@@ -233,7 +233,7 @@ async def start_review(db: AsyncSession, user: User, plot_id: int,
 async def garden_handler(db: AsyncSession, user: User, s: QuizSession, correct: bool,
                          now: dt.datetime) -> dict:
     p = await db.get(Plot, int(s.ref)) if s.ref else None
-    if p is None or p.user_id != user.id or p.word_id != s.word_id:
+    if p is None or p.user_id != user.id or p.word_id != s.item_id:
         return {"note": "plot_changed"}
     plots = await _all_plots(db, user.id)
     srs.refresh_wither(p, now, await wither_rate(db, user.id))
@@ -245,7 +245,7 @@ async def garden_handler(db: AsyncSession, user: User, s: QuizSession, correct: 
         # pollinated while it was already due: this new wait is the one that gets shorter
         p.next_review_at = now + (p.next_review_at - now) * (1 - beesys.review_cut())
         p.pollen_boost = False
-    col = await quiz.get_collection(db, user.id, s.word_id)
+    col = await quiz.get_collection(db, user.id, s.item_id)
     if col is not None:
         quiz.bump_mastery(col, out.mastery_delta)
         if correct:

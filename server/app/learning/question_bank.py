@@ -55,6 +55,11 @@ class Question:
     time_limit: float
     meta: dict = field(default_factory=dict)
 
+    @property
+    def item_id(self) -> str:
+        """What quiz_sessions.item_id stores for this question."""
+        return self.word_id
+
     def public(self) -> dict:
         return {"qtype": self.qtype, "instruction_vi": INSTRUCTIONS_VI[self.qtype],
                 "prompt": self.prompt, "input": self.input, "options": self.options,

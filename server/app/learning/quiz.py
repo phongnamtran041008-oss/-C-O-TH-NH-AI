@@ -48,6 +48,43 @@ def register_handler(context: str, fn: Handler) -> None:
     _handlers[context] = fn
 
 
+# Vocabulary questions (Q1-Q11) are graded by question_bank; other kinds of question
+# register their own grader per question type.
+Grader = Callable[[str, dict, dict | None], bool]
+_graders: dict[str, Grader] = {}
+
+
+def register_grader(qtypes, fn: Grader) -> None:
+    for qtype in qtypes:
+        _graders[qtype] = fn
+
+
+def grade(qtype: str, answer_key: dict, given: dict | None) -> bool:
+    return _graders.get(qtype, qb.grade)(qtype, answer_key, given)
+
+
+# Tu Vi for a right answer: cultivation.json xp_per_correct[context] unless the context
+# registered its own rule (math: by difficulty tier).
+XpRule = Callable[[QuizSession], int]
+XpListener = Callable[[AsyncSession, QuizSession, int], Awaitable[None]]
+_xp_rules: dict[str, XpRule] = {}
+_xp_listeners: dict[str, XpListener] = {}
+
+
+def register_xp_rule(context: str, fn: XpRule, on_gain: XpListener | None = None) -> None:
+    """`fn(session)` = base Tu Vi for a right answer in this context; `on_gain` is told
+    what the player really gained (after pills and pets)."""
+    _xp_rules[context] = fn
+    if on_gain:
+        _xp_listeners[context] = on_gain
+
+
+def base_xp(s: QuizSession) -> int:
+    from ..systems import cultivation
+    rule = _xp_rules.get(s.context)
+    return int(rule(s)) if rule else int(cultivation.cfg()["xp_per_correct"].get(s.context, 0))
+
+
 async def create_session(db: AsyncSession, user: User, context: str, question: qb.Question,
                          ref: str | None = None, expires_in: float | None = None) -> dict:
     now = clock.now()
@@ -58,7 +95,7 @@ async def create_session(db: AsyncSession, user: User, context: str, question: q
     grace = balance.quiz()["network_grace"]
     life = expires_in if expires_in is not None else question.time_limit + grace
     s = QuizSession(id=str(uuid.uuid4()), user_id=user.id, context=context, ref=ref,
-                    qtype=question.qtype, word_id=question.word_id, payload=question.public(),
+                    qtype=question.qtype, item_id=question.item_id, payload=question.public(),
                     answer_key=question.answer_key, created_at=now,
                     expires_at=now + dt.timedelta(seconds=life))
     db.add(s)
@@ -89,14 +126,14 @@ async def answer(db: AsyncSession, user: User, session_id: str, given: dict | No
         raise QuizError(409, "already_answered", "Câu này đã được trả lời rồi.")
     now = clock.now()
     timed_out = now > s.expires_at
-    correct = (not timed_out) and qb.grade(s.qtype, s.answer_key, given)
+    correct = (not timed_out) and grade(s.qtype, s.answer_key, given)
     s.answered_at, s.correct = now, correct
     s.answer = given if isinstance(given, dict) and len(str(given)) < 500 else None
     s.answer_ms = int((now - s.created_at).total_seconds() * 1000)
     _watch_for_bots(user, correct, s.answer_ms)
 
-    col = await get_collection(db, user.id, s.word_id)
-    if col is not None:
+    col = None if s.qtype in _graders else await get_collection(db, user.id, s.item_id)
+    if col is not None:   # (only vocabulary questions are about a collected word)
         col.times_correct += int(correct)
         col.times_wrong += int(not correct)
         col.last_answered_at = now
@@ -105,7 +142,7 @@ async def answer(db: AsyncSession, user: User, session_id: str, given: dict | No
     extra = await handler(db, user, s, correct, now) if handler else {}
     if correct:  # Tu Vi: right answers anywhere are the main source (spec 7.3)
         from ..systems import buffs, cultivation, pets, quests
-        amount = cultivation.cfg()["xp_per_correct"].get(s.context, 0)
+        amount = base_xp(s)
         if amount:   # Tụ Linh Đan, and the Gà for garden reviews (stage 8)
             mult = buffs.xp_mult(user, now)
             if s.context == "garden":
@@ -114,6 +151,8 @@ async def answer(db: AsyncSession, user: User, session_id: str, given: dict | No
         info = await cultivation.add_xp(db, user.id, amount, s.context) if amount else None
         if info:
             extra["xp"] = info
+            if s.context in _xp_listeners:
+                await _xp_listeners[s.context](db, s, info["gained"])
         await quests.on_event(db, user.id, "answer", "*")
     mishap = await _tone_mishap(db, user, s, given, correct)
     if mishap:
@@ -153,7 +192,7 @@ async def _tone_mishap(db: AsyncSession, user: User, s: QuizSession, given, corr
     from . import pinyin as py
     from ..systems import inventory
     for m in bank().mishaps:
-        if m["target_id"] == s.word_id and py.canonical(m["wrong_pinyin"]) == py.canonical(chosen):
+        if m["target_id"] == s.item_id and py.canonical(m["wrong_pinyin"]) == py.canonical(chosen):
             out = {k: m[k] for k in ("id", "effect", "line_vi", "wrong_hanzi", "wrong_vi")}
             out["wrong_pinyin"] = m["wrong_pinyin_marked"]
             if m["effect"] == "lose_stones":
@@ -171,7 +210,7 @@ async def practice_handler(db: AsyncSession, user: User, s: QuizSession, correct
     """Non-garden contexts (spec 8.3): mastery ±2, wrong answers mark the word 'cần ôn';
     the garden stage never changes here."""
     q = balance.quiz()
-    col = await get_collection(db, user.id, s.word_id)
+    col = await get_collection(db, user.id, s.item_id)
     if col is None:
         return {}
     bump_mastery(col, q["non_garden_mastery_correct"] if correct else q["non_garden_mastery_wrong"])

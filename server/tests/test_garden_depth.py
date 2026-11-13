@@ -145,7 +145,7 @@ async def test_mishap_never_negative(client, db):
     user = await db.get(User, uid)
     user.spirit_stones = 3
     await db.commit()
-    s = QuizSession(id="m1", user_id=uid, context="practice", qtype="Q3", word_id=B.by_hanzi["买"].id,
+    s = QuizSession(id="m1", user_id=uid, context="practice", qtype="Q3", item_id=B.by_hanzi["买"].id,
                     payload={}, answer_key={"option": "a", "option_numeric": {"a": "mai3", "b": "mai4"}},
                     created_at=clock.now(), expires_at=clock.now() + dt.timedelta(seconds=30))
     db.add(s)

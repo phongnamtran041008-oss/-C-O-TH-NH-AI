@@ -360,3 +360,31 @@ Biến môi trường mới: `FIREBASE_API_KEY`, `HOST_FIREBASE_UID` (người c
 Tín hiệu LAN (không phải HTTP): UDP broadcast tới cổng 47654 mỗi 1,5 giây, nội dung JSON
 `{"g": "khuvuon-lan", "v": <giao thức>, "name", "host", "port", "online"}`.
 
+## Nhánh `toan-tu-tien` — M2: vòng câu hỏi toán
+
+Một *buổi luyện* (`math_runs`) diễn ra trên một tầng của một bí cảnh toán. Mỗi câu hỏi là một phiên câu hỏi
+`context: "math"` và được trả lời qua `/quiz/answer` như mọi câu hỏi khác; đáp án và lời giải chỉ được gửi về
+sau khi trả lời.
+
+| Method | Đường dẫn | Body | Ghi chú |
+|---|---|---|---|
+| GET | `/math/path` | — | `{subjects[{id, name_vi, order, floors[{floor, title_vi, hidden, tier_min, tier_max, questions, playable, skills[{id, name_vi}]}]}], run?, tiers{"1": "Nhập môn", …}}`. `run` là buổi luyện đang dở (nếu có). `questions` chỉ đếm câu máy chủ được phép hỏi (câu chưa duyệt chỉ tính khi `ALLOW_UNREVIEWED=1`) |
+| POST | `/math/run/start` | `{subject_id, floor}` | mở buổi luyện mới ở bậc thấp nhất của tầng (buổi đang dở bị đóng). → `{run}`. Lỗi `no_floor` (404), `no_questions` (400) |
+| POST | `/math/run/next` | `{run_id}` | → `{run, question}`. Nếu buổi còn một câu chưa trả lời và chưa hết giờ thì trả lại đúng câu đó. Lỗi `no_run` (404), `run_ended` (409), `no_questions` |
+| POST | `/math/run/end` | `{run_id}` | đóng buổi luyện → `{run}` (bảng tổng kết) |
+
+`run` = `{run_id, subject_id, floor, tier, tier_name_vi, tier_min, tier_max, combo, best_combo, asked, correct, xp_gained, ended}`.
+
+`question` = phiên câu hỏi chung cộng `math{subject, subject_name_vi, skill, skill_name_vi, floor, tier, tier_name_vi}`:
+
+| `qtype` | `input` | Câu trả lời gửi lên |
+|---|---|---|
+| `true_false` | `truefalse` | `{"value": true}` hoặc `{"value": false}` |
+| `multiple_choice` | `choice` (`options[{id, text}]`, đã xáo) | `{"option": "a"}` |
+| `numeric` | `number` | `{"text": "3/4"}` — số nguyên, số thập phân (dấu chấm), phân số `a/b`, hoặc nhiều số cách nhau bằng dấu phẩy; sai số cho phép `numeric_tolerance` |
+
+Hết giờ trên máy khách thì game gửi `{"timed_out": true}`; máy chủ cũng tự tính hết giờ theo `expires_at`
+(`time_limit` + `network_grace`). Cả hai đều là một câu sai và làm mất chuỗi đúng, không mất gì khác.
+
+`/quiz/answer` trả thêm cho câu toán: `reveal{answer_text, solution_vi[]}`, `xp` (Tu Vi theo bậc, chỉ khi đúng) và
+`math{tier, timed_out, xp_base, tier_change (-1/0/+1), run}`.

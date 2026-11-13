@@ -19,7 +19,7 @@ class NoWordAvailable(Exception):
 
 
 async def recent_word_ids(db: AsyncSession, user_id: int, n: int) -> set[str]:
-    rows = (await db.execute(select(QuizSession.word_id).where(QuizSession.user_id == user_id)
+    rows = (await db.execute(select(QuizSession.item_id).where(QuizSession.user_id == user_id, QuizSession.context != "math")
                              .order_by(QuizSession.created_at.desc()).limit(n))).scalars().all()
     return set(rows)
 

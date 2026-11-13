@@ -607,7 +607,8 @@ class AbodeScene(Scene):
                                         ("hud_hive", T.HUD_HIVE, pygame.K_h, self.open_hive),
                                         ("hud_book", T.HUD_BOOK, pygame.K_b, self.open_book),
                                         ("hud_craft", T.HUD_CRAFT, pygame.K_c, self.open_craft),
-                                        ("hud_bag", T.HUD_BAG, pygame.K_TAB, self.open_bag)]:
+                                        ("hud_bag", T.HUD_BAG, pygame.K_TAB, self.open_bag),
+                                        ("hud_math", T.HUD_MATH, pygame.K_m, self.game.open_math)]:
             w = ui.text_size(label, 8)[0] + 10
             bx -= w + 3
             if ui.button(wid, bx, 252, w, 14, label, key=key if (top and not typing) else None, enabled=top):

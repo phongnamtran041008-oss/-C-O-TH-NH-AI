@@ -23,6 +23,22 @@ LGPL-3.0+.
 Nghĩa tiếng Việt, câu ví dụ, câu luyện tập và truyện thành ngữ do AI viết dựa trên nghĩa tiếng Anh của
 CC-CEDICT và **cần người duyệt** (cờ `meaning_vi_reviewed`, `example_reviewed`, `reviewed`).
 
+## Lộ trình toán (nhánh `toan-tu-tien`)
+
+Thứ tự và tên các tầng của mỗi bí cảnh toán đi theo **tên chương, mục** trong đề cương học phần công khai
+của Đại học Bách khoa Hà Nội (HUST). Game chỉ dùng tên chương/mục làm khung; tên và mô tả vi kỹ năng,
+câu hỏi, lời giải và tài liệu đều tự viết, không chép nội dung đề cương hay giáo trình.
+
+- Đại Số Tuyến Tính (`server/data/math/dai_so_tuyen_tinh.json`): MI1144 Đại số (tầng 1–9),
+  https://fami.hust.edu.vn/wp-content/uploads/MI1144-Decuong-Daiso-VN.pdf ; MI1141 Đại số, hệ tài năng
+  (tầng ẩn 10), https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf
+- Ba bí cảnh còn lại (Giải Tích, Xác Suất và Thống Kê, Tối Ưu và Toán Rời Rạc) mới có tên và mã học phần
+  trong `server/data/math/subjects.json`, chưa có nội dung. Đề cương của từng bí cảnh sẽ được ghi ở đây
+  khi viết tới.
+
+Các mục đánh dấu `"extension": "ai"` (ví dụ phép chiếu, PCA/SVD) là phần thêm cho lộ trình AI, không
+nằm trong đề cương.
+
 ## Phần mềm
 
 FastAPI, SQLAlchemy, Alembic, bcrypt, PyJWT, Uvicorn, websockets, httpx, pygame-ce, pytest (các giấy phép

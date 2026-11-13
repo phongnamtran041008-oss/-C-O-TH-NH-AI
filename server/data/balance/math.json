@@ -1,0 +1,74 @@
+{
+  "_comment": "Learning path of the math game (plan section 3): tiers, which tiers a floor may show, the rules that move a player between tiers and floors, and the time limit of every question type. Read through app/learning/math_path.py. Floors and micro-skills are in server/data/math/.",
+
+  "tiers": {
+    "1": {"name_vi": "Nhập môn"},
+    "2": {"name_vi": "Cơ bản"},
+    "3": {"name_vi": "Vận dụng"},
+    "4": {"name_vi": "Nâng cao"},
+    "5": {"name_vi": "Thử thách"}
+  },
+
+  "main_floors": 9,
+  "hidden_floor": 10,
+  "floor_tiers": {
+    "_comment": "floor -> [lowest tier, highest tier] a question on that floor may have. Floor 10 is the optional hidden 'Tài Năng' floor.",
+    "1": [1, 2],
+    "2": [1, 2],
+    "3": [2, 3],
+    "4": [2, 3],
+    "5": [3, 4],
+    "6": [3, 4],
+    "7": [4, 5],
+    "8": [4, 5],
+    "9": [5, 5],
+    "10": [5, 5]
+  },
+  "skills_per_floor": {"min": 3, "max": 6},
+
+  "adaptive": {
+    "_comment": "Inside one session: this many right answers in a row raise the tier by one, this many wrong ones lower it by one, never outside the floor's range.",
+    "up_after_correct_streak": 2,
+    "down_after_wrong_streak": 2
+  },
+  "tier_unlock": {
+    "_comment": "A tier-N question of a micro-skill appears only after this many right answers among the player's last `window` answers at tier N-1 of the same micro-skill. The floor's lowest tier is always open.",
+    "correct_at_previous_tier": 3,
+    "window": 5
+  },
+  "xp_per_correct": {
+    "_comment": "Tu Vi for one right answer at tiers 1..5 in that order (a wrong answer or a timeout gives none).",
+    "by_tier": [3, 5, 8, 12, 18]
+  },
+  "numeric_tolerance": 1e-6,
+  "mastery_gate": {
+    "_comment": "To leave a floor: every micro-skill has at least min_correct_pct right among its last `window` answers at its current tier, and the floor's tribulation test is passed.",
+    "window": 5,
+    "min_correct_pct": 80
+  },
+  "spiral_review": {
+    "_comment": "Share of a session that goes back to earlier floors, and the spaced-repetition waits in days.",
+    "share_min": 0.20,
+    "share_max": 0.25,
+    "intervals_days": [1, 3, 7, 14]
+  },
+  "anti_repeat_window": 50,
+  "placement_test": {"min_questions": 10, "max_questions": 15},
+  "timeout": {
+    "_comment": "Running out of time is a wrong answer and ends the combo; nothing else is lost.",
+    "counts_as_wrong": true,
+    "resets_combo": true
+  },
+
+  "question_types": {
+    "_comment": "time_limit: seconds for tiers 1..5 in that order; null = this type does not exist at that tier.",
+    "true_false":      {"name_vi": "Đúng/Sai",          "time_limit": [10, 15, 20, 30, 40]},
+    "multiple_choice": {"name_vi": "Trắc nghiệm",       "time_limit": [20, 30, 60, 90, 120]},
+    "numeric":         {"name_vi": "Điền số",           "time_limit": [45, 90, 150, 240, 360]},
+    "matching":        {"name_vi": "Ghép cặp",          "time_limit": [45, 75, 120, 180, 240]},
+    "ordering":        {"name_vi": "Sắp xếp bước giải", "time_limit": [45, 75, 120, 180, 240]},
+    "find_mistake":    {"name_vi": "Tìm chỗ sai",       "time_limit": [null, 90, 150, 240, 300]},
+    "tribulation":     {"name_vi": "Thiên kiếp",        "time_limit": [null, null, null, 480, 720]},
+    "programming":     {"name_vi": "Bài lập trình",     "time_limit": [600, 900, 1200, 1800, 2700]}
+  }
+}

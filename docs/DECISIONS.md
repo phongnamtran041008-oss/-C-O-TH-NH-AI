@@ -693,3 +693,38 @@ một lần, lần sau chỉ đăng nhập, dùng Firebase (dự án và API key
 - **MessageBox tự đo chiều cao chữ** (sửa lỗi): trước tính mỗi dòng 10 đơn vị trong khi chữ cỡ 8 cao ~13,4 (kể cả giãn
   dòng 1,15), nên thông báo dài từ 4–5 dòng trở lên bị hai nút đè lên chữ.
 
+## Nhánh `toan-tu-tien` — M2: vòng câu hỏi toán
+
+- **Dùng chung dịch vụ câu hỏi cũ** (`learning/quiz.py`) thay vì viết một vòng riêng: câu toán là một `QuizSession`
+  `context = "math"`, nên đếm giờ, chống trả lời hai lần, cờ nghi bot và nhiệm vụ "trả lời câu hỏi" chạy y như cũ.
+  `quiz.py` có thêm ba chỗ đăng ký: `register_grader` (chấm theo dạng câu), `register_xp_rule` (Tu Vi theo bậc thay cho
+  bảng `xp_per_correct` theo ngữ cảnh) và người nghe Tu Vi thực nhận (đã nhân đan dược) để ghi vào buổi luyện.
+- **`quiz_sessions.word_id` → `item_id`, bỏ khóa ngoại tới `words`** (migration 0010), `qtype` dài 20 ký tự. Câu từ vựng
+  vẫn ghi mã chữ vào đó, câu toán ghi mã câu. Trên SQLite bảng được dựng lại từ một mô tả viết tay trong migration:
+  khóa ngoại do 0001 tạo không có tên, và cách "đặt tên theo quy ước rồi drop" của Alembic không tìm ra nó ở
+  Alembic 1.20/SQLAlchemy 2.1. PostgreSQL thì tìm tên khóa bằng inspector rồi `DROP CONSTRAINT`; **đường PostgreSQL
+  chưa được chạy thử** (máy phát triển chỉ có SQLite). Hạ cấp xóa các phiên câu hỏi toán (mã của chúng không phải chữ).
+- **Chưa gỡ phần từ vựng.** `words` còn là khóa ngoại của `plots`, `seeds`, `collection`, `fruits`; gỡ dần theo từng
+  mốc, bảng `words` gỡ sau cùng.
+- **Bậc của một câu = min(bậc của buổi luyện, bậc đã mở của vi kỹ năng)** (`learning/math_adaptive.py`). Luật 2: 2 câu
+  đúng liền thì buổi luyện lên một bậc, 2 câu sai liền thì xuống một bậc, không ra khỏi khoảng bậc của tầng; chuỗi đã
+  dùng để đổi bậc thì tính lại từ đầu. Luật 3: bậc N của một vi kỹ năng chỉ mở khi có ít nhất 3 câu đúng trong
+  **5 câu gần nhất** ở bậc N-1 của chính vi kỹ năng đó (`tier_unlock.window`; con số 5 là giá trị tạm, kế hoạch chỉ nói
+  "gần đây"). Bậc thấp nhất của tầng luôn mở.
+- **Tu Vi theo bậc** `xp_per_correct.by_tier = [3, 5, 8, 12, 18]` trong `balance/math.json` (giá trị tạm, chờ chủ dự án
+  quyết). Vẫn cộng vào thanh Tu Vi cũ; việc 4 bí cảnh x 9 tầng gắn thế nào với Luyện Khí tầng 1-9 để lại cho mốc cổng
+  thông thạo (M5).
+- **Chọn câu**: rút một vi kỹ năng của tầng rồi một câu của nó ở bậc được phép; câu có dấu vân tay nằm trong 50 câu trả
+  lời gần nhất bị bỏ qua khi còn câu khác, hết câu mới thì câu hỏi lâu nhất quay lại. Dấu vân tay = vi kỹ năng + mẫu +
+  bộ số (câu viết tay là mẫu của chính nó). Tiền điều kiện giữa các vi kỹ năng chưa chặn gì: cần "thông thạo", thuộc M5.
+- **Ba dạng câu chơi được ở M2**: Đúng/Sai, trắc nghiệm một đáp án, điền số. Điền số so bằng phân số chính xác với sai
+  số `numeric_tolerance`; dấu phẩy là dấu ngăn các số nên số thập phân viết bằng dấu chấm. Các dạng còn lại trong
+  `balance/math.json` có giờ nhưng chưa có câu và chưa có màn hình.
+- **Ngân hàng câu M2 chỉ là hạt giống**: 27 câu viết tay cho tầng 1 (mỗi vi kỹ năng ít nhất 2 câu mỗi bậc), tất cả
+  `reviewed: false`, nên máy chủ `ALLOW_UNREVIEWED=0` không hỏi câu nào. Bộ sinh câu và ngân hàng tầng 1-3 là việc của M3;
+  "câu song song sau khi sai" (luật 6) cũng cần bộ sinh nên M2 mới hiện lời giải từng bước.
+- **Hết giờ ở máy khách**: thẻ câu hỏi tự gửi `{"timed_out": true}` khi đồng hồ của nó về 0 (máy chủ còn 1,5 giây bù
+  mạng nên tự nó chưa coi là hết giờ); máy chủ ghi `math_answers.timed_out` trong cả hai trường hợp.
+- **Lối vào**: nút "Toán" (phím M) trên thanh dưới của Động Phủ. Vòng luyện là một màn phủ lên Động Phủ nên không có
+  thế giới nào chạy phía sau trong lúc câu hỏi mở; "thế giới dừng khi mở câu hỏi" sẽ cần xử lý khi câu toán vào chiến
+  đấu (M7).

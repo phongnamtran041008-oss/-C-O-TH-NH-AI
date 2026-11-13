@@ -437,6 +437,11 @@ class Game:
         from .scenes.library import LibraryScene
         self.push(LibraryScene(self))
 
+    def open_math(self) -> None:
+        """Bí Cảnh Toán (M2): the math question loop; also the M key in the abode."""
+        from .scenes.math_practice import MathPracticeScene
+        self.push(MathPracticeScene(self))
+
     def open_bag(self) -> None:
         from .scenes.bag import BagScene
         self.push(BagScene(self, None))

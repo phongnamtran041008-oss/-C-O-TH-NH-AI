@@ -19,8 +19,8 @@ from .learning.wordbank import bank
 from .models import Word
 from .realtime import ws as ws_routes
 from .realtime.world import world
-from .routers import (auth_routes, bee_routes, economy_routes, fishing_routes, game_routes, realm_routes,
-                      rpg_routes, server_routes, social_routes, td_routes)
+from .routers import (auth_routes, bee_routes, economy_routes, fishing_routes, game_routes, math_routes,
+                      realm_routes, rpg_routes, server_routes, social_routes, td_routes)
 from .systems import cultivation as _cultivation  # noqa: F401  (registers meditate/tribulation handlers)
 from .systems import inscription as _inscription  # noqa: F401  (registers the khắc văn handler)
 
@@ -91,6 +91,7 @@ def create_app(use_lifespan: bool = True) -> FastAPI:
     app.include_router(td_routes.router)
     app.include_router(economy_routes.router)
     app.include_router(realm_routes.router)
+    app.include_router(math_routes.router)
     app.include_router(ws_routes.router)
 
     @app.exception_handler(HTTPException)

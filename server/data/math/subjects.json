@@ -1,0 +1,14 @@
+{
+  "_comment": "The secret realms (bí cảnh) of a cultivation realm, one per math subject. In code a math bí cảnh is called a 'subject', because 'realm' already means cảnh giới and 'secret realm' already means the party dungeon. 'courses' are the HUST course codes whose chapter titles give the outline (see CREDITS.md). 'file' is the floor file in this folder, or null while the subject is not written yet.",
+  "cultivation_realm": "luyen_khi",
+  "subjects": [
+    {"id": "dai_so_tuyen_tinh", "order": 1, "name_vi": "Đại Số Tuyến Tính",
+     "courses": ["MI1144", "MI1141"], "file": "dai_so_tuyen_tinh.json"},
+    {"id": "giai_tich", "order": 2, "name_vi": "Giải Tích",
+     "courses": ["MI1114", "MI1111"], "file": null},
+    {"id": "xac_suat_thong_ke", "order": 3, "name_vi": "Xác Suất và Thống Kê",
+     "courses": ["MI2021", "MI3030", "MI3350"], "file": null},
+    {"id": "toi_uu_roi_rac", "order": 4, "name_vi": "Tối Ưu và Toán Rời Rạc",
+     "courses": ["IT3020", "MI3052", "MI2044"], "file": null}
+  ]
+}

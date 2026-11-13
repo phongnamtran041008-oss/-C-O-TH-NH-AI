@@ -241,7 +241,7 @@ async def quiz_audio(session_id: str, user: User = Depends(current_user), db: As
     s = await db.get(QuizSession, session_id)
     if s is None or s.user_id != user.id or s.qtype != "Q4":
         raise api_error(404, "no_audio", "Không có âm thanh.")
-    path = quiz.AUDIO_DIR / f"{s.word_id}.mp3"
+    path = quiz.AUDIO_DIR / f"{s.item_id}.mp3"
     if not path.exists():
         raise api_error(404, "no_audio", "Không có âm thanh.")
     return FileResponse(path, media_type="audio/mpeg", filename="q.mp3")

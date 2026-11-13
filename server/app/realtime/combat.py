@@ -280,7 +280,7 @@ async def combat_handler(db, user, s, correct: bool, now) -> dict:
     if p is not None:
         out["combat"] = on_answer(p, s.id, correct, s.answer_ms)
         if "mastery" in out:
-            w.word_mastery_changed(user.id, s.word_id, out["mastery"])
+            w.word_mastery_changed(user.id, s.item_id, out["mastery"])
     return out
 
 

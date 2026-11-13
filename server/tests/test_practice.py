@@ -84,7 +84,7 @@ async def test_selection_no_repeat_and_known_only(client, db):
         assert wid in {w.id for w in words[:8]}
         assert wid not in asked[-5:]
         asked.append(wid)
-        db.add(QuizSession(id=f"s{len(asked)}", user_id=user_id, context="practice", qtype="Q1", word_id=wid,
+        db.add(QuizSession(id=f"s{len(asked)}", user_id=user_id, context="practice", qtype="Q1", item_id=wid,
                            payload={}, answer_key={}, created_at=clock.now(), expires_at=clock.now()))
         await db.commit()
         clock._clock.advance(seconds=1)

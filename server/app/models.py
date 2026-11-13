@@ -112,10 +112,12 @@ class QuizSession(Base):
     __table_args__ = (Index("ix_quiz_user_created", "user_id", "created_at"),)
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     user_id: Mapped[int] = mapped_column(UserFK())
-    context: Mapped[str] = mapped_column(String(16))  # garden|combat|td|fishing|realm|tribulation|forge|practice
+    context: Mapped[str] = mapped_column(String(16))  # garden|combat|td|fishing|realm|tribulation|forge|practice|math
     ref: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    qtype: Mapped[str] = mapped_column(String(4))
-    word_id: Mapped[str] = mapped_column(ForeignKey("words.id"))
+    qtype: Mapped[str] = mapped_column(String(20))    # Q1..Q11, or a math question type (balance/math.json)
+    # What the question is about: a word id for the vocabulary contexts, a math item id for
+    # "math". Not a foreign key, so the question log does not depend on the words table.
+    item_id: Mapped[str] = mapped_column(String(40))
     payload: Mapped[dict] = mapped_column(JSON)
     answer_key: Mapped[dict] = mapped_column(JSON)  # never sent to the client before answering
     created_at: Mapped[dt.datetime] = mapped_column(DateTime)
@@ -390,3 +392,45 @@ class AdminAction(Base):
     target_name: Mapped[str | None] = mapped_column(String(40), nullable=True)
     detail: Mapped[str] = mapped_column(String(300), default="")
     created_at: Mapped[dt.datetime] = mapped_column(DateTime)
+
+
+class MathRun(Base):
+    """One practice sitting on a floor of a math subject (milestone M2). Holds what the
+    adaptive rule needs between two questions: the tier now and the two streaks."""
+    __tablename__ = "math_runs"
+    __table_args__ = (Index("ix_math_runs_user_open", "user_id", "ended_at"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(UserFK())
+    subject_id: Mapped[str] = mapped_column(String(40))
+    floor: Mapped[int] = mapped_column(Integer)
+    tier: Mapped[int] = mapped_column(Integer)                    # tier of the next question
+    correct_streak: Mapped[int] = mapped_column(Integer, default=0)
+    wrong_streak: Mapped[int] = mapped_column(Integer, default=0)
+    combo: Mapped[int] = mapped_column(Integer, default=0)        # right answers in a row; a timeout ends it
+    best_combo: Mapped[int] = mapped_column(Integer, default=0)
+    asked: Mapped[int] = mapped_column(Integer, default=0)        # questions answered (timeouts included)
+    correct: Mapped[int] = mapped_column(Integer, default=0)
+    xp_gained: Mapped[int] = mapped_column(Integer, default=0)
+    started_at: Mapped[dt.datetime] = mapped_column(DateTime)
+    ended_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
+
+
+class MathAnswer(Base):
+    """Every answered math question. The learning rules read this log: which tier of a
+    micro-skill is open (rule 3) now, mastery gates and spaced review in later milestones."""
+    __tablename__ = "math_answers"
+    __table_args__ = (Index("ix_math_answers_skill", "user_id", "skill_id", "tier", "id"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(UserFK())
+    run_id: Mapped[int | None] = mapped_column(ForeignKey("math_runs.id", ondelete="SET NULL"), nullable=True)
+    subject_id: Mapped[str] = mapped_column(String(40))
+    skill_id: Mapped[str] = mapped_column(String(40))
+    floor: Mapped[int] = mapped_column(Integer)
+    tier: Mapped[int] = mapped_column(Integer)
+    item_id: Mapped[str] = mapped_column(String(40))
+    qtype: Mapped[str] = mapped_column(String(20))
+    fingerprint: Mapped[str] = mapped_column(String(64))          # concept + template + numbers (anti-repeat)
+    correct: Mapped[bool] = mapped_column(Boolean)
+    timed_out: Mapped[bool] = mapped_column(Boolean, default=False)
+    answer_ms: Mapped[int] = mapped_column(Integer, default=0)
+    answered_at: Mapped[dt.datetime] = mapped_column(DateTime)

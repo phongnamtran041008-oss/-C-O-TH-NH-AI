@@ -433,7 +433,7 @@ async def test_upgrade_questions_are_about_the_plant(client, frozen):
         from app.models import QuizSession
         async with dbm.SessionLocal() as db:
             s = await db.get(QuizSession, q["session_id"])
-            assert s.word_id == wid("火") and s.context == "td"
+            assert s.item_id == wid("火") and s.context == "td"
         await answer(client, h, q)
     r = await client.post("/td/question", json={"run_id": st["run_id"], "kind": "upgrade", "word_id": wid("木")},
                           headers=h)
