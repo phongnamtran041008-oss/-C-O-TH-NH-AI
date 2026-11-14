@@ -395,14 +395,18 @@ class AdminAction(Base):
 
 
 class MathRun(Base):
-    """One practice sitting on a floor of a math subject (milestone M2). Holds what the
-    adaptive rule needs between two questions: the tier now and the two streaks."""
+    """One sitting on a floor of a math subject (milestone M2). Holds what the adaptive rule
+    needs between two questions: the tier now and the two streaks. A sitting is either
+    ordinary practice or the floor's own test, the Thiên kiếp nhỏ (`mode`, M5); a floor
+    counts as cleared once the player has a trial run on it with `passed` true."""
     __tablename__ = "math_runs"
-    __table_args__ = (Index("ix_math_runs_user_open", "user_id", "ended_at"),)
+    __table_args__ = (Index("ix_math_runs_user_open", "user_id", "ended_at"),
+                      Index("ix_math_runs_cleared", "user_id", "subject_id", "mode", "passed"))
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(UserFK())
     subject_id: Mapped[str] = mapped_column(String(40))
     floor: Mapped[int] = mapped_column(Integer)
+    mode: Mapped[str] = mapped_column(String(10), default="practice")   # practice|trial
     tier: Mapped[int] = mapped_column(Integer)                    # tier of the next question
     correct_streak: Mapped[int] = mapped_column(Integer, default=0)
     wrong_streak: Mapped[int] = mapped_column(Integer, default=0)
@@ -410,7 +414,9 @@ class MathRun(Base):
     best_combo: Mapped[int] = mapped_column(Integer, default=0)
     asked: Mapped[int] = mapped_column(Integer, default=0)        # questions answered (timeouts included)
     correct: Mapped[int] = mapped_column(Integer, default=0)
+    review_asked: Mapped[int] = mapped_column(Integer, default=0)  # of those, spiral review (rule 6)
     xp_gained: Mapped[int] = mapped_column(Integer, default=0)
+    passed: Mapped[bool | None] = mapped_column(Boolean, nullable=True)   # a trial: passed, failed, still going
     started_at: Mapped[dt.datetime] = mapped_column(DateTime)
     ended_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
 
@@ -432,5 +438,26 @@ class MathAnswer(Base):
     fingerprint: Mapped[str] = mapped_column(String(64))          # concept + template + numbers (anti-repeat)
     correct: Mapped[bool] = mapped_column(Boolean)
     timed_out: Mapped[bool] = mapped_column(Boolean, default=False)
+    review: Mapped[bool] = mapped_column(Boolean, default=False)   # a spiral-review question (M5, rule 6)
     answer_ms: Mapped[int] = mapped_column(Integer, default=0)
     answered_at: Mapped[dt.datetime] = mapped_column(DateTime)
+
+
+class MathRetry(Base):
+    """A mistake that has to come back (learning-path rule 6, "tâm ma"): the template the
+    player got wrong returns as a parallel question, the same idea with new numbers, once
+    a few other questions have been answered. Cleared by a right answer to it."""
+    __tablename__ = "math_retries"
+    __table_args__ = (Index("ix_math_retries_open", "user_id", "subject_id", "floor", "cleared_at"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(UserFK())
+    subject_id: Mapped[str] = mapped_column(String(40))
+    floor: Mapped[int] = mapped_column(Integer)
+    skill_id: Mapped[str] = mapped_column(String(40))
+    tier: Mapped[int] = mapped_column(Integer)
+    item_id: Mapped[str] = mapped_column(String(40))              # the template: an item id or a generator id
+    fingerprint: Mapped[str] = mapped_column(String(64))          # the question that was missed last
+    after_answer_id: Mapped[int] = mapped_column(Integer)         # math_answers.id of the latest miss
+    misses: Mapped[int] = mapped_column(Integer, default=1)
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime)
+    cleared_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)

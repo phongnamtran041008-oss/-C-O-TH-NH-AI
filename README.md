@@ -560,6 +560,34 @@ mở `tools/reports/review_sheet.csv` và `sentences_review.csv` bằng Excel, �
 bản sửa vào cột `*_fixed`, rồi chạy `python tools/apply_review.py`. Câu chưa duyệt chỉ được dùng khi
 `ALLOW_UNREVIEWED=1` (mặc định ở môi trường dev).
 
+## Nội dung toán (nhánh `toan-tu-tien`)
+
+```bash
+python tools/check_all.py       # 7 kiểm tra nội dung: lộ trình, ngân hàng câu, bộ sinh câu, đáp án, Tàng Thư, công thức, phông chữ
+python tools/math_review.py     # bảng duyệt câu hỏi -> tools/reports/math_review_<bí cảnh>.md
+python tools/math_verify.py     # tính lại đáp án của mọi câu sinh ra bằng SymPy
+python tools/build_formulas.py  # dựng ảnh công thức cho Tàng Thư Các (cần Node, xem bên dưới)
+```
+
+Câu hỏi nằm trong `server/data/math/items/`, bài đọc Tàng Thư Các nằm trong `server/data/math/library/`
+(Markdown rút gọn: `##` một mục cho mỗi vi kỹ năng, `$$...$$` công thức, `:::matrix` ma trận, `>` lời nhắc).
+
+Mỗi công thức `$$...$$` được dựng sẵn thành một ảnh PNG đi kèm game, nên lúc chơi không cần Node, không cần
+mạng và không cần phông chữ toán. Chỉ khi **thêm hoặc sửa công thức** mới phải dựng lại:
+
+```bash
+cd tools/formulas && npm install     # một lần (MathJax + resvg)
+python tools/build_formulas.py       # dựng ảnh mới vào client/assets/formulas/
+```
+
+Mọi câu hỏi và bài đọc đều do AI viết nên **cần người duyệt** (cờ `reviewed`), giống phần từ vựng.
+
+**Đường đi trong một bí cảnh toán.** Tầng 1 mở sẵn; muốn lên tầng trên phải qua **Thiên kiếp nhỏ** của tầng
+đang đứng. Thiên kiếp nhỏ chỉ mở khi **cổng thuần thục** đã mở: mọi vi kỹ năng của tầng đều đã lên tới bậc cao
+nhất của tầng và đúng ít nhất 4 trong 5 câu gần nhất ở bậc ấy. Bài thi hỏi mỗi vi kỹ năng một câu ở bậc cao
+nhất, được sai một câu; trượt thì ôn lại rồi thi lại ngay được. Trong lúc luyện, cứ khoảng 4 câu lại có một
+câu **ôn xoắn ốc** lấy từ tầng dưới theo lịch 1 → 3 → 7 → 14 ngày, ưu tiên vi kỹ năng hay sai.
+
 ## Lộ trình
 
 | Giai đoạn | Nội dung | Trạng thái |

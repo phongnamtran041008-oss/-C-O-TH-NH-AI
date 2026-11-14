@@ -14,6 +14,7 @@ tools/check_all.py fail when that list is not empty, so a broken path never ship
 from __future__ import annotations
 
 import json
+import math
 import re
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -326,7 +327,18 @@ def validate_config(config: dict) -> list[str]:
     pct = _get(config, "mastery_gate", "min_correct_pct")
     if not (isinstance(pct, (int, float)) and not isinstance(pct, bool) and 0 < pct <= 100):
         errors.append("mastery_gate.min_correct_pct: must be above 0 and at most 100")
+    per_skill = need_int(1, "mastery_gate", "trial", "questions_per_skill")
+    wrong = need_int(0, "mastery_gate", "trial", "max_wrong")
+    few = _get(config, "skills_per_floor", "min")
+    if per_skill and wrong is not None and _is_int(few) and wrong >= per_skill * few:
+        errors.append("mastery_gate.trial.max_wrong: a trial on the smallest floor could then be "
+                      "passed with every question wrong")
     need_int(1, "anti_repeat_window")
+    need_int(0, "template_cooldown")
+    need_int(0, "parallel_question", "after_answers")
+    need_int(1, "parallel_question", "max_open")
+    for key in ("templates_per_floor", "generators_per_floor", "per_skill_tier", "generator_variety"):
+        need_int(1, "bank_targets", key)
     lo, hi = need_int(1, "placement_test", "min_questions"), need_int(1, "placement_test", "max_questions")
     if lo and hi and lo > hi:
         errors.append("placement_test: min_questions is above max_questions")
@@ -335,6 +347,10 @@ def validate_config(config: dict) -> list[str]:
     if not (all(isinstance(s, (int, float)) and not isinstance(s, bool) for s in share)
             and 0 <= share[0] <= share[1] < 1):
         errors.append("spiral_review: need 0 <= share_min <= share_max < 1")
+    elif share[1] > 0 and 1 / math.ceil(1 / share[1]) < share[0] - 1e-9:
+        # one review question every ceil(1 / share_max) questions is what the loop can do
+        errors.append(f"spiral_review: a share of at most {share[1]} means one review question every "
+                      f"{math.ceil(1 / share[1])}, which is below share_min {share[0]}")
     days = _get(config, "spiral_review", "intervals_days")
     if not (isinstance(days, list) and days and all(_is_int(d) and d >= 1 for d in days)
             and all(a < b for a, b in zip(days, days[1:]))):

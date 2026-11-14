@@ -728,3 +728,109 @@ một lần, lần sau chỉ đăng nhập, dùng Firebase (dự án và API key
 - **Lối vào**: nút "Toán" (phím M) trên thanh dưới của Động Phủ. Vòng luyện là một màn phủ lên Động Phủ nên không có
   thế giới nào chạy phía sau trong lúc câu hỏi mở; "thế giới dừng khi mở câu hỏi" sẽ cần xử lý khi câu toán vào chiến
   đấu (M7).
+
+## Nhánh `toan-tu-tien` — M3: ngân hàng câu tầng 1-3, bộ sinh câu, chống lặp
+
+- **Bộ sinh câu = dữ liệu + hàm.** Mỗi bộ có một dòng trong `data/math/items/<bí cảnh>.json` (`generators`: mã, vi kỹ
+  năng, bậc, dạng, `reviewed`) và một hàm cùng mã trong `learning/math_gen/` (`@generator`). Dữ liệu giữ phần người
+  duyệt cần sửa (bậc, cờ duyệt); phần sinh số thì phải là mã. Kiểm tra hai chiều: dòng không có hàm và hàm không có
+  dòng đều là lỗi. Hàm chỉ dùng `rng` được truyền vào nên cùng hạt giống cho cùng câu hỏi.
+- **Tính lại đáp án bằng SymPy, tách khỏi game.** Hàm sinh câu tự tính đáp án bằng số nguyên/phân số của thư viện
+  chuẩn; `tools/math_verify.py` tính lại từ bộ số đã rút (`Draw.params`) bằng SymPy theo đường khác (tập hợp, số
+  phức, ma trận của SymPy; giải phương trình thay vì chuyển vế bằng tay). SymPy chỉ nằm trong
+  `server/requirements-dev.txt`: máy chủ, Docker và exe không phải mang theo. Không dùng NumPy: mọi đáp án ở tầng 1-3
+  là số hữu tỉ, SymPy tính đúng tuyệt đối. CI cài bản dev và chạy `tools/check_all.py`.
+- **`check_all.py` có 4 kiểm tra**: lộ trình; ngân hàng câu (hợp lệ, không có hai câu viết tay chỉ khác số, đủ chỉ
+  tiêu); bộ sinh câu (200 lần rút đều là câu hợp lệ, cùng hạt giống cùng câu, đủ đa dạng); đáp án sinh ra (SymPy).
+- **Chỉ tiêu ngân hàng** (`bank_targets`): tầng nào có câu thì phải có ít nhất 30 dạng câu, 3 bộ sinh câu và 2 dạng
+  cho mỗi (vi kỹ năng, bậc); 200 lần rút của một bộ phải cho ít nhất 8 câu khác nhau. Tầng chưa viết không bị tính.
+  Hiện có: tầng 1 = 27 câu viết tay + 13 bộ, tầng 2 = 21 + 12, tầng 3 = 23 + 12.
+- **Phát hiện câu gần trùng**: hai câu viết tay của cùng vi kỹ năng giống nhau từ 95% trở lên sau khi thay mọi con số
+  bằng `#` là lỗi (cùng một câu, khác số là việc của bộ sinh câu). Ngưỡng 90% bắt nhầm "A giao B" với "hiệu A \ B".
+- **Ma trận là hình, không phải chữ.** Câu hỏi gửi `prompt.matrices`, game vẽ ngoặc vuông và các phần tử; lời đề viết
+  "ma trận A như hình". Phần tử là số, phân số hoặc một chữ thường (ẩn `x`, `y`). Vectơ vẫn viết trong câu: `(1, -2, 0)`.
+  Số phức viết `3 - 2i`; đáp án số phức nhập hai số "phần thực, phần ảo".
+- **Chống lặp** (`systems/math_practice.choose_item`), theo thứ tự ưu tiên: câu có dấu vân tay ngoài 50 câu trả lời gần
+  nhất *và* thuộc dạng câu không nằm trong 4 câu gần nhất (`template_cooldown`); câu ngoài 50 câu gần nhất; một bộ sinh
+  câu (bộ số đành lặp); câu viết tay hỏi lâu nhất. Bộ sinh câu rút tối đa 30 lần để tìm bộ số chưa gặp.
+- **Câu song song, "tâm ma" (luật 6)**: mỗi câu sai (kể cả hết giờ) ghi một dòng `math_retries` (migration 0011). Sau
+  khi người chơi trả lời thêm `parallel_question.after_answers` = 1 câu khác, ý đó quay lại: bộ sinh câu thì rút bộ số
+  mới (không bao giờ đúng câu vừa sai); câu viết tay thì lấy một dạng khác cùng vi kỹ năng và cùng bậc, ưu tiên bộ
+  sinh câu, chỉ lặp lại chính nó khi không còn dạng nào. Trả lời đúng thì xóa; sai thì chờ tiếp. Hàng chờ theo người
+  chơi và tầng, sống qua các buổi luyện, tối đa `max_open` = 5 (ý cũ nhất bị bỏ). Con số 1 và 5 là giá trị tạm.
+  Câu song song giữ bậc của câu đã sai, kể cả khi buổi luyện đã đổi bậc.
+- **Bảng duyệt**: `python tools/math_review.py` ghi `tools/reports/math_review_<bí cảnh>.md` (mọi câu viết tay và 3
+  mẫu của mỗi bộ sinh câu, kèm đáp án và lời giải). Tất cả 108 dạng câu hiện `reviewed: false`.
+
+## Nhánh `toan-tu-tien` — M4: Tàng Thư Các, công thức dựng sẵn
+
+- **Công thức là ảnh dựng sẵn, không dựng lúc chơi.** `$$...$$` trong bài đọc được MathJax đổi thành SVG
+  (`fontCache: 'none'` nên mọi nét chữ là đường vẽ, không cần phông), rồi resvg đổi thành PNG nền trong suốt
+  (`tools/formulas/render.mjs`, chạy qua `tools/build_formulas.py`). Ảnh đi kèm game trong
+  `client/assets/formulas/`, nên lúc chơi không cần Node, không cần mạng, không cần phông toán. Node chỉ cần
+  khi thêm hoặc sửa công thức. Tên ảnh là băm của chính công thức, nên công thức không đổi thì không dựng lại,
+  và không bao giờ có chuyện ảnh lệch với công thức.
+- **Không dùng matplotlib** như kế hoạch đã ghi (mathtext không vẽ được môi trường ma trận), cũng không dùng
+  Pillow: máy không có sẵn và không cần. Chỗ duy nhất cần xử lý ảnh lúc chơi là thu phóng, pygame làm được.
+- **Ma trận thì game tự vẽ**, không thành ảnh: nó chỉ là các số trong ngoặc vuông, nét luôn sắc ở mọi cỡ cửa
+  sổ, và các số còn thay đổi theo từng câu hỏi (M3). Mã vẽ dùng chung giữa thẻ câu hỏi và trang sách
+  (`client/ui/mathdraw.py`).
+- **Công thức trong dòng vẫn viết ASCII** (A^T, !=, A \ B) đúng như kế hoạch; chỉ công thức đứng riêng mới
+  thành ảnh. Nhờ vậy câu hỏi, lời giải và phần lớn bài đọc vẫn là chữ thật, tìm kiếm được, đọc được bằng
+  phông của game.
+- **Mỗi công thức có sẵn dạng chữ thường (`alt`)** do `tex_to_ascii` sinh ra từ chính công thức đó, nên không
+  có hai nguồn sự thật. Lệnh TeX nào chưa có cách viết bằng chữ thì `tools/check_all.py` báo lỗi ngay, không
+  đợi đến lúc thiếu ảnh mới lộ. Game hiện `alt` khi ảnh thiếu, nên trang sách không bao giờ trống.
+- **Một bài đọc cho một tầng**, chia thành đúng một mục `##` cho mỗi vi kỹ năng, theo thứ tự `skills` trong
+  front matter. Nhờ vậy câu hỏi dẫn thẳng tới đúng mục (`question.math.doc.block`) mà không cần mỗi vi kỹ
+  năng một file. Kiểm tra bắt buộc: tầng nào có câu hỏi thì phải có bài đọc, và bài đọc phải phủ đủ vi kỹ năng
+  của tầng.
+- **Markdown rút gọn, không có thư viện Markdown nào.** Chỉ 8 loại khối (mục, tiêu đề nhỏ, đoạn văn, gạch đầu
+  dòng, các bước, công thức, ma trận, lời nhắc). Máy chủ tách sẵn thành khối rồi mới gửi; game không bao giờ
+  phải hiểu Markdown. Không có in đậm, in nghiêng hay bảng: `ui.text` của game không vẽ được chữ hỗn hợp kiểu.
+- **Kiểm tra phông chữ** (`check_all.py`): gom mọi chuỗi game hiện ra — tên tầng, vi kỹ năng, mọi câu hỏi viết
+  tay, 5 lần rút của mỗi bộ sinh câu, mọi bài đọc, và toàn bộ `client/strings_vi.py` — rồi soát từng ký tự với
+  bảng mã của hai phông đi kèm, theo đúng cách `client/engine/text.py` chọn phông. Đây là lưới an toàn cho cả
+  phần chữ Hán cũ, không riêng phần toán.
+- **So ảnh màn hình**: kế hoạch ghi việc này trong `check_all.py`, nhưng ảnh chuẩn dễ lệch theo máy và theo
+  phiên bản SDL. Thay vào đó `client/tests/test_math_library_flow.py` dựng và vẽ **mọi trang của mọi bài đọc**
+  không cần màn hình, rồi kiểm tra: không dòng nào, ảnh nào, ma trận nào rộng quá khổ trang; mọi ảnh công thức
+  đều có thật (không trang nào phải lùi về chữ thay thế); cuộn được từ đầu tới cuối và nhảy mục đúng chỗ.
+  Ảnh chụp vẫn được lưu để người xem (`python -m client.tests.test_math_library_flow <thư mục>`).
+- **Cỡ chữ công thức**: 1 ex = 4,5 đơn vị nền, ảnh dựng ở 3 lần cỡ đó. Cửa sổ thường ở scale 3 nên ảnh vẽ
+  đúng 1:1, không mờ. Giới hạn 380 x 90 đơn vị nền cho vừa trang đọc; `check_all.py` chặn công thức quá khổ.
+
+## Nhánh `toan-tu-tien` — M5: cổng thuần thục, Thiên kiếp nhỏ, ôn xoắn ốc
+
+- **"Bậc hiện tại" của cổng thuần thục = bậc cao nhất của tầng.** Kế hoạch (luật 3a) viết "mỗi vi kỹ năng đã
+  đúng >= 80% trong 5 câu gần nhất ở bậc hiện tại". Bậc mà một vi kỹ năng *đang* được hỏi chính là bậc cao
+  nhất đang mở của nó (luật 4), nên cổng đòi thêm: vi kỹ năng phải đã mở tới bậc cao nhất của tầng. Nếu
+  không, người chơi có thể rời tầng mà chưa từng chạm câu khó nhất của tầng ấy.
+- **Phải đủ 5 câu mới xét**, không chỉ xét tỉ lệ: "5 câu gần nhất" mà mới có 4 câu thì chưa có gì để xét. Nhờ
+  vậy bảng tiến độ của cổng luôn đọc được: "đúng 4/5 câu gần nhất ở bậc 2".
+- **Thiên kiếp nhỏ không có đồng hồ riêng.** Bảng 3.4 chỉ cho "Thiên kiếp (tổng hợp)" 8 và 12 phút ở bậc 4-5,
+  tức là bài tổng hợp lúc độ kiếp lên cảnh giới (làm sau). Thiên kiếp nhỏ của tầng là **một chuỗi câu hỏi**,
+  mỗi câu giữ nguyên thời gian của loại câu và bậc của nó. Không phải viết thêm đồng hồ cho cả bài, và tầng
+  thấp (bậc 1-3, chỗ bảng 3.4 để trống) cũng chạy được.
+- **Mỗi vi kỹ năng một câu, được sai một câu** (`mastery_gate.trial`: `questions_per_skill: 1`, `max_wrong: 1`).
+  Hai con số này tôi tự chọn, kế hoạch không ghi — tầng nhỏ nhất có 3 vi kỹ năng nên "được sai 1" vẫn là 2/3
+  đúng. **Thi trượt dừng ngay** khi đã sai quá số cho phép: không bắt ai làm nốt một bài đã hỏng.
+- **Thi lại được ngay** (luật 3: "không bị chặn cứng quá lâu"). Tầng đã qua vẫn thi lại được; qua một lần là
+  qua.
+- **Tầng đã qua = có một buổi `mode: "trial"` với `passed: true`**, chứ không phải một cột trạng thái riêng.
+  Nhật ký là sự thật duy nhất, và bảng `math_runs` đã có sẵn mọi thứ cần đếm.
+- **Ôn xoắn ốc đi theo `share_max`**: câu thứ n là câu ôn khi `review_asked < int(share_max * n)`, tức cứ 4
+  câu có 1 câu ôn (0,25) — vẫn nằm trong khoảng 20-25% của kế hoạch. `share_min` không bị bỏ quên:
+  `check_all.py` báo lỗi nếu nhịp số nguyên gần nhất rơi xuống dưới nó.
+- **Lịch lặp lại ngắt quãng đọc thẳng từ nhật ký trả lời**, không có bảng lịch riêng: số câu đúng liên tiếp
+  gần nhất của một vi kỹ năng quyết định thời gian chờ (1 → 3 → 7 → 14 ngày), một câu sai xoá chuỗi đó. Vi kỹ
+  năng **vừa sai thì đến hạn ngay**, không chờ một ngày — đó chính là "tâm ma" cho các tầng dưới, và cũng là
+  cách spaced repetition xử lí một lần quên.
+- **Câu ôn lấy ở bậc cao nhất đang mở của vi kỹ năng ấy trên tầng của nó**, nên ôn lại không bao giờ dễ hơn
+  lúc học, mà cũng không khó hơn những gì người chơi đã qua.
+- **Câu sai trong lúc ôn thuộc về tầng của câu**, không thuộc buổi luyện: nó chờ buổi luyện của tầng ấy (quy
+  tắc hàng đợi tâm ma theo tầng của M3). Trong buổi đang chơi nó vẫn quay lại rất nhanh, vì vừa sai thì đến
+  hạn ngay và hàng đợi ôn xếp vi kỹ năng yếu lên trước.
+- **Thiên kiếp nhỏ không trộn câu ôn và không có tâm ma**: bài thi của một tầng chỉ hỏi đúng tầng ấy.
+- **Chưa làm ở mốc này**: bài kiểm tra đầu vào (luật 7) và "bậc thang" của câu bậc 5 (luật 8) — bậc 5 chỉ xuất
+  hiện từ tầng 7 trở lên, mà tầng 7-9 chưa có câu hỏi nào. Cả hai chờ mốc M11.

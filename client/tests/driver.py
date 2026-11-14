@@ -104,7 +104,9 @@ class Driver:
         self.n_shots = 0
         self.toast_log: list[str] = []
         orig = self.game.toast
-        self.game.toast = lambda text, color="#2B2B2B": (self.toast_log.append(text), orig(text, color))
+        # *rest: a world notice calls toast(text, colour, life); without it any test that
+        # happened to receive one (a Khe Nứt Mực opening, say) died with a TypeError
+        self.game.toast = lambda text, *rest: (self.toast_log.append(text), orig(text, *rest))
 
     # ------------------------------------------------------------ stepping
     def step(self, frames: int = 1, events=None) -> None:

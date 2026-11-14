@@ -388,3 +388,65 @@ Hết giờ trên máy khách thì game gửi `{"timed_out": true}`; máy chủ 
 
 `/quiz/answer` trả thêm cho câu toán: `reveal{answer_text, solution_vi[]}`, `xp` (Tu Vi theo bậc, chỉ khi đúng) và
 `math{tier, timed_out, xp_base, tier_change (-1/0/+1), run}`.
+
+### M3: ngân hàng câu tầng 1-3, bộ sinh câu, câu song song
+
+- `GET /math/path`: mỗi tầng có thêm `generators` (số bộ sinh câu); `questions` giờ là số *dạng câu* (câu viết
+  tay + bộ sinh câu). Tầng 1-3 của Đại Số Tuyến Tính `playable`.
+- `question.prompt` có thể kèm `matrices[{name, rows[][]}]` (mỗi phần tử là chuỗi: số, phân số `a/b` hoặc một
+  chữ thường như `x`); game tự vẽ, lời đề chỉ gọi tên ("ma trận A như hình").
+- `question.math.parallel` = `true` khi đây là câu song song của một ý vừa sai (luật 6, "tâm ma").
+- `/quiz/answer` → `math` có thêm `parallel` (câu vừa trả lời là câu song song) và `parallel_waiting` (ý này
+  đang chờ quay lại: vừa trả lời sai hoặc hết giờ).
+- Câu do bộ sinh câu tạo ra được lưu với `quiz_sessions.item_id` = mã bộ sinh câu; bộ số nằm trong dấu vân tay
+  (`math_answers.fingerprint`).
+
+### M4: Tàng Thư Các của bí cảnh toán
+
+| Method | Đường dẫn | Body | Ghi chú |
+|---|---|---|---|
+| GET | `/math/library` | — | `{subjects[{id, name_vi, order, documents[{id, title_vi, floor, summary_vi, skills[], sections[]}]}]}` |
+| GET | `/math/library/{doc_id}` | — | một bài đọc đã tách sẵn thành khối. Lỗi `no_doc` (404) |
+
+Bài đọc: `{id, title_vi, subject, floor, skills[], summary_vi, blocks[]}`. Mỗi khối có `type`:
+
+| `type` | Nội dung | Game vẽ bằng |
+|---|---|---|
+| `section` | `title_vi`, `skill` | tiêu đề một mục, ứng với một vi kỹ năng |
+| `heading` | `title_vi` | tiêu đề nhỏ |
+| `text` | `text` | một đoạn văn |
+| `bullets` / `steps` | `items[]` | gạch đầu dòng / các bước có đánh số |
+| `formula` | `key`, `tex`, `alt`, `w`, `h` | ảnh `client/assets/formulas/<key>.png` vẽ rộng `w` cao `h` đơn vị nền; thiếu ảnh thì hiện `alt` |
+| `matrices` | `matrices[{name, rows[][]}]` | game tự vẽ ngoặc vuông và các số |
+| `note` | `text` | lời nhắc của Trúc Lão |
+
+- `GET /math/path`: mỗi tầng có thêm `doc_id` (bài đọc của tầng, hoặc `null`).
+- `question.math.doc` = `{id, title_vi, block}`: bài đọc giải thích vi kỹ năng của câu hỏi và số thứ tự khối
+  để mở đúng mục. `null` khi chưa có bài đọc.
+
+### M5: cổng thuần thục, Thiên kiếp nhỏ, ôn xoắn ốc
+
+Tầng 1 của một bí cảnh mở sẵn; tầng trên chỉ mở khi tầng dưới đã **qua** (vượt Thiên kiếp nhỏ của nó).
+Tầng ẩn 10 chờ tầng 9. Mở buổi luyện ở tầng chưa mở → lỗi `floor_locked` (403).
+
+| Method | Đường dẫn | Body | Ghi chú |
+|---|---|---|---|
+| POST | `/math/trial/start` | `{subject_id, floor}` | mở **Thiên kiếp nhỏ** của tầng: mỗi vi kỹ năng một câu, đều ở bậc cao nhất của tầng. → `{run, gate}`. Lỗi `gate_not_met` (409, kèm tên vi kỹ năng cần ôn), `floor_locked` (403), `no_floor` (404), `no_questions` (400) |
+
+- `GET /math/path`: mỗi bí cảnh có thêm `cleared[]` (các tầng đã qua) và `next_floor` (tầng đang đi, `null`
+  khi đã xong hết tầng chính). Mỗi tầng có thêm:
+  `state` (`locked` | `open` | `cleared`), `has_questions` (tầng có câu hỏi hay chưa — `playable` giờ còn đòi
+  tầng đã mở), `trial_total` (số câu của Thiên kiếp nhỏ) và `gate` (`null` khi tầng còn khoá hoặc chưa có câu):
+
+  `gate` = `{floor, ok, weak[], skills[{skill, tier, top_tier, at_top, answered, correct, needed, window, ok}]}`
+  — `tier` là bậc cao nhất đang mở của vi kỹ năng đó, `ok` khi `tier == top_tier` và trong `window` câu gần nhất
+  ở bậc ấy có ít nhất `needed` câu đúng (mặc định 4/5 = 80%). Cổng mở khi mọi vi kỹ năng `ok`.
+- `run` có thêm `mode` (`practice` | `trial`), `review_asked` (số câu ôn tầng dưới trong buổi), `passed`
+  (`null` khi chưa ngã ngũ) và — khi là Thiên kiếp nhỏ — `trial{total, left, wrong, max_wrong}`.
+- `question.math.review` = `true` khi đây là câu ôn xoắn ốc lấy từ **tầng dưới**; `question.math.floor` khi đó
+  là tầng của câu, không phải tầng đang luyện. Khoảng mỗi 4 câu có một câu như vậy (`spiral_review.share_max`).
+- `/quiz/answer` → `math` có thêm `review` và, trong Thiên kiếp nhỏ,
+  `trial{total, asked, correct, left, passed, unlocked}`: `passed` là `null` khi còn câu, `true`/`false` khi đã
+  ngã ngũ (thi trượt dừng ngay, không bắt làm nốt), `unlocked` là tầng vừa mở ra.
+- Trong Thiên kiếp nhỏ không có câu song song (tâm ma) và không có câu ôn; bậc không lên xuống theo chuỗi
+  đúng/sai (`tier_change` luôn 0).

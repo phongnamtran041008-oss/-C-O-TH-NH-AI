@@ -1,0 +1,223 @@
+{
+ "_comment": "Built by tools/build_formulas.py from the $$...$$ formulas of math/library/. key -> the formula, its plain-text form and the size of its picture in the game's base units (its screen is 480 x 270 of them). The picture itself is client/assets/formulas/<key>.png, 3 times that size. Do not edit by hand.",
+ "supersample": 3,
+ "ex_in_base": 4.5,
+ "formulas": {
+  "0b077c7f7d33af9c": {
+   "tex": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
+   "alt": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
+   "w": 176.4,
+   "h": 10.18
+  },
+  "0edcb1c94c35bfd5": {
+   "tex": "z = r(\\cos \\varphi + i \\sin \\varphi)",
+   "alt": "z = r(cos phi + i sin phi)",
+   "w": 91.31,
+   "h": 10.18
+  },
+  "276f6dc656a48c00": {
+   "tex": "(A^{T})_{ij} = a_{ji}",
+   "alt": "(A^T)_(ij) = a_(ji)",
+   "w": 53.02,
+   "h": 12.07
+  },
+  "30bd9caf1cd478e3": {
+   "tex": "A \\times B = \\{(a, b) : a \\in A, b \\in B\\}",
+   "alt": "A x B = {(a, b) : a thuoc A, b thuoc B}",
+   "w": 136.79,
+   "h": 10.18
+  },
+  "3215732d2ddc7eea": {
+   "tex": "A = (a_{ij}), \\quad 1 \\le i \\le m, \\quad 1 \\le j \\le n",
+   "alt": "A = (a_(ij)), 1 <= i <= m, 1 <= j <= n",
+   "w": 157.47,
+   "h": 10.63
+  },
+  "3da09a42c3cf2aff": {
+   "tex": "f(u) = f(v) \\Rightarrow u = v",
+   "alt": "f(u) = f(v) => u = v",
+   "w": 91.55,
+   "h": 10.18
+  },
+  "417b96ad43ac1e42": {
+   "tex": "a(u + v) = au + av",
+   "alt": "a(u + v) = au + av",
+   "w": 84.07,
+   "h": 10.18
+  },
+  "4f50a10553b7482c": {
+   "tex": "(A + B)_{ij} = a_{ij} + b_{ij}",
+   "alt": "(A + B)_(ij) = a_(ij) + b_(ij)",
+   "w": 90.39,
+   "h": 10.63
+  },
+  "5547ad49cda83f3f": {
+   "tex": "\\overline{z} = a - bi",
+   "alt": "z = a - bi",
+   "w": 44.38,
+   "h": 8.56
+  },
+  "5cb06c1c60c80701": {
+   "tex": "f : X \\to Y, \\quad x \\mapsto f(x)",
+   "alt": "f : X -> Y, x -> f(x)",
+   "w": 102.08,
+   "h": 10.18
+  },
+  "6358d05f6f806e85": {
+   "tex": "(g \\circ f)(x) = g(f(x))",
+   "alt": "(g o f)(x) = g(f(x))",
+   "w": 87.44,
+   "h": 10.18
+  },
+  "6e2e7f899468f982": {
+   "tex": "z = a + bi, \\quad a \\in \\mathbb{R}, \\quad b \\in \\mathbb{R}",
+   "alt": "z = a + bi, a thuoc R, b thuoc R",
+   "w": 122.79,
+   "h": 9.04
+  },
+  "71ff8b25e972f593": {
+   "tex": "|z| = \\sqrt{a^{2} + b^{2}}",
+   "alt": "|z| = can(a^2 + b^2)",
+   "w": 65.44,
+   "h": 13.88
+  },
+  "728a1a8a7d942996": {
+   "tex": "|A| = n \\Rightarrow A \\text{ co } 2^{n} \\text{ tap con}",
+   "alt": "|A| = n => A co 2^n tap con",
+   "w": 116.48,
+   "h": 10.17
+  },
+  "7477bd6f051ff562": {
+   "tex": "(A^{T})^{T} = A",
+   "alt": "(A^T)^T = A",
+   "w": 48.6,
+   "h": 11.62
+  },
+  "7b3a92db81feea15": {
+   "tex": "\\text{tr}(A) = a_{11} + a_{22} + \\ldots + a_{nn}",
+   "alt": "tr(A) = a_(11) + a_(22) + ... + a_(nn)",
+   "w": 128.08,
+   "h": 10.18
+  },
+  "7b51cbf0318d6121": {
+   "tex": "\\text{tr}(kA + B) = k \\cdot \\text{tr}(A) + \\text{tr}(B)",
+   "alt": "tr(kA + B) = k . tr(A) + tr(B)",
+   "w": 134.78,
+   "h": 10.18
+  },
+  "818833d1104b6103": {
+   "tex": "A = \\{1, 2, 3\\}",
+   "alt": "A = {1, 2, 3}",
+   "w": 55.72,
+   "h": 10.18
+  },
+  "851c10778cae11a1": {
+   "tex": "\\text{tr}(A^{T}) = \\text{tr}(A)",
+   "alt": "tr(A^T) = tr(A)",
+   "w": 66.51,
+   "h": 11.62
+  },
+  "855d8105cc9bc858": {
+   "tex": "z^{n} = w \\quad \\Leftrightarrow \\quad z \\text{ la can bac } n \\text{ cua } w",
+   "alt": "z^n = w <=> z la can bac n cua w",
+   "w": 154.1,
+   "h": 8.22
+  },
+  "8607765a58542d8f": {
+   "tex": "A \\cap B = \\{x : x \\in A \\text{ va } x \\in B\\}",
+   "alt": "A giao B = {x : x thuoc A va x thuoc B}",
+   "w": 132.21,
+   "h": 10.18
+  },
+  "8d64442e0066c978": {
+   "tex": "A \\cup B = \\{x : x \\in A \\text{ hoac } x \\in B\\}",
+   "alt": "A hop B = {x : x thuoc A hoac x thuoc B}",
+   "w": 142.1,
+   "h": 10.18
+  },
+  "95d7cadb04483fcd": {
+   "tex": "|A \\times B| = |A| \\cdot |B|",
+   "alt": "|A x B| = |A| . |B|",
+   "w": 81.09,
+   "h": 10.17
+  },
+  "98f71033221ab6d8": {
+   "tex": "u = (u_{1}, u_{2}, \\ldots, u_{n}) \\in \\mathbb{R}^{n}",
+   "alt": "u = (u_1, u_2, ..., u_n) thuoc R^n",
+   "w": 111.02,
+   "h": 10.18
+  },
+  "a18821c5a106dd9e": {
+   "tex": "A^{T} = A",
+   "alt": "A^T = A",
+   "w": 34.76,
+   "h": 9.91
+  },
+  "a89e3f91338d1ea1": {
+   "tex": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^{2} + d^{2}}",
+   "alt": "(a + bi)/(c + di) = ((a + bi)(c - di))/(c^2 + d^2)",
+   "w": 115.46,
+   "h": 23.03
+  },
+  "b0744396ced61238": {
+   "tex": "z \\cdot \\overline{z} = a^{2} + b^{2} = |z|^{2}",
+   "alt": "z . z = a^2 + b^2 = |z|^2",
+   "w": 90.26,
+   "h": 11.54
+  },
+  "ba3e3c2c22180fc1": {
+   "tex": "(a + bi) + (c + di) = (a + c) + (b + d)i",
+   "alt": "(a + bi) + (c + di) = (a + c) + (b + d)i",
+   "w": 169.38,
+   "h": 10.18
+  },
+  "c61d38ce578e4169": {
+   "tex": "(A + B)^{T} = A^{T} + B^{T}",
+   "alt": "(A + B)^T = A^T + B^T",
+   "w": 94.86,
+   "h": 11.62
+  },
+  "ca12f7c66b231e12": {
+   "tex": "i^{2} = -1",
+   "alt": "i^2 = -1",
+   "w": 34.55,
+   "h": 9.83
+  },
+  "ce1bf27302ed640e": {
+   "tex": "f(A) = \\{f(x) : x \\in A\\}",
+   "alt": "f(A) = {f(x) : x thuoc A}",
+   "w": 98.65,
+   "h": 10.18
+  },
+  "d13cba521a59655b": {
+   "tex": "(kA)_{ij} = k \\cdot a_{ij}",
+   "alt": "(kA)_(ij) = k . a_(ij)",
+   "w": 65.07,
+   "h": 10.63
+  },
+  "edb5cef95eebe641": {
+   "tex": "f^{-1}(y) = x \\Leftrightarrow f(x) = y",
+   "alt": "f^(-1)(y) = x <=> f(x) = y",
+   "w": 102.24,
+   "h": 11.54
+  },
+  "ee1ddc847f77f642": {
+   "tex": "|A \\cup B| = |A| + |B| - |A \\cap B|",
+   "alt": "|A hop B| = |A| + |B| - |A giao B|",
+   "w": 129.83,
+   "h": 10.17
+  },
+  "f1c4bb9eda96ca00": {
+   "tex": "A \\setminus B = \\{x : x \\in A \\text{ va } x \\notin B\\}",
+   "alt": "A \\ B = {x : x thuoc A va x khong thuoc B}",
+   "w": 130.51,
+   "h": 10.18
+  },
+  "fd73e590df6a1f3f": {
+   "tex": "z^{n} = r^{n}(\\cos n\\varphi + i \\sin n\\varphi)",
+   "alt": "z^n = r^n(cos nphi + i sin nphi)",
+   "w": 113.86,
+   "h": 10.18
+  }
+ }
+}

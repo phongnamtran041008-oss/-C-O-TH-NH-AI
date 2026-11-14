@@ -42,17 +42,36 @@
   },
   "numeric_tolerance": 1e-6,
   "mastery_gate": {
-    "_comment": "To leave a floor: every micro-skill has at least min_correct_pct right among its last `window` answers at its current tier, and the floor's tribulation test is passed.",
+    "_comment": "To leave a floor: every micro-skill is already being asked at the highest tier of the floor and has at least min_correct_pct right among its last `window` answers at that tier, and the floor's own test is passed.",
     "window": 5,
-    "min_correct_pct": 80
+    "min_correct_pct": 80,
+    "trial": {
+      "_comment": "Thiên kiếp nhỏ, the test at the end of a floor: this many questions for each micro-skill of the floor, all at the floor's highest tier, with at most max_wrong of them missed. Every question keeps the time limit of its own type and tier; the trial has no clock of its own. It can be taken again straight away.",
+      "questions_per_skill": 1,
+      "max_wrong": 1
+    }
   },
   "spiral_review": {
-    "_comment": "Share of a session that goes back to earlier floors, and the spaced-repetition waits in days.",
+    "_comment": "Questions from the floors below the one being played: share_max of the questions asked are review questions (0.25 = every fourth one), which also keeps the share above share_min. A micro-skill comes back after intervals_days[streak] days, where streak is how many times in a row it was last answered right; the ones answered worst lately come first.",
     "share_min": 0.20,
     "share_max": 0.25,
     "intervals_days": [1, 3, 7, 14]
   },
   "anti_repeat_window": 50,
+  "template_cooldown": 4,
+  "_template_cooldown": "A template (a hand-written item or a generator) asked within the player's last this-many answers is passed over while another template is available.",
+  "parallel_question": {
+    "_comment": "Rule 6 (tâm ma): after a wrong answer the same idea comes back with new numbers once this many other questions have been answered. At most max_open mistakes wait per player and floor; older ones are dropped.",
+    "after_answers": 1,
+    "max_open": 5
+  },
+  "bank_targets": {
+    "_comment": "What a floor that has questions must have (checked by tools/check_all.py): templates (hand-written items + generators) and generators per floor, templates per micro-skill and tier, and how many different questions 200 draws of one generator must give.",
+    "templates_per_floor": 30,
+    "generators_per_floor": 3,
+    "per_skill_tier": 2,
+    "generator_variety": 8
+  },
   "placement_test": {"min_questions": 10, "max_questions": 15},
   "timeout": {
     "_comment": "Running out of time is a wrong answer and ends the combo; nothing else is lost.",

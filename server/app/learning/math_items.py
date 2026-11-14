@@ -1,22 +1,33 @@
-"""Math questions (milestone M2): the items of data/math/items/<subject>.json, how one
-becomes a question a player sees, and how an answer is graded.
+"""Math questions: the templates of data/math/items/<subject>.json, how one becomes a
+question a player sees, and how an answer is graded.
 
-An item belongs to one micro-skill and one tier. Three question types are playable so
-far; the other types of balance/math.json come with later milestones:
+A *template* belongs to one micro-skill and one tier. There are two kinds:
+
+  * a hand-written item (the "items" list): one fixed question;
+  * a generator (the "generators" list + a function in learning/math_gen): a question
+    with new numbers every time it is drawn.
+
+Three question types are playable so far; the other types of balance/math.json come with
+later milestones:
 
   true_false       "answer": true | false                     the player sends {"value": bool}
   multiple_choice  "options_vi": [...], "answer": <index>      the player sends {"option": "a"}
   numeric          "answer": "7" | "3/4" | "1, 3, 5"           the player sends {"text": "..."}
                    ("unordered": true when the listed numbers form a set)
 
+A question may show small matrices next to its text ("matrices": {"A": [[1, 2], [3, 4]]});
+the game draws them, so the text only names them.
+
 Pure data and rules, like math_path: no database here. `validate_all()` returns one
 readable line per problem; the tests and tools/check_all.py fail when it is not empty.
 """
 from __future__ import annotations
 
+import difflib
 import hashlib
 import json
 import random
+import re
 from dataclasses import dataclass, field
 from fractions import Fraction
 from functools import lru_cache
@@ -31,6 +42,10 @@ OPTION_IDS = "abcdef"
 MIN_OPTIONS, MAX_OPTIONS = 2, 6
 MAX_NUMBERS = 12            # longest list a numeric answer may have
 MAX_ANSWER_CHARS = 120      # longer typed answers are wrong without being parsed
+MAX_MATRICES, MAX_MATRIX_SIDE = 3, 4
+MATRIX_NAME_RE = re.compile(r"^[A-Z]$")
+MATRIX_ENTRY_RE = re.compile(r"^(-?\d{1,4}(/\d{1,3})?|[a-z])$")    # a number, a fraction, or an unknown like x
+NEAR_DUPLICATE = 0.95       # two hand-written prompts this alike (digits ignored) are one question twice
 
 TRUE_VI, FALSE_VI = "Đúng", "Sai"
 INSTRUCTIONS_VI = {
@@ -40,9 +55,10 @@ INSTRUCTIONS_VI = {
 }
 INPUTS = {"true_false": "truefalse", "multiple_choice": "choice", "numeric": "number"}
 
-_FILE_KEYS = {"subject", "items"}
+_FILE_KEYS = {"subject", "items", "generators"}
 _ITEM_KEYS = {"id", "skill", "tier", "type", "prompt_vi", "options_vi", "answer", "unordered",
-              "solution_vi", "reviewed"}
+              "solution_vi", "matrices", "reviewed"}
+_GENERATOR_KEYS = {"id", "skill", "tier", "type", "reviewed"}
 
 
 # ------------------------------------------------------------------ numbers
@@ -93,9 +109,11 @@ def number_text(n: Fraction) -> str:
     return str(n.numerator) if n.denominator == 1 else f"{n.numerator}/{n.denominator}"
 
 
-# ------------------------------------------------------------------ items
+# ------------------------------------------------------------------ templates
 @dataclass(frozen=True)
 class MathItem:
+    """One concrete question: a hand-written item, or one draw of a generator (then
+    `numbers` says which numbers were drawn and `id` is the id of the generator)."""
     id: str
     subject: str
     skill: str
@@ -108,12 +126,14 @@ class MathItem:
     options_vi: tuple[str, ...] = ()
     unordered: bool = False
     reviewed: bool = False
+    matrices: tuple[tuple[str, tuple[tuple[str, ...], ...]], ...] = ()    # ((name, rows), ...)
+    numbers: str = ""
+    generated: bool = False
 
     @property
     def fingerprint(self) -> str:
-        """concept + template + numbers. A hand-written item is its own template with fixed
-        numbers; generators (M3) put the numbers they drew in the third part."""
-        return fingerprint(self.skill, self.id, "")
+        """concept + template + numbers: what the anti-repeat window remembers."""
+        return fingerprint(self.skill, self.id, self.numbers)
 
     @property
     def answer_text(self) -> str:
@@ -124,8 +144,39 @@ class MathItem:
         return ", ".join(number_text(n) for n in parse_numbers(self.answer))
 
 
+@dataclass(frozen=True)
+class GeneratorSpec:
+    """A generator as the data file lists it; the function that draws lives in math_gen."""
+    id: str
+    subject: str
+    skill: str
+    floor: int
+    tier: int
+    qtype: str
+    reviewed: bool = False
+    generated: bool = True
+
+
+Template = MathItem | GeneratorSpec
+
+
 def fingerprint(skill: str, template: str, numbers: str) -> str:
     return hashlib.sha1(f"{skill}|{template}|{numbers}".encode()).hexdigest()[:32]
+
+
+def _matrices(raw) -> tuple:
+    return tuple((name, tuple(tuple(str(v) for v in row) for row in rows)) for name, rows in (raw or {}).items())
+
+
+def draw(spec: GeneratorSpec, rng: random.Random) -> MathItem:
+    """One question of this generator, with the numbers this rng gives."""
+    from . import math_gen
+    d = math_gen.REGISTRY[spec.id](rng)
+    return MathItem(id=spec.id, subject=spec.subject, skill=spec.skill, floor=spec.floor, tier=spec.tier,
+                    qtype=spec.qtype, prompt_vi=d.prompt_vi, answer=d.answer, solution_vi=tuple(d.solution_vi),
+                    options_vi=tuple(d.options_vi), unordered=d.unordered, reviewed=spec.reviewed,
+                    matrices=_matrices(d.matrices), numbers=json.dumps(d.params, sort_keys=True, ensure_ascii=True),
+                    generated=True)
 
 
 @dataclass
@@ -146,9 +197,12 @@ class MathQuestion:
                 "time_limit": self.time_limit, "math": self.meta}
 
 
-def to_question(item: MathItem, rng: random.Random | None = None, config: dict | None = None) -> MathQuestion:
+def to_question(item: MathItem, rng: random.Random | None = None, config: dict | None = None,
+                parallel: bool = False, review: bool = False) -> MathQuestion:
     """The question a player gets for this item. Options are shuffled; the answer key
-    (never sent before answering) carries the solution steps."""
+    (never sent before answering) carries the solution steps. `parallel` marks the
+    question that comes back after a mistake (rule 6a), `review` one that comes from a
+    floor below the one being played (rule 6b, spiral review)."""
     rng = rng or random.Random()
     config = config or math_path.cfg()
     limit = math_path.time_limit(item.qtype, item.tier, config)
@@ -171,8 +225,12 @@ def to_question(item: MathItem, rng: random.Random | None = None, config: dict |
         key["tolerance"] = float(config["numeric_tolerance"])
     meta = {"subject": item.subject, "subject_name_vi": subject.name_vi, "skill": item.skill,
             "skill_name_vi": subject.skills[item.skill].name_vi, "floor": item.floor, "tier": item.tier,
-            "tier_name_vi": config["tiers"][str(item.tier)]["name_vi"]}
-    return MathQuestion(qtype=item.qtype, item_id=item.id, prompt={"text": item.prompt_vi},
+            "tier_name_vi": config["tiers"][str(item.tier)]["name_vi"], "parallel": bool(parallel),
+            "review": bool(review)}
+    prompt: dict = {"text": item.prompt_vi}
+    if item.matrices:
+        prompt["matrices"] = [{"name": name, "rows": [list(r) for r in rows]} for name, rows in item.matrices]
+    return MathQuestion(qtype=item.qtype, item_id=item.id, prompt=prompt,
                         input=INPUTS[item.qtype], options=options, answer_key=key,
                         time_limit=float(limit), meta=meta)
 
@@ -209,125 +267,290 @@ def build_item(subject: math_path.Subject, raw: dict) -> MathItem:
                     floor=subject.skills[raw["skill"]].floor, tier=raw["tier"], qtype=raw["type"],
                     prompt_vi=raw["prompt_vi"], answer=raw["answer"],
                     solution_vi=tuple(raw["solution_vi"]), options_vi=tuple(raw.get("options_vi", ())),
-                    unordered=bool(raw.get("unordered", False)), reviewed=bool(raw.get("reviewed", False)))
+                    unordered=bool(raw.get("unordered", False)), reviewed=bool(raw.get("reviewed", False)),
+                    matrices=_matrices(raw.get("matrices")))
+
+
+def build_generator(subject: math_path.Subject, raw: dict) -> GeneratorSpec:
+    return GeneratorSpec(id=raw["id"], subject=subject.id, skill=raw["skill"],
+                         floor=subject.skills[raw["skill"]].floor, tier=raw["tier"], qtype=raw["type"],
+                         reviewed=bool(raw.get("reviewed", False)))
+
+
+def _files() -> list[tuple[math_path.Subject, dict]]:
+    out = []
+    for subject in math_path.subjects():
+        path = items_path(subject.id)
+        if path.is_file():
+            out.append((subject, json.loads(path.read_text("utf-8"))))
+    return out
 
 
 @lru_cache(maxsize=1)
 def bank() -> dict[str, MathItem]:
-    """Every item of every written subject, by id."""
-    out: dict[str, MathItem] = {}
-    for subject in math_path.subjects():
-        path = items_path(subject.id)
-        if path.is_file():
-            for raw in json.loads(path.read_text("utf-8"))["items"]:
-                out[raw["id"]] = build_item(subject, raw)
-    return out
+    """Every hand-written item of every written subject, by id."""
+    return {raw["id"]: build_item(subject, raw) for subject, data in _files() for raw in data.get("items", [])}
+
+
+@lru_cache(maxsize=1)
+def generators() -> dict[str, GeneratorSpec]:
+    """Every generator of every written subject, by id."""
+    return {raw["id"]: build_generator(subject, raw)
+            for subject, data in _files() for raw in data.get("generators", [])}
 
 
 def floor_items(subject_id: str, floor: int, allow_unreviewed: bool) -> list[MathItem]:
-    """The items a player may get on this floor: unreviewed ones only where the server
-    allows them (ALLOW_UNREVIEWED, on by default in the dev environment only)."""
+    """The hand-written items a player may get on this floor: unreviewed ones only where
+    the server allows them (ALLOW_UNREVIEWED, on by default in the dev environment only)."""
     return [i for i in bank().values()
             if i.subject == subject_id and i.floor == floor and (i.reviewed or allow_unreviewed)]
 
 
+def floor_templates(subject_id: str, floor: int, allow_unreviewed: bool) -> list[Template]:
+    """Hand-written items and generators of this floor, under the same review rule."""
+    return floor_items(subject_id, floor, allow_unreviewed) + [
+        g for g in generators().values()
+        if g.subject == subject_id and g.floor == floor and (g.reviewed or allow_unreviewed)]
+
+
 # ------------------------------------------------------------------ validation
+def _matrix_problems(matrices) -> list[str]:
+    if not isinstance(matrices, dict) or not 1 <= len(matrices) <= MAX_MATRICES:
+        return [f"matrices must name 1 to {MAX_MATRICES} matrices"]
+    errors = []
+    for name, rows in matrices.items():
+        if not isinstance(name, str) or not MATRIX_NAME_RE.match(name):
+            errors.append(f"matrix name {name!r} must be one capital letter A-Z")
+            continue
+        ok = (isinstance(rows, (list, tuple)) and 1 <= len(rows) <= MAX_MATRIX_SIDE
+              and all(isinstance(r, (list, tuple)) and 1 <= len(r) <= MAX_MATRIX_SIDE for r in rows)
+              and len({len(r) for r in rows}) == 1)
+        if not ok:
+            errors.append(f"matrix {name} must be a rectangle of 1 to {MAX_MATRIX_SIDE} rows and columns")
+            continue
+        for row in rows:
+            for v in row:
+                if isinstance(v, bool) or not isinstance(v, (int, str)) or not MATRIX_ENTRY_RE.match(str(v)):
+                    errors.append(f"matrix {name}: entry {v!r} must be a number, a fraction a/b or one small letter")
+    return errors
+
+
+def _slot_problems(subject: math_path.Subject, it: dict, config: dict, here: str) -> list[str]:
+    """Problems in what a hand-written item and a generator share: skill, tier, type."""
+    errors = []
+    qtypes = math_path.question_types(config)
+    skill = subject.skills.get(it.get("skill")) if isinstance(it.get("skill"), str) else None
+    if skill is None:
+        errors.append(f"{here}: skill {it.get('skill')!r} is not a micro-skill of {subject.id}")
+    tier, qtype = it.get("tier"), it.get("type")
+    if tier not in math_path.TIERS or isinstance(tier, bool):
+        errors.append(f"{here}: tier must be 1..{math_path.TOP_TIER}")
+    elif skill is not None and not math_path.tier_allowed(skill.floor, tier, config):
+        lo, hi = math_path.floor_tiers(skill.floor, config)
+        errors.append(f"{here}: tier {tier} is not allowed on floor {skill.floor} (tiers {lo}-{hi})")
+    if qtype not in PLAYABLE_TYPES:
+        errors.append(f"{here}: type must be one of {', '.join(PLAYABLE_TYPES)}")
+    elif qtype not in qtypes:
+        errors.append(f"{here}: type {qtype} has no time limits in balance/math.json")
+    elif tier in math_path.TIERS and qtypes[qtype]["time_limit"][tier - 1] is None:
+        errors.append(f"{here}: a {qtype} question does not exist at tier {tier}")
+    if not isinstance(it.get("reviewed", False), bool):
+        errors.append(f"{here}: reviewed must be true or false")
+    return errors
+
+
+def content_problems(it: dict, here: str) -> list[str]:
+    """Problems in the question itself: the text, the options, the answer, the matrices.
+    Used for hand-written items and for every draw of a generator."""
+    errors = []
+    qtype, answer = it.get("type"), it.get("answer")
+    problem = text_problem(it.get("prompt_vi"))
+    if problem:
+        errors.append(f"{here}: prompt_vi {problem}")
+    steps = it.get("solution_vi")
+    if not isinstance(steps, (list, tuple)) or not steps:
+        errors.append(f"{here}: solution_vi must list at least one step")
+    else:
+        for k, step in enumerate(steps, 1):
+            problem = text_problem(step)
+            if problem:
+                errors.append(f"{here}: solution_vi step {k} {problem}")
+    if it.get("matrices"):
+        errors += [f"{here}: {e}" for e in _matrix_problems(it["matrices"])]
+    if qtype != "multiple_choice" and it.get("options_vi"):
+        errors.append(f"{here}: only a multiple_choice question has options_vi")
+    if qtype != "numeric" and it.get("unordered"):
+        errors.append(f"{here}: only a numeric question has unordered")
+    if qtype == "true_false":
+        if not isinstance(answer, bool):
+            errors.append(f"{here}: the answer of a true_false question must be true or false")
+    elif qtype == "multiple_choice":
+        options = it.get("options_vi")
+        if not (isinstance(options, (list, tuple)) and MIN_OPTIONS <= len(options) <= MAX_OPTIONS):
+            return errors + [f"{here}: options_vi must list {MIN_OPTIONS} to {MAX_OPTIONS} options"]
+        for k, option in enumerate(options, 1):
+            problem = text_problem(option)
+            if problem:
+                errors.append(f"{here}: option {k} {problem}")
+        texts = [" ".join(o.split()).casefold() for o in options if isinstance(o, str)]
+        if len(set(texts)) != len(texts):
+            errors.append(f"{here}: two options have the same text, so more than one would be right")
+        if isinstance(answer, bool) or not isinstance(answer, int) or not 0 <= answer < len(options):
+            errors.append(f"{here}: answer must be the position (from 0) of the one right option")
+    elif qtype == "numeric":
+        numbers = parse_numbers(answer)
+        if numbers is None:
+            errors.append(f"{here}: answer must be a number, a fraction a/b or numbers separated by commas")
+        elif not isinstance(it.get("unordered", False), bool):
+            errors.append(f"{here}: unordered must be true or false")
+        elif it.get("unordered") and len(set(numbers)) != len(numbers):
+            errors.append(f"{here}: an unordered answer lists the same number twice")
+    return errors
+
+
+def draw_problems(spec: GeneratorSpec, item: MathItem) -> list[str]:
+    """Problems in one draw of a generator (the same rules as a hand-written item)."""
+    raw = {"type": item.qtype, "prompt_vi": item.prompt_vi, "answer": item.answer,
+           "solution_vi": list(item.solution_vi), "options_vi": list(item.options_vi),
+           "unordered": item.unordered, "matrices": {name: rows for name, rows in item.matrices}}
+    return content_problems(raw, f"{spec.id} with {item.numbers}")
+
+
+def generator_problems(draws: int = 200, config: dict | None = None) -> list[str]:
+    """Problems that only show when the generators run: a draw that breaks the rules of an
+    item, a seed that does not always give the same question, too few different questions."""
+    config = math_path.cfg() if config is None else config
+    variety = config["bank_targets"]["generator_variety"]
+    errors = []
+    for spec in generators().values():
+        prints = set()
+        for seed in range(draws):
+            item = draw(spec, random.Random(seed))
+            problems = draw_problems(spec, item)
+            if draw(spec, random.Random(seed)) != item:
+                problems.append(f"{spec.id}: seed {seed} gives two different questions")
+            if problems:
+                errors += problems[:3]
+                break
+            prints.add(item.fingerprint)
+        else:
+            if len(prints) < min(variety, draws // 2):     # (a short run cannot show the full variety)
+                errors.append(f"{spec.id}: {draws} draws give only {len(prints)} different questions, "
+                              f"need {variety}")
+    return errors
+
+
+def _shape(text: str) -> str:
+    """A prompt with its numbers blanked: two prompts of the same shape differ only in numbers."""
+    return re.sub(r"\d+", "#", " ".join(text.casefold().split()))
+
+
+def near_duplicates(items: list[dict]) -> list[str]:
+    """Pairs of hand-written prompts of one micro-skill that are almost the same text once
+    digits are ignored: the same question with other numbers is a generator's job."""
+    errors = []
+    by_skill: dict[str, list[tuple[str, str]]] = {}
+    for it in items:
+        if isinstance(it.get("prompt_vi"), str) and isinstance(it.get("id"), str):
+            by_skill.setdefault(str(it.get("skill")), []).append((it["id"], _shape(it["prompt_vi"])))
+    for group in by_skill.values():
+        for i, (a_id, a) in enumerate(group):
+            for b_id, b in group[i + 1:]:
+                if difflib.SequenceMatcher(None, a, b).ratio() >= NEAR_DUPLICATE:
+                    errors.append(f"{b_id}: is almost the same question as {a_id} (only the numbers differ)")
+    return errors
+
+
+def target_problems(subject: math_path.Subject, raw: dict, config: dict) -> list[str]:
+    """A floor that has questions must have enough of them (balance/math.json bank_targets):
+    templates and generators per floor, and templates per micro-skill and tier."""
+    want = config["bank_targets"]
+    errors = []
+    slots: dict[tuple[int, str, int], int] = {}
+    per_floor: dict[int, list[int]] = {}
+    for kind, n_gen in (("items", 0), ("generators", 1)):
+        for it in raw.get(kind) or []:
+            skill = subject.skills.get(it.get("skill")) if isinstance(it, dict) else None
+            if skill is None or it.get("tier") not in math_path.TIERS:
+                continue
+            slots[(skill.floor, skill.id, it["tier"])] = slots.get((skill.floor, skill.id, it["tier"]), 0) + 1
+            count = per_floor.setdefault(skill.floor, [0, 0])
+            count[0] += 1
+            count[1] += n_gen
+    for floor in sorted(per_floor):
+        templates, gens = per_floor[floor]
+        if templates < want["templates_per_floor"]:
+            errors.append(f"floor {floor}: has {templates} templates, need {want['templates_per_floor']}")
+        if gens < want["generators_per_floor"]:
+            errors.append(f"floor {floor}: has {gens} generators, need {want['generators_per_floor']}")
+        for skill in subject.floor(floor).skills:
+            for tier in math_path.allowed_tiers(floor, config):
+                n = slots.get((floor, skill.id, tier), 0)
+                if n < want["per_skill_tier"]:
+                    errors.append(f"floor {floor}: {skill.id} has {n} templates at tier {tier}, "
+                                  f"need {want['per_skill_tier']}")
+    return errors
+
+
 def validate_items(subject: math_path.Subject, raw: dict, config: dict) -> list[str]:
     """Problems in one data/math/items/<subject>.json."""
+    from . import math_gen
     errors = [f"unknown key {k!r}" for k in sorted(raw) if not k.startswith("_") and k not in _FILE_KEYS]
     if raw.get("subject") != subject.id:
         errors.append(f"its subject is {raw.get('subject')!r} but the file belongs to {subject.id!r}")
     items = raw.get("items")
     if not isinstance(items, list) or not all(isinstance(i, dict) for i in items):
         return errors + ["items: must be a list of questions"]
-    qtypes = math_path.question_types(config)
+    gens = raw.get("generators", [])
+    if not isinstance(gens, list) or not all(isinstance(g, dict) for g in gens):
+        return errors + ["generators: must be a list"]
     seen: set[str] = set()
     prompts: dict[tuple[str, str], str] = {}
-    for n, it in enumerate(items, 1):
+
+    def check_id(it: dict, here: str) -> None:
         iid = it.get("id")
-        here = iid if isinstance(iid, str) else f"item {n}"
-        for key in sorted(k for k in it if not k.startswith("_") and k not in _ITEM_KEYS):
-            errors.append(f"{here}: unknown key {key!r}")
         if not isinstance(iid, str) or not math_path.ID_RE.match(iid):
             errors.append(f"{here}: the id must be 3-40 lowercase letters, digits and _")
         elif iid in seen:
             errors.append(f"{here}: this id is used twice")
         seen.add(iid)
 
-        skill = subject.skills.get(it.get("skill")) if isinstance(it.get("skill"), str) else None
-        if skill is None:
-            errors.append(f"{here}: skill {it.get('skill')!r} is not a micro-skill of {subject.id}")
-        tier, qtype = it.get("tier"), it.get("type")
-        if tier not in math_path.TIERS or isinstance(tier, bool):
-            errors.append(f"{here}: tier must be 1..{math_path.TOP_TIER}")
-        elif skill is not None and not math_path.tier_allowed(skill.floor, tier, config):
-            lo, hi = math_path.floor_tiers(skill.floor, config)
-            errors.append(f"{here}: tier {tier} is not allowed on floor {skill.floor} (tiers {lo}-{hi})")
-        if qtype not in PLAYABLE_TYPES:
-            errors.append(f"{here}: type must be one of {', '.join(PLAYABLE_TYPES)}")
-        elif qtype not in qtypes:
-            errors.append(f"{here}: type {qtype} has no time limits in balance/math.json")
-        elif tier in math_path.TIERS and qtypes[qtype]["time_limit"][tier - 1] is None:
-            errors.append(f"{here}: a {qtype} question does not exist at tier {tier}")
-
-        problem = text_problem(it.get("prompt_vi"))
-        if problem:
-            errors.append(f"{here}: prompt_vi {problem}")
-        elif (it.get("skill"), it["prompt_vi"]) in prompts:
-            errors.append(f"{here}: has the same question text as {prompts[(it.get('skill'), it['prompt_vi'])]}")
-        else:
-            prompts[(it.get("skill"), it["prompt_vi"])] = here
-        steps = it.get("solution_vi")
-        if not isinstance(steps, list) or not steps:
-            errors.append(f"{here}: solution_vi must list at least one step")
-        else:
-            for k, step in enumerate(steps, 1):
-                problem = text_problem(step)
-                if problem:
-                    errors.append(f"{here}: solution_vi step {k} {problem}")
-        if not isinstance(it.get("reviewed", False), bool):
-            errors.append(f"{here}: reviewed must be true or false")
-
-        answer = it.get("answer")
-        if qtype != "multiple_choice" and "options_vi" in it:
-            errors.append(f"{here}: only a multiple_choice question has options_vi")
-        if qtype != "numeric" and "unordered" in it:
-            errors.append(f"{here}: only a numeric question has unordered")
-        if qtype == "true_false":
-            if not isinstance(answer, bool):
-                errors.append(f"{here}: the answer of a true_false question must be true or false")
-        elif qtype == "multiple_choice":
-            options = it.get("options_vi")
-            if not (isinstance(options, list) and MIN_OPTIONS <= len(options) <= MAX_OPTIONS):
-                errors.append(f"{here}: options_vi must list {MIN_OPTIONS} to {MAX_OPTIONS} options")
-                continue
-            for k, option in enumerate(options, 1):
-                problem = text_problem(option)
-                if problem:
-                    errors.append(f"{here}: option {k} {problem}")
-            texts = [" ".join(o.split()).casefold() for o in options if isinstance(o, str)]
-            if len(set(texts)) != len(texts):
-                errors.append(f"{here}: two options have the same text, so more than one would be right")
-            if isinstance(answer, bool) or not isinstance(answer, int) or not 0 <= answer < len(options):
-                errors.append(f"{here}: answer must be the position (from 0) of the one right option")
-        elif qtype == "numeric":
-            numbers = parse_numbers(answer)
-            if numbers is None:
-                errors.append(f"{here}: answer must be a number, a fraction a/b or numbers separated by commas")
-            elif not isinstance(it.get("unordered", False), bool):
-                errors.append(f"{here}: unordered must be true or false")
-            elif it.get("unordered") and len(set(numbers)) != len(numbers):
-                errors.append(f"{here}: an unordered answer lists the same number twice")
+    for n, it in enumerate(items, 1):
+        here = it["id"] if isinstance(it.get("id"), str) else f"item {n}"
+        for key in sorted(k for k in it if not k.startswith("_") and k not in _ITEM_KEYS):
+            errors.append(f"{here}: unknown key {key!r}")
+        check_id(it, here)
+        errors += _slot_problems(subject, it, config, here)
+        errors += content_problems(it, here)
+        if isinstance(it.get("prompt_vi"), str) and not text_problem(it["prompt_vi"]):
+            key = (it.get("skill"), it["prompt_vi"])
+            if key in prompts:
+                errors.append(f"{here}: has the same question text as {prompts[key]}")
+            else:
+                prompts[key] = here
+    for n, g in enumerate(gens, 1):
+        here = g["id"] if isinstance(g.get("id"), str) else f"generator {n}"
+        for key in sorted(k for k in g if not k.startswith("_") and k not in _GENERATOR_KEYS):
+            errors.append(f"{here}: unknown key {key!r}")
+        check_id(g, here)
+        errors += _slot_problems(subject, g, config, here)
+        if isinstance(g.get("id"), str) and g["id"] not in math_gen.REGISTRY:
+            errors.append(f"{here}: no generator function with this id in learning/math_gen")
+    errors += near_duplicates(items)
+    if not errors:
+        errors += target_problems(subject, raw, config)
     return errors
 
 
 def validate_all(math_dir: Path = MATH_DIR, config: dict | None = None) -> list[str]:
     """Every problem in the item files, each line starting with the file it is in. Run
     after math_path.validate_all() passes: the items are checked against that path."""
+    from . import math_gen
     config = math_path.cfg() if config is None else config
     errors: list[str] = []
     index = math_path.load_index(math_dir)
     known = set()
+    listed: set[str] = set()
     for entry in sorted((e for e in index["subjects"] if e.get("file")), key=lambda e: e["order"]):
         subject = math_path.build_subject(entry, json.loads((math_dir / entry["file"]).read_text("utf-8")))
         known.add(subject.id)
@@ -344,8 +567,13 @@ def validate_all(math_dir: Path = MATH_DIR, config: dict | None = None) -> list[
             errors.append(f"{name}: must be a JSON object")
             continue
         errors += [f"{name}: {e}" for e in validate_items(subject, raw, config)]
+        gens = raw.get("generators")
+        listed |= {g.get("id") for g in gens if isinstance(g, dict)} if isinstance(gens, list) else set()
     folder = math_dir / ITEMS_DIR_NAME
     for path in sorted(folder.glob("*.json")) if folder.is_dir() else []:
         if path.stem not in known:
             errors.append(f"math/{ITEMS_DIR_NAME}/{path.name}: no written subject has this id")
+    if math_dir == MATH_DIR:        # (a test folder lists only the generators it wants to try)
+        for gid in sorted(set(math_gen.REGISTRY) - listed):
+            errors.append(f"learning/math_gen: generator {gid} is not listed in any math/{ITEMS_DIR_NAME} file")
     return errors

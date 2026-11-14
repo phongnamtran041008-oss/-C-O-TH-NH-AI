@@ -1,5 +1,6 @@
 """M2: one math question loop - open a question, the countdown, grading, the adaptive tier
-(learning-path rules 2 and 3), Tu Vi by tier, and what is written to the database."""
+(learning-path rules 2 and 3), Tu Vi by tier, and what is written to the database.
+M3: generators in the loop, anti-repeat, and the parallel question after a mistake (rule 6)."""
 import datetime as dt
 import random
 import sqlite3
@@ -13,7 +14,7 @@ from app.learning import math_adaptive as ma
 from app.learning import math_items as mi
 from app.learning import math_path as mp
 from app.learning import selection
-from app.models import Character, MathAnswer, MathRun, QuizSession
+from app.models import Character, MathAnswer, MathRetry, MathRun, QuizSession
 from app.systems import math_practice
 from tests.helpers import answer_key, register
 from tests.test_combat import LOOK
@@ -34,6 +35,17 @@ async def start(client, h, floor=1, subject=SUBJECT) -> int:
     r = await client.post("/math/run/start", json={"subject_id": subject, "floor": floor}, headers=h)
     assert r.status_code == 200, r.text
     return r.json()["run"]["run_id"]
+
+
+async def clear_below(uid, floor, subject=SUBJECT):
+    """A passed Thiên kiếp nhỏ on every floor below this one (M5), so a test about another
+    rule can sit down higher up. The gate itself is tested in test_math_mastery.py."""
+    async with dbm.SessionLocal() as db:
+        for n in range(1, floor):
+            db.add(MathRun(user_id=uid, subject_id=subject, floor=n, mode="trial",
+                           tier=mp.floor_tiers(n)[1], asked=1, correct=1, passed=True,
+                           started_at=dt.datetime(2026, 1, 1), ended_at=dt.datetime(2026, 1, 1)))
+        await db.commit()
 
 
 async def ask(client, h, run_id) -> dict:
@@ -84,10 +96,22 @@ def fake_items(floor: int, per_tier: int = 3) -> dict[str, mi.MathItem]:
 
 @pytest.fixture
 def floor3(monkeypatch):
-    """Floor 3 (tiers 2-3) with questions, so the tier has room to move both ways."""
+    """Floor 3 (tiers 2-3) with hand-written questions only and no parallel questions, so
+    a test decides alone which tier comes next."""
     items = fake_items(3)
     monkeypatch.setattr(mi, "bank", lambda: items)
+    monkeypatch.setattr(mi, "generators", lambda: {})
+    monkeypatch.setitem(mp.cfg()["parallel_question"], "after_answers", 10 ** 6)
     return items
+
+
+@pytest.fixture
+def no_parallel(monkeypatch):
+    monkeypatch.setitem(mp.cfg()["parallel_question"], "after_answers", 10 ** 6)
+
+
+def is_generated(item_id: str) -> bool:
+    return item_id in mi.generators()
 
 
 async def log_answers(uid, skill, tier, results, floor=3):
@@ -219,15 +243,20 @@ async def test_path_lists_the_floors_and_which_have_questions(client):
     assert [s["id"] for s in data["subjects"]] == [SUBJECT]
     floors = data["subjects"][0]["floors"]
     assert [f["floor"] for f in floors] == list(range(1, 11))
-    assert floors[0]["playable"] and floors[0]["questions"] == len(mi.floor_items(SUBJECT, 1, True))
+    assert floors[0]["playable"] and floors[0]["questions"] == len(mi.floor_templates(SUBJECT, 1, True))
+    assert floors[0]["generators"] == 13 and floors[0]["questions"] >= 30
     assert (floors[0]["tier_min"], floors[0]["tier_max"]) == (1, 2)
-    assert not floors[1]["playable"] and floors[9]["hidden"]
+    assert [f["has_questions"] for f in floors] == [True, True, True] + [False] * 7  # M3: floors 1-3 are written
+    # M5: only floor 1 is open until its Thiên kiếp nhỏ is passed
+    assert [f["playable"] for f in floors] == [True] + [False] * 9
+    assert [f["state"] for f in floors] == ["open"] + ["locked"] * 9
+    assert floors[9]["hidden"]
     assert data["run"] is None and data["tiers"]["1"] == "Nhập môn"
 
 
 async def test_start_refuses_a_floor_without_questions_or_that_does_not_exist(client):
     h, _ = await make(client)
-    for body, status, code in (({"subject_id": SUBJECT, "floor": 2}, 400, "no_questions"),
+    for body, status, code in (({"subject_id": SUBJECT, "floor": 4}, 400, "no_questions"),
                                ({"subject_id": SUBJECT, "floor": 11}, 404, "no_floor"),
                                ({"subject_id": "giai_tich", "floor": 1}, 404, "no_floor")):
         r = await client.post("/math/run/start", json=body, headers=h)
@@ -265,7 +294,8 @@ async def test_a_right_answer_pays_tu_vi_by_tier_and_is_written_down(client):
         row = (await db.execute(select(MathAnswer))).scalar_one()
         assert (row.user_id, row.run_id, row.subject_id, row.floor, row.tier) == (uid, run_id, SUBJECT, 1, 1)
         assert row.skill_id == q["math"]["skill"] and row.correct and not row.timed_out
-        assert row.fingerprint == mi.bank()[row.item_id].fingerprint and row.qtype == q["qtype"]
+        assert len(row.fingerprint) == 32 and row.qtype == q["qtype"]
+        assert is_generated(row.item_id) or row.fingerprint == mi.bank()[row.item_id].fingerprint
         s = await db.get(QuizSession, q["session_id"])
         assert s.item_id == row.item_id and s.context == "math" and s.qtype == q["qtype"] and s.correct
         run = await db.get(MathRun, run_id)
@@ -280,7 +310,8 @@ async def test_a_wrong_answer_shows_the_solution_and_pays_nothing(client):
     run_id = await start(client, h)
     q, res = await play(client, h, run_id, correct=False)
     assert not res["correct"] and not res["timed_out"] and "xp" not in res
-    assert res["reveal"]["solution_vi"] == list(mi.bank()[(await item_of(q))].solution_vi)
+    assert res["reveal"]["solution_vi"] and all(isinstance(s, str) and s for s in res["reveal"]["solution_vi"])
+    assert res["math"]["parallel_waiting"] and not res["math"]["parallel"]
     assert res["math"]["xp_base"] == 0 and res["math"]["run"]["combo"] == 0
     async with dbm.SessionLocal() as db:
         assert (await db.get(Character, uid)).cultivation_xp == 0
@@ -338,7 +369,8 @@ async def test_an_expired_question_is_replaced_by_a_new_one(client, frozen):
 
 
 async def test_the_sitting_tier_moves_with_streaks_through_the_api(client, floor3):
-    h, _ = await make(client)
+    h, uid = await make(client)
+    await clear_below(uid, 3)
     run_id = await start(client, h, floor=3)
     changes = []
     for ok in (True, True, False, False, False, False, True, True, True, True):
@@ -354,6 +386,7 @@ async def test_a_higher_tier_question_needs_three_right_answers_one_tier_below(c
     skills = [s.id for s in mp.subject(SUBJECT).floor(3).skills]
     await log_answers(uid, skills[0], 2, [True, True, True])
     await log_answers(uid, skills[1], 2, [True, True, False, False, False])
+    await clear_below(uid, 3)
     run_id = await start(client, h, floor=3)
     async with dbm.SessionLocal() as db:                  # a sitting that has reached tier 3
         (await db.get(MathRun, run_id)).tier = 3
@@ -375,6 +408,7 @@ async def test_tu_vi_grows_with_the_tier(client, floor3):
     skills = [s.id for s in mp.subject(SUBJECT).floor(3).skills]
     for skill in skills:
         await log_answers(uid, skill, 2, [True, True, True])
+    await clear_below(uid, 3)
     run_id = await start(client, h, floor=3)
     gains = {}
     for _ in range(4):
@@ -385,17 +419,202 @@ async def test_tu_vi_grows_with_the_tier(client, floor3):
         assert (await db.get(MathRun, run_id)).xp_gained == 5 + 5 + 8 + 8
 
 
-async def test_no_question_repeats_while_a_fresh_one_is_left(client):
-    h, _ = await make(client)
+async def test_no_question_repeats_and_templates_take_turns(client):
+    """M3 anti-repeat: with generators there is always a question not seen in the last 50,
+    and a template asked in the last 4 answers waits while others are available."""
+    h, uid = await make(client)
     run_id = await start(client, h)
-    tier1 = {i.id for i in mi.floor_items(SUBJECT, 1, True) if i.tier == 1}
+    for _ in range(70):
+        await play(client, h, run_id, correct=True)
+    async with dbm.SessionLocal() as db:
+        rows = (await db.execute(select(MathAnswer.fingerprint, MathAnswer.item_id).where(
+            MathAnswer.user_id == uid).order_by(MathAnswer.id))).all()
+    prints = [r[0] for r in rows]
+    window = mp.cfg()["anti_repeat_window"]
+    for i, fp in enumerate(prints):
+        assert fp not in prints[max(0, i - window):i], f"question {i} repeats one of the {window} before it"
+    templates = [r[1] for r in rows]
+    cooldown = mp.cfg()["template_cooldown"]
+    for i, t in enumerate(templates):
+        assert t not in templates[max(0, i - cooldown):i], f"template {t} came back within {cooldown} answers"
+    assert any(is_generated(t) for t in templates) and not all(is_generated(t) for t in templates)
+
+
+async def test_hand_written_items_all_come_before_one_repeats(client, floor3):
+    h, uid = await make(client)
+    await clear_below(uid, 3)
+    run_id = await start(client, h, floor=3)
+    tier2 = {i.id for i in floor3.values() if i.tier == 2}
     asked = []
-    for _ in range(len(tier1)):                           # all wrong: tier 2 never opens
+    for _ in range(len(tier2)):                           # all wrong: tier 3 never opens
         q, _ = await play(client, h, run_id, correct=False)
         asked.append(await item_of(q))
-    assert set(asked) == tier1 and len(asked) == len(tier1)
+    assert set(asked) == tier2 and len(asked) == len(tier2)
     q, _ = await play(client, h, run_id, correct=False)
     assert await item_of(q) == asked[0]                   # all seen: the oldest comes back first
+
+
+# ------------------------------------------------------------------ M3: generators in the loop
+def test_choose_item_draws_new_numbers_from_a_generator():
+    spec = mi.generators()["dstt_g3_vet"]
+    rng = random.Random(5)
+    seen = [mi.draw(spec, random.Random(s)).fingerprint for s in range(40)]
+    for _ in range(40):
+        pick = math_practice.choose_item([spec], 2, 3, {}, seen, rng)
+        assert pick.generated and pick.id == spec.id and pick.fingerprint not in seen
+        seen.insert(0, pick.fingerprint)
+
+
+def test_choose_item_rests_a_template_that_was_just_asked():
+    spec = mi.generators()["dstt_g3_vet"]
+    static = [i for i in fake_items(3).values() if i.skill == spec.skill and i.tier == 2][:2]
+    rng = random.Random(2)
+    for _ in range(40):                                   # the generator rests, the two items do not
+        pick = math_practice.choose_item([spec, *static], 2, 3, {}, [], rng, recent_templates=[spec.id])
+        assert pick.id != spec.id
+    picks = {math_practice.choose_item([spec, *static], 2, 3, {}, [], rng, recent_templates=["x"] * 4 + [spec.id]).id
+             for _ in range(60)}
+    assert picks == {spec.id, static[0].id, static[1].id}       # ...and is back once it is out of the last 4
+    resting = [spec.id, static[0].id, static[1].id]             # everything rests: something is still asked
+    assert math_practice.choose_item([spec, *static], 2, 3, {}, [], rng, recent_templates=resting).id in resting
+
+
+def test_choose_item_falls_back_to_a_generator_when_every_item_was_seen():
+    spec = mi.generators()["dstt_g2_so_nghiem"]
+    static = [i for i in mi.bank().values() if i.skill == spec.skill and i.tier == 1]
+    seen = [i.fingerprint for i in static]
+    pick = math_practice.choose_item(static + [spec], 1, 2, {}, seen, random.Random(1))
+    assert pick.id == spec.id
+
+
+async def test_a_generated_question_is_stored_with_its_numbers(client, monkeypatch):
+    spec = mi.generators()["dstt_g3_cong_ma_tran"]
+    monkeypatch.setattr(mi, "bank", lambda: {})
+    monkeypatch.setattr(mi, "generators", lambda: {spec.id: spec})
+    h, uid = await make(client)
+    await clear_below(uid, 3)
+    run_id = await start(client, h, floor=3)
+    q = await ask(client, h, run_id)
+    assert q["qtype"] == "numeric" and q["math"]["skill"] == spec.skill and not q["math"]["parallel"]
+    names = [m["name"] for m in q["prompt"]["matrices"]]
+    assert names == ["A", "B"] and all(len(m["rows"]) == 2 and len(m["rows"][0]) == 2 for m in q["prompt"]["matrices"])
+    a, b = (m["rows"] for m in q["prompt"]["matrices"])
+    sign = 1 if " + " in q["prompt"]["text"] else -1
+    typed = ", ".join(str(int(a[r][c]) + sign * int(b[r][c])) for r in range(2) for c in range(2))
+    r = await client.post("/quiz/answer", json={"session_id": q["session_id"], "answer": {"text": typed}}, headers=h)
+    assert r.json()["correct"], r.text                    # worked out from what the player sees
+    async with dbm.SessionLocal() as db:
+        row = (await db.execute(select(MathAnswer))).scalar_one()
+        assert row.item_id == spec.id and row.correct
+
+
+# ------------------------------------------------------------------ M3: the parallel question (rule 6)
+async def miss_then_meet_parallel(client, h, run_id):
+    """Miss one question, answer one other, and return (missed question, its parallel)."""
+    missed, res = await play(client, h, run_id, correct=False)
+    assert res["math"]["parallel_waiting"]
+    between, _ = await play(client, h, run_id, correct=True)
+    assert not between["math"]["parallel"]                # not at once: one other question first
+    return missed, await ask(client, h, run_id)
+
+
+async def test_a_mistake_comes_back_as_a_parallel_question(client):
+    h, uid = await make(client)
+    run_id = await start(client, h)
+    missed, parallel = await miss_then_meet_parallel(client, h, run_id)
+    assert parallel["math"]["parallel"]
+    assert (parallel["math"]["skill"], parallel["math"]["tier"]) == (missed["math"]["skill"], missed["math"]["tier"])
+    missed_id, parallel_id = await item_of(missed), await item_of(parallel)
+    async with dbm.SessionLocal() as db:
+        retry = (await db.execute(select(MathRetry))).scalar_one()
+        assert retry.item_id == missed_id and retry.cleared_at is None and retry.misses == 1
+        key = (await db.get(QuizSession, parallel["session_id"])).answer_key
+        assert key["retry_id"] == retry.id and key["fingerprint"] != retry.fingerprint      # not the same question
+    if is_generated(missed_id):
+        assert parallel_id == missed_id                   # the same generator, new numbers
+    else:
+        assert parallel_id != missed_id                   # another template of that micro-skill and tier
+
+    key = await answer_key(parallel["session_id"])
+    r = await client.post("/quiz/answer", json={"session_id": parallel["session_id"],
+                                                "answer": right_answer(parallel, key)}, headers=h)
+    res = r.json()
+    assert res["correct"] and res["math"]["parallel"] and not res["math"]["parallel_waiting"]
+    async with dbm.SessionLocal() as db:
+        assert (await db.execute(select(MathRetry))).scalar_one().cleared_at is not None
+    for _ in range(4):                                    # cleared: it does not come back again
+        q, _ = await play(client, h, run_id, correct=True)
+        assert not q["math"]["parallel"]
+
+
+async def test_a_parallel_question_answered_wrong_comes_back_again(client):
+    h, uid = await make(client)
+    run_id = await start(client, h)
+    _, parallel = await miss_then_meet_parallel(client, h, run_id)
+    key = await answer_key(parallel["session_id"])
+    r = await client.post("/quiz/answer", json={"session_id": parallel["session_id"],
+                                                "answer": wrong_answer(parallel, key)}, headers=h)
+    assert not r.json()["correct"] and r.json()["math"]["parallel_waiting"]
+    async with dbm.SessionLocal() as db:
+        retry = (await db.execute(select(MathRetry))).scalar_one()        # still one mistake, missed twice
+        assert retry.cleared_at is None and retry.misses == 2
+    q, _ = await play(client, h, run_id, correct=True)
+    assert not q["math"]["parallel"]
+    again = await ask(client, h, run_id)
+    assert again["math"]["parallel"]
+
+
+async def test_a_mistake_waits_for_the_next_sitting(client):
+    h, uid = await make(client)
+    run_id = await start(client, h)
+    missed, res = await play(client, h, run_id, correct=False)
+    await client.post("/math/run/end", json={"run_id": run_id}, headers=h)
+    await clear_below(uid, 2)
+    other = await start(client, h, floor=2)               # another floor: that mistake is not asked there
+    for _ in range(3):
+        q, _ = await play(client, h, other, correct=True)
+        assert not q["math"]["parallel"]
+    back = await start(client, h, floor=1)
+    q = await ask(client, h, back)
+    assert q["math"]["parallel"] and q["math"]["skill"] == missed["math"]["skill"]
+
+
+async def test_running_out_of_time_also_queues_a_parallel_question(client, frozen):
+    h, uid = await make(client)
+    run_id = await start(client, h)
+    q = await ask(client, h, run_id)
+    frozen.advance(seconds=q["time_limit"] + 2)
+    r = await client.post("/quiz/answer", json={"session_id": q["session_id"], "answer": {}}, headers=h)
+    assert r.json()["timed_out"] and r.json()["math"]["parallel_waiting"]
+
+
+async def test_only_a_few_mistakes_wait_at_a_time(client, no_parallel):
+    h, uid = await make(client)
+    run_id = await start(client, h)
+    for _ in range(12):
+        await play(client, h, run_id, correct=False)
+    async with dbm.SessionLocal() as db:
+        retries = (await db.execute(select(MathRetry).order_by(MathRetry.id))).scalars().all()
+    open_ = [r for r in retries if r.cleared_at is None]
+    assert len(open_) == mp.cfg()["parallel_question"]["max_open"] == 5
+    assert len({r.item_id for r in open_}) == 5           # one per template
+    assert open_[0].id > min(r.id for r in retries)       # the oldest were let go
+
+
+def test_parallel_item_for_a_hand_written_question():
+    items = [i for i in fake_items(3).values()]
+    skill = items[0].skill
+    missed = next(i for i in items if i.skill == skill and i.tier == 2)
+    retry = MathRetry(item_id=missed.id, skill_id=skill, tier=2, fingerprint=missed.fingerprint)
+    rng = random.Random(3)
+    for _ in range(30):
+        pick = math_practice.parallel_item(items, retry, [], rng)
+        assert pick.id != missed.id and (pick.skill, pick.tier) == (skill, 2)
+    spec = mi.generators()["dstt_g3_to_hop_vecto"]        # a generator of that micro-skill and tier goes first
+    assert spec.skill == skill
+    assert all(math_practice.parallel_item(items + [spec], retry, [], rng).id == spec.id for _ in range(20))
+    assert math_practice.parallel_item([missed], retry, [], rng) is missed      # the only one: it comes back itself
+    assert math_practice.parallel_item([i for i in items if i.skill != skill], retry, [], rng) is None
 
 
 async def test_ending_a_sitting_and_starting_another(client):
@@ -499,7 +718,7 @@ def test_migration_0010_keeps_the_question_log_and_drops_the_word_key(tmp_path):
                 "expires_at) values ('s2', 1, 'math', 'multiple_choice', 'dstt_t1_th_02', '{}', '{}', "
                 "'2026-01-01', '2026-01-01')")              # not a word: allowed now
     tables = {r[0] for r in con.execute("select name from sqlite_master where type='table'")}
-    assert {"math_runs", "math_answers"} <= tables
+    assert {"math_runs", "math_answers", "math_retries"} <= tables
     con.commit()
     con.close()
 
@@ -508,6 +727,6 @@ def test_migration_0010_keeps_the_question_log_and_drops_the_word_key(tmp_path):
     assert con.execute("select id, word_id from quiz_sessions").fetchall() == [("s1", "w_ma")]     # math rows go
     assert sorted(fk[2] for fk in con.execute("pragma foreign_key_list(quiz_sessions)")) == ["users", "words"]
     tables = {r[0] for r in con.execute("select name from sqlite_master where type='table'")}
-    assert not {"math_runs", "math_answers"} & tables
+    assert not {"math_runs", "math_answers", "math_retries"} & tables
     con.close()
     command.upgrade(cfg, "head")                           # and forward again

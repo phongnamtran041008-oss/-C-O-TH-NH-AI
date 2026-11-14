@@ -1,0 +1,6 @@
+# Everything the server needs, plus what only the tests and tools/check_all.py use.
+-r requirements.txt
+# recomputes the answers of generated math questions (tools/math_verify.py)
+sympy>=1.13
+# reads the shipped fonts to check every string can be drawn (tools/check_all.py)
+fonttools>=4.40

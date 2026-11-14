@@ -39,10 +39,21 @@ câu hỏi, lời giải và tài liệu đều tự viết, không chép nội 
 Các mục đánh dấu `"extension": "ai"` (ví dụ phép chiếu, PCA/SVD) là phần thêm cho lộ trình AI, không
 nằm trong đề cương.
 
+Ngân hàng câu hỏi (`server/data/math/items/`, `server/app/learning/math_gen/`) do AI viết: câu hỏi, đáp án
+và lời giải đều tự soạn, không chép đề bài hay lời giải từ giáo trình, đề cương hay sách nào. Đáp án của
+các bộ sinh câu được tính lại bằng SymPy; mọi câu **cần người duyệt** (cờ `reviewed`, bảng duyệt
+`tools/reports/math_review_<bí cảnh>.md`).
+
 ## Phần mềm
 
 FastAPI, SQLAlchemy, Alembic, bcrypt, PyJWT, Uvicorn, websockets, httpx, pygame-ce, pytest (các giấy phép
-MIT/BSD/Apache/LGPL tương ứng).
+MIT/BSD/Apache/LGPL tương ứng). SymPy (BSD) và fontTools (MIT) chỉ dùng lúc kiểm tra nội dung
+(`tools/math_verify.py`, `tools/check_all.py`, `server/requirements-dev.txt`), không đi kèm game hay máy chủ.
+
+Ảnh công thức trong Tàng Thư Các được dựng sẵn bằng **MathJax** (Apache-2.0) và **resvg** (MPL-2.0) qua
+`tools/formulas`; cả hai chỉ chạy lúc dựng nội dung, không nằm trong game. Nét chữ trong các ảnh đó là phông
+toán của MathJax, dẫn xuất từ phông TeX của American Mathematical Society, phát hành theo **Apache-2.0** và
+**SIL OFL 1.1**; giấy phép đi kèm trong `client/assets/formulas/LICENSES.md`.
 
 ## Phông chữ
 

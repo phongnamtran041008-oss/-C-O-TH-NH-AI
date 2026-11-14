@@ -6,6 +6,7 @@ server/.env
 server/*.db
 server/*.db-*
 tools/raw/*
+tools/formulas/node_modules/
 !tools/raw/SOURCES.md
 dist/
 build/

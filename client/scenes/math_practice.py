@@ -2,6 +2,11 @@
 question after another. Each question has a countdown; when it runs out the server counts
 a wrong answer. After a wrong answer the card shows the solution step by step.
 
+M5: the floor list says which floors are open, which are cleared and how far the mastery
+gate of the floor being played has come; a floor whose gate is open offers its Thiên kiếp
+nhỏ, a sitting of one question per micro-skill that ends in a verdict. Questions that come
+from a floor below say so ("Ôn xoắn ốc").
+
 The client never knows the answer: it sends what the player chose or typed and shows what
 the server reveals afterwards (the same rule as QuizScene)."""
 from __future__ import annotations
@@ -12,20 +17,13 @@ import pygame
 
 from .. import strings_vi as T
 from ..art.palette import UI as UICOL
+from ..ui.mathdraw import draw_matrices, fit
 from .base import Scene
+from .math_library import DocScene, LibraryListScene
 from .quiz import KEYS, QuizScene
 
 GREY = "#5A5A5A"
 OPTION_KEYS = KEYS + [pygame.K_5, pygame.K_6]
-
-
-def fit(ui, text: str, size: float, max_w: float) -> str:
-    """The text, cut with "..." when it is wider than max_w."""
-    if ui.text_size(text, size)[0] <= max_w:
-        return text
-    while text and ui.text_size(text + "...", size)[0] > max_w:
-        text = text[:-1]
-    return text.rstrip() + "..."
 
 
 def tiers_text(lo: int, hi: int) -> str:
@@ -94,24 +92,44 @@ class MathQuizScene(QuizScene):
         ui.progress(x + 12, y + 22, w - 74, 4, frac, "#BC4749" if frac < 0.3 else "#6A994E")
         ui.text(T.MATH_SECONDS.format(n=self.seconds_left()), x + w - 12, y + 24, 8,
                 "#BC4749" if frac < 0.3 else GREY, anchor="midright")
-        ui.text(self.q.get("instruction_vi", ""), x + w / 2, y + 36, 7, GREY, anchor="midtop", max_w=w - 30)
-        prompt = self.q.get("prompt", {}).get("text", "")
-        ui.text(prompt, x + w / 2, y + 52, 10 if len(prompt) <= 110 else 9, anchor="midtop", max_w=w - 36)
+        top = y + 36
+        badge = (T.MATH_PARALLEL if m.get("parallel") else       # rule 6a: the idea just missed
+                 T.MATH_REVIEW.format(n=m.get("floor", "?")) if m.get("review") else "")
+        if badge:                                   # rule 6b: a question from a floor below
+            ui.text(badge, x + w / 2, y + 32, 7, UICOL["accent"], anchor="midtop")
+            top = y + 42
+        ui.text(self.q.get("instruction_vi", ""), x + w / 2, top, 7, GREY, anchor="midtop", max_w=w - 30)
+        prompt = self.q.get("prompt", {})
+        text = prompt.get("text", "")
+        cy = top + 16
+        cy += ui.text(text, x + w / 2, cy, 10 if len(text) <= 110 else 9, anchor="midtop", max_w=w - 36).h
+        if prompt.get("matrices"):
+            cy = draw_matrices(ui, prompt["matrices"], x + w / 2, cy + 6)
         inp = self.q.get("input")
         if inp == "truefalse":
-            self.draw_true_false(ui, x, y + 126, w)
+            self.draw_true_false(ui, x, max(y + 126, cy + 12), w)
         elif inp == "choice":
-            self.draw_options(ui, x, y + 104, w)
+            self.draw_options(ui, x, max(y + 104, cy + 8), w)
         elif inp == "number":
-            self.draw_number(ui, x, y + 124, w)
+            self.draw_number(ui, x, max(y + 124, cy + 26), w)
         self.draw_run(ui, x, y, w, h)
 
+
+    def run_line(self, r: dict, answered: bool) -> str:
+        """The line along the bottom of the card: how the sitting is going, or - in a Thiên
+        kiếp nhỏ - which question of the trial this is and how many misses are left."""
+        if r.get("mode") == "trial":
+            t = r.get("trial") or {}
+            total = t.get("total", 0)
+            n = min(total, r.get("asked", 0) + (0 if answered else 1))
+            left = max(0, t.get("max_wrong", 0) - t.get("wrong", 0))
+            return f"{T.MATH_TRIAL_PROGRESS.format(n=n, t=total)}   {T.MATH_TRIAL_ALLOWED.format(n=left)}"
+        return (f"{T.MATH_COMBO.format(n=r.get('combo', 0))}   "
+                f"{T.MATH_SCORE.format(c=r.get('correct', 0), a=r.get('asked', 0))}")
+
     def draw_run(self, ui, x, y, w, h):
-        r = self.run
-        if r:
-            ui.text(f"{T.MATH_COMBO.format(n=r.get('combo', 0))}   "
-                    f"{T.MATH_SCORE.format(c=r.get('correct', 0), a=r.get('asked', 0))}",
-                    x + 12, y + h - 12, 7, GREY, anchor="midleft")
+        if self.run:
+            ui.text(self.run_line(self.run, answered=False), x + 12, y + h - 12, 7, GREY, anchor="midleft")
 
     def draw_true_false(self, ui, x, y, w):
         for i, (wid, label, value) in enumerate((("math_true", T.MATH_TRUE, True),
@@ -161,10 +179,20 @@ class MathQuizScene(QuizScene):
             notes.append(T.MATH_TIER_UP.format(name=run.get("tier_name_vi", "")))
         elif m.get("tier_change", 0) < 0:
             notes.append(T.MATH_TIER_DOWN.format(name=run.get("tier_name_vi", "")))
+        if m.get("parallel_waiting"):
+            notes.append(T.MATH_WILL_RETURN)
+        elif good and m.get("parallel"):
+            notes.append(T.MATH_PARALLEL_CLEARED)
+        verdict = (m.get("trial") or {}).get("passed")
+        if verdict is not None:
+            notes.append(T.MATH_TRIAL_PASSED if verdict else T.MATH_TRIAL_FAILED)
         ui.text("   ".join(notes), x + w - 18, y + 31, 9, "#C99A3A", anchor="midright")
 
         cy = y + 48
-        cy += ui.text(self.q.get("prompt", {}).get("text", ""), x + 16, cy, 8, GREY, max_w=w - 32).h + 3
+        prompt = self.q.get("prompt", {})
+        cy += ui.text(prompt.get("text", ""), x + 16, cy, 8, GREY, max_w=w - 32).h + 3
+        if prompt.get("matrices"):
+            cy = draw_matrices(ui, prompt["matrices"], x + 20, cy + 1, centered=False) + 4
         rv = res.get("reveal") or {}
         if not good and not timed_out and self.given_text():
             cy += ui.text(T.MATH_YOUR_ANSWER.format(a=self.given_text()), x + 16, cy, 8, UICOL["accent"],
@@ -179,15 +207,19 @@ class MathQuizScene(QuizScene):
                 ui.text(f"{n}.", x + 18, cy, 8, GREY)
                 cy += ui.text(step, x + 32, cy, 8, "#2B2B2B", max_w=w - 52).h + 2
         if run:
-            ui.text(f"{T.MATH_COMBO.format(n=run.get('combo', 0))}   "
-                    f"{T.MATH_SCORE.format(c=run.get('correct', 0), a=run.get('asked', 0))}",
-                    x + 12, y + h - 12, 7, GREY, anchor="midleft")
-        if ui.button("math_stop", x + w - 176, y + h - 22, 60, 16, T.MATH_STOP, key=pygame.K_ESCAPE):
+            ui.text(self.run_line(run, answered=True), x + 12, y + h - 12, 7, GREY, anchor="midleft")
+        doc = (self.q.get("math") or {}).get("doc")
+        if doc and ui.button("math_doc", x + w - 252, y + h - 22, 70, 16, T.LIB_OPEN, size=7, style="gold",
+                             key=pygame.K_t):
+            self.game.push(DocScene(self.game, doc["id"], doc.get("block", 0)))
+        over = verdict is not None                  # the trial is decided: no more questions
+        if not over and ui.button("math_stop", x + w - 176, y + h - 22, 60, 16, T.MATH_STOP,
+                                  key=pygame.K_ESCAPE):
             self.finish(stop=True)
             return
-        if ui.button("math_next", x + w - 108, y + h - 22, 96, 16, T.MATH_NEXT, style="primary") or \
-                ui.key(pygame.K_RETURN) or ui.key(pygame.K_SPACE):
-            self.finish(stop=False)
+        if ui.button("math_next", x + w - 108, y + h - 22, 96, 16, T.MATH_RESULT if over else T.MATH_NEXT,
+                     style="primary") or ui.key(pygame.K_RETURN) or ui.key(pygame.K_SPACE):
+            self.finish(stop=over)
 
 
 class MathPracticeScene(Scene):
@@ -198,6 +230,7 @@ class MathPracticeScene(Scene):
         self.path: dict | None = None
         self.run: dict | None = None
         self.summary: dict | None = None
+        self.trial: dict | None = None      # the verdict of the Thiên kiếp nhỏ just finished
         self.busy = False
 
     def on_enter(self):
@@ -216,15 +249,18 @@ class MathPracticeScene(Scene):
         self.busy = False
         self.game.api_error(err)
 
-    def start(self, subject_id: str, floor: int):
+    def start(self, subject_id: str, floor: int, trial: bool = False):
+        """Open a sitting on this floor: ordinary practice, or its Thiên kiếp nhỏ (M5)."""
         if self.busy:
             return
         self.busy = True
+        self.trial = None
 
         def ok(res):
             self.run = res["run"]
             self.next_question()
-        self.api.post("/math/run/start", {"subject_id": subject_id, "floor": floor}, ok, self.fail)
+        self.api.post("/math/trial/start" if trial else "/math/run/start",
+                      {"subject_id": subject_id, "floor": floor}, ok, self.fail)
 
     def resume(self, run: dict):
         if self.busy:
@@ -244,8 +280,13 @@ class MathPracticeScene(Scene):
         self.api.post("/math/run/next", {"run_id": self.run["run_id"]}, ok, self.fail)
 
     def on_result(self, res: dict, stop: bool):
-        self.run = (res.get("math") or {}).get("run") or self.run
-        if stop:
+        m = res.get("math") or {}
+        self.run = m.get("run") or self.run
+        trial = m.get("trial") or {}
+        if trial.get("passed") is not None:         # the Thiên kiếp nhỏ is decided
+            self.trial = trial
+            self.end()
+        elif stop:
             self.end()
         else:
             self.next_question()
@@ -271,6 +312,9 @@ class MathPracticeScene(Scene):
             ui.text(T.MATH_LOADING, x + w / 2, y + h / 2, 9, GREY, anchor="center")
         else:
             self.draw_floors(ui, x, y, w, h)
+        if ui.button("math_library", x + 12, y + h - 20, 76, 14, T.LIB_TITLE, size=7, style="gold",
+                     enabled=self.path is not None):
+            self.game.push(LibraryListScene(self.game))
         if ui.button("math_close", x + w - 62, y + h - 20, 50, 14, T.CLOSE, key=pygame.K_ESCAPE):
             self.close()
 
@@ -285,12 +329,11 @@ class MathPracticeScene(Scene):
                 label = T.MATH_HIDDEN_FLOOR if f["hidden"] else T.MATH_FLOOR.format(n=f["floor"])
                 ink = "#2B2B2B" if f["playable"] else "#9A9387"
                 ui.text(label, x + 12, cy + 7, 8, ink, anchor="midleft")
-                ui.text(fit(ui, f["title_vi"], 8, 206), x + 58, cy + 7, 8, ink, anchor="midleft")
-                ui.text(tiers_text(f["tier_min"], f["tier_max"]), x + 270, cy + 7, 7, GREY, anchor="midleft")
+                ui.text(fit(ui, f["title_vi"], 8, 104), x + 52, cy + 7, 8, ink, anchor="midleft")
+                ui.text(tiers_text(f["tier_min"], f["tier_max"]), x + 160, cy + 7, 7, GREY, anchor="midleft")
+                self.draw_floor_gate(ui, x, cy, w, s, f)
                 if f["playable"]:
-                    ui.text(T.MATH_QUESTIONS.format(n=f["questions"]), x + w - 74, cy + 7, 7, GREY,
-                            anchor="midright")
-                    if ui.button(f"math_floor_{s['id']}_{f['floor']}", x + w - 68, cy, 56, 13,
+                    if ui.button(f"math_floor_{s['id']}_{f['floor']}", x + w - 76, cy, 64, 13,
                                  T.MATH_RESUME if mine else T.MATH_PLAY, size=7, style="primary",
                                  enabled=not self.busy):
                         if mine:
@@ -298,18 +341,66 @@ class MathPracticeScene(Scene):
                         else:
                             self.start(s["id"], f["floor"])
                 else:
-                    ui.text(T.MATH_NO_QUESTIONS, x + w - 12, cy + 7, 7, "#9A9387", anchor="midright")
+                    ui.text(T.MATH_LOCKED if f["has_questions"] else T.MATH_NO_QUESTIONS,
+                            x + w - 12, cy + 7, 7, "#9A9387", anchor="midright")
+                if f.get("doc_id") and ui.button(f"math_doc_{s['id']}_{f['floor']}", x + w - 118, cy, 34, 13,
+                                                 T.LIB_READ, size=7, style="gold"):
+                    self.game.push(DocScene(self.game, f["doc_id"]))
                 cy += 17
+
+    def draw_floor_gate(self, ui, x, cy, w, subject: dict, f: dict):
+        """The slot between the tiers and the Tàng Thư button (M5): how far the mastery gate
+        has come, or the button for the Thiên kiếp nhỏ once the gate is open."""
+        gate = f.get("gate")
+        if f["state"] == "cleared":
+            ui.text(T.MATH_CLEARED, x + w - 122, cy + 7, 7, "#C99A3A", anchor="midright")
+        elif not f["playable"] or not gate:
+            return                                  # a locked floor says so on the right
+        elif gate["ok"]:
+            if ui.button(f"math_trial_{subject['id']}_{f['floor']}", x + w - 180, cy, 58, 13,
+                         T.MATH_TRIAL, size=7, style="gold", enabled=not self.busy):
+                self.start(subject["id"], f["floor"], trial=True)
+        else:
+            done = sum(1 for k in gate["skills"] if k["ok"])
+            ui.text(T.MATH_GATE.format(n=done, t=len(gate["skills"])), x + w - 122, cy + 7, 7, GREY,
+                    anchor="midright")
+
+    def gate_hint(self, run: dict) -> str:
+        """What the floor just practised still wants before its Thiên kiếp nhỏ opens (M5),
+        read from the floor list that was reloaded when the sitting ended."""
+        for s in (self.path or {}).get("subjects", []):
+            if s["id"] != run["subject_id"]:
+                continue
+            for f in s["floors"]:
+                gate = f.get("gate")
+                if f["floor"] == run["floor"] and gate and not gate["ok"] and gate["skills"]:
+                    k = gate["skills"][0]
+                    return T.MATH_GATE_HINT.format(need=k["needed"], window=k["window"], tier=k["top_tier"])
+        return ""
 
     def draw_summary(self, ui, x, y, w, h):
         r = self.summary
-        ui.text(T.MATH_SUMMARY, x + w / 2, y + 44, 12, UICOL["accent"], anchor="center")
-        lines = [T.MATH_SUMMARY_SCORE.format(c=r["correct"], a=r["asked"]),
-                 T.MATH_SUMMARY_COMBO.format(n=r["best_combo"]),
-                 T.MATH_SUMMARY_XP.format(n=r["xp_gained"]),
-                 T.MATH_SUMMARY_TIER.format(name=r["tier_name_vi"])]
+        if self.trial is not None:                  # the verdict of a Thiên kiếp nhỏ
+            t = self.trial
+            title = T.MATH_TRIAL_PASSED if t["passed"] else T.MATH_TRIAL_FAILED
+            colour = UICOL["green"] if t["passed"] else UICOL["accent"]
+            lines = [T.MATH_SUMMARY_SCORE.format(c=t["correct"], a=t["asked"]),
+                     T.MATH_SUMMARY_XP.format(n=r["xp_gained"]),
+                     T.MATH_TRIAL_UNLOCKED.format(n=t["unlocked"]) if t.get("unlocked") else T.MATH_TRIAL_AGAIN]
+        else:
+            title, colour = T.MATH_SUMMARY, UICOL["accent"]
+            lines = [T.MATH_SUMMARY_SCORE.format(c=r["correct"], a=r["asked"]),
+                     T.MATH_SUMMARY_COMBO.format(n=r["best_combo"]),
+                     T.MATH_SUMMARY_XP.format(n=r["xp_gained"]),
+                     T.MATH_SUMMARY_TIER.format(name=r["tier_name_vi"])]
+            if r.get("review_asked"):
+                lines.append(T.MATH_REVIEW_COUNT.format(n=r["review_asked"]))
+            hint = self.gate_hint(r)
+            if hint:
+                lines.append(hint)
+        ui.text(title, x + w / 2, y + 44, 12, colour, anchor="center")
         for i, line in enumerate(lines):
-            ui.text(line, x + w / 2, y + 76 + i * 18, 9, "#2B2B2B", anchor="center")
-        if ui.button("math_back", x + w / 2 - 45, y + 160, 90, 16, T.MATH_BACK, style="primary",
+            ui.text(line, x + w / 2, y + 70 + i * 18, 9, "#2B2B2B", anchor="center", max_w=w - 40)
+        if ui.button("math_back", x + w / 2 - 45, y + 176, 90, 16, T.MATH_BACK, style="primary",
                      key=pygame.K_RETURN):
-            self.summary = None
+            self.summary = self.trial = None
