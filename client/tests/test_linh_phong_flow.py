@@ -184,7 +184,7 @@ def run_bee_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait(lambda: ws.bee_hits > 0, 6, "bees sting the monster")
         drv.shot("guards_sting")
         if m.alive and m.id in ws.entities:
-            beat(drv, ws, m)
+            beat(drv, ws, m, server)
         drv.close()
     finally:
         server.stop()

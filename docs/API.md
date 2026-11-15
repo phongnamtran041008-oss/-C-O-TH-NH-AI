@@ -450,3 +450,31 @@ Tầng ẩn 10 chờ tầng 9. Mở buổi luyện ở tầng chưa mở → l�
   ngã ngũ (thi trượt dừng ngay, không bắt làm nốt), `unlocked` là tầng vừa mở ra.
 - Trong Thiên kiếp nhỏ không có câu song song (tâm ma) và không có câu ôn; bậc không lên xuống theo chuỗi
   đúng/sai (`tier_change` luôn 0).
+
+### M6: bài tập lập trình
+
+Bài làm **chạy trên máy người học**, không chạy trên máy chủ (kế hoạch 5.2). Máy chủ chỉ gửi đi *dữ liệu vào*:
+đề bài kèm ví dụ, và khi nộp bài thì dữ liệu vào của test ẩn. Đáp án của test ẩn và lời giải mẫu không bao giờ
+rời máy chủ. Game gửi về những gì chương trình đã in ra, máy chủ so đáp án và quyết định AC / WA / TLE / RE / CE.
+
+| Method | Đường dẫn | Body | Ghi chú |
+|---|---|---|---|
+| GET | `/math/problems?subject_id=&floor=` | — | `{subject_id, name_vi, floors[{floor, title_vi, problems[{id, title_vi, skill, floor, tier, tests, reviewed, best}]}]}`. `floor` là tuỳ chọn; tầng chưa mở không có trong danh sách. `best` = lần nộp tốt nhất `{verdict, passed, total, ms, xp_gained}` hoặc `null` |
+| GET | `/math/problem/{id}` | — | đề bài và ví dụ. `tests` chỉ là **số lượng** test ẩn. Lỗi `no_problem` (404), `floor_locked` (403) |
+| POST | `/math/problem/{id}/tests` | — | Nộp bài bước 1 → `{attempt_id, total, time_limit_ms, inputs[]}`: dữ liệu vào của test ẩn, để chạy trên máy người học. Lần nộp chưa chấm thì dùng lại, không mở thêm |
+| POST | `/math/problem/{id}/judge` | `{outputs[], status, times_ms[], code, error, attempt_id?}` | chấm. Có `attempt_id` là **Nộp bài** (test ẩn, có Tu Vi); không có là **Chạy thử** (ví dụ, không Tu Vi, không ghi lại). Lỗi `no_attempt` (404), `already_judged` (409), `bad_status`, `too_many_outputs`, `output_too_long`, `code_too_long` (400) |
+
+`problem` = `{id, subject, subject_name_vi, skill, skill_name_vi, floor, tier, tier_name_vi, title_vi,
+statement_vi[], input_vi, output_vi, limits_vi, checker ("exact" | "float"), time_limit_ms, samples[{in, out,
+note_vi}], tests (số test ẩn), think_limit_s, reviewed}`.
+
+`status` là kết quả của chính lần chạy trên máy người học: `ok` (chạy hết), `ce` (không biên dịch được),
+`re` (lỗi lúc chạy), `tle` (quá giờ). Lần chạy dừng ở test đầu tiên bị hỏng, nên `outputs` có thể ngắn hơn
+`total`.
+
+Kết quả chấm = `{verdict, passed, total, share, ms, error, tests[{test, verdict, ms}]}`, với `verdict` của từng
+test là `AC`, `WA`, `TLE`, `RE`, `CE` hoặc `-` (chưa chạy tới). Khi nộp bài còn có `xp`, `xp_gained` và `best`.
+
+- `GET /math/path`: mỗi bí cảnh có thêm `problems` = số bài tập người chơi mở được lúc này (các tầng đã mở).
+- Tu Vi: bậc của bài đáng `xp_per_correct` của bậc đó, nhân với tỉ lệ test đạt, và **chỉ trả phần hơn** so với
+  lần tốt nhất trước đó - nộp lại cùng một bài làm không ăn thêm Tu Vi.

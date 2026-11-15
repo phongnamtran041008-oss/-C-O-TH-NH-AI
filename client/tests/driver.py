@@ -102,6 +102,7 @@ class Driver:
         from client.scenes.menu import MenuScene
         self.game.push(MenuScene(self.game))
         self.n_shots = 0
+        self.fixed_dt: float | None = None     # set to pin the game clock (see step)
         self.toast_log: list[str] = []
         orig = self.game.toast
         # *rest: a world notice calls toast(text, colour, life); without it any test that
@@ -110,10 +111,16 @@ class Driver:
 
     # ------------------------------------------------------------ stepping
     def step(self, frames: int = 1, events=None) -> None:
-        """Advance frames using real elapsed time, like the real game loop does."""
+        """Advance frames using real elapsed time, like the real game loop does - unless
+        `fixed_dt` is set, when every frame advances the game by exactly that much.
+
+        A test that drives something timed to the millisecond (the canh lửa needle) cannot
+        race the wall clock: under load one frame can take the whole 0.1 s clamp, and the
+        needle is long past where the test aimed. Such a test pins the clock instead; the
+        game runs its ordinary loop, it is only told how much time passed."""
         for i in range(frames):
             now = time.perf_counter()
-            dt = min(0.1, max(1 / 240, now - getattr(self, "_last", now - 1 / 60)))
+            dt = self.fixed_dt or min(0.1, max(1 / 240, now - getattr(self, "_last", now - 1 / 60)))
             self._last = now
             self.game.step(dt, events if (events and i == 0) else [])
             time.sleep(0.004)

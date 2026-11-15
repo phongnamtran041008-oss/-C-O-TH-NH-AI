@@ -37,6 +37,10 @@ from tests.helpers import correct_answer  # noqa: E402
 from tests.realm_bot import Bot, Team  # noqa: E402
 
 SPEED = 74.0
+# A real client pings every 15 s while it has nothing else to say (client/net/ws_client.py) and the
+# server kicks a connection that has been silent for world.json idle_timeout_seconds (45 s), so a bot
+# must do the same or it is dropped whenever it stands still longer than that.
+HEARTBEAT = 15.0
 LOOK = {"hair_color": "#2B2B2B", "hair_style": "ngan", "body": "nam"}
 
 
@@ -92,6 +96,8 @@ class NetBot(Bot):
         self.record: list | None = [] if record else None
         self.room_view = Room(self)
         self.party_ok = asyncio.Event()
+        self.kicked: dict | None = None
+        self.beat: asyncio.Task | None = None
 
     # ------------------------------------------------------------ the bits realm_bot reads
     @property
@@ -140,6 +146,7 @@ class NetBot(Bot):
         self.ws = await connect(ws_url, max_size=2 ** 22)
         await self.ws.send(json.dumps({"t": "hello", "v": PROTOCOL_VERSION, "token": self.token}))
         self.reader = asyncio.create_task(self._read())
+        self.beat = asyncio.create_task(self._heartbeat())
 
     async def _read(self) -> None:
         try:
@@ -148,6 +155,16 @@ class NetBot(Bot):
                 if self.record is not None:
                     self.record.append((time.monotonic(), m))
                 self.on_message(m)
+        except Exception:
+            pass
+
+    async def _heartbeat(self) -> None:
+        """Keep the connection alive while the bot has nothing to send, the way the real client does:
+        a bot waiting for the rest of the party may stand still for longer than the idle timeout."""
+        try:
+            while True:
+                await asyncio.sleep(HEARTBEAT)
+                await self.send({"t": "ping", "c": time.monotonic()})
         except Exception:
             pass
 
@@ -192,6 +209,9 @@ class NetBot(Bot):
             self.s.sent.append(m)
         elif t == "q_end":
             self.q_open = False
+        elif t == "kicked":
+            self.kicked = m
+            self.s.sent.append(m)
         elif t in ("error", "notice"):
             self.s.sent.append(m)
         elif t == "party":
@@ -208,6 +228,9 @@ class NetBot(Bot):
             self.s.sent.append(m)
 
     async def close(self) -> None:
+        for task in (self.beat, getattr(self, "reader", None)):
+            if task is not None:
+                task.cancel()
         try:
             await self.ws.close()
         except Exception:
@@ -253,6 +276,14 @@ def answer_keys(db: Path):
 
 
 # ------------------------------------------------------------------ a run
+def stages_owed(b) -> set[str]:
+    """Every loot stage a bot that won is owed: one per room, including the boss room, plus the
+    chest. `puzzles` in the end message counts the rooms before the boss (realm.py end_msg)."""
+    if b.ended is None or b.ended.get("result") != "won":
+        return set()
+    return {f"room{i}" for i in range(b.ended["puzzles"] + 1)} | {"chest"}
+
+
 async def make_bots(url: str, db: Path, prefix: str, n: int, record: int | None = None) -> list[NetBot]:
     """n heroes at the Cổng Bí Cảnh, connected and standing in Trúc Lâm Thôn."""
     team = Team()
@@ -311,9 +342,25 @@ async def run_team(url: str, db: Path, prefix: str = "rb", n: int = 3, realm: st
             log(f"  room {leader.room['i'] + 1}/{leader.room['n']}: {leader.room['kind']}")
         return False
     await play(bots, timeout, stop=progress)
-    await asyncio.sleep(1.0)   # the chest is paid right after the end
-    for b in bots:
-        b.read()
+    # Each stage is paid by its own background task on the server (realm.py `_pay_room` and
+    # `_pay_chest`), each in its own transaction, and the "loot" message for a stage goes out only
+    # once that transaction has committed. Those tasks do not commit in the order they were spawned:
+    # the chest can land before the boss room it was paid after. So wait for every stage a winner is
+    # owed, which is exactly what a caller then reads back out of the database.
+    missing: dict[str, list[str]] = {}
+    end = time.monotonic() + 30
+    while True:
+        for b in bots:
+            b.read()
+        missing = {b.name: sorted(stages_owed(b) - {lt["stage"] for lt in b.loot}) for b in bots}
+        missing = {k: v for k, v in missing.items() if v}
+        if not missing or time.monotonic() > end:
+            break
+        await asyncio.sleep(0.05)
+    if missing:
+        log(f"loot that never arrived: {missing}")
+    if any(b.kicked for b in bots):
+        log("kicked: " + ", ".join(f"{b.name}={b.kicked}" for b in bots if b.kicked))
     log("result: " + ", ".join(f"{b.name}={b.ended and b.ended['result']}" for b in bots))
     return bots
 

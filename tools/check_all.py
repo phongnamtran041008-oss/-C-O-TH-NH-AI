@@ -29,18 +29,29 @@ Exit code 0 when every check passes, 1 otherwise. The list grows with each miles
     from that very formula, and small enough to fit the page
   * fonts (M4): every string the game shows, questions and documents included, can really
     be drawn with the two fonts that ship with it
+  * programming exercises (M6): every exercise of math/problems/ belongs to a micro-skill
+    and a tier its floor allows, has samples and enough hidden tests, and its test data is
+    plain ASCII that ends with a newline
+  * reference solutions (M6): each exercise's own solution is run on every sample and
+    every hidden test, and has to produce exactly the answer that is written down - so a
+    sample answer typed by hand and a test answer built by tools/build_problem_tests.py
+    can never drift apart from the problem
+  * exercise tests have teeth (M6): every exercise is also run with three wrong programs
+    (one that prints nothing, one that prints a constant, one that always prints the first
+    sample's answer) and none of them may be accepted
 """
 from __future__ import annotations
 
 import random
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "server"))
 sys.path.insert(0, str(ROOT / "tools"))
 
-from app.learning import math_items, math_library, math_path  # noqa: E402
+from app.learning import math_items, math_library, math_path, math_problems  # noqa: E402
 
 FONT_DIR = ROOT / "client" / "assets" / "fonts"
 FORMULA_DIR = ROOT / "client" / "assets" / "formulas"
@@ -104,6 +115,10 @@ def displayed_strings() -> list[tuple[str, str]]:
             out += [(doc.id, b[k]) for k in ("title_vi", "text", "alt") if b.get(k)]
             out += [(doc.id, item) for item in b.get("items", [])]
             out += [(doc.id, str(v)) for m in b.get("matrices", []) for row in m["rows"] for v in row]
+    for p in math_problems.bank().values():
+        out += [(p.id, t) for t in (p.title_vi, *p.statement_vi, p.input_vi, p.output_vi, p.limits_vi) if t]
+        out += [(p.id, s.note_vi) for s in p.samples if s.note_vi]
+        out += [(p.id, s.data) for s in p.samples] + [(p.id, s.expected) for s in p.samples]
     out += [(f"strings_vi.{name}", text) for name, text in _interface_strings()]
     return out
 
@@ -162,6 +177,85 @@ def check_fonts() -> list[str]:
     return errors
 
 
+def check_problems() -> list[str]:
+    if math_path.validate_all():
+        return ["skipped: the learning path check above must pass first"]
+    return math_problems.validate_all()
+
+
+def check_problem_solutions() -> list[str]:
+    """Run every exercise's reference solution on every test it has. The sample answers are
+    written by hand, so this is a real check of the solution; the hidden answers come from
+    the solution, so this catches a test or a solution that changed without the other."""
+    if math_problems.validate_all():
+        return ["skipped: the exercise check above must pass first"]
+    sys.path.insert(0, str(ROOT))
+    try:
+        from client.engine import coderun
+    except ImportError as e:
+        return [f"cannot run the solutions: {e}"]
+    finally:
+        sys.path.remove(str(ROOT))
+    errors = []
+    for problem in math_problems.bank().values():
+        path = math_problems.solution_path(problem.subject, problem.id)
+        for group, tests in (("ví dụ", problem.samples), ("test ẩn", problem.tests)):
+            for n, test in enumerate(tests, 1):
+                result = coderun.run_one(path, test.data, problem.time_limit_ms)
+                where = f"{problem.id} {group} {n}"
+                if not result.ok:
+                    errors.append(f"{where}: the reference solution gave {result.status.upper()} "
+                                  f"{result.error.strip()[:120]}")
+                    continue
+                if not math_problems.same_output(test.expected, result.output, problem.checker):
+                    errors.append(f"{where}: the reference solution printed "
+                                  f"{result.output.strip()[:60]!r}, the answer says "
+                                  f"{test.expected.strip()[:60]!r}")
+    return errors
+
+
+#: programs that must never be accepted. (name, how to build the source from a problem)
+MUTANTS = [
+    ("chương trình rỗng", lambda p: "pass\n"),
+    ("in ra một hằng số", lambda p: "print(0)\n"),
+    # the sharpest one: print the first sample's answer whatever the input is. It passes only
+    # if every hidden test happens to have that same answer, i.e. if the tests test nothing.
+    ("in đáp án của ví dụ 1", lambda p: f"import sys\nsys.stdout.write({p.samples[0].expected!r})\n"),
+]
+
+
+def check_problem_tests_have_teeth() -> list[str]:
+    """A test set that any old program passes is not a test set. Every exercise is run with
+    three deliberately wrong programs, and none of them may come out AC."""
+    if math_problems.validate_all():
+        return ["skipped: the exercise check above must pass first"]
+    sys.path.insert(0, str(ROOT))
+    try:
+        from client.engine import coderun
+    except ImportError as e:
+        return [f"cannot run the solutions: {e}"]
+    finally:
+        sys.path.remove(str(ROOT))
+    errors = []
+    with tempfile.TemporaryDirectory(prefix="kvtt_mutants_") as tmp:
+        path = Path(tmp) / "bai_lam.py"
+        for problem in math_problems.bank().values():
+            answers = {t.expected.strip() for t in problem.tests}
+            if len(answers) == 1:
+                errors.append(f"{problem.id}: every hidden test wants the same answer "
+                              f"({answers.pop()[:40]!r}), so they cannot tell solutions apart")
+            for name, build in MUTANTS:
+                coderun.write_solution(path, build(problem))
+                attempt = coderun.run_tests(path, [t.data for t in problem.tests],
+                                            problem.time_limit_ms)
+                verdict = math_problems.judge(list(problem.tests), attempt.outputs, attempt.status,
+                                              attempt.times_ms, problem.checker, attempt.error)
+                if verdict.accepted:
+                    errors.append(f"{problem.id}: a program that only {name} is accepted; "
+                                  f"the hidden tests do not test anything")
+    return errors
+
+
 def check_generated_answers() -> list[str]:
     if math_path.validate_all() or math_items.validate_all():
         return ["skipped: the checks above must pass first"]
@@ -180,6 +274,9 @@ CHECKS = [
     ("generated answers: recomputed with sympy", check_generated_answers),
     ("library: documents parse and cover the micro-skills of their floor", check_library),
     ("formula pictures: one per formula, built from it, small enough for the page", check_formulas),
+    ("programming exercises: statements, samples and hidden tests are well formed", check_problems),
+    ("reference solutions: every exercise's own solution reproduces every answer", check_problem_solutions),
+    ("exercise tests have teeth: no wrong program is accepted", check_problem_tests_have_teeth),
     ("fonts: every string the game shows can be drawn", check_fonts),
 ]
 

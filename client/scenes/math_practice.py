@@ -19,6 +19,7 @@ from .. import strings_vi as T
 from ..art.palette import UI as UICOL
 from ..ui.mathdraw import draw_matrices, fit
 from .base import Scene
+from .math_code import ProblemListScene
 from .math_library import DocScene, LibraryListScene
 from .quiz import KEYS, QuizScene
 
@@ -323,6 +324,9 @@ class MathPracticeScene(Scene):
         cy = y + 22
         for s in self.path["subjects"]:
             ui.text(s["name_vi"], x + 12, cy, 10, UICOL["accent"])
+            if s.get("problems") and ui.button(f"math_code_{s['id']}", x + w - 78, cy - 1, 66, 13,
+                                               T.CODE_SHORT, size=7, enabled=not self.busy):
+                self.game.push(ProblemListScene(self.game, s["id"]))      # bài tập lập trình (M6)
             cy += 15
             for f in s["floors"]:
                 mine = bool(open_run) and open_run["subject_id"] == s["id"] and open_run["floor"] == f["floor"]

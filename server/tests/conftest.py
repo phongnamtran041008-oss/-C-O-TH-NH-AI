@@ -3,9 +3,15 @@ import sys
 import tempfile
 from pathlib import Path
 
-if "KVTT_TEST_DB" not in os.environ:  # guard: this module must configure the DB only once
-    os.environ["KVTT_TEST_DB"] = str(Path(tempfile.mkdtemp(prefix="kvtt_test_")) / "test.db")
-os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{os.environ['KVTT_TEST_DB']}"
+# KVTT_TEST_URL runs the whole suite against another database, e.g. a throwaway PostgreSQL:
+#   KVTT_TEST_URL=postgresql+asyncpg://user:pass@127.0.0.1:5432/kvtt_test python -m pytest -q
+# Without it the suite uses its own SQLite file, as it always has.
+if os.environ.get("KVTT_TEST_URL"):
+    os.environ["DATABASE_URL"] = os.environ["KVTT_TEST_URL"]
+else:
+    if "KVTT_TEST_DB" not in os.environ:  # guard: this module must configure the DB only once
+        os.environ["KVTT_TEST_DB"] = str(Path(tempfile.mkdtemp(prefix="kvtt_test_")) / "test.db")
+    os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{os.environ['KVTT_TEST_DB']}"
 os.environ["TIME_SCALE"] = "1"
 os.environ["ENV"] = "dev"
 os.environ["ALLOW_UNREVIEWED"] = "1"

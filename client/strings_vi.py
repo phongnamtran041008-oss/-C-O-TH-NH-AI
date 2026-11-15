@@ -1004,6 +1004,42 @@ MATH_REVIEW = "Ôn xoắn ốc: tầng {n}"
 MATH_REVIEW_COUNT = "Câu ôn tầng dưới: {n}"
 MATH_RESULT = "Xem kết quả"
 
+# Bài tập lập trình (M6)
+CODE_TITLE = "Bài tập lập trình"
+CODE_SHORT = "Bài tập"
+CODE_NONE = "Tầng này chưa có bài tập lập trình."
+CODE_LOADING = "Đang mở đề..."
+CODE_OPEN = "Làm bài"
+CODE_RUN = "Chạy thử"
+CODE_SUBMIT = "Nộp bài"
+CODE_SAVE = "Lưu"
+CODE_RUNNING = "Đang chạy bài làm..."
+CODE_SENDING = "Đang chấm..."
+CODE_INPUT = "Dữ liệu vào"
+CODE_OUTPUT = "Kết quả ra"
+CODE_LIMITS = "Giới hạn"
+CODE_SAMPLE = "Ví dụ {n}"
+CODE_HIDDEN_TESTS = "{n} test ẩn"
+CODE_TIME_LIMIT = "{n} giây mỗi test"
+CODE_FILE = "Bài làm: {path}"
+CODE_SAVED = "Đã lưu bài làm"
+CODE_NO_PYTHON = "Máy chưa có Python để chạy bài làm. Hãy cài Python, hoặc ghi đường dẫn vào config.json."
+CODE_TEST_LINE = "Test {n}: {v}"
+CODE_SAMPLE_LINE = "Ví dụ {n}: {v}"
+CODE_PASSED = "Qua {p}/{t} test"
+CODE_BEST = "Tốt nhất: {v}, {p}/{t} test"
+CODE_SOLVED = "Đã giải"
+CODE_UNSOLVED = "Chưa giải"
+CODE_RUN_HINT = "Chạy thử dùng ví dụ trong đề. Nộp bài chạy trên test ẩn và nhận Tu Vi."
+CODE_VERDICTS = {
+    "AC": "Đúng hết",
+    "WA": "Sai kết quả",
+    "TLE": "Quá thời gian",
+    "RE": "Lỗi khi chạy",
+    "CE": "Lỗi cú pháp",
+    "-": "chưa chạy",
+}
+
 # Tàng Thư Các của bí cảnh toán (M4)
 LIB_TITLE = "Tàng Thư Các"
 LIB_READ = "Đọc"

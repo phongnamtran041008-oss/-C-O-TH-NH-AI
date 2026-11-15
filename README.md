@@ -563,10 +563,11 @@ bản sửa vào cột `*_fixed`, rồi chạy `python tools/apply_review.py`. C
 ## Nội dung toán (nhánh `toan-tu-tien`)
 
 ```bash
-python tools/check_all.py       # 7 kiểm tra nội dung: lộ trình, ngân hàng câu, bộ sinh câu, đáp án, Tàng Thư, công thức, phông chữ
-python tools/math_review.py     # bảng duyệt câu hỏi -> tools/reports/math_review_<bí cảnh>.md
-python tools/math_verify.py     # tính lại đáp án của mọi câu sinh ra bằng SymPy
-python tools/build_formulas.py  # dựng ảnh công thức cho Tàng Thư Các (cần Node, xem bên dưới)
+python tools/check_all.py           # 10 kiểm tra nội dung: lộ trình, ngân hàng câu, bộ sinh câu, đáp án, Tàng Thư, công thức, bài tập, lời giải mẫu, test có răng, phông chữ
+python tools/math_review.py         # bảng duyệt câu hỏi -> tools/reports/math_review_<bí cảnh>.md
+python tools/math_verify.py         # tính lại đáp án của mọi câu sinh ra bằng SymPy
+python tools/build_formulas.py      # dựng ảnh công thức cho Tàng Thư Các (cần Node, xem bên dưới)
+python tools/build_problem_tests.py # sinh đáp án test ẩn của bài tập lập trình từ lời giải mẫu
 ```
 
 Câu hỏi nằm trong `server/data/math/items/`, bài đọc Tàng Thư Các nằm trong `server/data/math/library/`
@@ -587,6 +588,11 @@ Mọi câu hỏi và bài đọc đều do AI viết nên **cần người duy�
 nhất của tầng và đúng ít nhất 4 trong 5 câu gần nhất ở bậc ấy. Bài thi hỏi mỗi vi kỹ năng một câu ở bậc cao
 nhất, được sai một câu; trượt thì ôn lại rồi thi lại ngay được. Trong lúc luyện, cứ khoảng 4 câu lại có một
 câu **ôn xoắn ốc** lấy từ tầng dưới theo lịch 1 → 3 → 7 → 14 ngày, ưu tiên vi kỹ năng hay sai.
+
+**Bài tập lập trình.** Đề nằm trong `server/data/math/problems/`, lời giải mẫu nằm cạnh đó và không bao giờ gửi
+cho game. Bài làm **chạy trên máy người chơi** (cần có Python trên máy), mỗi test một lần chạy có giới hạn thời
+gian; máy chủ giữ đáp án test ẩn và chấm AC / WA / TLE / RE / CE. Bài làm được lưu thành file `.py` thật trong
+thư mục `bai_lam/` cạnh `session.json`, nên viết trong game hay trong editor của bạn đều được.
 
 ## Lộ trình
 

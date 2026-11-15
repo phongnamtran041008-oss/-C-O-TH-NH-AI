@@ -10,7 +10,7 @@ from ..auth import api_error, current_user, write_user
 from ..db import get_db
 from ..learning import math_library
 from ..models import User
-from ..systems import math_practice
+from ..systems import math_code, math_practice
 
 router = APIRouter(tags=["math"])
 
@@ -58,6 +58,52 @@ async def math_run_next(body: RunIn, user: User = Depends(write_user), db: Async
 @router.post("/math/run/end")
 async def math_run_end(body: RunIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
     return await _run(db, math_practice.end(db, user, body.run_id))
+
+
+class ProblemsIn(BaseModel):
+    subject_id: str = Field(max_length=40)
+    floor: int = Field(ge=1, le=99)
+
+
+class JudgeIn(BaseModel):
+    """What the player's machine printed. The code never leaves their own account; it is
+    kept so they can read back what they handed in."""
+    outputs: list[str] = Field(default_factory=list, max_length=200)
+    status: str = Field(default="ok", max_length=4)
+    times_ms: list[int] = Field(default_factory=list, max_length=200)
+    code: str = Field(default="", max_length=40000)
+    error: str = Field(default="", max_length=2000)
+    attempt_id: int | None = Field(default=None, ge=1)
+
+
+@router.get("/math/problems")
+async def math_problems_list(subject_id: str, floor: int | None = None,
+                             user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    """Bài tập lập trình of a subject, floor by floor; `floor` narrows it to one (M6)."""
+    return await _run(db, math_code.list_view(db, user, subject_id, floor))
+
+
+@router.get("/math/problem/{problem_id}")
+async def math_problem_get(problem_id: str, user: User = Depends(current_user),
+                           db: AsyncSession = Depends(get_db)):
+    """The statement and its samples. Hidden tests are not in this answer."""
+    return await _run(db, math_code.problem_view(db, user, problem_id))
+
+
+@router.post("/math/problem/{problem_id}/tests")
+async def math_problem_tests(problem_id: str, user: User = Depends(write_user),
+                             db: AsyncSession = Depends(get_db)):
+    """Nộp bài, step one: the input of the hidden tests, to run on the player's machine."""
+    return await _run(db, math_code.open_attempt(db, user, problem_id))
+
+
+@router.post("/math/problem/{problem_id}/judge")
+async def math_problem_judge(problem_id: str, body: JudgeIn, user: User = Depends(write_user),
+                             db: AsyncSession = Depends(get_db)):
+    """Mark a run: with `attempt_id` it is Nộp bài (hidden tests, Tu Vi), without it Chạy
+    thử on the samples."""
+    return await _run(db, math_code.judge(db, user, problem_id, body.outputs, body.status,
+                                          body.times_ms, body.code, body.attempt_id, body.error))
 
 
 @router.get("/math/library")

@@ -20,50 +20,67 @@ STEP = 4   # path grid in pixels (corridors of the maze are one tile wide)
 
 
 def path(col, start, goal, avoid=()) -> list[tuple[float, float]]:
-    """Breadth-first path over a 4 px grid of foot positions the collider allows."""
-    def ok(x, y):
-        if col.blocked(x, y):
-            return False
-        return not any(a.x - 2 <= x <= a.x + a.w + 2 and a.y - 2 <= y <= a.y + a.h + 2 for a in avoid)
+    """Breadth-first path over a 4 px grid of foot positions the collider allows.
 
-    # cell centres sit in the middle of one-tile corridors (feet x = tile + 8, y = tile + 11)
-    def cell(x, y):
-        return round(x / STEP), round((y - 3) / STEP)
+    `avoid` keeps the route out of places the bot must not tread on the way - the other stones of
+    Câu Văn Đứt Đoạn, say. What it must not do is keep the bot *where it already is*: a bot that
+    has just stepped on a stone is standing inside one of those places, and forbidding it outright
+    leaves the search with no legal first step at all, so the bot stays on that stone for ever and
+    the room never finishes. So when no route is found, look again while allowing the places the
+    bot is standing in: it may walk out of the one it is in, never into the others.
+    """
+    def covers(a, x, y) -> bool:
+        return a.x - 2 <= x <= a.x + a.w + 2 and a.y - 2 <= y <= a.y + a.h + 2
 
-    def center(c):
-        return c[0] * STEP + 0.0, c[1] * STEP + 3.0
-    s, g = cell(*start), cell(*goal)
-    if not ok(*center(g)):   # the exact goal is inside something: the nearest open cell
-        best = None
-        for r in range(1, 8):
-            for dx in range(-r, r + 1):
-                for dy in range(-r, r + 1):
-                    c = (g[0] + dx, g[1] + dy)
-                    if ok(*center(c)) and (best is None or abs(dx) + abs(dy) < best[0]):
-                        best = (abs(dx) + abs(dy), c)
-            if best:
+    def search(keep_out) -> list[tuple[float, float]]:
+        def ok(x, y):
+            if col.blocked(x, y):
+                return False
+            return not any(covers(a, x, y) for a in keep_out)
+
+        # cell centres sit in the middle of one-tile corridors (feet x = tile + 8, y = tile + 11)
+        def cell(x, y):
+            return round(x / STEP), round((y - 3) / STEP)
+
+        def center(c):
+            return c[0] * STEP + 0.0, c[1] * STEP + 3.0
+        s, g = cell(*start), cell(*goal)
+        if not ok(*center(g)):   # the exact goal is inside something: the nearest open cell
+            best = None
+            for r in range(1, 8):
+                for dx in range(-r, r + 1):
+                    for dy in range(-r, r + 1):
+                        c = (g[0] + dx, g[1] + dy)
+                        if ok(*center(c)) and (best is None or abs(dx) + abs(dy) < best[0]):
+                            best = (abs(dx) + abs(dy), c)
+                if best:
+                    break
+            if best is None:
+                return []
+            g = best[1]
+        prev = {s: None}
+        q = deque([s])
+        while q:
+            c = q.popleft()
+            if c == g:
                 break
-        if best is None:
+            for d in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                n = (c[0] + d[0], c[1] + d[1])
+                if n not in prev and ok(*center(n)):
+                    prev[n] = c
+                    q.append(n)
+        if g not in prev:
             return []
-        g = best[1]
-    prev = {s: None}
-    q = deque([s])
-    while q:
-        c = q.popleft()
-        if c == g:
-            break
-        for d in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            n = (c[0] + d[0], c[1] + d[1])
-            if n not in prev and ok(*center(n)):
-                prev[n] = c
-                q.append(n)
-    if g not in prev:
-        return []
-    out, c = [], g
-    while c is not None and c != s:
-        out.append(center(c))
-        c = prev[c]
-    return list(reversed(out))
+        out, c = [], g
+        while c is not None and c != s:
+            out.append(center(c))
+            c = prev[c]
+        return list(reversed(out))
+
+    out = search(list(avoid))
+    if out or not any(covers(a, *start) for a in avoid):
+        return out
+    return search([a for a in avoid if not covers(a, *start)])
 
 
 class Team:

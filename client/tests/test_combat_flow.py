@@ -42,29 +42,56 @@ def nearest(ws, kind: str):
 
 
 def engage(drv: Driver, server: ServerProcess, kind: str = "ink_slime"):
+    """Walk up to the nearest monster of that kind and attack it until its Vấn Đạo card opens.
+
+    One click is not enough. A weapon has a cooldown (0.7 s for a brush, combat.json) and the
+    server simply ignores an attack sent inside it - no error, no event - so an attack that
+    follows a flurry of swings can land in the dead time and nothing at all happens. A click
+    can also miss a monster that moved since the frame it was aimed at. A player clicks again;
+    so does this. The monster that comes back is the one that really asked, which is not always
+    the nearest one: a bystander can get the swing."""
+    import time
     ws = world(drv)
     drv.wait(lambda: nearest(ws, kind) is not None, 10, f"a {kind}")
-    for _ in range(6):
+    end = time.time() + 15
+    while time.time() < end:
         m = nearest(ws, kind)
-        walk_to(drv, m.pos[0], m.pos[1])
-        drv.step(5)
-        m = nearest(ws, kind)
-        if m and math.hypot(m.pos[0] - ws.player.x, m.pos[1] - ws.player.y) < 34:
+        if m is None:
             break
-    m = nearest(ws, kind)
-    cx, cy = ws.cam
-    drv.click_at(drv.game.display.to_window(m.pos[0] - cx, m.pos[1] - cy - 8))   # left click = attack
-    drv.wait_scene("CombatQuizScene", 6)
-    return m
+        if math.hypot(m.pos[0] - ws.player.x, m.pos[1] - ws.player.y) >= 34:
+            walk_to(drv, m.pos[0], m.pos[1])
+            drv.step(5)
+            continue
+        cx, cy = ws.cam
+        drv.click_at(drv.game.display.to_window(m.pos[0] - cx, m.pos[1] - cy - 8))   # left click = attack
+        for _ in range(40):                 # longer than any weapon cooldown, then attack again
+            drv.step(3)
+            if drv.top_is("CombatQuizScene"):
+                asked = getattr(drv.game.top, "monster_id", "")
+                return ws.entities.get(asked) or m
+    open_q = server.sql("select ref, created_at from quiz_sessions where answered_at is null")
+    raise AssertionError(f"no Vấn Đạo card after attacking a {kind}; questions the server still "
+                         f"has open: {open_q}; scenes={drv.scene_names()}; toasts={drv.toast_log[-5:]}")
 
 
-def beat(drv: Driver, ws, m) -> None:
-    """Swing (Space) at a monster whose shield is down until it falls."""
+def beat(drv: Driver, ws, m, server: ServerProcess | None = None) -> None:
+    """Swing (Space) at a monster whose shield is down until it falls.
+
+    A swing hits whatever is in range and a Mực Con that decides to attack engages by
+    itself, so a *bystander* that still has its Mặc Thuẫn up can ask its own question in
+    the middle of this (spec 8.1). That is the game working: answer it the way a player
+    would and go back to the monster we came for. A question about that monster is a
+    different matter - its shield would have to come back, which only elites do."""
     for _ in range(60):
         if not m.alive or m.id not in ws.entities:
             return
-        if drv.top_is("CombatQuizScene"):          # its shield came back (elites) - not expected here
-            raise AssertionError("unexpected question")
+        if drv.top_is("CombatQuizScene"):
+            asked = getattr(drv.game.top, "monster_id", "")
+            assert asked != m.id, f"the Mặc Thuẫn of {m.id} came back"
+            assert server is not None, f"{asked} asked a question and this test cannot answer it"
+            answer_current_quiz(drv, server, correct=True)
+            drv.wait(lambda: not drv.top_is("CombatQuizScene"), 5, f"the card of {asked} closes")
+            continue
         drv.press(pygame.K_SPACE)
         drv.step(20)
     raise AssertionError("monster did not fall")
@@ -111,7 +138,7 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.step(8)
         drv.shot("shield_broken")
         drv.wait(lambda: not drv.top_is("CombatQuizScene"), 5, "card closes by itself")
-        beat(drv, ws, m)
+        beat(drv, ws, m, server)
         drv.wait(lambda: any("Linh Thạch" in t or "Nhận" in t for t in drv.toast_log) or
                  any(f.text.startswith("+") for f in ws.fx.texts), 6, "loot")
         drv.shot("loot")
@@ -131,7 +158,7 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait_scene("CombatQuizScene", 8)
         answer_current_quiz(drv, server, correct=True)
         drv.wait(lambda: not drv.top_is("CombatQuizScene"), 5, "card closes")
-        beat(drv, ws, m2)
+        beat(drv, ws, m2, server)
 
         # the screens
         drv.press(pygame.K_k)

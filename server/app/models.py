@@ -443,6 +443,29 @@ class MathAnswer(Base):
     answered_at: Mapped[dt.datetime] = mapped_column(DateTime)
 
 
+class MathSubmission(Base):
+    """One go at a programming exercise (M6). The row is opened when the player asks for
+    the hidden tests and closed when their machine sends back what the program printed, so
+    an unfinished row is simply an attempt nobody handed in. `code` is kept so the player
+    can read back what they wrote; it never leaves their own account."""
+    __tablename__ = "math_submissions"
+    __table_args__ = (Index("ix_math_submissions_user", "user_id", "problem_id", "id"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(UserFK())
+    problem_id: Mapped[str] = mapped_column(String(40))
+    subject_id: Mapped[str] = mapped_column(String(40))
+    floor: Mapped[int] = mapped_column(Integer)
+    tier: Mapped[int] = mapped_column(Integer)
+    verdict: Mapped[str | None] = mapped_column(String(4), nullable=True)   # AC|WA|TLE|RE|CE
+    passed: Mapped[int] = mapped_column(Integer, default=0)
+    total: Mapped[int] = mapped_column(Integer, default=0)
+    ms: Mapped[int] = mapped_column(Integer, default=0)                    # the slowest test
+    xp_gained: Mapped[int] = mapped_column(Integer, default=0)
+    code: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime)
+    judged_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
+
+
 class MathRetry(Base):
     """A mistake that has to come back (learning-path rule 6, "tâm ma"): the template the
     player got wrong returns as a parallel question, the same idea with new numbers, once

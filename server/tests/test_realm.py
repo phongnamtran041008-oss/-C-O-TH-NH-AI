@@ -18,7 +18,7 @@ from app.realtime import world as wmod
 from app.realtime.world import World
 from app.systems import cultivation, secret_realm
 from tests.helpers import answer_key, correct_answer
-from tests.realm_bot import Bot, Team
+from tests.realm_bot import Bot, Team, path
 from tests.test_combat import FakeMono, fighter, last, learn, run, settle
 
 TIER1 = [w.hanzi for w in bank().words.values() if w.tier == 1]
@@ -148,6 +148,53 @@ async def test_party_members_share_xp(client, gw):
 
 
 # ------------------------------------------------------------------ the whole run with three bots
+def test_a_bot_can_walk_off_a_stone_it_must_avoid():
+    """`path()` has to let a bot leave a place it was told to avoid. A bot that has just stepped on
+    a stone of Câu Văn Đứt Đoạn is standing inside one, and the stones sit shoulder to shoulder: if
+    its own cell counts as forbidden the search has no legal first step, so the bot stays on that
+    stone for ever, nobody can take the next one and the room never finishes (6 of 200 seeded runs
+    of the three-bot realm test wedged exactly like that)."""
+    m = maps.load("bi_canh")
+    tiles = [o for o in m.realm_objs
+             if o.props.get("room") == "sentence" and o.props.get("kind") == "tile"]
+    assert len(tiles) >= 3, len(tiles)
+    goal = tiles[0]
+    for standing_on in tiles[1:]:
+        feet = (standing_on.x + standing_on.w / 2, standing_on.y + standing_on.h / 2 + 7)
+        route = path(m.collider, feet, (goal.x + goal.w / 2, goal.y + goal.h / 2),
+                     avoid=[t for t in tiles if t is not goal])
+        assert route, f"no way off the stone at {feet}"
+        # it got out of the stone it stood on, and it did not route through any other
+        assert not any(t.x - 2 <= x <= t.x + t.w + 2 and t.y - 2 <= y <= t.y + t.h + 2
+                       for x, y in route[2:] for t in tiles if t is not goal and t is not standing_on), route
+
+
+def stuck_report(gw, inst, bots) -> str:
+    """Everything needed to tell apart the ways a room can wedge: which stage the puzzle is at,
+    who owns what, where everyone stands and which tile the instance thinks they are on."""
+    pz = inst.puzzle
+    out = [f"stuck in room {inst.room_i} ({inst.kind}): {pz.public(gw.mono()) if pz else None}"]
+    if pz is not None:
+        for name in ("owner", "on_tile", "k", "n", "streak", "round"):
+            if hasattr(pz, name):
+                out.append(f"  {name} = {getattr(pz, name)!r}")
+        if hasattr(pz, "tokens"):
+            out.append("  tokens = " + repr([t["t"] for t in pz.tokens]))
+    alive = [m for m in inst.monsters if m.alive]
+    out.append(f"  monsters alive = " + repr([(m.eid, round(m.x, 1), round(m.y, 1)) for m in alive]))
+    out.append(f"  phase = {inst.phase} mono = {gw.mono():.1f}")
+    tiles = {int(o.props.get("n", 0)): o for o in inst.objs("tile")}
+    for b in bots:
+        p = b.p
+        if p is None:
+            out.append(f"  bot {b.uid}: no player")
+            continue
+        here = next((n for n, o in tiles.items() if inst.on(p, o)), None)
+        out.append(f"  bot {b.uid}: pos=({p.x:.1f},{p.y:.1f}) dead={p.dead} on_tile={here} "
+                   f"mine={b.mine} goal={b.goal} route_left={len(b.route)}")
+    return "\n".join(out)
+
+
 async def test_three_bots_clear_a_realm_together(client, gw):
     """Spec 20, stage 9: three players clear one bí cảnh; each gets their own loot, once."""
     heroes = [await hero(client, gw, f"bot_{i}", f"Đạo Hữu {i}") for i in range(3)]
@@ -173,7 +220,7 @@ async def test_three_bots_clear_a_realm_together(client, gw):
     room = last(s0, "realm") if last(s0, "realm")["event"] == "room" else msgs(s0, "realm", "room")[-1]
     assert room["kind"] == "compose" and "piece" in room["mine"]
     done = await play(gw, bots, 900, lambda: inst.phase == "ended")
-    assert done, f"stuck in room {inst.room_i} ({inst.kind}): {inst.puzzle.public(gw.mono()) if inst.puzzle else None}"
+    assert done, stuck_report(gw, inst, bots)
     assert inst.result == "won", inst.result
     end = msgs(s0, "realm", "end")[-1]
     assert end["puzzles"] == 5 and end["fragments"] == inst._fragments()

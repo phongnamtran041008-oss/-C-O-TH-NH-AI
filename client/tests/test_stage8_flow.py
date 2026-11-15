@@ -21,6 +21,16 @@ def top(drv: Driver):
     return drv.game.top
 
 
+def middle_of_zone(zone: dict, period_ms: int, bar: int) -> float:
+    """The first needle time that lands exactly in the middle of the văn hỏa zone, late
+    enough that the game counts the press (FireScene ignores anything under 120 ms)."""
+    half = max(2, int(period_ms)) // 2
+    t = zone["center"] * half / bar                 # the needle climbs 0 -> bar over half a sweep
+    while t < 130:
+        t += 2 * half                               # the same spot one whole sweep later
+    return t
+
+
 def run_alchemy_flow(workdir: Path, shots: Path | None = None) -> None:
     server = ServerProcess(workdir, time_scale=1)
     try:
@@ -63,15 +73,20 @@ def run_alchemy_flow(workdir: Path, shots: Path | None = None) -> None:
         assert [c["c"] for c in fire.fire["chars"]] == ["回", "气", "丹"]
         assert fire.fire["chars"][1]["ask"] and not fire.fire["chars"][0]["ask"]
         from client.engine import alchemy_fire
+        drv.fixed_dt = 1 / 60           # the needle is judged to the millisecond: pin the clock
         for rnd in range(3):
             z = fire.fire["zones"][rnd]
             per = fire.fire["periods"][rnd]
-            # press while the needle sweeps across the middle of the văn hỏa zone
-            drv.wait(lambda: fire.state == "run" and fire.round == rnd and 120 < fire.round_ms < per // 2 and
-                     abs(alchemy_fire.needle(int(fire.round_ms + 20), per) - z["center"]) <= z["perfect"] / 2,
-                     10, f"the needle in zone {rnd}")
+            drv.wait(lambda: fire.state == "run" and fire.round == rnd, 10, f"round {rnd} burning")
+            # Put the needle one frame short of the middle of the văn hỏa zone: the frame that
+            # handles the press adds exactly that frame, so it is judged dead centre. Waiting
+            # for the needle instead would race three frames of wall clock against a band
+            # about 27 ms wide, which is what used to make this test flaky.
+            want = middle_of_zone(z, per, fire.fire["bar"])
+            fire.round_ms = want - drv.fixed_dt * 1000
             drv.press(pygame.K_SPACE)
             drv.wait(lambda: fire.state != "run", 3, "the press")
+            assert fire.hits[-1] == "perfect", (rnd, fire.hits, fire.timings[-1], want, z)
             if rnd == 1:
                 drv.shot("fire_type_pinyin")
                 drv.type("qi4")
@@ -80,10 +95,12 @@ def run_alchemy_flow(workdir: Path, shots: Path | None = None) -> None:
                 if rnd == 0:
                     drv.shot("fire_new_char")
                 drv.click("fire_next")
+        drv.fixed_dt = None         # back to real time for the rest of the walk-about
         drv.wait(lambda: fire.state == "result", 10, "the pills")
         res = fire.result
         assert res["hits"] == fire.hits, (res["hits"], fire.hits)       # the server replayed the same fire
-        assert res["made"] >= 1 and res["chars"][1]["right"] and res["quality"] in ("trung", "thuong")
+        assert fire.hits == ["perfect"] * 3                             # every press was dead centre
+        assert res["made"] >= 1 and res["chars"][1]["right"] and res["quality"] == "thuong"
         assert all(h != "miss" for h in res["hits"])
         drv.shot("fire_result")
         n = server.sql("select coalesce(sum(quantity), 0) from inventory_items where user_id=? and item_id='hoi_khi_dan'",

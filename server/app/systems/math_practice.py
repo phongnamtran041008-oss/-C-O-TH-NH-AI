@@ -41,7 +41,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import clock
 from ..config import settings
-from ..learning import math_adaptive, math_items, math_library, math_mastery, math_path, quiz
+from ..learning import (math_adaptive, math_items, math_library, math_mastery, math_path,
+                        math_problems, quiz)
 from ..learning.math_items import GeneratorSpec, MathItem, Template
 from ..models import MathAnswer, MathRetry, MathRun, QuizSession, User
 
@@ -126,8 +127,12 @@ async def path_view(db: AsyncSession, user: User) -> dict:
                            "trial_total": math_mastery.trial_total(s, f.number, cfg),
                            "doc_id": docs[0].id if docs else None,
                            "skills": [{"id": k.id, "name_vi": k.name_vi} for k in f.skills]})
+        playable_floors = {f["floor"] for f in floors if f["playable"]}
         subjects.append({"id": s.id, "name_vi": s.name_vi, "order": s.order, "floors": floors,
-                         "cleared": sorted(cleared), "next_floor": math_mastery.next_floor(s, cleared)})
+                         "cleared": sorted(cleared), "next_floor": math_mastery.next_floor(s, cleared),
+                         # how many programming exercises the player may open right now (M6)
+                         "problems": sum(len(math_problems.floor_problems(s.id, n, settings.allow_unreviewed))
+                                         for n in playable_floors)})
     run = await open_run(db, user.id)
     return {"subjects": subjects, "run": run_view(run) if run else None,
             "tiers": {t: v["name_vi"] for t, v in cfg["tiers"].items() if not t.startswith("_")}}

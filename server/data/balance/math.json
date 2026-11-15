@@ -73,6 +73,15 @@
     "generator_variety": 8
   },
   "placement_test": {"min_questions": 10, "max_questions": 15},
+  "programming": {
+    "_comment": "Bài tập lập trình (M6). The learner's program runs on the learner's own machine, one run per test, with stdin in and stdout out; the server keeps the hidden tests' expected output and decides the verdict. time_limit_ms is the default per test, a problem may ask for more; tolerance is for problems graded as floats; reward is xp_per_correct at the problem's tier times the share of tests passed.",
+    "time_limit_ms": 2000,
+    "max_time_limit_ms": 10000,
+    "max_code_chars": 20000,
+    "max_output_chars": 100000,
+    "tolerance": 1e-6,
+    "min_tests": 3
+  },
   "timeout": {
     "_comment": "Running out of time is a wrong answer and ends the combo; nothing else is lost.",
     "counts_as_wrong": true,

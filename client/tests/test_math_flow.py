@@ -3,7 +3,9 @@
 countdown run out, stop, read the summary, and find the answers in the database.
 M3: the mistake comes back as a parallel question, and floor 3 shows a matrix question.
 M5: floors above the first are locked, the mastery gate opens the Thiên kiếp nhỏ, passing it
-clears the floor and opens the next, and a sitting there mixes in review questions."""
+clears the floor and opens the next, and a sitting there mixes in review questions.
+M6: a programming exercise is written in the game's own editor, run on the samples, handed
+in on the hidden tests, and pays Tu Vi."""
 from __future__ import annotations
 
 import json
@@ -17,6 +19,8 @@ from client.tests.test_linh_phong_flow import abode
 from client.tests.test_world_flow import make_account
 
 SUBJECT = "dai_so_tuyen_tinh"
+CODE_LIST = "math_code_dai_so_tuyen_tinh"
+EXERCISE = "dstt_bt_dem_phan_tu"
 FLOOR_1 = "math_floor_dai_so_tuyen_tinh_1"
 FLOOR_2 = "math_floor_dai_so_tuyen_tinh_2"
 FLOOR_3 = "math_floor_dai_so_tuyen_tinh_3"
@@ -260,13 +264,77 @@ def run_math_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait(lambda: drv.top_is("MathPracticeScene") and top(drv).summary is not None, 10, "the second summary")
         drv.click("math_back")
         drv.wait(lambda: top(drv).summary is None and top(drv).path is not None, 10, "the floors once more")
+        # ---- M6: a programming exercise, written and handed in through the game
+        drv.click(CODE_LIST)
+        drv.wait(lambda: drv.top_is("ProblemListScene") and top(drv).data is not None, 10, "the exercises")
+        floors = top(drv).data["floors"]
+        assert [f["floor"] for f in floors] == [1, 2, 3]          # every open floor that has exercises
+        assert any(p["id"] == EXERCISE for p in floors[0]["problems"])
+        assert all(p["best"] is None for f in floors for p in f["problems"])
+        drv.shot("code_list")
+
+        drv.click(f"code_open_{EXERCISE}")
+        drv.wait(lambda: drv.top_is("ProblemScene") and top(drv).problem is not None, 10, "the statement")
+        scene = top(drv)
+        total = scene.problem["tests"]
+        assert scene.problem["samples"] and isinstance(total, int) and total >= 3
+        drv.shot("code_statement")
+
+        # the starter the game offers reads stdin but answers nothing yet
+        drv.click("code_run")
+        drv.wait(lambda: top(drv).result is not None, 30, "the first Chạy thử")
+        assert top(drv).result["result"]["verdict"] == "WA"
+        drv.shot("code_first_try")
+
+        for _ in range(8):                                        # to the end of the starter
+            drv.press(pygame.K_DOWN)
+        drv.press(pygame.K_END)
+        drv.press(pygame.K_RETURN)
+        drv.type("print(len({int(x) for x in data[1:]}))")
+        assert "print(len(" in top(drv).box.text
+        drv.shot("code_written")
+
+        drv.click("code_run")
+        drv.wait(lambda: (top(drv).result or {}).get("result", {}).get("verdict") == "AC",
+                 30, "Chạy thử passing")
+        assert top(drv).result["mode"] == "run"
+        assert top(drv).result["result"]["passed"] == len(scene.problem["samples"])
+        drv.shot("code_run_ok")
+
+        xp_before = server.sql("select cultivation_xp from characters where user_id=?", (uid,))[0][0]
+        drv.click("code_submit")
+        drv.wait(lambda: (top(drv).result or {}).get("mode") == "submit", 60, "Nộp bài")
+        res = top(drv).result
+        assert res["result"]["verdict"] == "AC"
+        assert res["result"]["passed"] == res["result"]["total"] == total
+        assert res["xp_gained"] > 0
+        drv.shot("code_accepted")
+
+        saved = Path(drv.game.session.path).parent / "bai_lam" / f"{EXERCISE}.py"
+        assert saved.is_file() and "print(len(" in saved.read_text("utf-8")
+        rows = server.sql("select verdict, passed, total, xp_gained from math_submissions where user_id=?",
+                          (uid,))
+        assert rows == [("AC", total, total, res["xp_gained"])]
+        xp_after = server.sql("select cultivation_xp from characters where user_id=?", (uid,))[0][0]
+        assert xp_after - xp_before == res["xp_gained"]
+
+        drv.click("code_back")
+        drv.wait(lambda: drv.top_is("ProblemListScene") and any(
+            p.get("best") for f in (top(drv).data or {}).get("floors", []) for p in f["problems"]),
+            15, "the list showing the verdict")
+        drv.shot("code_list_solved")
+        drv.click("code_close")
+        drv.wait(lambda: drv.top_is("MathPracticeScene"), 10, "the floors")
+
         drv.click("math_close")
         drv.wait(lambda: not drv.top_is("MathPracticeScene"), 5, "the abode again")
 
         # ---- what the server kept
         assert server.sql("select count(*) from math_runs where user_id=? and ended_at is null", (uid,))[0][0] == 0
         xp = server.sql("select cultivation_xp from characters where user_id=?", (uid,))[0][0]
-        assert xp == server.sql("select sum(xp_gained) from math_runs where user_id=?", (uid,))[0][0]
+        assert xp == (server.sql("select sum(xp_gained) from math_runs where user_id=?", (uid,))[0][0]
+                      + server.sql("select sum(xp_gained) from math_submissions where user_id=?",
+                                   (uid,))[0][0])
         assert abode(drv).game.state.cult.get("xp") == xp     # the HUD heard about it
         drv.close()
     finally:

@@ -834,3 +834,94 @@ một lần, lần sau chỉ đăng nhập, dùng Firebase (dự án và API key
 - **Thiên kiếp nhỏ không trộn câu ôn và không có tâm ma**: bài thi của một tầng chỉ hỏi đúng tầng ấy.
 - **Chưa làm ở mốc này**: bài kiểm tra đầu vào (luật 7) và "bậc thang" của câu bậc 5 (luật 8) — bậc 5 chỉ xuất
   hiện từ tầng 7 trở lên, mà tầng 7-9 chưa có câu hỏi nào. Cả hai chờ mốc M11.
+
+## Nhánh `toan-tu-tien` — M6: bài tập lập trình
+
+- **Bài làm chạy trên máy người học, máy chủ không chạy mã của ai cả.** Kế hoạch 5.2 đã ghi vậy, và đó cũng là
+  lựa chọn an toàn nhất: máy chủ có thể cho bạn bè chơi chung, mà chạy mã lạ trên máy chủ thì phải có hộp cát
+  thật sự. Ở đây máy chủ chỉ gửi *dữ liệu vào*; game chạy đúng một file Python mà chính người chơi viết, với
+  dòng lệnh cố định (`-I -X utf8 <file>`), dữ liệu test chỉ đi vào qua stdin. Game không bao giờ chạy mã do
+  máy chủ gửi xuống.
+- **Chấm ở máy chủ.** Đáp án của test ẩn và lời giải mẫu không bao giờ rời máy chủ, nên muốn qua bài thì phải
+  giải thật. Một máy khách bị sửa vẫn có thể khai gian verdict - đây là game tự học của một người, gian lận là
+  gian lận với chính mình, mà đáp án thì vẫn giấu được.
+- **`-I` nên `PYTHONIOENCODING` vô tác dụng**, vì vậy dùng `-X utf8`: in tiếng Việt chạy được trên mọi máy, kể
+  cả Windows dùng bảng mã cũ. (Test `test_a_program_may_print_vietnamese_whatever_the_code_page_is` bắt lỗi
+  này, lúc đầu tôi đặt biến môi trường và nó bị bỏ qua.)
+- **CE lấy từ `compile()` trước khi chạy**, nên lỗi cú pháp không bao giờ phải chạy thử mới biết, và việc kiểm
+  tra cú pháp không thực thi gì cả. RE và TLE là của chính lần chạy; AC/WA là so sánh.
+- **Chạy tới test hỏng đầu tiên là dừng.** Các test sau đó ghi `-` (chưa chạy) chứ không ghi RE: nói đúng
+  những gì đã xảy ra. Tỉ lệ test đạt vẫn tính được, nên hỏng ở test 3 vẫn được thưởng cho 2 test đầu.
+- **Dấu cách không bao giờ quyết định đúng sai**: so sánh theo từng "từ" nên thừa dấu cách, thừa dòng trống,
+  `\r\n` đều không sao. Bài chấm số thực so với sai số 1e-6, tương đối theo số lớn hơn (kế hoạch 5.2).
+- **Mỗi bài có một lời giải mẫu nằm ở máy chủ** (`problems/<bí cảnh>/<id>.py`). `tools/check_all.py` chạy nó
+  trên **mọi ví dụ và mọi test ẩn** và bắt buộc phải ra đúng đáp án đã ghi. Đáp án của ví dụ do tôi viết tay
+  nên đây là phép thử thật cho lời giải mẫu; đáp án của test ẩn do `tools/build_problem_tests.py` sinh ra từ
+  chính lời giải mẫu, nên phép thử này bắt được mọi trường hợp test hoặc lời giải bị sửa lệch nhau.
+- **Thưởng theo tỉ lệ test đạt** (kế hoạch 5.2), nhưng **chỉ trả phần hơn** lần tốt nhất trước đó: nộp đi nộp
+  lại một bài làm không cày được Tu Vi.
+- **Bài làm là một file .py thật**, nằm cạnh `session.json` trong thư mục `bai_lam/`. Ai thích viết Python
+  trong editor của mình thì cứ viết rồi bấm Chạy thử. Trình soạn trong game là loại nhỏ nhất dùng được (có số
+  dòng, caret, cuộn, tự thụt lề như Python, Tab là 4 dấu cách), không tô màu cú pháp, không undo - file mới là
+  chỗ ở thật của bài làm.
+- **Bài tập theo đúng khoá tầng của M5**: tầng chưa mở thì không xem được đề, không nhận được test.
+- **Chỉ Python.** Chương trình học là AI nên Python là ngôn ngữ của khoá; thêm ngôn ngữ khác sau cũng chỉ là
+  thêm cách gọi trình biên dịch, phần chấm không đổi.
+
+## Nhánh `toan-tu-tien` — dọn trước M7: test phải ổn định
+
+- **Test không được đọc đồng hồ thật để quyết định đúng sai.** `client/tests/test_stage8_flow.py` tính thời
+  điểm bấm phím từ `time` lúc ấy rồi giả định chỉ mất ~20 ms mới bấm được, trong khi driver phải chạy ba frame
+  nữa mới gửi phím đi; vùng "perfect" của luyện đan chỉ rộng ±27 ms nên máy chậm một nhịp là trượt. Nay driver
+  có `fixed_dt` (ghim dt của vòng lặp) và test đặt luôn `round_ms` ngay trước khi bấm, nên cây kim rơi đúng chỗ
+  test muốn. Test còn **chặt hơn** trước: bắt buộc cả ba lần đều "perfect" (trước chỉ cần một lần).
+- **Bot cũng phải "ping".** Máy chủ ngắt kết nối im lặng quá `idle_timeout_seconds` (45 s, `world.json`), còn
+  `tools/realm_bots.py` chỉ gửi gói khi di chuyển: một bot đứng chờ cả đội làm xong phòng của họ thì không gửi
+  gì cả. Máy chạy chậm (một lượt test dài gấp đôi) là có bot bị ngắt giữa bí cảnh, `realm_members.result` thành
+  `disconnected` và `test_three_bots_clear_a_realm_over_websockets` hỏng. Nay bot đập nhịp 15 s đúng như máy
+  khách thật (`client/net/ws_client.py`), có test giữ cho `HEARTBEAT * 2` luôn nhỏ hơn `idle_timeout_seconds`,
+  và bot nhớ gói `kicked` để lần sau hỏng thì đọc ra được lý do ngay.
+- **Chờ điều kiện, đừng chờ đồng hồ - và phải là đúng điều kiện.** Chỗ `asyncio.sleep(1.0)` "rương được trả
+  ngay sau khi xong" đổi thành đợi gói loot của rương (hạn trên 30 s). Nhưng *rương về* không có nghĩa là
+  *mọi phần thưởng đã ghi xong*: mỗi chặng được trả bằng một tác vụ nền riêng với một giao dịch riêng
+  (`realm.py` `_pay_room` / `_pay_chest`), gói loot chỉ gửi sau khi giao dịch ấy commit, và thứ tự commit
+  **không** theo thứ tự tạo tác vụ. Hậu quả: `test_three_bots_clear_a_realm_over_websockets` đọc
+  `realm_claims` lúc chưa có `room5` (phòng trùm) rồi báo thiếu, trong khi cơ sở dữ liệu của chính lượt hỏng
+  ấy xem lại thì đủ cả 7 dòng cho cả 3 bot - `room5` ghi trước `chest` 2,7 ms, chỉ là commit sau. Nay
+  `run_team` đợi loot của **mọi** chặng người thắng được nhận (`stages_owed()`: mỗi phòng kể cả phòng trùm,
+  cộng rương), đúng bằng tập mà người gọi sẽ đọc lại từ cơ sở dữ liệu, và có một test rẻ giữ lấy quy tắc đó.
+  Chứng cứ: 8 lượt liên tiếp, 12/24 lượt-bot có rương về **trước** phòng trùm (đúng là cuộc đua ấy), và cả
+  24 lượt-bot đều đủ dòng trong cơ sở dữ liệu.
+- **Một cú click không chắc là một đòn đánh.** `engage()` của test đánh đúng một lần rồi đợi thẻ Vấn Đạo.
+  Nhưng vũ khí có hồi chiêu (bút lông 0,7 s) và máy chủ **im lặng bỏ qua** đòn đánh gửi trong lúc ấy (không
+  lỗi, không sự kiện), nên một đòn đánh ngay sau một tràng vẩy bút có thể rơi vào khoảng chết và không có gì
+  xảy ra cả; click cũng có thể trượt con đã kịp đi khỏi chỗ ngắm. Nay test đánh lại cho tới khi thẻ mở, đúng
+  như người chơi, và trả về **con thật sự đã hỏi** (không phải con gần nhất). Nếu hết 15 s mà không có thẻ,
+  lời báo lỗi in luôn những phiên Vấn Đạo máy chủ còn để mở, nên lần sau hỏng là đọc ra ngay.
+- **Con bên cạnh cũng có quyền hỏi.** `beat()` coi mọi thẻ Vấn Đạo hiện ra giữa lúc đánh là lỗi, trong khi một
+  nhát vẩy trúng con khác (hoặc một con tự xông vào đánh) mà con ấy còn Mặc Thuẫn thì nó hỏi câu của nó - đúng
+  luật 8.1. Chứng cứ: chạy lại 6 lượt thì hỏng 2 lượt, và bảng `quiz_sessions` của lượt hỏng có hai phiên,
+  phiên thứ hai `ref` trỏ sang `m1_0` chứ không phải con đang đánh. Nay `beat()` trả lời câu của con bên cạnh
+  rồi đánh tiếp, và chỉ báo lỗi khi câu hỏi là của **chính** con đang đánh (nghĩa là khiên mọc lại, chỉ tinh
+  anh mới vậy).
+- **Bot phải được phép bước ra khỏi chỗ mình đang đứng.** `path()` của bot (`tests/realm_bot.py`) nhận
+  danh sách `avoid` để không đi qua những ô không được đạp lên - ví dụ các phiến đá khác của Câu Văn
+  Đứt Đoạn. Nhưng danh sách ấy cũng cấm luôn **ô bot đang đứng**: một bot vừa đạp xong phiến của nó thì
+  đang đứng trong một ô bị cấm, mà các phiến kề sát nhau nên mọi ô lân cận đều bị cấm - BFS không có
+  bước đi hợp lệ nào, trả về đường rỗng, bot đứng đó mãi. Nó không rời phiến để về chỗ chờ, và tới lượt
+  nó giữ chữ kế tiếp thì cũng không đi tới phiến đúng được: phòng treo vĩnh viễn với `fails: 0`.
+  Đây là lỗi của bot (dụng cụ test), không phải của game - người chơi thật chỉ việc bước ra.
+  Chứng cứ: `RealmInstance` dùng `random.Random()` không gieo hạt nên mỗi lượt là một cấu hình khác;
+  gieo hạt cố định rồi quét 200 hạt thì **6 hạt treo** (34, 38, 98, 99, 172, 173), cả 6 đều cùng một
+  dấu vết - chủ của chữ đang tới có `route_left=0` và `on_tile` là một phiến **khác** phiến đích. Ba
+  hạt chạy lại hai lần đều treo y nguyên, nên đây là tất định theo hạt, không phải đua đồng hồ (test
+  này chạy trên đồng hồ ảo `FakeMono`, 18000 nhịp 0,05 s, nên máy chậm không ảnh hưởng). Nay `path()`
+  tìm lần hai khi không thấy đường: lần ấy bỏ cấm **đúng những ô đang chứa bot** - được bước ra khỏi ô
+  mình đứng, không được bước vào ô khác. Cả 6 hạt đều qua, và
+  `test_a_bot_can_walk_off_a_stone_it_must_avoid` đứng canh: test ấy **trượt** với `path()` cũ.
+- **Chạy được cả trên PostgreSQL.** `KVTT_TEST_URL` cho phép chỉ cho bộ test trỏ sang một cơ sở dữ liệu khác,
+  nên `alembic upgrade/downgrade` và cả bộ test máy chủ đều đã chạy thật trên PostgreSQL 18 (0013 lên, xuống
+  0009, lên lại). Không có gì phải sửa trong migration.
+- **Test của bài tập lập trình phải có răng.** `tools/check_all.py` nay chạy ba bài làm sai (rỗng, in một hằng
+  số, in đáp án ví dụ 1) trên mọi bài tập và bắt buộc bài nào cũng **phải trượt**, và không cho phép mọi test
+  ẩn của một bài hỏi cùng một đáp án. Lời giải mẫu vẫn phải đúng trên mọi test.
