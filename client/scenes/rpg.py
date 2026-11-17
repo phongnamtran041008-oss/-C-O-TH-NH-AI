@@ -10,7 +10,7 @@ import pygame
 from .. import strings_vi as T
 from ..engine import sprites
 from .base import Scene
-from .quiz import QuizScene
+from .quiz import CombatCard, QuizScene
 
 
 def fmt_wait(s: float) -> str:
@@ -19,7 +19,7 @@ def fmt_wait(s: float) -> str:
 
 
 # ------------------------------------------------------------------ combat question
-class CombatQuizScene(QuizScene):
+class CombatQuizScene(CombatCard, QuizScene):
     """The Vấn Đạo card (spec 8.1): lower part of the screen, the fight stays visible; the
     answer and its explanation show for 2 seconds, then the fight goes on."""
     compact = True

@@ -337,11 +337,22 @@ async def test_kill_counts_for_quest(client, gw):
 
 
 def test_monster_data_is_complete():
+    """Two kinds of monster now: a Mặc Quái asks about a word and says which question
+    types it may use, while a quái lỗi sai (M7) asks a math question about one
+    micro-skill and drops the ghi chú that explains the mistake. Each has to carry
+    what its own kind of fight needs."""
     types = __import__("app.balance", fromlist=["quiz"]).quiz()["types"]
     for kind, m in catalog.monsters().items():
-        for key in ("hp", "atk", "def", "xp", "rank", "qtypes", "drops", "name_vi"):
+        for key in ("hp", "atk", "def", "xp", "rank", "drops", "name_vi"):
             assert key in m, (kind, key)
-        assert all(q in types for q in m["qtypes"])
+        if m.get("skill"):
+            for key in ("subject", "floor", "note", "mistake_vi", "shape", "look"):
+                assert m.get(key), (kind, key)
+            assert catalog.stack_item(m["note"]), (kind, m["note"])
+            assert "qtypes" not in m, (kind, "a math monster does not pick word question types")
+        else:
+            assert "qtypes" in m, (kind, "qtypes")
+            assert all(q in types for q in m["qtypes"])
         for d in m["drops"]:
             if "item" in d:
                 assert catalog.stack_item(d["item"]), d

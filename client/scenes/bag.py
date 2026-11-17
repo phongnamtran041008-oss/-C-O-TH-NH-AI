@@ -108,14 +108,41 @@ class BagScene(Scene):
             self.reload()
         return ok
 
+    def _read_note(self, r: dict) -> None:
+        """Open Tàng Thư Các at the section this ghi chú explains (M7)."""
+        from .math_library import DocScene
+        doc = r.get("doc") or {}
+        if doc.get("id"):
+            self.game.push(DocScene(self.game, doc["id"], doc.get("block", 0)))
+
+    def row_icon(self, ui, r, lx, ry, fallback: str) -> float:
+        """Draw the item's icon (M8) and say where its text should start.
+
+        The icons are rendered from 3D models by a tool that needs Blender, so a
+        checkout without them falls back to the colour bar this row always had."""
+        from ..engine import icons
+        img = icons.for_item(r)
+        if img is None:
+            ui.fill(lx, ry, 3, 16, fallback)
+            return lx + 8
+        ui.image(img, lx, ry - 1, zoom=0.5)      # 32 px icon, drawn at 16
+        return lx + 20
+
     def row_items(self, ui, r, lx, ry, lw):
-        ui.fill(lx, ry, 3, 16, "#4A7CC8" if r.get("kind") == "manual" else "#BC4749" if r.get("kind") == "pill"
-                else "#C99A3A" if r.get("kind") in ("egg", "food") else "#8E877A")
-        ui.text(r["name_vi"], lx + 8, ry + 8, 8, anchor="midleft")
+        colour = ("#4A7CC8" if r.get("kind") == "manual" else "#BC4749" if r.get("kind") == "pill"
+                  else "#C99A3A" if r.get("kind") in ("egg", "food")
+                  else "#6A994E" if r.get("kind") == "note" else "#8E877A")
+        tx = self.row_icon(ui, r, lx, ry, colour)
+        ui.text(r["name_vi"], tx, ry + 8, 8, anchor="midleft")
         ui.text(f"x{r['qty']}", lx + 170, ry + 8, 8, anchor="midleft")
         if ui.hover(lx, ry, lw - 70, 16):
             ui.set_tooltip(r.get("desc_vi", ""))
-        if r.get("usable") and ui.button(f"use_{r['item_id']}", lx + lw - 70, ry + 2, 66, 12, T.USE, size=7):
+        if r.get("kind") == "note" and ui.button(f"read_{r['item_id']}", lx + lw - 70, ry + 2, 66, 12,
+                                                 T.NOTE_READ, size=7):
+            # M7: a ghi chú lỗi sai is read, not spent - it opens its part of Tàng Thư Các
+            self.api.post("/inventory/use", {"item_id": r["item_id"]}, self._read_note,
+                          self.game.api_error)
+        elif r.get("usable") and ui.button(f"use_{r['item_id']}", lx + lw - 70, ry + 2, 66, 12, T.USE, size=7):
             self.api.post("/inventory/use", {"item_id": r["item_id"]},
                           self._after(r["name_vi"] if r.get("kind") == "manual" else None), self.game.api_error)
         elif r.get("kind") == "egg":
@@ -126,9 +153,9 @@ class BagScene(Scene):
             self.api.post("/inventory/sell", {"item_id": r["item_id"], "qty": 1}, self._money, self.game.api_error)
 
     def row_gear(self, ui, r, lx, ry, lw):
-        ui.fill(lx, ry, 3, 16, r["color"])
+        tx = self.row_icon(ui, r, lx, ry, r["color"])
         lvl = f" +{r['enhance']}" if r["enhance"] else ""
-        ui.text(r["name_vi"] + lvl, lx + 8, ry + 8, 8, r["color"], anchor="midleft")
+        ui.text(r["name_vi"] + lvl, tx, ry + 8, 8, r["color"], anchor="midleft")
         stats = " ".join(f"{T.STATS_VI.get(k, k)} {v}" for k, v in r["stats"].items())
         ui.text(f"{r['slot_vi']} · {stats}", lx + 130, ry + 8, 7, "#5A5A5A", anchor="midleft")
         if ui.hover(lx, ry, lw - 70, 16):

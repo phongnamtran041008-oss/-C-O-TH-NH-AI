@@ -1,0 +1,46 @@
+{
+ "_comment": "Chế tạo cơ bản của M7: nguyên liệu quái lỗi sai rớt ra + những ghi chú đã đọc hiểu -> một món trang bị. 'needs_notes' là các ghi chú phải có trong túi: chỉ rèn được thứ mình đã hiểu. Ghi chú KHÔNG mất đi khi rèn (như đan phương), nguyên liệu thì mất. 'rarity' cố định, không rút thăm: rèn là biết trước mình được gì. 'fee' là Linh Thạch trả cho lò (một chỗ tiêu tiền). 'floor' chỉ để xếp thứ tự trên màn hình.",
+ "recipes": {
+  "but_tap_hop": {
+   "name_vi": "Bút Tập Hợp",
+   "floor": 1,
+   "makes": "but_tap_hop",
+   "rarity": "linh",
+   "fee": 20,
+   "needs_notes": ["ghi_chu_phan_tu", "ghi_chu_nghich_hieu"],
+   "ingredients": [
+    {"item": "manh_tap_hop", "qty": 6},
+    {"item": "muc_tinh", "qty": 2}
+   ],
+   "desc_vi": "Ngòi bút chẻ đôi: một nhánh viết phần tử, một nhánh viết tập chứa nó."
+  },
+  "ngoc_so_phuc": {
+   "name_vi": "Ngọc Số Phức",
+   "floor": 2,
+   "makes": "ngoc_so_phuc",
+   "rarity": "linh",
+   "fee": 35,
+   "needs_notes": ["ghi_chu_phan_ao", "ghi_chu_binh_phuong"],
+   "ingredients": [
+    {"item": "tinh_so_phuc", "qty": 6},
+    {"item": "manh_tap_hop", "qty": 2},
+    {"item": "muc_tinh", "qty": 2}
+   ],
+   "desc_vi": "Hai nửa ngọc quay quanh nhau, nửa thực nửa ảo, không nửa nào rời được nửa kia."
+  },
+  "nhan_ma_tran": {
+   "name_vi": "Nhẫn Ma Trận",
+   "floor": 3,
+   "makes": "nhan_ma_tran",
+   "rarity": "huyen",
+   "fee": 60,
+   "needs_notes": ["ghi_chu_chi_so", "ghi_chu_chuyen_vi", "ghi_chu_doi_xung"],
+   "ingredients": [
+    {"item": "loi_ma_tran", "qty": 8},
+    {"item": "tinh_so_phuc", "qty": 3},
+    {"item": "muc_tinh", "qty": 4}
+   ],
+   "desc_vi": "Mặt nhẫn là một bảng vuông nhỏ; lật ngược vẫn đúng chỗ ấy, vì nó đối xứng thật."
+  }
+ }
+}

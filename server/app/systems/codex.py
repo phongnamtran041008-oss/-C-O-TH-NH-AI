@@ -47,6 +47,7 @@ async def monster_book(db: AsyncSession, user: User) -> dict:
             entry.update({"name_vi": m["name_vi"], "kills": int((e.progress or {}).get("kills", 0)),
                           "qtypes_vi": [qnames.get(q, q) for q in m.get("qtypes", [])],
                           "weakness_vi": m.get("weakness_vi", ""), "drops_vi": drops, "hp": m.get("hp"),
+                          "mistake_vi": m.get("mistake_vi", ""),   # M7: what this one gets wrong
                           "rank_vi": {"normal": "Thường", "elite": "Tinh anh", "boss": "Thủ lĩnh"}.get(m.get("rank"), "")})
         out.append(entry)
     from . import td   # Mặc Quái of the Thủ Vườn levels (stage 7) are in the same book

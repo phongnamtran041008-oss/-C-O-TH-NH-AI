@@ -10,7 +10,8 @@ from ..auth import api_error, current_user, write_user
 from ..db import get_db
 from ..learning import math_library
 from ..models import User
-from ..systems import math_code, math_practice
+from ..systems import math_code, math_craft, math_practice
+from ..systems import math_combat  # noqa: F401  (registers the quái lỗi sai grader)
 
 router = APIRouter(tags=["math"])
 
@@ -27,7 +28,7 @@ class RunIn(BaseModel):
 async def _run(db: AsyncSession, coro):
     try:
         out = await coro
-    except math_practice.MathError as e:
+    except (math_practice.MathError, math_craft.CraftError) as e:
         await db.rollback()
         raise api_error(e.status, e.code, e.message_vi)
     await db.commit()
@@ -110,6 +111,23 @@ async def math_problem_judge(problem_id: str, body: JudgeIn, user: User = Depend
 async def math_library_list(user: User = Depends(current_user)):
     """Tàng Thư Các: every document, by subject and floor."""
     return math_practice.library_view()
+
+
+class CraftIn(BaseModel):
+    recipe_id: str = Field(max_length=40)
+
+
+@router.get("/math/craft")
+async def math_craft_view(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    """Lò Toán (M7): the recipes, and what the player holds against each one."""
+    return await _run(db, math_craft.view(db, user))
+
+
+@router.post("/math/craft")
+async def math_craft_make(body: CraftIn, user: User = Depends(write_user),
+                          db: AsyncSession = Depends(get_db)):
+    """Forge one recipe: materials and the fee are spent, the ghi chú are only checked."""
+    return await _run(db, math_craft.craft(db, user, body.recipe_id))
 
 
 @router.get("/math/library/{doc_id}")

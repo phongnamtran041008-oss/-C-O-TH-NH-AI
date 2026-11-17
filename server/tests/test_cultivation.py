@@ -245,7 +245,11 @@ async def test_monster_book_hides_unmet(client):
     h, uid = await make(client, "tu_10", "Tu Mười")
     b = (await client.get("/codex/monster", headers=h)).json()
     from app.systems import td   # the book also lists the Mặc Quái of the Thủ Vườn levels (stage 7)
-    assert b["found"] == 0 and b["total"] == 6 + len(td.cfg()["monsters"])   # 3 world + 3 bí cảnh (stage 9) and "name_vi" not in b["entries"][0]
+    # every monster the game has: 3 of the forest, 3 of a bí cảnh (stage 9), the 9 quái lỗi
+    # sai of Loạn Số Cốc (M7), plus the Mặc Quái of the Thủ Vườn levels (stage 7)
+    from app.systems import catalog as cat
+    assert b["total"] == len(cat.monsters()) + len(td.cfg()["monsters"])
+    assert b["found"] == 0 and "name_vi" not in b["entries"][0]
     async with dbm.SessionLocal() as db:
         from app.systems import codex
         await codex.meet_monster(db, uid, "tone_wisp")

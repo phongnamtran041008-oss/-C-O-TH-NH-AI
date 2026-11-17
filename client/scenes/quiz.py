@@ -26,6 +26,13 @@ def _kind(text: str, qtype: str = "") -> str:
     return "han" if CJK.search(text) or TONE_MARKED.search(text) else "ui"
 
 
+class CombatCard:
+    """Marker for a question card that belongs to a fight, whatever it asks about: a
+    word (rpg.CombatQuizScene) or, since M7, a mistake (math_practice.
+    MathCombatQuizScene). The world scene never stacks two of them and closes them
+    all when the fight ends, so it needs one name for both."""
+
+
 class QuizScene(Scene):
     compact = False          # True: a shorter card in the lower part of the screen (combat)
 

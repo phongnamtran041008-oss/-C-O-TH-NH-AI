@@ -40,7 +40,10 @@ def quests() -> dict:
 
 @lru_cache(maxsize=1)
 def monsters() -> dict:
-    return _load("creatures/monsters.json")
+    """Every kind of monster: the Mặc Quái of the old game and, since M7, the quái lỗi sai
+    of the math edition, which keep their own file because they carry a micro-skill and a
+    ghi chú instead of a word list. One registry, so loot, codex and quests see them all."""
+    return {**_load("creatures/monsters.json"), **_load("math/monsters.json")}
 
 
 @lru_cache(maxsize=1)
@@ -82,13 +85,31 @@ def realms() -> list[dict]:
     return _load("realms_cultivation.json")["realms"]
 
 
+@lru_cache(maxsize=1)
+def math_crafting() -> dict:
+    """Lò Toán (M7): recipes that turn those drops, plus the notes the player kept, into
+    equipment."""
+    import json
+    return json.loads((DATA_DIR / "math" / "crafting.json").read_text("utf-8"))
+
+
+@lru_cache(maxsize=1)
+def math_drops() -> dict:
+    """What the "quái = lỗi sai" of the math edition leave behind (M7): materials to
+    craft with, and the ghi chú lỗi sai, which open a section of Tàng Thư Các."""
+    return _load("math/drops.json")
+
+
 def stack_item(item_id: str) -> dict | None:
-    """Stackable things in inventory_items: pills, materials (incl. manuals), fishing rods,
-    baits and caught fish (`fish_<species>`)."""
+    """Stackable things in inventory_items: pills, materials (incl. manuals), the math
+    edition's materials and ghi chú lỗi sai, fishing rods, baits and caught fish
+    (`fish_<species>`)."""
     if item_id in pills():
         return {"kind": "pill", **pills()[item_id]}
     if item_id in materials():
         return materials()[item_id]
+    if item_id in math_drops():
+        return math_drops()[item_id]
     if item_id in rods():
         r = rods()[item_id]
         return {"kind": "rod", "name_vi": r["name_vi"], "desc_vi": r["desc_vi"], "rarity": r["rarity"]}

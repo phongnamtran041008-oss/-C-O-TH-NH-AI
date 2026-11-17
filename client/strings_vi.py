@@ -206,8 +206,10 @@ FUN_COMBO_NOTE = "Ghép vui: cách nhớ cho dễ, không phải nguồn gốc t
 
 # ---------------------------------------------------------------- stage 3: the shared world
 ZONE_NAMES = {"abode": "Động Phủ", "truc_lam_thon": "Trúc Lâm Thôn", "rung_muc_loang": "Rừng Mực Loang",
-              "ho_nghien_muc": "Hồ Nghiên Mực", "bi_canh": "Bí Cảnh"}
-WORLD_ZONES = ("truc_lam_thon", "rung_muc_loang", "ho_nghien_muc")
+              "ho_nghien_muc": "Hồ Nghiên Mực", "loan_so_coc": "Loạn Số Cốc",
+              "bi_canh": "Bí Cảnh"}
+# where a player may be standing when they log out, so the game sends them back there
+WORLD_ZONES = ("truc_lam_thon", "rung_muc_loang", "ho_nghien_muc", "loan_so_coc")
 ENTERING = "Đang đến {zone}..."
 CONNECTING_WORLD = "Đang kết nối thế giới..."
 CHANNEL = "Kênh {n}"
@@ -218,6 +220,7 @@ CHANNEL_HINT = "Mỗi kênh là một bản sao của vùng đất, tối đa 40
 HP = "Sinh Lực"
 QI = "Linh Lực"
 WORLD_ACTIONS = {"talk_master": "Nói chuyện", "talk_guide": "Hỏi đường", "gacha": "Thiên Cơ Các",
+                 "math_craft": "Lò Toán",
                  "library": "Tàng Thư Các", "shop": "Mua bán", "alchemy": "Lò luyện đan", "forge": "Lò rèn",
                  "quests": "Bảng nhiệm vụ", "td": "Cổng Thủ Vườn", "player": "Đạo hữu", "monster": "Mặc Quái",
                  "fisher": "Ngư Ông", "fish_book": "Ngư Phổ", "cloth": "Sạp Vải", "realm": "Cổng Bí Cảnh",
@@ -1050,3 +1053,21 @@ LIB_PREV = "Mục trước"
 LIB_NEXT = "Mục sau"
 LIB_NOTE = "Trúc Lão nhắc: "
 LIB_EMPTY = "Chưa có trang sách nào."
+
+# ------------------------------------------------------------------ M7: quái lỗi sai, Lò Toán
+CRAFT_TITLE = "Lò Toán"
+CRAFT_EMPTY = "Chưa có công thức nào."
+CRAFT_LOADING = "Đang nhóm lò..."
+CRAFT_MAKES = "Rèn ra"
+CRAFT_NEEDS = "Nguyên liệu"
+CRAFT_NOTES = "Phải hiểu trước"
+CRAFT_NOTE_HINT = "Ghi chú vẫn ở trong túi sau khi rèn."
+CRAFT_FEE = "Phí lò: {n} Linh Thạch"
+CRAFT_DO = "Rèn"
+CRAFT_DONE = "Rèn xong: {name}!"
+CRAFT_HAVE = "{have}/{need}"
+CRAFT_SLOT = {"weapon": "Vũ khí", "body": "Áo", "hat": "Mũ", "shoes": "Giày", "jade": "Ngọc Bội",
+              "ring": "Nhẫn"}
+NOTE_READ = "Đọc ghi chú"
+NOTE_KEPT = "Ghi chú vẫn còn trong túi."
+MISTAKE_LABEL = "Lỗi nó mắc"

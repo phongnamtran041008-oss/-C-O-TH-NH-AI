@@ -262,26 +262,32 @@ class WorldScene(Scene):
             if m.get("ch") in ("zone", "world") and eid:
                 self.bubbles[eid] = (m.get("text", ""), self.game.now + BUBBLE_SECONDS)
         elif t == "q":  # a Vấn Đạo question: Hộ Thể until answered (spec 8.1)
+            from .math_practice import MathCombatQuizScene
+            from .quiz import CombatCard
             from .rpg import CombatQuizScene
             self.flush_inputs()
             self.player.moving = False
             for sc in self.game.scenes:
-                if isinstance(sc, CombatQuizScene):
+                if isinstance(sc, CombatCard):
                     return
             while self.game.top is not None and self.game.top is not self and self in self.game.scenes:
                 self.game.pop()      # the fight comes first: close bag/menus so the card sits over the world
             if m.get("first_meet"):
                 self.game.toast(T.COMBAT_INTRO, "#4A7CC8")
-            self.game.push(CombatQuizScene(self.game, m["q"], m.get("mid", ""), on_result=self.on_combat_result))
+            # M7: a quái lỗi sai asks a math question, so it gets the math card
+            card = (MathCombatQuizScene if m["q"].get("context") == "math_combat"
+                    else CombatQuizScene)
+            self.game.push(card(self.game, m["q"], m.get("mid", ""), on_result=self.on_combat_result))
         elif t == "q_end":
-            from .rpg import CombatQuizScene
+            from .quiz import CombatCard
             for sc in list(self.game.scenes):
-                if isinstance(sc, CombatQuizScene) and sc.q.get("session_id") == m.get("sid") and not sc.result:
+                if isinstance(sc, CombatCard) and sc.q.get("session_id") == m.get("sid") and not sc.result:
                     self.game.pop(sc)
         elif t == "dead":
-            from .rpg import CombatQuizScene, DeathOverlay
+            from .quiz import CombatCard
+            from .rpg import DeathOverlay
             for sc in list(self.game.scenes):
-                if isinstance(sc, CombatQuizScene):
+                if isinstance(sc, CombatCard):
                     self.game.pop(sc)
             if m.get("ghost"):   # stage 9: in a bí cảnh you follow the party as a ghost
                 self.ghost = True
@@ -795,12 +801,35 @@ class WorldScene(Scene):
                                    on_done=lambda: g.push(ShopScene(g))))
             else:
                 g.push(ShopScene(g))
+        elif action == "math_craft":    # M7: Lò Toán in Loạn Số Cốc
+            from .math_craft import MathCraftScene
+            g.push(MathCraftScene(g))
         elif action == "sign":
             g.message(obj.props.get("text", ""), T.SIGN_READ)
         elif action in T.COMING:
             g.message(T.COMING[action], T.WORLD_ACTIONS.get(action, obj.name))
 
     # ------------------------------------------------------------ drawing
+    def _char_frame(self, o, cx: float, cy: float):
+        """A Blender-rendered character (M8): it idles, and every few seconds runs
+        through its slash, which is the whole pipeline on show in the world.
+
+        Returns (None, None) when this checkout has no sheet for it - the sheets are
+        built from a .blend by a tool that needs Blender, so a clone without them must
+        still play."""
+        from ..engine import charsheet
+        cs = charsheet.load(o.props.get("sheet", ""))
+        if cs is None:
+            return None, None
+        idle_for = 3.0
+        slash = cs.clips.get("slash")
+        cycle = idle_for + (slash.seconds if slash else 0.0)
+        u = self.t % cycle if cycle > 0 else 0.0
+        clip, at = ("slash", u - idle_for) if slash and u >= idle_for else ("idle", u)
+        img = cs.at(clip, at, o.props.get("facing", "down"))
+        bx, by = cs.blit_pos(o.x + o.w / 2, o.y + o.h)
+        return img, (int(bx - cx), int(by - cy))
+
     def _build_minimap(self) -> pygame.Surface:
         k = min(100 / self.map.px_w, 64 / self.map.px_h)
         w, h = max(1, int(self.map.px_w * k)), max(1, int(self.map.px_h * k))
@@ -868,6 +897,10 @@ class WorldScene(Scene):
                 img = sprites.prop(name, int(o.props.get("variant", 0) or 0),
                                    frame if name in sprites.ANIMATED_PROPS else 0)
                 drawables.append((o.foot_y, img, (int(o.x) - cx, int(o.y) - cy)))
+            elif o.type == "char":      # M8: a character rendered out of Blender
+                img, pos = self._char_frame(o, cx, cy)
+                if img is not None:
+                    drawables.append((o.foot_y, img, pos))
             elif o.type == "npc":
                 look = o.props.get("npc", "guide")
                 if look == "truc_lao":

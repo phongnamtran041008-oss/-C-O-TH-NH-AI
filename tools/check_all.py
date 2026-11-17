@@ -42,6 +42,7 @@ Exit code 0 when every check passes, 1 otherwise. The list grows with each miles
 """
 from __future__ import annotations
 
+import json
 import random
 import sys
 import tempfile
@@ -53,6 +54,8 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 from app.learning import math_items, math_library, math_path, math_problems  # noqa: E402
 
+DATA_DIR = ROOT / "server" / "data"
+MATH_DIR = DATA_DIR / "math"
 FONT_DIR = ROOT / "client" / "assets" / "fonts"
 FORMULA_DIR = ROOT / "client" / "assets" / "formulas"
 CJK_START = 0x2E80          # the game draws these with Noto, never with the pixel font
@@ -256,6 +259,148 @@ def check_problem_tests_have_teeth() -> list[str]:
     return errors
 
 
+def _json(path: Path) -> dict:
+    return json.loads(path.read_text("utf-8"))
+
+
+def check_mistake_monsters() -> list[str]:
+    """M7: every quái lỗi sai has to hang together across four files. A monster names a
+    micro-skill (data/math/monsters.json), the floor's document must have a section for it
+    (data/math/library/), the ghi chú it drops must be an item pointing at that same skill
+    (data/math/drops.json), and the client must be able to draw it (client/art/math_art.py).
+    Any one of those missing is a monster that cannot be fought, or a note that opens nothing.
+    """
+    if math_path.validate_all() or math_library.validate_all():
+        return ["skipped: the learning path and library checks above must pass first"]
+    sys.path.insert(0, str(ROOT))
+    try:
+        from client.art import math_art
+    except ImportError as e:
+        return [f"cannot read the client art: {e}"]
+    finally:
+        sys.path.remove(str(ROOT))
+    out: list[str] = []
+    monsters = {k: v for k, v in _json(MATH_DIR / "monsters.json").items() if not k.startswith("_")}
+    drops = {k: v for k, v in _json(MATH_DIR / "drops.json").items() if not k.startswith("_")}
+    docs = math_library.documents()
+    for kind, m in sorted(monsters.items()):
+        where = f"monster {kind}"
+        try:
+            subject = math_path.subject(m["subject"])
+        except KeyError:
+            out.append(f"{where}: no subject {m.get('subject')!r}")
+            continue
+        floor = next((f for f in subject.floors if f.number == m.get("floor")), None)
+        if floor is None:
+            out.append(f"{where}: {m['subject']} has no floor {m.get('floor')!r}")
+            continue
+        if m.get("skill") not in {s.id for s in floor.skills}:
+            out.append(f"{where}: {m.get('skill')!r} is not a micro-skill of floor {m['floor']}")
+            continue
+        doc = next((d for d in docs.values() if m["skill"] in d.skills), None)
+        if doc is None:
+            out.append(f"{where}: no document explains {m['skill']}")
+        elif not any(b["type"] == "section" and b.get("skill") == m["skill"] for b in doc.blocks):
+            out.append(f"{where}: {doc.id} has no section for {m['skill']}, so its note opens page 1")
+        note = drops.get(m.get("note"))
+        if note is None:
+            out.append(f"{where}: drops.json has no note {m.get('note')!r}")
+        else:
+            if note.get("kind") != "note":
+                out.append(f"{where}: {m['note']} is a {note.get('kind')!r}, not a note")
+            if note.get("skill") != m["skill"]:
+                out.append(f"{where}: {m['note']} points at {note.get('skill')!r}, "
+                           f"the monster at {m['skill']!r}")
+            if note.get("monster") != kind:
+                out.append(f"{where}: {m['note']} says it comes from {note.get('monster')!r}")
+        if not str(m.get("mistake_vi", "")).strip():
+            out.append(f"{where}: no mistake_vi, so the card cannot say what it gets wrong")
+        for key in ("name_vi", "speed", "idle_seconds", "hp"):
+            if key not in m:
+                out.append(f"{where}: no {key} (the world needs it to spawn one)")
+        art = math_art.MONSTERS.get(kind)
+        if art is None:
+            out.append(f"{where}: client/art/math_art.py cannot draw it")
+        else:
+            shape, body = art[0], art[1]
+            if shape != m.get("shape"):
+                out.append(f"{where}: shape {m.get('shape')!r} in the data, {shape!r} in the art")
+            if body.lower() != str((m.get("look") or {}).get("body", "")).lower():
+                out.append(f"{where}: the body colour differs between the data and the art")
+    for item_id, note in sorted(drops.items()):
+        if note.get("kind") != "note":
+            continue
+        if note.get("monster") not in monsters:
+            out.append(f"note {item_id}: no monster {note.get('monster')!r} drops it")
+    spawned, problem = _spawned_monsters(set(monsters))
+    if problem:
+        return out + [problem]
+    for kind in sorted(set(monsters) - spawned):
+        out.append(f"monster {kind}: no zone spawns it, so nobody can ever meet it")
+    return out
+
+
+def _spawned_monsters(known: set[str]) -> tuple[set[str], str]:
+    """Which of these monsters a zone really spawns, read from the Tiled maps."""
+    spawned: set[str] = set()
+    try:
+        zones = _json(DATA_DIR / "zones.json")
+        for zid, z in zones.items():
+            if zid.startswith("_") or not z.get("map"):
+                continue
+            tiled = _json(ROOT / "server" / "maps" / f"{z['map']}.tmj")
+            for layer in tiled.get("layers", []):
+                for o in layer.get("objects", []):
+                    if o.get("type") != "monster_area":
+                        continue
+                    props = {p["name"]: p["value"] for p in o.get("properties", [])}
+                    if props.get("monster") in known:
+                        spawned.add(props["monster"])
+    except (OSError, ValueError, KeyError) as e:
+        return spawned, f"cannot read the maps: {e}"
+    return spawned, ""
+
+
+def check_math_crafting() -> list[str]:
+    """M7: every recipe of Lò Toán makes a real piece of equipment out of things that really
+    drop, and asks only for notes that really exist."""
+    out: list[str] = []
+    recipes = _json(MATH_DIR / "crafting.json")["recipes"]
+    drops = _json(MATH_DIR / "drops.json")
+    equipment = _json(DATA_DIR / "items" / "equipment.json")
+    materials = _json(DATA_DIR / "items" / "materials.json")
+    monsters = {k: v for k, v in _json(MATH_DIR / "monsters.json").items() if not k.startswith("_")}
+    creatures = {k: v for k, v in _json(DATA_DIR / "creatures" / "monsters.json").items()
+                 if not k.startswith("_")}
+    dropped = set()
+    for m in list(monsters.values()) + list(creatures.values()):
+        dropped |= {d["item"] for d in m.get("drops", []) if "item" in d}
+        if m.get("note"):
+            dropped.add(m["note"])
+    for rid, r in sorted(recipes.items()):
+        where = f"recipe {rid}"
+        if r.get("makes") not in equipment["items"]:
+            out.append(f"{where}: makes {r.get('makes')!r}, which is not a piece of equipment")
+        if r.get("rarity") not in equipment["rarities"]:
+            out.append(f"{where}: rarity {r.get('rarity')!r} does not exist")
+        if int(r.get("fee", 0)) < 0:
+            out.append(f"{where}: a negative fee")
+        if not r.get("ingredients"):
+            out.append(f"{where}: no ingredients at all")
+        for i in r.get("ingredients", []):
+            item = i.get("item")
+            if item not in drops and item not in materials:
+                out.append(f"{where}: ingredient {item!r} is not an item")
+            elif item not in dropped:
+                out.append(f"{where}: nothing drops {item!r}, so the recipe cannot be finished")
+            if int(i.get("qty", 0)) <= 0:
+                out.append(f"{where}: {item!r} with qty {i.get('qty')!r}")
+        for n in r.get("needs_notes", []):
+            if drops.get(n, {}).get("kind") != "note":
+                out.append(f"{where}: needs {n!r}, which is not a ghi chú lỗi sai")
+    return out
+
+
 def check_generated_answers() -> list[str]:
     if math_path.validate_all() or math_items.validate_all():
         return ["skipped: the checks above must pass first"]
@@ -277,6 +422,10 @@ CHECKS = [
     ("programming exercises: statements, samples and hidden tests are well formed", check_problems),
     ("reference solutions: every exercise's own solution reproduces every answer", check_problem_solutions),
     ("exercise tests have teeth: no wrong program is accepted", check_problem_tests_have_teeth),
+    ("mistake-monsters: skill, library section, ghi chú, sprite, and a zone that spawns them",
+     check_mistake_monsters),
+    ("Lò Toán: every recipe makes real equipment from things that really drop",
+     check_math_crafting),
     ("fonts: every string the game shows can be drawn", check_fonts),
 ]
 

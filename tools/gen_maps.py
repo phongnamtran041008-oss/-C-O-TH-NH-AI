@@ -296,11 +296,13 @@ def village() -> dict:
     south_gap = set(range(26, 30))
     east_gap = set(range(16, 20))
     west_gap = set(range(16, 20))
+    north_gap = set(range(16, 20))        # M7: north to Loạn Số Cốc
     # roads and the square
     m.fill(26, 24, 29, H - 1, ["path0", "path1", "path0"])            # south road to the abode
     m.fill(36, 16, W - 1, 19, ["path0", "path1", "path0"])            # east road to the forest
     m.fill(26, 8, 29, 11, ["path0", "path1"])                         # north to Thiên Cơ Các
     m.fill(10, 16, 19, 19, ["path0", "path1"])                        # west to the market
+    m.fill(16, 0, 19, 15, ["path0", "path1"])                         # M7: north to Loạn Số Cốc
     m.fill(0, 16, 9, 19, ["path0", "path1", "path0"])                 # stage 6: west road to Hồ Nghiên Mực
     m.fill(20, 12, 35, 23, ["plaza0", "plaza1"])                      # the square
     m.fill(30, 24, 31, 27, ["path0", "path1"])
@@ -313,7 +315,8 @@ def village() -> dict:
             m.setg(x, y, "water0")
     m.solid(4 * T, 26 * T, 7 * T, 5 * T)
     m.reserve(4 * T, 26 * T, 7 * T, 5 * T)
-    m.ring("bamboo", {("s", x) for x in south_gap} | {("e", y) for y in east_gap} | {("w", y) for y in west_gap})
+    m.ring("bamboo", {("s", x) for x in south_gap} | {("e", y) for y in east_gap}
+           | {("w", y) for y in west_gap} | {("n", x) for x in north_gap})
     # buildings and service points (actions are handled by the client; spec 7.1)
     m.building("Thiên Cơ Các", "pavilion", 25, 3, 64, 64, 22, otype="interact", action="gacha")
     m.building("Tàng Thư Các", "library", 36, 4, 64, 56, 24, otype="interact", action="library")
@@ -350,6 +353,14 @@ def village() -> dict:
     m.obj("spawn", "spawn", 28 * T, 21 * T, 1, 1)
     m.obj("from_abode", "spawn", 28 * T, (H - 3) * T, 1, 1)
     m.obj("from_forest", "spawn", (W - 4) * T, 18 * T, 1, 1)
+    # M7: the gate north to Loạn Số Cốc, where the mistakes themselves walk around
+    m.obj("Cổng Bắc", "prop", 16 * T, 0, 32, 40, sprite="portal")
+    m.obj("to_loan_so_coc", "portal", 16 * T, -8, 4 * T, T + 10, target="loan_so_coc",
+          target_spawn="from_village")
+    m.obj("Đi Loạn Số Cốc", "sign", 20 * T, 3 * T, 16, 20, sprite="sign",
+          text="↑ Loạn Số Cốc")
+    m.solid(20 * T + 6, 3 * T + 14, 4, 6)
+    m.obj("from_loan_so_coc", "spawn", 17 * T, 3 * T, 1, 1)
     # stage 6: the pond can be fished (spec 11.1), the west gate leads to Hồ Nghiên Mực
     m.obj("pond", "area", 4 * T, 26 * T, 7 * T, 5 * T, kind="pond", pool="ao")
     m.obj("Cổng Tây", "prop", 0, 16 * T - 8, 32, 40, sprite="portal")
@@ -469,6 +480,70 @@ REALM_ROOM_W, REALM_ROOM_H = 22, 16
 REALM_LAYOUT = (("compose", 0, 0), ("sentence", 1, 0), ("tone", 2, 0), ("mirror", 0, 1), ("maze", 1, 1), ("boss", 2, 1))
 
 
+def math_valley() -> dict:
+    """Loạn Số Cốc (M7): the valley where the mistakes themselves walk around. Three stretches,
+    one per floor of Đại Số Tuyến Tính, so a player meets the mistakes of the floor they are on
+    first. South gate -> Trúc Lâm Thôn; Lò Toán stands just inside the gate."""
+    m = MapBuilder("loan_so_coc", "Loạn Số Cốc", 56, 44, "loan_so_coc")
+    W, H = m.W, m.H
+    for y in range(H):
+        for x in range(W):
+            r = m.rng.random()
+            # the floor is bare stone where the numbers fell apart, grass where it is still quiet
+            if y < 14:
+                m.setg(x, y, "stone0" if r < 0.7 else "ink1" if r < 0.9 else "dirt0")
+            elif y < 29:
+                m.setg(x, y, "dirt0" if r < 0.5 else "stone0" if r < 0.8 else "dark_grass0")
+            else:
+                m.setg(x, y, "dark_grass0" if r < 0.6 else "dark_grass1" if r < 0.93 else "dirt0")
+    south_gap = set(range(26, 30))
+    # the one road: it runs the length of the valley, floor 1 at the gate, floor 3 at the far end
+    for y in range(2, H - 1):
+        m.fill(27, y, 28, y, ["path0", "path1"], reserve=False)
+    m.fill(20, 30, 35, 33, ["path0", "path1"], reserve=False)      # the clearing by the gate
+    m.fill(18, 18, 37, 20, ["path0", "path1"], reserve=False)      # the middle crossing
+    m.fill(16, 5, 39, 7, ["path0", "path1"], reserve=False)        # the far end
+    m.ring("ink_tree", {("s", x) for x in south_gap})
+    # Lò Toán: the furnace that turns what the mistakes drop into equipment (data/math/crafting.json)
+    m.building("Lò Toán", "furnace", 22, 34, 24, 28, 14, otype="interact", action="math_craft")
+    m.obj("Lò Toán", "sign", 20 * T, 35 * T, 16, 20, sprite="sign", text="Lò Toán")
+    m.solid(20 * T + 6, 35 * T + 14, 4, 6)
+    # M8: the Đạo Sĩ practising by the furnace is a character rendered out of Blender;
+    # the client draws him from client/assets/chars/, and skips him when not rendered yet.
+    m.obj("Đạo Sĩ Luyện Kiếm", "char", 33 * T, 34 * T, 16, 24, sheet="dao_si_truc_co", facing="down")
+    m.obj("Bảng chỉ dẫn", "sign", 30 * T, 35 * T, 16, 20, sprite="sign",
+          text="Tầng 1 gần cổng, tầng 3 cuối cốc")
+    m.solid(30 * T + 6, 35 * T + 14, 4, 6)
+    # rocks to break the sight lines
+    for i, (tx, ty) in enumerate(((12, 26), (44, 24), (16, 10), (40, 9), (22, 16), (34, 38))):
+        m.obj("rock", "prop", tx * T, ty * T, 16, 12, sprite="rock", variant=i)
+        m.solid(tx * T + 2, ty * T + 4, 12, 8)
+        m.blocked_tiles.add((tx, ty))
+    # floor 1 (tập hợp và ánh xạ): just inside the gate
+    m.obj("t1_phan_tu", "monster_area", 8 * T, 29 * T, 16 * T, 11 * T, monster="dstt_phan_tu_ma", count=5)
+    m.obj("t1_nghich_hieu", "monster_area", 32 * T, 29 * T, 16 * T, 11 * T,
+          monster="dstt_nghich_hieu_ma", count=4)
+    m.obj("t1_anh_trung", "monster_area", 20 * T, 24 * T, 14 * T, 6 * T, monster="dstt_anh_trung_ma", count=1)
+    # floor 2 (số phức): the middle of the valley
+    m.obj("t2_phan_ao", "monster_area", 6 * T, 15 * T, 18 * T, 10 * T, monster="dstt_phan_ao_ma", count=4)
+    m.obj("t2_binh_phuong", "monster_area", 32 * T, 15 * T, 18 * T, 10 * T,
+          monster="dstt_binh_phuong_ma", count=4)
+    m.obj("t2_modun", "monster_area", 22 * T, 12 * T, 14 * T, 6 * T, monster="dstt_modun_ma", count=1)
+    # floor 3 (vectơ và ma trận): the far end, where the stone is bare
+    m.obj("t3_chi_so", "monster_area", 6 * T, 2 * T, 18 * T, 10 * T, monster="dstt_chi_so_ma", count=4)
+    m.obj("t3_chuyen_vi", "monster_area", 32 * T, 2 * T, 18 * T, 10 * T, monster="dstt_chuyen_vi_ma", count=4)
+    m.obj("t3_doi_xung", "monster_area", 20 * T, 2 * T, 16 * T, 6 * T, monster="dstt_doi_xung_ma", count=1)
+    m.scatter_trees(34, "ink_tree")
+    m.scatter_trees(12, "tree")
+    # the way home
+    m.obj("Cổng Nam", "prop", 26 * T, (H - 2) * T - 8, 32, 40, sprite="portal")
+    m.obj("to_village", "portal", 26 * T, (H - 1) * T - 2, 4 * T, T + 10, target="truc_lam_thon",
+          target_spawn="from_loan_so_coc")
+    m.obj("spawn", "spawn", 27 * T + 8, (H - 5) * T, 1, 1)
+    m.obj("from_village", "spawn", 27 * T + 8, (H - 5) * T, 1, 1)
+    return m.build({"music": "forest", "safe": "false"})
+
+
 def secret_realm() -> dict:
     """Bí cảnh (spec 14): six walled rooms, one per puzzle kind plus the boss's den. A run
     uses 3-5 of the puzzle rooms in a random order; the server moves the party from room to
@@ -558,7 +633,8 @@ def main() -> int:
     server_maps = ROOT / "server" / "maps"
     server_maps.mkdir(parents=True, exist_ok=True)
     for name, fn in (("abode", abode), ("truc_lam_thon", village), ("rung_muc_loang", forest),
-                     ("ho_nghien_muc", lake), ("bi_canh", secret_realm)):
+                     ("ho_nghien_muc", lake), ("loan_so_coc", math_valley),
+                     ("bi_canh", secret_realm)):
         m = fn()
         data = json.dumps(m, ensure_ascii=False, indent=1).encode("utf-8")   # LF on every OS
         (OUT / f"{name}.tmj").write_bytes(data)

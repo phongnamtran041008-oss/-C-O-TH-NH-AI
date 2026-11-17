@@ -170,37 +170,66 @@ def request_question(ch: "ChannelZone", p: "Player", m: "Monster", now: float) -
     _world().spawn(_create_question(ch, p, m.eid, m.kind))
 
 
-async def _create_question(ch: "ChannelZone", p: "Player", mid: str, kind: str) -> None:
+async def _word_question(db, ch: "ChannelZone", p: "Player", mid: str, rng: random.Random):
+    """The Vấn Đạo question a Mặc Quái asks: a word this player has learned (spec 8.1)."""
     from ..learning import question_bank as qb
     from ..learning import quiz, selection
     from ..learning.wordbank import bank
-    from ..models import User
-    from ..systems import codex, cultivation
+    from ..systems import cultivation
     from .world import zone_defs
+    tier = cultivation.tier_of(p.realm)
+    zone_tier = getattr(ch, "question_tier", None) or zone_defs().get(ch.zone_id, {}).get("tier", tier)
+    try:
+        word_id = await selection.pick_word(db, p.user_id, zone_tier, rng)
+    except selection.NoWordAvailable:
+        p.no_words_until = _world().mono() + 10
+        if p.session:
+            p.session.send({"t": "error", "code": "nothing_learned",
+                            "message_vi": "Con chưa học chữ nào nên chưa phá được Mặc Thuẫn. "
+                                          "Về vườn học ít nhất một chữ đã!"})
+        return None
+    word = bank().get(word_id)
+    types = balance.quiz()["types"]
+    allowed = [q for q in ch.monster(mid).info.get("qtypes", []) if types[q]["min_tier"] <= tier] \
+        if ch.monster(mid) else []
+    return "combat", qb.generate_any(allowed or ["Q1", "Q2"],
+                                     word, quiz.gen_context(rng, max_tier=max(tier, word.tier)))
+
+
+async def _math_question(db, user, p: "Player", info: dict, rng: random.Random):
+    """The question a quái lỗi sai asks (M7): its own micro-skill, at this player's tier."""
+    from ..systems import math_combat
+    question = await math_combat.question_for(db, user, info, rng)
+    if question is None:
+        p.no_words_until = _world().mono() + 10
+        if p.session:
+            p.session.send({"t": "error", "code": "no_math_question",
+                            "message_vi": "Chưa có câu toán nào cho lỗi này ở bậc của con. "
+                                          "Luyện ở Động Phủ một lúc rồi quay lại!"})
+        return None
+    return math_combat.CONTEXT, question
+
+
+async def _create_question(ch: "ChannelZone", p: "Player", mid: str, kind: str) -> None:
+    from ..learning import quiz
+    from ..models import User
+    from ..systems import codex, math_combat
     w = _world()
     rng = random.Random()
     try:
         async with dbm.SessionLocal() as db:
             user = await db.get(User, p.user_id)
-            tier = cultivation.tier_of(p.realm)
-            zone_tier = getattr(ch, "question_tier", None) or zone_defs().get(ch.zone_id, {}).get("tier", tier)
-            try:
-                word_id = await selection.pick_word(db, p.user_id, zone_tier, rng)
-            except selection.NoWordAvailable:
+            m0 = ch.monster(mid)
+            info = m0.info if m0 is not None else None
+            if math_combat.is_mistake_monster(info):
+                built = await _math_question(db, user, p, info, rng)
+            else:
+                built = await _word_question(db, ch, p, mid, rng)
+            if built is None:
                 p.q_pending = False
-                p.no_words_until = w.mono() + 10
-                if p.session:
-                    p.session.send({"t": "error", "code": "nothing_learned",
-                                    "message_vi": "Con chưa học chữ nào nên chưa phá được Mặc Thuẫn. "
-                                                  "Về vườn học ít nhất một chữ đã!"})
                 return
-            word = bank().get(word_id)
-            types = balance.quiz()["types"]
-            allowed = [q for q in ch.monster(mid).info.get("qtypes", []) if types[q]["min_tier"] <= tier] \
-                if ch.monster(mid) else []
-            question = qb.generate_any(allowed or ["Q1", "Q2"], word,
-                                       quiz.gen_context(rng, max_tier=max(tier, word.tier)))
-            out = await quiz.create_session(db, user, "combat", question, ref=f"{ch.key}|{mid}")
+            context, question = built
+            out = await quiz.create_session(db, user, context, question, ref=f"{ch.key}|{mid}")
             first = await codex.meet_monster(db, p.user_id, kind)
             await db.commit()
     except Exception:

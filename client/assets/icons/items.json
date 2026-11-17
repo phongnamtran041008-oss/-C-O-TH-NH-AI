@@ -1,0 +1,287 @@
+{
+ "_comment": "Built by tools/pack_icons.py from art/render_items/. Do not edit by hand. Models that are CC-BY keep their credit in CREDITS.md.",
+ "sheet": "items.png",
+ "cell": 32,
+ "cols": 8,
+ "count": 34,
+ "icons": {
+  "cuon_thu": [
+   {
+    "index": 0,
+    "kind": "cong_phap",
+    "title": "Scroll",
+    "creator": "Poly",
+    "licence": "CC-BY"
+   },
+   {
+    "index": 1,
+    "kind": "cong_phap",
+    "title": "Scroll",
+    "creator": "Quaternius",
+    "licence": "CC0"
+   }
+  ],
+  "sach": [
+   {
+    "index": 2,
+    "kind": "cong_phap",
+    "title": "Open Book",
+    "creator": "Quaternius",
+    "licence": "CC0"
+   },
+   {
+    "index": 3,
+    "kind": "cong_phap",
+    "title": "Book Stack",
+    "creator": "Danni",
+    "licence": "CC-BY"
+   }
+  ],
+  "dan": [
+   {
+    "index": 4,
+    "kind": "dan_duoc",
+    "title": "Potion Bottle - Game Asset",
+    "creator": "Don",
+    "licence": "CC-BY"
+   },
+   {
+    "index": 5,
+    "kind": "dan_duoc",
+    "title": "Potion Bottle",
+    "creator": "Quaternius",
+    "licence": "CC0"
+   },
+   {
+    "index": 6,
+    "kind": "dan_duoc",
+    "title": "Complex Health Potion",
+    "creator": "Garrett",
+    "licence": "CC-BY"
+   }
+  ],
+  "linh_thao": [
+   {
+    "index": 7,
+    "kind": "dan_duoc",
+    "title": "Mushroom",
+    "creator": "jeremy",
+    "licence": "CC-BY"
+   },
+   {
+    "index": 8,
+    "kind": "dan_duoc",
+    "title": "Bamboo",
+    "creator": "Zsky",
+    "licence": "CC-BY"
+   }
+  ],
+  "lo_dan": [
+   {
+    "index": 9,
+    "kind": "dan_duoc",
+    "title": "Cauldron",
+    "creator": "Quaternius",
+    "licence": "CC0"
+   }
+  ],
+  "ao_giap": [
+   {
+    "index": 10,
+    "kind": "trang_bi",
+    "title": "Áo giáp",
+    "creator": "tự dựng trong Blender",
+    "licence": "own work"
+   }
+  ],
+  "day_chuyen": [
+   {
+    "index": 11,
+    "kind": "trang_bi",
+    "title": "Necklace",
+    "creator": "Quaternius",
+    "licence": "CC0"
+   }
+  ],
+  "gang": [
+   {
+    "index": 12,
+    "kind": "trang_bi",
+    "title": "Glove",
+    "creator": "Quaternius",
+    "licence": "CC0"
+   }
+  ],
+  "giay": [
+   {
+    "index": 13,
+    "kind": "trang_bi",
+    "title": "Boots",
+    "creator": "Poly",
+    "licence": "CC-BY"
+   }
+  ],
+  "khien": [
+   {
+    "index": 14,
+    "kind": "trang_bi",
+    "title": "Shield",
+    "creator": "Quaternius",
+    "licence": "CC0"
+   },
+   {
+    "index": 15,
+    "kind": "trang_bi",
+    "title": "Shield",
+    "creator": "Quaternius",
+    "licence": "CC0"
+   }
+  ],
+  "mu": [
+   {
+    "index": 16,
+    "kind": "trang_bi",
+    "title": "Wizard hat",
+    "creator": "Poly",
+    "licence": "CC-BY"
+   },
+   {
+    "index": 17,
+    "kind": "trang_bi",
+    "title": "Witch Hat",
+    "creator": "J-Toastie",
+    "licence": "CC-BY"
+   }
+  ],
+  "nhan": [
+   {
+    "index": 18,
+    "kind": "trang_bi",
+    "title": "Halo",
+    "creator": "Poly",
+    "licence": "CC-BY"
+   }
+  ],
+  "bua": [
+   {
+    "index": 19,
+    "kind": "vu_khi",
+    "title": "Mace",
+    "creator": "Poly",
+    "licence": "CC-BY"
+   },
+   {
+    "index": 20,
+    "kind": "vu_khi",
+    "title": "d20 mace",
+    "creator": "Robin",
+    "licence": "CC-BY"
+   }
+  ],
+  "cung": [
+   {
+    "index": 21,
+    "kind": "vu_khi",
+    "title": "Bow",
+    "creator": "Zsky",
+    "licence": "CC-BY"
+   },
+   {
+    "index": 22,
+    "kind": "vu_khi",
+    "title": "Wooden Bow",
+    "creator": "Quaternius",
+    "licence": "CC0"
+   }
+  ],
+  "dao": [
+   {
+    "index": 23,
+    "kind": "vu_khi",
+    "title": "Katana",
+    "creator": "dook",
+    "licence": "CC-BY"
+   },
+   {
+    "index": 24,
+    "kind": "vu_khi",
+    "title": "Katana",
+    "creator": "Pichuliru",
+    "licence": "CC0"
+   }
+  ],
+  "ho_lo": [
+   {
+    "index": 25,
+    "kind": "vu_khi",
+    "title": "Hồ lô",
+    "creator": "tự dựng trong Blender",
+    "licence": "own work"
+   }
+  ],
+  "kiem": [
+   {
+    "index": 26,
+    "kind": "vu_khi",
+    "title": "Sword",
+    "creator": "Quaternius",
+    "licence": "CC0"
+   },
+   {
+    "index": 27,
+    "kind": "vu_khi",
+    "title": "Short Sword",
+    "creator": "joney_lol",
+    "licence": "CC-BY"
+   },
+   {
+    "index": 28,
+    "kind": "vu_khi",
+    "title": "Katana Sword",
+    "creator": "Nick",
+    "licence": "CC-BY"
+   }
+  ],
+  "quat": [
+   {
+    "index": 29,
+    "kind": "vu_khi",
+    "title": "Quạt xếp",
+    "creator": "tự dựng trong Blender",
+    "licence": "own work"
+   }
+  ],
+  "thuong": [
+   {
+    "index": 30,
+    "kind": "vu_khi",
+    "title": "Spear",
+    "creator": "Quaternius",
+    "licence": "CC0"
+   },
+   {
+    "index": 31,
+    "kind": "vu_khi",
+    "title": "Pike",
+    "creator": "joney_lol",
+    "licence": "CC-BY"
+   }
+  ],
+  "truong": [
+   {
+    "index": 32,
+    "kind": "vu_khi",
+    "title": "Staff",
+    "creator": "Zsky",
+    "licence": "CC-BY"
+   },
+   {
+    "index": 33,
+    "kind": "vu_khi",
+    "title": "Staff",
+    "creator": "Quaternius",
+    "licence": "CC0"
+   }
+  ]
+ }
+}

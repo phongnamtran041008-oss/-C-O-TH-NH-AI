@@ -67,3 +67,43 @@ toán của MathJax, dẫn xuất từ phông TeX của American Mathematical So
 
 Toàn bộ hình pixel (nhân vật, dân làng, Mặc Quái gồm Mặc Hồ, vũ khí, hiệu ứng chiến đấu và sấm Thiên Kiếp, cây, nhà cửa, đạo cụ, bản đồ Trúc Lâm Thôn và Rừng Mực Loang) và âm thanh hiệu ứng được tạo bằng code trong dự án,
 không dùng gói asset bên ngoài. Phát âm từ vựng (nếu có) tạo bằng `edge-tts` giọng `zh-CN-XiaoxiaoNeural`.
+
+## Model 3D cho icon (M8)
+
+Model low-poly tải từ Poly Pizza (https://poly.pizza) bằng `tools/fetch_models.py`; icon trong game là ảnh render từ chúng.
+CC0 thì không bắt buộc ghi công, nhưng vẫn ghi ở đây cho đủ dấu vết; CC-BY thì **bắt buộc** giữ dòng ghi công.
+
+- cong_phap/cuon_thu: "Scroll" — Poly (CC-BY) — https://poly.pizza/m/arIYNl9gMyr
+- cong_phap/cuon_thu: "Scroll" — Quaternius (CC0) — https://poly.pizza/m/MWGB9nxMIc
+- cong_phap/sach: "Open Book" — Quaternius (CC0) — https://poly.pizza/m/FsCIGEfTEs
+- cong_phap/sach: "Book Stack" — Danni (CC-BY) — https://poly.pizza/m/1WggoIFq8tx
+- dan_duoc/dan: "Potion Bottle - Game Asset" — Don (CC-BY) — https://poly.pizza/m/dOREefQfDQu
+- dan_duoc/dan: "Potion Bottle" — Quaternius (CC0) — https://poly.pizza/m/WJxYta4Z96
+- dan_duoc/dan: "Complex Health Potion" — Garrett (CC-BY) — https://poly.pizza/m/5DvOJDIgDYu
+- dan_duoc/linh_thao: "Mushroom" — jeremy (CC-BY) — https://poly.pizza/m/2DAaKHD48ZP
+- dan_duoc/linh_thao: "Bamboo" — Zsky (CC-BY) — https://poly.pizza/m/mKh1dBFt9p
+- dan_duoc/lo_dan: "Cauldron" — Quaternius (CC0) — https://poly.pizza/m/QaWJOPa6Gt
+- trang_bi/ao_giap: "Áo giáp" — tự dựng trong Blender (own work) — tools/blender/build_items.py
+- trang_bi/day_chuyen: "Necklace" — Quaternius (CC0) — https://poly.pizza/m/Jvhs8DCNDZ
+- trang_bi/gang: "Glove" — Quaternius (CC0) — https://poly.pizza/m/l1zv4LaA4I
+- trang_bi/giay: "Boots" — Poly (CC-BY) — https://poly.pizza/m/7HbqG8RwRcA
+- trang_bi/khien: "Shield" — Quaternius (CC0) — https://poly.pizza/m/srN1KGAO7f
+- trang_bi/khien: "Shield" — Quaternius (CC0) — https://poly.pizza/m/xoHSnOjsBG
+- trang_bi/mu: "Wizard hat" — Poly (CC-BY) — https://poly.pizza/m/7VVumyY7L_u
+- trang_bi/mu: "Witch Hat" — J-Toastie (CC-BY) — https://poly.pizza/m/fy1Elzr3nl
+- trang_bi/nhan: "Halo" — Poly (CC-BY) — https://poly.pizza/m/5jiuuz7sOV_
+- vu_khi/bua: "Mace" — Poly (CC-BY) — https://poly.pizza/m/40LBkajLUig
+- vu_khi/bua: "d20 mace" — Robin (CC-BY) — https://poly.pizza/m/32NZ3FY4yo-
+- vu_khi/cung: "Bow" — Zsky (CC-BY) — https://poly.pizza/m/XkJVO6cACA
+- vu_khi/cung: "Wooden Bow" — Quaternius (CC0) — https://poly.pizza/m/QnpqjLSKFU
+- vu_khi/dao: "Katana" — dook (CC-BY) — https://poly.pizza/m/zV3WXbyjMf
+- vu_khi/dao: "Katana" — Pichuliru (CC0) — https://poly.pizza/m/15A7InejC7
+- vu_khi/ho_lo: "Hồ lô" — tự dựng trong Blender (own work) — tools/blender/build_items.py
+- vu_khi/kiem: "Sword" — Quaternius (CC0) — https://poly.pizza/m/9lLmH8Et4K
+- vu_khi/kiem: "Short Sword" — joney_lol (CC-BY) — https://poly.pizza/m/8euoHHy9Le
+- vu_khi/kiem: "Katana Sword" — Nick (CC-BY) — https://poly.pizza/m/7Ly4_Ou8HXK
+- vu_khi/quat: "Quạt xếp" — tự dựng trong Blender (own work) — tools/blender/build_items.py
+- vu_khi/thuong: "Spear" — Quaternius (CC0) — https://poly.pizza/m/fH1zmvjPNx
+- vu_khi/thuong: "Pike" — joney_lol (CC-BY) — https://poly.pizza/m/CcIAY7h9aE
+- vu_khi/truong: "Staff" — Zsky (CC-BY) — https://poly.pizza/m/DZpBi0DSgZ
+- vu_khi/truong: "Staff" — Quaternius (CC0) — https://poly.pizza/m/PnGRvO4Lwd

@@ -21,3 +21,8 @@ backups/
 deploy/.env
 deploy/backups/
 client/worlds/
+# M8: intermediate renders; the models in art/models/ and the packed
+# sprites in client/assets/ are what the game and the build need
+art/render/
+art/render_items/
+*.blend1

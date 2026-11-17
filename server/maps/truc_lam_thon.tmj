@@ -11,7 +11,7 @@
  "type": "map",
  "version": "1.10",
  "nextlayerid": 4,
- "nextobjectid": 301,
+ "nextobjectid": 299,
  "properties": [
   {
    "name": "zone",
@@ -62,10 +62,10 @@
     3,
     1,
     1,
-    1,
-    1,
-    3,
-    2,
+    6,
+    7,
+    6,
+    7,
     1,
     3,
     2,
@@ -118,10 +118,10 @@
     3,
     2,
     1,
-    2,
-    2,
-    1,
-    1,
+    7,
+    6,
+    7,
+    6,
     2,
     3,
     1,
@@ -174,10 +174,10 @@
     1,
     2,
     2,
-    3,
-    1,
-    3,
-    1,
+    6,
+    7,
+    6,
+    7,
     1,
     1,
     1,
@@ -230,10 +230,10 @@
     1,
     2,
     3,
-    1,
-    2,
-    1,
-    3,
+    7,
+    6,
+    7,
+    6,
     1,
     1,
     1,
@@ -286,10 +286,10 @@
     2,
     5,
     1,
-    1,
-    2,
-    2,
-    2,
+    6,
+    7,
+    6,
+    7,
     1,
     3,
     1,
@@ -342,10 +342,10 @@
     1,
     2,
     3,
-    2,
-    2,
-    1,
-    1,
+    7,
+    6,
+    7,
+    6,
     1,
     3,
     1,
@@ -398,10 +398,10 @@
     1,
     1,
     1,
-    1,
-    1,
-    2,
-    2,
+    6,
+    7,
+    6,
+    7,
     1,
     1,
     1,
@@ -454,10 +454,10 @@
     2,
     1,
     1,
-    5,
-    1,
-    1,
-    2,
+    7,
+    6,
+    7,
+    6,
     2,
     1,
     2,
@@ -510,10 +510,10 @@
     1,
     2,
     1,
-    2,
-    1,
-    2,
-    1,
+    6,
+    7,
+    6,
+    7,
     3,
     2,
     2,
@@ -566,10 +566,10 @@
     3,
     1,
     2,
-    1,
-    2,
-    1,
-    1,
+    7,
+    6,
+    7,
+    6,
     2,
     2,
     1,
@@ -622,10 +622,10 @@
     3,
     5,
     5,
-    1,
-    1,
-    1,
-    5,
+    6,
+    7,
+    6,
+    7,
     2,
     3,
     1,
@@ -678,10 +678,10 @@
     1,
     2,
     3,
-    1,
-    1,
-    1,
-    2,
+    7,
+    6,
+    7,
+    6,
     1,
     3,
     1,
@@ -734,10 +734,10 @@
     3,
     1,
     1,
-    1,
-    1,
-    1,
-    1,
+    6,
+    7,
+    6,
+    7,
     12,
     13,
     12,
@@ -790,10 +790,10 @@
     1,
     1,
     3,
-    2,
-    1,
-    1,
-    1,
+    7,
+    6,
+    7,
+    6,
     13,
     12,
     13,
@@ -846,10 +846,10 @@
     1,
     1,
     3,
-    1,
-    1,
-    5,
-    2,
+    6,
+    7,
+    6,
+    7,
     12,
     13,
     12,
@@ -902,10 +902,10 @@
     1,
     1,
     2,
-    1,
-    1,
-    3,
-    2,
+    7,
+    6,
+    7,
+    6,
     13,
     12,
     13,
@@ -2815,29 +2815,6 @@
      "name": "bamboo",
      "type": "prop",
      "x": 256,
-     "y": -16,
-     "width": 16,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "bamboo"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "16"
-      }
-     ]
-    },
-    {
-     "id": 35,
-     "name": "bamboo",
-     "type": "prop",
-     "x": 256,
      "y": 528,
      "width": 16,
      "height": 40,
@@ -2857,30 +2834,7 @@
      ]
     },
     {
-     "id": 36,
-     "name": "bamboo",
-     "type": "prop",
-     "x": 272,
-     "y": -16,
-     "width": 16,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "bamboo"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "17"
-      }
-     ]
-    },
-    {
-     "id": 37,
+     "id": 35,
      "name": "bamboo",
      "type": "prop",
      "x": 272,
@@ -2903,30 +2857,7 @@
      ]
     },
     {
-     "id": 38,
-     "name": "bamboo",
-     "type": "prop",
-     "x": 288,
-     "y": -16,
-     "width": 16,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "bamboo"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "18"
-      }
-     ]
-    },
-    {
-     "id": 39,
+     "id": 36,
      "name": "bamboo",
      "type": "prop",
      "x": 288,
@@ -2949,30 +2880,7 @@
      ]
     },
     {
-     "id": 40,
-     "name": "bamboo",
-     "type": "prop",
-     "x": 304,
-     "y": -16,
-     "width": 16,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "bamboo"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "19"
-      }
-     ]
-    },
-    {
-     "id": 41,
+     "id": 37,
      "name": "bamboo",
      "type": "prop",
      "x": 304,
@@ -2995,7 +2903,7 @@
      ]
     },
     {
-     "id": 42,
+     "id": 38,
      "name": "bamboo",
      "type": "prop",
      "x": 320,
@@ -3018,7 +2926,7 @@
      ]
     },
     {
-     "id": 43,
+     "id": 39,
      "name": "bamboo",
      "type": "prop",
      "x": 320,
@@ -3041,7 +2949,7 @@
      ]
     },
     {
-     "id": 44,
+     "id": 40,
      "name": "bamboo",
      "type": "prop",
      "x": 336,
@@ -3064,7 +2972,7 @@
      ]
     },
     {
-     "id": 45,
+     "id": 41,
      "name": "bamboo",
      "type": "prop",
      "x": 336,
@@ -3087,7 +2995,7 @@
      ]
     },
     {
-     "id": 46,
+     "id": 42,
      "name": "bamboo",
      "type": "prop",
      "x": 352,
@@ -3110,7 +3018,7 @@
      ]
     },
     {
-     "id": 47,
+     "id": 43,
      "name": "bamboo",
      "type": "prop",
      "x": 352,
@@ -3133,7 +3041,7 @@
      ]
     },
     {
-     "id": 48,
+     "id": 44,
      "name": "bamboo",
      "type": "prop",
      "x": 368,
@@ -3156,7 +3064,7 @@
      ]
     },
     {
-     "id": 49,
+     "id": 45,
      "name": "bamboo",
      "type": "prop",
      "x": 368,
@@ -3179,7 +3087,7 @@
      ]
     },
     {
-     "id": 50,
+     "id": 46,
      "name": "bamboo",
      "type": "prop",
      "x": 384,
@@ -3202,7 +3110,7 @@
      ]
     },
     {
-     "id": 51,
+     "id": 47,
      "name": "bamboo",
      "type": "prop",
      "x": 384,
@@ -3225,7 +3133,7 @@
      ]
     },
     {
-     "id": 52,
+     "id": 48,
      "name": "bamboo",
      "type": "prop",
      "x": 400,
@@ -3248,7 +3156,7 @@
      ]
     },
     {
-     "id": 53,
+     "id": 49,
      "name": "bamboo",
      "type": "prop",
      "x": 400,
@@ -3271,7 +3179,7 @@
      ]
     },
     {
-     "id": 54,
+     "id": 50,
      "name": "bamboo",
      "type": "prop",
      "x": 416,
@@ -3294,7 +3202,7 @@
      ]
     },
     {
-     "id": 55,
+     "id": 51,
      "name": "bamboo",
      "type": "prop",
      "x": 432,
@@ -3317,7 +3225,7 @@
      ]
     },
     {
-     "id": 56,
+     "id": 52,
      "name": "bamboo",
      "type": "prop",
      "x": 448,
@@ -3340,7 +3248,7 @@
      ]
     },
     {
-     "id": 57,
+     "id": 53,
      "name": "bamboo",
      "type": "prop",
      "x": 464,
@@ -3363,7 +3271,7 @@
      ]
     },
     {
-     "id": 58,
+     "id": 54,
      "name": "bamboo",
      "type": "prop",
      "x": 480,
@@ -3386,7 +3294,7 @@
      ]
     },
     {
-     "id": 59,
+     "id": 55,
      "name": "bamboo",
      "type": "prop",
      "x": 480,
@@ -3409,7 +3317,7 @@
      ]
     },
     {
-     "id": 60,
+     "id": 56,
      "name": "bamboo",
      "type": "prop",
      "x": 496,
@@ -3432,7 +3340,7 @@
      ]
     },
     {
-     "id": 61,
+     "id": 57,
      "name": "bamboo",
      "type": "prop",
      "x": 496,
@@ -3455,7 +3363,7 @@
      ]
     },
     {
-     "id": 62,
+     "id": 58,
      "name": "bamboo",
      "type": "prop",
      "x": 512,
@@ -3478,7 +3386,7 @@
      ]
     },
     {
-     "id": 63,
+     "id": 59,
      "name": "bamboo",
      "type": "prop",
      "x": 512,
@@ -3501,7 +3409,7 @@
      ]
     },
     {
-     "id": 64,
+     "id": 60,
      "name": "bamboo",
      "type": "prop",
      "x": 528,
@@ -3524,7 +3432,7 @@
      ]
     },
     {
-     "id": 65,
+     "id": 61,
      "name": "bamboo",
      "type": "prop",
      "x": 528,
@@ -3547,7 +3455,7 @@
      ]
     },
     {
-     "id": 66,
+     "id": 62,
      "name": "bamboo",
      "type": "prop",
      "x": 544,
@@ -3570,7 +3478,7 @@
      ]
     },
     {
-     "id": 67,
+     "id": 63,
      "name": "bamboo",
      "type": "prop",
      "x": 544,
@@ -3593,7 +3501,7 @@
      ]
     },
     {
-     "id": 68,
+     "id": 64,
      "name": "bamboo",
      "type": "prop",
      "x": 560,
@@ -3616,7 +3524,7 @@
      ]
     },
     {
-     "id": 69,
+     "id": 65,
      "name": "bamboo",
      "type": "prop",
      "x": 560,
@@ -3639,7 +3547,7 @@
      ]
     },
     {
-     "id": 70,
+     "id": 66,
      "name": "bamboo",
      "type": "prop",
      "x": 576,
@@ -3662,7 +3570,7 @@
      ]
     },
     {
-     "id": 71,
+     "id": 67,
      "name": "bamboo",
      "type": "prop",
      "x": 576,
@@ -3685,7 +3593,7 @@
      ]
     },
     {
-     "id": 72,
+     "id": 68,
      "name": "bamboo",
      "type": "prop",
      "x": 592,
@@ -3708,7 +3616,7 @@
      ]
     },
     {
-     "id": 73,
+     "id": 69,
      "name": "bamboo",
      "type": "prop",
      "x": 592,
@@ -3731,7 +3639,7 @@
      ]
     },
     {
-     "id": 74,
+     "id": 70,
      "name": "bamboo",
      "type": "prop",
      "x": 608,
@@ -3754,7 +3662,7 @@
      ]
     },
     {
-     "id": 75,
+     "id": 71,
      "name": "bamboo",
      "type": "prop",
      "x": 608,
@@ -3777,7 +3685,7 @@
      ]
     },
     {
-     "id": 76,
+     "id": 72,
      "name": "bamboo",
      "type": "prop",
      "x": 624,
@@ -3800,7 +3708,7 @@
      ]
     },
     {
-     "id": 77,
+     "id": 73,
      "name": "bamboo",
      "type": "prop",
      "x": 624,
@@ -3823,7 +3731,7 @@
      ]
     },
     {
-     "id": 78,
+     "id": 74,
      "name": "bamboo",
      "type": "prop",
      "x": 640,
@@ -3846,7 +3754,7 @@
      ]
     },
     {
-     "id": 79,
+     "id": 75,
      "name": "bamboo",
      "type": "prop",
      "x": 640,
@@ -3869,7 +3777,7 @@
      ]
     },
     {
-     "id": 80,
+     "id": 76,
      "name": "bamboo",
      "type": "prop",
      "x": 656,
@@ -3892,7 +3800,7 @@
      ]
     },
     {
-     "id": 81,
+     "id": 77,
      "name": "bamboo",
      "type": "prop",
      "x": 656,
@@ -3915,7 +3823,7 @@
      ]
     },
     {
-     "id": 82,
+     "id": 78,
      "name": "bamboo",
      "type": "prop",
      "x": 672,
@@ -3938,7 +3846,7 @@
      ]
     },
     {
-     "id": 83,
+     "id": 79,
      "name": "bamboo",
      "type": "prop",
      "x": 672,
@@ -3961,7 +3869,7 @@
      ]
     },
     {
-     "id": 84,
+     "id": 80,
      "name": "bamboo",
      "type": "prop",
      "x": 688,
@@ -3984,7 +3892,7 @@
      ]
     },
     {
-     "id": 85,
+     "id": 81,
      "name": "bamboo",
      "type": "prop",
      "x": 688,
@@ -4007,7 +3915,7 @@
      ]
     },
     {
-     "id": 86,
+     "id": 82,
      "name": "bamboo",
      "type": "prop",
      "x": 704,
@@ -4030,7 +3938,7 @@
      ]
     },
     {
-     "id": 87,
+     "id": 83,
      "name": "bamboo",
      "type": "prop",
      "x": 704,
@@ -4053,7 +3961,7 @@
      ]
     },
     {
-     "id": 88,
+     "id": 84,
      "name": "bamboo",
      "type": "prop",
      "x": 720,
@@ -4076,7 +3984,7 @@
      ]
     },
     {
-     "id": 89,
+     "id": 85,
      "name": "bamboo",
      "type": "prop",
      "x": 720,
@@ -4099,7 +4007,7 @@
      ]
     },
     {
-     "id": 90,
+     "id": 86,
      "name": "bamboo",
      "type": "prop",
      "x": 736,
@@ -4122,7 +4030,7 @@
      ]
     },
     {
-     "id": 91,
+     "id": 87,
      "name": "bamboo",
      "type": "prop",
      "x": 736,
@@ -4145,7 +4053,7 @@
      ]
     },
     {
-     "id": 92,
+     "id": 88,
      "name": "bamboo",
      "type": "prop",
      "x": 752,
@@ -4168,7 +4076,7 @@
      ]
     },
     {
-     "id": 93,
+     "id": 89,
      "name": "bamboo",
      "type": "prop",
      "x": 752,
@@ -4191,7 +4099,7 @@
      ]
     },
     {
-     "id": 94,
+     "id": 90,
      "name": "bamboo",
      "type": "prop",
      "x": 768,
@@ -4214,7 +4122,7 @@
      ]
     },
     {
-     "id": 95,
+     "id": 91,
      "name": "bamboo",
      "type": "prop",
      "x": 768,
@@ -4237,7 +4145,7 @@
      ]
     },
     {
-     "id": 96,
+     "id": 92,
      "name": "bamboo",
      "type": "prop",
      "x": 784,
@@ -4260,7 +4168,7 @@
      ]
     },
     {
-     "id": 97,
+     "id": 93,
      "name": "bamboo",
      "type": "prop",
      "x": 784,
@@ -4283,7 +4191,7 @@
      ]
     },
     {
-     "id": 98,
+     "id": 94,
      "name": "bamboo",
      "type": "prop",
      "x": 800,
@@ -4306,7 +4214,7 @@
      ]
     },
     {
-     "id": 99,
+     "id": 95,
      "name": "bamboo",
      "type": "prop",
      "x": 800,
@@ -4329,7 +4237,7 @@
      ]
     },
     {
-     "id": 100,
+     "id": 96,
      "name": "bamboo",
      "type": "prop",
      "x": 816,
@@ -4352,7 +4260,7 @@
      ]
     },
     {
-     "id": 101,
+     "id": 97,
      "name": "bamboo",
      "type": "prop",
      "x": 816,
@@ -4375,7 +4283,7 @@
      ]
     },
     {
-     "id": 102,
+     "id": 98,
      "name": "bamboo",
      "type": "prop",
      "x": 832,
@@ -4398,7 +4306,7 @@
      ]
     },
     {
-     "id": 103,
+     "id": 99,
      "name": "bamboo",
      "type": "prop",
      "x": 832,
@@ -4421,7 +4329,7 @@
      ]
     },
     {
-     "id": 104,
+     "id": 100,
      "name": "bamboo",
      "type": "prop",
      "x": 848,
@@ -4444,7 +4352,7 @@
      ]
     },
     {
-     "id": 105,
+     "id": 101,
      "name": "bamboo",
      "type": "prop",
      "x": 848,
@@ -4467,7 +4375,7 @@
      ]
     },
     {
-     "id": 106,
+     "id": 102,
      "name": "bamboo",
      "type": "prop",
      "x": 864,
@@ -4490,7 +4398,7 @@
      ]
     },
     {
-     "id": 107,
+     "id": 103,
      "name": "bamboo",
      "type": "prop",
      "x": 864,
@@ -4513,7 +4421,7 @@
      ]
     },
     {
-     "id": 108,
+     "id": 104,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -4536,7 +4444,7 @@
      ]
     },
     {
-     "id": 109,
+     "id": 105,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -4559,7 +4467,7 @@
      ]
     },
     {
-     "id": 110,
+     "id": 106,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -4582,7 +4490,7 @@
      ]
     },
     {
-     "id": 111,
+     "id": 107,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -4605,7 +4513,7 @@
      ]
     },
     {
-     "id": 112,
+     "id": 108,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -4628,7 +4536,7 @@
      ]
     },
     {
-     "id": 113,
+     "id": 109,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -4651,7 +4559,7 @@
      ]
     },
     {
-     "id": 114,
+     "id": 110,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -4674,7 +4582,7 @@
      ]
     },
     {
-     "id": 115,
+     "id": 111,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -4697,7 +4605,7 @@
      ]
     },
     {
-     "id": 116,
+     "id": 112,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -4720,7 +4628,7 @@
      ]
     },
     {
-     "id": 117,
+     "id": 113,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -4743,7 +4651,7 @@
      ]
     },
     {
-     "id": 118,
+     "id": 114,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -4766,7 +4674,7 @@
      ]
     },
     {
-     "id": 119,
+     "id": 115,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -4789,7 +4697,7 @@
      ]
     },
     {
-     "id": 120,
+     "id": 116,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -4812,7 +4720,7 @@
      ]
     },
     {
-     "id": 121,
+     "id": 117,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -4835,7 +4743,7 @@
      ]
     },
     {
-     "id": 122,
+     "id": 118,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -4858,7 +4766,7 @@
      ]
     },
     {
-     "id": 123,
+     "id": 119,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -4881,7 +4789,7 @@
      ]
     },
     {
-     "id": 124,
+     "id": 120,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -4904,7 +4812,7 @@
      ]
     },
     {
-     "id": 125,
+     "id": 121,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -4927,7 +4835,7 @@
      ]
     },
     {
-     "id": 126,
+     "id": 122,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -4950,7 +4858,7 @@
      ]
     },
     {
-     "id": 127,
+     "id": 123,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -4973,7 +4881,7 @@
      ]
     },
     {
-     "id": 128,
+     "id": 124,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -4996,7 +4904,7 @@
      ]
     },
     {
-     "id": 129,
+     "id": 125,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5019,7 +4927,7 @@
      ]
     },
     {
-     "id": 130,
+     "id": 126,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5042,7 +4950,7 @@
      ]
     },
     {
-     "id": 131,
+     "id": 127,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5065,7 +4973,7 @@
      ]
     },
     {
-     "id": 132,
+     "id": 128,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5088,7 +4996,7 @@
      ]
     },
     {
-     "id": 133,
+     "id": 129,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5111,7 +5019,7 @@
      ]
     },
     {
-     "id": 134,
+     "id": 130,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5134,7 +5042,7 @@
      ]
     },
     {
-     "id": 135,
+     "id": 131,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5157,7 +5065,7 @@
      ]
     },
     {
-     "id": 136,
+     "id": 132,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5180,7 +5088,7 @@
      ]
     },
     {
-     "id": 137,
+     "id": 133,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5203,7 +5111,7 @@
      ]
     },
     {
-     "id": 138,
+     "id": 134,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5226,7 +5134,7 @@
      ]
     },
     {
-     "id": 139,
+     "id": 135,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5249,7 +5157,7 @@
      ]
     },
     {
-     "id": 140,
+     "id": 136,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5272,7 +5180,7 @@
      ]
     },
     {
-     "id": 141,
+     "id": 137,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5295,7 +5203,7 @@
      ]
     },
     {
-     "id": 142,
+     "id": 138,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5318,7 +5226,7 @@
      ]
     },
     {
-     "id": 143,
+     "id": 139,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5341,7 +5249,7 @@
      ]
     },
     {
-     "id": 144,
+     "id": 140,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5364,7 +5272,7 @@
      ]
     },
     {
-     "id": 145,
+     "id": 141,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5387,7 +5295,7 @@
      ]
     },
     {
-     "id": 146,
+     "id": 142,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5410,7 +5318,7 @@
      ]
     },
     {
-     "id": 147,
+     "id": 143,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5433,7 +5341,7 @@
      ]
     },
     {
-     "id": 148,
+     "id": 144,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5456,7 +5364,7 @@
      ]
     },
     {
-     "id": 149,
+     "id": 145,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5479,7 +5387,7 @@
      ]
     },
     {
-     "id": 150,
+     "id": 146,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5502,7 +5410,7 @@
      ]
     },
     {
-     "id": 151,
+     "id": 147,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5525,7 +5433,7 @@
      ]
     },
     {
-     "id": 152,
+     "id": 148,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5548,7 +5456,7 @@
      ]
     },
     {
-     "id": 153,
+     "id": 149,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5571,7 +5479,7 @@
      ]
     },
     {
-     "id": 154,
+     "id": 150,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5594,7 +5502,7 @@
      ]
     },
     {
-     "id": 155,
+     "id": 151,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5617,7 +5525,7 @@
      ]
     },
     {
-     "id": 156,
+     "id": 152,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5640,7 +5548,7 @@
      ]
     },
     {
-     "id": 157,
+     "id": 153,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5663,7 +5571,7 @@
      ]
     },
     {
-     "id": 158,
+     "id": 154,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5686,7 +5594,7 @@
      ]
     },
     {
-     "id": 159,
+     "id": 155,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5709,7 +5617,7 @@
      ]
     },
     {
-     "id": 160,
+     "id": 156,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5732,7 +5640,7 @@
      ]
     },
     {
-     "id": 161,
+     "id": 157,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5755,7 +5663,7 @@
      ]
     },
     {
-     "id": 162,
+     "id": 158,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5778,7 +5686,7 @@
      ]
     },
     {
-     "id": 163,
+     "id": 159,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5801,7 +5709,7 @@
      ]
     },
     {
-     "id": 164,
+     "id": 160,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5824,7 +5732,7 @@
      ]
     },
     {
-     "id": 165,
+     "id": 161,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5847,7 +5755,7 @@
      ]
     },
     {
-     "id": 166,
+     "id": 162,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5870,7 +5778,7 @@
      ]
     },
     {
-     "id": 167,
+     "id": 163,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5893,7 +5801,7 @@
      ]
     },
     {
-     "id": 168,
+     "id": 164,
      "name": "bamboo",
      "type": "prop",
      "x": 0,
@@ -5916,7 +5824,7 @@
      ]
     },
     {
-     "id": 169,
+     "id": 165,
      "name": "bamboo",
      "type": "prop",
      "x": 880,
@@ -5939,7 +5847,7 @@
      ]
     },
     {
-     "id": 177,
+     "id": 174,
      "name": "Thiên Cơ Các",
      "type": "interact",
      "x": 400,
@@ -5962,7 +5870,7 @@
      ]
     },
     {
-     "id": 179,
+     "id": 176,
      "name": "Tàng Thư Các",
      "type": "interact",
      "x": 576,
@@ -5985,7 +5893,7 @@
      ]
     },
     {
-     "id": 181,
+     "id": 178,
      "name": "Nhà Trúc Lão",
      "type": "prop",
      "x": 96,
@@ -6003,7 +5911,7 @@
      ]
     },
     {
-     "id": 183,
+     "id": 180,
      "name": "Trúc Lão",
      "type": "npc",
      "x": 160,
@@ -6026,7 +5934,7 @@
      ]
     },
     {
-     "id": 185,
+     "id": 182,
      "name": "Sạp Tạp Hóa",
      "type": "interact",
      "x": 176,
@@ -6054,7 +5962,7 @@
      ]
     },
     {
-     "id": 187,
+     "id": 184,
      "name": "Bà Chủ Sạp",
      "type": "npc",
      "x": 208,
@@ -6077,7 +5985,7 @@
      ]
     },
     {
-     "id": 189,
+     "id": 186,
      "name": "Sạp Vải",
      "type": "interact",
      "x": 176,
@@ -6105,7 +6013,7 @@
      ]
     },
     {
-     "id": 191,
+     "id": 188,
      "name": "Lò Luyện Đan",
      "type": "interact",
      "x": 256,
@@ -6128,7 +6036,7 @@
      ]
     },
     {
-     "id": 193,
+     "id": 190,
      "name": "Đan Sư",
      "type": "npc",
      "x": 224,
@@ -6151,7 +6059,7 @@
      ]
     },
     {
-     "id": 195,
+     "id": 192,
      "name": "Lò Rèn",
      "type": "interact",
      "x": 336,
@@ -6174,7 +6082,7 @@
      ]
     },
     {
-     "id": 197,
+     "id": 194,
      "name": "Thợ Rèn",
      "type": "npc",
      "x": 368,
@@ -6197,7 +6105,7 @@
      ]
     },
     {
-     "id": 199,
+     "id": 196,
      "name": "Bảng Nhiệm Vụ",
      "type": "interact",
      "x": 512,
@@ -6220,7 +6128,7 @@
      ]
     },
     {
-     "id": 201,
+     "id": 198,
      "name": "Cổng Thủ Vườn",
      "type": "interact",
      "x": 704,
@@ -6243,7 +6151,7 @@
      ]
     },
     {
-     "id": 203,
+     "id": 200,
      "name": "Giếng",
      "type": "prop",
      "x": 436,
@@ -6261,7 +6169,7 @@
      ]
     },
     {
-     "id": 205,
+     "id": 202,
      "name": "Tiểu Lan",
      "type": "npc",
      "x": 480,
@@ -6284,7 +6192,7 @@
      ]
     },
     {
-     "id": 207,
+     "id": 204,
      "name": "Thủ Thư",
      "type": "npc",
      "x": 656,
@@ -6307,7 +6215,7 @@
      ]
     },
     {
-     "id": 209,
+     "id": 206,
      "name": "lantern",
      "type": "prop",
      "x": 324,
@@ -6330,7 +6238,7 @@
      ]
     },
     {
-     "id": 211,
+     "id": 208,
      "name": "lantern",
      "type": "prop",
      "x": 564,
@@ -6353,7 +6261,7 @@
      ]
     },
     {
-     "id": 213,
+     "id": 210,
      "name": "lantern",
      "type": "prop",
      "x": 324,
@@ -6376,7 +6284,7 @@
      ]
     },
     {
-     "id": 215,
+     "id": 212,
      "name": "lantern",
      "type": "prop",
      "x": 564,
@@ -6399,7 +6307,7 @@
      ]
     },
     {
-     "id": 217,
+     "id": 214,
      "name": "lantern",
      "type": "prop",
      "x": 404,
@@ -6422,7 +6330,7 @@
      ]
     },
     {
-     "id": 219,
+     "id": 216,
      "name": "lantern",
      "type": "prop",
      "x": 484,
@@ -6445,7 +6353,7 @@
      ]
     },
     {
-     "id": 221,
+     "id": 218,
      "name": "Nhà dân",
      "type": "prop",
      "x": 704,
@@ -6468,7 +6376,7 @@
      ]
     },
     {
-     "id": 223,
+     "id": 220,
      "name": "Nhà dân",
      "type": "prop",
      "x": 784,
@@ -6491,7 +6399,7 @@
      ]
     },
     {
-     "id": 225,
+     "id": 222,
      "name": "Nhà dân",
      "type": "prop",
      "x": 672,
@@ -6514,7 +6422,7 @@
      ]
     },
     {
-     "id": 227,
+     "id": 224,
      "name": "Nhà dân",
      "type": "prop",
      "x": 784,
@@ -6537,7 +6445,7 @@
      ]
     },
     {
-     "id": 229,
+     "id": 226,
      "name": "Nhà dân",
      "type": "prop",
      "x": 48,
@@ -6560,7 +6468,7 @@
      ]
     },
     {
-     "id": 231,
+     "id": 228,
      "name": "Nhà dân",
      "type": "prop",
      "x": 576,
@@ -6583,7 +6491,7 @@
      ]
     },
     {
-     "id": 233,
+     "id": 230,
      "name": "sign",
      "type": "prop",
      "x": 528,
@@ -6601,7 +6509,7 @@
      ]
     },
     {
-     "id": 234,
+     "id": 231,
      "name": "Đi Rừng Mực Loang",
      "type": "sign",
      "x": 832,
@@ -6624,30 +6532,7 @@
      ]
     },
     {
-     "id": 236,
-     "name": "tree",
-     "type": "prop",
-     "x": 312,
-     "y": 8,
-     "width": 32,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "tree"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "800"
-      }
-     ]
-    },
-    {
-     "id": 238,
+     "id": 233,
      "name": "tree",
      "type": "prop",
      "x": 840,
@@ -6670,30 +6555,7 @@
      ]
     },
     {
-     "id": 240,
-     "name": "tree",
-     "type": "prop",
-     "x": 264,
-     "y": 168,
-     "width": 32,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "tree"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "411"
-      }
-     ]
-    },
-    {
-     "id": 242,
+     "id": 235,
      "name": "tree",
      "type": "prop",
      "x": 200,
@@ -6716,30 +6578,7 @@
      ]
     },
     {
-     "id": 244,
-     "name": "tree",
-     "type": "prop",
-     "x": 312,
-     "y": 104,
-     "width": 32,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "tree"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "494"
-      }
-     ]
-    },
-    {
-     "id": 246,
+     "id": 237,
      "name": "tree",
      "type": "prop",
      "x": 600,
@@ -6762,30 +6601,7 @@
      ]
     },
     {
-     "id": 248,
-     "name": "tree",
-     "type": "prop",
-     "x": 232,
-     "y": 72,
-     "width": 32,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "tree"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "247"
-      }
-     ]
-    },
-    {
-     "id": 250,
+     "id": 239,
      "name": "tree",
      "type": "prop",
      "x": 248,
@@ -6808,7 +6624,30 @@
      ]
     },
     {
-     "id": 252,
+     "id": 241,
+     "name": "tree",
+     "type": "prop",
+     "x": 328,
+     "y": 40,
+     "width": 32,
+     "height": 40,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "tree"
+      },
+      {
+       "name": "variant",
+       "type": "string",
+       "value": "704"
+      }
+     ]
+    },
+    {
+     "id": 243,
      "name": "tree",
      "type": "prop",
      "x": 728,
@@ -6831,7 +6670,7 @@
      ]
     },
     {
-     "id": 254,
+     "id": 245,
      "name": "tree",
      "type": "prop",
      "x": 88,
@@ -6854,7 +6693,7 @@
      ]
     },
     {
-     "id": 256,
+     "id": 247,
      "name": "tree",
      "type": "prop",
      "x": 792,
@@ -6877,7 +6716,7 @@
      ]
     },
     {
-     "id": 258,
+     "id": 249,
      "name": "tree",
      "type": "prop",
      "x": 744,
@@ -6900,7 +6739,7 @@
      ]
     },
     {
-     "id": 260,
+     "id": 251,
      "name": "tree",
      "type": "prop",
      "x": 504,
@@ -6923,7 +6762,30 @@
      ]
     },
     {
-     "id": 262,
+     "id": 253,
+     "name": "tree",
+     "type": "prop",
+     "x": 216,
+     "y": 88,
+     "width": 32,
+     "height": 40,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "tree"
+      },
+      {
+       "name": "variant",
+       "type": "string",
+       "value": "715"
+      }
+     ]
+    },
+    {
+     "id": 255,
      "name": "tree",
      "type": "prop",
      "x": 808,
@@ -6946,7 +6808,7 @@
      ]
     },
     {
-     "id": 264,
+     "id": 257,
      "name": "tree",
      "type": "prop",
      "x": 360,
@@ -6969,7 +6831,30 @@
      ]
     },
     {
-     "id": 266,
+     "id": 259,
+     "name": "tree",
+     "type": "prop",
+     "x": 328,
+     "y": 120,
+     "width": 32,
+     "height": 40,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "tree"
+      },
+      {
+       "name": "variant",
+       "type": "string",
+       "value": "885"
+      }
+     ]
+    },
+    {
+     "id": 261,
      "name": "tree",
      "type": "prop",
      "x": 296,
@@ -6992,7 +6877,7 @@
      ]
     },
     {
-     "id": 268,
+     "id": 263,
      "name": "tree",
      "type": "prop",
      "x": 696,
@@ -7015,7 +6900,7 @@
      ]
     },
     {
-     "id": 270,
+     "id": 265,
      "name": "tree",
      "type": "prop",
      "x": 776,
@@ -7038,7 +6923,7 @@
      ]
     },
     {
-     "id": 272,
+     "id": 267,
      "name": "tree",
      "type": "prop",
      "x": 264,
@@ -7061,7 +6946,7 @@
      ]
     },
     {
-     "id": 274,
+     "id": 269,
      "name": "tree",
      "type": "prop",
      "x": 24,
@@ -7084,7 +6969,7 @@
      ]
     },
     {
-     "id": 276,
+     "id": 271,
      "name": "tree",
      "type": "prop",
      "x": 40,
@@ -7107,7 +6992,7 @@
      ]
     },
     {
-     "id": 278,
+     "id": 273,
      "name": "tree",
      "type": "prop",
      "x": 680,
@@ -7130,7 +7015,7 @@
      ]
     },
     {
-     "id": 280,
+     "id": 275,
      "name": "tree",
      "type": "prop",
      "x": 840,
@@ -7153,7 +7038,7 @@
      ]
     },
     {
-     "id": 282,
+     "id": 277,
      "name": "tree",
      "type": "prop",
      "x": 792,
@@ -7176,30 +7061,7 @@
      ]
     },
     {
-     "id": 284,
-     "name": "tree",
-     "type": "prop",
-     "x": 264,
-     "y": 8,
-     "width": 32,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "tree"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "961"
-      }
-     ]
-    },
-    {
-     "id": 286,
+     "id": 279,
      "name": "to_abode",
      "type": "portal",
      "x": 416,
@@ -7222,7 +7084,7 @@
      ]
     },
     {
-     "id": 287,
+     "id": 280,
      "name": "Cổng Đông",
      "type": "prop",
      "x": 864,
@@ -7240,7 +7102,7 @@
      ]
     },
     {
-     "id": 288,
+     "id": 281,
      "name": "to_forest",
      "type": "portal",
      "x": 876,
@@ -7263,7 +7125,7 @@
      ]
     },
     {
-     "id": 289,
+     "id": 282,
      "name": "spawn",
      "type": "spawn",
      "x": 448,
@@ -7275,7 +7137,7 @@
      "properties": []
     },
     {
-     "id": 290,
+     "id": 283,
      "name": "from_abode",
      "type": "spawn",
      "x": 448,
@@ -7287,7 +7149,7 @@
      "properties": []
     },
     {
-     "id": 291,
+     "id": 284,
      "name": "from_forest",
      "type": "spawn",
      "x": 832,
@@ -7299,7 +7161,83 @@
      "properties": []
     },
     {
-     "id": 292,
+     "id": 285,
+     "name": "Cổng Bắc",
+     "type": "prop",
+     "x": 256,
+     "y": 0,
+     "width": 32,
+     "height": 40,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "portal"
+      }
+     ]
+    },
+    {
+     "id": 286,
+     "name": "to_loan_so_coc",
+     "type": "portal",
+     "x": 256,
+     "y": -8,
+     "width": 64,
+     "height": 26,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "target",
+       "type": "string",
+       "value": "loan_so_coc"
+      },
+      {
+       "name": "target_spawn",
+       "type": "string",
+       "value": "from_village"
+      }
+     ]
+    },
+    {
+     "id": 287,
+     "name": "Đi Loạn Số Cốc",
+     "type": "sign",
+     "x": 320,
+     "y": 48,
+     "width": 16,
+     "height": 20,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "sign"
+      },
+      {
+       "name": "text",
+       "type": "string",
+       "value": "↑ Loạn Số Cốc"
+      }
+     ]
+    },
+    {
+     "id": 289,
+     "name": "from_loan_so_coc",
+     "type": "spawn",
+     "x": 272,
+     "y": 48,
+     "width": 1,
+     "height": 1,
+     "rotation": 0,
+     "visible": true,
+     "properties": []
+    },
+    {
+     "id": 290,
      "name": "pond",
      "type": "area",
      "x": 64,
@@ -7322,7 +7260,7 @@
      ]
     },
     {
-     "id": 293,
+     "id": 291,
      "name": "Cổng Tây",
      "type": "prop",
      "x": 0,
@@ -7340,7 +7278,7 @@
      ]
     },
     {
-     "id": 294,
+     "id": 292,
      "name": "to_lake",
      "type": "portal",
      "x": -8,
@@ -7363,7 +7301,7 @@
      ]
     },
     {
-     "id": 295,
+     "id": 293,
      "name": "Đi Hồ Nghiên Mực",
      "type": "sign",
      "x": 48,
@@ -7386,7 +7324,7 @@
      ]
     },
     {
-     "id": 297,
+     "id": 295,
      "name": "from_lake",
      "type": "spawn",
      "x": 48,
@@ -7398,7 +7336,7 @@
      "properties": []
     },
     {
-     "id": 298,
+     "id": 296,
      "name": "Cổng Bí Cảnh",
      "type": "interact",
      "x": 336,
@@ -7421,7 +7359,7 @@
      ]
     },
     {
-     "id": 300,
+     "id": 298,
      "name": "from_realm",
      "type": "spawn",
      "x": 356,
@@ -7456,18 +7394,29 @@
      "visible": true
     },
     {
-     "id": 170,
+     "id": 166,
      "name": "",
      "type": "solid",
      "x": 0,
      "y": 0,
-     "width": 896,
+     "width": 256,
      "height": 24,
      "rotation": 0,
      "visible": true
     },
     {
-     "id": 171,
+     "id": 167,
+     "name": "",
+     "type": "solid",
+     "x": 320,
+     "y": 0,
+     "width": 576,
+     "height": 24,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 168,
      "name": "",
      "type": "solid",
      "x": 0,
@@ -7478,7 +7427,7 @@
      "visible": true
     },
     {
-     "id": 172,
+     "id": 169,
      "name": "",
      "type": "solid",
      "x": 480,
@@ -7489,7 +7438,7 @@
      "visible": true
     },
     {
-     "id": 173,
+     "id": 170,
      "name": "",
      "type": "solid",
      "x": 0,
@@ -7500,10 +7449,32 @@
      "visible": true
     },
     {
-     "id": 174,
+     "id": 171,
      "name": "",
      "type": "solid",
      "x": 0,
+     "y": 320,
+     "width": 16,
+     "height": 256,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 172,
+     "name": "",
+     "type": "solid",
+     "x": 880,
+     "y": 0,
+     "width": 16,
+     "height": 256,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 173,
+     "name": "",
+     "type": "solid",
+     "x": 880,
      "y": 320,
      "width": 16,
      "height": 256,
@@ -7514,28 +7485,6 @@
      "id": 175,
      "name": "",
      "type": "solid",
-     "x": 880,
-     "y": 0,
-     "width": 16,
-     "height": 256,
-     "rotation": 0,
-     "visible": true
-    },
-    {
-     "id": 176,
-     "name": "",
-     "type": "solid",
-     "x": 880,
-     "y": 320,
-     "width": 16,
-     "height": 256,
-     "rotation": 0,
-     "visible": true
-    },
-    {
-     "id": 178,
-     "name": "",
-     "type": "solid",
      "x": 402,
      "y": 90,
      "width": 60,
@@ -7544,7 +7493,7 @@
      "visible": true
     },
     {
-     "id": 180,
+     "id": 177,
      "name": "",
      "type": "solid",
      "x": 578,
@@ -7555,7 +7504,7 @@
      "visible": true
     },
     {
-     "id": 182,
+     "id": 179,
      "name": "",
      "type": "solid",
      "x": 98,
@@ -7566,7 +7515,7 @@
      "visible": true
     },
     {
-     "id": 184,
+     "id": 181,
      "name": "",
      "type": "solid",
      "x": 162,
@@ -7577,7 +7526,7 @@
      "visible": true
     },
     {
-     "id": 186,
+     "id": 183,
      "name": "",
      "type": "solid",
      "x": 178,
@@ -7588,7 +7537,7 @@
      "visible": true
     },
     {
-     "id": 188,
+     "id": 185,
      "name": "",
      "type": "solid",
      "x": 210,
@@ -7599,7 +7548,7 @@
      "visible": true
     },
     {
-     "id": 190,
+     "id": 187,
      "name": "",
      "type": "solid",
      "x": 178,
@@ -7610,7 +7559,7 @@
      "visible": true
     },
     {
-     "id": 192,
+     "id": 189,
      "name": "",
      "type": "solid",
      "x": 258,
@@ -7621,7 +7570,7 @@
      "visible": true
     },
     {
-     "id": 194,
+     "id": 191,
      "name": "",
      "type": "solid",
      "x": 226,
@@ -7632,7 +7581,7 @@
      "visible": true
     },
     {
-     "id": 196,
+     "id": 193,
      "name": "",
      "type": "solid",
      "x": 338,
@@ -7643,7 +7592,7 @@
      "visible": true
     },
     {
-     "id": 198,
+     "id": 195,
      "name": "",
      "type": "solid",
      "x": 370,
@@ -7654,7 +7603,7 @@
      "visible": true
     },
     {
-     "id": 200,
+     "id": 197,
      "name": "",
      "type": "solid",
      "x": 514,
@@ -7665,7 +7614,7 @@
      "visible": true
     },
     {
-     "id": 202,
+     "id": 199,
      "name": "",
      "type": "solid",
      "x": 706,
@@ -7676,7 +7625,7 @@
      "visible": true
     },
     {
-     "id": 204,
+     "id": 201,
      "name": "",
      "type": "solid",
      "x": 438,
@@ -7687,7 +7636,7 @@
      "visible": true
     },
     {
-     "id": 206,
+     "id": 203,
      "name": "",
      "type": "solid",
      "x": 482,
@@ -7698,7 +7647,7 @@
      "visible": true
     },
     {
-     "id": 208,
+     "id": 205,
      "name": "",
      "type": "solid",
      "x": 658,
@@ -7709,7 +7658,7 @@
      "visible": true
     },
     {
-     "id": 210,
+     "id": 207,
      "name": "",
      "type": "solid",
      "x": 326,
@@ -7720,7 +7669,7 @@
      "visible": true
     },
     {
-     "id": 212,
+     "id": 209,
      "name": "",
      "type": "solid",
      "x": 566,
@@ -7731,7 +7680,7 @@
      "visible": true
     },
     {
-     "id": 214,
+     "id": 211,
      "name": "",
      "type": "solid",
      "x": 326,
@@ -7742,7 +7691,7 @@
      "visible": true
     },
     {
-     "id": 216,
+     "id": 213,
      "name": "",
      "type": "solid",
      "x": 566,
@@ -7753,7 +7702,7 @@
      "visible": true
     },
     {
-     "id": 218,
+     "id": 215,
      "name": "",
      "type": "solid",
      "x": 406,
@@ -7764,7 +7713,7 @@
      "visible": true
     },
     {
-     "id": 220,
+     "id": 217,
      "name": "",
      "type": "solid",
      "x": 486,
@@ -7775,7 +7724,7 @@
      "visible": true
     },
     {
-     "id": 222,
+     "id": 219,
      "name": "",
      "type": "solid",
      "x": 706,
@@ -7786,7 +7735,7 @@
      "visible": true
     },
     {
-     "id": 224,
+     "id": 221,
      "name": "",
      "type": "solid",
      "x": 786,
@@ -7797,7 +7746,7 @@
      "visible": true
     },
     {
-     "id": 226,
+     "id": 223,
      "name": "",
      "type": "solid",
      "x": 674,
@@ -7808,7 +7757,7 @@
      "visible": true
     },
     {
-     "id": 228,
+     "id": 225,
      "name": "",
      "type": "solid",
      "x": 786,
@@ -7819,7 +7768,7 @@
      "visible": true
     },
     {
-     "id": 230,
+     "id": 227,
      "name": "",
      "type": "solid",
      "x": 50,
@@ -7830,7 +7779,7 @@
      "visible": true
     },
     {
-     "id": 232,
+     "id": 229,
      "name": "",
      "type": "solid",
      "x": 578,
@@ -7841,7 +7790,7 @@
      "visible": true
     },
     {
-     "id": 235,
+     "id": 232,
      "name": "",
      "type": "solid",
      "x": 838,
@@ -7852,18 +7801,7 @@
      "visible": true
     },
     {
-     "id": 237,
-     "name": "",
-     "type": "solid",
-     "x": 324,
-     "y": 40,
-     "width": 9,
-     "height": 7,
-     "rotation": 0,
-     "visible": true
-    },
-    {
-     "id": 239,
+     "id": 234,
      "name": "",
      "type": "solid",
      "x": 852,
@@ -7874,18 +7812,7 @@
      "visible": true
     },
     {
-     "id": 241,
-     "name": "",
-     "type": "solid",
-     "x": 276,
-     "y": 200,
-     "width": 9,
-     "height": 7,
-     "rotation": 0,
-     "visible": true
-    },
-    {
-     "id": 243,
+     "id": 236,
      "name": "",
      "type": "solid",
      "x": 212,
@@ -7896,18 +7823,7 @@
      "visible": true
     },
     {
-     "id": 245,
-     "name": "",
-     "type": "solid",
-     "x": 324,
-     "y": 136,
-     "width": 9,
-     "height": 7,
-     "rotation": 0,
-     "visible": true
-    },
-    {
-     "id": 247,
+     "id": 238,
      "name": "",
      "type": "solid",
      "x": 612,
@@ -7918,18 +7834,7 @@
      "visible": true
     },
     {
-     "id": 249,
-     "name": "",
-     "type": "solid",
-     "x": 244,
-     "y": 104,
-     "width": 9,
-     "height": 7,
-     "rotation": 0,
-     "visible": true
-    },
-    {
-     "id": 251,
+     "id": 240,
      "name": "",
      "type": "solid",
      "x": 260,
@@ -7940,7 +7845,18 @@
      "visible": true
     },
     {
-     "id": 253,
+     "id": 242,
+     "name": "",
+     "type": "solid",
+     "x": 340,
+     "y": 72,
+     "width": 9,
+     "height": 7,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 244,
      "name": "",
      "type": "solid",
      "x": 740,
@@ -7951,7 +7867,7 @@
      "visible": true
     },
     {
-     "id": 255,
+     "id": 246,
      "name": "",
      "type": "solid",
      "x": 100,
@@ -7962,7 +7878,7 @@
      "visible": true
     },
     {
-     "id": 257,
+     "id": 248,
      "name": "",
      "type": "solid",
      "x": 804,
@@ -7973,7 +7889,7 @@
      "visible": true
     },
     {
-     "id": 259,
+     "id": 250,
      "name": "",
      "type": "solid",
      "x": 756,
@@ -7984,7 +7900,7 @@
      "visible": true
     },
     {
-     "id": 261,
+     "id": 252,
      "name": "",
      "type": "solid",
      "x": 516,
@@ -7995,7 +7911,18 @@
      "visible": true
     },
     {
-     "id": 263,
+     "id": 254,
+     "name": "",
+     "type": "solid",
+     "x": 228,
+     "y": 120,
+     "width": 9,
+     "height": 7,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 256,
      "name": "",
      "type": "solid",
      "x": 820,
@@ -8006,7 +7933,7 @@
      "visible": true
     },
     {
-     "id": 265,
+     "id": 258,
      "name": "",
      "type": "solid",
      "x": 372,
@@ -8017,7 +7944,18 @@
      "visible": true
     },
     {
-     "id": 267,
+     "id": 260,
+     "name": "",
+     "type": "solid",
+     "x": 340,
+     "y": 152,
+     "width": 9,
+     "height": 7,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 262,
      "name": "",
      "type": "solid",
      "x": 308,
@@ -8028,7 +7966,7 @@
      "visible": true
     },
     {
-     "id": 269,
+     "id": 264,
      "name": "",
      "type": "solid",
      "x": 708,
@@ -8039,7 +7977,7 @@
      "visible": true
     },
     {
-     "id": 271,
+     "id": 266,
      "name": "",
      "type": "solid",
      "x": 788,
@@ -8050,7 +7988,7 @@
      "visible": true
     },
     {
-     "id": 273,
+     "id": 268,
      "name": "",
      "type": "solid",
      "x": 276,
@@ -8061,7 +7999,7 @@
      "visible": true
     },
     {
-     "id": 275,
+     "id": 270,
      "name": "",
      "type": "solid",
      "x": 36,
@@ -8072,7 +8010,7 @@
      "visible": true
     },
     {
-     "id": 277,
+     "id": 272,
      "name": "",
      "type": "solid",
      "x": 52,
@@ -8083,7 +8021,7 @@
      "visible": true
     },
     {
-     "id": 279,
+     "id": 274,
      "name": "",
      "type": "solid",
      "x": 692,
@@ -8094,7 +8032,7 @@
      "visible": true
     },
     {
-     "id": 281,
+     "id": 276,
      "name": "",
      "type": "solid",
      "x": 852,
@@ -8105,7 +8043,7 @@
      "visible": true
     },
     {
-     "id": 283,
+     "id": 278,
      "name": "",
      "type": "solid",
      "x": 804,
@@ -8116,18 +8054,18 @@
      "visible": true
     },
     {
-     "id": 285,
+     "id": 288,
      "name": "",
      "type": "solid",
-     "x": 276,
-     "y": 40,
-     "width": 9,
-     "height": 7,
+     "x": 326,
+     "y": 62,
+     "width": 4,
+     "height": 6,
      "rotation": 0,
      "visible": true
     },
     {
-     "id": 296,
+     "id": 294,
      "name": "",
      "type": "solid",
      "x": 54,
@@ -8138,7 +8076,7 @@
      "visible": true
     },
     {
-     "id": 299,
+     "id": 297,
      "name": "",
      "type": "solid",
      "x": 338,

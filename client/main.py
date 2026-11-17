@@ -395,8 +395,8 @@ class Game:
             self.party_invites = [i for i in self.party_invites if i["uid"] != frm.get("uid")]
             self.party_invites.append({"uid": frm.get("uid"), "name": frm.get("name", "?"), "until": self.now + 60})
             text = T.PARTY_INVITE_FROM.format(name=frm.get("name", "?"), realm=T.REALMS.get(frm.get("realm"), ""))
-            from .scenes.rpg import CombatQuizScene
-            if any(isinstance(s, CombatQuizScene) for s in self.scenes):   # never over a fight
+            from .scenes.quiz import CombatCard
+            if any(isinstance(s, CombatCard) for s in self.scenes):   # never over a fight
                 self.toast(T.PARTY_INVITE_TOAST.format(name=frm.get("name", "?")), "#4A7CC8")
             else:
                 uid = frm.get("uid")

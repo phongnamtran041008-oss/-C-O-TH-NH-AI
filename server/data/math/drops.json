@@ -1,0 +1,84 @@
+{
+ "_comment": "Thứ quái lỗi sai rớt ra (M7). 'material' để chế tạo; 'note' là ghi chú lỗi sai: giữ lại chứ không mất đi, đọc nó là mở đúng mục của vi kỹ năng ấy trong Tàng Thư Các (máy chủ tự tính ra tài liệu và khối từ 'skill', xem math_library.section_of). Ghi chú không bán được: nó là thứ đã hiểu, không phải thứ đem đổi. Mỗi 'skill' ở đây phải là một vi kỹ năng có thật và phải có mục trong tài liệu của tầng; tools/check_all.py canh việc đó.",
+ "manh_tap_hop": {
+  "name_vi": "Mảnh Tập Hợp",
+  "kind": "material",
+  "desc_vi": "Mảnh vỡ của một tập hợp bị đếm sai, các phần tử còn lẫn vào nhau. Dùng để chế tạo.",
+  "sell_price": 4
+ },
+ "tinh_so_phuc": {
+  "name_vi": "Tinh Số Phức",
+  "kind": "material",
+  "desc_vi": "Một hạt sáng hai phần: phần thực và phần ảo xoay quanh nhau. Dùng để chế tạo.",
+  "sell_price": 6
+ },
+ "loi_ma_tran": {
+  "name_vi": "Lõi Ma Trận",
+  "kind": "material",
+  "desc_vi": "Khối vuông xếp từ những hàng và cột còn nguyên thứ tự. Dùng để chế tạo.",
+  "sell_price": 9
+ },
+ "ghi_chu_phan_tu": {
+  "name_vi": "Ghi chú: đếm phần tử",
+  "kind": "note",
+  "skill": "dstt_t1_tap_hop",
+  "monster": "dstt_phan_tu_ma",
+  "desc_vi": "Phần tử của phần tử thì không phải phần tử. Đọc để mở mục Tập hợp và phần tử."
+ },
+ "ghi_chu_nghich_hieu": {
+  "name_vi": "Ghi chú: hiệu hai tập",
+  "kind": "note",
+  "skill": "dstt_t1_phep_toan_tap_hop",
+  "monster": "dstt_nghich_hieu_ma",
+  "desc_vi": "Phép hiệu không đổi chỗ được. Đọc để mở mục Các phép toán trên tập hợp."
+ },
+ "ghi_chu_anh_trung": {
+  "name_vi": "Ghi chú: ảnh của một tập",
+  "kind": "note",
+  "skill": "dstt_t1_anh_xa",
+  "monster": "dstt_anh_trung_ma",
+  "desc_vi": "Hai phần tử khác nhau được phép chung một ảnh. Đọc để mở mục Ánh xạ."
+ },
+ "ghi_chu_phan_ao": {
+  "name_vi": "Ghi chú: phần ảo là một số thật",
+  "kind": "note",
+  "skill": "dstt_t2_dang_dai_so",
+  "monster": "dstt_phan_ao_ma",
+  "desc_vi": "Phần ảo của 3 - 4i là -4, không phải -4i. Đọc để mở mục Dạng đại số."
+ },
+ "ghi_chu_binh_phuong": {
+  "name_vi": "Ghi chú: i^2 = -1",
+  "kind": "note",
+  "skill": "dstt_t2_cong_nhan",
+  "monster": "dstt_binh_phuong_ma",
+  "desc_vi": "Số hạng chứa i^2 đổi dấu khi nhập vào phần thực. Đọc để mở mục Cộng và nhân."
+ },
+ "ghi_chu_modun": {
+  "name_vi": "Ghi chú: môđun của một tổng",
+  "kind": "note",
+  "skill": "dstt_t2_lien_hop_modun",
+  "monster": "dstt_modun_ma",
+  "desc_vi": "|z + w| không phải |z| + |w|. Đọc để mở mục Liên hợp và môđun."
+ },
+ "ghi_chu_chi_so": {
+  "name_vi": "Ghi chú: hàng trước cột sau",
+  "kind": "note",
+  "skill": "dstt_t3_kich_thuoc_phan_tu",
+  "monster": "dstt_chi_so_ma",
+  "desc_vi": "a_32 là hàng 3, cột 2. Đọc để mở mục Kích thước và phần tử."
+ },
+ "ghi_chu_chuyen_vi": {
+  "name_vi": "Ghi chú: cỡ của chuyển vị",
+  "kind": "note",
+  "skill": "dstt_t3_chuyen_vi",
+  "monster": "dstt_chuyen_vi_ma",
+  "desc_vi": "Chỉ ma trận vuông mới cộng được với chuyển vị của chính nó. Đọc để mở mục Chuyển vị."
+ },
+ "ghi_chu_doi_xung": {
+  "name_vi": "Ghi chú: đối xứng không có nghĩa là rỗng",
+  "kind": "note",
+  "skill": "dstt_t3_ma_tran_dac_biet",
+  "monster": "dstt_doi_xung_ma",
+  "desc_vi": "Hai ô đối nhau qua đường chéo bằng nhau, chúng có quyền khác 0. Đọc để mở mục Ma trận đặc biệt."
+ }
+}

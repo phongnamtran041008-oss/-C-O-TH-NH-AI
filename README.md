@@ -563,7 +563,7 @@ bản sửa vào cột `*_fixed`, rồi chạy `python tools/apply_review.py`. C
 ## Nội dung toán (nhánh `toan-tu-tien`)
 
 ```bash
-python tools/check_all.py           # 10 kiểm tra nội dung: lộ trình, ngân hàng câu, bộ sinh câu, đáp án, Tàng Thư, công thức, bài tập, lời giải mẫu, test có răng, phông chữ
+python tools/check_all.py           # 12 kiểm tra nội dung: lộ trình, ngân hàng câu, bộ sinh câu, đáp án, Tàng Thư, công thức, bài tập, lời giải mẫu, test có răng, quái lỗi sai, Lò Toán, phông chữ
 python tools/math_review.py         # bảng duyệt câu hỏi -> tools/reports/math_review_<bí cảnh>.md
 python tools/math_verify.py         # tính lại đáp án của mọi câu sinh ra bằng SymPy
 python tools/build_formulas.py      # dựng ảnh công thức cho Tàng Thư Các (cần Node, xem bên dưới)
@@ -588,6 +588,17 @@ Mọi câu hỏi và bài đọc đều do AI viết nên **cần người duy�
 nhất của tầng và đúng ít nhất 4 trong 5 câu gần nhất ở bậc ấy. Bài thi hỏi mỗi vi kỹ năng một câu ở bậc cao
 nhất, được sai một câu; trượt thì ôn lại rồi thi lại ngay được. Trong lúc luyện, cứ khoảng 4 câu lại có một
 câu **ôn xoắn ốc** lấy từ tầng dưới theo lịch 1 → 3 → 7 → 14 ngày, ưu tiên vi kỹ năng hay sai.
+
+**Quái = lỗi sai (Loạn Số Cốc).** Cổng bắc Trúc Lâm Thôn dẫn sang **Loạn Số Cốc**, nơi mỗi con quái là
+một lỗi thường gặp: Phần Tử Ma đếm `{1, {2, 3}}` thành ba phần tử, Mô Đun Ma viết `|z + w| = |z| + |w|`.
+Mặc Thuẫn của nó chỉ xuống khi con trả lời đúng một câu toán của vi kỹ năng ấy, **ở bậc con đang mở**
+(câu ấy cũng tính vào lộ trình như câu luyện ở Động Phủ). Đánh chết thì nó rớt nguyên liệu và một
+**ghi chú lỗi sai**: đọc ghi chú là mở đúng mục giải thích trong Tàng Thư Các, và ghi chú không mất đi.
+Tầng 1 ở gần cổng, tầng 3 ở cuối cốc. Dữ liệu: `server/data/math/monsters.json` và `drops.json`.
+
+**Lò Toán.** Ngay trong cốc, cạnh cổng. Một công thức (`server/data/math/crafting.json`) đòi nguyên
+liệu (bị tiêu) **và** những ghi chú lỗi sai đang giữ (chỉ kiểm tra, không tiêu): chỉ rèn được thứ mình
+đã hiểu. Phẩm chất món rèn ra là cố định, không rút thăm.
 
 **Bài tập lập trình.** Đề nằm trong `server/data/math/problems/`, lời giải mẫu nằm cạnh đó và không bao giờ gửi
 cho game. Bài làm **chạy trên máy người chơi** (cần có Python trên máy), mỗi test một lần chạy có giới hạn thời

@@ -7,5 +7,7 @@
                       "recommended_realm": "luyen_khi", "tier": 1},
   "ho_nghien_muc": {"name_vi": "Hồ Nghiên Mực", "kind": "wild", "map": "ho_nghien_muc", "safe": false,
                      "recommended_realm": "luyen_khi", "tier": 1},
+  "loan_so_coc": {"name_vi": "Loạn Số Cốc", "kind": "wild", "map": "loan_so_coc", "safe": false,
+                   "recommended_realm": "luyen_khi", "tier": 1},
   "bi_canh": {"name_vi": "Bí Cảnh", "kind": "instance", "map": "bi_canh", "safe": false, "tier": 1}
 }

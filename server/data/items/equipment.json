@@ -31,7 +31,13 @@
     "mac_anh_ngoa": {"name_vi": "Mặc Ảnh Ngoa", "slot": "shoes", "set": "mac_anh", "stats": {"def": 2, "max_hp": 15},
                      "desc_vi": "Đôi hài đi trên mực không để lại dấu."},
     "mac_anh_boi": {"name_vi": "Mặc Ảnh Bội", "slot": "jade", "set": "mac_anh", "stats": {"ink_res": 6, "max_qi": 15},
-                    "desc_vi": "Ngọc bội tạc từ mảnh nghiên vỡ của Nghiên Ma."}
+                    "desc_vi": "Ngọc bội tạc từ mảnh nghiên vỡ của Nghiên Ma."},
+    "but_tap_hop": {"name_vi": "Bút Tập Hợp", "slot": "weapon", "kind": "brush", "stats": {"atk": 8, "crit": 2},
+                    "desc_vi": "Ngòi bút chẻ đôi: một nhánh viết phần tử, một nhánh viết tập chứa nó. Rèn ở Lò Toán."},
+    "ngoc_so_phuc": {"name_vi": "Ngọc Số Phức", "slot": "jade", "stats": {"max_qi": 20, "max_hp": 20},
+                     "desc_vi": "Hai nửa ngọc quay quanh nhau, nửa thực nửa ảo. Rèn ở Lò Toán."},
+    "nhan_ma_tran": {"name_vi": "Nhẫn Ma Trận", "slot": "ring", "stats": {"def": 6, "crit": 4},
+                     "desc_vi": "Mặt nhẫn là một bảng vuông nhỏ, lật ngược vẫn đúng chỗ ấy. Rèn ở Lò Toán."}
   },
   "sets": {
     "mac_anh": {"name_vi": "Bộ Mặc Ảnh", "pieces": ["mac_anh_quan", "mac_anh_bao", "mac_anh_ngoa", "mac_anh_boi"],

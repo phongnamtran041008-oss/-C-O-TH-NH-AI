@@ -122,8 +122,10 @@ async def inventory_view(db: AsyncSession, user: User) -> dict:
     for iid, qty in sorted(st.items()):
         info = catalog.stack_item(iid) or {}
         items.append({"item_id": iid, "qty": qty, "name_vi": info.get("name_vi", iid), "kind": info.get("kind"),
-                      "desc_vi": info.get("desc_vi", ""), "usable": info.get("kind") in ("manual", "pill")
-                      and info.get("effect") not in ("breakthrough", "bee_food"), "sell_price": info.get("sell_price"),
+                      "desc_vi": info.get("desc_vi", ""),
+                      "usable": info.get("kind") == "note" or (info.get("kind") in ("manual", "pill")
+                      and info.get("effect") not in ("breakthrough", "bee_food")),
+                      "sell_price": info.get("sell_price"),
                       "hanzi": info.get("hanzi")})
     eq = (await db.execute(select(EquipmentInstance).where(EquipmentInstance.user_id == user.id)
                            .order_by(EquipmentInstance.id))).scalars().all()
@@ -201,6 +203,15 @@ async def use(db: AsyncSession, user: User, item_id: str) -> dict:
         raise ItemError(404, "no_item", "Không có vật phẩm này.")
     if info.get("kind") == "manual":
         return await _learn(db, user, item_id, info)
+    if info.get("kind") == "note":
+        # A ghi chú lỗi sai (M7) is read, not spent: it opens the part of Tàng Thư Các that
+        # explains the mistake the monster was making. Keeping it is what lets the player
+        # forge with it later (data/math/crafting.json), so it is never consumed.
+        from .math_practice import doc_link
+        doc = doc_link(info["skill"])
+        if doc is None:
+            raise ItemError(404, "no_doc", "Chưa có tài liệu cho ghi chú này.")
+        return {"read": item_id, "skill": info["skill"], "doc": doc}
     if info.get("kind") == "pill" and info.get("effect") in ("heal", "qi"):
         from ..realtime.world import world
         if not world.in_world(user.id):

@@ -21,7 +21,7 @@ from ..ui.mathdraw import draw_matrices, fit
 from .base import Scene
 from .math_code import ProblemListScene
 from .math_library import DocScene, LibraryListScene
-from .quiz import KEYS, QuizScene
+from .quiz import KEYS, CombatCard, QuizScene
 
 GREY = "#5A5A5A"
 OPTION_KEYS = KEYS + [pygame.K_5, pygame.K_6]
@@ -33,6 +33,8 @@ def tiers_text(lo: int, hi: int) -> str:
 
 class MathQuizScene(QuizScene):
     """One math question: true/false, multiple choice or a typed number."""
+
+    in_combat = False        # M7: the card a quái lỗi sai opens closes itself
 
     def panel_rect(self):
         return (24, 12, 432, 246)
@@ -213,6 +215,8 @@ class MathQuizScene(QuizScene):
         if doc and ui.button("math_doc", x + w - 252, y + h - 22, 70, 16, T.LIB_OPEN, size=7, style="gold",
                              key=pygame.K_t):
             self.game.push(DocScene(self.game, doc["id"], doc.get("block", 0)))
+        if self.in_combat:          # the fight is waiting: no "stop" and no "next"
+            return
         over = verdict is not None                  # the trial is decided: no more questions
         if not over and ui.button("math_stop", x + w - 176, y + h - 22, 60, 16, T.MATH_STOP,
                                   key=pygame.K_ESCAPE):
@@ -221,6 +225,58 @@ class MathQuizScene(QuizScene):
         if ui.button("math_next", x + w - 108, y + h - 22, 96, 16, T.MATH_RESULT if over else T.MATH_NEXT,
                      style="primary") or ui.key(pygame.K_RETURN) or ui.key(pygame.K_SPACE):
             self.finish(stop=over)
+
+
+class MathCombatQuizScene(CombatCard, MathQuizScene):
+    """The card a quái lỗi sai opens (M7): the math card of Động Phủ, but low on the screen
+    with the fight still visible, and it closes itself after the explanation the way the word
+    card does (spec 8.1). The monster's own mistake is named above the question, so the player
+    can see what they are arguing with."""
+    modal = False
+    draws_world = False
+    toast_y = 70
+    in_combat = True
+
+    def panel_rect(self):
+        return (24, 56, 432, 202)
+
+    def __init__(self, game, question: dict, monster_id: str, on_result=None):
+        super().__init__(game, question, run=None, on_result=None)
+        self.monster_id = monster_id
+        self.on_combat_result = on_result
+        self.close_after = 2.0
+
+    def update(self, dt, top):
+        super().update(dt, top)
+        if self.result and self.result_t >= self.close_after:
+            self.finish()
+
+    def finish(self, stop: bool = False):
+        self.close()
+        if self.on_combat_result and self.result:
+            self.on_combat_result(self.result)
+
+    def draw_ui(self, ui):
+        super().draw_ui(ui)
+        if self.result:
+            return
+        x, y, w, h = self.panel_rect()
+        m = self.q.get("math", {})
+        if m.get("mistake_vi"):
+            ui.text(f"{m.get('monster_vi', '')}: {m['mistake_vi']}", x + w / 2, y + h - 12, 7,
+                    UICOL["accent"], anchor="midbottom", max_w=w - 30)
+        ui.text(T.HOI_THE, x + w - 12, y + 20, 7, UICOL["green"], anchor="topright")
+
+    def draw_math_result(self, ui, x, y, w, h):
+        super().draw_math_result(ui, x, y, w, h)
+        c = (self.result or {}).get("combat") or {}
+        if c.get("shield_broken"):
+            txt = f"{T.SHIELD_BROKEN} {T.NGO_DAO} -{c.get('damage', 0)}" + (" (chí mạng!)" if c.get("crit") else "")
+            ui.text(txt, x + w - 12, y + h - 12, 8, UICOL["green"], anchor="bottomright")
+            self.close_after = 1.2          # a right answer gets back to the fight a little faster
+        elif c.get("mac_kich"):
+            ui.text(f"{T.MAC_KICH} -{c['mac_kich']}", x + w - 12, y + h - 12, 8, UICOL["accent"],
+                    anchor="bottomright")
 
 
 class MathPracticeScene(Scene):

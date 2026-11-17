@@ -478,3 +478,35 @@ test là `AC`, `WA`, `TLE`, `RE`, `CE` hoặc `-` (chưa chạy tới). Khi nộ
 - `GET /math/path`: mỗi bí cảnh có thêm `problems` = số bài tập người chơi mở được lúc này (các tầng đã mở).
 - Tu Vi: bậc của bài đáng `xp_per_correct` của bậc đó, nhân với tỉ lệ test đạt, và **chỉ trả phần hơn** so với
   lần tốt nhất trước đó - nộp lại cùng một bài làm không ăn thêm Tu Vi.
+
+### M7: quái lỗi sai và Lò Toán
+
+Quái trong Loạn Số Cốc là **lỗi sai**: mỗi con giữ một vi kỹ năng, và Mặc Thuẫn của nó chỉ xuống khi
+người chơi trả lời đúng một câu toán của vi kỹ năng ấy. Câu hỏi đi qua đúng đường cũ: gói `q` trên
+WebSocket rồi `POST /quiz/answer`, chỉ khác `context` là `math_combat` và trong gói có khối `math`
+(giống câu ở Động Phủ) kèm hai khoá riêng:
+
+- `math.mistake_vi`: lỗi con quái ấy mắc, hiện trên thẻ.
+- `math.monster_vi`: tên nó.
+
+**Bậc câu hỏi không do con quái quyết định.** Máy chủ đọc nhật ký trả lời của chính người chơi ở vi kỹ
+năng ấy (`math_answers`) rồi hỏi ở bậc cao nhất đã mở (luật 3.3), nên con quái còn dạy được khi người
+chơi khá lên. Câu trả lời được ghi vào `math_answers` với `run_id = NULL`: luật học đọc nhật ký ấy, nên
+đánh quái ngoài thế giới cũng tính vào bậc đã mở và vào cổng thuần thục. Luật 6 ("tâm ma") **không** chạy
+ở đây: câu song song không có buổi luyện nào để quay về.
+
+Khi chưa có câu nào cho vi kỹ năng ấy ở bậc của người chơi, máy chủ gửi `{"t": "error", "code":
+"no_math_question"}` và con quái giữ khiên.
+
+| Method | Đường dẫn | Body | Ghi chú |
+|---|---|---|---|
+| GET | `/math/craft` | — | `{recipes[], spirit_stones}`. Mỗi công thức: `{id, name_vi, floor, fee, rarity, desc_vi, makes{item_id, name_vi, slot, stats}, ingredients[{item_id, name_vi, qty, have, enough}], notes[{...}], can}` |
+| POST | `/math/craft` | `{recipe_id}` | rèn. Lỗi `no_recipe` (404), `need_note`, `need_material`, `no_stones` (400) |
+
+`ingredients` bị tiêu, `notes` (ghi chú lỗi sai) **chỉ bị kiểm tra** - chúng vẫn ở trong túi sau khi rèn,
+như đan phương. `rarity` ghi cố định trong công thức, không rút thăm.
+
+- `POST /inventory/use` với một ghi chú lỗi sai (`kind: "note"`) không tiêu nó: trả về
+  `{read, skill, doc{id, title_vi, block}}` để game mở đúng mục trong Tàng Thư Các.
+- `GET /inventory`: vật phẩm `kind: "note"` có `usable: true`.
+- `GET /codex/monster`: mỗi con có thêm `mistake_vi` (rỗng với Mặc Quái cũ).

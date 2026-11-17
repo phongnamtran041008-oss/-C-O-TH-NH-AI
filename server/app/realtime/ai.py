@@ -2,22 +2,20 @@
 area, pausing now and then. Aggro, attacks and Mặc Thuẫn arrive with combat in stage 4."""
 from __future__ import annotations
 
-import json
 import math
 import random
 from dataclasses import dataclass, field
-from functools import lru_cache
 
-from ..config import DATA_DIR
 from .maps import Area, ZoneMap
 from .movement import Collider
 from .protocol import FACING_CODE
 
 
-@lru_cache(maxsize=1)
 def monster_types() -> dict:
-    data = json.loads((DATA_DIR / "creatures" / "monsters.json").read_text("utf-8"))
-    return {k: v for k, v in data.items() if not k.startswith("_")}
+    """Every kind of monster the world can spawn. One registry with the loot and codex
+    side (systems/catalog.py), so a monster can never exist for one of them only."""
+    from ..systems import catalog
+    return catalog.monsters()
 
 
 @dataclass

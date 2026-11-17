@@ -72,9 +72,11 @@ def character_frames(appearance: dict, outfit_colors: dict | None = None) -> dic
 
 
 def monster_frames(kind: str) -> list[pygame.Surface]:
-    from . import realm_art
+    from . import math_art, realm_art
     if kind in realm_art.MONSTERS:   # stage 9: the bí cảnh monsters are drawn with shapes
         return realm_art.monster_frames(kind)
+    if kind in math_art.MONSTERS:    # M7: the quái lỗi sai of Loạn Số Cốc
+        return math_art.monster_frames(kind)
     rows = {"ink_slime": creatures.INK_SLIME, "tone_wisp": creatures.TONE_WISP, "ink_fox": creatures.INK_FOX}[kind]
     return [grid(f) for f in rows]
 

@@ -925,3 +925,46 @@ một lần, lần sau chỉ đăng nhập, dùng Firebase (dự án và API key
 - **Test của bài tập lập trình phải có răng.** `tools/check_all.py` nay chạy ba bài làm sai (rỗng, in một hằng
   số, in đáp án ví dụ 1) trên mọi bài tập và bắt buộc bài nào cũng **phải trượt**, và không cho phép mọi test
   ẩn của một bài hỏi cùng một đáp án. Lời giải mẫu vẫn phải đúng trên mọi test.
+
+## Nhánh `toan-tu-tien` — M7: thế giới và chiến đấu (quái = lỗi sai)
+
+- **Một con quái là một lỗi sai, không phải một con vật.** `data/math/monsters.json` giữ 9 con cho Đại Số
+  Tuyến Tính tầng 1-3, mỗi con trỏ tới **một vi kỹ năng** và **một mục** của Tàng Thư Các. 18 mục "Lỗi
+  thường gặp" viết ở M4 chính là danh sách lỗi có sẵn, nên M7 không phải nghĩ ra lỗi mới: con quái chỉ là
+  cái mặt của một ghi chú đã có. Chọn 9 trong 18 (3 mỗi tầng) cho vừa một vùng chơi được; số còn lại để
+  dành. "Hoán Vị Ma" (AB = BA) trong kế hoạch phải chờ: phép nhân ma trận là tầng 4 trở lên, chưa có câu.
+- **Bậc câu hỏi thuộc về người chơi, không thuộc về con quái.** Con quái cố định vi kỹ năng; bậc thì đọc từ
+  `math_answers` của chính người chơi ở vi kỹ năng ấy (luật 3.3). Vì thế một con Phần Tử Ma vẫn còn việc để
+  dạy sau mười lần gặp, và không ai bị hỏi bậc mà lộ trình chưa mở. Nếu vi kỹ năng ấy chưa có câu nào ở bậc
+  đó thì con quái giữ khiên và người chơi được nhắc đi luyện - thà không hỏi còn hơn hỏi sai bậc.
+- **Đánh quái ngoài thế giới cũng là học.** Câu trả lời ghi vào `math_answers` với `run_id = NULL`, nên nó
+  tính vào bậc đã mở và vào cổng thuần thục y như câu ở Động Phủ. Giá trị tôi tự chọn: **không** chạy luật 6
+  ("tâm ma") ở đây, vì câu song song không có buổi luyện nào để quay về; sai thì chịu Mặc Kích và được ghi
+  lại, thế thôi.
+- **Ghi chú lỗi sai là thứ giữ lại, không phải thứ tiêu đi.** Vật phẩm `kind: "note"` không bán được, đọc
+  không mất, và đọc là mở đúng mục giải thích (máy chủ tự tính tài liệu + khối từ `skill`, nên dữ liệu
+  không phải nhắc lại số thứ tự mục). Tàng Thư Các **không** bị khoá sau con quái: kế hoạch nói đọc tài
+  liệu phải không có rào, nên ghi chú chỉ là đường tắt tới đúng trang.
+- **Chỉ rèn được thứ mình đã hiểu.** Công thức ở Lò Toán (`data/math/crafting.json`) đòi hai thứ khác loại:
+  nguyên liệu (tiêu mất) và ghi chú (chỉ kiểm tra). Luật "đánh đẹp là học đúng" của kế hoạch nằm trong dữ
+  liệu, không nằm trong lời thuyết. Phẩm chất món rèn ra ghi cố định trong công thức, không rút thăm: gom đủ
+  nguyên liệu thì biết trước mình được gì, và test khẳng định được.
+- **Một sổ quái duy nhất.** Trước M7 có hai chỗ đọc `creatures/monsters.json`: `systems/catalog.py` (rớt đồ,
+  Yêu Quái Phổ, nhiệm vụ) và `realtime/ai.py` (sinh quái). Nếu chỉ thêm quái toán vào một chỗ thì con quái
+  đánh được mà không rớt gì (hoặc ngược lại). Nay `catalog.monsters()` gộp cả hai file và `ai.monster_types()`
+  gọi chính nó, nên không thể lệch. Hai test cũ phải sửa theo: `test_monster_data_is_complete` giờ đòi
+  `qtypes` ở Mặc Quái và đòi `skill`/`note`/`mistake_vi` ở quái lỗi sai (**chặt hơn** trước), còn
+  `test_monster_book_hides_unmet` đếm từ dữ liệu chứ không ghi cứng số 6.
+- **Thẻ Vấn Đạo có hai loại, thế giới chỉ cần biết một tên.** Thẻ chữ (`rpg.CombatQuizScene`) và thẻ toán
+  (`math_practice.MathCombatQuizScene`) không cùng cha, nên `world.py` nhận cả hai bằng một lớp dấu hiệu
+  `quiz.CombatCard`. Trước đó `world.py` dò `isinstance(..., CombatQuizScene)` ở ba chỗ (không xếp hai thẻ,
+  đóng thẻ khi `q_end`, đóng thẻ khi chết) và `main.py` một chỗ; thiếu một chỗ là thẻ toán sống sót sau khi
+  chết.
+- **Danh sách vùng của máy khách cũng phải biết vùng mới.** `strings_vi.WORLD_ZONES` quyết định chỗ người
+  chơi quay lại khi đăng nhập; thiếu `loan_so_coc` trong đó thì ai đăng xuất giữa Loạn Số Cốc sẽ tỉnh dậy ở
+  Động Phủ. Test dòng chảy M7 bắt được lỗi này ngay lần chạy đầu.
+- **Kiểm tra dữ liệu M7 có răng.** `tools/check_all.py` nay 12 kiểm tra: một con quái phải có vi kỹ năng
+  thật, mục tài liệu thật, ghi chú trỏ về đúng vi kỹ năng và đúng con quái, hình vẽ ở `client/art/math_art.py`
+  (cùng `shape` và cùng màu thân với dữ liệu), và phải có vùng sinh ra nó; mỗi công thức phải rèn ra trang bị
+  thật từ thứ thật sự rớt. Đã thử làm sai 5 chỗ (đổi vi kỹ năng, xoá ghi chú, lệch màu, thêm con không ai
+  sinh, nguyên liệu không tồn tại): cả 5 đều bị bắt.
