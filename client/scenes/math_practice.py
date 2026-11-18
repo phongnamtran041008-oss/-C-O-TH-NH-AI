@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import math
 
+import importlib
+
 import pygame
 
 from .. import strings_vi as T
@@ -36,6 +38,7 @@ class MathQuizScene(QuizScene):
     """One math question: true/false, multiple choice or a typed number."""
 
     in_combat = False        # M7: the card a quái lỗi sai opens closes itself
+    can_stop = True          # "Nghỉ" ends a buổi luyện; a card with no sitting to end has no such button
     solution_margin = 40     # the solution steps stop this far above the bottom edge of the card
 
     def input_margin(self) -> int:
@@ -74,8 +77,16 @@ class MathQuizScene(QuizScene):
 
     def finish(self, stop: bool = False):
         self.close()
+        self.tell_fortune()
         if self.on_math_result and self.result:
             self.on_math_result(self.result, stop)
+
+    def tell_fortune(self) -> None:
+        """M10: a right answer can bring a cơ duyên. The answer itself says so
+        (`math.fortune_offer`), whichever card asked the question, and the player is told
+        when that card closes."""
+        from .math_fortune import notice      # imported here: that module imports this one
+        notice(self.game, self.result)
 
     def seconds_left(self) -> int:
         return max(0, math.ceil(self.limit - self.t))
@@ -255,7 +266,7 @@ class MathQuizScene(QuizScene):
         if self.in_combat:          # the fight is waiting: no "stop" and no "next"
             return
         over = verdict is not None                  # the trial is decided: no more questions
-        if not over and ui.button("math_stop", x + w - 176, y + h - 22, 60, 16, T.MATH_STOP,
+        if not over and self.can_stop and ui.button("math_stop", x + w - 176, y + h - 22, 60, 16, T.MATH_STOP,
                                   key=pygame.K_ESCAPE):
             self.finish(stop=True)
             return
@@ -297,6 +308,7 @@ class MathCombatQuizScene(CombatCard, MathQuizScene):
 
     def finish(self, stop: bool = False):
         self.close()
+        self.tell_fortune()
         if self.on_combat_result and self.result:
             self.on_combat_result(self.result)
 
@@ -333,6 +345,13 @@ class MathCombatQuizScene(CombatCard, MathQuizScene):
         elif c.get("mac_kich"):
             ui.text(f"{T.MAC_KICH} -{c['mac_kich']}", x + w - 12, y + h - 12, 8, UICOL["accent"],
                     anchor="bottomright")
+
+
+# M10: (widget id, label, module, scene class) of the doors along the bottom of the hub. The
+# scenes are imported when a door is opened, so a mode that is not there costs nothing.
+HUB_DOORS = (("math_hub_dungeon", T.MATH_HUB_DUNGEON, ".math_dungeon", "MathDungeonScene"),
+             ("math_hub_td", T.MATH_HUB_TD, ".math_td", "MathTdScene"),
+             ("math_hub_fortune", T.MATH_HUB_FORTUNE, ".math_fortune", "MathFortuneScene"))
 
 
 class MathPracticeScene(Scene):
@@ -428,6 +447,10 @@ class MathPracticeScene(Scene):
         if ui.button("math_library", x + 12, y + h - 20, 76, 14, T.LIB_TITLE, size=7, style="gold",
                      enabled=self.path is not None):
             self.game.push(LibraryListScene(self.game))
+        if not self.summary:      # M10: the other ways to play - each one a scene of its own
+            for i, (wid, label, module, cls) in enumerate(HUB_DOORS):
+                if ui.button(wid, x + 94 + i * 64, y + h - 20, 60, 14, label, size=7, enabled=self.path is not None):
+                    self.game.push(getattr(importlib.import_module(module, __package__), cls)(self.game))
         if ui.button("math_close", x + w - 62, y + h - 20, 50, 14, T.CLOSE, key=pygame.K_ESCAPE):
             self.close()
 

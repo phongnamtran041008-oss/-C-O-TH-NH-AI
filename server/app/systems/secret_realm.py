@@ -54,10 +54,26 @@ async def entries_used(db: AsyncSession, user_id: int, day: str | None = None) -
     return {r: int(n) for r, n in rows}
 
 
+def daily_limit(realm_id: str) -> int:
+    """Entries a day: the realm's own `daily_entries` (realms.json) or the balance default."""
+    return int(realms().get(realm_id, {}).get("daily_entries", cfg()["daily_entries"]))
+
+
+async def math_floors(db: AsyncSession, user_ids: list[int]) -> dict[int, int | None]:
+    """M10: the floor each player's questions in a math bí cảnh come from (math_ask.own_floor),
+    None for a player the bank has no question for at all."""
+    from . import math_ask
+    out: dict[int, int | None] = {}
+    for uid in user_ids:
+        where = await math_ask.own_floor(db, uid)
+        out[uid] = where[1] if where else None
+    return out
+
+
 async def over_limit(db: AsyncSession, user_ids: list[int], realm_id: str) -> list[int]:
     """Spec 14.1: each player may enter each realm at most N times a day."""
     day = clock.local_date(clock.now())
-    limit = cfg()["daily_entries"]
+    limit = daily_limit(realm_id)
     out = []
     for uid in user_ids:
         if (await entries_used(db, uid, day)).get(realm_id, 0) >= limit:
@@ -155,8 +171,12 @@ async def _grant_table(db: AsyncSession, uid: int, rng: random.Random, entries: 
         out["equipment"].append(await items.grant_equipment(db, uid, rng.choice(e["equipment"]), rar, "realm", ref))
 
 
-async def claim_room(run_id: int, user_id: int, room_index: int, room_kind: str) -> dict | None:
-    c = cfg()["room_loot"]
+async def claim_room(run_id: int, user_id: int, room_index: int, room_kind: str,
+                     realm_id: str | None = None) -> dict | None:
+    """A cleared room's loot. A realm may have its own table (`room_loot_by_realm`, M10: the
+    math bí cảnh pays Linh Thạch and the materials of data/math/drops.json, and its Tu Vi
+    comes from the answers alone, so its `xp` is 0)."""
+    c = cfg().get("room_loot_by_realm", {}).get(realm_id or "") or cfg()["room_loot"]
     ref = f"run{run_id}:room{room_index}"
 
     async def roll(db, rng):
@@ -168,7 +188,8 @@ async def claim_room(run_id: int, user_id: int, room_index: int, room_kind: str)
             if rng.random() < d["chance"]:
                 out["items"] += await items.grant_items(
                     db, user_id, [{"item": d["item"], "qty": rng.randint(*d.get("qty", [1, 1]))}], "realm", ref)
-        out["xp"] = await cultivation.add_xp(db, user_id, c["xp"], "realm")
+        if c["xp"]:
+            out["xp"] = await cultivation.add_xp(db, user_id, c["xp"], "realm")
         return out
     return await _claim(user_id, run_id, f"room{room_index}", roll)
 
@@ -196,7 +217,8 @@ async def claim_chest(run_id: int, user_id: int, realm_id: str, fragments: int, 
                                                     "realm", ref)
         for _ in range(chest["rolls"] + (c["fast_bonus"]["extra_rolls"] if fast else 0)):
             await _grant_table(db, user_id, rng, chest["table"], ref, out)
-        out["xp"] = await cultivation.add_xp(db, user_id, chest["xp"], "realm")
+        if chest["xp"]:
+            out["xp"] = await cultivation.add_xp(db, user_id, chest["xp"], "realm")
         from . import quests
         out["quests"] = await quests.on_event(db, user_id, "realm", realm_id)
         return out
@@ -238,21 +260,38 @@ async def view(db: AsyncSession, user: User) -> dict:
     ch = await db.get(Character, user.id)
     used = await entries_used(db, user.id)
     order = cultivation.order()
-    limit = cfg()["daily_entries"]
-    out = []
+    out, math_out = [], []
+    floor = None
     for rid, r in realms().items():
-        st = window_status(clock.now()) if r["kind"] == "scheduled" else {"open": None}
-        out.append({"id": rid, "name_vi": r["name_vi"], "hanzi": r.get("hanzi", ""), "kind": r["kind"],
-                    "min_realm": r["min_realm"], "min_realm_vi": cultivation.realm_name(r["min_realm"]),
-                    "realm_ok": ch is not None and order.index(ch.realm) >= order.index(r["min_realm"]),
-                    "tier": r["tier"], "puzzles": r["puzzles"], "time_limit_minutes": r["time_limit_minutes"],
-                    "desc_vi": r.get("desc_vi", ""), "entries_left": max(0, limit - used.get(rid, 0)),
-                    "daily": limit, **st})
+        limit = daily_limit(rid)
+        if r["kind"] == "scheduled":
+            st = window_status(clock.now())
+        elif r["kind"] == "math":   # M10: open whenever the gate is; entered alone or with the party
+            st = {"open": True, "opens_in": 0, "closes_in": None}
+        else:
+            st = {"open": None}
+        row = {"id": rid, "name_vi": r["name_vi"], "hanzi": r.get("hanzi", ""), "kind": r["kind"],
+               "min_realm": r.get("min_realm"),
+               "min_realm_vi": cultivation.realm_name(r["min_realm"]) if r.get("min_realm") else "",
+               "realm_ok": ch is not None and (not r.get("min_realm")
+                                               or order.index(ch.realm) >= order.index(r["min_realm"])),
+               "tier": r["tier"], "puzzles": r["puzzles"], "time_limit_minutes": r["time_limit_minutes"],
+               "desc_vi": r.get("desc_vi", ""), "entries_left": max(0, limit - used.get(rid, 0)),
+               "daily": limit, "party_min": int(r.get("party_min", cfg()["party_min"])), **st}
+        if r["kind"] == "math":
+            if floor is None:
+                floor = (await math_floors(db, [user.id]))[user.id] or 0
+            row.update(math=True, floor=floor, realm_ok=row["realm_ok"] and floor > 0,
+                       rooms=[puzzle_info(x["kind"]).get("name_vi", x["kind"]) for x in r["math"]["rooms"]])
+            math_out.append(row)   # (their own list: the gate shows them on their own tab)
+            continue
+        out.append(row)
     fc = cfg()["forge"]
     eq = catalog.equipment()
     s = eq["sets"]["mac_anh"]
     have = (await items.stacks(db, user.id)).get("manh_bao_vat", 0)
-    return {"realms": out, "party": world.parties.view_for(user.id), "queue": world.realms.queue_of(user.id),
+    return {"realms": out, "math_realms": math_out,
+            "party": world.parties.view_for(user.id), "queue": world.realms.queue_of(user.id),
             "puzzles": data()["puzzles"],
             "forge": {"fragments": fc["fragments"], "stones": fc["stones"], "have": have,
                       "rarity": fc["rarity"], "rarity_vi": eq["rarities"][fc["rarity"]]["name_vi"],

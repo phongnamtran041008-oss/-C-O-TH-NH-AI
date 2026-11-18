@@ -1,5 +1,5 @@
 {
-  "_comment": "Bí cảnh (spec 14). kind: 'scheduled' opens at fixed hours (balance/realm.json schedule), 'rift' is entered through a Khe Nứt Mực that appears now and then in a public zone. 'puzzles' = how many puzzle rooms come before the boss room (3-5, picked at random from the five kinds the party can play). tier = the highest HSK level of the words used. Numbers (loot, timings, damage) live in balance/realm.json.",
+  "_comment": "Bí cảnh (spec 14). kind: 'scheduled' opens at fixed hours (balance/realm.json schedule), 'rift' is entered through a Khe Nứt Mực that appears now and then in a public zone. 'puzzles' = how many puzzle rooms come before the boss room (3-5, picked at random from the five kinds the party can play). tier = the highest HSK level of the words used. Numbers (loot, timings, damage) live in balance/realm.json. kind 'math' (M10): the math bí cảnh, see toan_tran._comment; party_min / daily_entries there override the balance defaults; puzzles 'seal' and 'math_boss' are its rooms (a 'math_<kind>' entry rewords a room for a math realm).",
   "realms": {
     "khe_nut_muc": {
       "name_vi": "Khe Nứt Mực", "hanzi": "墨隙", "kind": "rift", "min_realm": "luyen_khi", "tier": 1,
@@ -12,6 +12,21 @@
       "puzzles": 5, "time_limit_minutes": 20, "room_monsters": {"muc_anh": 2, "but_yeu": 1}, "boss": "nghien_ma",
       "boss_hp_mult": 1.0,
       "desc_vi": "Hang động nơi Nghiên Ma ngủ, mở cửa ba lần mỗi ngày. Năm gian câu đố, rồi tới hang của nó."
+    },
+    "toan_tran": {
+      "_comment": "M10, bí cảnh toán (kế hoạch 4.3). kind 'math': entered at the Cổng Bí Cảnh whenever it is open, alone (party_min 1) or with the party; no min_realm, nothing here reads the cultivation realms. Every question - a Mặc Quái's, a seal's, the boss's - comes from math_ask.pick_own: the answering player's own floor and tier, never the monster's or the room's. math.rooms: the rooms before the boss in order; kind = a puzzle of app/realtime/realm.py PUZZLES, place = the room of the bi_canh map it is played in, seal = the kind of map object that serves as its seals. math.boss_question: prefer = the question type the boss would like to ask (a type of balance/math.json); while that type cannot be asked yet (find_mistake, 'Tìm chỗ sai', waits for M11) the boss asks the fallback, the 'bài tổng hợp': pick_own(highest=True), the hardest question this player may be asked. math.lines_vi: the line the math card shows under the question for each asker. tier/puzzles are only shown at the gate. room_monsters are quái lỗi sai of floor 1: they ask nothing of their own floor here.",
+      "name_vi": "Toán Trận Bí Cảnh", "hanzi": "算阵", "kind": "math", "party_min": 1, "daily_entries": 3, "tier": 1,
+      "puzzles": 2, "time_limit_minutes": 20, "room_monsters": {"dstt_phan_tu_ma": 1, "dstt_nghich_hieu_ma": 1},
+      "boss": "nghien_ma", "boss_hp_mult": 0.6,
+      "desc_vi": "Hai gian trận nhãn rồi hang Nghiên Ma. Ai cũng được hỏi đúng tầng toán của mình, đi một mình hay cả tổ đội đều được.",
+      "math": {
+        "rooms": [{"kind": "seal", "place": "compose", "seal": "pedestal"},
+                  {"kind": "seal", "place": "sentence", "seal": "tile"}],
+        "boss_question": {"prefer": "find_mistake", "fallback": "highest"},
+        "lines_vi": {"monster": "hỏi một câu ở tầng của con.",
+                     "seal": "phá ấn bằng một câu ở tầng của con.",
+                     "boss": "bài tổng hợp, câu khó nhất con được hỏi."}
+      }
     }
   },
   "puzzles": {
@@ -26,6 +41,10 @@
     "maze": {"name_vi": "Mê Cung Mực", "hanzi": "墨迷宫",
              "how_vi": "Mê cung tối. Người đã học chữ 明 tỏa sáng soi đường, người khác đi theo; đứng trong bóng tối thì mực ăn mòn máu. Cả đội tới cửa ra là xong."},
     "boss": {"name_vi": "Hang Nghiên Ma", "hanzi": "砚魔",
-             "how_vi": "Mỗi pha Nghiên Ma dựng Mặc Thuẫn lớn: mỗi người còn sống phải trả lời đúng một câu mới vỡ. Né vùng đỏ Mặc Triều."}
+             "how_vi": "Mỗi pha Nghiên Ma dựng Mặc Thuẫn lớn: mỗi người còn sống phải trả lời đúng một câu mới vỡ. Né vùng đỏ Mặc Triều."},
+    "seal": {"name_vi": "Trận Nhãn", "hanzi": "阵眼",
+             "how_vi": "Đứng lên một ấn đá để nhận một câu toán ở tầng của mình; đúng thì ấn vỡ, sai thì mất máu. Phá đủ ấn, mỗi người ít nhất một ấn, thì cửa mở."},
+    "math_boss": {"name_vi": "Hang Nghiên Ma", "hanzi": "砚魔",
+                  "how_vi": "Mỗi pha Mặc Thuẫn lớn chỉ vỡ khi mỗi người còn sống làm đúng bài tổng hợp của mình: câu khó nhất ở tầng của người ấy. Né vùng đỏ Mặc Triều."}
   }
 }

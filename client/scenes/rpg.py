@@ -80,6 +80,8 @@ class CharacterScene(Scene):
     def reload(self):
         self.game.refresh_cult()
         self.api.get("/inventory", lambda r: setattr(self, "inv", r), self.game.api_error)
+        self.mskills: list[dict] = []        # the chiêu thức (M9); an old server simply has none
+        self.api.get("/math/skills", lambda r: setattr(self, "mskills", r.get("skills") or []), lambda e: None)
 
     def draw_ui(self, ui):
         ui.dim()
@@ -133,19 +135,26 @@ class CharacterScene(Scene):
                     ui.text(e["name_vi"] + lvl, gx + 48, ry, 8, e["color"])
                 else:
                     ui.text(T.NO_WEAPON if slot == "weapon" else "—", gx + 48, ry, 8, "#B8AE9C")
-            # skills
+            # chiêu thức (M9): what the player can cast, with the picture of each
+            from ..engine import icons
             ui.text(T.SKILLS_TITLE, gx, y + 120, 9)
-            for i, sk in enumerate(c.get("skills", [])):
-                ry = y + 134 + i * 16
-                ui.fill(gx, ry, 14, 14, "#2B2B2B" if sk["learned"] else "#CFC6B4")
-                ui.text(sk["hanzi"], gx + 7, ry + 7, 9, "#E9C46A" if sk["learned"] else "#8E877A", kind="han",
-                        anchor="center")
-                ui.text(sk["name_vi"], gx + 18, ry, 7)
-                info = T.SKILL_LEVEL.format(lv=sk["level"], m=sk["mastery"]) if sk["learned"] else T.SKILL_LOCKED
-                ui.text(info, gx + 18, ry + 7, 6, "#5A5A5A")
-                if ui.hover(gx, ry, 180, 14):
-                    ui.set_tooltip(f"{sk['name_vi']} ({sk['hanzi']})\n{sk['desc_vi']}\nLinh Lực {sk['qi']} · hồi "
-                                   f"{sk['cooldown']} giây")
+            for i, sk in enumerate(self.mskills[:6]):
+                ry = y + 132 + i * 13
+                open_ = sk.get("unlocked", True)
+                img = icons.icon(sk.get("icon") or "", int(sk.get("icon_variant") or 0))
+                if img is not None:
+                    ui.image(img, gx, ry - 1, zoom=0.375)                  # a 32 px icon, drawn at 12
+                else:
+                    ui.fill(gx, ry, 12, 12, "#2B2B2B" if open_ else "#CFC6B4")
+                ui.text(sk["name_vi"], gx + 16, ry + 1, 7, "#2B2B2B" if open_ else "#8E877A")
+                ui.text(sk.get("kind_vi", "") if open_ else T.SKILL_LOCKED, gx + 184, ry + 2, 6, "#5A5A5A",
+                        anchor="topright")
+                if ui.hover(gx, ry, 184, 12):
+                    ui.set_tooltip(T.MSKILL_TIP_LOCKED.format(name=sk["name_vi"], why=sk.get("locked_vi") or "")
+                                   if not open_ else
+                                   T.MSKILL_TIP.format(name=sk["name_vi"], key=i + 1, kind=sk.get("kind_vi", ""),
+                                                       qtype=sk.get("qtype_vi", ""), qi=sk.get("qi", 0),
+                                                       cd=sk.get("cooldown", 0), desc=sk.get("desc_vi", "")))
             # stage 8: the worn Linh Thú and the pill buffs running now
             pet = c.get("pet")
             py_ = y + 172

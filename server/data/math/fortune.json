@@ -1,0 +1,94 @@
+{
+ "_comment": "Cơ duyên (M10, kế hoạch 4.3): sự kiện ngẫu nhiên xuất hiện sau khi người chơi trả lời ĐÚNG câu hỏi toán. Máy chủ (app/systems/math_fortune.py) đọc file này; validate() ở đó và tools/check_all.py canh mọi trường. 'trigger': right_answers = số câu đúng (ở buổi luyện, quái lỗi sai, chiêu thức, các chế độ khác; câu của chính cơ duyên KHÔNG tính) để chạm ngưỡng; khi chạm ngưỡng, bộ đếm về 0 và gieo một lần: chance (0..1) là xác suất có cơ duyên, loại nào thì theo 'weight'; chỉ gieo khi chưa có lời mời nào đang mở và hôm nay (giờ máy chủ, UTC+7) chưa đủ daily_limit lời mời; expires_seconds = lời mời hết hạn sau bấy nhiêu giây nếu không nhận; play_seconds = nhận rồi thì có bấy nhiêu giây để trả lời hết chuỗi câu, quá giờ coi như trượt; log_size = số cơ duyên gần đây được giữ lại để hiển thị; how_vi = một dòng giải thích cách cơ duyên đến. Hết giờ hay sai đều không được thưởng và không mất gì. 'events' (ít nhất bốn): id, kind ('elder' = Lão nhân ra đề: một câu KHÓ NHẤT mà người chơi được phép gặp, math_ask highest; 'chest' = Rương đề: chuỗi count câu thuộc các dạng trong qtypes, ở tầng của chính người chơi, phải đúng hết mới mở), name_vi, intro_vi (đọc khi cơ duyên hiện), win_vi, lose_vi, weight (>0), question {qtypes: các dạng câu hỏi cho phép (toàn dạng chơi được: true_false, multiple_choice, numeric, matching, ordering), count: số câu; elder luôn 1}, rewards {stones: [ít nhất, nhiều nhất] Linh Thạch, items: [{item, qty}] chắc chắn có (vật phẩm xếp chồng của drops.json hay vật liệu), rare: {chance, item, qty} cơ hội nhỏ nhận món hiếm}, reviewed (false cho tới khi có người duyệt). Chỉ dùng vật phẩm có thật; món hiếm mới nằm ở drops.json.",
+ "trigger": {
+  "right_answers": 8,
+  "chance": 0.6,
+  "daily_limit": 3,
+  "expires_seconds": 600,
+  "play_seconds": 420,
+  "log_size": 8
+ },
+ "how_vi": "Cơ duyên tìm đến người chăm chỉ: cứ trả lời đúng một chặng câu hỏi, đôi khi sẽ có lão nhân hay rương đề hiện ra.",
+ "events": [
+  {
+   "id": "lao_nhan_ben_suoi",
+   "kind": "elder",
+   "name_vi": "Lão nhân bên suối",
+   "intro_vi": "Một lão nhân râu bạc ngồi câu bên suối, chợt ngoảnh lại: \"Này tiểu hữu, ta có một đề, khó nhất mà con đủ sức gánh. Giải được ta tặng quà.\"",
+   "win_vi": "Lão nhân vuốt râu cười: \"Tốt lắm, đạo tâm vững!\" rồi trao quà mà biến mất.",
+   "lose_vi": "Lão nhân lắc đầu: \"Chưa tới lúc.\" Rồi ông khẽ biến mất, con chẳng mất gì cả.",
+   "weight": 3,
+   "question": {"qtypes": ["numeric", "multiple_choice"], "count": 1},
+   "rewards": {
+    "stones": [25, 45],
+    "items": [{"item": "manh_tap_hop", "qty": 2}],
+    "rare": {"chance": 0.15, "item": "ngoc_gian_lao_nhan", "qty": 1}
+   },
+   "reviewed": false
+  },
+  {
+   "id": "lao_nhan_dai_lo",
+   "kind": "elder",
+   "name_vi": "Lão nhân đầu đại lộ",
+   "intro_vi": "Một lão nhân gánh hồ lô đứng chắn giữa đường: \"Đường này chỉ nhường người giải được đề của ta. Đề này đã chọn hợp sức con nhất.\"",
+   "win_vi": "Lão nhân nhường đường, tặng con chút quà gặp mặt.",
+   "lose_vi": "Lão nhân chỉ cười: \"Về ôn thêm rồi ta gặp lại.\" Con không mất gì.",
+   "weight": 2,
+   "question": {"qtypes": ["numeric", "multiple_choice", "ordering", "matching"], "count": 1},
+   "rewards": {
+    "stones": [30, 55],
+    "items": [{"item": "tinh_so_phuc", "qty": 1}],
+    "rare": {"chance": 0.2, "item": "ngoc_gian_lao_nhan", "qty": 1}
+   },
+   "reviewed": false
+  },
+  {
+   "id": "ruong_go_cu",
+   "kind": "chest",
+   "name_vi": "Rương gỗ cũ",
+   "intro_vi": "Giữa bụi cỏ lộ ra một chiếc rương gỗ phủ rêu, khóa niêm bằng hai câu đố. Đáp đúng cả hai thì mở.",
+   "win_vi": "Cạch! Khóa rương bật mở, bên trong có món quà nhỏ.",
+   "lose_vi": "Khóa rương không nhúc nhích, rồi rương chìm xuống đất. Con không mất gì.",
+   "weight": 4,
+   "question": {"qtypes": ["true_false", "multiple_choice"], "count": 2},
+   "rewards": {
+    "stones": [15, 30],
+    "items": [{"item": "manh_tap_hop", "qty": 1}],
+    "rare": {"chance": 0.1, "item": "an_ruong_de", "qty": 1}
+   },
+   "reviewed": false
+  },
+  {
+   "id": "ruong_ngoc_boi",
+   "kind": "chest",
+   "name_vi": "Rương ngọc bội",
+   "intro_vi": "Một chiếc rương ngọc bội sáng mờ chặn lối, niêm ba câu đố nối nhau. Sai một câu là khóa đóng lại.",
+   "win_vi": "Ba lớp khóa lần lượt tan. Rương mở, ngọc quang tỏa khắp nơi.",
+   "lose_vi": "Ngọc quang tắt lịm, rương biến mất. Không sao, con chẳng mất gì.",
+   "weight": 3,
+   "question": {"qtypes": ["true_false", "numeric", "matching"], "count": 3},
+   "rewards": {
+    "stones": [25, 50],
+    "items": [{"item": "manh_tap_hop", "qty": 1}, {"item": "tinh_so_phuc", "qty": 1}],
+    "rare": {"chance": 0.2, "item": "an_ruong_de", "qty": 1}
+   },
+   "reviewed": false
+  },
+  {
+   "id": "ruong_sat_tho",
+   "kind": "chest",
+   "name_vi": "Rương sắt cổ",
+   "intro_vi": "Chiếc rương sắt nặng trịch niêm ba câu đố hóc hơn: trắc nghiệm, sắp bước, điền số. Cần đúng cả ba.",
+   "win_vi": "Rương sắt mở ra tiếng vang trầm, lộ ra chút của quý.",
+   "lose_vi": "Rương sắt vẫn im lìm, và con ra về với hai bàn tay không nhưng chẳng mất gì.",
+   "weight": 1,
+   "question": {"qtypes": ["multiple_choice", "ordering", "numeric"], "count": 3},
+   "rewards": {
+    "stones": [40, 70],
+    "items": [{"item": "loi_ma_tran", "qty": 1}],
+    "rare": {"chance": 0.3, "item": "an_ruong_de", "qty": 1}
+   },
+   "reviewed": false
+  }
+ ]
+}

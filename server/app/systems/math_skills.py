@@ -60,8 +60,8 @@ EFFECT_KEYS = {
     "ward": {"radius": (0, 1000), "duration": (0, 120), "reduce": (0, 0.95), "heal_pct": (0, 100)},
 }
 _REQUIRED = ("name_vi", "kind_vi", "element", "qtypes", "min_tier", "qi", "cooldown", "range", "effect",
-             "power", "anim", "fx", "unlock", "desc_vi")
-_OPTIONAL = {"reviewed", "radius", "slow", "duration", "reduce", "heal_pct"}
+             "power", "anim", "fx", "icon", "unlock", "desc_vi")
+_OPTIONAL = {"reviewed", "radius", "slow", "duration", "reduce", "heal_pct", "icon_variant"}
 
 REFUSALS_VI = {
     "unknown": "Không có chiêu này.",
@@ -125,7 +125,10 @@ def validate(raw: dict | None = None, config: dict | None = None) -> list[str]:
         extra = sorted(set(s) - set(_REQUIRED) - _OPTIONAL)
         if extra:
             out.append(f"{here}: unknown keys {', '.join(extra)}")
-        for key in ("name_vi", "desc_vi", "anim", "fx"):
+        variant = s.get("icon_variant", 0)
+        if not isinstance(variant, int) or isinstance(variant, bool) or variant < 0:
+            out.append(f"{here}: icon_variant must be a whole number >= 0")
+        for key in ("name_vi", "desc_vi", "anim", "fx", "icon"):
             if not isinstance(s[key], str) or not s[key].strip():
                 out.append(f"{here}: {key} must be a non-empty string")
         if s["kind_vi"] not in KINDS:
@@ -219,7 +222,9 @@ async def view(db: AsyncSession, user: User) -> dict:
     for sid, s in skills().items():
         reason = locked_reason(s, floor)
         row = {"id": sid, **{k: s[k] for k in ("name_vi", "kind_vi", "element", "min_tier", "qi", "cooldown",
-                                                 "range", "effect", "power", "anim", "fx", "desc_vi")},
+                                                 "range", "effect", "power", "anim", "fx", "icon",
+                                                 "desc_vi")},
+               "icon_variant": int(s.get("icon_variant", 0)),
                "qtypes": list(s["qtypes"]),
                "qtype_vi": ", ".join(types[q]["name_vi"] for q in s["qtypes"]),
                "unlock": {"floor": s["unlock"]["floor"]}, "unlocked": reason is None, "locked_vi": reason}
@@ -384,7 +389,11 @@ async def _create(p: "Player", ch: "ChannelZone", k: str, eid: str | None) -> No
                 refuse(p, k, code)
                 return
             m0 = ch.monster(eid) if (eid and sk["effect"] != "ward") else None
-            question, code = await question_for(db, user, sk, m0.info if m0 is not None else None, rng)
+            # M10: in a bí cảnh toán every question is at the answering player's own floor,
+            # whoever is hit (plan 4.3) - so the target's own floor and micro-skill are not used
+            own_floor = getattr(ch, "question_source", None) is not None
+            info = m0.info if (m0 is not None and not own_floor) else None
+            question, code = await question_for(db, user, sk, info, rng)
             if question is None:
                 p.q_pending = False
                 refuse(p, k, code)

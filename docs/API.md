@@ -582,3 +582,131 @@ Sự kiện kênh (trong `fx` của `snap`, ai ở gần cũng thấy):
 - `{"k": "mskill", "by", "s", "fx", "anim", "ok": 1|0, "x", "y", "tx", "ty", "r", "combo"}`: chiêu trúng
   (`ok: 1`) hoặc hụt (`ok: 0`); `tx, ty` khi có mục tiêu, `r` với `area`/`ward`. Đòn đánh vẫn đi kèm
   các sự kiện `hit`, `shield`, `gshield`, `heal`, `die` như cũ.
+
+## M10 — Cơ duyên (sự kiện ngẫu nhiên sau câu đúng)
+
+Dữ liệu: `server/data/math/fortune.json` (`_comment` giải thích từng trường). Mã: `app/systems/math_fortune.py`.
+Mỗi câu toán trả lời đúng (buổi luyện, quái lỗi sai, chiêu thức, các chế độ khác; câu của chính cơ duyên
+không tính) cộng một vào bộ đếm; chạm ngưỡng thì bộ đếm về 0 và gieo xem có cơ duyên không. Một lúc chỉ có
+một lời mời mở, mỗi ngày (giờ máy chủ, UTC+7) tối đa `daily_limit` lời mời. Trạng thái nằm trong
+`users.flags["math_fortune"]`. Câu hỏi luôn lấy qua `math_ask` (bậc của chính người chơi, không bao giờ cao hơn).
+
+- `GET /math/fortune` -> `{"offer": {id, kind: "elder"|"chest", name_vi, intro_vi, accepted, expires_in,
+  progress: [đã đúng, tổng]} | null, "today": {offers, limit}, "progress": {right, need}, "log": [{at, event,
+  name_vi, kind, outcome: won|lost|declined|expired|timeout, rewards?}], "how_vi"}`. Lời mời hết hạn tự biến mất.
+- Lời mời hiện ra trong phản hồi `POST /quiz/answer` của câu đúng đã khiến nó xuất hiện:
+  `math.fortune_offer` (cùng dạng `offer` ở trên). Máy khách báo bằng `scenes/math_fortune.notice(game, res)`.
+- `POST /math/fortune/accept` -> `{"question": <phiên câu hỏi, context "math_fortune">, "fortune": offer}`;
+  nhận lần nữa trả lại đúng câu đang chờ. Khi không còn câu nào để hỏi: `{"question": null, "ended": true,
+  "message_vi"}` (không lỗi, không mất gì). 404 `no_offer` nếu không có lời mời.
+- `POST /math/fortune/decline` -> như `GET /math/fortune`. 409 `accepted` nếu đã nhận rồi.
+- Trả lời câu của cơ duyên: `POST /quiz/answer` như mọi câu. Phản hồi có thêm khối `fortune`:
+  `{event, kind, name_vi, progress: [i, n], done, won, rewards: {spirit_stones, items: [{item, qty, rare,
+  name_vi}]} | null, next: <phiên câu hỏi tiếp> | null, text_vi (khi done), stale}`. Sai, hết giờ hay quá
+  `play_seconds` thì kết thúc, không thưởng, không phạt. Lão nhân ra đề (`elder`) hỏi một câu khó nhất người chơi
+  được phép gặp; rương đề (`chest`) hỏi `count` câu thuộc các dạng đã nêu, phải đúng hết.
+
+## M10 — Hầm ngục (sinh theo hạt giống, mỗi phòng một dạng câu)
+
+Dữ liệu: `server/data/math/dungeon.json` (`_comment` giải thích từng trường). Mã: `app/systems/math_dungeon.py`,
+bảng `math_dungeon_runs` (migration `0014_math_dungeon`). Bản đồ của một hầm (số phòng, dạng câu và thứ tự
+từng phòng, vi kỹ năng mỗi phòng hỏi, kẻ canh giữ, rương cuối) là một hàm thuần của (hạt giống, môn, tầng):
+cùng hạt giống thì cùng hầm. Câu hỏi bên trong không thuộc hạt giống: lấy qua `math_ask` lúc vào phòng (bậc
+của chính người chơi, không bao giờ cao hơn; chống lặp theo nhật ký của người chơi). Chỉ sinh phòng hỏi được
+cho bất kỳ ai đứng ở tầng đó (dạng câu + vi kỹ năng có câu ở bậc thấp nhất của tầng). Phòng cuối là trấn thủ:
+câu khó nhất người chơi được hỏi ở dạng đó (`highest`). Mỗi phòng thường cần `questions_per_room` câu đúng,
+phòng trấn thủ `warden_questions`. Câu sai hoặc hết giờ mất một tâm lực; hết tâm lực là thua; thứ đã nhận
+không mất. `rewards_per_day` hầm đầu tiên mỗi ngày (UTC) có Linh Thạch và vật liệu; sau đó vẫn chơi, vẫn có Tu Vi.
+
+- `GET /math/dungeon` -> `{subject_id, subject_name_vi, floors: [{floor, title_vi, open, locked_vi}], own_floor,
+  run: <run> | null, hearts, rewards_left, rewards_per_day, seed_max}`. Câu của hầm đang mở đã hết giờ mà chưa
+  trả lời thì được chấm như hết giờ ngay lúc này (mất tâm lực).
+- `GET /math/dungeon/layout?seed=&floor=` -> `{"layout": {seed, subject_id, floor, floor_title_vi, rooms:
+  [{index, kind, name_vi, short_vi, desc_vi, qtype_vi, skill, skill_name_vi, guardian_vi, flavour_vi, warden,
+  need}], room_reward: {stones, items}, chest: {name_vi, stones, items: [{item_id, name_vi, qty}]}}}`: xem trước,
+  không vào hầm. `floor` mặc định là tầng của người chơi.
+- `POST /math/dungeon/start {seed?, floor?}` -> `{"run": <run>}`. Không có `seed` thì máy chủ tự rút (0..`seed_max`)
+  và trả về. Tầng chưa tới: 403 `floor_locked`; tầng chưa có câu: 400 `no_questions`; hạt giống ngoài khoảng:
+  400 `bad_seed`. Hầm đang mở (nếu có) bị bỏ (`abandoned`).
+- `<run>` = `{run_id, seed, subject_id, subject_name_vi, floor, floor_title_vi, rooms: [... như layout, thêm
+  state: cleared|current|ahead|lost|left, progress], room, rooms_cleared, total_rooms, hearts, max_hearts,
+  state: open|cleared|failed|abandoned, ended, asked, correct, xp_gained, stones_gained, items_gained,
+  rewarded, room_reward, chest, chest_opened}`.
+- `POST /math/dungeon/next {run_id}` -> `{"run", "question": <phiên câu hỏi, context "math_dungeon"> | null}`: vào
+  phòng hiện tại / câu tiếp của phòng; câu đang chờ thì trả lại đúng câu đó. `question: null` khi một câu hết
+  giờ vừa được chấm đã làm hết tâm lực. Khối `math` của câu có thêm `dungeon: {room, rooms, name_vi,
+  guardian_vi, warden}`. Hầm đã kết thúc: 409 `run_ended`.
+- `POST /math/dungeon/abandon {run_id}` -> `{"run"}`: rời hầm, giữ những gì đã nhận.
+- `GET /math/dungeon/run/{run_id}` -> `{"run"}`: một hầm của người chơi (màn kết quả đọc số cuối ở đây).
+- Trả lời: `POST /quiz/answer` như mọi câu. Khối `math` như M7 (ghi vào `math_answers`, `run_id = NULL`), và
+  `dungeon: {correct, room, room_cleared, reward: {stones, items, withheld} | null, chest: (cùng dạng) | null,
+  heart_lost, run}`; câu của hầm đã rời / đã chấm: `dungeon: {stale: true, run}` (chỉ ghi vào nhật ký học).
+
+## M10 — Thủ thành toán (tháp ứng với mảng toán)
+
+Ải Thủ Vườn của bản toán: cùng mô phỏng `td_sim.py` (client chơi, máy chủ chơi lại nhật ký), cùng bảng `td_runs`
+/ `td_progress` (mã ải bắt đầu bằng `math_`; hai bản không bao giờ thấy lượt của nhau). Dữ liệu:
+`server/data/math/td.json`. Mỗi tháp có một mảng toán (`subject`, `floor`, `skills`); tháp dùng được khi mảng có
+câu và người chơi đã tới tầng ấy (`math_ask.open_floor`). Đặt tháp và nâng tháp mỗi lần cần một câu đúng của
+mảng ấy, ở bậc của chính người chơi (không bao giờ cao hơn); sai / hết giờ thì không đặt / không nâng, Linh Khí
+của lần thử không hoàn lại (như nâng cấp ở Ải Thủ Vườn), ngoài ra không mất gì. Mọi câu ghi vào `math_answers`
+với `run_id = NULL` và cho Tu Vi theo bậc.
+
+- `GET /math/td` -> `{levels: [{id, name_vi, desc_vi, waves, unlocked, locked_vi, stars, best_wave, monsters,
+  first_rewards: [{spirit_stones, items?: [{item, qty, name_vi}]} ×3]}], towers: [<tower>], roles, active_run:
+  {run_id, level_id, name_vi, waves} | null, stars_need, daily_left, daily_max}`.
+- `<tower>` = `{id, name_vi, label, role, desc_vi, power, cost, subject, subject_name_vi, floor, available,
+  locked_vi}`; `locked_vi` nói vì sao chưa dựng được (tầng chưa tới, hoặc môn / tầng chưa có câu hỏi).
+- `POST /math/td/start {level_id}` -> `{run_id, level_id, params, step_ms, max_speed, name_vi, monsters, towers}`.
+  `params` như `/td/start` với `plants` = các tháp dựng được (`{role, hanzi: nhãn, pinyin: tên, power}`),
+  `combos: []` và `place_needs_answer: true`. Lượt toán đang dở bị thay; lượt Ải Thủ Vườn không bị đụng tới.
+  Lỗi: 404 `no_level`, 400 `locked`, 400 `no_tower`.
+- `POST /math/td/question {run_id, kind, tower_id?}` -> một phiên câu hỏi `context: "math_td"` (khối `math` như
+  M7) cộng `math_td: {kind, tower, power}`. `kind` = `place` / `upgrade` (câu về mảng của `tower_id`), `break`
+  (đầu mỗi lúc nghỉ) / `tu_khi` (nút Tụ Khí): câu ở tầng của chính người chơi. `power` = hệ số sức mạnh theo bậc
+  (`tier_power`) mà tháp nhận nếu trả lời đúng. Lỗi: 400 `no_tower` (tháp không mở trong lượt này), 400
+  `no_question`, 400 `too_many`, 404 `no_run`.
+- Trả lời: `POST /quiz/answer`. Kết quả có `math` (như M7) và `math_td: {kind, tower, ok, power, qi}`.
+- Sự kiện trong nhật ký như Ải Thủ Vườn, trừ `{"k": "place", x, y, w, q}`: `q` bắt buộc là một câu `place` về
+  đúng tháp `w`; câu đúng thì tháp đứng lên với `power` của câu, câu sai thì chỉ trừ Linh Khí. `{"k": "up", x, y,
+  q}`: câu `upgrade` về đúng tháp ấy; đúng thì lên cấp và giữ `power` cao nhất. Mỗi câu chỉ dùng được một lần.
+- `POST /math/td/event {run_id, start, events}`, `POST /math/td/resume`, `POST /math/td/cancel`: như `/td/*`.
+- `POST /math/td/finish {run_id, events, claim}` -> `{result, core_hp, wave, steps, waves_cleared, stars,
+  prev_stars, new_stars, rewards, daily_left, next_level}`. Máy chủ chơi lại nhật ký với câu trả lời nó đã ghi;
+  nhật ký có tháp không do câu đúng nào dựng nên, kết quả không khớp hay nhanh hơn thời gian thật: 400
+  (`bad_log`, `log_mismatch`, `too_fast`) và lượt bị xoá. Thưởng: lần đầu đạt mỗi sao nhận `first_rewards` của
+  ải; thắng lại nhận `replay_stones` Linh Thạch, tối đa `daily_rewarded_plays` lần mỗi ngày; thua không có thưởng.
+
+## M10 — Bí cảnh toán (tổ đội)
+
+Bí cảnh của giai đoạn 9 (ghép đội, khe nứt, mỗi lượt một bản, phòng, hồn ma, khiên nhóm của boss, phần thưởng)
+dùng lại nguyên vẹn; bí cảnh `kind: "math"` trong `server/data/realms.json` (hiện có `toan_tran`, Toán Trận Bí Cảnh)
+chỉ đổi *câu được hỏi*. Mọi câu — của Mặc Quái, của ấn Trận Nhãn, của boss — lấy bằng `math_ask.pick_own`: tầng và
+bậc của chính người trả lời, không bao giờ theo tầng của quái hay của phòng. Câu có `context: "math_realm"` (khối
+`math` như M7, thêm `realm_asker`: `monster` / `seal` / `boss`), trả lời qua `POST /quiz/answer`, ghi vào
+`math_answers` với `run_id = NULL`, Tu Vi theo bậc; hết giờ là câu sai, ngoài ra không mất gì.
+
+- `GET /realms` thêm `math_realms: [{id, name_vi, hanzi, kind: "math", math: true, floor, rooms, party_min,
+  min_realm: null, realm_ok, entries_left, daily, open: true, ...}]` (không nằm trong `realms`). `floor` = tầng câu
+  hỏi của người chơi (0: chưa có tầng nào có câu, `realm_ok` false). `puzzles` có thêm `seal` và `math_boss`.
+- WebSocket `{"t": "realm", "op": "enter", "realm": "toan_tran"}` ở Cổng Bí Cảnh: một mình (không cần tổ đội,
+  `party_min` 1) hoặc đội trưởng dẫn cả đội; không có giờ mở cửa, không đòi cảnh giới. Ai không có tầng nào có
+  câu hỏi thì cả đội bị từ chối: lỗi `no_math_question`, không mất lượt. `op: "queue"` cũng dùng được.
+- `realm start`: `run.math: true`, mỗi `members[]` có `floor`. `realm room`: thêm `place` (gian của bản đồ
+  `bi_canh` mà phòng mượn) và `math`.
+- Phòng `seal` (Trận Nhãn): `puzzle = {kind: "seal", seal_kind, seals: [{name, broken, busy}], broken, need,
+  missing: [uid], solved, fails}`. Đứng lên một ấn chưa vỡ (`name` là tên đồ vật bản đồ) thì máy chủ gửi
+  `{"t": "q", "mid": null, "seal": name, "q": ...}`; Hộ Thể khi đang trả lời. Kết quả `POST /quiz/answer` có
+  `realm: {seal, broken, count?, need?, hurt?, hp?}` (hoặc `stale`). Mọi người nhận `{"t": "realm", "event":
+  "seal", "ok", "by"}` và `{"k": "pz", "e": "ask" | "seal"}` trong snapshot. Cửa mở khi đã vỡ `need` ấn
+  (`seal.base` + `seal.per_member` cho mỗi thành viên khác hỏi được, tối đa số ấn của gian) và ít nhất
+  min(số thành viên, need) người khác nhau đã phá một ấn. Người đã phá một ấn bị từ chối ấn tiếp theo nếu lấy
+  nó thì không đủ ấn cho người chưa phá: `{"t": "realm", "event": "hint", "code": "seal_share"}`.
+- Boss: mỗi người được hỏi "bài tổng hợp" của mình (`pick_own(highest=True)`); khiên lớn cần mỗi người còn sống
+  (trừ người không có câu nào) trả lời đúng một câu. Dạng boss muốn hỏi (`boss_question.prefer:
+  "find_mistake"`, Tìm chỗ sai) chưa chơi được: chờ M11.
+- Người chơi mà ngân hàng không có câu: `{"t": "error", "code": "no_math_question"}`; phòng và khiên boss không
+  chờ người đó.
+- Thưởng: như bí cảnh cũ (`realm loot`), nhưng chỉ Linh Thạch và vật liệu của `data/math/drops.json`
+  (`room_loot_by_realm.toan_tran`, `chest.toan_tran` trong `balance/realm.json`), không Tu Vi, không Ngọc,
+  không Mảnh Bảo Vật.

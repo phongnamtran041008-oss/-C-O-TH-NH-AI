@@ -110,6 +110,7 @@ class Member:
     name: str
     learned: dict[str, int]          # word id -> mastery (introduced words only)
     state: str = "in"                # in | left
+    floor: int | None = None         # M10, a math bí cảnh: the floor this player's questions come from
 
 
 @dataclass
@@ -615,8 +616,177 @@ class BossPuzzle(Puzzle):
             self.solved = True
 
 
+class SealPuzzle(Puzzle):
+    """Trận Nhãn (M10, the math bí cảnh): seals lie on the floor of the room. Whoever stands
+    on an unbroken one is asked one question of *their own* floor (math_ask.pick_own, never
+    the room's or a monster's); a right answer breaks the seal, a wrong one (or running out
+    of time) hurts the one who answered and the seal holds.
+
+    The room opens when the party has broken `need` seals - `base`, plus `per_member` for
+    every other member who can be asked, never more than the room has - and at least
+    min(members, need) *different* members broke one. So a seal room is cleared together,
+    never by the strongest player alone; alone, `base` seals are enough. A member who has
+    already broken one is not asked by a further seal when that would leave too few for the
+    ones who have not, so the room can always still be finished."""
+    kind = "seal"
+
+    def __init__(self, inst: "RealmInstance", now: float):
+        super().__init__(inst)
+        self.obj_kind = inst.room_spec().get("seal", "pedestal")
+        self.names = [o.name for o in inst.objs(self.obj_kind)]
+        self.broken: dict[str, int] = {}          # seal -> who broke it
+        self.asking: dict[int, str] = {}          # uid -> the seal whose question they hold
+        self.cool: dict[int, float] = {}          # uid -> not asked again before this
+        self.on_seal: dict[int, str | None] = {}  # uid -> the seal they stood on last tick
+
+    # ------------------------------------------------------------ the rule
+    def askers(self) -> list[Player]:
+        """Whom the room waits for: everyone standing who can be asked a question at all."""
+        return [p for p in self.inst.active() if p.user_id not in self.inst.no_question]
+
+    def need(self) -> int:
+        c = cfg()["seal"]
+        n = max(1, len(self.askers()))
+        return max(1, min(len(self.names), c["base"] + c["per_member"] * (n - 1)))
+
+    def missing(self) -> list[int]:
+        done = set(self.broken.values())
+        return [p.user_id for p in self.askers() if p.user_id not in done]
+
+    def done(self) -> bool:
+        askers = self.askers()
+        if not askers:
+            return False
+        need = self.need()
+        breakers = {p.user_id for p in askers} & set(self.broken.values())
+        return len(self.broken) >= need and len(breakers) >= min(len(askers), need)
+
+    def may_take(self, p: Player) -> bool:
+        """A member who already broke a seal leaves enough unbroken ones for those who have not."""
+        if p.user_id not in set(self.broken.values()):
+            return True
+        missing = [u for u in self.missing() if u != p.user_id]
+        held = sum(1 for u in self.asking if u != p.user_id and u not in missing)
+        return len(self.names) - len(self.broken) - held - 1 >= len(missing)
+
+    def obj(self, name: str) -> Area | None:
+        return next((o for o in self.inst.objs(self.obj_kind) if o.name == name), None)
+
+    # ------------------------------------------------------------ what everyone sees
+    def public(self, now: float) -> dict:
+        busy = set(self.asking.values())
+        return {**super().public(now), "seal_kind": self.obj_kind, "broken": len(self.broken), "need": self.need(),
+                "seals": [{"name": n, "broken": n in self.broken, "busy": n in busy} for n in self.names],
+                "missing": self.missing()}
+
+    # ------------------------------------------------------------ the tick
+    def tick(self, dt_: float, now: float) -> None:
+        if self.solved:
+            return
+        inst = self.inst
+        for uid in list(self.asking):   # a question that went away (fell, left, ran out) frees its seal
+            p = inst.players.get(uid)
+            if p is None or p.dead or (p.question is None and not p.q_pending):
+                del self.asking[uid]
+                self.inst.push_puzzle(now)
+        if self.done():
+            self.solve(now)
+            return
+        objs = {o.name: o for o in inst.objs(self.obj_kind)}
+        for p in inst.active():
+            here = next((n for n, o in objs.items() if n not in self.broken and inst.on(p, o)), None)
+            before = self.on_seal.get(p.user_id)
+            self.on_seal[p.user_id] = here
+            if (here is None or p.user_id in self.asking or p.question is not None or p.q_pending
+                    or here in self.asking.values() or now < self.cool.get(p.user_id, 0.0)
+                    or now < p.no_words_until):
+                continue
+            if not self.may_take(p):
+                if here != before and p.session is not None:
+                    p.session.send({"t": "realm", "event": "hint", "code": "seal_share",
+                                    "text_vi": "Con đã phá một ấn rồi, nhường ấn này cho đạo hữu chưa phá."})
+                continue
+            self.asking[p.user_id] = here
+            p.q_pending = True
+            inst.world.spawn(self._ask(p, here))
+            inst.push_puzzle(now)
+
+    async def _ask(self, p: Player, name: str) -> None:
+        from .. import balance as bal
+        from ..systems import math_realm
+        inst = self.inst
+        made = None
+        try:
+            made = await math_realm.seal_session(inst, p, name)
+        except Exception:
+            log.exception("could not create a seal question")
+        p.q_pending = False
+        now = inst.world.mono()
+        if made is None:
+            if self.asking.get(p.user_id) == name:
+                del self.asking[p.user_id]
+            self.cool[p.user_id] = now + cfg()["seal"]["retry_seconds"]
+            inst.push_puzzle(now)
+            return
+        out, limit = made
+        if (inst.puzzle is not self or self.solved or name in self.broken or self.asking.get(p.user_id) != name
+                or p.dead or p.channel is not inst or p.session is None or p.question is not None):
+            if self.asking.get(p.user_id) == name:
+                del self.asking[p.user_id]
+            return   # the room went on while the question was written; it simply expires
+        deadline = now + limit + bal.quiz()["network_grace"]
+        p.question = {"sid": out["session_id"], "mid": None, "deadline": deadline, "asked": now, "limit": limit,
+                      "timeout_sent": False, "seal": name, "ch": inst.key}
+        p.protect_until = deadline
+        p.inputs.clear()
+        p.queued_ms = 0
+        p.session.send({"t": "q", "mid": None, "q": out, "first_meet": False, "seal": name})
+        o = self.obj(name)
+        if o is not None:
+            self.inst.event(k="pz", e="ask", x=o.x + o.w / 2, y=o.y + o.h / 2, by=p.eid)
+
+    # ------------------------------------------------------------ the answer (graded by app/systems/math_realm.py)
+    def answer(self, p: Player, sid: str, correct: bool) -> dict:
+        q = p.question
+        if q is None or q["sid"] != sid or not q.get("seal"):
+            return {"stale": True}
+        p.question = None
+        p.protect_until = 0.0
+        name = q["seal"]
+        if self.asking.get(p.user_id) == name:
+            del self.asking[p.user_id]
+        now = self.inst.world.mono()
+        if self.solved or name in self.broken or name not in self.names or p.dead:
+            return {"seal": name, "stale": True}
+        o = self.obj(name)
+        x, y = (o.x + o.w / 2, o.y + o.h / 2) if o is not None else (p.x, p.y)
+        self.inst.send_all({"t": "realm", "event": "seal", "ok": bool(correct), "by": p.name})
+        if correct:
+            self.broken[name] = p.user_id
+            self.inst.event(k="pz", e="seal", x=x, y=y, by=p.eid)
+            if self.done():
+                self.solve(now)
+            else:
+                self.inst.push_puzzle(now)
+            return {"seal": name, "broken": True, "count": len(self.broken), "need": self.need()}
+        hp = p.hp
+        self.inst.hurt(p, cfg()["seal"]["fail_pct"], now)
+        self.mistake(now, x, y)
+        self.cool[p.user_id] = now + cfg()["seal"]["retry_seconds"]
+        self.inst.push_puzzle(now)
+        return {"seal": name, "broken": False, "hurt": int(round(hp - p.hp)), "hp": max(0, int(round(p.hp)))}
+
+    def solve(self, now: float) -> None:
+        for uid in list(self.asking):   # the seals the others were still being asked about need no answer now
+            p = self.inst.players.get(uid)
+            if p is not None and p.question and p.question.get("seal"):
+                combat.end_question(p, "solved")
+        self.asking.clear()
+        super().solve(now)
+
+
 PUZZLES = {"compose": ComposePuzzle, "sentence": SentencePuzzle, "tone": TonePuzzle, "mirror": MirrorPuzzle,
-           "maze": MazePuzzle}
+           "maze": MazePuzzle, "seal": SealPuzzle}
 
 
 # ------------------------------------------------------------------ one run
@@ -633,7 +803,13 @@ class RealmInstance(ChannelZone):
         self.question_tier = int(self.rdef["tier"])
         self.members = members
         self._union: set[str] | None = None
+        # M10: a math bí cảnh asks every question at the answering player's own floor, whatever
+        # asks it (combat.py calls `question_source` instead of the monster's own question)
+        self.math = self.rdef.get("kind") == "math"
+        self.question_source = self.math_question if self.math else None
+        self.no_question: set[int] = set()     # members the bank has no question for right now
         self.rooms = list(rooms) if rooms else self._pick_rooms()
+        self.room_specs = self._room_specs()
         self.room_i = -1
         self.puzzle: Puzzle | None = None
         self.phase = "starting"            # starting | running | advancing | ended
@@ -674,21 +850,54 @@ class RealmInstance(ChannelZone):
         return out
 
     def _pick_rooms(self) -> list[str]:
+        if self.math:   # M10: the math bí cảnh plays the rooms its data lists, in that order
+            return [r["kind"] for r in self.rdef["math"]["rooms"]] + ["boss"]
         kinds = [k for k in PUZZLE_KINDS if (k != "compose" or self.compose_candidates())
                  and (k != "sentence" or self.sentence_candidates())]
         self.rng.shuffle(kinds)
         return kinds[:max(1, min(int(self.rdef["puzzles"]), len(kinds)))] + ["boss"]
+
+    def _room_specs(self) -> list[dict]:
+        """Where each room is played. A word puzzle has a room of the bi_canh map named after it;
+        a math one (M10) borrows a room of the map and its stones, as realms.json says
+        ({"kind": "seal", "place": "compose", "seal": "pedestal"}), so no new map is needed."""
+        spec = [dict(r) for r in (self.rdef.get("math") or {}).get("rooms", [])]
+        out, used = [], set()
+        for k in self.rooms:
+            if k in self.map.rooms:
+                out.append({"kind": k, "place": k})
+                continue
+            mine = [j for j, r in enumerate(spec) if r["kind"] == k]
+            if not mine:
+                raise ValueError(f"realm {self.realm_id}: no place for a {k} room")
+            j = next((j for j in mine if j not in used), mine[0])
+            used.add(j)
+            out.append({**spec[j], "place": spec[j].get("place", k)})
+        return out
 
     # ------------------------------------------------------------ places and people
     @property
     def kind(self) -> str | None:
         return self.rooms[self.room_i] if 0 <= self.room_i < len(self.rooms) else None
 
+    @property
+    def place(self) -> str | None:
+        """The room of the map the current room is played in (its kind, for the word puzzles)."""
+        return self.room_specs[self.room_i]["place"] if 0 <= self.room_i < len(self.rooms) else None
+
+    def room_spec(self) -> dict:
+        return self.room_specs[self.room_i] if 0 <= self.room_i < len(self.rooms) else {}
+
+    def info_key(self, kind: str) -> str:
+        """realms.json `puzzles` entry of a room: a math bí cảnh may word it its own way ("math_boss")."""
+        from ..systems import secret_realm
+        return f"math_{kind}" if self.math and secret_realm.puzzle_info(f"math_{kind}") else kind
+
     def objs(self, kind: str) -> list[Area]:
-        return [o for o in self.map.realm_objs if o.props.get("room") == self.kind and o.props.get("kind") == kind]
+        return [o for o in self.map.realm_objs if o.props.get("room") == self.place and o.props.get("kind") == kind]
 
     def room_center(self) -> tuple[float, float]:
-        a = self.map.rooms[self.kind]
+        a = self.map.rooms[self.place]
         return a.x + a.w / 2, a.y + a.h / 2
 
     def on(self, p: Player, a: Area, pad: float | None = None) -> bool:
@@ -705,8 +914,34 @@ class RealmInstance(ChannelZone):
 
     def group_need(self, m: ai.Monster) -> int:
         """Spec 14.2: the boss's big shield needs as many right answers (from different players)
-        as there are members still alive."""
-        return max(1, len(self.active()))
+        as there are members still alive. M10: a member the bank has no question for cannot
+        answer, so the shield does not wait for them."""
+        return max(1, len([p for p in self.active() if p.user_id not in self.no_question]))
+
+    # ------------------------------------------------------------ M10: math questions
+    async def math_question(self, db, user, p: Player, m: "ai.Monster | None", rng: random.Random):
+        """combat.py's question for a monster of this run: at this player's own floor; the
+        boss asks their "bài tổng hợp" (the hardest question they may be asked)."""
+        from ..systems import math_realm
+        boss = m is not None and bool(m.info.get("group_shield"))
+        q = await math_realm.question_for(db, user, self.rdef, "boss" if boss else "monster", rng,
+                                          who_vi=m.info.get("name_vi", "") if m is not None else "")
+        if not self.got_question(p, q):
+            return None
+        return math_realm.CONTEXT, q
+
+    def got_question(self, p: Player, q) -> bool:
+        """Notes whether the bank had a question for this player; tells them when it did not."""
+        if q is not None:
+            self.no_question.discard(p.user_id)
+            return True
+        self.no_question.add(p.user_id)
+        p.no_words_until = self.world.mono() + 10
+        if p.session is not None:
+            p.session.send({"t": "error", "code": "no_math_question",
+                            "message_vi": "Chưa có câu toán nào ở tầng của con. Luyện ở Động Phủ một lúc "
+                                          "rồi quay lại; đội vẫn đi tiếp được mà không chờ con."})
+        return False
 
     def exit_pos(self) -> tuple[float, float]:
         from .world import zone_defs
@@ -721,13 +956,15 @@ class RealmInstance(ChannelZone):
     def run_msg(self, now: float) -> dict:
         return {"t": "realm", "event": "start", "run": {
             "id": self.run_id, "realm": self.realm_id, "name_vi": self.rdef["name_vi"],
-            "hanzi": self.rdef.get("hanzi", ""), "left": int(max(0, self.deadline - now)),
-            "rooms": [{"kind": k, "name_vi": puzzle_info(k).get("name_vi", k)} for k in self.rooms],
-            "members": [{"uid": m.uid, "name": m.name, "in": m.state == "in"} for m in self.members.values()]}}
+            "hanzi": self.rdef.get("hanzi", ""), "left": int(max(0, self.deadline - now)), "math": self.math,
+            "rooms": [{"kind": k, "name_vi": puzzle_info(self.info_key(k)).get("name_vi", k)} for k in self.rooms],
+            "members": [{"uid": m.uid, "name": m.name, "in": m.state == "in", "floor": m.floor}
+                        for m in self.members.values()]}}
 
     def room_msg(self, uid: int, now: float) -> dict:
-        info = puzzle_info(self.kind)
+        info = puzzle_info(self.info_key(self.kind))
         return {"t": "realm", "event": "room", "i": self.room_i, "n": len(self.rooms), "kind": self.kind,
+                "place": self.place, "math": self.math,
                 "name_vi": info.get("name_vi", self.kind), "hanzi": info.get("hanzi", ""),
                 "how_vi": info.get("how_vi", ""), "left": int(max(0, self.deadline - now)), "phase": self.phase,
                 "puzzle": self.puzzle.public(now) if self.puzzle else None,
@@ -799,7 +1036,7 @@ class RealmInstance(ChannelZone):
     # ------------------------------------------------------------ the run
     def begin(self, now: float) -> None:
         self.phase = "running"
-        x, y = self.map.spawn(f"{self.rooms[0]}_entry")
+        x, y = self.map.spawn(f"{self.room_specs[0]['place']}_entry")
         for i, (uid, m) in enumerate(self.members.items()):
             s = self.world.sessions.get(uid)
             if s is None:
@@ -825,7 +1062,7 @@ class RealmInstance(ChannelZone):
 
     def _spawn_monsters(self, now: float) -> None:
         kind = self.kind
-        area = self.map.rooms[kind]
+        area = self.map.rooms[self.place]
         if kind == "maze":
             return
         if kind == "boss":
@@ -859,7 +1096,7 @@ class RealmInstance(ChannelZone):
         self.monsters = []
         self.boss, self.aoes = None, []
         self.puzzle = None
-        x, y = self.map.spawn(f"{self.kind}_entry")
+        x, y = self.map.spawn(f"{self.place}_entry")
         if i > 0:   # (the first room: begin() just put everyone there)
             for n, p in enumerate(self.present()):
                 self._teleport(p, *self._spread(x, y, n))
@@ -908,7 +1145,8 @@ class RealmInstance(ChannelZone):
         if self.result != "won":
             return 0
         c = cfg()
-        return c["chest"][self.realm_id]["fragments"] + self.flawless * c["flawless_fragments"]
+        chest = c["chest"][self.realm_id]
+        return chest["fragments"] + self.flawless * chest.get("flawless_fragments", c["flawless_fragments"])
 
     def _finish(self, result: str, now: float) -> None:
         if self.phase == "ended":
@@ -935,7 +1173,7 @@ class RealmInstance(ChannelZone):
     async def _pay_room(self, uid: int, i: int, kind: str) -> None:
         from ..systems import secret_realm
         try:
-            loot = await secret_realm.claim_room(self.run_id, uid, i, kind)
+            loot = await secret_realm.claim_room(self.run_id, uid, i, kind, self.realm_id)
         except Exception:
             log.exception("room loot failed")
             return
@@ -966,6 +1204,9 @@ class RealmInstance(ChannelZone):
         m = self.members.get(p.user_id)
         if m is not None:
             self._member_gone(m, "left")
+        if p.question:   # an open question stays behind (it may still be answered: that is only logged)
+            combat.end_question(p, "left")
+        p.next_q = None
         self._exit(p)
 
     def member_lost(self, p: Player) -> None:
@@ -987,7 +1228,7 @@ class RealmInstance(ChannelZone):
     def act(self, p: Player, name: str, now: float) -> None:
         if self.phase != "running" or p.dead or self.puzzle is None:
             return
-        obj = next((o for o in self.map.realm_objs if o.name == name and o.props.get("room") == self.kind), None)
+        obj = next((o for o in self.map.realm_objs if o.name == name and o.props.get("room") == self.place), None)
         if obj is not None:
             self.puzzle.act(p, obj, now)
 
@@ -1068,6 +1309,7 @@ class RealmService:
         self.starting: set[int] = set()                  # players whose entry is being written
         self.rng = random.Random()
         self.room_order: list[str] | None = None         # tests: a fixed room order
+        self.seed: int | None = None                     # tests and bots: the next runs' random rooms and monsters
         self._rift_ids = itertools.count(1)
         self._next_rift = 0.0
         self._next_queue = 0.0
@@ -1098,7 +1340,8 @@ class RealmService:
                 return f"{s.name} đang trọng thương."
             if uid in self.starting and not starting_ok:
                 return f"{s.name} đang vào một bí cảnh khác."
-            if realm_index(s.realm) < realm_index(rdef["min_realm"]):
+            # (M10: the math bí cảnh has no min_realm: nothing in it reads the cultivation realms)
+            if rdef.get("min_realm") and realm_index(s.realm) < realm_index(rdef["min_realm"]):
                 return f"{s.name} chưa đạt {cultivation.realm_name(rdef['min_realm'])}."
         return None
 
@@ -1124,10 +1367,11 @@ class RealmService:
                 return None
             return r.realm_id, f"rift:{r.id}"
         rdef = realm_defs().get(m.realm or "")
-        if rdef is None or rdef["kind"] != "scheduled":
+        if rdef is None or rdef["kind"] not in ("scheduled", "math"):
             self._err(s, "no_realm", "Không có bí cảnh này.")
             return None
-        if not window_status(clock.now())["open"]:
+        # the math bí cảnh (M10) is a place to review, open whenever the gate is
+        if rdef["kind"] == "scheduled" and not window_status(clock.now())["open"]:
             self._err(s, "realm_closed", "Bí cảnh chưa mở cửa. Xem giờ mở ở Cổng Bí Cảnh.")
             return None
         if p is None or not self._near_gate(p):
@@ -1164,13 +1408,23 @@ class RealmService:
                 return
             self.unqueue(s.user_id, notify=False)
             from .world import realm_index
-            self.queues.setdefault(key, []).append([s.user_id, realm_index(s.realm), now])
+            # the math bí cảnh groups nobody by cultivation realm: each one is asked at their own floor
+            group = 0 if rdef["kind"] == "math" else realm_index(s.realm)
+            self.queues.setdefault(key, []).append([s.user_id, group, now])
             self.queued[s.user_id] = key
             self._queue_news(key)
             return
         c = cfg()
-        if party is None or len(party.members) < c["party_min"]:
-            self._err(s, "need_party", f"Cần tổ đội {c['party_min']}-{c['party_max']} người. "
+        pmin = int(rdef.get("party_min", c["party_min"]))
+        if party is None and pmin <= 1:   # M10: a realm one may also enter alone
+            err = self.check_members([s.user_id], rdef)
+            if err:
+                self._err(s, "cannot_enter", err)
+                return
+            self.start([s.user_id], realm_id)
+            return
+        if party is None or len(party.members) < pmin:
+            self._err(s, "need_party", f"Cần tổ đội {pmin}-{c['party_max']} người. "
                                        "Mời bạn vào đội, hoặc vào hàng chờ ghép đội.")
             return
         if party.leader != s.user_id:
@@ -1208,8 +1462,19 @@ class RealmService:
                         names = ", ".join(self.world.sessions[u].name for u in over if u in self.world.sessions)
                         for uid in uids:
                             self.world.notify(uid, protocol.error(
-                                "daily_limit", f"{names} đã vào {rdef['name_vi']} {cfg()['daily_entries']} lần hôm nay rồi."))
+                                "daily_limit", f"{names} đã vào {rdef['name_vi']} "
+                                               f"{secret_realm.daily_limit(realm_id)} lần hôm nay rồi."))
                         return
+                    floors: dict[int, int | None] = {}
+                    if rdef["kind"] == "math":   # M10: everyone must have a floor with questions
+                        floors = await secret_realm.math_floors(db, uids)
+                        none = [u for u in uids if floors.get(u) is None]
+                        if none:
+                            names = ", ".join(self.world.sessions[u].name for u in none if u in self.world.sessions)
+                            for uid in uids:
+                                self.world.notify(uid, protocol.error(
+                                    "no_math_question", f"{names} chưa có tầng toán nào có câu hỏi."))
+                            return
                     run_id = await secret_realm.create_run(db, realm_id, uids)
                     learned = await secret_realm.learned_words(db, uids)
                     await db.commit()
@@ -1224,9 +1489,11 @@ class RealmService:
                 for uid in uids:
                     self.world.notify(uid, protocol.error("cannot_enter", err))
                 return
-            members = {uid: Member(uid, self.world.sessions[uid].name, learned.get(uid, {})) for uid in uids}
+            members = {uid: Member(uid, self.world.sessions[uid].name, learned.get(uid, {}), floor=floors.get(uid))
+                       for uid in uids}
             try:
-                inst = RealmInstance(self.world, run_id, realm_id, members, random.Random(), rooms=self.room_order)
+                rng = random.Random(self.seed) if self.seed is not None else random.Random()
+                inst = RealmInstance(self.world, run_id, realm_id, members, rng, rooms=self.room_order)
             except Exception:
                 log.exception("could not build a realm run")
                 await secret_realm.abort_run(run_id)

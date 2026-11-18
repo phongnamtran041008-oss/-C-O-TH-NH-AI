@@ -15,8 +15,17 @@ from collections import deque
 from app.learning.wordbank import bank, senses
 from app.realtime import maps
 from app.realtime.realm import anchor, composable, tone_of
+from tests.helpers import correct_answer
+from tests.test_math_loop import right_answer as math_right_answer
 
 STEP = 4   # path grid in pixels (corridors of the maze are one tile wide)
+
+
+def right_answer_any(q: dict, key: dict) -> dict:
+    """The right answer to whatever a bí cảnh asks: a math question (M10) or a word one."""
+    if "math" in q:
+        return math_right_answer(q, key)
+    return correct_answer(q["qtype"], key)
 
 
 def path(col, start, goal, avoid=()) -> list[tuple[float, float]]:
@@ -205,13 +214,13 @@ class Bot:
     def obj(self, kind, **props):
         inst = self.inst
         for o in inst.map.realm_objs:
-            if o.props.get("room") == inst.kind and o.props.get("kind") == kind and all(
+            if o.props.get("room") == inst.place and o.props.get("kind") == kind and all(
                     str(o.props.get(k)) == str(v) for k, v in props.items()):
                 return o
         return None
 
     def standby(self):
-        a = self.inst.map.rooms[self.inst.kind]
+        a = self.inst.map.rooms[self.inst.place]
         i = self.team.bots.index(self)
         return a.x + a.w / 2 - 40 + 40 * i, a.y + a.h - 30
 
@@ -317,6 +326,21 @@ class Bot:
     def play_maze(self) -> None:
         door = self.inst.objs("maze_exit")[0]
         self.go(door.x + door.w / 2, door.y + door.h / 2)
+
+    def play_seal(self) -> None:
+        """Trận Nhãn (M10): the ones who have not broken a seal yet pick first, one seal each;
+        everybody walks round the other seals so as not to be asked on the way."""
+        pz = self.puzzle or {}
+        seals = {o.name: o for o in self.inst.objs(pz.get("seal_kind", "pedestal"))}
+        open_ = [s["name"] for s in pz.get("seals", []) if not s["broken"] and s["name"] in seals]
+        if not open_:
+            self.go(*self.standby(), avoid=list(seals.values()))
+            return
+        missing = set(pz.get("missing", []))
+        order = sorted(self.team.bots, key=lambda b: (b.uid not in missing, self.team.bots.index(b)))
+        target = open_[order.index(self) % len(open_)]
+        o = seals[target]
+        self.go(o.x + o.w / 2, o.y + o.h / 2, avoid=[x for n, x in seals.items() if n != target])
 
 
 

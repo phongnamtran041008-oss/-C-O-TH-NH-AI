@@ -18,6 +18,18 @@
   "desc_vi": "Khối vuông xếp từ những hàng và cột còn nguyên thứ tự. Dùng để chế tạo.",
   "sell_price": 9
  },
+ "ngoc_gian_lao_nhan": {
+  "name_vi": "Ngọc Giản Lão Nhân",
+  "kind": "material",
+  "desc_vi": "Mảnh ngọc giản một lão nhân để lại sau khi ra đề, vẫn còn khắc dở một phép tính. Món hiếm của cơ duyên.",
+  "sell_price": 40
+ },
+ "an_ruong_de": {
+  "name_vi": "Ấn Rương Đề",
+  "kind": "material",
+  "desc_vi": "Con dấu niêm trên một chiếc rương đố đã được mở. Món hiếm của cơ duyên.",
+  "sell_price": 30
+ },
  "ghi_chu_phan_tu": {
   "name_vi": "Ghi chú: đếm phần tử",
   "kind": "note",

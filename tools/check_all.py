@@ -27,6 +27,10 @@ Exit code 0 when every check passes, 1 otherwise. The list grows with each miles
     of its floor, and every floor that has questions has its document
   * formula pictures (M4): every $$...$$ has a picture that ships with the game, built
     from that very formula, and small enough to fit the page
+  * the four modes of M10 - bí cảnh toán, hầm ngục, cơ duyên, thủ thành toán: each mode's
+    own validate() (app/systems/math_realm.py, math_dungeon.py, math_fortune.py, math_td.py):
+    its data is sound, names things that exist, and can really be played with the questions
+    the bank has today
   * fonts (M4): every string the game shows, questions and documents included, can really
     be drawn with the two fonts that ship with it
   * programming exercises (M6): every exercise of math/problems/ belongs to a micro-skill
@@ -132,8 +136,40 @@ def displayed_strings() -> list[tuple[str, str]]:
         out += [(p.id, s.data) for s in p.samples] + [(p.id, s.expected) for s in p.samples]
     for sid, sk in _json(MATH_DIR / "skills.json").get("skills", {}).items():   # chiêu thức (M9)
         out += [(f"math/skills.json {sid}", str(sk.get(k, ""))) for k in ("name_vi", "kind_vi", "desc_vi")]
+    for name in M10_TEXT_FILES:   # M10: what the four modes show comes from their data
+        out += [(f"{name} {where}", text) for where, text in _vi_strings(_json(DATA_DIR / name))]
     out += [(f"strings_vi.{name}", text) for name, text in _interface_strings()]
     return out
+
+
+M10_TEXT_FILES = ("math/dungeon.json", "math/fortune.json", "math/td.json", "math/drops.json", "realms.json")
+
+
+def _vi_strings(node, where: str = "") -> list[tuple[str, str]]:
+    """(path, text) of every string kept under a key ending in `_vi`, anywhere in a data
+    file: a plain string, or strings inside lists and objects below such a key."""
+    out: list[tuple[str, str]] = []
+    if isinstance(node, dict):
+        for key, value in node.items():
+            here = f"{where}.{key}" if where else str(key)
+            if str(key).endswith("_vi"):
+                out += [(here, t) for t in _all_strings(value)]
+            else:
+                out += _vi_strings(value, here)
+    elif isinstance(node, list):
+        for i, value in enumerate(node):
+            out += _vi_strings(value, f"{where}[{i}]")
+    return out
+
+
+def _all_strings(node) -> list[str]:
+    if isinstance(node, str):
+        return [node]
+    if isinstance(node, dict):
+        return [t for v in node.values() for t in _all_strings(v)]
+    if isinstance(node, list):
+        return [t for v in node for t in _all_strings(v)]
+    return []
 
 
 def _interface_strings() -> list[tuple[str, str]]:
@@ -420,7 +456,8 @@ UNCASTABLE_OK = {"thien_loi_tuyet_ky": "'tribulation' is not playable yet and ti
 def check_chieu() -> list[str]:
     """M9: every chiêu thức of data/math/skills.json hangs together with the rest of the
     game. Its fields are sound (math_skills.validate), its question types exist, its effect
-    is one client/art/skill_fx.py can draw, its animation is a clip of every Đạo Sĩ sheet,
+    is one client/art/skill_fx.py can draw, its picture is an icon of the item sheet (never a
+    Chinese character), its animation is a clip of every Đạo Sĩ sheet,
     and - the point of a chiêu gắn câu hỏi - there really is a question that casts it: on
     each of floors 1-3 where it is unlocked, at least one template of one of its types at a
     tier it accepts and that a player who has just reached the floor is asked (the floor's
@@ -448,6 +485,10 @@ def check_chieu() -> list[str]:
         sys.path.remove(str(ROOT))
     sheets = sorted((ROOT / "client" / "assets" / "chars").glob("dao_si_*.json"))
     clips = {p.stem: set(_json(p).get("clips", {})) for p in sheets}
+    icon_file = ROOT / "client" / "assets" / "icons" / "items.json"
+    icons = _json(icon_file).get("icons", {}) if icon_file.exists() else None
+    if icons is None:
+        out.append("no client/assets/icons/items.json, so no chiêu has a picture")
     if not clips:
         out.append("no Đạo Sĩ sheet in client/assets/chars/, so no chiêu can be animated")
     subject = math_path.subject("dai_so_tuyen_tinh")
@@ -456,6 +497,9 @@ def check_chieu() -> list[str]:
         where = f"chiêu {sid}"
         if fx_ids is not None and sk["fx"] not in fx_ids:
             out.append(f"{where}: fx {sk['fx']!r} is not in client/art/skill_fx.py FX_IDS")
+        if icons is not None and len(icons.get(sk["icon"], [])) <= int(sk.get("icon_variant", 0)):
+            out.append(f"{where}: icon {sk['icon']!r} variant {sk.get('icon_variant', 0)} is not in "
+                       f"client/assets/icons/items.json")
         lacking = [name for name, have in clips.items() if sk["anim"] not in have]
         if lacking:
             out.append(f"{where}: anim {sk['anim']!r} is not a clip of {', '.join(lacking)}")
@@ -485,6 +529,17 @@ def check_generated_answers() -> list[str]:
 
 
 # (name, function returning one line per problem; an empty list means the check passed)
+def _mode_check(module: str):
+    """A check that is the `validate()` of one M10 mode (empty list = sound)."""
+    def check() -> list[str]:
+        import importlib
+        try:
+            return list(importlib.import_module(f"app.systems.{module}").validate())
+        except Exception as e:      # a broken module must fail the check, not crash the run
+            return [f"app/systems/{module}.py: validate() raised {type(e).__name__}: {e}"]
+    return check
+
+
 CHECKS = [
     ("learning path: tiers per floor, time limits, micro-skill prerequisites", check_learning_path),
     ("question bank: items valid, no near-duplicates, enough templates per floor, skill and tier", check_items),
@@ -501,6 +556,14 @@ CHECKS = [
      check_math_crafting),
     ("chiêu thức: fields, question types, FX, animation, and a question that casts each one",
      check_chieu),
+    ("bí cảnh toán: the math realm, its Trận Nhãn rooms and its boss can be played",
+     _mode_check("math_realm")),
+    ("hầm ngục: room kinds, guardians and chests are sound and every floor can be generated",
+     _mode_check("math_dungeon")),
+    ("cơ duyên: events, their questions and their rewards are sound",
+     _mode_check("math_fortune")),
+    ("thủ thành toán: towers, their areas of mathematics and the level are sound",
+     _mode_check("math_td")),
     ("fonts: every string the game shows can be drawn", check_fonts),
 ]
 

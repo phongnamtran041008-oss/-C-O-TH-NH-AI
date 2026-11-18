@@ -221,7 +221,10 @@ async def _create_question(ch: "ChannelZone", p: "Player", mid: str, kind: str) 
             user = await db.get(User, p.user_id)
             m0 = ch.monster(mid)
             info = m0.info if m0 is not None else None
-            if math_combat.is_mistake_monster(info):
+            source = getattr(ch, "question_source", None)
+            if source is not None:   # M10 realm: a math bí cảnh asks at the player's own floor, whoever asks
+                built = await source(db, user, p, m0, rng)
+            elif math_combat.is_mistake_monster(info):
                 built = await _math_question(db, user, p, info, rng)
             else:
                 built = await _word_question(db, ch, p, mid, rng)

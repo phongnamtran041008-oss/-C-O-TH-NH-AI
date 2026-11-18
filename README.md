@@ -563,7 +563,7 @@ bản sửa vào cột `*_fixed`, rồi chạy `python tools/apply_review.py`. C
 ## Nội dung toán (nhánh `toan-tu-tien`)
 
 ```bash
-python tools/check_all.py           # 13 kiểm tra nội dung: lộ trình, ngân hàng câu, bộ sinh câu, đáp án, Tàng Thư, công thức, bài tập, lời giải mẫu, test có răng, quái lỗi sai, Lò Toán, chiêu thức, phông chữ
+python tools/check_all.py           # 17 kiểm tra nội dung: lộ trình, ngân hàng câu, bộ sinh câu, đáp án, Tàng Thư, công thức, bài tập, lời giải mẫu, test có răng, quái lỗi sai, Lò Toán, chiêu thức, bí cảnh toán, hầm ngục, cơ duyên, thủ thành toán, phông chữ
 python tools/math_review.py         # bảng duyệt câu hỏi -> tools/reports/math_review_<bí cảnh>.md
 python tools/math_verify.py         # tính lại đáp án của mọi câu sinh ra bằng SymPy
 python tools/build_formulas.py      # dựng ảnh công thức cho Tàng Thư Các (cần Node, xem bên dưới)
@@ -600,12 +600,27 @@ Tầng 1 ở gần cổng, tầng 3 ở cuối cốc. Dữ liệu: `server/data/
 liệu (bị tiêu) **và** những ghi chú lỗi sai đang giữ (chỉ kiểm tra, không tiêu): chỉ rèn được thứ mình
 đã hiểu. Phẩm chất món rèn ra là cố định, không rút thăm.
 
-**Chiêu thức gắn câu hỏi.** Hàng chiêu thứ hai (phím **Z X C V G N**) lấy từ
+**Chiêu thức gắn câu hỏi.** Hàng chiêu (phím **1-6**, mỗi ô một icon dựng từ model 3D) lấy từ
 `server/data/math/skills.json`. Mỗi chiêu được thi triển bằng cách trả lời **một câu toán đúng loại của
 nó**: Thường Quyền = Đúng/Sai, Phá Mê Kiếm Quyết = Trắc nghiệm, Hỏa Cầu Thuật = Điền số, Ngũ Hành Trận =
 Sắp xếp bước giải, Hộ Thân Trận = Ghép cặp. Đúng thì chiêu trúng (đúng liên tiếp tăng sát thương, trả
 lời nhanh là chí mạng); sai hoặc hết giờ là **chiêu hụt**: mất linh khí và hồi chiêu, không mất máu. Chiêu
 mở theo tầng của lộ trình học. Thiên Lôi Tuyệt Kỹ có sẵn trong dữ liệu nhưng còn khoá tới tầng 7.
+
+**Bốn chế độ chơi (M10).** Mọi câu hỏi của bốn chế độ đều theo bậc và tầng của chính người chơi, và đều
+tính vào lộ trình học.
+- **Bí cảnh toán (tổ đội)** - vào ở Cổng Bí Cảnh, thẻ "Bí cảnh toán", một mình hoặc theo tổ đội. Hai phòng
+  Trận Nhãn rồi tới trùm; mỗi người nhận câu theo tầng của mình. Dữ liệu: `server/data/realms.json`
+  (`toan_tran`).
+- **Hầm ngục** - cửa "Hầm Ngục" ở sảnh toán trong Động Phủ. Sinh theo hạt giống (gõ lại hạt giống để chơi
+  lại; trong game gọi là "linh thạch số"), mỗi phòng một loại câu, sai là mất tâm lực. Dữ liệu: `server/data/math/dungeon.json`.
+- **Cơ duyên** - cửa "Cơ Duyên". Trả lời đúng đủ số câu thì có thể gặp Lão nhân ra đề hoặc Rương đề; thắng
+  có thưởng hiếm, thua không mất gì. Dữ liệu: `server/data/math/fortune.json`.
+- **Thủ thành toán** - cửa "Thủ Thành". Mỗi tháp là một mảng toán; đặt tháp và nâng tháp đều phải trả lời
+  đúng một câu của mảng ấy. Dữ liệu: `server/data/math/td.json`.
+
+Bot chơi thử: `tools/realm_bots.py --math`, `tools/math_dungeon_bot.py`, `tools/math_fortune_bot.py`,
+`tools/math_td_bot.py`.
 
 **Bài tập lập trình.** Đề nằm trong `server/data/math/problems/`, lời giải mẫu nằm cạnh đó và không bao giờ gửi
 cho game. Bài làm **chạy trên máy người chơi** (cần có Python trên máy), mỗi test một lần chạy có giới hạn thời

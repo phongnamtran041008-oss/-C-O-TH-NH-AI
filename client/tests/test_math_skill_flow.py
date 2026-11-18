@@ -28,8 +28,8 @@ sys.path.insert(0, str(ROOT / "server"))        # the test reads the map the ser
 
 from app.realtime import maps  # noqa: E402
 
-KEYS = {"thuong_quyen": pygame.K_z, "kiem_quyet": pygame.K_x, "hoa_cau_thuat": pygame.K_c,
-        "ngu_hanh_tran": pygame.K_v, "ho_than_tran": pygame.K_g, "thien_loi_tuyet_ky": pygame.K_n}
+KEYS = {"thuong_quyen": pygame.K_1, "kiem_quyet": pygame.K_2, "hoa_cau_thuat": pygame.K_3,
+        "ngu_hanh_tran": pygame.K_4, "ho_than_tran": pygame.K_5, "thien_loi_tuyet_ky": pygame.K_6}
 SUBJECT = "dai_so_tuyen_tinh"
 
 
@@ -154,7 +154,7 @@ def see_effect(drv: Driver, name: str, ok: bool = True) -> None:
 
 
 def hover_slot(drv: Driver, slot: int) -> None:
-    pygame.mouse.set_pos(drv.game.display.to_window(252 + slot * 24 + 11, 200 + 11))
+    pygame.mouse.set_pos(drv.game.display.to_window(252 + slot * 24 + 11, 226 + 11))
     drv.step(3)
 
 

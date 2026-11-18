@@ -7,6 +7,8 @@ it (snapshots, its own puzzle pieces) plus the map file and the word list every 
     # a server with the dev balance (the scheduled realm is always open):
     #   cd server && BALANCE_PROFILE=dev python -m uvicorn app.main:app --port 8000
     python tools/realm_bots.py --url http://127.0.0.1:8000 --db server/dev.db
+    # M10, the math bí cảnh: a party on floors 1, 2 and 3 (one floor = a bot alone)
+    python tools/realm_bots.py --math --floors 1,2,3
 
 The bots read Vấn Đạo answer keys from the server's database file (a stand-in for players who
 know their words), so this only works next to a local server.
@@ -33,8 +35,7 @@ from websockets.asyncio.client import connect  # noqa: E402
 from app.config import PROTOCOL_VERSION  # noqa: E402
 from app.realtime import maps  # noqa: E402
 from app.realtime.movement import step as move_step  # noqa: E402
-from tests.helpers import correct_answer  # noqa: E402
-from tests.realm_bot import Bot, Team  # noqa: E402
+from tests.realm_bot import Bot, Team, right_answer_any  # noqa: E402
 
 SPEED = 74.0
 # A real client pings every 15 s while it has nothing else to say (client/net/ws_client.py) and the
@@ -57,15 +58,20 @@ class Room:
         return self.bot.room["kind"] if self.bot.room else None
 
     @property
+    def place(self):
+        """The room of the map the current room is played in (M10: a math room borrows one)."""
+        return (self.bot.room.get("place") or self.kind) if self.bot.room else None
+
+    @property
     def phase(self):
         b = self.bot
         return "running" if b.room and not b.cleared and not b.ended else "waiting"
 
     def objs(self, kind):
-        return [o for o in self.map.realm_objs if o.props.get("room") == self.kind and o.props.get("kind") == kind]
+        return [o for o in self.map.realm_objs if o.props.get("room") == self.place and o.props.get("kind") == kind]
 
     def room_center(self):
-        a = self.map.rooms[self.kind]
+        a = self.map.rooms[self.place]
         return a.x + a.w / 2, a.y + a.h / 2
 
     @property
@@ -114,7 +120,7 @@ class NetBot(Bot):
     async def _answer(self, bot, q):
         key = self.keyfn(q["session_id"])
         r = await self.http.post("/quiz/answer", json={"session_id": q["session_id"],
-                                                       "answer": correct_answer(q["qtype"], key)})
+                                                       "answer": right_answer_any(q, key)})
         self.q_open = False
         return r.json()
 
@@ -365,9 +371,58 @@ async def run_team(url: str, db: Path, prefix: str = "rb", n: int = 3, realm: st
     return bots
 
 
+def set_floor(db: Path, uid: int, floor: int, subject: str = "dai_so_tuyen_tinh") -> None:
+    """M10: the player's own math floor is `floor`: the Thiên kiếp nhỏ of every floor below it passed,
+    the way the learning path records it (a stand-in for a player who studied that far)."""
+    for n in range(1, floor):
+        sql(db, "insert into math_runs(user_id, subject_id, floor, mode, tier, correct_streak, wrong_streak, combo, "
+                "best_combo, asked, correct, review_asked, xp_gained, passed, started_at, ended_at) "
+                "values (?, ?, ?, 'trial', 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, datetime('now'), datetime('now'))",
+            (uid, subject, n))
+
+
+async def run_math(url: str, db: Path, prefix: str = "mb", floors=(1, 2, 3), realm: str = "toan_tran",
+                   timeout: float = 900, log=print) -> list[NetBot]:
+    """M10: bots clear the math bí cảnh, each asked at its own floor; one floor is a bot alone (the
+    math bí cảnh may be entered without a party)."""
+    bots = await make_bots(url, db, prefix, len(floors))
+    for b, f in zip(bots, floors):
+        set_floor(db, b.uid, f)
+    leader = bots[0]
+    for b in bots[1:]:
+        await leader.send({"t": "party", "op": "invite", "name": b.name})
+    end = time.monotonic() + 10
+    while len(bots) > 1 and len((getattr(leader, "party", None) or {}).get("members", [])) < len(bots):
+        if time.monotonic() > end:
+            raise RuntimeError("party did not form")
+        await asyncio.sleep(0.05)
+    await leader.send({"t": "realm", "op": "enter", "realm": realm})
+    end = time.monotonic() + 15
+    while any(b.zone != "bi_canh" for b in bots):
+        if time.monotonic() > end:
+            errs = [m for m in leader.s.sent if m.get("t") in ("error", "realm")]
+            raise RuntimeError(f"could not enter: {errs} zones {[b.zone for b in bots]}")
+        await asyncio.sleep(0.05)
+    log(f"entered {realm} with floors {list(floors)}")
+    await play(bots, timeout)
+    end = time.monotonic() + 30
+    while time.monotonic() < end:
+        for b in bots:
+            b.read()
+        if all(stages_owed(b) <= {lt["stage"] for lt in b.loot} for b in bots):
+            break
+        await asyncio.sleep(0.05)
+    log("result: " + ", ".join(f"{b.name}={b.ended and b.ended['result']}" for b in bots))
+    return bots
+
+
 async def main_async(args) -> int:
-    bots = await run_team(args.url, Path(args.db), prefix=args.prefix, n=args.bots, realm=args.realm,
-                          timeout=args.minutes * 60)
+    if args.math:
+        floors = [int(x) for x in args.floors.split(",")]
+        bots = await run_math(args.url, Path(args.db), prefix=args.prefix, floors=floors, timeout=args.minutes * 60)
+    else:
+        bots = await run_team(args.url, Path(args.db), prefix=args.prefix, n=args.bots, realm=args.realm,
+                              timeout=args.minutes * 60)
     ok = all(b.ended and b.ended["result"] == "won" for b in bots)
     for b in bots:
         stages = sorted(lt["stage"] for lt in b.loot)
@@ -385,6 +440,8 @@ def main() -> int:
     ap.add_argument("--realm", default="mac_anh_dong")
     ap.add_argument("--prefix", default="rb")
     ap.add_argument("--minutes", type=float, default=15)
+    ap.add_argument("--math", action="store_true", help="the math bí cảnh (M10)")
+    ap.add_argument("--floors", default="1,2,3", help="with --math: each bot's own floor")
     return asyncio.run(main_async(ap.parse_args()))
 
 

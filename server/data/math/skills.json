@@ -1,5 +1,5 @@
 {
-  "_comment": "Chiêu thức gắn câu hỏi (M9, kế hoạch 4.4). A chiêu is cast by answering one math question of one of its `qtypes`: right -> it lands, wrong or out of time -> 'chiêu hụt' (no effect, combo back to 0, no Mặc Kích; the qi and the cooldown are spent anyway). Read and validated by server/app/systems/math_skills.py, checked by tools/check_all.py. Fields of a chiêu: name_vi (shown), kind_vi (one of Đòn thường | Kiếm quyết | Pháp thuật | Trận pháp | Tuyệt kỹ), element (kim | moc | thuy | hoa | tho | loi, colour only), qtypes (the question types that may cast it, keys of balance/math.json question_types), min_tier (no question below this tier casts it; the question's tier is the player's own tier for the micro-skill, never above it), qi (spent when the cast is accepted), cooldown (seconds, starts when the cast is accepted), range (pixels from the caster to the target; 0 for a ward, which has no target), effect (damage: one target | area: every monster within `radius` of the target is hit and slowed to `slow` x its speed for `duration` s | ward: the caster and party members within `radius` of the caster take `reduce` x less damage for `duration` s and are healed `heal_pct` % of their max HP), power (damage multiplier, 0 for a ward), anim (clip of the Đạo Sĩ sheets in client/assets/chars/ played by the caster), fx (effect id of client/art/skill_fx.py FX_IDS), unlock.floor (the player's open floor on the learning path - the lowest main floor not cleared yet, the best over all subjects - must be >= this; nothing depends on the cultivation realm), desc_vi (shown). Damage of a landed chiêu, per monster hit: base_damage (attack x weapon - half the monster's defence, as a normal hit) x power x combo_mult x (fast_answer_crit_mult of balance/combat.json when answered within fast_answer_fraction of the time limit, else 1). combo_mult = min(combo.max_mult, 1 + combo.per_streak x n) where n = right cast answers in a row before this one (so the first right answer is x1.0, the second x1.1, ... capped at x1.5 from the sixth on). The streak is per player, in memory, and goes back to 0 on a miss, on death and on leaving the world. A landed damage/area chiêu breaks the target's Mặc Thuẫn like a right Vấn Đạo answer (a bí cảnh boss's group shield counts it as this player's right answer and still needs the other players). thien_loi_tuyet_ky is data only for now: 'tribulation' is not a playable question type yet and tier 4 starts at floor 5, so it shows as locked until floors 7-9 come (M11); tools/check_all.py allows exactly this one chiêu to be uncastable.",
+  "_comment": "Chiêu thức gắn câu hỏi (M9, kế hoạch 4.4). A chiêu is cast by answering one math question of one of its `qtypes`: right -> it lands, wrong or out of time -> 'chiêu hụt' (no effect, combo back to 0, no Mặc Kích; the qi and the cooldown are spent anyway). Read and validated by server/app/systems/math_skills.py, checked by tools/check_all.py. Fields of a chiêu: name_vi (shown), kind_vi (one of Đòn thường | Kiếm quyết | Pháp thuật | Trận pháp | Tuyệt kỹ), element (kim | moc | thuy | hoa | tho | loi, colour only), qtypes (the question types that may cast it, keys of balance/math.json question_types), min_tier (no question below this tier casts it; the question's tier is the player's own tier for the micro-skill, never above it), qi (spent when the cast is accepted), cooldown (seconds, starts when the cast is accepted), range (pixels from the caster to the target; 0 for a ward, which has no target), effect (damage: one target | area: every monster within `radius` of the target is hit and slowed to `slow` x its speed for `duration` s | ward: the caster and party members within `radius` of the caster take `reduce` x less damage for `duration` s and are healed `heal_pct` % of their max HP), power (damage multiplier, 0 for a ward), anim (clip of the Đạo Sĩ sheets in client/assets/chars/ played by the caster), fx (effect id of client/art/skill_fx.py FX_IDS), icon (the picture on the hotbar slot: a name of client/assets/icons/items.json, rendered from a 3D model of art/models/; icon_variant picks one when the name has several, default 0), unlock.floor (the player's open floor on the learning path - the lowest main floor not cleared yet, the best over all subjects - must be >= this; nothing depends on the cultivation realm), desc_vi (shown). Damage of a landed chiêu, per monster hit: base_damage (attack x weapon - half the monster's defence, as a normal hit) x power x combo_mult x (fast_answer_crit_mult of balance/combat.json when answered within fast_answer_fraction of the time limit, else 1). combo_mult = min(combo.max_mult, 1 + combo.per_streak x n) where n = right cast answers in a row before this one (so the first right answer is x1.0, the second x1.1, ... capped at x1.5 from the sixth on). The streak is per player, in memory, and goes back to 0 on a miss, on death and on leaving the world. A landed damage/area chiêu breaks the target's Mặc Thuẫn like a right Vấn Đạo answer (a bí cảnh boss's group shield counts it as this player's right answer and still needs the other players). thien_loi_tuyet_ky is data only for now: 'tribulation' is not a playable question type yet and tier 4 starts at floor 5, so it shows as locked until floors 7-9 come (M11); tools/check_all.py allows exactly this one chiêu to be uncastable.",
   "combo": {"per_streak": 0.1, "max_mult": 1.5},
   "skills": {
     "thuong_quyen": {
@@ -13,6 +13,7 @@
       "power": 1.2,
       "anim": "slash",
       "fx": "chem",
+      "icon": "gang",
       "unlock": {"floor": 1},
       "desc_vi": "Một quyền đơn giản: trả lời đúng một câu Đúng/Sai là ra đòn. Không tốn linh khí, hồi nhanh.",
       "reviewed": false
@@ -28,6 +29,8 @@
       "power": 2.0,
       "anim": "slash",
       "fx": "kiem_khi",
+      "icon": "kiem",
+      "icon_variant": 1,
       "unlock": {"floor": 1},
       "desc_vi": "Chọn đúng đáp án giữa những lối rẽ sai, kiếm khí chém tan màn mê. Sát thương vừa.",
       "reviewed": false
@@ -43,6 +46,7 @@
       "power": 3.2,
       "anim": "cast",
       "fx": "hoa_cau",
+      "icon": "quat",
       "unlock": {"floor": 1},
       "desc_vi": "Tự tính ra con số, ngưng thành một quả cầu lửa bắn từ xa. Sát thương lớn, tốn linh khí.",
       "reviewed": false
@@ -59,6 +63,8 @@
       "radius": 80, "slow": 0.5, "duration": 4,
       "anim": "cast",
       "fx": "tran_do",
+      "icon": "sach",
+      "icon_variant": 1,
       "unlock": {"floor": 2},
       "desc_vi": "Xếp đúng thứ tự các bước giải để bày trận quanh mục tiêu: mọi quái trong trận bị đánh và chậm lại.",
       "reviewed": false
@@ -75,6 +81,8 @@
       "radius": 120, "duration": 8, "reduce": 0.4, "heal_pct": 10,
       "anim": "cast",
       "fx": "ho_tran",
+      "icon": "khien",
+      "icon_variant": 1,
       "unlock": {"floor": 2},
       "desc_vi": "Ghép đúng từng cặp để dựng trận hộ thân: con và đồng đội đứng gần chịu ít sát thương hơn một lúc, hồi chút máu.",
       "reviewed": false
@@ -90,6 +98,7 @@
       "power": 6.0,
       "anim": "cast",
       "fx": "thien_loi",
+      "icon": "cuon_thu",
       "unlock": {"floor": 7},
       "desc_vi": "Vượt qua một câu Thiên kiếp để gọi sấm trời giáng xuống. Sát thương rất lớn, hồi rất lâu.",
       "reviewed": false

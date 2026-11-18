@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import datetime as dt
 import random
+from collections.abc import Awaitable, Callable
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -82,6 +83,25 @@ async def question_for(db: AsyncSession, user: User, info: dict,
     return question
 
 
+# M10 (cơ duyên): modes that want to hear "a math answer was just written to the log" register
+# here. A listener gets (db, user, quiz session, correct, now) and returns a dict that is merged
+# into the "math" block of the answer response (or {}); it must filter by `s.context` itself.
+AnswerListener = Callable[[AsyncSession, User, QuizSession, bool, dt.datetime], Awaitable[dict]]
+_answer_listeners: list[AnswerListener] = []
+
+
+def add_answer_listener(fn: AnswerListener) -> None:
+    if fn not in _answer_listeners:
+        _answer_listeners.append(fn)
+
+
+async def notify_answer(db: AsyncSession, user: User, s: QuizSession, correct: bool, now: dt.datetime) -> dict:
+    out: dict = {}
+    for fn in _answer_listeners:
+        out.update(await fn(db, user, s, correct, now) or {})
+    return out
+
+
 async def record(db: AsyncSession, user: User, s: QuizSession, correct: bool, now: dt.datetime) -> dict:
     """Write a question asked in the field (a monster's, or a chiêu's since M9) to the answer
     log with no run, so the learning path counts it."""
@@ -92,8 +112,10 @@ async def record(db: AsyncSession, user: User, s: QuizSession, correct: bool, no
                       fingerprint=s.answer_key.get("fingerprint", ""), correct=correct, timed_out=timed_out,
                       review=False, answer_ms=s.answer_ms or 0, answered_at=now))
     await db.flush()
-    return {"tier": meta["tier"], "timed_out": timed_out, "parallel": False, "parallel_waiting": False,
-            "review": False, "xp_base": math_path.xp_for_tier(meta["tier"]) if correct else 0}
+    block = {"tier": meta["tier"], "timed_out": timed_out, "parallel": False, "parallel_waiting": False,
+             "review": False, "xp_base": math_path.xp_for_tier(meta["tier"]) if correct else 0}
+    block.update(await notify_answer(db, user, s, correct, now))
+    return block
 
 
 async def math_combat_handler(db: AsyncSession, user: User, s: QuizSession, correct: bool,

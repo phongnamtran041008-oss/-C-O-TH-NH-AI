@@ -132,16 +132,57 @@ def test_lightning_comes_from_above_the_target():
     assert min(ys) < DST[1] - 80 and max(ys) <= DST[1]
 
 
-def test_every_chieu_in_the_data_names_a_real_effect_and_element():
-    path = ROOT / "server" / "data" / "math" / "skills.json"
-    if not path.exists():
-        pytest.skip("server/data/math/skills.json is not there yet")
-    from client.scenes.world import ELEMENT_HANZI
-    skills = json.loads(path.read_text("utf-8"))["skills"]
+def test_every_chieu_in_the_data_names_a_real_effect_and_a_real_icon():
+    """A chiêu's slot shows an icon rendered from a 3D model (art/models/), never a Chinese
+    character: every chiêu names one that is in the sheet, and no two chiêu share a picture."""
+    from client.engine import icons
+    skills = json.loads((ROOT / "server" / "data" / "math" / "skills.json").read_text("utf-8"))["skills"]
+    index = json.loads((icons.ICON_DIR / "items.json").read_text("utf-8"))["icons"]
     assert len(skills) >= 5
+    seen = set()
     for sid, s in skills.items():
         assert s["fx"] in F.FX_IDS, (sid, s["fx"])
-        assert s["element"] in ELEMENT_HANZI, (sid, s["element"])
+        picture = (s["icon"], s.get("icon_variant", 0))
+        assert len(index.get(picture[0], [])) > picture[1], (sid, picture)
+        assert picture not in seen, f"{sid} shares the icon {picture} with another chiêu"
+        seen.add(picture)
+        assert icons.icon(*picture) is not None, (sid, picture)
+
+
+def has_cjk(text: str) -> bool:
+    return any("⺀" <= ch <= "鿿" or "豈" <= ch <= "﫿" for ch in text)
+
+
+def test_the_hotbar_shows_no_chinese_with_or_without_the_icon_sheet(monkeypatch):
+    """With the sheet a slot draws the icon; without it, the initials of the Vietnamese name."""
+    from client.engine import icons
+    from client.scenes import world
+    assert not hasattr(world, "ELEMENT_HANZI")
+    assert world.MSKILL_KEY_NAMES == "123456" and len(world.MSKILL_KEYS) == 6
+    skills = json.loads((ROOT / "server" / "data" / "math" / "skills.json").read_text("utf-8"))["skills"]
+    for sid, s in skills.items():
+        short = world.mskill_initials(s["name_vi"])
+        assert 1 <= len(short) <= 2 and not has_cjk(short), (sid, short)
+        assert not has_cjk(s["name_vi"] + s["desc_vi"] + s["kind_vi"]), sid
+
+    drawn = []
+    ui = SimpleNamespace(image=lambda *a, **k: drawn.append("image"),
+                         text=lambda text, *a, **k: drawn.append(text))
+    ws = world.WorldScene.__new__(world.WorldScene)
+    sk = {"name_vi": "Hỏa Cầu Thuật", "icon": "quat"}
+    ws.draw_mskill_icon(ui, sk, 0, 0, locked=False)
+    assert drawn == ["image"]
+    monkeypatch.setattr(icons, "icon", lambda name, variant=0: None)       # a checkout with no sheet
+    ws.draw_mskill_icon(ui, sk, 0, 0, locked=False)
+    assert drawn == ["image", "HC"]
+
+
+def test_the_interface_no_longer_names_the_old_word_skills():
+    import client.strings_vi as T
+    for name in ("ATTACK_HINT", "SKILLS_TITLE", "SKILL_LOCKED"):
+        assert "Pháp Chữ" not in getattr(T, name), name
+    assert all("Pháp Chữ" not in text for text in T.SKILL_FAIL.values())
+    assert not hasattr(T, "SKILL_EMPTY")
 
 
 # ------------------------------------------------------------------ matching and ordering: state

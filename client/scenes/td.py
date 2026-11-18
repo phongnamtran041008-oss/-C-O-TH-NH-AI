@@ -418,6 +418,11 @@ class TdPlayScene(Scene):
     opaque = True
     draws_world = True
     toast_y = 26
+    # M10: what the math edition (scenes/math_td.py) changes; the word edition keeps these
+    api_base = "/td"            # /question, /event, /cancel, /finish
+    word_key = "word_id"        # how a question names the piece it is about
+    label_kind = "han"          # the font of a piece's label
+    SELL, PLACE_HINT, PICK_HINT = T.TD_SELL, T.TD_PLACE_HINT, T.TD_PICK_HINT
 
     def __init__(self, game, run: dict, host: TdMapScene | None):
         super().__init__(game)
@@ -481,39 +486,56 @@ class TdPlayScene(Scene):
             if self.break_left > 0:
                 self.ask("break")
 
+    def question_hint(self, kind: str, word: str | None) -> str:
+        q = self.params["qi"]
+        if kind == "break":
+            n = q["break_questions"] - self.break_left + 1
+            return T.TD_BREAK_HINT.format(n=n, t=q["break_questions"], q=q["break_qi"])
+        if kind == "tu_khi":
+            return T.TD_TU_KHI_HINT.format(q=q["tu_khi_qi"], l=q["tu_khi_wrong_loss"])
+        return T.TD_UPGRADE_HINT.format(hz=self.params["plants"][word]["hanzi"])
+
+    def question_card(self, question: dict, hint: str, on_result) -> Scene:
+        return TdQuizScene(self.game, question, hint, on_result=on_result)
+
+    def answer_entry(self, question: dict, kind: str, word: str | None, ok: bool) -> dict:
+        """What the simulation is told about an answer (the server keeps its own copy)."""
+        return {"kind": kind, "word": word or "", "ok": ok}
+
+    def piece_name(self, d: dict) -> str:
+        return d["hanzi"]
+
     def ask(self, kind: str, word: str | None = None, cell: tuple[int, int] | None = None) -> None:
         if self.busy:
             return
         self.busy = True
         body = {"run_id": self.run["run_id"], "kind": kind}
         if word:
-            body["word_id"] = word
-        q = self.params["qi"]
+            body[self.word_key] = word
 
         def ok(question):
-            if kind == "break":
-                n = q["break_questions"] - self.break_left + 1
-                hint = T.TD_BREAK_HINT.format(n=n, t=q["break_questions"], q=q["break_qi"])
-            elif kind == "tu_khi":
-                hint = T.TD_TU_KHI_HINT.format(q=q["tu_khi_qi"], l=q["tu_khi_wrong_loss"])
-            else:
-                hint = T.TD_UPGRADE_HINT.format(hz=self.params["plants"][word]["hanzi"])
-            self.game.push(TdQuizScene(self.game, question, hint,
-                                       on_result=lambda res: self.answered(question, kind, word, cell, res)))
+            hint = self.question_hint(kind, word)
+            self.game.push(self.question_card(question, hint,
+                                              lambda res: self.answered(question, kind, word, cell, res)))
 
         def err(e):
             self.busy = False
             if kind == "break":
                 self.break_left = 0
             self.game.api_error(e)
-        self.api.post("/td/question", body, ok, err)
+        self.api.post(f"{self.api_base}/question", body, ok, err)
 
     def answered(self, q: dict, kind: str, word: str | None, cell, res: dict) -> None:
         sid = q["session_id"]
         ok = bool(res.get("correct"))
-        self.answers[sid] = {"kind": kind, "word": word or "", "ok": ok}
+        self.answers[sid] = self.answer_entry(q, kind, word, ok)
         self.busy = False
-        if kind == "upgrade":
+        if kind == "place":         # M10: a tower stands only after a right answer
+            if self.log({"k": "place", "x": cell[0], "y": cell[1], "w": word, "q": sid}) and ok:
+                self.game.audio.play("discover")
+                if self.card and self.sim.qi < self.sim.cost_to_place(self.card):
+                    self.card = None
+        elif kind == "upgrade":
             self.log({"k": "up", "x": cell[0], "y": cell[1], "q": sid})
             if ok:
                 self.game.audio.play("discover")
@@ -534,6 +556,9 @@ class TdPlayScene(Scene):
         if why:
             msg = {"no_qi": T.TD_NO_QI, "needs_path": T.TD_ON_PATH, "off_path": T.TD_OFF_PATH}.get(why, T.TD_CANT_PLACE)
             self.game.toast(msg, "#BC4749")
+            return
+        if self.params.get("place_needs_answer"):      # M10: placing is a question first
+            self.ask("place", self.card, (x, y))
             return
         if self.log({"k": "place", "x": x, "y": y, "w": self.card}):
             self.game.audio.play("step")
@@ -574,7 +599,7 @@ class TdPlayScene(Scene):
     def leave(self) -> None:
         def go():
             self.sending = True
-            self.api.post("/td/cancel", {}, None, lambda e: None)
+            self.api.post(f"{self.api_base}/cancel", {}, None, lambda e: None)
             self.close()
             if self.host:
                 self.host.reload()
@@ -596,7 +621,7 @@ class TdPlayScene(Scene):
             self.close()
             if self.host:
                 self.host.reload()
-        self.api.post("/td/finish", {"run_id": self.run["run_id"], "events": self.events, "claim": claim}, ok, err)
+        self.api.post(f"{self.api_base}/finish", {"run_id": self.run["run_id"], "events": self.events, "claim": claim}, ok, err)
 
     # ------------------------------------------------------------ time
     def update(self, dt, top):
@@ -638,7 +663,7 @@ class TdPlayScene(Scene):
 
         def err(e):
             self.saving = False
-        self.api.post("/td/event", {"run_id": self.run["run_id"], "start": start, "events": part}, ok, err)
+        self.api.post(f"{self.api_base}/event", {"run_id": self.run["run_id"], "start": start, "events": part}, ok, err)
 
     def take_fx(self) -> None:
         for f in self.sim.fx[-60:]:
@@ -709,7 +734,7 @@ class TdPlayScene(Scene):
         for c in sim.order:
             pl = sim.plants[c]
             d = self.params["plants"][pl.word]
-            img = plant_sprite(pl.word, d.get("rarity", "common"), pl.level, frame)
+            img = self.piece_image(pl, d, frame)
             rx, ry = BX + pl.x * CELL, BY + pl.y * CELL
             if pl.role == "moc":
                 pygame.draw.rect(surf, rgb("#5C4A2E"), (rx + 3, ry + 3, CELL - 6, CELL - 6))
@@ -759,6 +784,9 @@ class TdPlayScene(Scene):
             veil.fill((188, 71, 73, int(120 * self.flash)))
             surf.blit(veil, (0, 0))
 
+    def piece_image(self, pl, d: dict, frame: int) -> pygame.Surface:
+        return plant_sprite(pl.word, d.get("rarity", "common"), pl.level, frame)
+
     def hover_cell(self) -> tuple[int, int] | None:
         mx, my = self.game.ui.inp.mouse
         x, y = int((mx - BX) // CELL), int((my - BY) // CELL)
@@ -784,7 +812,7 @@ class TdPlayScene(Scene):
             hz = p["plants"][pl.word]["hanzi"]
             tx, ty = BX + pl.x * CELL + CELL - 5, BY + pl.y * CELL + CELL - 8
             ui.fill(tx - 5, ty - 5, 10, 10, "#FFFDF7")
-            ui.text(hz[:2], tx, ty, 7 if len(hz) == 1 else 4, kind="han", anchor="center")
+            ui.text(hz[:2], tx, ty, 7 if len(hz) == 1 else 4, kind=self.label_kind, anchor="center")
         for i in range(sim.rows):
             for j in range(sim.cols):
                 ui.widgets[f"td_cell_{j}_{i}"] = ui.rect(BX + j * CELL, BY + i * CELL, CELL, CELL)
@@ -833,20 +861,15 @@ class TdPlayScene(Scene):
             can = (not used) and (sim.phase == td_sim.WAVE if is_skill else sim.qi >= cost)
             ui.fill(cx, cy, 34, 52, "#FFF3C4" if self.card == w else ("#FFFDF7" if can else "#CFC6B4"))
             ui.border(cx, cy, 34, 52, T.TD_ROLE_COLORS.get(role, "#2B2B2B"), 2 if self.card == w else 1)
-            ui.text(d["hanzi"], cx + 17, cy + 14, 14 if len(d["hanzi"]) <= 2 else 7, kind="han", anchor="center")
+            ui.text(d["hanzi"], cx + 17, cy + 14, 14 if len(d["hanzi"]) <= 2 else 7, kind=self.label_kind,
+                    anchor="center")
             ui.text(T.TD_SKILL if is_skill else str(int(cost)), cx + 17, cy + 31, 7,
                     "#8E5AC8" if is_skill else "#2E6B2E", anchor="center")
             ui.text(T.TD_SKILL_USED if used else f"{int(d['power'] * 100)}%", cx + 17, cy + 42, 6, "#5A5A5A", anchor="center")
             ui.widgets[f"td_card_{i}"] = ui.rect(cx, cy, 34, 52)
             if top and not self.sending:
                 if ui.hover(cx, cy, 34, 52):
-                    st = sim.roles[role]
-                    tip = f"{d['hanzi']} {d.get('pinyin', '')} · {role}"
-                    if is_skill:
-                        tip = f"{d['hanzi']}: {d['skill'].get('desc_vi', '')}"
-                    else:
-                        tip += "\n" + stats_text(role, st, d["power"])
-                    ui.set_tooltip(tip)
+                    ui.set_tooltip(self.card_tooltip(w, d))
                 if ui.click_in(cx, cy, 34, 52) or ui.key(pygame.K_1 + i):
                     if is_skill:
                         if not used:
@@ -854,6 +877,16 @@ class TdPlayScene(Scene):
                     else:
                         self.card = None if self.card == w else w
                         self.picked = None
+        self.draw_bar_extra(ui, top)
+
+    def card_tooltip(self, word: str, d: dict) -> str:
+        if d.get("skill"):
+            return f"{d['hanzi']}: {d['skill'].get('desc_vi', '')}"
+        return f"{d['hanzi']} {d.get('pinyin', '')} · {d['role']}\n" + stats_text(d["role"], self.sim.roles[d["role"]],
+                                                                                 d["power"])
+
+    def draw_bar_extra(self, ui, top) -> None:
+        """M10: room after the cards (the math edition shows its locked towers there)."""
 
     def draw_side(self, ui, top):
         sim = self.sim
@@ -865,11 +898,12 @@ class TdPlayScene(Scene):
         if self.picked and self.picked in sim.plants:
             pl = sim.plants[self.picked]
             d = self.params["plants"][pl.word]
-            ui.text(d["hanzi"], x + 16, yy + 12, 18 if len(d["hanzi"]) <= 2 else 9, kind="han", anchor="center")
-            ui.text(f"{d.get('pinyin', '')} · {T.TD_LEVEL.format(n=pl.level)}", x + 34, yy + 4, 8, kind="han")
-            ui.text(f"{int(d['power'] * pl.buff * 100)}%", x + 34, yy + 16, 7, "#5A5A5A")
+            ui.text(d["hanzi"], x + 16, yy + 12, 18 if len(d["hanzi"]) <= 2 else 9, kind=self.label_kind,
+                    anchor="center")
+            ui.text(f"{d.get('pinyin', '')} · {T.TD_LEVEL.format(n=pl.level)}", x + 34, yy + 4, 8, kind=self.label_kind)
+            ui.text(f"{int(d['power'] * pl.buff * pl.mult * 100)}%", x + 34, yy + 16, 7, "#5A5A5A")
             yy += 30
-            yy = ui.text(stats_text(pl.role, sim.roles[pl.role], d["power"] * pl.buff, pl.level,
+            yy = ui.text(stats_text(pl.role, sim.roles[pl.role], d["power"] * pl.buff * pl.mult, pl.level,
                                     self.params["upgrade"]["level_mult"]), x + 6, yy, 7, max_w=w - 12).bottom + 4
             cost = sim.cost_to_upgrade(pl)
             if cost is None:
@@ -877,17 +911,17 @@ class TdPlayScene(Scene):
             elif ui.button("td_upgrade", x + 6, yy, 76, 15, T.TD_UPGRADE.format(c=int(cost)), size=7, style="green",
                            enabled=enabled and not self.busy and sim.qi >= cost):
                 self.upgrade()
-            if ui.button("td_sell", x + 88, yy, 76, 15, T.TD_SELL.format(c=int(pl.spent * self.params["sell_refund"])),
+            if ui.button("td_sell", x + 88, yy, 76, 15, self.SELL.format(c=int(pl.spent * self.params["sell_refund"])),
                          size=7, enabled=enabled and not self.busy):
                 self.sell()
             yy += 22
         elif self.card:
             d = self.params["plants"][self.card]
-            ui.text(T.TD_PLACE_HINT.format(hz=d["hanzi"]), x + 6, yy, 7, max_w=w - 12, kind="han")
+            ui.text(self.PLACE_HINT.format(hz=self.piece_name(d)), x + 6, yy, 7, max_w=w - 12, kind=self.label_kind)
             yy += 22
             yy = ui.text(stats_text(d["role"], sim.roles[d["role"]], d["power"]), x + 6, yy, 7, max_w=w - 12).bottom + 4
         else:
-            yy = ui.text(T.TD_PICK_HINT, x + 6, yy, 7, "#5A5A5A", max_w=w - 12).bottom + 4
+            yy = ui.text(self.PICK_HINT, x + 6, yy, 7, "#5A5A5A", max_w=w - 12).bottom + 4
         if sim.combos:
             names = " ".join(next(c["name_vi"] for c in self.params["combos"] if c["id"] == cid) for cid in sim.combos)
             ui.text(T.TD_COMBO.format(names=names), x + 6, yy, 8, "#6A994E", kind="han")

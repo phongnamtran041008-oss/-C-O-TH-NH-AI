@@ -1,0 +1,62 @@
+{
+  "_comment": "Thủ thành toán (M10, kế hoạch 4.3): tháp ứng với mảng toán. Mọi số ở đây được gửi nguyên cho client trong params của lượt chơi và chạy trong td_sim.py (cùng mô phỏng với Ải Thủ Vườn) ở cả hai bên. Các trường: grid = kích thước bàn cờ (client vẽ đúng 12×7); core_hp = điểm của Linh Mạch; qi = Linh Khí (start: lúc vào ải, regen_per_s: mỗi giây trong đợt quái, wave_bonus: khi hết một đợt, break_questions: số câu Vấn Đạo đầu mỗi lúc nghỉ, break_qi: Linh Khí của một câu nghỉ đúng, tu_khi_qi / tu_khi_wrong_loss / tu_khi_cooldown_s: nút Tụ Khí; sai thì không mất gì vì luật 4.4 'sai không mất gì thêm'); upgrade.cost = hệ số giá nâng cấp theo giá đặt tháp (cấp 1→2, 2→3), upgrade.level_mult = hệ số sức mạnh theo cấp; sell_refund = phần Linh Khí trả lại khi dỡ tháp; tier_power = hệ số sức mạnh tháp theo bậc của câu đã đặt / nâng nó (câu khó hơn thì tháp mạnh hơn; nâng cấp giữ hệ số cao nhất đã đạt); roles = chỉ số gốc của từng hành vi mà td_sim biết (hoa: bắn nổ vùng, thuy: bắn làm chậm, kim: bắn mạnh một con nhiều máu nhất, son: choáng cả vùng, quang: soi sáng quái ẩn, ho_tro: tăng tốc tháp kề bên) với cost = Linh Khí để đặt; towers = các loại tháp: id, name_vi, label (chữ ngắn vẽ trên tháp), role (một khóa của roles), power (hệ số sức mạnh gốc), desc_vi, area = mảng toán của tháp: subject (một môn trong math/subjects.json), floor (tầng chính), skills (danh sách vi kỹ năng của tầng ấy, null = cả tầng). Tháp chỉ dùng được khi mảng của nó có câu hỏi và người chơi đã tới tầng ấy (math_ask.open_floor); tháp của môn chưa có câu thì hiện khóa kèm lý do và tự mở khi môn ấy có câu. stars = điểm Linh Mạch còn lại tối thiểu cho 1/2/3 sao; rewards: daily_rewarded_plays = số lượt thắng lại trong ngày còn được Linh Thạch, replay_stones = Linh Thạch một lượt thắng lại; levels = các ải: id (bắt đầu bằng 'math_'), name_vi, desc_vi, path (các ô liền nhau từ cổng quái tới Linh Mạch), rocks (ô đá không đặt được), waves (mỗi đợt là các nhóm quái {m: loài trong balance/td.json monsters, n: số con, gap: ms giữa hai con, at: ms từ đầu đợt}), first_rewards = thưởng lần đầu đạt 1/2/3 sao (spirit_stones, items: vật phẩm của math/drops.json).",
+  "grid": {"cols": 12, "rows": 7},
+  "core_hp": 20,
+  "qi": {"start": 120, "regen_per_s": 0.8, "wave_bonus": 15,
+         "break_questions": 1, "break_qi": 25,
+         "tu_khi_qi": 12, "tu_khi_wrong_loss": 0, "tu_khi_cooldown_s": 12},
+  "upgrade": {"cost": [0.7, 1.1], "level_mult": [1.0, 1.4, 1.85]},
+  "sell_refund": 0.5,
+  "tier_power": {"1": 1.0, "2": 1.1, "3": 1.2, "4": 1.3, "5": 1.4},
+  "roles": {
+    "hoa":    {"cost": 50, "range": 2.3, "cd": 1.4, "dmg": 15, "splash": 1.2, "elem": "hoa"},
+    "thuy":   {"cost": 45, "range": 2.3, "cd": 0.9, "dmg": 6, "slow": 0.6, "slow_s": 1.8, "elem": "thuy"},
+    "kim":    {"cost": 70, "range": 3.0, "cd": 1.3, "dmg": 34, "elem": "kim"},
+    "son":    {"cost": 60, "range": 1.8, "cd": 3.0, "dmg": 10, "stun_s": 1.0, "elem": "son"},
+    "quang":  {"cost": 35, "range": 2.2, "cd": 1.1, "dmg": 6, "elem": "quang"},
+    "ho_tro": {"cost": 40, "haste": 0.25, "heal": 6}
+  },
+  "towers": [
+    {"id": "tap_hop", "name_vi": "Tháp Tập Hợp", "label": "{}", "role": "hoa", "power": 1.0,
+     "desc_vi": "Vây cả một nhóm quái như gom phần tử vào một tập: nổ trúng mọi con quanh đích.",
+     "area": {"subject": "dai_so_tuyen_tinh", "floor": 1, "skills": null}},
+    {"id": "so_phuc", "name_vi": "Tháp Số Phức", "label": "i", "role": "thuy", "power": 1.0,
+     "desc_vi": "Xoay quái quanh gốc như nhân với i: quái trúng đòn đi chậm hẳn lại.",
+     "area": {"subject": "dai_so_tuyen_tinh", "floor": 2, "skills": null}},
+    {"id": "vecto", "name_vi": "Tháp Vectơ", "label": "v", "role": "kim", "power": 1.0,
+     "desc_vi": "Một mũi tên có hướng và độ dài: bắn xa, đánh mạnh vào con quái nhiều máu nhất.",
+     "area": {"subject": "dai_so_tuyen_tinh", "floor": 3, "skills": ["dstt_t3_vecto_rn"]}},
+    {"id": "ma_tran", "name_vi": "Tháp Ma Trận", "label": "M", "role": "son", "power": 1.0,
+     "desc_vi": "Biến đổi cả một vùng lưới cùng lúc: mọi con quái trong tầm bị choáng.",
+     "area": {"subject": "dai_so_tuyen_tinh", "floor": 3,
+              "skills": ["dstt_t3_kich_thuoc_phan_tu", "dstt_t3_cong_nhan_vo_huong", "dstt_t3_chuyen_vi",
+                         "dstt_t3_vet", "dstt_t3_ma_tran_dac_biet"]}},
+    {"id": "xac_suat", "name_vi": "Tháp Xác Suất", "label": "P", "role": "quang", "power": 1.0,
+     "desc_vi": "Thấy được điều chưa chắc chắn: soi sáng quái ẩn để các tháp khác bắn trúng.",
+     "area": {"subject": "xac_suat_thong_ke", "floor": 1, "skills": null}},
+    {"id": "gradient", "name_vi": "Tháp Gradient", "label": "G", "role": "ho_tro", "power": 1.0,
+     "desc_vi": "Chỉ hướng dốc nhất: các tháp kề bên bắn nhanh hơn.",
+     "area": {"subject": "giai_tich", "floor": 1, "skills": null}}
+  ],
+  "stars": {"3": 16, "2": 8, "1": 1},
+  "rewards": {"daily_rewarded_plays": 5, "replay_stones": 15},
+  "levels": [
+    {"id": "math_td_01", "name_vi": "Cổng Thành Số Học",
+     "desc_vi": "Mặc Quái kéo về từ cổng mực. Mỗi tháp phải trả lời đúng một câu của mảng toán ấy mới dựng được.",
+     "path": [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [4, 2], [4, 3], [4, 4], [4, 5], [5, 5], [6, 5], [7, 5],
+              [8, 5], [8, 4], [8, 3], [8, 2], [8, 1], [9, 1], [10, 1], [10, 2], [10, 3], [10, 4], [10, 5],
+              [11, 5]],
+     "rocks": [[1, 4], [6, 2], [11, 0]],
+     "waves": [
+       [{"m": "muc_con", "n": 5, "gap": 1100, "at": 0}],
+       [{"m": "muc_con", "n": 5, "gap": 1000, "at": 0}, {"m": "muc_phi", "n": 3, "gap": 900, "at": 6000}],
+       [{"m": "muc_con", "n": 6, "gap": 900, "at": 0}, {"m": "muc_dac", "n": 2, "gap": 1500, "at": 6500}],
+       [{"m": "muc_phi", "n": 5, "gap": 800, "at": 0}, {"m": "muc_con", "n": 5, "gap": 900, "at": 5000}],
+       [{"m": "muc_dac", "n": 3, "gap": 1400, "at": 0}, {"m": "muc_con", "n": 6, "gap": 800, "at": 5000},
+        {"m": "muc_phi", "n": 4, "gap": 700, "at": 10500}]
+     ],
+     "first_rewards": [{"spirit_stones": 40},
+                       {"spirit_stones": 40, "items": {"manh_tap_hop": 2}},
+                       {"spirit_stones": 60, "items": {"tinh_so_phuc": 1, "loi_ma_tran": 1}}]}
+  ]
+}

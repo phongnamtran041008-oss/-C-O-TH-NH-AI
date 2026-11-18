@@ -12,6 +12,12 @@ each plant the player brought). The client plays live and records its actions as
 must reach the same end (`replay`). Question results come from the server's own records
 (`answers`), so a client cannot claim a right answer it did not give. Only + - * / and
 random.Random.random() are used, so both sides compute exactly the same floats.
+
+The math edition (M10, systems/math_td.py) runs this same simulation with
+`params["place_needs_answer"]`: a tower is placed only by a "place" event that carries a
+question answered right about that tower (like an upgrade), and an answer may carry a
+`power` multiplier (from the tier of the question) that the piece keeps. Without that flag
+and without `power` in the answers, every number is exactly what it was before.
 """
 from __future__ import annotations
 
@@ -43,6 +49,7 @@ class Plant:
         self.haste = 0.0      # attack speed from Hỗ Trợ neighbours
         self.heal = 0.0       # hp per second from Hỗ Trợ neighbours
         self.reach: set[int] = set()   # path indices in range
+        self.mult = 1.0       # math edition: from the tier of the question that placed / upgraded it
 
 
 class Monster:
@@ -128,7 +135,7 @@ class Sim:
         return self.p["upgrade"]["level_mult"][pl.level - 1]
 
     def strength(self, pl: Plant) -> float:
-        return self.defs[pl.word]["power"] * self.level_mult(pl) * pl.buff
+        return self.defs[pl.word]["power"] * self.level_mult(pl) * pl.buff * pl.mult
 
     def cost_to_place(self, word: str) -> float:
         return float(self.role(word)["cost"])
@@ -277,8 +284,18 @@ class Sim:
             if why:
                 raise LogError(why)
             cost = self.cost_to_place(word)
-            self.qi -= cost
-            self.plants[(x, y)] = Plant(x, y, word, self.defs[word]["role"], cost)
+            a = None
+            if self.p.get("place_needs_answer"):   # math edition: placing is earned by a right answer
+                a = self._answer(ev.get("q"), "place")
+                if a["word"] != word:
+                    raise LogError("wrong_word")
+            self.qi -= cost                       # an attempt costs its Linh Khí, as an upgrade does
+            if a is not None and not a["ok"]:
+                return
+            pl = Plant(x, y, word, self.defs[word]["role"], cost)
+            if a is not None and "power" in a:
+                pl.mult = float(a["power"])
+            self.plants[(x, y)] = pl
             self._refresh()
         elif k == "sell":
             pl = self.plants.get((ev.get("x"), ev.get("y")))
@@ -303,6 +320,8 @@ class Sim:
             pl.spent += cost
             if a["ok"]:
                 pl.level += 1
+                if "power" in a and float(a["power"]) > pl.mult:
+                    pl.mult = float(a["power"])
                 self._refresh()
         elif k == "qi":
             a = self._answer(ev.get("q"), None)

@@ -1027,8 +1027,8 @@ một lần, lần sau chỉ đăng nhập, dùng Firebase (dự án và API key
   của sheet `dao_si_luyen_khi` (cố định, chưa nối với cảnh giới). Thiếu clip thì lùi về `slash`, thiếu sheet
   thì lùi về động tác vung cũ. Sprite người chơi bình thường vẫn là sprite pixel cũ, nên có một lần đổi
   hình; muốn liền mạch thì phải vẽ người chơi bằng sprite Đạo Sĩ suốt, việc ấy chờ quyết định cảnh giới.
-- **Phím chiêu là Z X C V G N.** Phím B đã là nút Sách nên chiêu thứ năm dùng G. Hàng Pháp Chữ cũ (1-4)
-  giữ nguyên.
+- **Phím chiêu là 1-6** (từ sau M10; lúc đầu là Z X C V G N vì hàng 1-4 còn thuộc về Pháp Chữ cũ - xem mục
+  "Công pháp không còn tiếng Trung" bên dưới).
 - **Kiểm tra phông chữ quét thêm phần mới.** Vế ghép cặp, bước sắp xếp, lời đáp án hiện sau khi trả lời,
   câu hướng dẫn của từng loại câu và chữ của chiêu thức đều vào `displayed_strings()`.
 - **Câu hỏi tới lúc thẻ trước còn hiện kết quả thì chờ, không bị bỏ.** Trước M9, `world.py` bỏ mọi gói `q`
@@ -1040,3 +1040,97 @@ một lần, lần sau chỉ đăng nhập, dùng Firebase (dự án và API key
   thẻ mới, vì đồng hồ máy chủ vẫn chạy. Thẻ còn đang trả lời thì không bao giờ bị đóng thay.
 - **`client/main.py` phải biết gói `mcast`.** Danh sách gói được chuyển tới màn thế giới nằm ở `Game._on_net`;
   thiếu `mcast` thì lời từ chối của máy chủ (chưa hồi xong, thiếu linh khí, còn khoá) không bao giờ hiện.
+
+## Nhánh `toan-tu-tien` — M10: bí cảnh tổ đội, hầm ngục, cơ duyên, thủ thành
+
+- **Một chỗ duy nhất để chọn câu hỏi.** `systems/math_ask.py` là nơi cả bốn chế độ lấy câu: bậc là của người
+  chơi ở vi kỹ năng ấy và không bao giờ cao hơn, không hỏi tầng chưa tới, cửa sổ chống lặp là cả sổ trả lời,
+  và câu trả lời ghi vào `math_answers` với `run_id = NULL` (`math_ask.record`) nên tính vào lộ trình như M7
+  và M9. Bốn chế độ không được chép lại các luật này. `pick(..., highest=True)` là "bài tổng hợp": câu khó
+  nhất mà người chơi ấy được phép gặp.
+- **Không chế độ nào đọc cảnh giới.** Mọi thứ mở theo tầng của lộ trình học, vì danh sách cảnh giới chưa chốt.
+- **Thứ cần nội dung chưa có thì nằm trong dữ liệu và hiện là khoá, không làm giả.** Tháp Xác Suất và Tháp
+  Gradient (môn chưa có câu), trùm bí cảnh hỏi "Tìm chỗ sai" (loại câu chưa chơi được), các tầng 4 trở lên
+  của hầm ngục. Chúng tự mở khi M11 thêm nội dung; với hai tháp có test giả lập một môn để chứng minh.
+
+### Bí cảnh toán (tổ đội)
+- **Dùng lại máy bí cảnh cũ, chỉ đổi thứ được hỏi.** Bí cảnh mới `toan_tran` chạy trên đúng bộ máy stage 9
+  (phòng, tổ đội, hồn ma, khiên nhóm, rương, cổng). Kênh của một bí cảnh toán có `question_source`; `combat.py`
+  hỏi qua nó thay vì hỏi câu của con quái. Bí cảnh chữ cũ không đổi gì và có test giữ.
+- **Mỗi người nhận câu theo tầng của chính mình** (kế hoạch 4.3), dù quái, trận nhãn hay trùm hỏi. Hai người
+  ở tầng 1 và tầng 3 đánh chung một con thì nhận câu tầng 1 và tầng 3. Chiêu thức M9 ra trong bí cảnh cũng
+  theo luật này: ngoài bí cảnh, chiêu hỏi theo tầng của con quái bị nhắm; trong bí cảnh thì theo tầng của
+  người ra chiêu.
+- **Trận Nhãn** là loại phòng giải đố mới, đứng cạnh các loại cũ và mượn phòng cùng các phiến đá có sẵn của
+  bản đồ `bi_canh` nên không sửa bản đồ. Đứng lên một trận nhãn thì được hỏi một câu; đúng thì trận nhãn vỡ.
+  Phòng mở khi đủ số trận nhãn vỡ (tăng theo số người) và đủ số người khác nhau đã phá. Ai đã phá rồi mà
+  phá tiếp sẽ làm thiếu phần của người khác thì bị từ chối, nên phòng không thể kẹt.
+- **Trùm:** khiên nhóm như cũ, mỗi người một câu đúng, và câu ấy là bài tổng hợp của người đó. Dữ liệu ghi
+  loại câu ưu tiên là `find_mistake`; khi loại ấy chơi được thì trùm tự dùng, không cần sửa code.
+- **Ai không có câu nào để hỏi thì được báo và không bị chờ:** không tính vào số trận nhãn cần phá và số người
+  cần cho khiên nhóm. Nếu ngân hàng không có tầng nào cho một người thì cả tổ đội không vào được và không
+  mất lượt.
+- **Vào một mình được** (`party_min: 1`), 3 lượt mỗi ngày, 20 phút một lượt.
+
+### Hầm ngục
+- **Bố cục là hàm thuần của (hạt giống, môn, tầng).** Số phòng, loại phòng, vi kỹ năng mỗi phòng, kẻ canh,
+  rương cuối: cùng hạt giống thì cùng hầm ngục, không đọc đồng hồ và không đọc người chơi. Câu hỏi bên trong
+  thì theo bậc của người chơi nên không nằm trong hạt giống. Bố cục được lưu cùng lượt chơi, nên sửa dữ liệu
+  không đổi lượt đang chơi dở.
+- **Mỗi phòng một loại câu, và chỉ sinh ra phòng hỏi được:** cặp (loại câu, vi kỹ năng) phải có mẫu ở bậc
+  thấp nhất của tầng - bậc luôn mở. Kiểm trên 300 hạt giống x tầng 1-3.
+- **Tâm lực:** sai hoặc hết giờ mất một; về 0 thì dừng và giữ mọi thứ đã nhận. Phòng cuối là Trấn Thủ: bài
+  tổng hợp.
+- **Tắt game không né được câu hỏi:** câu đang mở mà hết giờ lúc người chơi vắng mặt được chấm là hết giờ ở
+  lần kế tiếp nhìn vào lượt chơi.
+- **Thưởng có giới hạn ngày, học thì không:** 5 lượt đầu mỗi ngày có Linh Thạch và nguyên liệu; các lượt sau
+  vẫn chơi được, vẫn được Tu Vi và vẫn tính vào lộ trình.
+
+### Cơ duyên
+- **Cơ duyên đến từ việc học.** Mỗi câu toán đúng - ở Động Phủ, đánh quái, ra chiêu hay trong chế độ khác -
+  cộng một vào bộ đếm; đủ ngưỡng thì gieo một lần. Câu của chính cơ duyên không cộng vào bộ đếm. Mọi câu trả
+  lời đi qua một chỗ nghe duy nhất (`math_combat.add_answer_listener`) nên không chế độ nào bị sót.
+- **Thua không mất gì.** Sai, hết giờ hoặc bỏ qua: không thưởng, không phạt.
+- **Trạng thái nằm trong `users.flags`**, như bộ đếm ngày của thủ thành: không thêm bảng.
+- **Hai vật phẩm hiếm mới (Ngọc Giản Lão Nhân, Ấn Rương Đề) hiện chỉ bán được.** Chưa có công thức Lò Toán
+  nào dùng chúng; đó là quyết định về nội dung, để người chơi quyết.
+
+### Thủ thành toán
+- **Một bộ mô phỏng cho cả hai bản.** `td_sim.py` nhận thêm `place_needs_answer`: một sự kiện "đặt tháp" phải
+  kèm một câu hỏi "đặt" về đúng tháp ấy và mỗi câu chỉ dùng một lần. Bản chữ cũ không bật cờ này nên các con
+  số của nó không đổi; không test cũ nào bị sửa. `client/engine/td_sim.py` và `server/app/systems/td_sim.py`
+  vẫn giống nhau từng byte.
+- **Máy chủ vẫn là bên quyết định:** client mô phỏng và gửi nhật ký, máy chủ chạy lại rồi mới phát thưởng.
+  Năm kiểu nhật ký giả bị từ chối: đặt tháp không có câu hỏi, nâng tháp mà câu đặt đã sai, dùng câu của
+  tháp khác, một câu cho hai tháp, dùng câu nâng để đặt.
+- **Sai thì mất Linh Khí đã bỏ ra, ngoài ra không mất gì** - cùng luật "không hoàn lại" của thủ thành cũ và
+  cùng tinh thần chiêu hụt của M9. Tụ Khí sai thì không mất gì.
+- **Sức mạnh tháp không còn dựa vào độ thuộc chữ:** lấy từ dữ liệu nhân với hệ số theo bậc của câu hỏi đã
+  dựng tháp. Máy chủ chốt hệ số lúc ra câu hỏi và ghi cùng câu trả lời, nên việc chạy lại vẫn tất định.
+- **Hai bản không thấy lượt chơi của nhau:** lượt toán dùng lại bảng `td_runs` / `td_progress` với mã ải bắt
+  đầu bằng `math_`, không thêm bảng.
+
+### Việc chung
+- **Thông báo cơ duyên nằm ở thẻ câu hỏi toán**, không nằm ở từng chế độ: câu trả lời nào mang
+  `math.fortune_offer` thì thẻ báo khi đóng, chế độ nào hỏi cũng vậy.
+- **`check_all.py` nay 17 kiểm tra:** mỗi chế độ có `validate()` riêng trong module của nó và `check_all` gọi
+  bốn hàm ấy; kiểm tra phông chữ quét thêm mọi chuỗi `_vi` trong dữ liệu của bốn chế độ.
+- **Chỉ hầm ngục thêm bảng** (`math_dungeon_runs`, migration `0014_math_dungeon`).
+
+### Công pháp không còn tiếng Trung (sau M10, theo yêu cầu của người chơi)
+- **Ô chiêu hiện icon dựng từ model 3D, không hiện chữ Hán.** Mỗi chiêu trong `skills.json` có `icon` (và
+  `icon_variant`): tên một icon của `client/assets/icons/items.json`, tức ảnh render từ model trong
+  `art/models/` (M8). Thường Quyền = găng, Phá Mê Kiếm Quyết = kiếm, Hỏa Cầu Thuật = quạt, Ngũ Hành Trận =
+  sách, Hộ Thân Trận = khiên, Thiên Lôi Tuyệt Kỹ = cuộn thư. `check_all` đòi icon ấy phải có trong sheet; test
+  đòi không hai chiêu nào chung một hình. Bản clone không có sheet icon thì ô hiện chữ viết tắt tên tiếng
+  Việt ("HC"), không bao giờ hiện chữ Hán.
+- **Pháp Chữ cũ rời khỏi màn hình.** Hàng 1-4 gắn với chữ Hán đã học, chữ Hán to hiện trên đầu người ra
+  chiêu, danh sách "Pháp Chữ" trong bảng nhân vật và các dòng gợi ý nhắc tới nó đều đã gỡ. Chiêu thức nhận
+  hàng ấy và các phím 1-6; bảng nhân vật nay liệt kê sáu chiêu thức kèm icon.
+- **Chưa gỡ ở máy chủ và trong dữ liệu game cũ:** `data/skills.json`, lệnh `skill`, và bốn món "Bí kíp ... Chữ
+  Quyết" vẫn rớt từ quái, vẫn là thưởng nhiệm vụ / thủ thành chữ và vẫn bán ở Thủ Thư. Chúng thuộc kinh tế
+  của game chữ cũ, gỡ thì phải sửa bảng rớt đồ, nhiệm vụ, cửa hàng và test của các phần ấy - chờ người chơi
+  quyết.
+- **"Hạt giống" của hầm ngục gọi là "linh thạch số".** Trên màn hình: "Linh thạch số 1001", ô nhập "Linh thạch
+  số", nút "Chơi lại linh thạch này". Trong code và API vẫn là `seed`. Đây chỉ là cách gọi: vào hầm ngục không
+  tốn Linh Thạch.

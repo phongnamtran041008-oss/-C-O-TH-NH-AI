@@ -6,6 +6,10 @@ seed, sends every number the simulation needs, asks and grades every question, a
 end replays the client's event log (`td_sim.replay`): only a log that reaches exactly the
 result the client claims, within a believable real time, earns anything. A run in progress
 is saved in `td_runs` with its log, so a game closed mid-level can continue it.
+
+M10: the math edition (systems/math_td.py) keeps its runs in the same table, with level ids
+that start with MATH_PREFIX. The two editions never see each other's runs (`math=` below):
+starting, cancelling or continuing one never touches a run of the other.
 """
 from __future__ import annotations
 
@@ -30,6 +34,17 @@ from ..models import (Character, CodexEntry, Collection, Plot, QuizSession, Seed
 from . import catalog, cultivation, inventory, items, td_sim
 
 ENDLESS = "endless"
+MATH_PREFIX = "math_"      # level ids of the math edition (M10)
+
+
+def is_math(level_id: str) -> bool:
+    return level_id.startswith(MATH_PREFIX)
+
+
+def _edition(math: bool):
+    """SQL filter: the runs of one edition only."""
+    on = TdRun.level_id.startswith(MATH_PREFIX, autoescape=True)
+    return on if math else ~on
 
 
 class TdError(Exception):
@@ -293,8 +308,8 @@ async def _drop(db: AsyncSession, row: TdRun) -> None:
     await db.commit()
 
 
-async def current_run(db: AsyncSession, user_id: int) -> TdRun | None:
-    row = (await db.execute(select(TdRun).where(TdRun.user_id == user_id)
+async def current_run(db: AsyncSession, user_id: int, math: bool = False) -> TdRun | None:
+    row = (await db.execute(select(TdRun).where(TdRun.user_id == user_id, _edition(math))
                             .order_by(TdRun.started_at.desc()))).scalars().first()
     if row is not None and _expired(row):
         await db.delete(row)
@@ -303,9 +318,9 @@ async def current_run(db: AsyncSession, user_id: int) -> TdRun | None:
     return row
 
 
-async def _get_run(db: AsyncSession, user_id: int, run_id: str) -> TdRun:
+async def _get_run(db: AsyncSession, user_id: int, run_id: str, math: bool = False) -> TdRun:
     row = await db.get(TdRun, run_id) if isinstance(run_id, str) else None
-    if row is None or row.user_id != user_id:
+    if row is None or row.user_id != user_id or is_math(row.level_id) != math:
         raise TdError(404, "no_run", "Lượt thủ vườn này không còn nữa, vào ải lại nhé.")
     if _expired(row):
         await _drop(db, row)
@@ -354,7 +369,7 @@ async def start(db: AsyncSession, user: User, level_id: str, loadout: list | Non
     bonus = await pets.skill_value(db, user.id, "td_qi")   # Khỉ (stage 8): more Linh Khí to start with
     if bonus:
         params["qi"] = {**params["qi"], "start": params["qi"]["start"] + int(bonus)}
-    await db.execute(delete(TdRun).where(TdRun.user_id == user.id))   # a new run replaces an unfinished one
+    await db.execute(delete(TdRun).where(TdRun.user_id == user.id, _edition(False)))   # a new run replaces an unfinished one
     now = clock.now()
     row = TdRun(id=uuid.uuid4().hex, user_id=user.id, level_id=level_id, params=params, questions={}, events=[],
                 started_at=now, updated_at=now)
@@ -373,11 +388,12 @@ def _check_events(events, last_step: int) -> None:
         last_step = s
 
 
-async def save_events(db: AsyncSession, user: User, run_id: str, start_at: int, events: list) -> dict:
+async def save_events(db: AsyncSession, user: User, run_id: str, start_at: int, events: list,
+                      math: bool = False) -> dict:
     """Spec 16 `/td/event`: the client saves its log as it plays (from index `start_at`). A part
     already saved may be sent again (it must be the same); nothing saved can be changed or
     removed, so closing the game never lets a player take a move back."""
-    row = await _get_run(db, user.id, run_id)
+    row = await _get_run(db, user.id, run_id, math)
     have = list(row.events or [])
     if not isinstance(start_at, int) or start_at < 0 or start_at > len(have):
         raise TdError(409, "log_gap", "Nhật ký ải bị hụt một đoạn.")
@@ -459,19 +475,34 @@ async def td_handler(db: AsyncSession, user: User, s: QuizSession, correct: bool
 quiz.register_handler("td", td_handler)
 
 
-async def cancel(db: AsyncSession, user: User) -> dict:
-    res = await db.execute(delete(TdRun).where(TdRun.user_id == user.id))
+async def cancel(db: AsyncSession, user: User, math: bool = False) -> dict:
+    res = await db.execute(delete(TdRun).where(TdRun.user_id == user.id, _edition(math)))
     return {"cancelled": bool(res.rowcount)}
 
 
 def _answers(run: TdRun) -> dict:
-    """Results the replay may use. A question never answered counts as wrong."""
-    return {sid: {"kind": q["kind"], "word": q["word"], "ok": bool(q["ok"])}
+    """Results the replay may use. A question never answered counts as wrong. A math question
+    (M10) also carries the `power` its tier gives the tower it placed or upgraded."""
+    return {sid: {"kind": q["kind"], "word": q["word"], "ok": bool(q["ok"]),
+                  **({"power": q["power"]} if "power" in q else {})}
             for sid, q in (run.questions or {}).items()}
 
 
 async def finish(db: AsyncSession, user: User, run_id: str, events: list, claim: dict) -> dict:
-    run = await _get_run(db, user.id, run_id)
+    sim, got, level_id = await verify(db, user, run_id, events, claim)
+    await _record_monsters(db, user.id, sim)
+    if level_id == ENDLESS:
+        return {**got, **(await _endless_result(db, user, sim))}
+    return {**got, **(await _level_result(db, user, level_id, sim))}
+
+
+async def verify(db: AsyncSession, user: User, run_id: str, events: list, claim: dict,
+                 math: bool = False) -> tuple[td_sim.Sim, dict, str]:
+    """Replay a finished run's log with the server's own answers and check it against the
+    claim, the saved log and real time. A run that fails any check is deleted and nothing is
+    earned; a run that passes is deleted too (it is over) and (sim, summary, level id) comes
+    back for the edition to pay out. Shared by both editions."""
+    run = await _get_run(db, user.id, run_id, math)
     if run.id in _finishing:
         raise TdError(409, "busy", "Đang kiểm tra lượt này.")
     c = cfg()["anti_cheat"]
@@ -504,10 +535,7 @@ async def finish(db: AsyncSession, user: User, run_id: str, events: list, claim:
         await _drop(db, run)
         raise TdError(400, "unfinished", "Ải chưa kết thúc.")
     await db.delete(run)
-    await _record_monsters(db, user.id, sim)
-    if level_id == ENDLESS:
-        return {**got, **(await _endless_result(db, user, sim))}
-    return {**got, **(await _level_result(db, user, level_id, sim))}
+    return sim, got, level_id
 
 
 async def _record_monsters(db: AsyncSession, user_id: int, sim: td_sim.Sim) -> None:

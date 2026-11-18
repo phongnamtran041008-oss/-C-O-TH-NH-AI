@@ -33,15 +33,20 @@ SPEED = 74.0
 SEND_EVERY = 0.05          # 20 input messages a second at most
 BUBBLE_SECONDS = 5.0
 
-# M9: the chiêu thức row of the hotbar. Z X C V are free in the world; B is the Sách button, so the
-# fifth chiêu takes G (the key above it) and the sixth N.
-MSKILL_KEYS = (pygame.K_z, pygame.K_x, pygame.K_c, pygame.K_v, pygame.K_g, pygame.K_n)
-MSKILL_KEY_NAMES = "ZXCVGN"
+# The hotbar: the six chiêu thức (M9), keys 1-6. The row and the keys 1-4 used to belong to the
+# word-bound Pháp Chữ of the old game, which the math game no longer shows.
+MSKILL_KEYS = (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6)
+MSKILL_KEY_NAMES = "123456"
+MSKILL_ROW = (252, 226)            # top-left of the first slot; a slot is 22 px, 24 px apart
 MSKILL_NEAR = 140                  # a chiêu aimed at "the nearest monster" looks this far (px)
+def mskill_initials(name_vi: str) -> str:
+    """"Hỏa Cầu Thuật" -> "HC": what a slot shows when there is no icon to draw."""
+    return "".join(w[0] for w in name_vi.split()[:2]).upper()
+
+
 CAST_SHEET = "dao_si_luyen_khi"    # the Đạo Sĩ sheet a caster is drawn from (no realm mapping yet)
 CAST_CHANNEL_MAX = 40.0            # a channel the server never finished stops looking like one after this
 WAITING_Q_MAX = 2.5                # a question waits this long at most behind the result of the last one
-ELEMENT_HANZI = {"kim": "金", "moc": "木", "thuy": "水", "hoa": "火", "tho": "土", "loi": "雷"}
 
 
 @dataclass
@@ -339,12 +344,6 @@ class WorldScene(Scene):
                     self.game.state.character["qi"] = int(m["qi"])
             else:
                 self.game.toast(m.get("message_vi") or T.SKILL_FAIL.get(m.get("code"), ""), "#BC4749")
-        elif t == "cast":
-            if m.get("ok"):
-                self.skill_ready[m["k"]] = self.game.now + float(m.get("ready_in", 0))
-            else:
-                self.fx.float_text(T.SKILL_FAIL.get(m.get("code"), m.get("code") or ""), self.player.x,
-                                   self.player.y - 30, "#F4EBD9")
 
     def open_question(self, m: dict, waited: float = 0.0) -> None:
         """Put the card of a `q` message on the screen. `waited`: seconds the question was held
@@ -360,7 +359,8 @@ class WorldScene(Scene):
             q = {**q, "time_limit": max(1.0, float(q.get("time_limit") or 10) - waited)}
         self.start_cooldown((m.get("cast") or {}).get("k"))
         # M7: a quái lỗi sai asks a math question, so it gets the math card
-        if q.get("context") == "math_combat" or m.get("cast"):     # M9: a chiêu asks it too
+        if (q.get("context") == "math_combat" or m.get("cast")     # M9: a chiêu asks it too
+                or q.get("context") == "math_realm"):               # M10 realm: a math bí cảnh's question
             self.game.push(MathCombatQuizScene(self.game, q, m.get("mid") or "",
                                                on_result=self.on_combat_result, cast=m.get("cast")))
         else:
@@ -558,12 +558,6 @@ class WorldScene(Scene):
                 self.fx.burst(x, y, "l", 14, 25)
             elif sid == "son":
                 self.fx.burst(x, y + 8, "T", 16, 20)
-            caster = self.entities.get(ev.get("by"))
-            hz = {"hoa": "火", "thuy": "水", "moc": "木", "son": "山"}.get(sid, "")
-            if hz:  # spec 18: the skill's character shows big above the caster
-                cx, cy = (self.player.x, self.player.y) if ev.get("by") == me else (
-                    (caster.pos[0], caster.pos[1]) if caster else (x, y))
-                self.big_chars.append([hz, cx, cy - 40, 1.0])
         elif k == "heal":
             self.fx.float_text(f"+{ev.get('v', '')}", x, y - 30, "#4A7CC8" if ev.get("q") else "#B5D67A")
             self.fx.burst(x, y - 10, "l", 8, 15)
@@ -719,12 +713,25 @@ class WorldScene(Scene):
             dx, dy = target.pos[0] - self.player.x, target.pos[1] - self.player.y
             self.player.facing = ("right" if dx > 0 else "left") if abs(dx) > abs(dy) else ("down" if dy > 0 else "up")
 
+    def draw_mskill_icon(self, ui, sk: dict, x: float, y: float, locked: bool) -> None:
+        """The picture of a chiêu on its slot: the icon named in skills.json. A checkout
+        without the icon sheet (it is built by a tool that needs Blender) shows the initials
+        of the chiêu's Vietnamese name instead - never a Chinese character."""
+        from ..engine import icons
+        img = icons.icon(sk.get("icon") or "", int(sk.get("icon_variant") or 0))
+        if img is not None:
+            ui.image(img, x + 11, y + 11, zoom=0.625, anchor="center")       # a 32 px icon, drawn at 20
+        else:
+            ui.text(mskill_initials(sk.get("name_vi", "")), x + 11, y + 12, 8,
+                    "#6B665C" if locked else "#E9C46A", anchor="center")
+
     def draw_mskill_row(self, ui, active: bool) -> None:
-        """The second hotbar row: the six chiêu thức, keys Z X C V G N. Locked ones are grey (the
-        tooltip says what opens them), cooldown and missing qi look like the row below."""
+        """The hotbar: the six chiêu thức, keys 1-6, each with the picture its data names (an
+        icon rendered from a 3D model). Locked ones are grey and the tooltip says what opens
+        them; a chiêu on cooldown or too dear in Linh Lực is shaded."""
         if not self.mskills:
             return
-        x0, y0 = 252, 200
+        x0, y0 = MSKILL_ROW
         now = self.game.now
         qi = (self.game.state.character or {}).get("qi", 0)
         for i in range(len(MSKILL_KEYS)):
@@ -736,8 +743,7 @@ class WorldScene(Scene):
                 continue
             sk = self.mskills[i]
             locked = not sk.get("unlocked", True)
-            ui.text(ELEMENT_HANZI.get(sk.get("element"), sk["name_vi"][:1]), x + 11, y0 + 12, 13,
-                    "#6B665C" if locked else "#E9C46A", kind="han", anchor="center")
+            self.draw_mskill_icon(ui, sk, x, y0, locked)
             if sk.get("qi"):
                 ui.text(str(sk["qi"]), x + 20, y0 + 20, 6, "#8CB8DA" if not locked else "#6B665C", anchor="bottomright")
             if locked:
@@ -943,21 +949,6 @@ class WorldScene(Scene):
         self.swing_t = 0.25
         dx, dy = ent.pos[0] - self.player.x, ent.pos[1] - self.player.y
         self.player.facing = ("right" if dx > 0 else "left") if abs(dx) > abs(dy) else ("down" if dy > 0 else "up")
-
-    def learned_skills(self) -> list[dict]:
-        return [k for k in (self.game.state.cult or {}).get("skills", []) if k.get("learned")]
-
-    def cast(self, slot: int, hovered: Ent | None) -> None:
-        sk = self.learned_skills()
-        if slot >= len(sk) or self.net is None or self.dead:
-            if slot >= len(sk):
-                self.game.toast(T.SKILL_EMPTY, "#5A5A5A")
-            return
-        s = sk[slot]
-        target = hovered if (hovered is not None and hovered.kind == "m" and hovered.alive) else \
-            self.nearest_monster(140)
-        self.flush_inputs()
-        self.net.send({"t": "skill", "k": s["id"], "id": target.id if target else None})
 
     def use_pill(self) -> None:
         g = self.game
@@ -1424,14 +1415,11 @@ class WorldScene(Scene):
             ui.set_tooltip(tip)
         if self.realm is not None and ui.inp.right_clicked and 20 < myw < 222:   # a ping for the party
             self.realm.mark(wx, wy, 1 if pygame.key.get_mods() & pygame.KMOD_SHIFT else 0)
-        # fighting keys: Space attacks the nearest monster, 1-4 cast, Q drinks a pill
+        # fighting keys: Space attacks the nearest monster, 1-6 cast a chiêu thức, Q drinks a pill
         if ui.key(pygame.K_SPACE):
             self.attack(hovered if hovered is not None and hovered.kind == "m" else
                         self.nearest_monster(self.weapon_range() + 14))
-        for i, key in enumerate((pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4)):
-            if ui.key(key):
-                self.cast(i, hovered)
-        for i, key in enumerate(MSKILL_KEYS):        # M9: Z X C V G N cast a chiêu thức
+        for i, key in enumerate(MSKILL_KEYS):        # M9: a chiêu thức
             if ui.key(key):
                 self.cast_mskill(i, hovered)
         if ui.key(pygame.K_q):
@@ -1480,33 +1468,10 @@ class WorldScene(Scene):
                                T.BEE_HUD_TIP.format(name=name, hp=hp, mx=mhp))
 
     def draw_hotbar(self, ui, active: bool) -> None:
-        skills = self.learned_skills()
-        x0, y0 = 252, 226
-        now = self.game.now
-        for i in range(4):
-            x = x0 + i * 24
-            ui.fill(x, y0, 22, 22, (20, 18, 15, 180))
-            ui.border(x, y0, 22, 22, "#8B5A2B")
-            ui.text(str(i + 1), x + 2, y0 + 1, 6, "#8E877A")
-            if i < len(skills):
-                sk = skills[i]
-                ui.text(sk["hanzi"], x + 11, y0 + 12, 13, "#E9C46A", kind="han", anchor="center")
-                left = self.skill_ready.get(sk["id"], 0) - now
-                if left > 0:
-                    frac = min(1.0, left / max(0.1, sk.get("cooldown", 1)))
-                    ui.fill(x, y0 + 22 * (1 - frac), 22, 22 * frac, (0, 0, 0, 150))
-                    ui.text(f"{left:.0f}", x + 11, y0 + 11, 8, "#FFFFFF", anchor="center")
-                qi = (self.game.state.character or {}).get("qi", 0)
-                if qi < sk.get("qi", 0):
-                    ui.fill(x, y0, 22, 22, (40, 60, 120, 90))
-                if active and ui.hover(x, y0, 22, 22):
-                    ui.set_tooltip(f"{sk['name_vi']} ({sk['hanzi']}) · cấp {sk['level']}\n{sk['desc_vi']}\n"
-                                   f"Linh Lực {sk['qi']} · hồi {sk['cooldown']} giây")
-            elif active and ui.hover(x, y0, 22, 22):
-                ui.set_tooltip(T.SKILL_EMPTY)
+        x0, y0 = MSKILL_ROW
         self.draw_mskill_row(ui, active)
-        # pill slot
-        x = x0 + 4 * 24 + 4
+        # pill slot, after the six chiêu
+        x = x0 + len(MSKILL_KEYS) * 24 + 4
         ui.fill(x, y0, 22, 22, (20, 18, 15, 180))
         ui.border(x, y0, 22, 22, "#BC4749")
         ui.text("Q", x + 2, y0 + 1, 6, "#8E877A")

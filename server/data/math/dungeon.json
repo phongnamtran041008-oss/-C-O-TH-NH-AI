@@ -1,0 +1,75 @@
+{
+ "_comment": "Hầm ngục (M10, kế hoạch 4.3): một chuỗi phòng sinh ra từ một hạt giống; mỗi phòng hỏi một dạng câu. Đọc qua app/systems/math_dungeon.py, kiểm tra bằng math_dungeon.validate(). Các khoá: 'hearts' = số tâm lực lúc vào hầm, một câu sai hoặc hết giờ mất một, về 0 là hầm kết thúc (giữ nguyên những gì đã nhận). 'rooms' = số phòng của một hầm kể cả phòng trấn thủ ở cuối, rút trong [min, max] theo hạt giống. 'questions_per_room' = số câu trả lời đúng để qua một phòng thường; 'warden_questions' = như thế cho phòng trấn thủ (câu khó nhất người chơi được hỏi). 'seed_max' = hạt giống là số nguyên 0..seed_max (gõ được, chia sẻ được). 'rewards_per_day' = số hầm mỗi ngày (giờ UTC của máy chủ) được nhận Linh Thạch và vật liệu; hầm sau đó vẫn chơi, vẫn được Tu Vi và vẫn tính cho lộ trình học, chỉ là không có phần thưởng. 'room_kinds' = một loại phòng cho mỗi dạng câu chơi được (khoá là dạng câu của balance/math.json): 'name_vi' tên phòng, 'short_vi' tên ngắn trên bản đồ, 'desc_vi' một câu tả. 'guardians' = kẻ giữ phòng thường, 'wardens' = trấn thủ phòng cuối: 'name_vi' và 'flavour_vi', hạt giống chọn một. 'rewards' = theo tầng: 'room' là thưởng mỗi phòng thường qua được, 'chests' là các rương cuối hầm (hạt giống chọn một); 'stones' là Linh Thạch, 'items' là {vật phẩm: số lượng}, vật phẩm phải có trong data/math/drops.json và là vật liệu (ghi chú lỗi sai chỉ rơi từ quái giữ lỗi ấy). Mọi tầng có câu hỏi phải có phần thưởng ở đây.",
+ "hearts": 3,
+ "rooms": {"min": 4, "max": 6},
+ "questions_per_room": 2,
+ "warden_questions": 2,
+ "seed_max": 999999,
+ "rewards_per_day": 5,
+ "room_kinds": {
+  "true_false": {
+   "name_vi": "Phòng Hai Cửa",
+   "short_vi": "Hai Cửa",
+   "desc_vi": "Hai cánh cửa, một thật một giả. Nói Đúng hay Sai rồi mới được bước qua."
+  },
+  "multiple_choice": {
+   "name_vi": "Phòng Bốn Ngả",
+   "short_vi": "Bốn Ngả",
+   "desc_vi": "Bốn lối đi tối như nhau, chỉ một lối dẫn ra. Chọn cho đúng lối."
+  },
+  "numeric": {
+   "name_vi": "Phòng Khắc Số",
+   "short_vi": "Khắc Số",
+   "desc_vi": "Cửa đá chỉ mở khi khắc lên nó đúng con số nó chờ."
+  },
+  "matching": {
+   "name_vi": "Phòng Song Ảnh",
+   "short_vi": "Song Ảnh",
+   "desc_vi": "Mỗi ngọn đèn có một cái bóng. Ghép từng đèn với bóng của nó."
+  },
+  "ordering": {
+   "name_vi": "Phòng Bậc Thang",
+   "short_vi": "Bậc Thang",
+   "desc_vi": "Các bậc đá bị xáo tung. Xếp lại các bước giải thì cầu thang mới hiện ra."
+  }
+ },
+ "guardians": [
+  {"name_vi": "Thạch Linh Canh Cửa", "flavour_vi": "Nó không đánh ai, chỉ đứng chắn và hỏi."},
+  {"name_vi": "Hồn Đèn Lặng Lẽ", "flavour_vi": "Ngọn lửa xanh chỉ cháy sáng khi nghe câu trả lời đúng."},
+  {"name_vi": "Bóng Mực Lang Thang", "flavour_vi": "Một vệt mực biết đi, còn nhớ một bài giải bị bỏ dở."},
+  {"name_vi": "Lão Quỷ Đếm Sai", "flavour_vi": "Lão đếm mãi không xong, mong có người đếm hộ."},
+  {"name_vi": "Cáo Giấy Hay Hỏi", "flavour_vi": "Gấp từ một trang vở cũ, hỏi rồi lại hỏi."},
+  {"name_vi": "Rắn Đá Ngủ Gật", "flavour_vi": "Trả lời sai là nó tỉnh dậy, mà nó không vui."}
+ ],
+ "wardens": [
+  {"name_vi": "Hầm Chủ Mặc Lão", "flavour_vi": "Người giữ rương đã ngồi đây từ khi hầm còn chưa có tên."},
+  {"name_vi": "Thiết Diện Trấn Thủ", "flavour_vi": "Mặt sắt không cười, chỉ hỏi câu khó nhất mà con đã mở."},
+  {"name_vi": "U Linh Giữ Rương", "flavour_vi": "Bóng mờ cuộn quanh chiếc rương, chờ một lời giải trọn vẹn."}
+ ],
+ "rewards": {
+  "1": {
+   "room": {"stones": 3, "items": {}},
+   "chests": [
+    {"name_vi": "Rương Gỗ Mục", "stones": 12, "items": {"manh_tap_hop": 2}},
+    {"name_vi": "Rương Đồng Xanh", "stones": 8, "items": {"manh_tap_hop": 3}},
+    {"name_vi": "Rương Đá Cổ", "stones": 18, "items": {"manh_tap_hop": 1}}
+   ]
+  },
+  "2": {
+   "room": {"stones": 4, "items": {}},
+   "chests": [
+    {"name_vi": "Rương Gỗ Mục", "stones": 14, "items": {"tinh_so_phuc": 2}},
+    {"name_vi": "Rương Đồng Xanh", "stones": 10, "items": {"tinh_so_phuc": 3}},
+    {"name_vi": "Rương Đá Cổ", "stones": 20, "items": {"tinh_so_phuc": 1, "manh_tap_hop": 1}}
+   ]
+  },
+  "3": {
+   "room": {"stones": 5, "items": {}},
+   "chests": [
+    {"name_vi": "Rương Gỗ Mục", "stones": 16, "items": {"loi_ma_tran": 2}},
+    {"name_vi": "Rương Đồng Xanh", "stones": 12, "items": {"loi_ma_tran": 3}},
+    {"name_vi": "Rương Đá Cổ", "stones": 22, "items": {"loi_ma_tran": 1, "tinh_so_phuc": 1}}
+   ]
+  }
+ }
+}

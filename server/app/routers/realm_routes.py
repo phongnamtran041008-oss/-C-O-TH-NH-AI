@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..auth import api_error, current_user, write_user
 from ..db import get_db
 from ..models import User
-from ..systems import secret_realm
+from ..systems import math_realm, secret_realm  # noqa: F401  (math_realm: the math bí cảnh's quiz context, M10)
 
 router = APIRouter(tags=["realm"])
 

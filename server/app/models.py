@@ -484,3 +484,32 @@ class MathRetry(Base):
     misses: Mapped[int] = mapped_column(Integer, default=1)
     created_at: Mapped[dt.datetime] = mapped_column(DateTime)
     cleared_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
+
+class MathDungeonRun(Base):
+    """One trip into a hầm ngục (M10). `layout` is what math_dungeon.generate made of
+    (seed, subject, floor) when the run started - rooms, their kinds, guardians, the chest -
+    kept so a run is not changed by a data edit while it is being played. `room` is the room
+    being played (== number of rooms cleared), `progress` the right answers in it so far.
+    `rewarded` is false for a run started after the day's rewarded runs were used up."""
+    __tablename__ = "math_dungeon_runs"
+    __table_args__ = (Index("ix_math_dungeon_runs_user", "user_id", "ended_at"),
+                      Index("ix_math_dungeon_runs_day", "user_id", "started_at"))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(UserFK())
+    seed: Mapped[int] = mapped_column(Integer)
+    subject_id: Mapped[str] = mapped_column(String(40))
+    floor: Mapped[int] = mapped_column(Integer)
+    layout: Mapped[dict] = mapped_column(JSON)
+    room: Mapped[int] = mapped_column(Integer, default=0)
+    progress: Mapped[int] = mapped_column(Integer, default=0)
+    hearts: Mapped[int] = mapped_column(Integer)
+    max_hearts: Mapped[int] = mapped_column(Integer)
+    state: Mapped[str] = mapped_column(String(10), default="open")      # open|cleared|failed|abandoned
+    asked: Mapped[int] = mapped_column(Integer, default=0)
+    correct: Mapped[int] = mapped_column(Integer, default=0)
+    xp_gained: Mapped[int] = mapped_column(Integer, default=0)
+    stones_gained: Mapped[int] = mapped_column(Integer, default=0)
+    items_gained: Mapped[dict] = mapped_column(JSON, default=dict)      # {item_id: qty}
+    rewarded: Mapped[bool] = mapped_column(Boolean, default=True)
+    started_at: Mapped[dt.datetime] = mapped_column(DateTime)
+    ended_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)

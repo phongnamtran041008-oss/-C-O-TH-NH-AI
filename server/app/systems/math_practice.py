@@ -525,6 +525,8 @@ async def math_handler(db: AsyncSession, user: User, s: QuizSession, correct: bo
     out: dict = {"tier": meta["tier"], "timed_out": timed_out, "parallel": bool(meta.get("parallel")),
                  "parallel_waiting": waiting, "review": review,
                  "xp_base": math_path.xp_for_tier(meta["tier"]) if correct else 0}
+    from . import math_combat      # M10: cơ duyên listens to every right answer (math_combat.add_answer_listener)
+    out.update(await math_combat.notify_answer(db, user, s, correct, now))
     if run is not None and run.ended_at is None and run.user_id == user.id:
         before = run.tier
         if not trial:                       # the tier of a trial is the floor's hardest, all the way
