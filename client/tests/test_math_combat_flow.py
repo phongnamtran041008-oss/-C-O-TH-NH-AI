@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pygame
 
-from client.tests.driver import ROOT, Driver, ServerProcess
+from client.tests.driver import ROOT, Driver, ServerProcess, fill_math_answer
 from client.tests.test_combat_flow import nearest, walk_to, world
 from client.tests.test_world_flow import make_account
 
@@ -59,15 +59,7 @@ def answer_card(drv: Driver, server: ServerProcess, correct: bool) -> dict:
     """Answer the math question on the combat card, reading the key from the database."""
     q = drv.game.top.q
     key = json.loads(server.sql("select answer_key from quiz_sessions where id=?", (q["session_id"],))[0][0])
-    if q["input"] == "truefalse":
-        drv.click("math_true" if key["value"] == correct else "math_false")
-    elif q["input"] == "choice":
-        drv.click(f"opt_{key['option']}" if correct
-                  else "opt_" + next(o["id"] for o in q["options"] if o["id"] != key["option"]))
-    else:
-        drv.click("quiz_text")
-        drv.type(", ".join(key["numbers"]) if correct else "987654")
-        drv.press(pygame.K_RETURN)
+    fill_math_answer(drv, q, key, correct)
     drv.wait(lambda: drv.top_is("MathCombatQuizScene") and drv.game.top.result, 10, "the result")
     return drv.game.top.result
 

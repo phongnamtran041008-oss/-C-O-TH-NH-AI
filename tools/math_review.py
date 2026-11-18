@@ -24,7 +24,11 @@ sys.path.insert(0, str(ROOT / "server"))
 from app.learning import math_items, math_path  # noqa: E402
 
 SAMPLE_SEEDS = (1, 2, 3)
-TYPE_VI = {"true_false": "Đúng/Sai", "multiple_choice": "Trắc nghiệm", "numeric": "Điền số"}
+
+
+def _type_vi(qtype: str) -> str:
+    """The type's name as balance/math.json gives it (Ghép cặp, Sắp xếp bước giải, ...)."""
+    return math_path.question_types()[qtype]["name_vi"]
 
 
 def _matrices(item: math_items.MathItem) -> list[str]:
@@ -34,6 +38,17 @@ def _matrices(item: math_items.MathItem) -> list[str]:
 
 def _question(item: math_items.MathItem) -> list[str]:
     lines = [f"  - **Câu hỏi:** {item.prompt_vi}", *_matrices(item)]
+    if item.qtype in ("matching", "ordering"):
+        # the data order is the answer, so it is shown whole (the game shuffles what the player sees)
+        if item.qtype == "matching":
+            lines.append("  - **Đáp án (ghép đúng):**")
+            lines += [f"    - {left}{math_items.MATCH_SEP_VI}{right}" for left, right in item.pairs_vi]
+        else:
+            lines.append("  - **Đáp án (thứ tự đúng):**")
+            lines += [f"    {n}. {step}" for n, step in enumerate(item.steps_vi, 1)]
+        lines.append("  - **Lời giải:**")
+        lines += [f"    {n}. {step}" for n, step in enumerate(item.solution_vi, 1)]
+        return lines
     if item.qtype == "multiple_choice":
         lines += [f"    - {'**(đúng)** ' if k == item.answer else ''}{text}" for k, text in enumerate(item.options_vi)]
     lines.append(f"  - **Đáp án:** {item.answer_text}" + ("  (thứ tự nào cũng được)" if item.unordered else ""))
@@ -62,7 +77,7 @@ def subject_sheet(subject: math_path.Subject, only_floor: int | None = None) -> 
                 tier = cfg["tiers"][str(t.tier)]["name_vi"]
                 mark = "đã duyệt" if t.reviewed else "CHƯA DUYỆT"
                 kind = "bộ sinh câu, 3 mẫu" if t.generated else "viết tay"
-                out.append(f"- `{t.id}` · bậc {t.tier} ({tier}) · {TYPE_VI[t.qtype]} · {kind} · {mark}")
+                out.append(f"- `{t.id}` · bậc {t.tier} ({tier}) · {_type_vi(t.qtype)} · {kind} · {mark}")
                 if t.generated:
                     for seed in SAMPLE_SEEDS:
                         out += _question(math_items.draw(t, random.Random(seed)))

@@ -12,6 +12,7 @@ from ..learning import math_library
 from ..models import User
 from ..systems import math_code, math_craft, math_practice
 from ..systems import math_combat  # noqa: F401  (registers the quái lỗi sai grader)
+from ..systems import math_skills  # (registers the grader of cast questions, M9)
 
 router = APIRouter(tags=["math"])
 
@@ -128,6 +129,13 @@ async def math_craft_make(body: CraftIn, user: User = Depends(write_user),
                           db: AsyncSession = Depends(get_db)):
     """Forge one recipe: materials and the fee are spent, the ghi chú are only checked."""
     return await _run(db, math_craft.craft(db, user, body.recipe_id))
+
+
+@router.get("/math/skills")
+async def math_skills_view(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    """Chiêu thức gắn câu hỏi (M9): every chiêu in data order, and which this player has
+    unlocked on the learning path."""
+    return await _run(db, math_skills.view(db, user))
 
 
 @router.get("/math/library/{doc_id}")

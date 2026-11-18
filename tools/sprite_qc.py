@@ -16,7 +16,10 @@ The five things the plan asks for, and what each one really means in pixels:
    is, too. A render that forgot "Film > Transparent" comes back with a grey sky that looks
    fine in a viewer and square in the game.
 4. **The JSON and the sheet agree** - every frame index exists, every clip has a positive
-   fps and at least one frame in each direction.
+   fps and at least one frame in each direction. Every character also has the clips the
+   game plays by name (`REQUIRED_CLIPS`: idle, walk, slash, and M9's cast for the Pháp
+   thuật / Trận pháp chiêu) in all four facings - the game falls back rather than crash
+   when one is missing, but a fallback is a bug nobody sees, so the check says so.
 5. **One frame size for every character** - so two characters stand the same height.
 
 Exit code 0 when every character passes, 1 otherwise.
@@ -40,6 +43,8 @@ FOOT_PX = 4.0           # how far the lowest drawn row may sit from the pivot's 
 ALPHA = 8               # below this, a pixel counts as empty
 MIN_EMPTY = 0.35        # at least this share of a frame is background
 MIN_DRAWN = 30          # a frame with fewer drawn pixels than this is empty, not a drawing
+REQUIRED_CLIPS = ("idle", "walk", "slash", "cast")
+DIRS = ("down", "up", "left", "right")
 
 
 def _ready() -> None:
@@ -95,6 +100,14 @@ def check_character(doc_path: Path) -> list[str]:
 
     # ---- 4: the JSON and the sheet agree
     used: set[int] = set()
+    for clip in REQUIRED_CLIPS:
+        c = doc["clips"].get(clip)
+        if c is None:
+            out.append(f"{name}: no {clip!r} clip (the game plays it by name)")
+            continue
+        missing = [d for d in DIRS if d not in (c.get("frames") or {})]
+        if missing:
+            out.append(f"{name}/{clip}: no frames facing {', '.join(missing)}")
     for clip, c in doc["clips"].items():
         if float(c.get("fps", 0)) <= 0:
             out.append(f"{name}/{clip}: fps is {c.get('fps')!r}")

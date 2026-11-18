@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 import pygame
 
 from .. import strings_vi as T
+from ..art import skill_fx
 from ..art.palette import rgb
 from ..engine import movement as mv
 from ..engine import sprites
@@ -31,6 +32,16 @@ FACING = ("down", "up", "left", "right")
 SPEED = 74.0
 SEND_EVERY = 0.05          # 20 input messages a second at most
 BUBBLE_SECONDS = 5.0
+
+# M9: the chiêu thức row of the hotbar. Z X C V are free in the world; B is the Sách button, so the
+# fifth chiêu takes G (the key above it) and the sixth N.
+MSKILL_KEYS = (pygame.K_z, pygame.K_x, pygame.K_c, pygame.K_v, pygame.K_g, pygame.K_n)
+MSKILL_KEY_NAMES = "ZXCVGN"
+MSKILL_NEAR = 140                  # a chiêu aimed at "the nearest monster" looks this far (px)
+CAST_SHEET = "dao_si_luyen_khi"    # the Đạo Sĩ sheet a caster is drawn from (no realm mapping yet)
+CAST_CHANNEL_MAX = 40.0            # a channel the server never finished stops looking like one after this
+WAITING_Q_MAX = 2.5                # a question waits this long at most behind the result of the last one
+ELEMENT_HANZI = {"kim": "金", "moc": "木", "thuy": "水", "hoa": "火", "tho": "土", "loi": "雷"}
 
 
 @dataclass
@@ -205,6 +216,11 @@ class WorldScene(Scene):
         self.swing_t = 0.0
         self.dead = False
         self.skill_ready: dict[str, float] = {}
+        self.mskills: list[dict] | None = None    # M9: GET /math/skills (None: not loaded, or an old server)
+        self.mskill_ready: dict[str, float] = {}
+        self.casting: dict[str, dict] = {}        # eid -> the chiêu animation it is playing
+        self.skill_fx: list[dict] = []            # chiêu effects in flight
+        self.waiting_q: tuple[dict, float] | None = None   # a "q" message held back, and when it came
         self.attack_ready = 0.0
         self.flock = Flock()                 # guard bees (stage 5), drawn flying around their owner
         self.pet_follow: dict = {}           # Linh Thú trotting after their owners (stage 8): eid -> PetFollower
@@ -218,6 +234,14 @@ class WorldScene(Scene):
         self.realm = RealmView(self) if zone_id == "bi_canh" else None
         if zone_msg:
             self.apply_zone(zone_msg)
+        self.load_mskills()
+
+    def load_mskills(self) -> None:
+        """The six chiêu thức with what this player may cast now (the open floor decides). A server
+        without them answers 404: the row is then simply not drawn."""
+        def ok(d):
+            self.mskills = d.get("skills") or []
+        self.game.api.get("/math/skills", ok, lambda e: None)
 
     # ------------------------------------------------------------ network
     @property
@@ -262,30 +286,28 @@ class WorldScene(Scene):
             if m.get("ch") in ("zone", "world") and eid:
                 self.bubbles[eid] = (m.get("text", ""), self.game.now + BUBBLE_SECONDS)
         elif t == "q":  # a Vấn Đạo question: Hộ Thể until answered (spec 8.1)
-            from .math_practice import MathCombatQuizScene
             from .quiz import CombatCard
-            from .rpg import CombatQuizScene
             self.flush_inputs()
             self.player.moving = False
             for sc in self.game.scenes:
                 if isinstance(sc, CombatCard):
+                    if sc.result:    # only showing the result of the last question: the new one waits for it
+                        self.waiting_q = (m, self.game.now)
                     return
-            while self.game.top is not None and self.game.top is not self and self in self.game.scenes:
-                self.game.pop()      # the fight comes first: close bag/menus so the card sits over the world
-            if m.get("first_meet"):
-                self.game.toast(T.COMBAT_INTRO, "#4A7CC8")
-            # M7: a quái lỗi sai asks a math question, so it gets the math card
-            card = (MathCombatQuizScene if m["q"].get("context") == "math_combat"
-                    else CombatQuizScene)
-            self.game.push(card(self.game, m["q"], m.get("mid", ""), on_result=self.on_combat_result))
+            self.open_question(m)
         elif t == "q_end":
             from .quiz import CombatCard
+            self.end_channel(f"p{self.game.state.me.get('id')}")
+            if self.waiting_q is not None and self.waiting_q[0]["q"].get("session_id") == m.get("sid"):
+                self.waiting_q = None
             for sc in list(self.game.scenes):
                 if isinstance(sc, CombatCard) and sc.q.get("session_id") == m.get("sid") and not sc.result:
                     self.game.pop(sc)
         elif t == "dead":
             from .quiz import CombatCard
             from .rpg import DeathOverlay
+            self.end_channel(f"p{self.game.state.me.get('id')}")
+            self.waiting_q = None
             for sc in list(self.game.scenes):
                 if isinstance(sc, CombatCard):
                     self.game.pop(sc)
@@ -310,6 +332,13 @@ class WorldScene(Scene):
         elif t == "act_fail":
             if m.get("code") == "too_far":
                 self.fx.float_text(T.SKILL_FAIL["too_far"], self.player.x, self.player.y - 30, "#F4EBD9")
+        elif t == "mcast":      # M9: the answer to a chiêu thức key
+            if m.get("ok"):
+                self.mskill_ready[m["k"]] = self.game.now + float(m.get("ready_in", 0))
+                if m.get("qi") is not None:
+                    self.game.state.character["qi"] = int(m["qi"])
+            else:
+                self.game.toast(m.get("message_vi") or T.SKILL_FAIL.get(m.get("code"), ""), "#BC4749")
         elif t == "cast":
             if m.get("ok"):
                 self.skill_ready[m["k"]] = self.game.now + float(m.get("ready_in", 0))
@@ -317,8 +346,52 @@ class WorldScene(Scene):
                 self.fx.float_text(T.SKILL_FAIL.get(m.get("code"), m.get("code") or ""), self.player.x,
                                    self.player.y - 30, "#F4EBD9")
 
+    def open_question(self, m: dict, waited: float = 0.0) -> None:
+        """Put the card of a `q` message on the screen. `waited`: seconds the question was held
+        back behind the previous card - the server's clock ran meanwhile, so the card gets less."""
+        from .math_practice import MathCombatQuizScene
+        from .rpg import CombatQuizScene
+        while self.game.top is not None and self.game.top is not self and self in self.game.scenes:
+            self.game.pop()      # the fight comes first: close bag/menus so the card sits over the world
+        if m.get("first_meet"):
+            self.game.toast(T.COMBAT_INTRO, "#4A7CC8")
+        q = m["q"]
+        if waited > 0:
+            q = {**q, "time_limit": max(1.0, float(q.get("time_limit") or 10) - waited)}
+        self.start_cooldown((m.get("cast") or {}).get("k"))
+        # M7: a quái lỗi sai asks a math question, so it gets the math card
+        if q.get("context") == "math_combat" or m.get("cast"):     # M9: a chiêu asks it too
+            self.game.push(MathCombatQuizScene(self.game, q, m.get("mid") or "",
+                                               on_result=self.on_combat_result, cast=m.get("cast")))
+        else:
+            self.game.push(CombatQuizScene(self.game, q, m.get("mid", ""), on_result=self.on_combat_result))
+
+    def show_waiting_question(self) -> None:
+        """A question can arrive while the card of the previous one still shows its result: a
+        chiêu lands and the monster beside it asks at once. Such a question used to be thrown
+        away, and the server - which had already opened it - kept the player in Hộ Thể for a
+        card nobody could see, refused every chiêu with "answering" and ended it with a Mặc
+        Kích. Now it waits: it opens the moment that card closes, and closes the card itself
+        after WAITING_Q_MAX seconds."""
+        if self.waiting_q is None:
+            return
+        from .quiz import CombatCard
+        m, since = self.waiting_q
+        waited = self.game.now - since
+        cards = [sc for sc in self.game.scenes if isinstance(sc, CombatCard)]
+        if cards and waited < WAITING_Q_MAX:
+            return
+        self.waiting_q = None
+        if self.dead or any(not sc.result for sc in cards):
+            return               # dead, or a card that is still being answered: never close that one
+        for sc in cards:
+            sc.finish()
+        self.open_question(m, waited)
+
     def on_combat_result(self, res: dict) -> None:
-        pass  # effects arrive with the next snapshot; Tu Vi is shown by the quiz card
+        # effects arrive with the next snapshot; Tu Vi is shown by the quiz card
+        if (res.get("combat") or {}).get("cast"):
+            self.load_mskills()          # the answer may have opened a floor, so a chiêu
 
     def apply_zone(self, m: dict) -> None:
         p = self.player
@@ -327,6 +400,8 @@ class WorldScene(Scene):
         self.pending.clear()
         self.batch = []
         self.seq = max(self.seq, int(m.get("ack", -1)) + 1)
+        self.casting.clear()
+        self.skill_fx.clear()
         self.entities.clear()
         self.interp.clear()
         self.channel = m.get("channel", 1)
@@ -412,6 +487,9 @@ class WorldScene(Scene):
             if self.realm is not None:
                 self.realm.on_fx(ev)
             return
+        if k in ("mcast", "mskill"):                    # M9: a chiêu thức is channelled / lands
+            self.on_mskill_fx(k, ev)
+            return
         if k == "hit" and ev.get("b"):                  # a guard bee stung a monster (spec 10.2.3)
             self.bee_hits += 1
             ent = self.entities.get(ev.get("id"))
@@ -490,6 +568,197 @@ class WorldScene(Scene):
             self.fx.float_text(f"+{ev.get('v', '')}", x, y - 30, "#4A7CC8" if ev.get("q") else "#B5D67A")
             self.fx.burst(x, y - 10, "l", 8, 15)
 
+    # ------------------------------------------------------------ chiêu thức (M9)
+    def cast_sheet(self):
+        """The Đạo Sĩ sheet a caster is drawn from, or None when this checkout has none."""
+        from ..engine import charsheet
+        return charsheet.load(CAST_SHEET)
+
+    def cast_clip(self, anim: str) -> str | None:
+        """The clip to play for a chiêu: its own, else the slash, else none (then the old swing)."""
+        cs = self.cast_sheet()
+        if cs is None:
+            return None
+        if anim in cs.clips:
+            return anim
+        return "slash" if "slash" in cs.clips else None
+
+    def on_mskill_fx(self, k: str, ev: dict) -> None:
+        """`mcast`: the caster starts channelling (the question is open). `mskill`: it landed
+        or fizzled - the caster plays the clip again and the effect flies."""
+        by, now = ev.get("by"), self.game.now
+        anim = ev.get("anim") or "slash"
+        clip = self.cast_clip(anim)
+        if k == "mcast":
+            if clip is not None and by:
+                self.casting[by] = {"anim": anim, "t0": now, "until": now + CAST_CHANNEL_MAX}
+            else:
+                self.swing(by)
+            return
+        ok = bool(ev.get("ok", 1))
+        mine = by == f"p{self.game.state.me.get('id')}"
+        x, y = float(ev.get("x", 0.0)), float(ev.get("y", 0.0))
+        fx = ev.get("fx") if ev.get("fx") in skill_fx.FX_IDS else "chem"
+        dur = skill_fx.duration(fx, ok)
+        # the card of the caster's own chiêu covers most of the screen while it shows the result:
+        # the animation and the effect then wait for it to go, or nobody would see them
+        wait = mine and self.cast_card_open()
+        if clip is not None and by:
+            secs = max(self.cast_sheet().clips[clip].seconds, 0.45) + 0.15
+            if wait and by in self.casting:
+                self.casting[by]["land"] = secs
+            else:
+                self.casting[by] = {"anim": anim, "t0": now, "until": now + secs}
+        elif not wait:
+            self.swing(by)
+        self.skill_fx.append({"fx": fx, "ok": ok, "t0": None if wait else now, "dur": dur, "by": by, "x": x, "y": y,
+                              "tx": ev.get("tx"), "ty": ev.get("ty"), "r": float(ev.get("r") or 0)})
+        if not ok:
+            self.fx.float_text(T.MSKILL_MISS, x, y - 36, "#D8D8D8")
+        elif int(ev.get("combo") or 0) > 1:
+            self.fx.float_text(T.MSKILL_COMBO.format(n=int(ev["combo"])), x, y - 36, "#E9C46A")
+
+    def cast_card_open(self) -> bool:
+        """Is the question card of a chiêu on screen? (Not `getattr(sc, "cast")`: this scene has a method of that name.)"""
+        from .math_practice import MathCombatQuizScene
+        return any(isinstance(sc, MathCombatQuizScene) and sc.cast for sc in self.game.scenes)
+
+    def release_landings(self) -> None:
+        """Start the effects and animations that were waiting for the card to close."""
+        if self.cast_card_open():
+            return
+        now = self.game.now
+        for f in self.skill_fx:
+            if f["t0"] is None:
+                f["t0"] = now
+        for c in self.casting.values():
+            if c.get("land") is not None:
+                c["t0"], c["until"] = now, now + c.pop("land")
+
+    def start_cooldown(self, skill_id: str | None) -> None:
+        """The chiêu's cooldown runs from the moment its question opens, which is when the server
+        starts it too. The `mcast` message says exactly how long; this is the same number from
+        the data, so the hotbar is right even if that message is late."""
+        sk = next((s for s in self.mskills or [] if s["id"] == skill_id), None)
+        if sk is not None:
+            self.mskill_ready.setdefault(skill_id, 0.0)
+            self.mskill_ready[skill_id] = max(self.mskill_ready[skill_id],
+                                              self.game.now + float(sk.get("cooldown", 0)))
+
+    def swing(self, eid: str | None) -> None:
+        """The old attack swing, for a chiêu whose caster has no sheet to play."""
+        if eid == f"p{self.game.state.me.get('id')}":
+            self.swing_t = 0.25
+        elif eid in self.entities:
+            self.entities[eid].swing_t = 0.25
+
+    def end_channel(self, eid: str) -> None:
+        c = self.casting.get(eid)
+        if c is not None and c["until"] - c["t0"] >= CAST_CHANNEL_MAX:
+            del self.casting[eid]
+
+    def cast_image(self, eid: str, x: float, y: float, facing: str, cx: int, cy: int):
+        """(image, position) of the caster playing its chiêu clip, or None when it is not casting
+        or there is nothing to play it from."""
+        c = self.casting.get(eid)
+        if c is None:
+            return None
+        now = self.game.now
+        cs = self.cast_sheet()
+        clip = self.cast_clip(c["anim"])
+        if now >= c["until"] or cs is None or clip is None:
+            if now >= c["until"]:
+                del self.casting[eid]
+            return None
+        img = cs.at(clip, now - c["t0"], facing if facing in ("down", "up", "left", "right") else "down")
+        bx, by = cs.blit_pos(x, y)
+        return img, (bx - cx, by - cy)
+
+    def draw_skill_fx(self, surf, cx: int, cy: int) -> None:
+        now = self.game.now
+        me = f"p{self.game.state.me.get('id')}"
+        keep = []
+        for f in self.skill_fx:
+            if f["t0"] is None:                  # waiting for the card to close
+                keep.append(f)
+                continue
+            p = (now - f["t0"]) / max(0.01, f["dur"])
+            if p > 1.0:
+                continue
+            keep.append(f)
+            sx, sy = f["x"], f["y"]
+            if f["by"] == me and not self.dead:
+                sx, sy = self.player.x, self.player.y         # the ward follows the caster
+            elif f["by"] in self.entities:
+                sx, sy = self.entities[f["by"]].pos[0], self.entities[f["by"]].pos[1]
+            dst = None if f["tx"] is None else (f["tx"] - cx, f["ty"] - cy)
+            skill_fx.draw(surf, f["fx"], max(0.0, p), (sx - cx, sy - cy), dst, ok=f["ok"], radius=f["r"])
+        self.skill_fx = keep
+
+    def cast_mskill(self, slot: int, hovered: Ent | None) -> None:
+        """A chiêu thức key. The server decides everything (floor, qi, cooldown, range): a locked
+        chiêu is sent too, so it is the server that says why it is locked."""
+        sk = self.mskills or []
+        if slot >= len(sk) or self.net is None or self.dead:
+            return
+        s = sk[slot]
+        target = None
+        if s.get("unlocked", True):
+            if self.game.now < self.mskill_ready.get(s["id"], 0):
+                self.fx.float_text(T.SKILL_FAIL["cooldown"], self.player.x, self.player.y - 30, "#F4EBD9")
+                return
+            if s.get("effect") != "ward":
+                target = hovered if (hovered is not None and hovered.kind == "m" and hovered.alive) else \
+                    self.nearest_monster(MSKILL_NEAR)
+                if target is None:
+                    self.fx.float_text(T.MSKILL_NEEDS_TARGET, self.player.x, self.player.y - 30, "#F4EBD9")
+                    return
+        self.flush_inputs()
+        self.net.send({"t": "mskill", "k": s["id"], "id": target.id if target else None})
+        if target is not None:
+            dx, dy = target.pos[0] - self.player.x, target.pos[1] - self.player.y
+            self.player.facing = ("right" if dx > 0 else "left") if abs(dx) > abs(dy) else ("down" if dy > 0 else "up")
+
+    def draw_mskill_row(self, ui, active: bool) -> None:
+        """The second hotbar row: the six chiêu thức, keys Z X C V G N. Locked ones are grey (the
+        tooltip says what opens them), cooldown and missing qi look like the row below."""
+        if not self.mskills:
+            return
+        x0, y0 = 252, 200
+        now = self.game.now
+        qi = (self.game.state.character or {}).get("qi", 0)
+        for i in range(len(MSKILL_KEYS)):
+            x = x0 + i * 24
+            ui.fill(x, y0, 22, 22, (20, 18, 15, 180))
+            ui.border(x, y0, 22, 22, "#8B5A2B")
+            ui.text(MSKILL_KEY_NAMES[i], x + 2, y0 + 1, 6, "#8E877A")
+            if i >= len(self.mskills):
+                continue
+            sk = self.mskills[i]
+            locked = not sk.get("unlocked", True)
+            ui.text(ELEMENT_HANZI.get(sk.get("element"), sk["name_vi"][:1]), x + 11, y0 + 12, 13,
+                    "#6B665C" if locked else "#E9C46A", kind="han", anchor="center")
+            if sk.get("qi"):
+                ui.text(str(sk["qi"]), x + 20, y0 + 20, 6, "#8CB8DA" if not locked else "#6B665C", anchor="bottomright")
+            if locked:
+                ui.fill(x, y0, 22, 22, (0, 0, 0, 120))
+                ui.border(x + 14, y0 + 2, 6, 5, "#B8B1A3")          # the shackle and body of a padlock
+                ui.fill(x + 13, y0 + 5, 8, 6, "#B8B1A3")
+            else:
+                left = self.mskill_ready.get(sk["id"], 0) - now
+                if left > 0:
+                    frac = min(1.0, left / max(0.1, sk.get("cooldown", 1)))
+                    ui.fill(x, y0 + 22 * (1 - frac), 22, 22 * frac, (0, 0, 0, 150))
+                    ui.text(f"{left:.0f}", x + 11, y0 + 11, 8, "#FFFFFF", anchor="center")
+                if qi < sk.get("qi", 0):
+                    ui.fill(x, y0, 22, 22, (40, 60, 120, 90))
+            if active and ui.hover(x, y0, 22, 22):
+                ui.set_tooltip(T.MSKILL_TIP_LOCKED.format(name=sk["name_vi"], why=sk.get("locked_vi") or "")
+                               if locked else
+                               T.MSKILL_TIP.format(name=sk["name_vi"], key=MSKILL_KEY_NAMES[i], kind=sk.get("kind_vi", ""),
+                                                   qtype=sk.get("qtype_vi", ""), qi=sk.get("qi", 0),
+                                                   cd=sk.get("cooldown", 0), desc=sk.get("desc_vi", "")))
+
     # ------------------------------------------------------------ guard bees (stage 5)
     def update_bees(self, dt: float) -> None:
         now = self.game.now
@@ -543,6 +812,8 @@ class WorldScene(Scene):
         self.fx.update(dt)
         self.update_bees(dt)
         self.update_pets(dt)
+        self.release_landings()
+        self.show_waiting_question()
         self.weather.update(dt, self.game.api)
         self.portal_cool = max(0.0, self.portal_cool - dt)
         self.hurt_flash = max(0.0, self.hurt_flash - dt)
@@ -919,6 +1190,12 @@ class WorldScene(Scene):
             if not e.alive:
                 continue
             img = self._ent_frame(e, f, m)
+            cast = self.cast_image(e.id, x, y, FACING[f % 4], cx, cy) if e.kind == "p" and not e.ghost else None
+            if cast is not None:                  # M9: playing its chiêu clip from the Đạo Sĩ sheet
+                drawables.append((y, cast[0], cast[1]))
+                if e.hp < 100:
+                    bars.append((x, y - 27, 14, e.hp, "#6A994E"))
+                continue
             if e.kind == "r":
                 drawables.append((y, img, (int(x - 12) - cx, int(y - 32) - cy)))
             elif e.kind == "m":
@@ -941,7 +1218,11 @@ class WorldScene(Scene):
                 if e.hp < 100:
                     bars.append((x, y - 27, 14, e.hp, "#6A994E"))
         p = self.player
-        if not self.dead:
+        mine = self.cast_image(f"p{self.game.state.me.get('id')}", p.x, p.y, p.facing, cx, cy) \
+            if not self.dead and not self.ghost else None
+        if mine is not None:                       # M9: the chiêu clip, instead of the walking sprite
+            drawables.append((p.y, mine[0], mine[1]))
+        elif not self.dead:
             drawables.append((p.y, ghostly(p.frame()) if self.ghost else p.frame(), (int(p.x - 8) - cx, int(p.y - 24) - cy)))
             wp = (self.game.state.cult or {}).get("stats", {}).get("weapon")
             if wp:
@@ -958,6 +1239,7 @@ class WorldScene(Scene):
                               (int(fb.x - 4) - cx, int(fb.y - fb.z - 4) - cy)))
         for _, img, pos in sorted(drawables, key=lambda d: d[0]):
             surf.blit(img, pos)
+        self.draw_skill_fx(surf, cx, cy)           # M9: the effect of a chiêu thức, over the bodies
         if self.fishing is not None:
             from .fishing import draw_rod
             draw_rod(surf, self.fishing, cx, cy, self.t)
@@ -1149,6 +1431,9 @@ class WorldScene(Scene):
         for i, key in enumerate((pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4)):
             if ui.key(key):
                 self.cast(i, hovered)
+        for i, key in enumerate(MSKILL_KEYS):        # M9: Z X C V G N cast a chiêu thức
+            if ui.key(key):
+                self.cast_mskill(i, hovered)
         if ui.key(pygame.K_q):
             self.use_pill()
         if self.target:
@@ -1219,6 +1504,7 @@ class WorldScene(Scene):
                                    f"Linh Lực {sk['qi']} · hồi {sk['cooldown']} giây")
             elif active and ui.hover(x, y0, 22, 22):
                 ui.set_tooltip(T.SKILL_EMPTY)
+        self.draw_mskill_row(ui, active)
         # pill slot
         x = x0 + 4 * 24 + 4
         ui.fill(x, y0, 22, 22, (20, 18, 15, 180))

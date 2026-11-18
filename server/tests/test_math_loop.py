@@ -59,6 +59,10 @@ def right_answer(q: dict, key: dict) -> dict:
         return {"value": key["value"]}
     if q["qtype"] == "multiple_choice":
         return {"option": key["option"]}
+    if q["qtype"] == "matching":
+        return {"pairs": list(key["pairs"])}
+    if q["qtype"] == "ordering":
+        return {"order": list(key["order"])}
     return {"text": ", ".join(key["numbers"])}
 
 
@@ -67,6 +71,9 @@ def wrong_answer(q: dict, key: dict) -> dict:
         return {"value": not key["value"]}
     if q["qtype"] == "multiple_choice":
         return {"option": next(o["id"] for o in q["options"] if o["id"] != key["option"])}
+    if q["qtype"] in ("matching", "ordering"):          # rotated: a permutation with every entry wrong
+        name = "pairs" if q["qtype"] == "matching" else "order"
+        return {name: key[name][1:] + key[name][:1]}
     return {"text": "987654"}
 
 

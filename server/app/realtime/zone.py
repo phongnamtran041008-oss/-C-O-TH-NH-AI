@@ -81,6 +81,9 @@ class Player:
     buffs: dict = field(default_factory=dict)           # buff kind -> monotonic time it ends
     # ---- bí cảnh (stage 9) ----
     ghost: bool = False                                 # out of health in a realm: follows the party, cannot act
+    # ---- chiêu thức gắn câu hỏi (M9) ----
+    mskill_ready: dict = field(default_factory=dict)    # chiêu id -> time it can be cast again
+    mcombo: int = 0                                     # right cast answers in a row (0 after a miss/death)
 
     @property
     def eid(self) -> str:

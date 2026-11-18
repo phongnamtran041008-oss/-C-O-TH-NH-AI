@@ -968,3 +968,75 @@ một lần, lần sau chỉ đăng nhập, dùng Firebase (dự án và API key
   (cùng `shape` và cùng màu thân với dữ liệu), và phải có vùng sinh ra nó; mỗi công thức phải rèn ra trang bị
   thật từ thứ thật sự rớt. Đã thử làm sai 5 chỗ (đổi vi kỹ năng, xoá ghi chú, lệch màu, thêm con không ai
   sinh, nguyên liệu không tồn tại): cả 5 đều bị bắt.
+
+## Nhánh `toan-tu-tien` — M8: đường ống Blender
+
+- **Sprite là thứ được commit, Blender thì không bắt buộc.** `tools/make_character.py` chạy bốn bước: dựng
+  `.blend`, render, ghép sheet + JSON, kiểm tra. Chỉ hai bước đầu cần Blender; game và cả hai bộ test chỉ
+  đọc `client/assets/chars/*.png|json`. Ai clone về mà không có Blender vẫn chơi và vẫn chạy test được, và
+  `world.py` không crash khi thiếu sheet.
+- **Ảnh render trung gian không vào git.** `art/render/`, `art/render_items/` và `*.blend1` nằm trong
+  `.gitignore` vì dựng lại được bằng một lệnh; `.blend` và model `.glb` thì giữ, vì đó là nguồn.
+- **Năm luật chất lượng của kế hoạch 7.3 là một công cụ, không phải lời dặn.** `tools/sprite_qc.py` kiểm
+  điểm neo, mép khung, nền trong suốt, số khung khớp JSON và kích thước thống nhất giữa các nhân vật; bộ
+  test client chạy nó trên các sheet đã commit.
+- **Icon vật phẩm đi cùng giấy phép của nó.** `art/models/manifest.json` ghi tên, tác giả, giấy phép và
+  link của từng model (CC0, CC-BY, tự dựng); có test bắt buộc mọi model CC-BY phải có mặt trong
+  `CREDITS.md`. Game vẫn chạy khi chưa có icon nào.
+- **Tám bộ dáng theo danh sách cảnh giới của người chơi ghi, dữ liệu tu luyện chưa đụng tới.** Game đang
+  có 5 cảnh giới và gọi tầng 3 là Kim Đan; danh sách dựng sprite có 8 và gọi là Kết Đan. Chờ quyết định.
+- **Hàng "trái" và "phải" từng bị đảo (sửa ở M9).** `render_character.DIRS` xoay nhân vật +90 độ cho hướng
+  "trái", tức là quay mặt sang phải. M8 không lộ vì game chỉ vẽ hướng "xuống"; M9 vẽ người thi triển theo
+  hướng đang nhìn nên lộ ra. Nay trái là 270 độ, phải là 90 độ; các khung cũ giữ nguyên từng pixel, chỉ
+  đổi nhãn, và có test ghim lại.
+
+## Nhánh `toan-tu-tien` — M9: chiêu thức gắn câu hỏi
+
+- **Câu hỏi chính là chiêu đang vận.** Bấm phím chiêu chưa đánh gì cả: máy chủ hỏi một câu thuộc loại của
+  chiêu, qua đúng ô `p.question` của Vấn Đạo, nên người thi triển có Hộ Thể và không mở được câu thứ hai.
+  Linh khí và hồi chiêu bị trừ lúc chiêu được nhận, trước khi trả lời.
+- **Chiêu hụt không phải Mặc Kích.** Sai hoặc hết giờ: không sát thương, combo về 0, mất linh khí và hồi
+  chiêu, không mất máu. Kế hoạch chỉ nói rõ trường hợp hết giờ ("chiêu hụt nhưng không mất đồ"); giá trị
+  tự chọn là áp dụng cho cả trả lời sai. Sau chiêu hụt, con quái còn khiên vẫn hỏi câu của chính nó sau
+  vài giây như luật cũ.
+- **Chiêu trúng không hồi linh khí.** Câu Vấn Đạo đúng thì được `correct_qi_gain`; chiêu thì không, nếu
+  không Thường Quyền (0 linh khí) thành máy cày linh khí.
+- **Bậc vẫn thuộc về người chơi.** Câu của chiêu lấy đúng vi kỹ năng của con quái lỗi sai đang nhắm (không
+  có thì vi kỹ năng khác cùng tầng), ở bậc người chơi đang mở, không bao giờ cao hơn; thiếu mẫu ở bậc ấy
+  thì lùi xuống bậc gần nhất còn mẫu, không dưới `min_tier`. Câu trả lời ghi vào `math_answers` với
+  `run_id = NULL` như M7, nên tính vào lộ trình.
+- **Mở khoá theo lộ trình học, không theo cảnh giới.** `unlock.floor` so với tầng đang mở (tầng chính thấp
+  nhất chưa qua, lấy cao nhất giữa các môn). Danh sách cảnh giới chưa chốt nên không có gì đọc nó.
+- **Combo.** `combo_mult = min(max_mult, 1 + per_streak x n)`, n là số câu chiêu đúng liên tiếp trước câu
+  này: câu đầu x1,0, câu hai x1,1, chặn ở x1,5. Combo nằm trong bộ nhớ, về 0 khi hụt, khi chết và khi rời
+  thế giới. Trả lời nhanh là chí mạng theo đúng luật Ngộ Đạo.
+- **Khiên nhóm của trùm bí cảnh không bị đi tắt.** Chiêu trúng chỉ tính là một câu đúng của người ấy
+  (`combat.group_hit`, dùng chung với `on_answer`); vẫn phải đủ số người khiên mới vỡ.
+- **Câu đúng của người khác không huỷ chiêu đang vận.** `break_shield` kết thúc câu Vấn Đạo đang mở của
+  những người cùng đánh con ấy, nhưng bỏ qua câu của chiêu: khiên vỡ rồi thì chiêu vẫn nên trúng.
+- **Hai loại câu mới, vì bảng 4.4 đòi.** Trận pháp cần Ghép cặp / Sắp xếp bước giải, nên `matching` và
+  `ordering` thành loại chơi được (18 câu viết tay cho tầng 1-3, mỗi tầng 3 + 3). Câu sắp xếp không bao
+  giờ hiện ra ở đúng thứ tự sẵn; câu ghép cặp luôn có ít nhất một vế bị dời chỗ. Bài làm sai định dạng
+  được chấm là sai, không ném lỗi. Hệ quả: buổi luyện ở Động Phủ cũng rút ra hai loại câu này.
+- **Tuyệt kỹ có trong dữ liệu nhưng chưa thi triển được.** `thien_loi_tuyet_ky` cần câu Thiên kiếp bậc 4,
+  mà bậc 4 bắt đầu ở tầng 5 và tầng 7-9 chưa có câu (M11). `check_all` cho phép đúng một ngoại lệ này: mọi
+  chiêu mở ở tầng <= 3 phải có câu để thi triển ngay khi người chơi vừa tới tầng ấy.
+- **FX vẽ bằng code, không phải ảnh.** `client/art/skill_fx.py` có sáu hiệu ứng là hàm thuần của tiến độ
+  0..1 và toạ độ, nên test được không cần màn hình; mỗi hiệu ứng có bản "chiêu hụt" riêng.
+- **Người thi triển tạm đổi sang sprite Đạo Sĩ.** Trong lúc ra chiêu, nhân vật được vẽ bằng clip `anim`
+  của sheet `dao_si_luyen_khi` (cố định, chưa nối với cảnh giới). Thiếu clip thì lùi về `slash`, thiếu sheet
+  thì lùi về động tác vung cũ. Sprite người chơi bình thường vẫn là sprite pixel cũ, nên có một lần đổi
+  hình; muốn liền mạch thì phải vẽ người chơi bằng sprite Đạo Sĩ suốt, việc ấy chờ quyết định cảnh giới.
+- **Phím chiêu là Z X C V G N.** Phím B đã là nút Sách nên chiêu thứ năm dùng G. Hàng Pháp Chữ cũ (1-4)
+  giữ nguyên.
+- **Kiểm tra phông chữ quét thêm phần mới.** Vế ghép cặp, bước sắp xếp, lời đáp án hiện sau khi trả lời,
+  câu hướng dẫn của từng loại câu và chữ của chiêu thức đều vào `displayed_strings()`.
+- **Câu hỏi tới lúc thẻ trước còn hiện kết quả thì chờ, không bị bỏ.** Trước M9, `world.py` bỏ mọi gói `q`
+  tới trong lúc còn một thẻ chiến đấu trên màn hình, kể cả thẻ chỉ đang hiện kết quả. Máy chủ thì đã mở câu
+  ấy rồi: người chơi bị giữ trong Hộ Thể vì một câu không ai thấy, mọi chiêu bị từ chối "đang trả lời câu
+  khác", và hết giờ thì ăn Mặc Kích. M6 đã ghi nhận nhưng chưa gặp lần nào; với chiêu thức thì gặp ở cả 6/6
+  lượt chạy có đo, vì chiêu vừa trúng là con quái bên cạnh hỏi ngay. Nay câu ấy chờ (`waiting_q`): thẻ trước
+  đóng là mở, quá `WAITING_Q_MAX` = 2,5 giây thì tự đóng thẻ trước; thời gian đã chờ được trừ vào đồng hồ của
+  thẻ mới, vì đồng hồ máy chủ vẫn chạy. Thẻ còn đang trả lời thì không bao giờ bị đóng thay.
+- **`client/main.py` phải biết gói `mcast`.** Danh sách gói được chuyển tới màn thế giới nằm ở `Game._on_net`;
+  thiếu `mcast` thì lời từ chối của máy chủ (chưa hồi xong, thiếu linh khí, còn khoá) không bao giờ hiện.

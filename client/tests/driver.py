@@ -196,6 +196,33 @@ class Driver:
         self.game.shutdown()
 
 
+def fill_math_answer(drv: Driver, q: dict, key: dict, correct: bool) -> None:
+    """Give the right (or a wrong) answer to the math question `q` through the card's own
+    widgets, whatever its input: true/false, choice, number, matching (M9) or ordering (M9).
+    `key` is the session's answer key, read from the server database by the test."""
+    import pygame
+    kind = q["input"]
+    if kind == "truefalse":
+        drv.click("math_true" if key["value"] == correct else "math_false")
+    elif kind == "choice":
+        drv.click(f"opt_{key['option']}" if correct
+                  else "opt_" + next(o["id"] for o in q["options"] if o["id"] != key["option"]))
+    elif kind == "matching":
+        pairs = key["pairs"] if correct else key["pairs"][1:] + key["pairs"][:1]
+        for k, j in enumerate(pairs):
+            drv.click(f"match_l_{k}")
+            drv.click(f"match_r_{j}")
+        drv.click("mq_submit")
+    elif kind == "ordering":
+        for i in (key["order"] if correct else key["order"][::-1]):
+            drv.click(f"ord_step_{i}")
+        drv.click("mq_submit")
+    else:
+        drv.click("quiz_text")
+        drv.type(", ".join(key["numbers"]) if correct else "987654")
+        drv.press(pygame.K_RETURN)
+
+
 def answer_current_quiz(drv: Driver, server: ServerProcess, correct: bool = True) -> dict:
     """Reads the answer key from the server database (test only) and answers through the UI."""
     q = drv.game.top.q

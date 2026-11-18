@@ -15,7 +15,8 @@ box **parented to a bone**, not skinned to it. Rigid parenting cannot go wrong t
 weights can, and for a blocky chibi it looks the same. Every character that reuses this rig
 can reuse these clips (plan 7.1 bước 1).
 
-Three clips for M8 (plan 7.4): `idle`, `walk`, `slash`.
+Four clips: `idle`, `walk`, `slash` for M8 (plan 7.4), and `cast` (niệm chú) for M9, the
+pose the math game's Pháp thuật and Trận pháp chiêu play.
 """
 from __future__ import annotations
 
@@ -25,7 +26,7 @@ import sys
 from pathlib import Path
 
 import bpy
-from mathutils import Euler, Matrix, Vector
+from mathutils import Euler, Matrix, Quaternion, Vector
 
 ROOT = Path(__file__).resolve().parents[2]
 BLEND_DIR = ROOT / "art" / "blender"
@@ -178,6 +179,8 @@ def parts_for(outfit: dict) -> list[tuple]:
 
 
 # clip: (frames, {bone: [(frame, (rx, ry, rz) in degrees, (dx, dy, dz) in metres), ...]})
+# A rotation may instead be ("aim", (x, y, z)): point the bone that way in the rig's rest
+# space (front is -y, up is +z, the character's own left is +x). See aim_euler.
 CLIPS = {
     "idle": (4, {
         "chest": [(0, (0, 0, 0), (0, 0, 0)), (1, (0, 0, 0), (0, 0, 0.012)),
@@ -205,7 +208,50 @@ CLIPS = {
         "arm_l": [(0, (0, 10, 0), (0, 0, 0)), (2, (0, -14, 0), (0, 0, 0)), (3, (0, 0, 0), (0, 0, 0))],
         "hips": [(0, (0, 0, -6), (0, 0, 0)), (2, (0, 0, 8), (0, 0, 0)), (3, (0, 0, 0), (0, 0, 0))],
     }),
+    # M9: niệm chú, the pose of the math game's Pháp thuật / Trận pháp chiêu. The free (left)
+    # hand gathers at the chest, rises past the face to overhead, is held there for a beat,
+    # then is thrust forward at the target while the body leans in. The sword arm only
+    # tucks back a little, so the blade stays low and inside the frame in every facing.
+    # Unlike the older clips it keys the legs and hips too: a bone a clip does not key keeps
+    # whatever pose the clip rendered before it left behind (for cast, the last walk frame).
+    "cast": (5, {
+        # aimed, not rotated: see aim_euler (the arm bones slant, so Euler angles on them
+        # swing the hand along a tilted plane and are hard to read back)
+        # The raised hand goes up *forward and out*, not straight up: the chibi head is so big
+        # that a hand right above it hides behind it in the far-side profile, and one
+        # straight ahead hides in front of the body seen from the front or the back.
+        "arm_l": [(0, ("aim", (-0.5, -0.65, -0.5)), (0, 0, 0)),    # gathered at the chest
+                  (1, ("aim", (0.1, -0.6, 0.8)), (0, 0, 0)),       # rising past the face
+                  (2, ("aim", (0.45, -0.45, 0.85)), (0, 0, 0)),    # up, in front of the head
+                  (3, ("aim", (0.4, -0.35, 0.95)), (0, 0, 0)),     # held, reaching higher
+                  (4, ("aim", (0.55, -0.8, 0.25)), (0, 0, 0))],    # released at the target
+        # The sword hand opens a little to the side and turns the blade back, out of the
+        # way. The blade is modelled leaning forward from the hand, so swinging the arm
+        # forward points it at the ground ahead (below the feet on screen) and swinging it
+        # back digs the tip in; twisting the forearm -90 degrees instead lays it down-and-back
+        # behind the body, clear of the ground, in every facing. Opened only a little: wider
+        # lifts the tip more but makes the sword flare out like a second arm from the front.
+        # Keyed on every frame so no in-between is left to Euler interpolation of a twist.
+        "arm_r": [(0, ("aim", (-0.53, -0.05, -0.85), -85), (0, 0, 0)),
+                  (1, ("aim", (-0.55, -0.05, -0.83), -90), (0, 0, 0)),
+                  (2, ("aim", (-0.57, -0.05, -0.82), -90), (0, 0, 0)),
+                  (3, ("aim", (-0.57, -0.05, -0.82), -90), (0, 0, 0)),
+                  (4, ("aim", (-0.55, -0.05, -0.83), -90), (0, 0, 0))],
+        "chest": [(0, (4, 0, 0), (0, 0, -0.01)), (1, (2, 0, 0), (0, 0, 0.005)),
+                  (2, (4, 0, 0), (0, 0, 0.015)), (3, (6, 0, 0), (0, 0, 0.012)),
+                  (4, (12, 0, 0), (0, 0, 0))],
+        "head": [(0, (4, 0, 0), (0, 0, 0)), (2, (-4, 0, 0), (0, 0, 0)), (4, (4, 0, 0), (0, 0, 0))],
+        "hips": [(0, (0, 0, 0), (0, 0, 0)), (4, (0, 0, 0), (0, 0, 0))],
+        "leg_l": [(0, (0, 0, 0), (0, 0, 0)), (4, (0, 0, 0), (0, 0, 0))],
+        "leg_r": [(0, (0, 0, 0), (0, 0, 0)), (4, (0, 0, 0), (0, 0, 0))],
+    }),
 }
+# The order the actions are made in. It is not cosmetic: keyframe_insert leaves each bone
+# posed at its last key, the .blend is saved like that, and an older clip that does not key
+# a bone (idle never keys the legs or hips) renders with whatever the build left there. So
+# `cast` is built FIRST: every bone it keys is keyed again by a later clip, and the frames of
+# idle, walk and slash come out exactly as they did before cast existed.
+BUILD_ORDER = ("cast", "idle", "walk", "slash")
 
 
 def clear_scene() -> None:
@@ -305,6 +351,24 @@ def action_fcurves(action: bpy.types.Action) -> list:
     return out
 
 
+def aim_euler(rig: bpy.types.Object, bone: str, direction, twist: float = 0.0) -> Euler:
+    """The pose rotation that points `bone` along `direction` (rig rest space), then turns
+    it `twist` degrees about its own length (what a forearm does to a held sword).
+
+    A pose rotation acts in the bone's own frame, and the arm bones slant down and out, so
+    their local X is not the world's: an Euler of (60, 0, 25) on arm_l does not mean "60
+    degrees forward". Stating where the arm points and turning it into the shortest rotation
+    from the bone's rest direction keeps the clip's numbers readable (and gives the same
+    Euler curves as keying by hand would). The parent's own pose still applies on top.
+    """
+    rest = rig.data.bones[bone].matrix_local.to_3x3()
+    local = rest.inverted() @ Vector(direction).normalized()
+    turn = Vector((0.0, 1.0, 0.0)).rotation_difference(local)
+    if twist:
+        turn = turn @ Quaternion((0.0, 1.0, 0.0), math.radians(twist))
+    return turn.to_euler("XYZ")
+
+
 def make_action(rig: bpy.types.Object, name: str, frames: int, moves: dict) -> bpy.types.Action:
     action = bpy.data.actions.new(name)
     rig.animation_data_create()
@@ -313,7 +377,10 @@ def make_action(rig: bpy.types.Object, name: str, frames: int, moves: dict) -> b
         pb = rig.pose.bones[bone]
         pb.rotation_mode = "XYZ"
         for frame, rot, loc in keys:
-            pb.rotation_euler = Euler([math.radians(a) for a in rot], "XYZ")
+            if rot and rot[0] == "aim":
+                pb.rotation_euler = aim_euler(rig, bone, *rot[1:])
+            else:
+                pb.rotation_euler = Euler([math.radians(a) for a in rot], "XYZ")
             pb.location = Vector(loc)
             pb.keyframe_insert("rotation_euler", frame=frame + 1)
             pb.keyframe_insert("location", frame=frame + 1)
@@ -339,7 +406,8 @@ def main(argv: list[str]) -> int:
     rig = build_rig()
     build_body(rig, outfit)
     actions = {}
-    for clip, (frames, moves) in CLIPS.items():
+    for clip in BUILD_ORDER:
+        frames, moves = CLIPS[clip]
         rig.animation_data_clear()
         actions[clip] = make_action(rig, clip, frames, moves)
     rig.animation_data_create()

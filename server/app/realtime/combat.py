@@ -268,13 +268,10 @@ def on_answer(p: "Player", sid: str, correct: bool, answer_ms: int | None) -> di
     c = cfg()
     if correct:
         if m.shield and m.info.get("group_shield"):
-            # spec 14.2: the boss's big shield needs N right answers from N different players
-            m.group_hits.add(p.user_id)
-            need = ch.group_need(m) if hasattr(ch, "group_need") else 1
-            ch.event(k="gshield", id=m.eid, n=len(m.group_hits), need=need, by=p.eid, x=m.x, y=m.y)
+            progress = group_hit(ch, m, p)
             p.qi = min(p.max_qi, p.qi + c["correct_qi_gain"])
-            if len(m.group_hits) < need:
-                return {"correct": True, "shield_broken": False, "shield_progress": [len(m.group_hits), need],
+            if progress is not None:
+                return {"correct": True, "shield_broken": False, "shield_progress": list(progress),
                         "damage": 0, "crit": False, "monster_hp": max(0, m.hp_pct()), "killed": False}
         broke = m.shield
         if m.shield:
@@ -291,13 +288,24 @@ def on_answer(p: "Player", sid: str, correct: bool, answer_ms: int | None) -> di
     return {"correct": False, "mac_kich": int(round(dmg)), "hp": max(0, int(round(p.hp))), "dead": p.dead}
 
 
+def group_hit(ch: "ChannelZone", m: "Monster", p: "Player") -> tuple[int, int] | None:
+    """A right answer against a group shield (spec 14.2: the boss's big shield needs N right
+    answers from N different players), from Vấn Đạo or a landed chiêu (M9) alike.
+    Returns (have, need) while the shield still holds, None once this answer is enough."""
+    m.group_hits.add(p.user_id)
+    need = ch.group_need(m) if hasattr(ch, "group_need") else 1
+    ch.event(k="gshield", id=m.eid, n=len(m.group_hits), need=need, by=p.eid, x=m.x, y=m.y)
+    return (len(m.group_hits), need) if len(m.group_hits) < need else None
+
+
 def break_shield(ch: "ChannelZone", m: "Monster", p: "Player | None", now: float) -> None:
     m.shield = False
     m.group_hits = set()
     ch.event(k="shield", id=m.eid, on=0, x=m.x, y=m.y, by=p.eid if p else None)
     for uid in list(m.engaged):  # whoever is right first breaks it for everyone (spec 8.1)
         other = ch.players.get(uid)
-        if other is not None and other is not p and other.question and other.question["mid"] == m.eid:
+        if (other is not None and other is not p and other.question and other.question["mid"] == m.eid
+                and not other.question.get("cast")):   # a chiêu being channelled (M9) still lands
             end_question(other, "broken")
 
 
@@ -523,6 +531,7 @@ async def _reward(uid: int, kind: str, loot: dict | None = None) -> None:
 
 
 def die(ch: "ChannelZone", p: "Player", now: float) -> None:
+    p.mcombo = 0   # the chiêu combo (M9) does not survive a fall
     if ch.instance:   # a bí cảnh: no Tu Vi lost, the player becomes a ghost (spec 14.2)
         ch.on_down(p, now)
         return

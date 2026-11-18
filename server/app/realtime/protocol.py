@@ -77,6 +77,14 @@ class Cast(BaseModel):
     id: str | None = Field(default=None, max_length=24)
 
 
+class MathCast(BaseModel):
+    """Cast a chiêu thức gắn câu hỏi (M9, data/math/skills.json): the server answers with a
+    question of the chiêu's type; id = target monster, null for a ward."""
+    t: Literal["mskill"]
+    k: str = Field(max_length=40)
+    id: str | None = Field(default=None, max_length=24)
+
+
 class PartyCmd(BaseModel):
     """Tổ đội (stage 9): invite by display name, answer an invite (uid = who invited), leave,
     kick or promote a member (uid)."""
@@ -111,7 +119,7 @@ class Mark(BaseModel):
 
 MESSAGES: dict[str, type[BaseModel]] = {"ping": Ping, "in": Input, "join": Join, "channel": Channel,
                                         "chat": Chat, "face": Face, "atk": Attack, "skill": Cast,
-                                        "party": PartyCmd, "realm": RealmCmd, "ract": RealmAct, "mark": Mark}
+                                        "mskill": MathCast, "party": PartyCmd, "realm": RealmCmd, "ract": RealmAct, "mark": Mark}
 
 
 class BadMessage(Exception):
@@ -135,5 +143,5 @@ def error(code: str, message_vi: str, **extra) -> dict:
 
 
 __all__ = ["PROTOCOL_VERSION", "Hello", "Ping", "Input", "Join", "Channel", "Chat", "Face", "parse",
-           "BadMessage", "error", "FACING", "FACING_CODE", "Attack", "Cast", "PartyCmd", "RealmCmd", "RealmAct",
-           "Mark"]
+           "BadMessage", "error", "FACING", "FACING_CODE", "Attack", "Cast", "MathCast", "PartyCmd", "RealmCmd",
+           "RealmAct", "Mark"]

@@ -82,7 +82,9 @@ async def question_for(db: AsyncSession, user: User, info: dict,
     return question
 
 
-async def _record(db: AsyncSession, user: User, s: QuizSession, correct: bool, now: dt.datetime) -> dict:
+async def record(db: AsyncSession, user: User, s: QuizSession, correct: bool, now: dt.datetime) -> dict:
+    """Write a question asked in the field (a monster's, or a chiêu's since M9) to the answer
+    log with no run, so the learning path counts it."""
     meta = s.payload["math"]
     timed_out = now > s.expires_at or bool(isinstance(s.answer, dict) and s.answer.get("timed_out"))
     db.add(MathAnswer(user_id=user.id, run_id=None, subject_id=meta["subject"], skill_id=meta["skill"],
@@ -98,16 +100,16 @@ async def math_combat_handler(db: AsyncSession, user: User, s: QuizSession, corr
                               now: dt.datetime) -> dict:
     """Grading a question a monster asked: write it to the learning log, then tell the fight."""
     from ..realtime import combat
-    out: dict = {"math": await _record(db, user, s, correct, now)}
+    out: dict = {"math": await record(db, user, s, correct, now)}
     p = combat._world().players.get(user.id)
     if p is not None:
         out["combat"] = combat.on_answer(p, s.id, correct, s.answer_ms)
     return out
 
 
-def _xp_rule(s: QuizSession) -> int:
+def xp_rule(s: QuizSession) -> int:
     return math_path.xp_for_tier(s.payload["math"]["tier"])
 
 
 quiz.register_handler(CONTEXT, math_combat_handler)
-quiz.register_xp_rule(CONTEXT, _xp_rule)
+quiz.register_xp_rule(CONTEXT, xp_rule)

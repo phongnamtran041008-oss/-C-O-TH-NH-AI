@@ -525,7 +525,7 @@ class Game:
             self.chat.system(m.get("message_vi", ""))  # chat problems show up in the chat box
             return
         if ws is not None and t in ("welcome", "zone", "snap", "error", "chat", "q", "q_end", "dead", "loot",
-                                    "act_fail", "cast", "realm"):
+                                    "act_fail", "cast", "mcast", "realm"):
             ws.on_net(m)
 
     def _on_friend(self, m: dict) -> None:

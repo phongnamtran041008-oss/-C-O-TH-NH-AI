@@ -17,6 +17,7 @@ import pygame
 
 from .. import strings_vi as T
 from ..art.palette import UI as UICOL
+from ..ui import mathinputs as MI
 from ..ui.mathdraw import draw_matrices, fit
 from .base import Scene
 from .math_code import ProblemListScene
@@ -35,6 +36,11 @@ class MathQuizScene(QuizScene):
     """One math question: true/false, multiple choice or a typed number."""
 
     in_combat = False        # M7: the card a quái lỗi sai opens closes itself
+    solution_margin = 40     # the solution steps stop this far above the bottom edge of the card
+
+    def input_margin(self) -> int:
+        """How far above the bottom edge of the card the matching / ordering board ends."""
+        return 16
 
     def panel_rect(self):
         return (24, 12, 432, 246)
@@ -47,6 +53,10 @@ class MathQuizScene(QuizScene):
         self.timed_out = False
         if question.get("input") == "number":
             game.ui.set_focus("quiz_text")
+        prompt = question.get("prompt") or {}
+        # M9: the two inputs that are more than one click; their state lives here, not in the widgets
+        self.match = MI.MatchingState(len(prompt.get("left") or [])) if question.get("input") == "matching" else None
+        self.ordering = MI.OrderingState(len(prompt.get("steps") or [])) if question.get("input") == "ordering" else None
 
     # ------------------------------------------------------------ actions
     def submit(self, answer: dict):
@@ -76,6 +86,8 @@ class MathQuizScene(QuizScene):
             return T.MATH_TRUE if g["value"] else T.MATH_FALSE
         if "option" in g:
             return next((o["text"] for o in self.q.get("options") or [] if o["id"] == g["option"]), "")
+        if "pairs" in g or "order" in g:
+            return MI.given_text(self.q.get("input", ""), g)
         return str(g.get("text", ""))
 
     # ------------------------------------------------------------ drawing
@@ -115,6 +127,16 @@ class MathQuizScene(QuizScene):
             self.draw_options(ui, x, max(y + 104, cy + 8), w)
         elif inp == "number":
             self.draw_number(ui, x, max(y + 124, cy + 26), w)
+        elif inp == "matching" and self.match is not None:
+            ans = MI.draw_matching(ui, self.match, prompt.get("left") or [], prompt.get("right") or [],
+                                   x, cy + 6, w, y + h - self.input_margin(), self.sent)
+            if ans is not None:
+                self.submit(ans)
+        elif inp == "ordering" and self.ordering is not None:
+            ans = MI.draw_ordering(ui, self.ordering, prompt.get("steps") or [], x, cy + 6, w, y + h - self.input_margin(),
+                                   self.sent)
+            if ans is not None:
+                self.submit(ans)
         self.draw_run(ui, x, y, w, h)
 
 
@@ -164,6 +186,22 @@ class MathQuizScene(QuizScene):
         if (go or ui.submitted("quiz_text")) and val.strip() and not self.sent:
             self.submit({"text": val.strip()})
 
+    def draw_answer(self, ui, x, cy, w, bottom, text: str) -> float:
+        """The right answer. Matching and ordering have one line per pair / step, and a card
+        that is only 200 px high must not be overrun by them: the lines stop at `bottom`."""
+        inp = self.q.get("input", "")
+        if inp not in ("matching", "ordering"):
+            return cy + ui.text(T.QUIZ_ANSWER_WAS.format(a=text), x + 16, cy, 9, UICOL["green"],
+                                max_w=w - 32).h + 4
+        cy += ui.text(T.QUIZ_ANSWER_WAS.format(a=""), x + 16, cy, 9, UICOL["green"]).h + 1
+        lines = MI.answer_lines(inp, text)
+        for i, line in enumerate(lines):
+            if cy > bottom - 8:
+                ui.text("…", x + 24, cy, 8, UICOL["green"])
+                return cy + 8
+            cy += ui.text(line, x + 24, cy, 8, UICOL["green"], max_w=w - 56).h + 1
+        return cy + 3
+
     def draw_math_result(self, ui, x, y, w, h):
         res = self.result
         good = res.get("correct")
@@ -200,12 +238,11 @@ class MathQuizScene(QuizScene):
         if not good and not timed_out and self.given_text():
             cy += ui.text(T.MATH_YOUR_ANSWER.format(a=self.given_text()), x + 16, cy, 8, UICOL["accent"],
                           max_w=w - 32).h + 2
-        cy += ui.text(T.QUIZ_ANSWER_WAS.format(a=rv.get("answer_text", "")), x + 16, cy, 9, UICOL["green"],
-                      max_w=w - 32).h + 4
+        cy = self.draw_answer(ui, x, cy, w, y + h - 40, rv.get("answer_text", ""))
         if not good and rv.get("solution_vi"):      # rule 6: after a wrong answer, the steps
             cy += ui.text(T.MATH_SOLUTION, x + 16, cy, 8, "#2B2B2B").h + 2
             for n, step in enumerate(rv["solution_vi"], 1):
-                if cy > y + h - 40:
+                if cy > y + h - self.solution_margin:
                     break
                 ui.text(f"{n}.", x + 18, cy, 8, GREY)
                 cy += ui.text(step, x + 32, cy, 8, "#2B2B2B", max_w=w - 52).h + 2
@@ -236,13 +273,20 @@ class MathCombatQuizScene(CombatCard, MathQuizScene):
     draws_world = False
     toast_y = 70
     in_combat = True
+    solution_margin = 54        # room for the line of the chiêu / the Mặc Kích along the bottom
+
+    def input_margin(self) -> int:
+        """A quái lỗi sai has its mistake written along the bottom of the card: the board of a
+        matching / ordering question (buttons and key hint included) stays above that line."""
+        return 32 if self.q.get("math", {}).get("mistake_vi") else 16
 
     def panel_rect(self):
         return (24, 56, 432, 202)
 
-    def __init__(self, game, question: dict, monster_id: str, on_result=None):
+    def __init__(self, game, question: dict, monster_id: str, on_result=None, cast: dict | None = None):
         super().__init__(game, question, run=None, on_result=None)
         self.monster_id = monster_id
+        self.cast = cast            # M9: {"k": chiêu id, "name_vi": ...} when a chiêu asked this
         self.on_combat_result = on_result
         self.close_after = 2.0
 
@@ -265,12 +309,24 @@ class MathCombatQuizScene(CombatCard, MathQuizScene):
         if m.get("mistake_vi"):
             ui.text(f"{m.get('monster_vi', '')}: {m['mistake_vi']}", x + w / 2, y + h - 12, 7,
                     UICOL["accent"], anchor="midbottom", max_w=w - 30)
-        ui.text(T.HOI_THE, x + w - 12, y + 20, 7, UICOL["green"], anchor="topright")
+        ui.text(T.HOI_THE, x + w - 12, y + 29, 7, UICOL["green"], anchor="topright")
+        if self.cast:                # the chiêu being cast: its name, so the card says what a right answer does
+            ui.text(T.MSKILL_BADGE.format(name=self.cast.get("name_vi", "")), x + 12, y + 28, 7, "#B8862E",
+                    max_w=150)
 
     def draw_math_result(self, ui, x, y, w, h):
         super().draw_math_result(ui, x, y, w, h)
         c = (self.result or {}).get("combat") or {}
-        if c.get("shield_broken"):
+        if c.get("cast"):           # M9: a chiêu lands or fizzles; it never costs a Mặc Kích
+            if c.get("missed"):
+                ui.text(T.MSKILL_MISSED, x + w / 2, y + 31, 8, UICOL["accent"], anchor="center", max_w=w - 200)
+            else:
+                txt = (T.MSKILL_LANDED_CRIT if c.get("crit") else T.MSKILL_LANDED).format(n=c.get("damage", 0))
+                if c.get("combo", 0) > 1:
+                    txt += "   " + T.MSKILL_COMBO.format(n=c["combo"])
+                ui.text(txt, x + w / 2, y + 31, 8, UICOL["green"], anchor="center", max_w=w - 200)
+                self.close_after = 0.9      # the effect of the chiêu waits for this card to go
+        elif c.get("shield_broken"):
             txt = f"{T.SHIELD_BROKEN} {T.NGO_DAO} -{c.get('damage', 0)}" + (" (chí mạng!)" if c.get("crit") else "")
             ui.text(txt, x + w - 12, y + h - 12, 8, UICOL["green"], anchor="bottomright")
             self.close_after = 1.2          # a right answer gets back to the fight a little faster

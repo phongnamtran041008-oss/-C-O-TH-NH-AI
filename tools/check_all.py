@@ -39,6 +39,10 @@ Exit code 0 when every check passes, 1 otherwise. The list grows with each miles
   * exercise tests have teeth (M6): every exercise is also run with three wrong programs
     (one that prints nothing, one that prints a constant, one that always prints the first
     sample's answer) and none of them may be accepted
+  * chiêu thức (M9): data/math/skills.json has at least five chiêu with sound fields, every
+    question type exists, every effect is drawn by client/art/skill_fx.py and every
+    animation is a clip of every Đạo Sĩ sheet; each chiêu unlocked on floors 1-3 has a
+    question that casts it there, and only the documented one may have none anywhere
 """
 from __future__ import annotations
 
@@ -105,8 +109,12 @@ def displayed_strings() -> list[tuple[str, str]]:
             for skill in floor.skills:
                 out += [(f"math/{subject.id} {skill.id}", skill.name_vi),
                         (f"math/{subject.id} {skill.id}", skill.desc_vi)]
+    for qtype, text in math_items.INSTRUCTIONS_VI.items():
+        out.append((f"math_items.INSTRUCTIONS_VI {qtype}", text))
     for item in math_items.bank().values():
-        out += [(item.id, t) for t in (item.prompt_vi, *item.solution_vi, *item.options_vi)]
+        out += [(item.id, t) for t in (item.prompt_vi, *item.solution_vi, *item.options_vi,
+                                       *(side for pair in item.pairs_vi for side in pair), *item.steps_vi,
+                                       item.answer_text)]   # answer_text: what the reveal shows
     for spec in math_items.generators().values():
         for seed in range(5):
             drawn = math_items.draw(spec, random.Random(seed))
@@ -122,6 +130,8 @@ def displayed_strings() -> list[tuple[str, str]]:
         out += [(p.id, t) for t in (p.title_vi, *p.statement_vi, p.input_vi, p.output_vi, p.limits_vi) if t]
         out += [(p.id, s.note_vi) for s in p.samples if s.note_vi]
         out += [(p.id, s.data) for s in p.samples] + [(p.id, s.expected) for s in p.samples]
+    for sid, sk in _json(MATH_DIR / "skills.json").get("skills", {}).items():   # chiêu thức (M9)
+        out += [(f"math/skills.json {sid}", str(sk.get(k, ""))) for k in ("name_vi", "kind_vi", "desc_vi")]
     out += [(f"strings_vi.{name}", text) for name, text in _interface_strings()]
     return out
 
@@ -401,6 +411,69 @@ def check_math_crafting() -> list[str]:
     return out
 
 
+MIN_CHIEU = 5                      # the M9 milestone: at least five chiêu from data
+CHIEU_FLOORS = range(1, 4)         # the floors whose question bank is written today
+# chiêu that may not be castable yet, and why (the only one allowed: contract M9 section 2)
+UNCASTABLE_OK = {"thien_loi_tuyet_ky": "'tribulation' is not playable yet and tier 4 starts at floor 5 (M11)"}
+
+
+def check_chieu() -> list[str]:
+    """M9: every chiêu thức of data/math/skills.json hangs together with the rest of the
+    game. Its fields are sound (math_skills.validate), its question types exist, its effect
+    is one client/art/skill_fx.py can draw, its animation is a clip of every Đạo Sĩ sheet,
+    and - the point of a chiêu gắn câu hỏi - there really is a question that casts it: on
+    each of floors 1-3 where it is unlocked, at least one template of one of its types at a
+    tier it accepts and that a player who has just reached the floor is asked (the floor's
+    lowest tier). Only the documented exception may have no question anywhere."""
+    if math_path.validate_all() or math_items.validate_all():
+        return ["skipped: the learning path and question bank checks above must pass first"]
+    try:
+        from app.systems import math_skills
+    except Exception as e:   # noqa: BLE001 - any import problem is a finding, not a crash
+        return [f"cannot load server/app/systems/math_skills.py: {e}"]
+    out = math_skills.validate()
+    if out:
+        return out
+    skills = math_skills._read()["skills"]
+    if len(skills) < MIN_CHIEU:
+        out.append(f"only {len(skills)} chiêu in data/math/skills.json, the milestone needs {MIN_CHIEU}")
+    sys.path.insert(0, str(ROOT))
+    try:
+        from client.art import skill_fx
+        fx_ids = set(skill_fx.FX_IDS)
+    except Exception as e:   # noqa: BLE001
+        fx_ids = None
+        out.append(f"cannot read client/art/skill_fx.py FX_IDS: {e}")
+    finally:
+        sys.path.remove(str(ROOT))
+    sheets = sorted((ROOT / "client" / "assets" / "chars").glob("dao_si_*.json"))
+    clips = {p.stem: set(_json(p).get("clips", {})) for p in sheets}
+    if not clips:
+        out.append("no Đạo Sĩ sheet in client/assets/chars/, so no chiêu can be animated")
+    subject = math_path.subject("dai_so_tuyen_tinh")
+    playable = set(math_items.PLAYABLE_TYPES)
+    for sid, sk in skills.items():
+        where = f"chiêu {sid}"
+        if fx_ids is not None and sk["fx"] not in fx_ids:
+            out.append(f"{where}: fx {sk['fx']!r} is not in client/art/skill_fx.py FX_IDS")
+        lacking = [name for name, have in clips.items() if sk["anim"] not in have]
+        if lacking:
+            out.append(f"{where}: anim {sk['anim']!r} is not a clip of {', '.join(lacking)}")
+        types = set(sk["qtypes"]) & playable
+        for n in CHIEU_FLOORS:
+            if n < sk["unlock"]["floor"]:
+                continue
+            lo, _ = math_path.floor_tiers(n)
+            templates = math_items.floor_templates(subject.id, n, True)
+            if not any(t.qtype in types and sk["min_tier"] <= t.tier <= lo for t in templates):
+                if sid not in UNCASTABLE_OK:
+                    out.append(f"{where}: unlocked on floor {n} but no {'/'.join(sk['qtypes'])} question of "
+                               f"tier {sk['min_tier']}..{lo} there, so a player there cannot cast it")
+        if not math_skills.castable_floors(sk) and sid not in UNCASTABLE_OK:
+            out.append(f"{where}: no question anywhere can cast it")
+    return out
+
+
 def check_generated_answers() -> list[str]:
     if math_path.validate_all() or math_items.validate_all():
         return ["skipped: the checks above must pass first"]
@@ -426,6 +499,8 @@ CHECKS = [
      check_mistake_monsters),
     ("Lò Toán: every recipe makes real equipment from things that really drop",
      check_math_crafting),
+    ("chiêu thức: fields, question types, FX, animation, and a question that casts each one",
+     check_chieu),
     ("fonts: every string the game shows can be drawn", check_fonts),
 ]
 

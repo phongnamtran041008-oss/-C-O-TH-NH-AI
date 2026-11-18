@@ -10,6 +10,11 @@
     pack_sprites.py     ->  client/assets/chars/<id>.png + .json
     sprite_qc.py        ->  pass or a list of what is wrong
 
+    python tools/make_character.py --realms        # all eight realm looks, then the set
+
+Every character gets the same four clips in four facings: idle, walk, slash (M8) and cast
+(niệm chú, M9), defined in tools/blender/build_character.py.
+
 Only the first two steps need Blender. Where it is: `$KVTT_BLENDER`, else `blender` on PATH,
 else the usual Windows spots. Blender is **not** needed to play the game or to run the test
 suite - only to build a character - so this script says plainly where to point it rather

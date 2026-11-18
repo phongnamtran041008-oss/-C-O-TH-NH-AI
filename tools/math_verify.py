@@ -146,6 +146,10 @@ EXPECTED = {
 
 def mismatch(item: math_items.MathItem) -> str | None:
     """Why this draw's answer is not what sympy gets from its numbers, or None."""
+    if item.qtype not in ("true_false", "numeric"):
+        # (multiple_choice, matching and ordering are hand-written only so far; a generator of
+        # one of them needs its own comparison here before it can be trusted)
+        return f"is a {item.qtype} generator, which tools/math_verify.py cannot check yet"
     fn = EXPECTED.get(item.id)
     if fn is None:
         return "has no recomputation in tools/math_verify.py"

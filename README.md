@@ -563,7 +563,7 @@ bản sửa vào cột `*_fixed`, rồi chạy `python tools/apply_review.py`. C
 ## Nội dung toán (nhánh `toan-tu-tien`)
 
 ```bash
-python tools/check_all.py           # 12 kiểm tra nội dung: lộ trình, ngân hàng câu, bộ sinh câu, đáp án, Tàng Thư, công thức, bài tập, lời giải mẫu, test có răng, quái lỗi sai, Lò Toán, phông chữ
+python tools/check_all.py           # 13 kiểm tra nội dung: lộ trình, ngân hàng câu, bộ sinh câu, đáp án, Tàng Thư, công thức, bài tập, lời giải mẫu, test có răng, quái lỗi sai, Lò Toán, chiêu thức, phông chữ
 python tools/math_review.py         # bảng duyệt câu hỏi -> tools/reports/math_review_<bí cảnh>.md
 python tools/math_verify.py         # tính lại đáp án của mọi câu sinh ra bằng SymPy
 python tools/build_formulas.py      # dựng ảnh công thức cho Tàng Thư Các (cần Node, xem bên dưới)
@@ -599,6 +599,13 @@ Tầng 1 ở gần cổng, tầng 3 ở cuối cốc. Dữ liệu: `server/data/
 **Lò Toán.** Ngay trong cốc, cạnh cổng. Một công thức (`server/data/math/crafting.json`) đòi nguyên
 liệu (bị tiêu) **và** những ghi chú lỗi sai đang giữ (chỉ kiểm tra, không tiêu): chỉ rèn được thứ mình
 đã hiểu. Phẩm chất món rèn ra là cố định, không rút thăm.
+
+**Chiêu thức gắn câu hỏi.** Hàng chiêu thứ hai (phím **Z X C V G N**) lấy từ
+`server/data/math/skills.json`. Mỗi chiêu được thi triển bằng cách trả lời **một câu toán đúng loại của
+nó**: Thường Quyền = Đúng/Sai, Phá Mê Kiếm Quyết = Trắc nghiệm, Hỏa Cầu Thuật = Điền số, Ngũ Hành Trận =
+Sắp xếp bước giải, Hộ Thân Trận = Ghép cặp. Đúng thì chiêu trúng (đúng liên tiếp tăng sát thương, trả
+lời nhanh là chí mạng); sai hoặc hết giờ là **chiêu hụt**: mất linh khí và hồi chiêu, không mất máu. Chiêu
+mở theo tầng của lộ trình học. Thiên Lôi Tuyệt Kỹ có sẵn trong dữ liệu nhưng còn khoá tới tầng 7.
 
 **Bài tập lập trình.** Đề nằm trong `server/data/math/problems/`, lời giải mẫu nằm cạnh đó và không bao giờ gửi
 cho game. Bài làm **chạy trên máy người chơi** (cần có Python trên máy), mỗi test một lần chạy có giới hạn thời

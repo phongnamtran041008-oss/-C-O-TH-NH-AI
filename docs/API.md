@@ -510,3 +510,75 @@ như đan phương. `rarity` ghi cố định trong công thức, không rút th
   `{read, skill, doc{id, title_vi, block}}` để game mở đúng mục trong Tàng Thư Các.
 - `GET /inventory`: vật phẩm `kind: "note"` có `usable: true`.
 - `GET /codex/monster`: mỗi con có thêm `mistake_vi` (rỗng với Mặc Quái cũ).
+
+### M9: chiêu thức gắn câu hỏi
+
+Mỗi chiêu (`server/data/math/skills.json`) **được thi triển bằng cách trả lời một câu toán thuộc loại của
+nó** (`qtypes`). Đúng → chiêu trúng. Sai hoặc hết giờ → "chiêu hụt": không gây sát thương, combo về 0,
+**không có Mặc Kích**; chỉ mất linh khí và thời gian hồi đã tiêu. Trong lúc trả lời người chơi có Hộ Thể
+như Vấn Đạo và dùng chung một ô câu hỏi (mỗi lúc chỉ một câu).
+
+| Method | Đường dẫn | Body | Ghi chú |
+|---|---|---|---|
+| GET | `/math/skills` | — | `{combo{per_streak, max_mult}, open_floor, skills[]}`, theo đúng thứ tự trong `skills.json`. Mỗi chiêu: `{id, name_vi, kind_vi, element, qtypes[], qtype_vi, min_tier, qi, cooldown, range, effect, power, anim, fx, desc_vi, unlock{floor}, unlocked, locked_vi}`, cộng `radius, slow, duration` (chiêu `area`) hoặc `radius, duration, reduce, heal_pct` (chiêu `ward`) |
+
+**Mở khoá chỉ theo lộ trình học**: `open_floor` là tầng chính thấp nhất chưa qua Thiên kiếp nhỏ (tầng cuối
+nếu đã qua hết), lấy cao nhất giữa các môn; chiêu mở khi `open_floor >= unlock.floor`. Không gắn với cảnh
+giới tu luyện. Chiêu bị khoá có `locked_vi` (ví dụ "Mở khi lộ trình học tới tầng 7 (con đang ở tầng 1).").
+`thien_loi_tuyet_ky` hiện **luôn khoá**: loại `tribulation` chưa chơi được và bậc 4 chỉ có từ tầng 5 (M11).
+
+**Câu nào được hỏi**: loại thuộc `qtypes`; nếu mục tiêu là quái lỗi sai thì hỏi vi kỹ năng của chính nó,
+không có thì vi kỹ năng khác cùng tầng; không có mục tiêu (chiêu `ward`) hoặc mục tiêu là Mặc Quái cũ thì
+hỏi ở `open_floor` của môn đầu tiên có câu (thiếu thì xuống tầng dưới). Bậc là bậc của chính người chơi ở
+vi kỹ năng ấy, **không bao giờ cao hơn**; không có câu ở bậc đó thì lấy bậc thấp hơn gần nhất, không dưới
+`min_tier`. Câu trả lời được ghi vào `math_answers` với `run_id = NULL` (tính cho lộ trình học) và được
+Tu Vi theo bậc như M7.
+
+**Sát thương** mỗi con quái trúng: `base_damage × power × combo_mult × (fast_answer_crit_mult nếu trả lời
+trong fast_answer_fraction thời gian)` (hai số sau ở `balance/combat.json`, như Ngộ Đạo). `combo_mult =
+min(max_mult, 1 + per_streak × n)`, `n` = số câu chiêu đúng liên tiếp **trước** câu này (câu đúng đầu tiên
+×1.0, câu thứ hai ×1.1, ... tối đa ×1.5). Combo theo từng người, chỉ trong bộ nhớ, về 0 khi hụt, khi ngã
+xuống và khi rời thế giới. Chiêu trúng phá Mặc Thuẫn của mục tiêu như một câu Vấn Đạo đúng; với khiên
+nhóm của boss bí cảnh nó chỉ tính là câu đúng của **một** người (vẫn cần đủ N người).
+
+- `damage`: một mục tiêu trong `range`.
+- `area`: mọi quái trong `radius` quanh mục tiêu trúng đòn và chậm còn `slow` × tốc độ trong `duration` giây
+  (chỉ khiên của mục tiêu bị phá; con khác còn khiên chỉ bị trầy 1 máu, và bị cuốn vào trận đấu).
+- `ward`: không cần mục tiêu; người thi triển và đồng đội tổ đội đứng trong `radius` chịu ít hơn `reduce`
+  sát thương trong `duration` giây và hồi `heal_pct`% máu tối đa.
+
+WebSocket, client → server:
+
+    {"t": "mskill", "k": "<id chiêu>", "id": "<eid quái>" | null}
+
+Bị từ chối (không mất gì): `{"t": "mcast", "k", "ok": false, "code", "message_vi"}`, `code` ∈ `unknown`,
+`locked`, `cooldown`, `no_qi`, `no_target`, `too_far`, `answering`, `cannot`, `tier_low` (bậc đã mở thấp
+hơn `min_tier` hoặc chỉ có câu ở bậc cao hơn), `no_question` (chưa có câu loại này). `unknown`, `cannot`,
+`answering` trả về ngay; các mã khác đến sau khi máy chủ đọc lộ trình và soạn câu.
+
+Được nhận (linh khí bị trừ, bắt đầu hồi chiêu), theo thứ tự:
+
+    {"t": "mcast", "k", "ok": true, "ready_in": <giây hồi>, "qi": <linh khí còn lại>}
+    {"t": "q", "mid": <eid | null>, "q": <phiên câu hỏi, context "math_skill">, "first_meet": false,
+     "cast": {"k", "name_vi"}}
+
+Gói `q` giống hệt câu Vấn Đạo (khối `math` có thêm `cast_vi`, và `mistake_vi`, `monster_vi` khi mục tiêu là
+quái lỗi sai), trả lời bằng `POST /quiz/answer` như mọi câu. Kết quả có khối `math` như M7 và:
+
+    "combat": {"cast", "correct", "missed", "timed_out", "damage", "crit", "combo", "combo_mult",
+               "shield_broken", "monster_hp", "killed"}
+
+`monster_hp` là phần trăm máu còn lại (0 với `ward`, không có mục tiêu). Chiêu `ward` có thêm
+`ward{players, heal, duration, reduce}`; khiên nhóm chưa đủ người có thêm `shield_progress[có, cần]` và
+`damage: 0`. Khi thế giới đã đổi trong lúc trả lời (mục tiêu chết hoặc bỏ đi, người chơi ngã, đổi vùng)
+khối này chỉ là `{"cast", "stale": true}` và không gì được gây ra; nếu người chơi đã rời thế giới thì
+không có khối `combat`. Hết giờ được chấm như câu sai, cũng không có Mặc Kích. Sau chiêu hụt vào quái còn
+khiên, con quái hỏi câu Vấn Đạo của nó sau `next_question_delay` giây như thường lệ. Câu trả lời đúng
+của người khác phá khiên **không** huỷ câu chiêu đang mở: chiêu vẫn trúng khi trả lời đúng.
+
+Sự kiện kênh (trong `fx` của `snap`, ai ở gần cũng thấy):
+
+- `{"k": "mcast", "by", "s", "anim", "x", "y"}`: bắt đầu vận chiêu (câu hỏi vừa mở).
+- `{"k": "mskill", "by", "s", "fx", "anim", "ok": 1|0, "x", "y", "tx", "ty", "r", "combo"}`: chiêu trúng
+  (`ok: 1`) hoặc hụt (`ok: 0`); `tx, ty` khi có mục tiêu, `r` với `area`/`ward`. Đòn đánh vẫn đi kèm
+  các sự kiện `hit`, `shield`, `gshield`, `heal`, `die` như cũ.

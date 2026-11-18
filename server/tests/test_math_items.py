@@ -62,7 +62,13 @@ def test_every_shipped_item_becomes_a_question_its_own_answer_passes():
         assert q.item_id == it.id and q.meta["tier"] == it.tier and q.meta["skill"] == it.skill
         public = json.dumps(q.public(), ensure_ascii=False)
         assert "solution_vi" not in public and "fingerprint" not in public     # the key stays on the server
-        if it.qtype == "true_false":
+        if it.qtype == "matching":
+            right = {"pairs": list(q.answer_key["pairs"])}
+            wrong = {"pairs": right["pairs"][1:] + right["pairs"][:1]}
+        elif it.qtype == "ordering":
+            right = {"order": list(q.answer_key["order"])}
+            wrong = {"order": right["order"][::-1]}
+        elif it.qtype == "true_false":
             right, wrong = {"value": it.answer}, {"value": not it.answer}
         elif it.qtype == "multiple_choice":
             right = {"option": q.answer_key["option"]}
@@ -147,7 +153,9 @@ def test_multiple_choice_is_shuffled_but_keeps_exactly_one_right_option():
 
 
 def test_unknown_question_type_is_never_right():
-    assert not mi.grade("matching", {}, {"pairs": []})
+    assert not mi.grade("find_mistake", {}, {"pairs": []})
+    assert not mi.grade("matching", {}, {"pairs": []})        # (a key without pairs: never right)
+    assert not mi.grade("ordering", {"order": "012"}, {"order": "012"})
 
 
 def test_a_type_without_a_time_at_that_tier_cannot_be_asked():
@@ -177,7 +185,8 @@ BREAKAGE = {
     "tier not on this floor": lambda r: r["items"][0].update(tier=3),
     "tier out of range": lambda r: r["items"][0].update(tier=6),
     "tier is a boolean": lambda r: r["items"][0].update(tier=True),
-    "type not playable yet": lambda r: r["items"][0].update(type="matching"),
+    "type not playable yet": lambda r: r["items"][0].update(type="tribulation"),
+    "true_false turned matching without pairs": lambda r: first(r, "true_false").update(type="matching"),
     "empty prompt": lambda r: r["items"][0].update(prompt_vi=" "),
     "symbol the font may lack": lambda r: r["items"][0].update(prompt_vi="Cho x ∈ A."),
     "no solution": lambda r: r["items"][0].update(solution_vi=[]),
@@ -197,6 +206,37 @@ BREAKAGE = {
     "numeric unordered not a boolean": lambda r: first(r, "numeric").update(unordered="yes"),
     "numeric set with a repeat": lambda r: first(r, "numeric").update(answer="1, 1, 2", unordered=True),
     "unordered on a non-numeric": lambda r: first(r, "true_false").update(unordered=True),
+    "matching without pairs": lambda r: first(r, "matching").pop("pairs_vi"),
+    "matching with two pairs": lambda r: first(r, "matching").update(pairs_vi=[["a", "1"], ["b", "2"]]),
+    "matching with six pairs": lambda r: first(r, "matching").update(
+        pairs_vi=[[f"trái {k}", f"phải {k}"] for k in range(6)]),
+    "matching pair of three sides": lambda r: first(r, "matching")["pairs_vi"].__setitem__(0, ["a", "b", "c"]),
+    "matching pair as text": lambda r: first(r, "matching")["pairs_vi"].__setitem__(0, "a - b"),
+    "matching with a repeated left side": lambda r: first(r, "matching")["pairs_vi"].__setitem__(
+        1, [first(r, "matching")["pairs_vi"][0][0].upper(), "khác hẳn"]),
+    "matching with a repeated right side": lambda r: first(r, "matching")["pairs_vi"].__setitem__(
+        1, ["khác hẳn", first(r, "matching")["pairs_vi"][0][1].replace(" ", "  ")]),
+    "matching side with a bad symbol": lambda r: first(r, "matching")["pairs_vi"].__setitem__(0, ["A ∪ B", "x"]),
+    "matching side not text": lambda r: first(r, "matching")["pairs_vi"].__setitem__(0, ["a", 5]),
+    "matching with an answer": lambda r: first(r, "matching").update(answer=[0, 1, 2, 3]),
+    "matching with steps": lambda r: first(r, "matching").update(steps_vi=["a", "b", "c"]),
+    "matching with options": lambda r: first(r, "matching").update(options_vi=["a", "b"]),
+    "ordering without steps": lambda r: first(r, "ordering").pop("steps_vi"),
+    "ordering with two steps": lambda r: first(r, "ordering").update(steps_vi=["một", "hai"]),
+    "ordering with seven steps": lambda r: first(r, "ordering").update(steps_vi=[f"bước {k}" for k in range(7)]),
+    "ordering with a repeated step": lambda r: first(r, "ordering")["steps_vi"].append(
+        first(r, "ordering")["steps_vi"][0].casefold()),
+    "ordering with an empty step": lambda r: first(r, "ordering")["steps_vi"].__setitem__(1, " "),
+    "ordering steps as text": lambda r: first(r, "ordering").update(steps_vi="bước 1, bước 2, bước 3"),
+    "ordering with an answer": lambda r: first(r, "ordering").update(answer=0),
+    "ordering with pairs": lambda r: first(r, "ordering").update(pairs_vi=[["a", "1"], ["b", "2"], ["c", "3"]]),
+    "numeric with steps": lambda r: first(r, "numeric").update(steps_vi=["a", "b", "c"]),
+    "true_false with pairs": lambda r: first(r, "true_false").update(pairs_vi=[["a", "1"], ["b", "2"], ["c", "3"]]),
+    "same ordering question twice": lambda r: r["items"].append(
+        {**copy.deepcopy(first(r, "ordering")), "id": "dstt_x_twin"}),
+    "same matching question with other numbers": lambda r: r["items"].append(
+        {**copy.deepcopy(first(r, "matching")), "id": "dstt_x_twin",
+         "pairs_vi": [[a, b.replace("2", "7")] for a, b in first(r, "matching")["pairs_vi"]]}),
     "same question twice": lambda r: r["items"][1].update(skill=r["items"][0]["skill"],
                                                          prompt_vi=r["items"][0]["prompt_vi"]),
 }
@@ -229,3 +269,201 @@ def test_a_subject_without_an_item_file_is_fine(tmp_path):
     for name in ("subjects.json", "dai_so_tuyen_tinh.json"):
         (tmp_path / name).write_text((mp.MATH_DIR / name).read_text("utf-8"), "utf-8")
     assert mi.validate_all(tmp_path) == []
+
+
+# ------------------------------------------------------------------ matching and ordering (M9)
+PAIRS = (("A hợp B", "{1, 2, 3}"), ("A giao B", "{2}"), ("A \\ B", "{1}"), ("B \\ A", "{3}"))
+STEPS = ("Đặt y = 2x + 1.", "Chuyển vế: 2x = y - 1.", "Chia cho 2: x = (y - 1)/2.", "Vậy g(x) = (x - 1)/2.")
+
+
+def matching(n: int = 4, **over) -> mi.MathItem:
+    return item(qtype="matching", answer=None, pairs_vi=PAIRS[:n], prompt_vi="Ghép phép toán với kết quả.", **over)
+
+
+def ordering(n: int = 4, **over) -> mi.MathItem:
+    return item(qtype="ordering", answer=None, steps_vi=STEPS[:n], prompt_vi="Sắp xếp các bước.", **over)
+
+
+def test_the_new_types_are_playable_and_named():
+    for qtype in ("matching", "ordering"):
+        assert qtype in mi.PLAYABLE_TYPES
+        assert mi.INPUTS[qtype] == qtype and mi.INSTRUCTIONS_VI[qtype]
+        assert not mp.text_problem(mi.INSTRUCTIONS_VI[qtype])
+        assert mp.time_limit(qtype, 1) is not None
+
+
+def test_the_seed_bank_has_matching_and_ordering_on_every_written_floor():
+    """At least two of each per floor, on at least two micro-skills, and at the floor's
+    lowest tier too (a chiêu cast by a new player needs a question at tier 1 / tier 2)."""
+    for floor in (1, 2, 3):
+        lowest = mp.floor_tiers(floor)[0]
+        items = mi.floor_items(SUBJECT, floor, allow_unreviewed=True)
+        for qtype in ("matching", "ordering"):
+            own = [i for i in items if i.qtype == qtype]
+            assert len(own) >= 2, (floor, qtype)
+            assert len({i.skill for i in own}) >= 2, (floor, qtype)
+            assert any(i.tier == lowest for i in own), (floor, qtype)
+            assert all(i.answer is None and not i.options_vi for i in own)
+
+
+def test_matching_payload_keeps_left_and_shuffles_right():
+    it = matching()
+    q = mi.to_question(it, random.Random(3))
+    public = q.public()
+    assert public["input"] == "matching" and public["options"] is None and public["qtype"] == "matching"
+    assert public["instruction_vi"] == mi.INSTRUCTIONS_VI["matching"]
+    assert set(public["prompt"]) == {"text", "left", "right"}
+    assert public["prompt"]["text"] == it.prompt_vi
+    assert public["prompt"]["left"] == [left for left, _ in PAIRS]
+    assert sorted(public["prompt"]["right"]) == sorted(right for _, right in PAIRS)
+    assert "pairs" not in json.dumps(public) and "order" not in json.dumps(public)
+    key = q.answer_key["pairs"]
+    for k, left in enumerate(public["prompt"]["left"]):          # the key points at left k's own right side
+        assert dict(PAIRS)[left] == public["prompt"]["right"][key[k]]
+    assert set(q.answer_key) == {"pairs", "reveal", "fingerprint"}
+    assert q.answer_key["reveal"]["answer_text"] == "A hợp B — {1, 2, 3}; A giao B — {2}; A \\ B — {1}; B \\ A — {3}"
+    assert q.answer_key["reveal"]["solution_vi"] == list(it.solution_vi)
+
+
+def test_ordering_payload_shuffles_the_steps():
+    it = ordering()
+    q = mi.to_question(it, random.Random(3))
+    public = q.public()
+    assert public["input"] == "ordering" and public["options"] is None
+    assert set(public["prompt"]) == {"text", "steps"}
+    shown = public["prompt"]["steps"]
+    assert sorted(shown) == sorted(STEPS)
+    assert [shown[i] for i in q.answer_key["order"]] == list(STEPS)
+    assert set(q.answer_key) == {"order", "reveal", "fingerprint"}
+    assert q.answer_key["reveal"]["answer_text"] == "  ".join(f"{k}. {s}" for k, s in enumerate(STEPS, 1))
+
+
+def test_matrices_still_come_with_a_matching_question():
+    q = mi.to_question(matching(matrices=(("A", (("1", "2"),)),)), random.Random(1))
+    assert q.prompt["matrices"] == [{"name": "A", "rows": [["1", "2"]]}]
+    assert set(q.prompt) == {"text", "left", "right", "matrices"}
+
+
+@pytest.mark.parametrize("n", [3, 4])
+def test_the_shuffle_never_shows_the_answer(n):
+    """An ordering question is never shown already solved, a matching one never with every
+    right side next to its own left; and the shuffle really varies."""
+    seen_steps, seen_right = set(), set()
+    for seed in range(300):
+        q = mi.to_question(ordering(n), random.Random(seed))
+        assert q.prompt["steps"] != list(STEPS[:n]), seed
+        assert q.answer_key["order"] != list(range(n)), seed
+        seen_steps.add(tuple(q.prompt["steps"]))
+        m = mi.to_question(matching(n), random.Random(seed))
+        assert m.prompt["right"] != [right for _, right in PAIRS[:n]], seed
+        assert m.answer_key["pairs"] != list(range(n)), seed
+        seen_right.add(tuple(m.prompt["right"]))
+    import math
+    assert len(seen_steps) == len(seen_right) == math.factorial(n) - 1     # every other order shows up
+
+
+def test_shown_order_is_a_permutation_that_moves_something():
+    for n in range(2, 8):
+        for seed in range(50):
+            order = mi.shown_order(n, random.Random(seed))
+            assert sorted(order) == list(range(n)) and order != list(range(n))
+    assert mi.shown_order(1, random.Random(0)) == [0]
+
+
+def test_matching_and_ordering_grade_only_the_exact_key():
+    for qtype, name, it in (("matching", "pairs", matching()), ("ordering", "order", ordering())):
+        q = mi.to_question(it, random.Random(5))
+        key = q.answer_key[name]
+        assert mi.grade(qtype, q.answer_key, {name: list(key)})
+        assert mi.grade(qtype, q.answer_key, {name: tuple(key)})       # (same values, any sequence)
+        # every other permutation is wrong
+        import itertools
+        others = [list(p) for p in itertools.permutations(range(len(key))) if list(p) != key]
+        assert others and not any(mi.grade(qtype, q.answer_key, {name: p}) for p in others)
+        other_name = "order" if name == "pairs" else "pairs"
+        malformed = [
+            None, [], "0123", {name: None}, {name: ""}, {name: "0,1,2,3"}, {name: []}, {name: key[:-1]},
+            {name: key + [len(key)]}, {name: [key[0]] * len(key)},                  # wrong length, repeats
+            {name: [key[0], key[0]] + key[2:]},                                       # a repeated index
+            {name: [k + 1 for k in key]}, {name: [-1] + key[1:]},                    # out of range
+            {name: [float(k) for k in key]}, {name: [str(k) for k in key]},          # not ints
+            {name: [bool(k) if k in (0, 1) else k for k in key]},                    # bools are not indices
+            {name: {str(k): v for k, v in enumerate(key)}},                          # a dict, not a list
+            {name: [[k] for k in key]}, {name: [None] * len(key)},
+            {other_name: list(key)}, {},                                             # the wrong field / none
+        ]
+        for answer in malformed:
+            assert mi.grade(qtype, q.answer_key, answer) is False, (qtype, answer)
+
+
+def test_a_broken_answer_key_is_never_right():
+    for qtype, name in (("matching", "pairs"), ("ordering", "order")):
+        for key in ({}, {name: None}, {name: "012"}, {name: 3}):
+            assert not mi.grade(qtype, key, {name: [0, 1, 2]})
+
+
+def test_matching_and_ordering_keys_survive_json():
+    """The key is stored in the database as JSON and graded after a round trip."""
+    for qtype, name, it in (("matching", "pairs", matching(5)), ("ordering", "order", ordering(4))):
+        q = mi.to_question(it, random.Random(11))
+        stored = json.loads(json.dumps(q.answer_key))
+        sent = json.loads(json.dumps({name: q.answer_key[name]}))
+        assert mi.grade(qtype, stored, sent)
+
+
+def test_matching_and_ordering_items_build_from_data():
+    raw = raw_items()
+    subject = mp.subject(SUBJECT)
+    for qtype in ("matching", "ordering"):
+        data = first(raw, qtype)
+        built = mi.build_item(subject, data)
+        assert built.qtype == qtype and built.answer is None
+        if qtype == "matching":
+            assert built.pairs_vi == tuple(tuple(p) for p in data["pairs_vi"]) and not built.steps_vi
+        else:
+            assert built.steps_vi == tuple(data["steps_vi"]) and not built.pairs_vi
+        assert mi.bank()[data["id"]] == built
+
+
+NEW_TYPE_MESSAGES = {
+    "matching without pairs": "pairs_vi must list 3 to 5 pairs",
+    "matching with two pairs": "pairs_vi must list 3 to 5 pairs",
+    "matching with six pairs": "pairs_vi must list 3 to 5 pairs",
+    "matching pair of three sides": "pair 1 must be [left side, right side]",
+    "matching pair as text": "pair 1 must be [left side, right side]",
+    "matching with a repeated left side": "two left sides have the same text",
+    "matching with a repeated right side": "two right sides have the same text",
+    "matching side with a bad symbol": "pair 1 left side has the character",
+    "matching side not text": "pair 1 right side is missing or empty",
+    "matching with an answer": "matching questions have no answer key",
+    "matching with steps": "only an ordering question has steps_vi",
+    "matching with options": "only a multiple_choice question has options_vi",
+    "ordering without steps": "steps_vi must list 3 to 6 steps",
+    "ordering with two steps": "steps_vi must list 3 to 6 steps",
+    "ordering with seven steps": "steps_vi must list 3 to 6 steps",
+    "ordering with a repeated step": "two steps have the same text",
+    "ordering with an empty step": "step 2 is missing or empty",
+    "ordering steps as text": "steps_vi must list 3 to 6 steps",
+    "ordering with an answer": "ordering questions have no answer key",
+    "ordering with pairs": "only a matching question has pairs_vi",
+    "numeric with steps": "only an ordering question has steps_vi",
+    "true_false with pairs": "only a matching question has pairs_vi",
+    "true_false turned matching without pairs": "pairs_vi must list 3 to 5 pairs",
+    "same ordering question twice": "has the same question text as",
+    "same matching question with other numbers": "is almost the same question as",
+}
+
+
+@pytest.mark.parametrize("name", sorted(NEW_TYPE_MESSAGES))
+def test_validator_explains_matching_and_ordering_problems(name):
+    errors = check(BREAKAGE[name])
+    assert any(NEW_TYPE_MESSAGES[name] in e for e in errors), errors
+
+
+def test_ordering_questions_with_one_prompt_but_other_steps_are_different_questions():
+    """Two ordering items may share a prompt like "Sắp xếp các bước..." when their steps differ."""
+    def twin(r):
+        a = first(r, "ordering")
+        r["items"].append({**copy.deepcopy(a), "id": "dstt_x_twin",
+                           "steps_vi": ["Một bước khác hẳn.", "Bước thứ hai mới.", "Kết luận khác."]})
+    assert check(twin) == []

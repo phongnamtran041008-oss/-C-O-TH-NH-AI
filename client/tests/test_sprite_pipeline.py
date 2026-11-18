@@ -5,6 +5,9 @@ not - and those are the parts that decide whether a character walks properly in 
 these tests draw their own "renders" (a stick figure standing on a known ground point, the
 way the camera would leave it), pack them, and then break them on purpose to prove the
 quality checks of plan 7.3 actually catch each fault.
+
+M9 added the `cast` clip (niệm chú): the checks now require it, and the eight committed
+realm sheets are checked as they are in the repository.
 """
 from __future__ import annotations
 
@@ -25,7 +28,11 @@ RENDER_PX, FRAME_PX = 256, 64
 PIVOT = (128, 232)          # where the camera puts the feet, in rendered pixels
 CLIPS = {"idle": {"fps": 6, "loop": True, "count": 2},
          "walk": {"fps": 10, "loop": True, "count": 4},
-         "slash": {"fps": 12, "loop": False, "count": 3}}
+         "slash": {"fps": 12, "loop": False, "count": 3},
+         "cast": {"fps": 12, "loop": False, "count": 3}}       # M9: niệm chú
+CHARS_DIR = ROOT / "client" / "assets" / "chars"
+REALMS = ("luyen_khi", "truc_co", "ket_dan", "nguyen_anh",
+          "hoa_than", "luyen_hu", "hop_the", "dai_thua")
 
 
 def draw_figure(bob: int = 0, lean: int = 0) -> pygame.Surface:
@@ -69,7 +76,7 @@ def packed(tmp_path):
 def test_packing_lays_out_every_frame_and_scales_the_pivot(packed):
     out, doc = packed
     frames = sum(int(c["count"]) for c in CLIPS.values()) * len(pack_sprites.DIRS)
-    assert doc["frames"] == frames == 36
+    assert doc["frames"] == frames == 48
     assert doc["frame"] == {"w": FRAME_PX, "h": FRAME_PX}
     # the pivot came from the camera and is scaled by the same factor as the pixels
     assert doc["pivot"] == {"x": PIVOT[0] / 4, "y": PIVOT[1] / 4} == {"x": 32.0, "y": 58.0}
@@ -175,6 +182,79 @@ def test_a_frame_index_outside_the_sheet_is_caught(packed):
     path.write_text(json.dumps(d, ensure_ascii=False), "utf-8")
     problems = sprite_qc.check_character(path)
     assert any("outside the" in p for p in problems), problems
+
+
+def test_a_character_without_the_cast_clip_is_caught(packed):
+    """The game plays `cast` by name for the Pháp thuật / Trận pháp chiêu (M9)."""
+    out, doc = packed
+    path = out / f"{doc['id']}.json"
+    d = json.loads(path.read_text("utf-8"))
+    del d["clips"]["cast"]
+    path.write_text(json.dumps(d, ensure_ascii=False), "utf-8")
+    assert any("no 'cast' clip" in p for p in sprite_qc.check_character(path))
+
+
+def test_a_clip_missing_a_facing_is_caught(packed):
+    out, doc = packed
+    path = out / f"{doc['id']}.json"
+    d = json.loads(path.read_text("utf-8"))
+    d["clips"]["cast"]["frames"].pop("left")
+    path.write_text(json.dumps(d, ensure_ascii=False), "utf-8")
+    assert any("cast: no frames facing left" in p for p in sprite_qc.check_character(path))
+
+
+# ------------------------------------------------------------------ the committed sheets
+def test_every_realm_sheet_has_the_four_clips_in_four_facings():
+    """The eight committed Đạo Sĩ sheets (built by `tools/make_character.py --realms`): each
+    has idle, walk, slash and cast, every clip in all four facings; cast plays once and
+    holds its last frame, like slash; and cast was packed after the M8 clips, so the frame
+    indices those clips had in M8 still point at the same pictures."""
+    for realm in REALMS:
+        doc = json.loads((CHARS_DIR / f"dao_si_{realm}.json").read_text("utf-8"))
+        clips = doc["clips"]
+        assert set(clips) == {"idle", "walk", "slash", "cast"}, realm
+        for name, c in clips.items():
+            assert sorted(c["frames"]) == sorted(pack_sprites.DIRS), (realm, name)
+            assert c["fps"] > 0
+        cast = clips["cast"]
+        assert cast["loop"] is False and cast["fps"] == clips["slash"]["fps"], realm
+        counts = {len(ids) for ids in cast["frames"].values()}
+        assert counts == {5}, (realm, counts)
+        old = [i for n in ("idle", "walk", "slash") for ids in clips[n]["frames"].values()
+               for i in ids]
+        new = [i for ids in cast["frames"].values() for i in ids]
+        assert sorted(old) == list(range(len(old))), realm
+        assert sorted(new) == list(range(len(old), doc["frames"])), realm
+
+
+def test_the_committed_sheets_pass_every_quality_check():
+    assert sprite_qc.check_all(CHARS_DIR) == []
+
+
+def test_a_non_looping_cast_holds_its_last_frame():
+    """What the game sees: `cast` runs once and stays on the release pose."""
+    from client.engine import charsheet
+    sprite_qc._ready()                         # converting a surface needs a display
+    cs = charsheet.load("dao_si_luyen_khi", CHARS_DIR)
+    assert cs is not None and "cast" in cs.clips
+    for d in charsheet.DIRS:
+        ids = cs.clips["cast"].frames[d]
+        assert [cs.clips["cast"].index_at(n / 12 + 0.01, d) for n in range(5)] == ids
+        assert cs.clips["cast"].index_at(10.0, d) == ids[-1]
+
+
+def test_the_renderer_turns_left_facing_left():
+    """M8 rendered "left" with the rig turned +90 degrees, which points its face at +x, the
+    right of the picture (the camera looks along +y): the sheets' left and right were
+    swapped, unseen while the game only drew facing down. The cast clip plays in every
+    facing, so this pins the fix. Read from the source because the module needs Blender."""
+    import ast
+    src = (ROOT / "tools" / "blender" / "render_character.py").read_text("utf-8")
+    node = next(n for n in ast.parse(src).body if isinstance(n, ast.Assign)
+                and getattr(n.targets[0], "id", "") == "DIRS")
+    dirs = ast.literal_eval(node.value)
+    assert dirs == {"down": 0.0, "left": 270.0, "up": 180.0, "right": 90.0}
+    assert list(dirs) == ["down", "left", "up", "right"]     # the packing order of M8
 
 
 def test_a_clip_without_fps_is_caught(packed):

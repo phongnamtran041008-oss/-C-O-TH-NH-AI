@@ -33,11 +33,34 @@ from mathutils import Vector
 
 ROOT = Path(__file__).resolve().parents[2]
 RENDER_DIR = ROOT / "art" / "render"
-DIRS = {"down": 0.0, "left": 90.0, "up": 180.0, "right": 270.0}   # how far to turn the rig
+# How far to turn the rig for each facing. The rig faces -y, toward the camera, and turning
+# it +90 degrees points its face at +x, which is the RIGHT of the picture - so "right" is 90
+# and "left" is 270. M8 had these two the other way round, which nobody saw while the game
+# only drew characters facing down; M9 plays the cast clip in the caster's own facing, so
+# a character walking left that turned to face right would have been plain to see. (The
+# key order stays down, left, up, right: it is the order the frames are packed in.)
+DIRS = {"down": 0.0, "left": 270.0, "up": 180.0, "right": 90.0}
 ELEVATION = 35.0          # degrees above the ground: the game's own three-quarter view
 ORTHO_SCALE = 1.58        # metres across the frame. Wide enough that the widest character
                           # (Đại Thừa, wings out) keeps a margin, and the **same for every
                           # character**, which is what makes them all one size in game.
+
+
+# The one-shot clips (slash, cast) play at 12 fps; the loops are slower so they read as calm.
+FPS = {"idle": 6.0, "walk": 10.0, "slash": 12.0, "cast": 12.0}
+LOOP = {"idle": True, "walk": True, "slash": False, "cast": False}
+# The order clips are rendered in, which is also the order the packer lays their frames out
+# in. M8 rendered by name (idle, slash, walk); cast came in M9 and goes after them, so every
+# frame index the M8 sheets had still points at the same picture. A clip not listed here
+# comes after these, by name. The order also decides what pose a bone that a clip does not
+# key starts from (whatever the clip before it left), which is a second reason not to
+# reshuffle it.
+CLIP_ORDER = ("idle", "slash", "walk", "cast")
+
+
+def clip_rank(action) -> tuple[int, str]:
+    name = action.name
+    return (CLIP_ORDER.index(name) if name in CLIP_ORDER else len(CLIP_ORDER), name)
 
 
 def pick_engine() -> str:
@@ -97,15 +120,13 @@ def pivot_pixels(cam: bpy.types.Object, px: int) -> tuple[int, int]:
 def render_clips(rig: bpy.types.Object, cam: bpy.types.Object, out: Path, px: int) -> dict:
     scene = bpy.context.scene
     clips: dict[str, dict] = {}
-    fps = {"idle": 6.0, "walk": 10.0, "slash": 12.0}
-    loop = {"idle": True, "walk": True, "slash": False}
     out.mkdir(parents=True, exist_ok=True)
-    for action in sorted(bpy.data.actions, key=lambda a: a.name):
+    for action in sorted(bpy.data.actions, key=clip_rank):
         name = action.name
         rig.animation_data.action = action
         first, last = (int(action.frame_range[0]), int(action.frame_range[1]))
         count = last - first + 1
-        clips[name] = {"fps": fps.get(name, 8.0), "loop": loop.get(name, True), "count": count}
+        clips[name] = {"fps": FPS.get(name, 8.0), "loop": LOOP.get(name, True), "count": count}
         for direction, turn in DIRS.items():
             rig.rotation_euler = (0.0, 0.0, math.radians(turn))
             for n in range(count):

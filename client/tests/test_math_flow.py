@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pygame
 
-from client.tests.driver import Driver, ServerProcess
+from client.tests.driver import Driver, ServerProcess, fill_math_answer
 from client.tests.test_linh_phong_flow import abode
 from client.tests.test_world_flow import make_account
 
@@ -41,15 +41,7 @@ def answer_math(drv: Driver, server: ServerProcess, correct: bool) -> dict:
     """Reads the answer key from the server database (test only) and answers through the UI."""
     q = top(drv).q
     key = json.loads(server.sql("select answer_key from quiz_sessions where id=?", (q["session_id"],))[0][0])
-    if q["input"] == "truefalse":
-        drv.click("math_true" if key["value"] == correct else "math_false")
-    elif q["input"] == "choice":
-        drv.click(f"opt_{key['option']}" if correct
-                  else "opt_" + next(o["id"] for o in q["options"] if o["id"] != key["option"]))
-    else:
-        drv.click("quiz_text")
-        drv.type(", ".join(key["numbers"]) if correct else "987654")
-        drv.press(pygame.K_RETURN)
+    fill_math_answer(drv, q, key, correct)
     drv.wait(lambda: drv.top_is("MathQuizScene") and top(drv).result, 10, "the result")
     return top(drv).result
 

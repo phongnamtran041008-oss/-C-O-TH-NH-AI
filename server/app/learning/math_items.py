@@ -7,13 +7,19 @@ A *template* belongs to one micro-skill and one tier. There are two kinds:
   * a generator (the "generators" list + a function in learning/math_gen): a question
     with new numbers every time it is drawn.
 
-Three question types are playable so far; the other types of balance/math.json come with
+Five question types are playable so far; the other types of balance/math.json come with
 later milestones:
 
   true_false       "answer": true | false                     the player sends {"value": bool}
   multiple_choice  "options_vi": [...], "answer": <index>      the player sends {"option": "a"}
   numeric          "answer": "7" | "3/4" | "1, 3, 5"           the player sends {"text": "..."}
                    ("unordered": true when the listed numbers form a set)
+  matching         "pairs_vi": [[left, right], ...]  (3-5)     the player sends {"pairs": [r0, r1, ...]}
+  ordering         "steps_vi": [step, ...]  (3-6, right order) the player sends {"order": [i0, i1, ...]}
+
+A matching or ordering item has no "answer": the data is written right (each left side next
+to its right side, the steps in the order of the derivation) and the server shuffles what it
+shows, so the answer key is the inverse of that shuffle (see to_question).
 
 A question may show small matrices next to its text ("matrices": {"A": [[1, 2], [3, 4]]});
 the game draws them, so the text only names them.
@@ -37,9 +43,11 @@ from . import math_path
 from .math_path import MATH_DIR, text_problem
 
 ITEMS_DIR_NAME = "items"
-PLAYABLE_TYPES = ("true_false", "multiple_choice", "numeric")
+PLAYABLE_TYPES = ("true_false", "multiple_choice", "numeric", "matching", "ordering")
 OPTION_IDS = "abcdef"
 MIN_OPTIONS, MAX_OPTIONS = 2, 6
+MIN_PAIRS, MAX_PAIRS = 3, 5     # a matching question (fewer is a guess, more does not fit the card)
+MIN_STEPS, MAX_STEPS = 3, 6     # an ordering question
 MAX_NUMBERS = 12            # longest list a numeric answer may have
 MAX_ANSWER_CHARS = 120      # longer typed answers are wrong without being parsed
 MAX_MATRICES, MAX_MATRIX_SIDE = 3, 4
@@ -52,12 +60,17 @@ INSTRUCTIONS_VI = {
     "true_false": "Mệnh đề sau đúng hay sai?",
     "multiple_choice": "Chọn một đáp án đúng",
     "numeric": "Điền số (phân số viết a/b, nhiều số cách nhau bằng dấu phẩy)",
+    "matching": "Ghép mỗi vế trái với một vế phải cho đúng",
+    "ordering": "Sắp xếp các bước giải theo đúng thứ tự",
 }
-INPUTS = {"true_false": "truefalse", "multiple_choice": "choice", "numeric": "number"}
+INPUTS = {"true_false": "truefalse", "multiple_choice": "choice", "numeric": "number",
+          "matching": "matching", "ordering": "ordering"}
+MATCH_SEP_VI = " — "        # between the two sides of a pair in the revealed answer
 
 _FILE_KEYS = {"subject", "items", "generators"}
 _ITEM_KEYS = {"id", "skill", "tier", "type", "prompt_vi", "options_vi", "answer", "unordered",
-              "solution_vi", "matrices", "reviewed"}
+              "pairs_vi", "steps_vi", "solution_vi", "matrices", "reviewed"}
+_KEYED_TYPES = ("matching", "ordering")      # the data order is the answer: no "answer" key
 _GENERATOR_KEYS = {"id", "skill", "tier", "type", "reviewed"}
 
 
@@ -121,10 +134,12 @@ class MathItem:
     tier: int
     qtype: str
     prompt_vi: str
-    answer: object                       # bool | option index | numeric text
+    answer: object                       # bool | option index | numeric text | None (matching, ordering)
     solution_vi: tuple[str, ...]
     options_vi: tuple[str, ...] = ()
     unordered: bool = False
+    pairs_vi: tuple[tuple[str, str], ...] = ()     # matching: (left, right), each left next to its right
+    steps_vi: tuple[str, ...] = ()                 # ordering: the steps in the right order
     reviewed: bool = False
     matrices: tuple[tuple[str, tuple[tuple[str, ...], ...]], ...] = ()    # ((name, rows), ...)
     numbers: str = ""
@@ -141,6 +156,10 @@ class MathItem:
             return TRUE_VI if self.answer else FALSE_VI
         if self.qtype == "multiple_choice":
             return self.options_vi[self.answer]
+        if self.qtype == "matching":
+            return "; ".join(f"{left}{MATCH_SEP_VI}{right}" for left, right in self.pairs_vi)
+        if self.qtype == "ordering":
+            return "  ".join(f"{k}. {step}" for k, step in enumerate(self.steps_vi, 1))
         return ", ".join(number_text(n) for n in parse_numbers(self.answer))
 
 
@@ -197,6 +216,18 @@ class MathQuestion:
                 "time_limit": self.time_limit, "math": self.meta}
 
 
+def shown_order(n: int, rng: random.Random) -> list[int]:
+    """A shuffle of range(n) for a matching or ordering question that never shows the
+    answer: shown position j holds data position order[j], and the shuffle is drawn again
+    until at least one entry has moved (the right order shown as-is would be a free point)."""
+    order = list(range(n))
+    if n < 2:                   # (validation keeps these types at 3 or more; nothing to move)
+        return order
+    while order == sorted(order):
+        rng.shuffle(order)
+    return order
+
+
 def to_question(item: MathItem, rng: random.Random | None = None, config: dict | None = None,
                 parallel: bool = False, review: bool = False) -> MathQuestion:
     """The question a player gets for this item. Options are shuffled; the answer key
@@ -219,6 +250,16 @@ def to_question(item: MathItem, rng: random.Random | None = None, config: dict |
         rng.shuffle(order)
         options = [{"id": OPTION_IDS[i], "text": item.options_vi[src]} for i, src in enumerate(order)]
         key["option"] = OPTION_IDS[order.index(item.answer)]
+    elif item.qtype == "matching":
+        # left stays in the data order; right is shuffled, so the right side of left k is
+        # shown at the position where the shuffle put data entry k
+        order = shown_order(len(item.pairs_vi), rng)
+        shown_right = [item.pairs_vi[src][1] for src in order]
+        key["pairs"] = [order.index(k) for k in range(len(order))]
+    elif item.qtype == "ordering":
+        order = shown_order(len(item.steps_vi), rng)
+        shown_steps = [item.steps_vi[src] for src in order]
+        key["order"] = [order.index(k) for k in range(len(order))]
     else:
         key["numbers"] = [number_text(n) for n in parse_numbers(item.answer)]
         key["unordered"] = item.unordered
@@ -228,6 +269,11 @@ def to_question(item: MathItem, rng: random.Random | None = None, config: dict |
             "tier_name_vi": config["tiers"][str(item.tier)]["name_vi"], "parallel": bool(parallel),
             "review": bool(review)}
     prompt: dict = {"text": item.prompt_vi}
+    if item.qtype == "matching":
+        prompt["left"] = [left for left, _ in item.pairs_vi]
+        prompt["right"] = shown_right
+    elif item.qtype == "ordering":
+        prompt["steps"] = shown_steps
     if item.matrices:
         prompt["matrices"] = [{"name": name, "rows": [list(r) for r in rows]} for name, rows in item.matrices]
     return MathQuestion(qtype=item.qtype, item_id=item.id, prompt=prompt,
@@ -236,6 +282,16 @@ def to_question(item: MathItem, rng: random.Random | None = None, config: dict |
 
 
 # ------------------------------------------------------------------ grading
+def _permutation(value, n: int) -> list[int] | None:
+    """`value` as a permutation of range(n), or None: a list of n distinct ints (not bools,
+    not floats like 1.0) each in 0..n-1. Anything else a client sends is a wrong answer."""
+    if not isinstance(value, (list, tuple)) or len(value) != n:
+        return None
+    if not all(type(v) is int for v in value) or sorted(value) != list(range(n)):
+        return None
+    return list(value)
+
+
 def grade(qtype: str, answer_key: dict, answer: dict | None) -> bool:
     if not isinstance(answer, dict):
         return False
@@ -254,6 +310,13 @@ def grade(qtype: str, answer_key: dict, answer: dict | None) -> bool:
             given, want = sorted(given), sorted(want)
         tolerance = Fraction(str(answer_key.get("tolerance", 0)))
         return all(abs(g - w) <= tolerance for g, w in zip(given, want))
+    if qtype in _KEYED_TYPES:
+        name = "pairs" if qtype == "matching" else "order"
+        want = answer_key.get(name)
+        if not isinstance(want, list):
+            return False
+        given = _permutation(answer.get(name), len(want))
+        return given is not None and given == want
     return False
 
 
@@ -265,9 +328,11 @@ def items_path(subject_id: str, math_dir: Path = MATH_DIR) -> Path:
 def build_item(subject: math_path.Subject, raw: dict) -> MathItem:
     return MathItem(id=raw["id"], subject=subject.id, skill=raw["skill"],
                     floor=subject.skills[raw["skill"]].floor, tier=raw["tier"], qtype=raw["type"],
-                    prompt_vi=raw["prompt_vi"], answer=raw["answer"],
+                    prompt_vi=raw["prompt_vi"], answer=raw.get("answer"),
                     solution_vi=tuple(raw["solution_vi"]), options_vi=tuple(raw.get("options_vi", ())),
                     unordered=bool(raw.get("unordered", False)), reviewed=bool(raw.get("reviewed", False)),
+                    pairs_vi=tuple((left, right) for left, right in raw.get("pairs_vi", ())),
+                    steps_vi=tuple(raw.get("steps_vi", ())),
                     matrices=_matrices(raw.get("matrices")))
 
 
@@ -359,6 +424,50 @@ def _slot_problems(subject: math_path.Subject, it: dict, config: dict, here: str
     return errors
 
 
+def _same_text(text: str) -> str:
+    """How two display texts are compared for "the same": spacing and case ignored."""
+    return " ".join(text.split()).casefold()
+
+
+def _pairs_problems(pairs, here: str) -> list[str]:
+    """A matching question: 3-5 pairs [left, right] of showable text, no two lefts and no two
+    rights alike - otherwise more than one pairing would be right."""
+    if not (isinstance(pairs, (list, tuple)) and MIN_PAIRS <= len(pairs) <= MAX_PAIRS):
+        return [f"{here}: pairs_vi must list {MIN_PAIRS} to {MAX_PAIRS} pairs"]
+    errors = []
+    for k, pair in enumerate(pairs, 1):
+        if not (isinstance(pair, (list, tuple)) and len(pair) == 2):
+            errors.append(f"{here}: pair {k} must be [left side, right side]")
+            continue
+        for side, text in zip(("left", "right"), pair):
+            problem = text_problem(text)
+            if problem:
+                errors.append(f"{here}: pair {k} {side} side {problem}")
+    if errors:
+        return errors
+    for n, side in ((0, "left"), (1, "right")):
+        texts = [_same_text(p[n]) for p in pairs]
+        if len(set(texts)) != len(texts):
+            errors.append(f"{here}: two {side} sides have the same text, so more than one pairing would be right")
+    return errors
+
+
+def _steps_problems(steps, here: str) -> list[str]:
+    """An ordering question: 3-6 distinct steps of showable text, in the right order."""
+    if not (isinstance(steps, (list, tuple)) and MIN_STEPS <= len(steps) <= MAX_STEPS):
+        return [f"{here}: steps_vi must list {MIN_STEPS} to {MAX_STEPS} steps"]
+    errors = []
+    for k, step in enumerate(steps, 1):
+        problem = text_problem(step)
+        if problem:
+            errors.append(f"{here}: step {k} {problem}")
+    if not errors:
+        texts = [_same_text(s) for s in steps]
+        if len(set(texts)) != len(texts):
+            errors.append(f"{here}: two steps have the same text, so more than one order would be right")
+    return errors
+
+
 def content_problems(it: dict, here: str) -> list[str]:
     """Problems in the question itself: the text, the options, the answer, the matrices.
     Used for hand-written items and for every draw of a generator."""
@@ -381,7 +490,17 @@ def content_problems(it: dict, here: str) -> list[str]:
         errors.append(f"{here}: only a multiple_choice question has options_vi")
     if qtype != "numeric" and it.get("unordered"):
         errors.append(f"{here}: only a numeric question has unordered")
-    if qtype == "true_false":
+    if qtype != "matching" and it.get("pairs_vi"):
+        errors.append(f"{here}: only a matching question has pairs_vi")
+    if qtype != "ordering" and it.get("steps_vi"):
+        errors.append(f"{here}: only an ordering question has steps_vi")
+    if qtype in _KEYED_TYPES and answer is not None:
+        errors.append(f"{here}: {qtype} questions have no answer key: the order of the data is the answer")
+    if qtype == "matching":
+        errors += _pairs_problems(it.get("pairs_vi"), here)
+    elif qtype == "ordering":
+        errors += _steps_problems(it.get("steps_vi"), here)
+    elif qtype == "true_false":
         if not isinstance(answer, bool):
             errors.append(f"{here}: the answer of a true_false question must be true or false")
     elif qtype == "multiple_choice":
@@ -412,7 +531,8 @@ def draw_problems(spec: GeneratorSpec, item: MathItem) -> list[str]:
     """Problems in one draw of a generator (the same rules as a hand-written item)."""
     raw = {"type": item.qtype, "prompt_vi": item.prompt_vi, "answer": item.answer,
            "solution_vi": list(item.solution_vi), "options_vi": list(item.options_vi),
-           "unordered": item.unordered, "matrices": {name: rows for name, rows in item.matrices}}
+           "unordered": item.unordered, "matrices": {name: rows for name, rows in item.matrices},
+           "pairs_vi": [list(p) for p in item.pairs_vi], "steps_vi": list(item.steps_vi)}
     return content_problems(raw, f"{spec.id} with {item.numbers}")
 
 
@@ -445,14 +565,30 @@ def _shape(text: str) -> str:
     return re.sub(r"\d+", "#", " ".join(text.casefold().split()))
 
 
+def question_text(it: dict) -> str | None:
+    """Everything that makes a hand-written question what it is: the prompt, and for a
+    matching or ordering question its pairs or steps too (two ordering questions may share a
+    prompt like "Sắp xếp các bước..." and still be different questions). None when the
+    prompt is not text."""
+    if not isinstance(it.get("prompt_vi"), str):
+        return None
+    parts = [it["prompt_vi"]]
+    if it.get("type") == "matching" and isinstance(it.get("pairs_vi"), list):
+        parts += [str(side) for pair in it["pairs_vi"] if isinstance(pair, list) for side in pair]
+    elif it.get("type") == "ordering" and isinstance(it.get("steps_vi"), list):
+        parts += [str(step) for step in it["steps_vi"]]
+    return " | ".join(parts)
+
+
 def near_duplicates(items: list[dict]) -> list[str]:
-    """Pairs of hand-written prompts of one micro-skill that are almost the same text once
+    """Pairs of hand-written questions of one micro-skill that are almost the same text once
     digits are ignored: the same question with other numbers is a generator's job."""
     errors = []
     by_skill: dict[str, list[tuple[str, str]]] = {}
     for it in items:
-        if isinstance(it.get("prompt_vi"), str) and isinstance(it.get("id"), str):
-            by_skill.setdefault(str(it.get("skill")), []).append((it["id"], _shape(it["prompt_vi"])))
+        text = question_text(it)
+        if text is not None and isinstance(it.get("id"), str):
+            by_skill.setdefault(str(it.get("skill")), []).append((it["id"], _shape(text)))
     for group in by_skill.values():
         for i, (a_id, a) in enumerate(group):
             for b_id, b in group[i + 1:]:
@@ -523,7 +659,7 @@ def validate_items(subject: math_path.Subject, raw: dict, config: dict) -> list[
         errors += _slot_problems(subject, it, config, here)
         errors += content_problems(it, here)
         if isinstance(it.get("prompt_vi"), str) and not text_problem(it["prompt_vi"]):
-            key = (it.get("skill"), it["prompt_vi"])
+            key = (it.get("skill"), question_text(it))
             if key in prompts:
                 errors.append(f"{here}: has the same question text as {prompts[key]}")
             else:
@@ -534,6 +670,9 @@ def validate_items(subject: math_path.Subject, raw: dict, config: dict) -> list[
             errors.append(f"{here}: unknown key {key!r}")
         check_id(g, here)
         errors += _slot_problems(subject, g, config, here)
+        if g.get("type") in _KEYED_TYPES:       # (a math_gen Draw has no pairs or steps to fill)
+            article = "an" if g["type"] == "ordering" else "a"
+            errors.append(f"{here}: {article} {g['type']} question can only be hand-written for now")
         if isinstance(g.get("id"), str) and g["id"] not in math_gen.REGISTRY:
             errors.append(f"{here}: no generator function with this id in learning/math_gen")
     errors += near_duplicates(items)

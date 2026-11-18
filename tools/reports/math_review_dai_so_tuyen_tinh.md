@@ -4,7 +4,7 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
 
 ## Tầng 1: Tập hợp và ánh xạ
 
-40 dạng câu (27 câu viết tay, 13 bộ sinh câu); 40 chưa duyệt.
+46 dạng câu (33 câu viết tay, 13 bộ sinh câu); 46 chưa duyệt.
 
 ### Tập hợp và phần tử (`dstt_t1_tap_hop`)
 
@@ -92,6 +92,29 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. A hợp B gồm các phần tử thuộc A hoặc thuộc B.
     2. Gom các phần tử của hai tập, mỗi phần tử chỉ viết một lần: 1, 2, 3.
     3. A hợp B = {1, 2, 3}.
+- `dstt_t1_pt_06` · bậc 1 (Nhập môn) · Ghép cặp · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Cho A = {2, 4, 6, 8} và B = {6, 8, 10}. Ghép mỗi phép toán với tập kết quả của nó.
+  - **Đáp án (ghép đúng):**
+    - A hợp B — {2, 4, 6, 8, 10}
+    - A giao B — {6, 8}
+    - A \ B — {2, 4}
+    - B \ A — {10}
+  - **Lời giải:**
+    1. A hợp B gồm các phần tử thuộc A hoặc thuộc B: {2, 4, 6, 8, 10}.
+    2. A giao B gồm các phần tử thuộc cả A và B: {6, 8}.
+    3. A \ B gồm các phần tử thuộc A mà không thuộc B: {2, 4}.
+    4. B \ A gồm các phần tử thuộc B mà không thuộc A: chỉ còn {10}.
+- `dstt_t1_pt_07` · bậc 1 (Nhập môn) · Sắp xếp bước giải · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Cho A = {1, 2, 3, 4, 5}, B = {2, 4, 6} và C = {5, 7}. Sắp xếp các bước tìm (A giao B) hợp C.
+  - **Đáp án (thứ tự đúng):**
+    1. Làm phép trong ngoặc trước: tìm các phần tử thuộc cả A và B.
+    2. Được A giao B = {2, 4}.
+    3. Lấy hợp với C: (A giao B) hợp C = {2, 4} hợp {5, 7}.
+    4. Kết quả là {2, 4, 5, 7}.
+  - **Lời giải:**
+    1. Phép trong ngoặc làm trước: A giao B gồm 2 và 4, vì đó là hai phần tử có mặt ở cả A và B.
+    2. Sau đó hợp {2, 4} với C = {5, 7} bằng cách gộp các phần tử của hai tập.
+    3. Vậy (A giao B) hợp C = {2, 4, 5, 7}.
 - `dstt_g1_giao` · bậc 1 (Nhập môn) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho A = {1, 2, 8} và B = {1, 4, 6, 7}. Liệt kê các phần tử của A giao B.
   - **Đáp án:** 1  (thứ tự nào cũng được)
@@ -173,6 +196,17 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Trong một cặp của A x B, thành phần đứng trước phải thuộc A, thành phần đứng sau phải thuộc B.
     2. Ở cặp (a, 1), thành phần đứng trước là a, không thuộc A.
     3. Cặp (a, 1) thuộc B x A chứ không thuộc A x B.
+- `dstt_t1_td_05` · bậc 1 (Nhập môn) · Ghép cặp · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Cho A = {1, 2} và B = {a, b, c}. Ghép mỗi tích Descartes với số phần tử của nó.
+  - **Đáp án (ghép đúng):**
+    - A x B — 6
+    - B x B — 9
+    - A x A — 4
+    - A x {0} — 2
+  - **Lời giải:**
+    1. Số phần tử của X x Y bằng số phần tử của X nhân số phần tử của Y.
+    2. A có 2 phần tử, B có 3 phần tử, {0} có 1 phần tử.
+    3. A x B: 2 . 3 = 6. B x B: 3 . 3 = 9. A x A: 2 . 2 = 4. A x {0}: 2 . 1 = 2.
 - `dstt_g1_tich_dem` · bậc 1 (Nhập môn) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho A = {1, 4, 7} và B = {d, h}. Tích Descartes A x B có bao nhiêu phần tử?
   - **Đáp án:** 6
@@ -260,6 +294,18 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Tạo ảnh của {4} gồm mọi x sao cho f(x) thuộc {4}, tức là x^2 = 4.
     2. Phương trình x^2 = 4 có hai nghiệm x = 2 và x = -2.
     3. Tạo ảnh cần tìm là {-2, 2}.
+- `dstt_t1_ax_05` · bậc 2 (Cơ bản) · Sắp xếp bước giải · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Cho f: R -> R, f(x) = x^2 - 1. Sắp xếp các bước tìm tạo ảnh của tập {3}.
+  - **Đáp án (thứ tự đúng):**
+    1. Tạo ảnh của {3} gồm mọi số thực x có f(x) = 3.
+    2. Viết điều kiện đó thành phương trình x^2 - 1 = 3.
+    3. Chuyển vế: x^2 = 4.
+    4. Giải ra x = 2 hoặc x = -2.
+    5. Vậy tạo ảnh của {3} là {-2, 2}.
+  - **Lời giải:**
+    1. Tạo ảnh của một tập Y là tập các x có f(x) thuộc Y; ở đây Y chỉ có số 3.
+    2. f(x) = 3 nghĩa là x^2 - 1 = 3, tức x^2 = 4.
+    3. Phương trình có hai nghiệm 2 và -2, nên tạo ảnh là {-2, 2}.
 - `dstt_g1_anh_tap` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho f: R -> R, f(x) = x^2 - 1 và A = {-3, -2, 0, 3}. Liệt kê các phần tử của ảnh f(A).
   - **Đáp án:** -1, 3, 8  (thứ tự nào cũng được)
@@ -324,6 +370,18 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Một song ánh từ {1, 2, 3} vào chính nó xếp ba ảnh khác nhau cho 1, 2, 3.
     2. Ảnh của 1 có 3 cách chọn, ảnh của 2 còn 2 cách, ảnh của 3 còn 1 cách.
     3. Số song ánh là 3 . 2 . 1 = 6.
+- `dstt_t1_ds_05` · bậc 2 (Cơ bản) · Ghép cặp · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Mỗi ánh xạ dưới đây đi từ R vào R. Ghép mỗi ánh xạ với tính chất đúng của nó.
+  - **Đáp án (ghép đúng):**
+    - f(x) = 2x + 1 — song ánh
+    - f(x) = x^2 — không đơn ánh, không toàn ánh
+    - f(x) = e^x — đơn ánh nhưng không toàn ánh
+    - f(x) = x^3 - x — toàn ánh nhưng không đơn ánh
+  - **Lời giải:**
+    1. 2x + 1 = y có đúng một nghiệm x = (y - 1)/2 với mọi y, nên f(x) = 2x + 1 là song ánh.
+    2. x^2: f(1) = f(-1) nên không đơn ánh; số -1 không là ảnh của số nào nên không toàn ánh.
+    3. e^x: hàm tăng nên đơn ánh, nhưng e^x luôn dương nên số 0 và các số âm không là ảnh, do đó không toàn ánh.
+    4. x^3 - x: f(0) = f(1) = 0 nên không đơn ánh; là đa thức bậc ba nên nhận mọi giá trị thực, do đó toàn ánh.
 - `dstt_g1_dem_don_anh` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Có bao nhiêu đơn ánh từ một tập có 2 phần tử vào một tập có 6 phần tử?
   - **Đáp án:** 30
@@ -378,6 +436,18 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. f(g(2)) = f(3) = 9.
     2. g(f(2)) = g(4) = 5.
     3. Hiệu là 9 - 5 = 4, cho thấy đổi thứ tự hợp thành thì kết quả có thể khác.
+- `dstt_t1_hn_05` · bậc 2 (Cơ bản) · Sắp xếp bước giải · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Cho song ánh f: R -> R, f(x) = 3x - 2. Sắp xếp các bước tìm ánh xạ ngược g của f.
+  - **Đáp án (thứ tự đúng):**
+    1. Đặt y = 3x - 2 và tìm x theo y.
+    2. Chuyển -2 sang vế trái: 3x = y + 2.
+    3. Chia hai vế cho 3: x = (y + 2)/3.
+    4. Vậy g(y) = (y + 2)/3, viết lại theo biến x là g(x) = (x + 2)/3.
+    5. Thử lại: f(g(x)) = 3 . (x + 2)/3 - 2 = x.
+  - **Lời giải:**
+    1. Ánh xạ ngược đưa mỗi y về đúng số x có f(x) = y, nên ta giải phương trình y = 3x - 2 theo x.
+    2. 3x = y + 2, rồi x = (y + 2)/3.
+    3. Do đó g(x) = (x + 2)/3; thay vào f thấy f(g(x)) = x, đúng như mong đợi.
 - `dstt_g1_nguoc` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho song ánh f: R -> R, f(x) = -3x + 9. Tìm x sao cho f(x) = 12, tức là giá trị của ánh xạ ngược tại 12.
   - **Đáp án:** -1
@@ -397,7 +467,7 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
 
 ## Tầng 2: Số phức
 
-33 dạng câu (21 câu viết tay, 12 bộ sinh câu); 33 chưa duyệt.
+39 dạng câu (27 câu viết tay, 12 bộ sinh câu); 39 chưa duyệt.
 
 ### Dạng đại số của số phức (`dstt_t2_dang_dai_so`)
 
@@ -415,6 +485,17 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
   - **Đáp án:** -1
     1. Đơn vị ảo i được định nghĩa bởi tính chất i^2 = -1.
     2. Không có số thực nào có bình phương âm, vì vậy i không phải là số thực.
+- `dstt_t2_ds_05` · bậc 1 (Nhập môn) · Ghép cặp · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Ghép mỗi số phức với phần thực và phần ảo của nó.
+  - **Đáp án (ghép đúng):**
+    - z = 3 - 2i — phần thực 3, phần ảo -2
+    - z = -2 + 3i — phần thực -2, phần ảo 3
+    - z = 3i — phần thực 0, phần ảo 3
+    - z = -2 — phần thực -2, phần ảo 0
+  - **Lời giải:**
+    1. Với z = a + bi (a, b thực), phần thực là a, phần ảo là b; phần ảo là số thực b, không kèm i.
+    2. 3 - 2i có a = 3, b = -2. -2 + 3i có a = -2, b = 3.
+    3. 3i = 0 + 3i có a = 0, b = 3. -2 = -2 + 0i có a = -2, b = 0.
 - `dstt_g2_phan_thuc_ao` · bậc 1 (Nhập môn) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho số phức z = -5 - 7i. Phần ảo của z bằng bao nhiêu?
   - **Đáp án:** -7
@@ -470,6 +551,17 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
   - **Đáp án:** Đúng
     1. Cộng phần thực: 2 + 1 = 3. Cộng phần ảo: 3 + (-3) = 0.
     2. Tổng là 3, có phần ảo bằng 0, nên là một số thực.
+- `dstt_t2_cn_04` · bậc 1 (Nhập môn) · Sắp xếp bước giải · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Sắp xếp các bước tính tích (2 + 3i)(1 - i).
+  - **Đáp án (thứ tự đúng):**
+    1. Nhân phân phối: (2 + 3i)(1 - i) = 2 - 2i + 3i - 3i^2.
+    2. Thay i^2 = -1: được 2 - 2i + 3i + 3.
+    3. Gộp phần thực và phần ảo: (2 + 3) + (-2 + 3)i.
+    4. Kết quả là 5 + i.
+  - **Lời giải:**
+    1. Nhân từng số hạng của ngoặc thứ nhất với từng số hạng của ngoặc thứ hai: 2 . 1, 2 . (-i), 3i . 1, 3i . (-i).
+    2. Số hạng -3i^2 bằng +3 vì i^2 = -1.
+    3. Phần thực 2 + 3 = 5, phần ảo -2 + 3 = 1, nên tích là 5 + i.
 - `dstt_g2_cong_tru` · bậc 1 (Nhập môn) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho z = -5 - 7i và w = -1 - 6i. Tính z - w. Nhập phần thực và phần ảo, cách nhau bằng dấu phẩy.
   - **Đáp án:** -4, -1
@@ -533,6 +625,17 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Môđun của a + bi là căn bậc hai của a^2 + b^2.
     2. a^2 + b^2 là số thực không âm, nên căn bậc hai của nó là số thực không âm.
     3. Về hình học, môđun là khoảng cách từ điểm biểu diễn z đến gốc tọa độ.
+- `dstt_t2_lh_05` · bậc 1 (Nhập môn) · Ghép cặp · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Ghép mỗi số phức với môđun của nó.
+  - **Đáp án (ghép đúng):**
+    - 3 + 4i — 5
+    - 5 - 12i — 13
+    - -6 + 8i — 10
+    - -2i — 2
+  - **Lời giải:**
+    1. Môđun của a + bi là căn bậc hai của a^2 + b^2.
+    2. 3^2 + 4^2 = 25 nên môđun là 5. 5^2 + 12^2 = 169 nên môđun là 13.
+    3. 6^2 + 8^2 = 100 nên môđun là 10. -2i = 0 - 2i có 0^2 + 2^2 = 4 nên môđun là 2.
 - `dstt_g2_modun` · bậc 1 (Nhập môn) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Tính môđun của số phức z = 5 - 12i.
   - **Đáp án:** 13
@@ -618,6 +721,20 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Nhân cả tử và mẫu với số phức liên hợp của mẫu là 1 - i.
     2. Mẫu: (1 + i)(1 - i) = 1 + 1 = 2. Tử: 1 - i.
     3. 1 / (1 + i) = (1 - i)/2 = 1/2 - (1/2)i.
+- `dstt_t2_ch_04` · bậc 2 (Cơ bản) · Ghép cặp · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Ghép mỗi phép chia số phức với kết quả của nó.
+  - **Đáp án (ghép đúng):**
+    - (2 + 4i) / 2 — 1 + 2i
+    - 2 / i — -2i
+    - (1 + i) / (1 - i) — i
+    - 5 / (2 + i) — 2 - i
+    - 10 / (1 - 3i) — 1 + 3i
+  - **Lời giải:**
+    1. Chia cho số thực 2: chia cả phần thực lẫn phần ảo, được 1 + 2i.
+    2. 2 / i: nhân tử và mẫu với -i, được -2i / 1 = -2i.
+    3. (1 + i) / (1 - i): nhân tử và mẫu với 1 + i, được (1 + i)^2 / 2 = 2i / 2 = i.
+    4. 5 / (2 + i): nhân với 2 - i, được 5(2 - i) / 5 = 2 - i.
+    5. 10 / (1 - 3i): nhân với 1 + 3i, được 10(1 + 3i) / 10 = 1 + 3i.
 - `dstt_g2_chia` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Tính (-4 + 4i) / (-3 + i). Nhập phần thực và phần ảo (có thể là phân số), cách nhau bằng dấu phẩy.
   - **Đáp án:** 8/5, -4/5
@@ -678,6 +795,17 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Theo công thức Moivre, lũy thừa bậc n có môđun bằng môđun ban đầu lũy thừa n.
     2. Môđun của z^3 là 2^3 = 8.
     3. Acgumen của z^3 là 3 . 30 = 90 độ, nhưng câu hỏi chỉ cần môđun.
+- `dstt_t2_lg_04` · bậc 2 (Cơ bản) · Sắp xếp bước giải · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Cho z = 2(cos 30 độ + i sin 30 độ). Sắp xếp các bước tính z^3 bằng công thức Moivre.
+  - **Đáp án (thứ tự đúng):**
+    1. Theo công thức Moivre: z^3 = 2^3 (cos(3 . 30 độ) + i sin(3 . 30 độ)).
+    2. Tính ra: z^3 = 8(cos 90 độ + i sin 90 độ).
+    3. Thay cos 90 độ = 0 và sin 90 độ = 1: z^3 = 8(0 + i).
+    4. Vậy z^3 = 8i.
+  - **Lời giải:**
+    1. Công thức Moivre: lũy thừa n của r(cos a + i sin a) có môđun r^n và acgumen n . a.
+    2. Ở đây r = 2, a = 30 độ, n = 3: môđun 8, acgumen 90 độ.
+    3. cos 90 độ = 0, sin 90 độ = 1, nên z^3 = 8i.
 - `dstt_g2_moivre` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Dùng dạng lượng giác và công thức Moivre, tính (1 - i)^3. Nhập phần thực và phần ảo, cách nhau bằng dấu phẩy.
   - **Đáp án:** -2, -2
@@ -741,6 +869,18 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Bốn căn bậc bốn của 16 có môđun 2 và acgumen 0, 90, 180, 270 độ.
     2. Đó là 2, 2i, -2 và -2i.
     3. Các căn là số thực: 2 và -2.
+- `dstt_t2_cb_05` · bậc 2 (Cơ bản) · Sắp xếp bước giải · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Sắp xếp các bước tìm các căn bậc hai của số phức 2i.
+  - **Đáp án (thứ tự đúng):**
+    1. Gọi một căn bậc hai của 2i là w = x + yi, với x, y là số thực.
+    2. Bình phương: w^2 = x^2 - y^2 + 2xyi.
+    3. So sánh w^2 với 2i = 0 + 2i: x^2 - y^2 = 0 và 2xy = 2.
+    4. Từ xy = 1 thì x, y cùng dấu; kết hợp x^2 = y^2 được y = x, nên x^2 = 1.
+    5. Có x = 1 hoặc x = -1, nên hai căn bậc hai của 2i là 1 + i và -1 - i.
+  - **Lời giải:**
+    1. Hai số phức bằng nhau khi phần thực bằng nhau và phần ảo bằng nhau.
+    2. x^2 - y^2 = 0 cho y = x hoặc y = -x; 2xy = 2 loại trường hợp y = -x vì khi đó 2xy = -2x^2 không dương.
+    3. Thử lại: (1 + i)^2 = 1 + 2i - 1 = 2i và (-1 - i)^2 = 2i.
 - `dstt_g2_can_bac_hai` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Số phức w = -21 + 20i có hai căn bậc hai. Tìm căn có phần thực dương. Nhập phần thực và phần ảo, cách nhau bằng dấu phẩy.
   - **Đáp án:** 2, 5
@@ -763,7 +903,7 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
 
 ## Tầng 3: Vectơ trong R^n và ma trận
 
-35 dạng câu (23 câu viết tay, 12 bộ sinh câu); 35 chưa duyệt.
+41 dạng câu (29 câu viết tay, 12 bộ sinh câu); 41 chưa duyệt.
 
 ### Vectơ trong R^n (`dstt_t3_vecto_rn`)
 
@@ -783,6 +923,17 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Số chiều của vectơ là số tọa độ của nó.
     2. Vectơ này có 4 tọa độ: 4, -1, 0 và 7.
     3. Tọa độ bằng 0 vẫn được tính, nên vectơ thuộc R^4.
+- `dstt_t3_vt_04` · bậc 2 (Cơ bản) · Sắp xếp bước giải · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Cho u = (1, -2, 0) và v = (2, 1, -1) trong R^3. Sắp xếp các bước tìm vectơ x sao cho x + 2u = v.
+  - **Đáp án (thứ tự đúng):**
+    1. Trừ 2u ở cả hai vế: x = v - 2u.
+    2. Thay u và v vào: x = (2, 1, -1) - 2(1, -2, 0).
+    3. Nhân 2 với từng tọa độ của u: x = (2, 1, -1) - (2, -4, 0).
+    4. Trừ từng tọa độ: x = (0, 5, -1).
+  - **Lời giải:**
+    1. Phương trình vectơ được biến đổi như phương trình số: x = v - 2u.
+    2. 2u = (2, -4, 0), rồi v - 2u = (2 - 2, 1 + 4, -1 - 0) = (0, 5, -1).
+    3. Thử lại: x + 2u = (0 + 2, 5 - 4, -1 + 0) = (2, 1, -1) = v.
 - `dstt_g3_to_hop_vecto` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho u = (-3, 4, -4) và v = (-1, -4, 2) trong R^3. Tính u + v. Nhập các tọa độ theo thứ tự, cách nhau bằng dấu phẩy.
   - **Đáp án:** -4, 0, -2
@@ -835,6 +986,19 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
   - **Đáp án:** Đúng
     1. Quy ước chung: chỉ số thứ nhất chỉ hàng, chỉ số thứ hai chỉ cột.
     2. Ví dụ a_23 là phần tử ở hàng 2, cột 3.
+- `dstt_t3_kt_04` · bậc 2 (Cơ bản) · Ghép cặp · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Cho ma trận A như hình. Ghép mỗi phần tử của A với giá trị của nó.
+  - A = (7, -1, 0); (2, 5, 9)  (từng hàng)
+  - **Đáp án (ghép đúng):**
+    - a_12 — -1
+    - a_21 — 2
+    - a_13 — 0
+    - a_23 — 9
+    - a_22 — 5
+  - **Lời giải:**
+    1. a_ij là phần tử ở hàng i, cột j: chỉ số thứ nhất là hàng, chỉ số thứ hai là cột.
+    2. Hàng 1 của A là (7, -1, 0) nên a_12 = -1 và a_13 = 0.
+    3. Hàng 2 của A là (2, 5, 9) nên a_21 = 2, a_22 = 5 và a_23 = 9.
 - `dstt_g3_phan_tu` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho ma trận A như hình. Phần tử a_14 bằng bao nhiêu?
   - A = (-7, -1, -6, 6); (5, 6, 3, -3)  (từng hàng)
@@ -922,6 +1086,19 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Mỗi phần tử của 3A bằng 3 lần phần tử tương ứng của A.
     2. 3 . a_ij = 0 chỉ khi a_ij = 0.
     3. Mọi phần tử của A đều bằng 0, nên A là ma trận không.
+- `dstt_t3_cm_04` · bậc 3 (Vận dụng) · Sắp xếp bước giải · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Cho hai ma trận A và B như hình. Sắp xếp các bước tìm ma trận X sao cho 2X + B = A.
+  - A = (1, 2); (0, -1)  (từng hàng)
+  - B = (3, 0); (1, 1)  (từng hàng)
+  - **Đáp án (thứ tự đúng):**
+    1. Chuyển B sang vế phải: 2X = A - B.
+    2. Thay A và B: 2X có hàng 1 là (1 - 3, 2 - 0) và hàng 2 là (0 - 1, -1 - 1).
+    3. Tính các hiệu: 2X có hàng 1 là (-2, 2) và hàng 2 là (-1, -2).
+    4. Chia mọi phần tử cho 2: X có hàng 1 là (-1, 1) và hàng 2 là (-1/2, -1).
+  - **Lời giải:**
+    1. Cộng và nhân ma trận với một số làm theo từng vị trí, nên biến đổi như phương trình số: 2X = A - B, rồi X = (1/2)(A - B).
+    2. A - B có hàng (-2, 2) và (-1, -2); chia cho 2 được X có hàng (-1, 1) và (-1/2, -1).
+    3. Thử lại: 2X có hàng (-2, 2) và (-1, -2); cộng B được hàng (1, 2) và (0, -1), đúng bằng A.
 - `dstt_g3_to_hop_ma_tran` · bậc 3 (Vận dụng) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho hai ma trận A và B như hình. Phần tử ở hàng 2, cột 2 của 2A - 3B bằng bao nhiêu?
   - A = (-3, 4, -4); (-1, -4, 2)  (từng hàng)
@@ -960,6 +1137,19 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Phần tử ở hàng i, cột j của A^T là a_ji.
     2. Chuyển vị lần nữa, phần tử ở hàng i, cột j lại là a_ij.
     3. Mọi phần tử trở về chỗ cũ, nên (A^T)^T = A.
+- `dstt_t3_cv_05` · bậc 2 (Cơ bản) · Ghép cặp · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Cho ma trận A như hình. Ghép mỗi phần tử của A^T với giá trị của nó (hàng trước, cột sau).
+  - A = (1, -3, 0); (2, 8, 5)  (từng hàng)
+  - **Đáp án (ghép đúng):**
+    - hàng 1, cột 2 của A^T — 2
+    - hàng 2, cột 1 của A^T — -3
+    - hàng 2, cột 2 của A^T — 8
+    - hàng 3, cột 1 của A^T — 0
+    - hàng 3, cột 2 của A^T — 5
+  - **Lời giải:**
+    1. Phần tử ở hàng i, cột j của A^T là phần tử ở hàng j, cột i của A.
+    2. A^T cỡ 3 x 2 có hàng 1 là (1, 2), hàng 2 là (-3, 8), hàng 3 là (0, 5).
+    3. Từ đó đọc ra: hàng 1 cột 2 là 2, hàng 2 cột 1 là -3, hàng 2 cột 2 là 8, hàng 3 cột 1 là 0, hàng 3 cột 2 là 5.
 - `dstt_g3_chuyen_vi_phan_tu` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho ma trận A như hình. Phần tử ở hàng 2, cột 3 của A^T bằng bao nhiêu?
   - A = (9, -7); (-1, -6); (6, 5)  (từng hàng)
@@ -1057,6 +1247,17 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Vết có tính tuyến tính: tr(2A + I) = 2 . tr(A) + tr(I).
     2. tr(I) = 3 vì đường chéo chính của I gồm ba số 1.
     3. tr(2A + I) = 2 . 4 + 3 = 11.
+- `dstt_t3_vet_05` · bậc 3 (Vận dụng) · Sắp xếp bước giải · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** A và B là hai ma trận vuông cấp 3 có tr(A) = 5 và tr(B) = -2. Sắp xếp các bước tính tr(3A - 2B + I_3).
+  - **Đáp án (thứ tự đúng):**
+    1. Vết của một tổng bằng tổng các vết: tr(3A - 2B + I_3) = tr(3A) + tr(-2B) + tr(I_3).
+    2. Đưa hệ số ra ngoài vết: = 3 tr(A) - 2 tr(B) + tr(I_3).
+    3. Thay số, với tr(I_3) = 3: = 3 . 5 - 2 . (-2) + 3.
+    4. Tính ra: 15 + 4 + 3 = 22.
+  - **Lời giải:**
+    1. Vết cộng các phần tử trên đường chéo chính, nên tr(X + Y) = tr(X) + tr(Y) và tr(kX) = k tr(X).
+    2. Ma trận đơn vị I_3 có ba số 1 trên đường chéo nên tr(I_3) = 3.
+    3. tr(3A - 2B + I_3) = 3 . 5 - 2 . (-2) + 3 = 15 + 4 + 3 = 22.
 - `dstt_g3_vet_to_hop` · bậc 3 (Vận dụng) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho hai ma trận A và B như hình. Tính tr(-2A - 3B).
   - A = (-2, -4); (2, -3)  (từng hàng)
@@ -1134,6 +1335,18 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Ma trận tam giác trên có mọi phần tử nằm dưới đường chéo chính bằng 0.
     2. Cấp 3 có 9 phần tử, trong đó 3 phần tử nằm dưới đường chéo chính.
     3. Nhiều nhất 9 - 3 = 6 phần tử có thể khác 0.
+- `dstt_t3_db_07` · bậc 3 (Vận dụng) · Ghép cặp · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Mỗi ma trận cấp 2 bên trái được cho bởi hàng 1 rồi hàng 2. Ghép mỗi ma trận với mô tả đúng của nó.
+  - **Đáp án (ghép đúng):**
+    - (1, 0) và (0, 1) — ma trận đơn vị
+    - (2, 0) và (0, 5) — ma trận chéo nhưng không là ma trận đơn vị
+    - (1, 3) và (0, 2) — tam giác trên nhưng không là ma trận chéo
+    - (1, 3) và (3, 2) — đối xứng nhưng không là ma trận chéo
+  - **Lời giải:**
+    1. Ma trận chéo có mọi phần tử ngoài đường chéo chính bằng 0; ma trận đơn vị là ma trận chéo có đường chéo toàn số 1.
+    2. (1, 0) và (0, 1) là ma trận đơn vị; (2, 0) và (0, 5) là ma trận chéo nhưng đường chéo không toàn số 1.
+    3. (1, 3) và (0, 2) có a_21 = 0 nhưng a_12 = 3, nên là tam giác trên, không chéo và không đối xứng.
+    4. (1, 3) và (3, 2) có a_12 = a_21 = 3, nên đối xứng nhưng không chéo, cũng không tam giác trên.
 - `dstt_g3_doi_xung_dien` · bậc 3 (Vận dụng) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Ma trận A như hình là ma trận đối xứng. Tìm x và y. Nhập x rồi y, cách nhau bằng dấu phẩy.
   - A = (7, -2, x); (y, 7, 7); (3, 7, -4)  (từng hàng)

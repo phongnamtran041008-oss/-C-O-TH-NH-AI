@@ -461,6 +461,13 @@ class World:
             err = combat.cast(p, msg.k, msg.id, self.mono(), self.rng) if p else "cannot"
             s.send({"t": "cast", "k": msg.k, "ok": err is None, "code": err,
                     "ready_in": round(max(0.0, p.skill_ready.get(msg.k, 0) - self.mono()), 2) if p else 0})
+        elif isinstance(msg, protocol.MathCast):
+            from ..systems import math_skills   # chiêu thức gắn câu hỏi (M9)
+            p = s.player
+            err = math_skills.request(p, msg.k, msg.id, self.mono()) if p else "cannot"
+            if err is not None:   # refused at once; the rest of the answer comes from the background task
+                s.send({"t": "mcast", "k": msg.k, "ok": False, "code": err,
+                        "message_vi": math_skills.REFUSALS_VI.get(err, math_skills.REFUSALS_VI["cannot"])})
         elif isinstance(msg, protocol.PartyCmd):
             self.parties.handle(s, msg)
         elif isinstance(msg, protocol.RealmCmd):
@@ -607,6 +614,7 @@ class World:
         else:
             zone_id = ABODE
         self.players.pop(p.user_id, None)
+        p.mcombo = 0   # the chiêu combo (M9) is not kept across leaving the world
         if p.session is not None and p.session.player is p:
             p.session.player = None
         if p.session is not None:  # remember the body for the next time it steps out
