@@ -82,16 +82,31 @@ def run_library_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait(lambda: drv.top_is("MathPracticeScene") and top(drv).path is not None, 10, "the math path")
         drv.click("math_library")
         drv.wait(lambda: drv.top_is("LibraryListScene") and top(drv).data is not None, 10, "the library")
-        docs = [d for s in top(drv).data["subjects"] for d in s["documents"]]
-        assert [d["floor"] for d in docs] == [1, 2, 3] and all(len(d["sections"]) == 6 for d in docs)
+        listed = top(drv).data["subjects"]
+        # M11: four subjects, each written to floor 3, one tab each; the list opens on the hub's subject
+        assert [s["id"] for s in listed] == ["dai_so_tuyen_tinh", "giai_tich", "xac_suat_thong_ke", "toi_uu_roi_rac"]
+        assert top(drv).tab == 0
+        for s in listed:
+            assert [d["floor"] for d in s["documents"]] == [1, 2, 3], s["id"]
+            assert all(len(d["sections"]) == len(d["skills"]) for d in s["documents"])
+        assert all(len(d["sections"]) == 6 for d in listed[0]["documents"])
         drv.shot("library_list")
 
-        # ---- read every document from the first line to the last
-        for doc in docs:
+        # ---- read every document of every subject from the first line to the last
+        docs = []
+        for s in listed:
+            drv.click(f"lib_tab_{s['id']}")
+            assert top(drv).tab == listed.index(s)
+            assert all(drv.has(f"lib_open_{d['id']}") for d in s["documents"])
+            if s is listed[1]:
+                drv.shot("library_list_second_subject")
+            docs += [(s["id"], d) for d in s["documents"]]
+        for sid, doc in docs:
+            drv.click(f"lib_tab_{sid}")
             drv.click(f"lib_open_{doc['id']}")
             drv.wait_scene("DocScene")
-            seen = read_whole_document(drv, f"library_t{doc['floor']}" if doc["floor"] == 3 else None)
-            print(f"  floor {doc['floor']}: {seen}")
+            seen = read_whole_document(drv, f"library_{sid}_t{doc['floor']}" if doc["floor"] == 3 else None)
+            print(f"  {sid} floor {doc['floor']}: {seen}")
             assert top(drv).current_section() == len(doc["sections"]) - 1, "the end is not the last section"
             drv.press(pygame.K_HOME)
             drv.step(2)

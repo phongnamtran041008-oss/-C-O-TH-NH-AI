@@ -222,13 +222,65 @@ class DocScene(Scene):
         ui.fill(x, y + (ch - bar) * self.scroll / max(1.0, self.total - ch), 3, bar, UICOL["accent"])
 
 
-class LibraryListScene(Scene):
-    """Every document the game ships, by bí cảnh and tầng."""
+def subject_tabs(ui, prefix: str, subjects: list[dict], current: int, x: float, y: float, w: float,
+                 h: float = 13) -> int:
+    """M11: one tab per bí cảnh (four subjects do not fit one panel), widget ids
+    `<prefix>_<subject id>`. Click a tab, or Left / Right to move to the next one. Returns the
+    index of the subject now shown."""
+    n = len(subjects)
+    if not n:
+        return 0
+    current = max(0, min(current, n - 1))
+    gap = 4
+    widths = [ui.text_size(s["name_vi"], 7)[0] + 12 for s in subjects]
+    k = min(1.0, (w - gap * (n - 1)) / sum(widths))         # names that do not fit are shortened
+    cx = x
+    for i, s in enumerate(subjects):
+        bw = widths[i] * k
+        label = s["name_vi"] if k >= 1 else mathdraw.fit(ui, s["name_vi"], 7, bw - 6)
+        if ui.button(f"{prefix}_{s['id']}", cx, y, bw, h, label, size=7, selected=i == current):
+            current = i
+        cx += bw + gap
+    if n > 1:
+        if ui.key(pygame.K_RIGHT):
+            current = (current + 1) % n
+        if ui.key(pygame.K_LEFT):
+            current = (current - 1) % n
+    return current
 
-    def __init__(self, game):
+
+def scroll_rows(ui, first: int, total: int, shown: int, x: float, y: float, w: float, h: float) -> int:
+    """M11: the index of the first row a list shows, after the mouse wheel (over the list) and
+    Up / Down. `total` rows, `shown` fit."""
+    most = max(0, total - shown)
+    if ui.hover(x, y, w, h) and ui.inp.wheel:
+        first -= ui.inp.wheel
+        ui.inp.wheel = 0
+    if ui.key(pygame.K_DOWN):
+        first += 1
+    if ui.key(pygame.K_UP):
+        first -= 1
+    return max(0, min(first, most))
+
+
+class LibraryListScene(Scene):
+    """Every document the game ships, one bí cảnh at a time (M11: a tab per subject), floor
+    by floor; a subject with more documents than the panel holds scrolls."""
+
+    ROW = 28            # a document: its line and its summary
+
+    def __init__(self, game, subject_id: str | None = None):
         super().__init__(game)
         self.data: dict | None = None
-        self.api.get("/math/library", lambda d: setattr(self, "data", d), self.game.api_error)
+        self.want = subject_id          # open on this subject when it has documents
+        self.tab = 0
+        self.first = 0                  # the first document shown (scrolling)
+        self.api.get("/math/library", self.loaded, self.game.api_error)
+
+    def loaded(self, data: dict) -> None:
+        self.data = data
+        ids = [s["id"] for s in data.get("subjects", [])]
+        self.tab = ids.index(self.want) if self.want in ids else 0
 
     def open(self, doc_id: str) -> None:
         self.game.push(DocScene(self.game, doc_id))
@@ -239,23 +291,32 @@ class LibraryListScene(Scene):
         ui.panel(x, y, w, h, T.LIB_TITLE)
         if self.data is None:
             ui.text(T.MATH_LOADING, x + w / 2, y + h / 2, 9, GREY, anchor="center")
+        elif not self.data["subjects"]:
+            ui.text(T.LIB_EMPTY, x + w / 2, y + h / 2, 8, GREY, anchor="center")
         else:
-            cy = y + 24
-            for s in self.data["subjects"]:
-                ui.text(s["name_vi"], x + 12, cy, 10, UICOL["accent"])
-                cy += 15
-                for d in s["documents"]:
-                    ui.text(T.MATH_FLOOR.format(n=d["floor"]), x + 12, cy + 6, 8, INK, anchor="midleft")
-                    ui.text(mathdraw.fit(ui, d["title_vi"], 8, 150), x + 58, cy + 6, 8, INK, anchor="midleft")
-                    ui.text(T.LIB_SECTIONS.format(n=len(d["sections"])), x + 218, cy + 6, 7, GREY,
-                            anchor="midleft")
-                    if ui.button(f"lib_open_{d['id']}", x + w - 68, cy, 56, 13, T.LIB_READ, size=7,
-                                 style="primary"):
-                        self.open(d["id"])
-                    cy += 16
-                    ui.text(mathdraw.fit(ui, d["summary_vi"], 7, w - 90), x + 58, cy, 7, GREY)
-                    cy += 12
-            if not self.data["subjects"]:
-                ui.text(T.LIB_EMPTY, x + w / 2, y + h / 2, 8, GREY, anchor="center")
+            subjects = self.data["subjects"]
+            tab = subject_tabs(ui, "lib_tab", subjects, self.tab, x + 12, y + 19, w - 24)
+            if tab != self.tab:
+                self.tab, self.first = tab, 0
+            docs = subjects[self.tab]["documents"]
+            top, bottom = y + 38, y + h - 24
+            shown = int((bottom - top) // self.ROW)
+            self.first = scroll_rows(ui, self.first, len(docs), shown, x, top, w, bottom - top)
+            cy = top
+            for d in docs[self.first:self.first + shown]:
+                ui.text(T.MATH_FLOOR.format(n=d["floor"]), x + 12, cy + 6, 8, INK, anchor="midleft")
+                ui.text(mathdraw.fit(ui, d["title_vi"], 8, 150), x + 58, cy + 6, 8, INK, anchor="midleft")
+                ui.text(T.LIB_SECTIONS.format(n=len(d["sections"])), x + 218, cy + 6, 7, GREY,
+                        anchor="midleft")
+                if ui.button(f"lib_open_{d['id']}", x + w - 68, cy, 56, 13, T.LIB_READ, size=7,
+                             style="primary"):
+                    self.open(d["id"])
+                cy += 16
+                ui.text(mathdraw.fit(ui, d["summary_vi"], 7, w - 90), x + 58, cy, 7, GREY)
+                cy += 12
+            more = len(docs) - shown
+            if more > 0:
+                ui.text(T.MATH_LIST_MORE.format(a=self.first + 1, b=min(len(docs), self.first + shown),
+                                                t=len(docs)), x + 12, y + h - 13, 7, GREY, anchor="midleft")
         if ui.button("lib_close", x + w - 62, y + h - 20, 50, 14, T.CLOSE, key=pygame.K_ESCAPE):
             self.close()

@@ -5,10 +5,10 @@
     {"id": "dai_so_tuyen_tinh", "order": 1, "name_vi": "Đại Số Tuyến Tính",
      "courses": ["MI1144", "MI1141"], "file": "dai_so_tuyen_tinh.json"},
     {"id": "giai_tich", "order": 2, "name_vi": "Giải Tích",
-     "courses": ["MI1114", "MI1111"], "file": null},
+     "courses": ["MI1114", "MI1111"], "file": "giai_tich.json"},
     {"id": "xac_suat_thong_ke", "order": 3, "name_vi": "Xác Suất và Thống Kê",
-     "courses": ["MI2021", "MI3030", "MI3350"], "file": null},
+     "courses": ["MI2021", "MI3030", "MI3350"], "file": "xac_suat_thong_ke.json"},
     {"id": "toi_uu_roi_rac", "order": 4, "name_vi": "Tối Ưu và Toán Rời Rạc",
-     "courses": ["IT3020", "MI3052", "MI2044"], "file": null}
+     "courses": ["IT3020", "MI3052", "MI2044"], "file": "toi_uu_roi_rac.json"}
   ]
 }

@@ -21,7 +21,9 @@ Leaving a floor (M5, rules 3 and 6; the rules themselves are in learning/math_ma
 
   * floor 1 of a subject is open, and a floor opens when the floor below it is cleared;
   * a floor is cleared by passing its own test, the Thiên kiếp nhỏ - a sitting with
-    `mode == "trial"`, one question per micro-skill at the hardest tier of the floor;
+    `mode == "trial"`, one question per micro-skill at the hardest tier of the floor - or
+    skipped by the bài kiểm tra đầu vào (M11, systems/math_placement.py; `cleared_floors`
+    is the one place both are read);
   * that test can only be started once every micro-skill of the floor is through the
     mastery gate (half (a) of rule 3), which is read from the answer log;
   * an ordinary sitting mixes in **spiral review**: every fourth question or so comes from
@@ -48,6 +50,7 @@ from ..models import MathAnswer, MathRetry, MathRun, QuizSession, User
 
 CONTEXT = "math"
 PRACTICE, TRIAL = "practice", "trial"
+PLACEMENT = "placement"     # M11: bài kiểm tra đầu vào (systems/math_placement.py)
 DRAW_TRIES = 30         # draws of one generator before giving up on finding numbers not seen lately
 REVIEW_SCAN = 4         # times the gate window: how far back the review schedule reads the log
 
@@ -79,16 +82,43 @@ def run_view(run: MathRun) -> dict:
 
 
 async def open_run(db: AsyncSession, user_id: int) -> MathRun | None:
-    return (await db.execute(select(MathRun).where(MathRun.user_id == user_id, MathRun.ended_at.is_(None))
+    """The buổi luyện or Thiên kiếp nhỏ the player left open. A placement sitting (M11) is
+    not one of them: it has its own routes and lives beside them."""
+    return (await db.execute(select(MathRun).where(MathRun.user_id == user_id, MathRun.ended_at.is_(None),
+                                                   MathRun.mode != PLACEMENT)
                              .order_by(MathRun.id.desc()))).scalars().first()
 
 
-async def cleared_floors(db: AsyncSession, user_id: int, subject_id: str) -> set[int]:
+async def trial_floors(db: AsyncSession, user_id: int, subject_id: str) -> set[int]:
     """The floors of this subject whose Thiên kiếp nhỏ the player has passed."""
     rows = (await db.execute(select(MathRun.floor).where(
         MathRun.user_id == user_id, MathRun.subject_id == subject_id,
         MathRun.mode == TRIAL, MathRun.passed.is_(True)).distinct())).scalars().all()
     return set(rows)
+
+
+async def placement_floors(db: AsyncSession, user_id: int, subject_id: str) -> set[int]:
+    """The main floors of this subject the player skipped with the bài kiểm tra đầu vào
+    (M11): every main floor below the start floor of their latest finished sitting. An
+    abandoned sitting (`passed` not true) skipped nothing."""
+    run = (await db.execute(select(MathRun).where(
+        MathRun.user_id == user_id, MathRun.subject_id == subject_id, MathRun.mode == PLACEMENT,
+        MathRun.ended_at.is_not(None)).order_by(MathRun.id.desc()))).scalars().first()
+    if run is None or not run.passed:
+        return set()
+    try:
+        subject = math_path.subject(subject_id)
+    except KeyError:
+        return set()
+    return {f.number for f in subject.main_floors if f.number < run.floor}
+
+
+async def cleared_floors(db: AsyncSession, user_id: int, subject_id: str) -> set[int]:
+    """The floors of this subject that are behind the player: the ones whose Thiên kiếp nhỏ
+    they passed, and the ones the bài kiểm tra đầu vào let them skip (M11). The single
+    source of "which floor is this player on" - path_view, math_ask.open_floor and so every
+    M10 mode and the chiêu thức read it."""
+    return await trial_floors(db, user_id, subject_id) | await placement_floors(db, user_id, subject_id)
 
 
 async def floor_gate(db: AsyncSession, user_id: int, subject: math_path.Subject, floor: int,
@@ -106,10 +136,12 @@ async def path_view(db: AsyncSession, user: User) -> dict:
     """The subjects and floors, how many question templates each floor has for this server
     (hand-written items + generators), which floors are open or cleared and how far the
     mastery gate of each open floor has come, and the sitting the player left open (if any)."""
+    from . import math_placement        # (it imports this module)
     cfg = math_path.cfg()
     subjects = []
     for s in math_path.subjects():
-        cleared = await cleared_floors(db, user.id, s.id)
+        by_trial = await trial_floors(db, user.id, s.id)
+        cleared = by_trial | await placement_floors(db, user.id, s.id)
         floors = []
         for f in s.floors:
             lo, hi = math_path.floor_tiers(f.number)
@@ -124,6 +156,9 @@ async def path_view(db: AsyncSession, user: User) -> dict:
                            "generators": sum(1 for t in templates if t.generated),
                            "playable": bool(templates) and state != math_mastery.LOCKED,
                            "has_questions": bool(templates), "state": state, "gate": gate,
+                           # M11: a cleared floor was cleared by its Thiên kiếp nhỏ or skipped by placement
+                           "cleared_by": (None if f.number not in cleared else
+                                          "trial" if f.number in by_trial else "placement"),
                            "trial_total": math_mastery.trial_total(s, f.number, cfg),
                            "doc_id": docs[0].id if docs else None,
                            "skills": [{"id": k.id, "name_vi": k.name_vi} for k in f.skills]})
@@ -132,10 +167,20 @@ async def path_view(db: AsyncSession, user: User) -> dict:
                          "cleared": sorted(cleared), "next_floor": math_mastery.next_floor(s, cleared),
                          # how many programming exercises the player may open right now (M6)
                          "problems": sum(len(math_problems.floor_problems(s.id, n, settings.allow_unreviewed))
-                                         for n in playable_floors)})
+                                         for n in playable_floors),
+                         # M11: the bài kiểm tra đầu vào of this subject (offered / in progress / done)
+                         "placement": _placement_brief(await math_placement.state(db, user, s.id))})
     run = await open_run(db, user.id)
     return {"subjects": subjects, "run": run_view(run) if run else None,
             "tiers": {t: v["name_vi"] for t, v in cfg["tiers"].items() if not t.startswith("_")}}
+
+
+def _placement_brief(st: dict) -> dict:
+    """What the hub needs to know about the bài kiểm tra đầu vào of a subject."""
+    res = st.get("result") or {}
+    return {"status": st["status"], "offered": st["offered"], "planned": st["planned"],
+            "run_id": (st.get("run") or {}).get("run_id"),
+            "start_floor": res.get("start_floor"), "abandoned": res.get("abandoned")}
 
 
 def doc_link(skill_id: str) -> dict | None:
@@ -179,9 +224,9 @@ async def _open_floor(db: AsyncSession, user: User, subject_id: str, floor: int)
 
 async def _new_run(db: AsyncSession, user: User, subject_id: str, floor: int, mode: str, tier: int) -> MathRun:
     now = clock.now()
-    for old in (await db.execute(select(MathRun).where(MathRun.user_id == user.id,
+    for old in (await db.execute(select(MathRun).where(MathRun.user_id == user.id, MathRun.mode != PLACEMENT,
                                                        MathRun.ended_at.is_(None)))).scalars():
-        old.ended_at = now          # one sitting at a time
+        old.ended_at = now          # one sitting at a time (a placement sitting lives beside it, M11)
     run = MathRun(user_id=user.id, subject_id=subject_id, floor=floor, mode=mode, tier=tier,
                   correct_streak=0, wrong_streak=0, combo=0, best_combo=0, asked=0, correct=0,
                   review_asked=0, xp_gained=0, passed=None, started_at=now)
@@ -431,6 +476,8 @@ async def _due_retry(db: AsyncSession, user_id: int, run: MathRun) -> MathRetry 
 async def next_question(db: AsyncSession, user: User, run_id: int, rng: random.Random | None = None) -> dict:
     """The run's open question if it still has one, else a new one."""
     run = await _own_run(db, user, run_id, lock=True)
+    if run.mode == PLACEMENT:
+        raise MathError(409, "wrong_mode", "Bài kiểm tra đầu vào có đường riêng: /math/placement/next.")
     if run.ended_at is not None:
         raise MathError(409, "run_ended", "Buổi luyện này đã kết thúc.")
     now = clock.now()

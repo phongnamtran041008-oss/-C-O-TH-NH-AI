@@ -1134,3 +1134,65 @@ một lần, lần sau chỉ đăng nhập, dùng Firebase (dự án và API key
 - **"Hạt giống" của hầm ngục gọi là "linh thạch số".** Trên màn hình: "Linh thạch số 1001", ô nhập "Linh thạch
   số", nút "Chơi lại linh thạch này". Trong code và API vẫn là `seed`. Đây chỉ là cách gọi: vào hầm ngục không
   tốn Linh Thạch.
+
+## Nhánh `toan-tu-tien` — M11: ba bí cảnh còn lại của Luyện Khí (tầng 1-3), Tìm chỗ sai, kiểm tra đầu vào
+
+- **Phạm vi: khung đủ 9 tầng, viết đầy đủ tầng 1-3.** Kế hoạch ghi M11 là "thêm 3 bí cảnh còn lại" mà không
+  nói bao nhiêu tầng. Làm giống M1-M4 với Đại Số Tuyến Tính, đúng lời dặn trong phần rủi ro ("chia nhỏ theo
+  tầng, chỉ làm tầng 1-3 trước"): mỗi môn mới có đủ 9 tầng chính + tầng ẩn 10 (tên tầng theo mục 3.5, vi kỹ
+  năng, tiên quyết) và tầng 1-3 có ngân hàng câu, bộ sinh câu, bài đọc. **Tầng 4-9 của cả bốn môn chưa có
+  câu** - 24 tầng, phần lớn nhất của Luyện Khí. Vì thế vẫn chưa có câu bậc 4-5: Thiên Lôi Tuyệt Kỹ còn khoá,
+  loại câu Thiên kiếp chưa chơi được, và luật 8 (thang câu cho bậc 5) chưa có gì để áp dụng.
+- **Ba môn mới:** Giải Tích (`giai_tich`, tiền tố `gt`), Xác Suất và Thống Kê (`xac_suat_thong_ke`, `xs`), Tối Ưu
+  và Toán Rời Rạc (`toi_uu_roi_rac`, `tr`). Mỗi môn có file riêng cho mọi thứ: lộ trình, câu hỏi,
+  `math_gen/<tiền tố>_floor<N>.py`, `tools/math_verify_<tiền tố>.py`, thư mục bài đọc, bảng duyệt. Nhờ vậy ba
+  môn được viết song song mà không đụng file của nhau.
+- **Toán phải đúng, và có hai lớp kiểm.** Mỗi bộ sinh câu có phép tính lại bằng sympy theo đường khác với
+  chính nó (giải tích: `limit`, `solve`, chuỗi; xác suất: liệt kê cả không gian mẫu hoặc `sympy.stats`; rời
+  rạc: bảng chân trị, liệt kê mọi cấu hình, luỹ thừa ma trận cho truy hồi). Câu viết tay thì không máy nào
+  kiểm thay được: người viết phải tính lại độc lập, và mọi câu vẫn là `reviewed: false` cho tới khi người
+  chơi đọc bảng duyệt ở `tools/reports/`. Các câu người viết tự thấy kém chắc được nêu tên trong lời commit.
+- **Hai môn cùng chạm tổ hợp.** Tầng 1 của Xác Suất ("giải tích kết hợp") và tầng 1-2 của Toán Rời Rạc đều
+  đếm; đó là trùng lặp có sẵn trong đề cương. Xác Suất đếm để tính xác suất; Toán Rời Rạc dạy đếm như một
+  môn riêng (nguyên lý cộng / nhân, bù trừ, truy hồi) cùng logic mệnh đề và quy nạp.
+- **Ký hiệu.** Câu hỏi viết ASCII như các câu cũ (`C(n, k)`, `p => q`, `x -> +vô cùng`); bài đọc dùng công
+  thức `$$...$$` dựng thành ảnh. Phần bù viết Ā; logic trong câu hỏi viết bằng chữ ("không p", "p và q").
+- **Số chương trong `syllabus_ref` của ba môn mới chưa được đối chiếu với đề cương** - người viết không tra
+  mạng. Tên tầng thì theo đúng mục 3.5 của kế hoạch.
+
+### Tìm chỗ sai (`find_mistake`)
+- **Một lời giải viết sẵn, chọn bước đầu tiên bị sai.** Các bước giữ nguyên thứ tự, không bao giờ xáo: đó là
+  một lời giải. Đúng một dòng sai; các dòng sau có thể sai theo nên đề luôn hỏi "bước đầu tiên". Chỉ có từ
+  bậc 2 (bảng thời gian của kế hoạch 3.4 không có bậc 1).
+- **Chơi được ở mọi thẻ câu hỏi toán**, và mọi thứ liệt kê loại câu đều biết loại thứ sáu: hầm ngục có thêm
+  "Phòng Soi Lỗi" (chỉ sinh ra từ tầng 3, vì tầng 1-2 bắt đầu ở bậc 1), các bot và hàm trả lời của test.
+- **Trùm bí cảnh toán tự dùng nó**, đúng như M10 đã để sẵn: ai có câu Tìm chỗ sai ở bậc của mình thì nhận câu
+  ấy, ai chưa có thì nhận bài tổng hợp.
+- **Cơ duyên cố ý không dùng:** cơ duyên phải hỏi được người mới ở bậc 1.
+
+### Bài kiểm tra đầu vào (luật 7)
+- **Tuỳ chọn, theo từng môn, chỉ khi chưa qua tầng nào của môn ấy.** 10-15 câu, mỗi tầng đã viết 5 câu, khó
+  dần theo tầng rồi theo bậc. Đạt một tầng khi đúng từ 80% số câu của tầng; tầng xuất phát là tầng thấp nhất
+  chưa đạt và không bao giờ là tầng chưa có câu. Dừng sớm ngay khi một tầng không thể đạt nữa.
+- **Đây là ngoại lệ duy nhất của luật 4,** và chỉ một hàm được phép phá luật ấy: `math_placement._question`
+  tự chọn câu ở bậc của ô đang hỏi, không qua `math_ask.pick`.
+- **Tầng được miễn khác tầng đã qua.** Tầng bỏ qua nhờ kiểm tra đầu vào hiện "Được miễn" (lượt `MathRun` có
+  mode "placement"), tầng qua bằng Thiên kiếp nhỏ hiện "Đã qua". Ở tầng xuất phát, cổng thuần thục và Thiên
+  kiếp nhỏ vẫn áp dụng như với mọi người.
+- **Một nguồn duy nhất cho "người chơi đang ở tầng nào":** `math_practice.cleared_floors` = tầng qua bằng Thiên
+  kiếp nhỏ + tầng được miễn. Lộ trình, `math_ask.open_floor` và qua đó cả bốn chế độ M10 lẫn chiêu thức đều
+  đọc từ đây, nên sau khi xếp tầng mọi thứ tự hỏi theo tầng mới.
+- **Làm lại:** nhảy được tầng thì kết quả là chốt; bị xếp ở tầng 1 hoặc bỏ dở thì 7 ngày sau làm lại được.
+  Trong lúc kiểm tra không có tâm ma, không đổi bậc thích ứng, không cộng bộ đếm cơ duyên.
+- **Không thêm bảng:** `MathRun.mode = "placement"` là đủ.
+
+### Sảnh toán cho bốn môn
+- **Mỗi môn một thẻ** (chuột hoặc phím Trái / Phải); sảnh mở ở môn đang luyện dở. Tàng Thư Các có cùng hàng
+  thẻ và cuộn được. Mọi mã widget cũ giữ nguyên nên test dòng chảy cũ không phải sửa.
+- **Tháp Xác Suất và Tháp Gradient đã mở** vì môn của chúng có câu, đúng như M10 đã viết luật. Cả hai hiện
+  hỏi tầng 1 của môn mình; "Gradient" là nội dung tầng 9 của Giải Tích, nên tên tháp đang đi trước nội dung.
+- **Bí cảnh toán, hầm ngục và cơ duyên vẫn hỏi theo môn đầu tiên có câu** (Đại Số Tuyến Tính). Ba môn mới
+  chơi được qua buổi luyện, kiểm tra đầu vào, Tàng Thư Các và thủ thành; cho người chơi chọn môn trong ba chế
+  độ kia là việc chưa làm.
+- **Quái lỗi sai (M7) và bài tập lập trình (M6) chưa có cho ba môn mới.**
+- **Xưng hô:** game gọi người chơi là "con" ở mọi nơi, kể cả phần kiểm tra đầu vào.

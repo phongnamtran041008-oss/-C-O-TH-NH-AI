@@ -3,10 +3,34 @@
  "supersample": 3,
  "ex_in_base": 4.5,
  "formulas": {
+  "012d966802200465": {
+   "tex": "\\neg(p \\land q) \\equiv \\neg p \\lor \\neg q",
+   "alt": "khong(p va q) = khong p hoac khong q",
+   "w": 84.11,
+   "h": 10.18
+  },
+  "0a71cf0456ab4f7f": {
+   "tex": "\\ln(1 + x) \\sim x, \\quad e^{x} - 1 \\sim x, \\quad 1 - \\cos x \\sim \\frac{x^{2}}{2}",
+   "alt": "ln(1 + x) ~ x, e^x - 1 ~ x, 1 - cos x ~ (x^2)/2",
+   "w": 202.23,
+   "h": 22.36
+  },
   "0b077c7f7d33af9c": {
    "tex": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
    "alt": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
    "w": 176.4,
+   "h": 10.18
+  },
+  "0cf5bb6e26ab181d": {
+   "tex": "C_{n+k-1}^{n-1} = C_{n+k-1}^{k}",
+   "alt": "C_(n+k-1)^(n-1) = C_(n+k-1)^k",
+   "w": 75.57,
+   "h": 13.01
+  },
+  "0dbc2a74b7f70ba8": {
+   "tex": "f(a) \\cdot f(b) < 0 \\;\\Rightarrow\\; \\exists\\, c \\in (a, b) : f(c) = 0",
+   "alt": "f(a) . f(b) < 0 => ton tai c thuoc (a, b) : f(c) = 0",
+   "w": 175.81,
    "h": 10.18
   },
   "0edcb1c94c35bfd5": {
@@ -15,16 +39,64 @@
    "w": 91.31,
    "h": 10.18
   },
+  "1058a5a4e4f0d5dc": {
+   "tex": "A + B = A \\cup B, \\quad AB = A \\cap B",
+   "alt": "A + B = A hop B, AB = A giao B",
+   "w": 138.39,
+   "h": 9.27
+  },
+  "110674aba413b4dd": {
+   "tex": "A_n^k = n(n-1)\\cdots(n-k+1) = \\frac{n!}{(n-k)!}",
+   "alt": "A_n^k = n(n-1)...(n-k+1) = (n!)/((n-k)!)",
+   "w": 181.36,
+   "h": 23.94
+  },
+  "1d229de8de7acbd2": {
+   "tex": "p \\Rightarrow q \\text{ sai } \\Leftrightarrow p \\text{ dung va } q \\text{ sai}",
+   "alt": "p => q sai <=> p dung va q sai",
+   "w": 122.96,
+   "h": 9.16
+  },
+  "20b67950cac8d965": {
+   "tex": "P(A \\mid B) = \\frac{P(AB)}{P(B)}, \\quad P(B) > 0",
+   "alt": "P(A | B) = (P(AB))/(P(B)), P(B) > 0",
+   "w": 145.07,
+   "h": 24.64
+  },
+  "226eeab95bddeda1": {
+   "tex": "y = \\log_a x \\;\\Leftrightarrow\\; a^{y} = x, \\quad x > 0",
+   "alt": "y = log_a x <=> a^y = x, x > 0",
+   "w": 133.61,
+   "h": 9.92
+  },
   "276f6dc656a48c00": {
    "tex": "(A^{T})_{ij} = a_{ji}",
    "alt": "(A^T)_(ij) = a_(ji)",
    "w": 53.02,
    "h": 12.07
   },
+  "277e5e278e0e9dfe": {
+   "tex": "|A_1 \\times A_2 \\times \\cdots \\times A_k| = |A_1| \\cdot |A_2| \\cdots |A_k|",
+   "alt": "|A_1 x A_2 x ... x A_k| = |A_1| . |A_2| ... |A_k|",
+   "w": 180.95,
+   "h": 10.17
+  },
+  "2ee6047bbf2f1373": {
+   "tex": "\\lim_{x \\to 3} \\frac{x^{2} - 9}{x - 3} = \\lim_{x \\to 3} (x + 3) = 6",
+   "alt": "lim_(x -> 3) (x^2 - 9)/(x - 3) = lim_(x -> 3) (x + 3) = 6",
+   "w": 127.34,
+   "h": 23.19
+  },
   "30bd9caf1cd478e3": {
    "tex": "A \\times B = \\{(a, b) : a \\in A, b \\in B\\}",
    "alt": "A x B = {(a, b) : a thuoc A, b thuoc B}",
    "w": 136.79,
+   "h": 10.18
+  },
+  "3169079d3b0823a1": {
+   "tex": "f : X \\to \\mathbb{R}, \\quad x \\mapsto f(x)",
+   "alt": "f : X -> R, x -> f(x)",
+   "w": 101.66,
    "h": 10.18
   },
   "3215732d2ddc7eea": {
@@ -33,11 +105,53 @@
    "w": 157.47,
    "h": 10.63
   },
+  "37da482380ff9b9f": {
+   "tex": "\\lim_{n \\to \\infty} \\left(1 + \\frac{1}{n}\\right)^{n} = e",
+   "alt": "lim_(n -> vo cung) (1 + 1/n)^n = e",
+   "w": 87.01,
+   "h": 24.83
+  },
+  "38c652779be35416": {
+   "tex": "P(A_1 A_2 A_3) = P(A_1)\\,P(A_2 \\mid A_1)\\,P(A_3 \\mid A_1 A_2)",
+   "alt": "P(A_1 A_2 A_3) = P(A_1) P(A_2 | A_1) P(A_3 | A_1 A_2)",
+   "w": 204.94,
+   "h": 10.18
+  },
+  "39807d78d6ebc283": {
+   "tex": "a_n = A \\, r_1^{n} + B \\, r_2^{n}",
+   "alt": "a_n = A r_1^n + B r_2^n",
+   "w": 74.85,
+   "h": 9.9
+  },
+  "39ea31179a7c562a": {
+   "tex": "C_n^k = \\frac{A_n^k}{k!} = \\frac{n!}{k!\\,(n-k)!}",
+   "alt": "C_n^k = (A_n^k)/(k!) = (n!)/(k! (n-k)!)",
+   "w": 106.22,
+   "h": 25.74
+  },
+  "3a9516dc35dca48c": {
+   "tex": "P(A) = \\frac{m}{n}",
+   "alt": "P(A) = m/n",
+   "w": 50.2,
+   "h": 18.48
+  },
+  "3aa010db4da7a84a": {
+   "tex": "0 \\le P(A) \\le 1, \\qquad P(\\Omega) = 1",
+   "alt": "0 <= P(A) <= 1, P(Omega) = 1",
+   "w": 127.01,
+   "h": 10.18
+  },
   "3da09a42c3cf2aff": {
    "tex": "f(u) = f(v) \\Rightarrow u = v",
    "alt": "f(u) = f(v) => u = v",
    "w": 91.55,
    "h": 10.18
+  },
+  "409abd28080d8a48": {
+   "tex": "n^2, \\qquad n(n-1), \\qquad C_n^2 = \\frac{n(n-1)}{2}",
+   "alt": "n^2, n(n-1), C_n^2 = (n(n-1))/2",
+   "w": 166.45,
+   "h": 21.85
   },
   "417b96ad43ac1e42": {
    "tex": "a(u + v) = au + av",
@@ -45,11 +159,35 @@
    "w": 84.07,
    "h": 10.18
   },
+  "4a9c8736dfc5ff93": {
+   "tex": "P_n = n! = n(n-1)\\cdots 2 \\cdot 1, \\quad 0! = 1",
+   "alt": "P_n = n! = n(n-1)... 2 . 1, 0! = 1",
+   "w": 159.62,
+   "h": 10.18
+  },
+  "4d6a70acc50d0a1a": {
+   "tex": "(a+b)^n = \\sum_{k=0}^{n} C_n^k a^{k} b^{n-k}",
+   "alt": "(a+b)^n = tong_(k=0)^n C_n^k a^k b^(n-k)",
+   "w": 106.99,
+   "h": 28.8
+  },
+  "4e50f41f2b9d6a24": {
+   "tex": "\\sin(ax + b) \\text{ co chu ky } \\frac{2\\pi}{|a|}",
+   "alt": "sin(ax + b) co chu ky 2pi/(|a|)",
+   "w": 110.36,
+   "h": 23.43
+  },
   "4f50a10553b7482c": {
    "tex": "(A + B)_{ij} = a_{ij} + b_{ij}",
    "alt": "(A + B)_(ij) = a_(ij) + b_(ij)",
    "w": 90.39,
    "h": 10.63
+  },
+  "500007270fcc0dee": {
+   "tex": "P(A + B) = P(A) + P(B) - P(AB)",
+   "alt": "P(A + B) = P(A) + P(B) - P(AB)",
+   "w": 159.27,
+   "h": 10.18
   },
   "5547ad49cda83f3f": {
    "tex": "\\overline{z} = a - bi",
@@ -63,17 +201,53 @@
    "w": 102.08,
    "h": 10.18
   },
+  "5dbe9becf8911520": {
+   "tex": "\\bar{A}_n^k = n^k",
+   "alt": "A_n^k = n^k",
+   "w": 37.08,
+   "h": 12.44
+  },
+  "60328fc8c36e0be0": {
+   "tex": "p \\Rightarrow q \\equiv \\neg p \\lor q",
+   "alt": "p => q = khong p hoac q",
+   "w": 67.13,
+   "h": 8.06
+  },
+  "6182547b0ce4984c": {
+   "tex": "\\frac{n!}{n_1! \\, n_2! \\cdots n_m!}",
+   "alt": "(n!)/(n_1! n_2! ... n_m!)",
+   "w": 64.38,
+   "h": 22.76
+  },
   "6358d05f6f806e85": {
    "tex": "(g \\circ f)(x) = g(f(x))",
    "alt": "(g o f)(x) = g(f(x))",
    "w": 87.44,
    "h": 10.18
   },
+  "63824d2a3ec3731c": {
+   "tex": "C_n^k = C_{n-1}^{k-1} + C_{n-1}^{k}",
+   "alt": "C_n^k = C_(n-1)^(k-1) + C_(n-1)^k",
+   "w": 82.6,
+   "h": 12.8
+  },
+  "6b4b95113b260093": {
+   "tex": "A_n^k = n (n-1) \\cdots (n-k+1) = \\frac{n!}{(n-k)!}",
+   "alt": "A_n^k = n (n-1) ... (n-k+1) = (n!)/((n-k)!)",
+   "w": 181.36,
+   "h": 23.94
+  },
   "6e2e7f899468f982": {
    "tex": "z = a + bi, \\quad a \\in \\mathbb{R}, \\quad b \\in \\mathbb{R}",
    "alt": "z = a + bi, a thuoc R, b thuoc R",
    "w": 122.79,
    "h": 9.04
+  },
+  "70e2713a9e375eb8": {
+   "tex": "\\sin x \\sim x, \\quad \\tan x \\sim x, \\quad \\arcsin x \\sim x",
+   "alt": "sin x ~ x, tan x ~ x, arcsin x ~ x",
+   "w": 163.5,
+   "h": 8.78
   },
   "71ff8b25e972f593": {
    "tex": "|z| = \\sqrt{a^{2} + b^{2}}",
@@ -93,6 +267,12 @@
    "w": 48.6,
    "h": 11.62
   },
+  "76a3fe3a05444099": {
+   "tex": "(a_1, \\ldots, a_n) < (b_1, \\ldots, b_n) \\Leftrightarrow a_i < b_i \\text{ tai vi tri khac nhau dau tien } i",
+   "alt": "(a_1, ..., a_n) < (b_1, ..., b_n) <=> a_i < b_i tai vi tri khac nhau dau tien i",
+   "w": 290.18,
+   "h": 10.18
+  },
   "7b3a92db81feea15": {
    "tex": "\\text{tr}(A) = a_{11} + a_{22} + \\ldots + a_{nn}",
    "alt": "tr(A) = a_(11) + a_(22) + ... + a_(nn)",
@@ -105,10 +285,22 @@
    "w": 134.78,
    "h": 10.18
   },
+  "7d689e9bd3f9a027": {
+   "tex": "\\lim_{n \\to \\infty} u_n = L",
+   "alt": "lim_(n -> vo cung) u_n = L",
+   "w": 51.91,
+   "h": 14.27
+  },
   "818833d1104b6103": {
    "tex": "A = \\{1, 2, 3\\}",
    "alt": "A = {1, 2, 3}",
    "w": 55.72,
+   "h": 10.18
+  },
+  "8367125f66d20a31": {
+   "tex": "P(AB) = P(A)\\,P(B)",
+   "alt": "P(AB) = P(A) P(B)",
+   "w": 92.7,
    "h": 10.18
   },
   "851c10778cae11a1": {
@@ -129,11 +321,29 @@
    "w": 132.21,
    "h": 10.18
   },
+  "8a1f89990a7cb866": {
+   "tex": "P = \\frac{C_a^r \\cdot C_b^{k-r}}{C_{a+b}^k}",
+   "alt": "P = (C_a^r . C_b^(k-r))/(C_(a+b)^k)",
+   "w": 67.13,
+   "h": 29.26
+  },
+  "8cda997ce5f48553": {
+   "tex": "\\Omega = \\{1, 2, 3, 4, 5, 6\\}",
+   "alt": "Omega = {1, 2, 3, 4, 5, 6}",
+   "w": 84.29,
+   "h": 10.18
+  },
   "8d64442e0066c978": {
    "tex": "A \\cup B = \\{x : x \\in A \\text{ hoac } x \\in B\\}",
    "alt": "A hop B = {x : x thuoc A hoac x thuoc B}",
    "w": 142.1,
    "h": 10.18
+  },
+  "8f71eb7a4e45535a": {
+   "tex": "P(1) \\land \\big(P(k) \\Rightarrow P(k+1)\\big) \\Rightarrow \\forall n \\ge 1,\\ P(n)",
+   "alt": "P(1) va (P(k) => P(k+1)) => voi moi n >= 1, P(n)",
+   "w": 191.43,
+   "h": 12.21
   },
   "95d7cadb04483fcd": {
    "tex": "|A \\times B| = |A| \\cdot |B|",
@@ -141,11 +351,29 @@
    "w": 81.09,
    "h": 10.17
   },
+  "98194342502251ed": {
+   "tex": "\\lim_{n \\to \\infty} \\frac{1}{n^{k}} = 0 \\;(k > 0), \\qquad \\lim_{n \\to \\infty} q^{n} = 0 \\;(|q| < 1)",
+   "alt": "lim_(n -> vo cung) 1/(n^k) = 0 (k > 0), lim_(n -> vo cung) q^n = 0 (|q| < 1)",
+   "w": 203.09,
+   "h": 21.31
+  },
+  "98aed86da0eb7215": {
+   "tex": "\\lim_{x \\to a^{+}} f(x) - \\lim_{x \\to a^{-}} f(x)",
+   "alt": "lim_(x -> a^+) f(x) - lim_(x -> a^-) f(x)",
+   "w": 93.89,
+   "h": 15.48
+  },
   "98f71033221ab6d8": {
    "tex": "u = (u_{1}, u_{2}, \\ldots, u_{n}) \\in \\mathbb{R}^{n}",
    "alt": "u = (u_1, u_2, ..., u_n) thuoc R^n",
    "w": 111.02,
    "h": 10.18
+  },
+  "9b76fde074b9deae": {
+   "tex": "C_n^k = C_n^{n-k}",
+   "alt": "C_n^k = C_n^(n-k)",
+   "w": 49.23,
+   "h": 11.79
   },
   "a18821c5a106dd9e": {
    "tex": "A^{T} = A",
@@ -159,17 +387,71 @@
    "w": 115.46,
    "h": 23.03
   },
+  "ab0824792508352e": {
+   "tex": "\\lim_{x \\to 0} \\frac{1}{x^{2}} = +\\infty",
+   "alt": "lim_(x -> 0) 1/(x^2) = +vo cung",
+   "w": 63.04,
+   "h": 21.33
+  },
+  "ac0e58a128193342": {
+   "tex": "k(m-1) + 1",
+   "alt": "k(m-1) + 1",
+   "w": 57.24,
+   "h": 10.18
+  },
+  "ade2b45ea0c0c72e": {
+   "tex": "\\neg(p \\lor q) \\equiv \\neg p \\land \\neg q",
+   "alt": "khong(p hoac q) = khong p va khong q",
+   "w": 84.11,
+   "h": 10.18
+  },
   "b0744396ced61238": {
    "tex": "z \\cdot \\overline{z} = a^{2} + b^{2} = |z|^{2}",
    "alt": "z . z = a^2 + b^2 = |z|^2",
    "w": 90.26,
    "h": 11.54
   },
+  "b7a2a7534f308c2e": {
+   "tex": "(f \\circ g)(x) = f(g(x))",
+   "alt": "(f o g)(x) = f(g(x))",
+   "w": 87.44,
+   "h": 10.18
+  },
+  "b8553ac3190d5204": {
+   "tex": "P_n = n! = n (n-1) \\cdots 2 \\cdot 1",
+   "alt": "P_n = n! = n (n-1) ... 2 . 1",
+   "w": 118.33,
+   "h": 10.18
+  },
   "ba3e3c2c22180fc1": {
    "tex": "(a + bi) + (c + di) = (a + c) + (b + d)i",
    "alt": "(a + bi) + (c + di) = (a + c) + (b + d)i",
    "w": 169.38,
    "h": 10.18
+  },
+  "bbee470e364f0a01": {
+   "tex": "f^{-1}(y) = x \\;\\Leftrightarrow\\; f(x) = y",
+   "alt": "f^(-1)(y) = x <=> f(x) = y",
+   "w": 107.9,
+   "h": 11.54
+  },
+  "be6f80562fa86044": {
+   "tex": "a_n = c_1 a_{n-1} + c_2 a_{n-2} \\quad \\to \\quad r^2 = c_1 r + c_2",
+   "alt": "a_n = c_1 a_(n-1) + c_2 a_(n-2) -> r^2 = c_1 r + c_2",
+   "w": 187.34,
+   "h": 11.12
+  },
+  "c27e71f3ef135a2f": {
+   "tex": "f(-x) = f(x) \\;\\Rightarrow\\; f \\text{ chan}, \\qquad f(-x) = -f(x) \\;\\Rightarrow\\; f \\text{ le}",
+   "alt": "f(-x) = f(x) => f chan, f(-x) = -f(x) => f le",
+   "w": 240.75,
+   "h": 10.18
+  },
+  "c5aef6105fc186ce": {
+   "tex": "C_n^k = \\frac{A_n^k}{k!} = \\frac{n!}{k! \\, (n-k)!}",
+   "alt": "C_n^k = (A_n^k)/(k!) = (n!)/(k! (n-k)!)",
+   "w": 106.22,
+   "h": 25.74
   },
   "c61d38ce578e4169": {
    "tex": "(A + B)^{T} = A^{T} + B^{T}",
@@ -183,6 +465,18 @@
    "w": 34.55,
    "h": 9.83
   },
+  "cb18629089bcf9a7": {
+   "tex": "\\lim_{x \\to a} f(x) = L \\;\\Leftrightarrow\\; \\lim_{x \\to a^{-}} f(x) = \\lim_{x \\to a^{+}} f(x) = L",
+   "alt": "lim_(x -> a) f(x) = L <=> lim_(x -> a^-) f(x) = lim_(x -> a^+) f(x) = L",
+   "w": 193.71,
+   "h": 15.48
+  },
+  "cb776f957be257c2": {
+   "tex": "m + n \\quad \\text{(chon mot phuong an)}, \\qquad m \\cdot n \\quad \\text{(lam ca hai buoc)}",
+   "alt": "m + n (chon mot phuong an), m . n (lam ca hai buoc)",
+   "w": 268.83,
+   "h": 10.18
+  },
   "ce1bf27302ed640e": {
    "tex": "f(A) = \\{f(x) : x \\in A\\}",
    "alt": "f(A) = {f(x) : x thuoc A}",
@@ -195,11 +489,65 @@
    "w": 65.07,
    "h": 10.63
   },
+  "d563dd9631bfa749": {
+   "tex": "p \\Rightarrow q \\equiv \\neg q \\Rightarrow \\neg p",
+   "alt": "p => q = khong q => khong p",
+   "w": 78.44,
+   "h": 7.32
+  },
+  "d575c2ab58876001": {
+   "tex": "P_n(k) = C_n^k \\, p^k (1-p)^{n-k}",
+   "alt": "P_n(k) = C_n^k p^k (1-p)^(n-k)",
+   "w": 107.88,
+   "h": 11.79
+  },
+  "d73b5deb3186ae2e": {
+   "tex": "|A \\cup B \\cup C| = \\sum |A| - \\sum |A \\cap B| + |A \\cap B \\cap C|",
+   "alt": "|A hop B hop C| = tong |A| - tong |A giao B| + |A giao B giao C|",
+   "w": 219.69,
+   "h": 14.25
+  },
+  "d9f2d52fff46605e": {
+   "tex": "f_n(A) = \\frac{m}{n}",
+   "alt": "f_n(A) = m/n",
+   "w": 52.7,
+   "h": 18.48
+  },
+  "dc181a02b4a24dae": {
+   "tex": "\\log_a(xy) = \\log_a x + \\log_a y, \\qquad \\log_a \\frac{x}{y} = \\log_a x - \\log_a y",
+   "alt": "log_a(xy) = log_a x + log_a y, log_a x/y = log_a x - log_a y",
+   "w": 242.07,
+   "h": 20.45
+  },
+  "dea5c8b8fd750e49": {
+   "tex": "P(AB) = P(A)\\,P(B \\mid A)",
+   "alt": "P(AB) = P(A) P(B | A)",
+   "w": 108.83,
+   "h": 10.18
+  },
+  "e573d43c904cfa9a": {
+   "tex": "N \\text{ vat vao } k \\text{ hop } \\Rightarrow \\text{ co hop chua it nhat } \\left\\lceil \\frac{N}{k} \\right\\rceil \\text{ vat}",
+   "alt": "N vat vao k hop => co hop chua it nhat tran(N/k) vat",
+   "w": 222.75,
+   "h": 24.43
+  },
+  "e9d8e76fbb2493e5": {
+   "tex": "\\lim_{x \\to a} f(x) = f(a)",
+   "alt": "lim_(x -> a) f(x) = f(a)",
+   "w": 68.65,
+   "h": 14.84
+  },
   "edb5cef95eebe641": {
    "tex": "f^{-1}(y) = x \\Leftrightarrow f(x) = y",
    "alt": "f^(-1)(y) = x <=> f(x) = y",
    "w": 102.24,
    "h": 11.54
+  },
+  "edb79a15843ed8d7": {
+   "tex": "|A_1 \\cup A_2 \\cup \\cdots \\cup A_k| = |A_1| + |A_2| + \\cdots + |A_k|",
+   "alt": "|A_1 hop A_2 hop ... hop A_k| = |A_1| + |A_2| + ... + |A_k|",
+   "w": 204.15,
+   "h": 10.17
   },
   "ee1ddc847f77f642": {
    "tex": "|A \\cup B| = |A| + |B| - |A \\cap B|",
@@ -212,6 +560,18 @@
    "alt": "A \\ B = {x : x thuoc A va x khong thuoc B}",
    "w": 130.51,
    "h": 10.18
+  },
+  "f5059ad8586a4bc8": {
+   "tex": "\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1",
+   "alt": "lim_(x -> 0) (sin x)/x = 1",
+   "w": 59.78,
+   "h": 21.37
+  },
+  "fbd8ec7e7b958fb5": {
+   "tex": "\\text{hang} = 1 + \\sum_{i=1}^{n} c_i \\, (n-i)!",
+   "alt": "hang = 1 + tong_(i=1)^n c_i (n-i)!",
+   "w": 111.27,
+   "h": 28.59
   },
   "fd73e590df6a1f3f": {
    "tex": "z^{n} = r^{n}(\\cos n\\varphi + i \\sin n\\varphi)",

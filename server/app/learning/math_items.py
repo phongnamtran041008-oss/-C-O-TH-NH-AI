@@ -7,7 +7,7 @@ A *template* belongs to one micro-skill and one tier. There are two kinds:
   * a generator (the "generators" list + a function in learning/math_gen): a question
     with new numbers every time it is drawn.
 
-Five question types are playable so far; the other types of balance/math.json come with
+Six question types are playable so far; the other types of balance/math.json come with
 later milestones:
 
   true_false       "answer": true | false                     the player sends {"value": bool}
@@ -16,6 +16,8 @@ later milestones:
                    ("unordered": true when the listed numbers form a set)
   matching         "pairs_vi": [[left, right], ...]  (3-5)     the player sends {"pairs": [r0, r1, ...]}
   ordering         "steps_vi": [step, ...]  (3-6, right order) the player sends {"order": [i0, i1, ...]}
+  find_mistake     "lines_vi": [line, ...] (3-6), "answer": <index of the first wrong line>
+                                                              the player sends {"line": i}
 
 A matching or ordering item has no "answer": the data is written right (each left side next
 to its right side, the steps in the order of the derivation) and the server shuffles what it
@@ -43,11 +45,12 @@ from . import math_path
 from .math_path import MATH_DIR, text_problem
 
 ITEMS_DIR_NAME = "items"
-PLAYABLE_TYPES = ("true_false", "multiple_choice", "numeric", "matching", "ordering")
+PLAYABLE_TYPES = ("true_false", "multiple_choice", "numeric", "matching", "ordering", "find_mistake")
 OPTION_IDS = "abcdef"
 MIN_OPTIONS, MAX_OPTIONS = 2, 6
 MIN_PAIRS, MAX_PAIRS = 3, 5     # a matching question (fewer is a guess, more does not fit the card)
 MIN_STEPS, MAX_STEPS = 3, 6     # an ordering question
+MIN_LINES, MAX_LINES = 3, 6     # a find_mistake question: the lines of the worked solution
 MAX_NUMBERS = 12            # longest list a numeric answer may have
 MAX_ANSWER_CHARS = 120      # longer typed answers are wrong without being parsed
 MAX_MATRICES, MAX_MATRIX_SIDE = 3, 4
@@ -62,14 +65,15 @@ INSTRUCTIONS_VI = {
     "numeric": "Điền số (phân số viết a/b, nhiều số cách nhau bằng dấu phẩy)",
     "matching": "Ghép mỗi vế trái với một vế phải cho đúng",
     "ordering": "Sắp xếp các bước giải theo đúng thứ tự",
+    "find_mistake": "Tìm bước đầu tiên bị sai trong lời giải",
 }
 INPUTS = {"true_false": "truefalse", "multiple_choice": "choice", "numeric": "number",
-          "matching": "matching", "ordering": "ordering"}
+          "matching": "matching", "ordering": "ordering", "find_mistake": "find_mistake"}
 MATCH_SEP_VI = " — "        # between the two sides of a pair in the revealed answer
 
 _FILE_KEYS = {"subject", "items", "generators"}
 _ITEM_KEYS = {"id", "skill", "tier", "type", "prompt_vi", "options_vi", "answer", "unordered",
-              "pairs_vi", "steps_vi", "solution_vi", "matrices", "reviewed"}
+              "pairs_vi", "steps_vi", "lines_vi", "solution_vi", "matrices", "reviewed"}
 _KEYED_TYPES = ("matching", "ordering")      # the data order is the answer: no "answer" key
 _GENERATOR_KEYS = {"id", "skill", "tier", "type", "reviewed"}
 
@@ -134,12 +138,13 @@ class MathItem:
     tier: int
     qtype: str
     prompt_vi: str
-    answer: object                       # bool | option index | numeric text | None (matching, ordering)
+    answer: object                       # bool | option index | numeric text | wrong line index | None (matching, ordering)
     solution_vi: tuple[str, ...]
     options_vi: tuple[str, ...] = ()
     unordered: bool = False
     pairs_vi: tuple[tuple[str, str], ...] = ()     # matching: (left, right), each left next to its right
     steps_vi: tuple[str, ...] = ()                 # ordering: the steps in the right order
+    lines_vi: tuple[str, ...] = ()                 # find_mistake: the lines of the solution, as written
     reviewed: bool = False
     matrices: tuple[tuple[str, tuple[tuple[str, ...], ...]], ...] = ()    # ((name, rows), ...)
     numbers: str = ""
@@ -160,6 +165,8 @@ class MathItem:
             return "; ".join(f"{left}{MATCH_SEP_VI}{right}" for left, right in self.pairs_vi)
         if self.qtype == "ordering":
             return "  ".join(f"{k}. {step}" for k, step in enumerate(self.steps_vi, 1))
+        if self.qtype == "find_mistake":
+            return f"Bước {self.answer + 1}: {self.lines_vi[self.answer]}"
         return ", ".join(number_text(n) for n in parse_numbers(self.answer))
 
 
@@ -260,6 +267,8 @@ def to_question(item: MathItem, rng: random.Random | None = None, config: dict |
         order = shown_order(len(item.steps_vi), rng)
         shown_steps = [item.steps_vi[src] for src in order]
         key["order"] = [order.index(k) for k in range(len(order))]
+    elif item.qtype == "find_mistake":
+        key["line"] = item.answer       # the lines are shown as written: nothing to shuffle
     else:
         key["numbers"] = [number_text(n) for n in parse_numbers(item.answer)]
         key["unordered"] = item.unordered
@@ -274,6 +283,8 @@ def to_question(item: MathItem, rng: random.Random | None = None, config: dict |
         prompt["right"] = shown_right
     elif item.qtype == "ordering":
         prompt["steps"] = shown_steps
+    elif item.qtype == "find_mistake":
+        prompt["lines"] = list(item.lines_vi)
     if item.matrices:
         prompt["matrices"] = [{"name": name, "rows": [list(r) for r in rows]} for name, rows in item.matrices]
     return MathQuestion(qtype=item.qtype, item_id=item.id, prompt=prompt,
@@ -317,6 +328,9 @@ def grade(qtype: str, answer_key: dict, answer: dict | None) -> bool:
             return False
         given = _permutation(answer.get(name), len(want))
         return given is not None and given == want
+    if qtype == "find_mistake":
+        line = answer.get("line")
+        return type(line) is int and type(answer_key.get("line")) is int and line == answer_key["line"]
     return False
 
 
@@ -333,6 +347,7 @@ def build_item(subject: math_path.Subject, raw: dict) -> MathItem:
                     unordered=bool(raw.get("unordered", False)), reviewed=bool(raw.get("reviewed", False)),
                     pairs_vi=tuple((left, right) for left, right in raw.get("pairs_vi", ())),
                     steps_vi=tuple(raw.get("steps_vi", ())),
+                    lines_vi=tuple(raw.get("lines_vi", ())),
                     matrices=_matrices(raw.get("matrices")))
 
 
@@ -468,6 +483,22 @@ def _steps_problems(steps, here: str) -> list[str]:
     return errors
 
 
+def _lines_problems(lines, here: str) -> list[str]:
+    """A find_mistake question: 3-6 distinct lines of showable text, the solution as written."""
+    if not (isinstance(lines, (list, tuple)) and MIN_LINES <= len(lines) <= MAX_LINES):
+        return [f"{here}: lines_vi must list {MIN_LINES} to {MAX_LINES} lines"]
+    errors = []
+    for k, line in enumerate(lines, 1):
+        problem = text_problem(line)
+        if problem:
+            errors.append(f"{here}: line {k} {problem}")
+    if not errors:
+        texts = [_same_text(s) for s in lines]
+        if len(set(texts)) != len(texts):
+            errors.append(f"{here}: two lines have the same text, so more than one line could be the wrong one")
+    return errors
+
+
 def content_problems(it: dict, here: str) -> list[str]:
     """Problems in the question itself: the text, the options, the answer, the matrices.
     Used for hand-written items and for every draw of a generator."""
@@ -494,12 +525,20 @@ def content_problems(it: dict, here: str) -> list[str]:
         errors.append(f"{here}: only a matching question has pairs_vi")
     if qtype != "ordering" and it.get("steps_vi"):
         errors.append(f"{here}: only an ordering question has steps_vi")
+    if qtype != "find_mistake" and it.get("lines_vi"):
+        errors.append(f"{here}: only a find_mistake question has lines_vi")
     if qtype in _KEYED_TYPES and answer is not None:
         errors.append(f"{here}: {qtype} questions have no answer key: the order of the data is the answer")
     if qtype == "matching":
         errors += _pairs_problems(it.get("pairs_vi"), here)
     elif qtype == "ordering":
         errors += _steps_problems(it.get("steps_vi"), here)
+    elif qtype == "find_mistake":
+        errors += _lines_problems(it.get("lines_vi"), here)
+        lines = it.get("lines_vi")
+        n = len(lines) if isinstance(lines, (list, tuple)) else 0
+        if isinstance(answer, bool) or not isinstance(answer, int) or not 0 <= answer < n:
+            errors.append(f"{here}: answer must be the position (from 0) of the one wrong line")
     elif qtype == "true_false":
         if not isinstance(answer, bool):
             errors.append(f"{here}: the answer of a true_false question must be true or false")
@@ -532,7 +571,8 @@ def draw_problems(spec: GeneratorSpec, item: MathItem) -> list[str]:
     raw = {"type": item.qtype, "prompt_vi": item.prompt_vi, "answer": item.answer,
            "solution_vi": list(item.solution_vi), "options_vi": list(item.options_vi),
            "unordered": item.unordered, "matrices": {name: rows for name, rows in item.matrices},
-           "pairs_vi": [list(p) for p in item.pairs_vi], "steps_vi": list(item.steps_vi)}
+           "pairs_vi": [list(p) for p in item.pairs_vi], "steps_vi": list(item.steps_vi),
+           "lines_vi": list(item.lines_vi)}
     return content_problems(raw, f"{spec.id} with {item.numbers}")
 
 
@@ -577,6 +617,8 @@ def question_text(it: dict) -> str | None:
         parts += [str(side) for pair in it["pairs_vi"] if isinstance(pair, list) for side in pair]
     elif it.get("type") == "ordering" and isinstance(it.get("steps_vi"), list):
         parts += [str(step) for step in it["steps_vi"]]
+    elif it.get("type") == "find_mistake" and isinstance(it.get("lines_vi"), list):
+        parts += [str(line) for line in it["lines_vi"]]
     return " | ".join(parts)
 
 
@@ -670,7 +712,7 @@ def validate_items(subject: math_path.Subject, raw: dict, config: dict) -> list[
             errors.append(f"{here}: unknown key {key!r}")
         check_id(g, here)
         errors += _slot_problems(subject, g, config, here)
-        if g.get("type") in _KEYED_TYPES:       # (a math_gen Draw has no pairs or steps to fill)
+        if g.get("type") in _KEYED_TYPES or g.get("type") == "find_mistake":    # (a Draw has no pairs, steps or lines)
             article = "an" if g["type"] == "ordering" else "a"
             errors.append(f"{here}: {article} {g['type']} question can only be hand-written for now")
         if isinstance(g.get("id"), str) and g["id"] not in math_gen.REGISTRY:

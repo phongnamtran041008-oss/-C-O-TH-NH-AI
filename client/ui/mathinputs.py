@@ -1,8 +1,9 @@
-"""The two answer inputs of M9 for the math question card: matching (Ghép cặp) and ordering
-(Sắp xếp bước giải). Used by the Động Phủ practice card and by the combat card of a chiêu or
+"""The answer inputs of M9 and M11 for the math question card: matching (Ghép cặp), ordering
+(Sắp xếp bước giải) and find_mistake (Tìm chỗ sai). Used by the Động Phủ practice card and by the combat card of a chiêu or
 a quái lỗi sai, which are the same class underneath.
 
-The state of each input is a small plain object (`MatchingState`, `OrderingState`) that knows
+The state of each input is a small plain object (`MatchingState`, `OrderingState`,
+`FindMistakeState`) that knows
 nothing about pygame, so the rules - re-pairing, undo, when the answer may be sent - are
 tested without a window. `draw_matching` / `draw_ordering` draw the state in a rectangle of
 the card, take mouse and keyboard, and return the answer to send (or None):
@@ -13,9 +14,13 @@ the card, take mouse and keyboard, and return the answer to send (or None):
   * ordering: click the steps in the order the solution goes; each shows the number it was
     given and clicking it again takes it back. The steps are keys A-F, Backspace undoes the
     last one.
+  * find_mistake (M11): the lines of a worked solution are listed numbered 1-6; click one (or
+    press its number) to name it as the first wrong step, click another to change the choice,
+    Backspace takes the choice back.
 
 The answer is only sent when every left is paired / every step is numbered, and it is exactly
-what the server grades (contract M9 section 1): {"pairs": [...]} / {"order": [...]}.
+what the server grades (contract M9 section 1): {"pairs": [...]} / {"order": [...]} /
+{"line": i}.
 
 Vietnamese step text is long. Every row wraps its text to its column; when the rows would not
 fit the room the card has, the font steps down 8 -> 7 -> 6 and, as the last resort, text is
@@ -123,12 +128,40 @@ class OrderingState:
         return {"order": list(self.order)}
 
 
+class FindMistakeState:
+    """sel = index of the line the player names as the first wrong one (None: no choice yet)."""
+
+    def __init__(self, n: int):
+        self.n = n
+        self.sel: int | None = None
+
+    def click(self, i: int) -> None:
+        if 0 <= i < self.n:
+            self.sel = i                      # choosing another line changes the choice
+
+    def undo(self) -> None:
+        self.sel = None
+
+    def clear(self) -> None:
+        self.sel = None
+
+    @property
+    def complete(self) -> bool:
+        return self.sel is not None
+
+    def answer(self) -> dict:
+        return {"line": int(self.sel)}
+
+
 def given_text(inp: str, given: dict) -> str:
     """What the player answered, short enough for one line of the reveal."""
     if inp == "matching":
         return ", ".join(f"{k + 1}-{LETTERS[j]}" for k, j in enumerate(given.get("pairs") or []))
     if inp == "ordering":
         return ", ".join(LETTERS[i] for i in given.get("order") or [])
+    if inp == "find_mistake":
+        line = given.get("line")
+        return T.FM_STEP.format(n=line + 1) if type(line) is int else ""
     return ""
 
 
@@ -167,7 +200,7 @@ def layout(ui, texts: list[str], widths: list[float], avail: float):
         if sum(h for h, _ in rows) + GAP * (len(rows) - 1) <= avail:
             return size, rows
     size = SIZES[-1]                                    # last resort: cut the text, keep every row
-    each = max(9.0, (avail - GAP * (len(texts) - 1)) / max(1, len(texts)))
+    each = max(7.0, (avail - GAP * (len(texts) - 1)) / max(1, len(texts)))     # (never taller than the room allows)
     fit = max(1, int((each - 4) // pitch(size)))
     return size, [(each, [_clip(_wrap(ui, t, size, widths[c]), fit) for c, t in enumerate(row)])
                   for row in texts]
@@ -248,6 +281,26 @@ def draw_ordering(ui, st: OrderingState, steps: list[str], x: float, y: float, w
             ui.text(str(n), x + w - 16 - 11, cy + h / 2, 9, "#FFFFFF", anchor="center")
         cy += h + GAP
     return _bottom_row(ui, st, x, bottom - BUTTONS_H, w, sent, T.ORDER_KEYS)
+
+
+def draw_find_mistake(ui, st: FindMistakeState, lines: list[str], x: float, y: float, w: float, bottom: float,
+                      sent: bool) -> dict | None:
+    """The numbered lines of the solution as rows; click one (or press its number) to name it."""
+    avail = bottom - y - BUTTONS_H - 4
+    tw = w - 32 - 40
+    size, rows = layout(ui, [[s] for s in lines], [tw], avail)
+    cy = y
+    for i, (h, ls) in enumerate(rows):
+        chosen = st.sel == i
+        if ui.button(f"fm_line_{i}", x + 16, cy, w - 32, h, "", enabled=not sent,
+                     key=pygame.K_1 + i if not sent else None, selected=chosen):
+            st.click(i)
+        ui.text(str(i + 1), x + 21, cy + h / 2, 8, "#E9C46A" if chosen else "#8E877A", anchor="midleft")
+        _row_text(ui, ls[0], x + 32, cy, h, size, "#FFFFFF" if chosen else "#2B2B2B")
+        if chosen:
+            ui.border(x + 16, cy, w - 32, h, UI_GOLD, 2)
+        cy += h + GAP
+    return _bottom_row(ui, st, x, bottom - BUTTONS_H, w, sent, T.FIND_KEYS)
 
 
 def _bottom_row(ui, st, x: float, y: float, w: float, sent: bool, key_hint: str) -> dict | None:

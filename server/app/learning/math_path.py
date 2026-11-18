@@ -342,6 +342,14 @@ def validate_config(config: dict) -> list[str]:
     lo, hi = need_int(1, "placement_test", "min_questions"), need_int(1, "placement_test", "max_questions")
     if lo and hi and lo > hi:
         errors.append("placement_test: min_questions is above max_questions")
+    if hi and _is_int(main) and hi < main:
+        errors.append("placement_test: max_questions must allow one question for every main floor")
+    need_int(1, "placement_test", "per_floor")
+    pp = _get(config, "placement_test", "pass_pct")
+    if not (isinstance(pp, (int, float)) and not isinstance(pp, bool) and 0 < pp <= 100):
+        errors.append("placement_test.pass_pct: must be above 0 and at most 100")
+    if _get(config, "placement_test", "retake_after_days") is not None:
+        need_int(0, "placement_test", "retake_after_days")
 
     share = [_get(config, "spiral_review", k) for k in ("share_min", "share_max")]
     if not (all(isinstance(s, (int, float)) and not isinstance(s, bool) for s in share)

@@ -16,7 +16,8 @@ from app.learning.math_gen import Draw, complex_text, linear_text, num, nums, pa
 
 ROOT = Path(__file__).resolve().parents[2]
 SUBJECT = "dai_so_tuyen_tinh"
-WRITTEN_FLOORS = (1, 2, 3)
+WRITTEN_FLOORS = (1, 2, 3)                  # of every subject (M11)
+SUBJECTS = [SUBJECT, "giai_tich", "xac_suat_thong_ke", "toi_uu_roi_rac"]
 GENERATORS = sorted(mi.generators())
 
 
@@ -47,23 +48,31 @@ def test_the_bank_is_valid():
     assert mi.validate_all() == []
 
 
+@pytest.mark.parametrize("subject", SUBJECTS)
 @pytest.mark.parametrize("floor", WRITTEN_FLOORS)
-def test_a_written_floor_has_enough_templates_and_generators(floor):
+def test_a_written_floor_has_enough_templates_and_generators(subject, floor):
     want = mp.cfg()["bank_targets"]
-    templates = mi.floor_templates(SUBJECT, floor, allow_unreviewed=True)
+    templates = mi.floor_templates(subject, floor, allow_unreviewed=True)
     assert len(templates) >= want["templates_per_floor"] == 30
     assert sum(1 for t in templates if t.generated) >= want["generators_per_floor"] == 3
-    f = mp.subject(SUBJECT).floor(floor)
+    f = mp.subject(subject).floor(floor)
     for skill in f.skills:
         for tier in f.tiers:
             own = [t for t in templates if t.skill == skill.id and t.tier == tier]
             assert len(own) >= want["per_skill_tier"], (skill.id, tier)
-            assert any(t.generated for t in own) or floor == 1, (skill.id, tier)     # floors 2-3: new numbers everywhere
+            if subject == SUBJECT:      # Đại Số Tuyến Tính floors 2-3: new numbers everywhere (M3)
+                assert any(t.generated for t in own) or floor == 1, (skill.id, tier)
 
 
-def test_floors_not_written_yet_have_no_templates():
+def test_the_written_subjects_are_the_four_of_luyen_khi():
+    assert [s.id for s in mp.subjects()] == SUBJECTS                     # M11
+    assert {g.subject for g in mi.generators().values()} == set(SUBJECTS)
+
+
+@pytest.mark.parametrize("subject", SUBJECTS)
+def test_floors_not_written_yet_have_no_templates(subject):
     for floor in range(4, 11):
-        assert mi.floor_templates(SUBJECT, floor, allow_unreviewed=True) == []
+        assert mi.floor_templates(subject, floor, allow_unreviewed=True) == []
 
 
 def test_every_generator_is_listed_and_every_listed_generator_exists():
@@ -71,8 +80,9 @@ def test_every_generator_is_listed_and_every_listed_generator_exists():
     assert not set(mi.generators()) & set(mi.bank())
 
 
-def test_unreviewed_generators_are_held_back_like_items():
-    assert all(not t.generated or t.reviewed for t in mi.floor_templates(SUBJECT, 2, allow_unreviewed=False))
+@pytest.mark.parametrize("subject", SUBJECTS)
+def test_unreviewed_generators_are_held_back_like_items(subject):
+    assert all(not t.generated or t.reviewed for t in mi.floor_templates(subject, 2, allow_unreviewed=False))
 
 
 # ------------------------------------------------------------------ what a generator draws
@@ -228,6 +238,16 @@ def drop_generators_of_floor(raw: dict, floor: int) -> None:
     raw["generators"] = [g for g in raw["generators"] if g["skill"] not in skills]
 
 
+def too_few_templates_on_floor_2(raw: dict) -> None:
+    """Floor 2 without its generators and without its three Tìm chỗ sai items (M11): the 27
+    hand-written questions it had before, three short of the target."""
+    drop_generators_of_floor(raw, 2)
+    skills = {s.id for s in mp.subject(SUBJECT).floor(2).skills}
+    gone = [i for i in raw["items"] if i["skill"] in skills and i["type"] == "find_mistake"]
+    assert len(gone) == 3
+    raw["items"] = [i for i in raw["items"] if i not in gone]
+
+
 def clone_with_other_numbers(raw: dict) -> None:
     twin = copy.deepcopy(next(i for i in raw["items"] if i["id"] == "dstt_t1_td_04"))
     twin.update(id="dstt_t1_td_99", prompt_vi="Tập A x B có 20 phần tử và A có 5 phần tử. B có bao nhiêu phần tử?",
@@ -244,8 +264,10 @@ BREAKAGE = {
                                                     "tier 3 is not allowed on floor 1"),
     "generator of an unknown skill": (lambda r: r["generators"][0].update(skill="dstt_t1_khong_co"),
                                       "is not a micro-skill"),
-    "generator of a type that is not playable": (lambda r: r["generators"][0].update(type="find_mistake"),
+    "generator of a type that is not playable": (lambda r: r["generators"][0].update(type="tribulation"),
                                                  "type must be one of"),
+    "generator of a find_mistake question": (lambda r: r["generators"][0].update(type="find_mistake"),
+                                             "a find_mistake question can only be hand-written for now"),
     "generator of a matching question": (lambda r: r["generators"][0].update(type="matching"),
                                          "a matching question can only be hand-written for now"),
     "generator of an ordering question": (lambda r: r["generators"][0].update(type="ordering"),
@@ -258,7 +280,7 @@ BREAKAGE = {
     "the same question with other numbers": (clone_with_other_numbers,
                                              "dstt_t1_td_99: is almost the same question as dstt_t1_td_04"),
     "a floor without its generators": (lambda r: drop_generators_of_floor(r, 2), "floor 2: has 0 generators, need 3"),
-    "a floor with too few templates": (lambda r: drop_generators_of_floor(r, 2), "floor 2: has 27 templates, need 30"),
+    "a floor with too few templates": (too_few_templates_on_floor_2, "floor 2: has 27 templates, need 30"),
     "a micro-skill and tier with one template": (
         lambda r: r["items"].remove(next(i for i in r["items"] if i["id"] == "dstt_t3_vt_03")),
         "floor 3: dstt_t3_vecto_rn has 1 templates at tier 3, need 2"),

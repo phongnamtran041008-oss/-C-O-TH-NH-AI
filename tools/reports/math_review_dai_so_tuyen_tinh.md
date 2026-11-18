@@ -4,7 +4,7 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
 
 ## Tầng 1: Tập hợp và ánh xạ
 
-46 dạng câu (33 câu viết tay, 13 bộ sinh câu); 46 chưa duyệt.
+49 dạng câu (36 câu viết tay, 13 bộ sinh câu); 49 chưa duyệt.
 
 ### Tập hợp và phần tử (`dstt_t1_tap_hop`)
 
@@ -165,6 +165,16 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Chỉ cần một ví dụ để bác bỏ: lấy A = {1, 2} và B = {2}.
     2. A \ B = {1}, còn B \ A là tập rỗng.
     3. Hai kết quả khác nhau, nên phép hiệu không đổi chỗ được.
+- `dstt_t1_pt_08` · bậc 2 (Cơ bản) · Tìm chỗ sai · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Lời giải sau tính B \ A với A = {1, 2, 3, 4} và B = {3, 4, 5}. Bước đầu tiên bị sai là bước nào?
+  - **Lời giải đưa ra (có một bước sai):**
+    1. Các phần tử chung của A và B là 3 và 4.
+    2. B \ A giữ lại những phần tử của A không có trong B, tức là 1 và 2.   **<- bước sai đầu tiên**
+    3. Vậy B \ A = {1, 2}.
+  - **Đáp án:** Bước 2: B \ A giữ lại những phần tử của A không có trong B, tức là 1 và 2.
+  - **Vì sao sai, và bước đúng:**
+    1. B \ A là phần của B sau khi bỏ đi những phần tử cũng có trong A, chứ không phải phần của A. Bước 2 vừa tính A \ B.
+    2. Đúng ra: bỏ 3 và 4 khỏi B = {3, 4, 5}, còn lại 5. Vậy B \ A = {5}, và A \ B = {1, 2} là một tập khác.
 - `dstt_g1_hieu` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho A = {1, 2, 8} và B = {1, 4, 6, 7}. Liệt kê các phần tử của hiệu A \ B.
   - **Đáp án:** 2, 8  (thứ tự nào cũng được)
@@ -239,6 +249,16 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Số phần tử của A x B bằng số phần tử của A nhân với số phần tử của B.
     2. Gọi n là số phần tử của B: 3 . n = 12.
     3. n = 4.
+- `dstt_t1_td_07` · bậc 2 (Cơ bản) · Tìm chỗ sai · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Lời giải sau đếm số phần tử của A x B với A = {1, 2} và B = {x, y, z}. Bước đầu tiên bị sai là bước nào?
+  - **Lời giải đưa ra (có một bước sai):**
+    1. A có 2 phần tử và B có 3 phần tử.
+    2. Mỗi phần tử của A ghép với mỗi phần tử của B, nên số cặp là |A| + |B| = 2 + 3 = 5.   **<- bước sai đầu tiên**
+    3. Vậy A x B có 5 cặp có thứ tự.
+  - **Đáp án:** Bước 2: Mỗi phần tử của A ghép với mỗi phần tử của B, nên số cặp là |A| + |B| = 2 + 3 = 5.
+  - **Vì sao sai, và bước đúng:**
+    1. Mỗi cách chọn thành phần đầu ghép được với mọi cách chọn thành phần sau, nên số cặp là tích chứ không phải tổng.
+    2. Đúng ra: |A x B| = |A| . |B| = 2 . 3 = 6. Đó là (1, x), (1, y), (1, z), (2, x), (2, y), (2, z).
 - `dstt_g1_tich_nguoc` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Tập A x B có 9 phần tử và A có 3 phần tử. B có bao nhiêu phần tử?
   - **Đáp án:** 3
@@ -306,6 +326,16 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Tạo ảnh của một tập Y là tập các x có f(x) thuộc Y; ở đây Y chỉ có số 3.
     2. f(x) = 3 nghĩa là x^2 - 1 = 3, tức x^2 = 4.
     3. Phương trình có hai nghiệm 2 và -2, nên tạo ảnh là {-2, 2}.
+- `dstt_t1_ax_06` · bậc 2 (Cơ bản) · Tìm chỗ sai · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Lời giải sau tìm f(A) với f(x) = x^2 từ R vào R và A = {-2, -1, 0, 1, 2}. Bước đầu tiên bị sai là bước nào?
+  - **Lời giải đưa ra (có một bước sai):**
+    1. Ảnh của từng phần tử: f(-2) = 4, f(-1) = 1, f(0) = 0, f(1) = 1, f(2) = 4.
+    2. Mỗi phần tử của A cho một ảnh và A có 5 phần tử, nên f(A) có đúng 5 phần tử.   **<- bước sai đầu tiên**
+    3. Vậy f(A) = {4, 1, 0, 1, 4}, gồm 5 phần tử.
+  - **Đáp án:** Bước 2: Mỗi phần tử của A cho một ảnh và A có 5 phần tử, nên f(A) có đúng 5 phần tử.
+  - **Vì sao sai, và bước đúng:**
+    1. Hai phần tử khác nhau được phép chung một ảnh, nên f(A) có thể ít phần tử hơn A. Ở đây f(-2) = f(2) và f(-1) = f(1).
+    2. Đúng ra: trong một tập mỗi phần tử chỉ viết một lần, f(A) = {0, 1, 4}, gồm 3 phần tử.
 - `dstt_g1_anh_tap` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho f: R -> R, f(x) = x^2 - 1 và A = {-3, -2, 0, 3}. Liệt kê các phần tử của ảnh f(A).
   - **Đáp án:** -1, 3, 8  (thứ tự nào cũng được)
@@ -467,7 +497,7 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
 
 ## Tầng 2: Số phức
 
-39 dạng câu (27 câu viết tay, 12 bộ sinh câu); 39 chưa duyệt.
+42 dạng câu (30 câu viết tay, 12 bộ sinh câu); 42 chưa duyệt.
 
 ### Dạng đại số của số phức (`dstt_t2_dang_dai_so`)
 
@@ -527,6 +557,16 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Số thuần ảo là số phức có phần thực bằng 0 và phần ảo khác 0.
     2. -4i = 0 - 4i có phần thực 0 và phần ảo -4.
     3. Ba số còn lại đều có phần thực khác 0.
+- `dstt_t2_ds_06` · bậc 2 (Cơ bản) · Tìm chỗ sai · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Lời giải sau tìm phần ảo của z = 3 - 4i rồi bình phương nó. Bước đầu tiên bị sai là bước nào?
+  - **Lời giải đưa ra (có một bước sai):**
+    1. Viết z = 3 + (-4)i, nên phần thực của z là 3.
+    2. Phần ảo là cả cụm đứng trước dấu của i, tức là phần ảo của z là -4i.   **<- bước sai đầu tiên**
+    3. Bình phương phần ảo: (-4i)^2 = 16 i^2 = -16.
+  - **Đáp án:** Bước 2: Phần ảo là cả cụm đứng trước dấu của i, tức là phần ảo của z là -4i.
+  - **Vì sao sai, và bước đúng:**
+    1. Phần ảo là một số thực, là hệ số đứng trước i, chứ không có chữ i trong nó. Phần ảo của 3 - 4i là -4.
+    2. Đúng ra: (-4)^2 = 16.
 - `dstt_g2_luy_thua_i` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Tính i^13. Nhập phần thực và phần ảo, cách nhau bằng dấu phẩy.
   - **Đáp án:** 0, 1
@@ -735,6 +775,17 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     3. (1 + i) / (1 - i): nhân tử và mẫu với 1 + i, được (1 + i)^2 / 2 = 2i / 2 = i.
     4. 5 / (2 + i): nhân với 2 - i, được 5(2 - i) / 5 = 2 - i.
     5. 10 / (1 - 3i): nhân với 1 + 3i, được 10(1 + 3i) / 10 = 1 + 3i.
+- `dstt_t2_ch_05` · bậc 2 (Cơ bản) · Tìm chỗ sai · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Lời giải sau tính (1 + 2i) / (3 - i). Bước đầu tiên bị sai là bước nào?
+  - **Lời giải đưa ra (có một bước sai):**
+    1. Mẫu là 3 - i, tử là 1 + 2i; cần làm cho mẫu hết phần ảo.
+    2. Nhân cả tử và mẫu với liên hợp của tử, tức là với 1 - 2i.   **<- bước sai đầu tiên**
+    3. Tử: (1 + 2i)(1 - 2i) = 1 + 4 = 5.
+    4. Mẫu: (3 - i)(1 - 2i) = 3 - 6i - i + 2i^2 = 1 - 7i.
+  - **Đáp án:** Bước 2: Nhân cả tử và mẫu với liên hợp của tử, tức là với 1 - 2i.
+  - **Vì sao sai, và bước đúng:**
+    1. Mục đích là làm mẫu hết phần ảo, nên phải nhân với liên hợp của mẫu. Nhân với liên hợp của tử không làm mẫu thành số thực, như bước 4 cho thấy.
+    2. Đúng ra: nhân với 3 + i. Tử (1 + 2i)(3 + i) = 3 + i + 6i + 2i^2 = 1 + 7i, mẫu (3 - i)(3 + i) = 10. Vậy kết quả là (1 + 7i)/10.
 - `dstt_g2_chia` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Tính (-4 + 4i) / (-3 + i). Nhập phần thực và phần ảo (có thể là phân số), cách nhau bằng dấu phẩy.
   - **Đáp án:** 8/5, -4/5
@@ -806,6 +857,16 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Công thức Moivre: lũy thừa n của r(cos a + i sin a) có môđun r^n và acgumen n . a.
     2. Ở đây r = 2, a = 30 độ, n = 3: môđun 8, acgumen 90 độ.
     3. cos 90 độ = 0, sin 90 độ = 1, nên z^3 = 8i.
+- `dstt_t2_lg_06` · bậc 2 (Cơ bản) · Tìm chỗ sai · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Lời giải sau tính z^4 với z = 1 + i. Bước đầu tiên bị sai là bước nào?
+  - **Lời giải đưa ra (có một bước sai):**
+    1. z = 1 + i có môđun r = sqrt(2) và acgumen 45 độ.
+    2. Theo công thức Moivre, z^4 = r^4 (cos 45 + i sin 45), chỉ cần nâng môđun lên lũy thừa 4.   **<- bước sai đầu tiên**
+    3. r^4 = 4, nên z^4 = 4(cos 45 + i sin 45) = 2 sqrt(2) + 2 sqrt(2) i.
+  - **Đáp án:** Bước 2: Theo công thức Moivre, z^4 = r^4 (cos 45 + i sin 45), chỉ cần nâng môđun lên lũy thừa 4.
+  - **Vì sao sai, và bước đúng:**
+    1. Công thức Moivre nâng môđun lên lũy thừa n và nhân acgumen với n: z^4 = r^4 (cos 4.45 + i sin 4.45).
+    2. Đúng ra: z^4 = 4(cos 180 + i sin 180) = -4. Thử lại: (1 + i)^2 = 2i, nên (1 + i)^4 = (2i)^2 = -4.
 - `dstt_g2_moivre` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Dùng dạng lượng giác và công thức Moivre, tính (1 - i)^3. Nhập phần thực và phần ảo, cách nhau bằng dấu phẩy.
   - **Đáp án:** -2, -2
@@ -903,7 +964,7 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
 
 ## Tầng 3: Vectơ trong R^n và ma trận
 
-41 dạng câu (29 câu viết tay, 12 bộ sinh câu); 41 chưa duyệt.
+45 dạng câu (33 câu viết tay, 12 bộ sinh câu); 45 chưa duyệt.
 
 ### Vectơ trong R^n (`dstt_t3_vecto_rn`)
 
@@ -934,6 +995,16 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Phương trình vectơ được biến đổi như phương trình số: x = v - 2u.
     2. 2u = (2, -4, 0), rồi v - 2u = (2 - 2, 1 + 4, -1 - 0) = (0, 5, -1).
     3. Thử lại: x + 2u = (0 + 2, 5 - 4, -1 + 0) = (2, 1, -1) = v.
+- `dstt_t3_vt_05` · bậc 2 (Cơ bản) · Tìm chỗ sai · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Lời giải sau tính 3u - 2v với u = (1, 2, 3) và v = (2, -1, 0) trong R^3. Bước đầu tiên bị sai là bước nào?
+  - **Lời giải đưa ra (có một bước sai):**
+    1. 3u = (3, 6, 9) và 2v = (4, -2, 0).
+    2. Trừ từng tọa độ: 3u - 2v = (3 - 4, 6 - 2, 9 - 0).   **<- bước sai đầu tiên**
+    3. Vậy 3u - 2v = (-1, 4, 9).
+  - **Đáp án:** Bước 2: Trừ từng tọa độ: 3u - 2v = (3 - 4, 6 - 2, 9 - 0).
+  - **Vì sao sai, và bước đúng:**
+    1. Tọa độ thứ hai của 2v là -2, nên phải lấy 6 - (-2), không phải 6 - 2. Trừ một số âm là cộng số dương.
+    2. Đúng ra: 3u - 2v = (3 - 4, 6 + 2, 9 - 0) = (-1, 8, 9).
 - `dstt_g3_to_hop_vecto` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho u = (-3, 4, -4) và v = (-1, -4, 2) trong R^3. Tính u + v. Nhập các tọa độ theo thứ tự, cách nhau bằng dấu phẩy.
   - **Đáp án:** -4, 0, -2
@@ -999,6 +1070,18 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. a_ij là phần tử ở hàng i, cột j: chỉ số thứ nhất là hàng, chỉ số thứ hai là cột.
     2. Hàng 1 của A là (7, -1, 0) nên a_12 = -1 và a_13 = 0.
     3. Hàng 2 của A là (2, 5, 9) nên a_21 = 2, a_22 = 5 và a_23 = 9.
+- `dstt_t3_kt_06` · bậc 2 (Cơ bản) · Tìm chỗ sai · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Lời giải sau tìm a_32 của ma trận A như hình. Bước đầu tiên bị sai là bước nào?
+  - A = (1, 2, 3); (4, 5, 6); (7, 8, 9); (10, 11, 12)  (từng hàng)
+  - **Lời giải đưa ra (có một bước sai):**
+    1. Ma trận A có 4 hàng và 3 cột, nên có cỡ 4 x 3.
+    2. Trong a_32, chỉ số thứ nhất là cột và chỉ số thứ hai là hàng, nên đó là phần tử ở cột 3, hàng 2.   **<- bước sai đầu tiên**
+    3. Hàng 2 của A là (4, 5, 6), và cột 3 của hàng ấy là 6.
+    4. Vậy a_32 = 6.
+  - **Đáp án:** Bước 2: Trong a_32, chỉ số thứ nhất là cột và chỉ số thứ hai là hàng, nên đó là phần tử ở cột 3, hàng 2.
+  - **Vì sao sai, và bước đúng:**
+    1. Chỉ số thứ nhất của a_ij là hàng, chỉ số thứ hai là cột. Hàng luôn đứng trước.
+    2. Đúng ra: a_32 nằm ở hàng 3, cột 2. Hàng 3 là (7, 8, 9) và cột 2 của nó là 8. Vậy a_32 = 8.
 - `dstt_g3_phan_tu` · bậc 2 (Cơ bản) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho ma trận A như hình. Phần tử a_14 bằng bao nhiêu?
   - A = (-7, -1, -6, 6); (5, 6, 3, -3)  (từng hàng)
@@ -1181,6 +1264,19 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. A cỡ m x n thì A^T cỡ n x m.
     2. Hai ma trận chỉ cộng được khi cùng cỡ, tức là khi m = n.
     3. Ví dụ A cỡ 2 x 3 không cộng được với A^T cỡ 3 x 2. Chỉ ma trận vuông mới cộng được với chuyển vị của nó.
+- `dstt_t3_cv_06` · bậc 3 (Vận dụng) · Tìm chỗ sai · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Lời giải sau tính (A + 2B)^T với A, B như hình. Bước đầu tiên bị sai là bước nào?
+  - A = (1, 2); (3, 4)  (từng hàng)
+  - B = (0, 1); (2, 0)  (từng hàng)
+  - **Lời giải đưa ra (có một bước sai):**
+    1. Chuyển vị đi qua phép cộng và phép nhân với một số, nên xử lý được từng hạng tử.
+    2. Ta chỉ cần chuyển vị A: (A + 2B)^T = A^T + 2B.   **<- bước sai đầu tiên**
+    3. A^T = ((1, 3), (2, 4)), còn 2B = ((0, 2), (4, 0)).
+    4. Cộng lại: A^T + 2B = ((1, 5), (6, 4)).
+  - **Đáp án:** Bước 2: Ta chỉ cần chuyển vị A: (A + 2B)^T = A^T + 2B.
+  - **Vì sao sai, và bước đúng:**
+    1. Chuyển vị phải làm cho từng hạng tử, không chỉ cho hạng tử đầu: (A + 2B)^T = A^T + 2B^T.
+    2. Đúng ra: B^T = ((0, 2), (1, 0)), nên 2B^T = ((0, 4), (2, 0)). Cộng với A^T được ((1, 7), (4, 4)). Kiểm tra: A + 2B = ((1, 4), (7, 4)), chuyển vị của nó đúng là ((1, 7), (4, 4)).
 - `dstt_g3_chuyen_vi_tong` · bậc 3 (Vận dụng) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho hai ma trận A và B như hình. Tính A^T + B. Nhập bốn phần tử theo từng hàng, cách nhau bằng dấu phẩy.
   - A = (-2, -4); (2, -3)  (từng hàng)
@@ -1258,6 +1354,18 @@ Tạo bởi `python tools/math_review.py`. Đánh dấu đã duyệt bằng `"re
     1. Vết cộng các phần tử trên đường chéo chính, nên tr(X + Y) = tr(X) + tr(Y) và tr(kX) = k tr(X).
     2. Ma trận đơn vị I_3 có ba số 1 trên đường chéo nên tr(I_3) = 3.
     3. tr(3A - 2B + I_3) = 3 . 5 - 2 . (-2) + 3 = 15 + 4 + 3 = 22.
+- `dstt_t3_vet_06` · bậc 3 (Vận dụng) · Tìm chỗ sai · viết tay · CHƯA DUYỆT
+  - **Câu hỏi:** Lời giải sau tính tr(2A - B) với A, B như hình. Bước đầu tiên bị sai là bước nào?
+  - A = (2, 1); (0, 3)  (từng hàng)
+  - B = (1, 4); (5, 2)  (từng hàng)
+  - **Lời giải đưa ra (có một bước sai):**
+    1. tr(A) = 2 + 3 = 5 và tr(B) = 1 + 2 = 3.
+    2. Vết có tính tuyến tính, nên đặt 2 làm thừa số chung: tr(2A - B) = 2(tr(A) - tr(B)).   **<- bước sai đầu tiên**
+    3. Vậy tr(2A - B) = 2(5 - 3) = 4.
+  - **Đáp án:** Bước 2: Vết có tính tuyến tính, nên đặt 2 làm thừa số chung: tr(2A - B) = 2(tr(A) - tr(B)).
+  - **Vì sao sai, và bước đúng:**
+    1. Tuyến tính nghĩa là tr(kA + B) = k.tr(A) + tr(B): số 2 chỉ nhân với A, không nhân với B.
+    2. Đúng ra: tr(2A - B) = 2.5 - 3 = 7. Kiểm tra: 2A - B = ((3, -2), (-5, 4)), có vết 3 + 4 = 7.
 - `dstt_g3_vet_to_hop` · bậc 3 (Vận dụng) · Điền số · bộ sinh câu, 3 mẫu · CHƯA DUYỆT
   - **Câu hỏi:** Cho hai ma trận A và B như hình. Tính tr(-2A - 3B).
   - A = (-2, -4); (2, -3)  (từng hàng)

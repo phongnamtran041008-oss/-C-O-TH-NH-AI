@@ -527,3 +527,12 @@ async def test_the_bot_plays_cleanly_and_keeps_the_daily_limit(client, frozen, m
     assert stones1 - stones0 == total["stones"]
     for k, v in total["items"].items():
         assert bag1.get(k, 0) - bag0.get(k, 0) == v
+
+
+def test_no_event_asks_find_mistake_because_a_new_player_cannot_get_one():
+    """M11: 'Tìm chỗ sai' is playable but starts at tier 2, and a cơ duyên must be answerable by a
+    player at tier 1 of the first floor. The data uses none, and validate() refuses one that does."""
+    assert not any("find_mistake" in e["question"]["qtypes"] for e in math_fortune.events().values())
+    raw = copy.deepcopy(math_fortune._read())
+    raw["events"][0]["question"]["qtypes"] = ["find_mistake"]
+    assert any("no find_mistake question at tier 1" in p for p in math_fortune.validate(raw))

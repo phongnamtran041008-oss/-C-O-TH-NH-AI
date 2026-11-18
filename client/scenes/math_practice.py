@@ -23,7 +23,7 @@ from ..ui import mathinputs as MI
 from ..ui.mathdraw import draw_matrices, fit
 from .base import Scene
 from .math_code import ProblemListScene
-from .math_library import DocScene, LibraryListScene
+from .math_library import DocScene, LibraryListScene, subject_tabs
 from .quiz import KEYS, CombatCard, QuizScene
 
 GREY = "#5A5A5A"
@@ -60,6 +60,7 @@ class MathQuizScene(QuizScene):
         # M9: the two inputs that are more than one click; their state lives here, not in the widgets
         self.match = MI.MatchingState(len(prompt.get("left") or [])) if question.get("input") == "matching" else None
         self.ordering = MI.OrderingState(len(prompt.get("steps") or [])) if question.get("input") == "ordering" else None
+        self.mistake = MI.FindMistakeState(len(prompt.get("lines") or [])) if question.get("input") == "find_mistake" else None
 
     # ------------------------------------------------------------ actions
     def submit(self, answer: dict):
@@ -97,7 +98,7 @@ class MathQuizScene(QuizScene):
             return T.MATH_TRUE if g["value"] else T.MATH_FALSE
         if "option" in g:
             return next((o["text"] for o in self.q.get("options") or [] if o["id"] == g["option"]), "")
-        if "pairs" in g or "order" in g:
+        if "pairs" in g or "order" in g or "line" in g:
             return MI.given_text(self.q.get("input", ""), g)
         return str(g.get("text", ""))
 
@@ -146,6 +147,11 @@ class MathQuizScene(QuizScene):
         elif inp == "ordering" and self.ordering is not None:
             ans = MI.draw_ordering(ui, self.ordering, prompt.get("steps") or [], x, cy + 6, w, y + h - self.input_margin(),
                                    self.sent)
+            if ans is not None:
+                self.submit(ans)
+        elif inp == "find_mistake" and self.mistake is not None:        # M11: Tìm chỗ sai
+            ans = MI.draw_find_mistake(ui, self.mistake, prompt.get("lines") or [], x, cy + 6, w,
+                                       y + h - self.input_margin(), self.sent)
             if ans is not None:
                 self.submit(ans)
         self.draw_run(ui, x, y, w, h)
@@ -201,6 +207,8 @@ class MathQuizScene(QuizScene):
         """The right answer. Matching and ordering have one line per pair / step, and a card
         that is only 200 px high must not be overrun by them: the lines stop at `bottom`."""
         inp = self.q.get("input", "")
+        if inp == "find_mistake":                    # M11: "Bước 2: <the wrong line>", a long line that wraps
+            return cy + ui.text(T.QUIZ_ANSWER_WAS.format(a=text), x + 16, cy, 8, UICOL["green"], max_w=w - 32).h + 3
         if inp not in ("matching", "ordering"):
             return cy + ui.text(T.QUIZ_ANSWER_WAS.format(a=text), x + 16, cy, 9, UICOL["green"],
                                 max_w=w - 32).h + 4
@@ -242,7 +250,8 @@ class MathQuizScene(QuizScene):
 
         cy = y + 48
         prompt = self.q.get("prompt", {})
-        cy += ui.text(prompt.get("text", ""), x + 16, cy, 8, GREY, max_w=w - 32).h + 3
+        if self.q.get("input") != "find_mistake":     # (its prompt is the same long sentence every time: the reveal skips it)
+            cy += ui.text(prompt.get("text", ""), x + 16, cy, 8, GREY, max_w=w - 32).h + 3
         if prompt.get("matrices"):
             cy = draw_matrices(ui, prompt["matrices"], x + 20, cy + 1, centered=False) + 4
         rv = res.get("reveal") or {}
@@ -252,8 +261,10 @@ class MathQuizScene(QuizScene):
         cy = self.draw_answer(ui, x, cy, w, y + h - 40, rv.get("answer_text", ""))
         if not good and rv.get("solution_vi"):      # rule 6: after a wrong answer, the steps
             cy += ui.text(T.MATH_SOLUTION, x + 16, cy, 8, "#2B2B2B").h + 2
+            pitch = ui.text_size("Ag", 8)[1] * 1.15
             for n, step in enumerate(rv["solution_vi"], 1):
-                if cy > y + h - self.solution_margin:
+                rows = len(ui.f.wrap(step, 8, int((w - 52) * ui.s), ui.s)) or 1
+                if cy + rows * pitch > y + h - self.solution_margin + 12:     # a step that would run into the line below stops here
                     break
                 ui.text(f"{n}.", x + 18, cy, 8, GREY)
                 cy += ui.text(step, x + 32, cy, 8, "#2B2B2B", max_w=w - 52).h + 2
@@ -355,7 +366,12 @@ HUB_DOORS = (("math_hub_dungeon", T.MATH_HUB_DUNGEON, ".math_dungeon", "MathDung
 
 
 class MathPracticeScene(Scene):
-    """The floors of the math bí cảnh, and the sitting that runs on the chosen floor."""
+    """The floors of the math bí cảnh, and the sitting that runs on the chosen floor.
+
+    M11: one subject at a time - a tab per bí cảnh along the top (mouse, or Left / Right).
+    The hub opens on the subject of the sitting left open, else the first subject that has a
+    playable floor. Under the tabs: where the player is in that subject, the bài kiểm tra đầu
+    vào when it is offered (or going on), and the subject's bài tập."""
 
     def __init__(self, game):
         super().__init__(game)
@@ -364,6 +380,7 @@ class MathPracticeScene(Scene):
         self.summary: dict | None = None
         self.trial: dict | None = None      # the verdict of the Thiên kiếp nhỏ just finished
         self.busy = False
+        self.tab: int | None = None         # M11: the index of the subject shown
 
     def on_enter(self):
         self.load()
@@ -375,7 +392,28 @@ class MathPracticeScene(Scene):
         def ok(data):
             self.busy = False
             self.path = data
+            if self.tab is None or self.tab >= len(data.get("subjects", [])):
+                self.tab = self.first_tab(data)
         self.api.get("/math/path", ok, self.fail)
+
+    @staticmethod
+    def first_tab(path: dict) -> int:
+        """The subject of the sitting left open, else the first one with a playable floor."""
+        subjects = path.get("subjects", [])
+        run = path.get("run")
+        for i, s in enumerate(subjects):
+            if run and s["id"] == run["subject_id"]:
+                return i
+        return next((i for i, s in enumerate(subjects) if any(f["playable"] for f in s["floors"])), 0)
+
+    def subject(self) -> dict | None:
+        subjects = (self.path or {}).get("subjects") or []
+        return subjects[self.tab or 0] if subjects else None
+
+    def placement(self, subject: dict):
+        """M11: the bài kiểm tra đầu vào of this subject, in a scene of its own."""
+        from .math_placement import PlacementScene       # (it imports this module)
+        self.game.push(PlacementScene(self.game, subject, on_close=self.load))
 
     def fail(self, err):
         self.busy = False
@@ -446,7 +484,8 @@ class MathPracticeScene(Scene):
             self.draw_floors(ui, x, y, w, h)
         if ui.button("math_library", x + 12, y + h - 20, 76, 14, T.LIB_TITLE, size=7, style="gold",
                      enabled=self.path is not None):
-            self.game.push(LibraryListScene(self.game))
+            shown = self.subject()
+            self.game.push(LibraryListScene(self.game, shown["id"] if shown else None))
         if not self.summary:      # M10: the other ways to play - each one a scene of its own
             for i, (wid, label, module, cls) in enumerate(HUB_DOORS):
                 if ui.button(wid, x + 94 + i * 64, y + h - 20, 60, 14, label, size=7, enabled=self.path is not None):
@@ -456,43 +495,68 @@ class MathPracticeScene(Scene):
 
     def draw_floors(self, ui, x, y, w, h):
         open_run = self.path.get("run")
-        cy = y + 22
-        for s in self.path["subjects"]:
-            ui.text(s["name_vi"], x + 12, cy, 10, UICOL["accent"])
-            if s.get("problems") and ui.button(f"math_code_{s['id']}", x + w - 78, cy - 1, 66, 13,
-                                               T.CODE_SHORT, size=7, enabled=not self.busy):
-                self.game.push(ProblemListScene(self.game, s["id"]))      # bài tập lập trình (M6)
-            cy += 15
-            for f in s["floors"]:
-                mine = bool(open_run) and open_run["subject_id"] == s["id"] and open_run["floor"] == f["floor"]
-                label = T.MATH_HIDDEN_FLOOR if f["hidden"] else T.MATH_FLOOR.format(n=f["floor"])
-                ink = "#2B2B2B" if f["playable"] else "#9A9387"
-                ui.text(label, x + 12, cy + 7, 8, ink, anchor="midleft")
-                ui.text(fit(ui, f["title_vi"], 8, 104), x + 52, cy + 7, 8, ink, anchor="midleft")
-                ui.text(tiers_text(f["tier_min"], f["tier_max"]), x + 160, cy + 7, 7, GREY, anchor="midleft")
-                self.draw_floor_gate(ui, x, cy, w, s, f)
-                if f["playable"]:
-                    if ui.button(f"math_floor_{s['id']}_{f['floor']}", x + w - 76, cy, 64, 13,
-                                 T.MATH_RESUME if mine else T.MATH_PLAY, size=7, style="primary",
-                                 enabled=not self.busy):
-                        if mine:
-                            self.resume(open_run)
-                        else:
-                            self.start(s["id"], f["floor"])
-                else:
-                    ui.text(T.MATH_LOCKED if f["has_questions"] else T.MATH_NO_QUESTIONS,
-                            x + w - 12, cy + 7, 7, "#9A9387", anchor="midright")
-                if f.get("doc_id") and ui.button(f"math_doc_{s['id']}_{f['floor']}", x + w - 118, cy, 34, 13,
-                                                 T.LIB_READ, size=7, style="gold"):
-                    self.game.push(DocScene(self.game, f["doc_id"]))
-                cy += 17
+        subjects = self.path["subjects"]
+        if not subjects:
+            return
+        self.tab = subject_tabs(ui, "math_tab", subjects, self.tab or 0, x + 12, y + 19, w - 24)
+        s = subjects[self.tab]
+        cy = y + 36
+        self.draw_subject_line(ui, x, cy, w, s)
+        cy += 17
+        for f in s["floors"]:
+            mine = bool(open_run) and open_run["subject_id"] == s["id"] and open_run["floor"] == f["floor"]
+            label = T.MATH_HIDDEN_FLOOR if f["hidden"] else T.MATH_FLOOR.format(n=f["floor"])
+            ink = "#2B2B2B" if f["playable"] else "#9A9387"
+            ui.text(label, x + 12, cy + 7, 8, ink, anchor="midleft")
+            ui.text(fit(ui, f["title_vi"], 8, 104), x + 52, cy + 7, 8, ink, anchor="midleft")
+            ui.text(tiers_text(f["tier_min"], f["tier_max"]), x + 160, cy + 7, 7, GREY, anchor="midleft")
+            self.draw_floor_gate(ui, x, cy, w, s, f)
+            if f["playable"]:
+                if ui.button(f"math_floor_{s['id']}_{f['floor']}", x + w - 76, cy, 64, 13,
+                             T.MATH_RESUME if mine else T.MATH_PLAY, size=7, style="primary",
+                             enabled=not self.busy):
+                    if mine:
+                        self.resume(open_run)
+                    else:
+                        self.start(s["id"], f["floor"])
+            else:
+                ui.text(T.MATH_LOCKED if f["has_questions"] else T.MATH_NO_QUESTIONS,
+                        x + w - 12, cy + 7, 7, "#9A9387", anchor="midright")
+            if f.get("doc_id") and ui.button(f"math_doc_{s['id']}_{f['floor']}", x + w - 118, cy, 34, 13,
+                                             T.LIB_READ, size=7, style="gold"):
+                self.game.push(DocScene(self.game, f["doc_id"]))
+            cy += 16
+
+    def draw_subject_line(self, ui, x, cy, w, s: dict):
+        """M11: under the tabs - where the player is in this subject (and where the bài kiểm
+        tra đầu vào put them), the test itself when it is offered, and the bài tập (M6)."""
+        p = s.get("placement") or {}
+        if not any(f["has_questions"] for f in s["floors"]):
+            where = T.MATH_HUB_NOTHING_YET
+        elif s.get("next_floor") is None:
+            where = T.MATH_HUB_ALL_CLEARED
+        else:
+            where = T.MATH_HUB_AT.format(n=s["next_floor"])
+        if p.get("start_floor") and not p.get("abandoned"):
+            where += "   " + T.MATH_PLACE_DONE.format(n=p["start_floor"])
+        ui.text(where, x + 12, cy + 7, 8, UICOL["accent"], anchor="midleft", max_w=w - 200)
+        if s.get("problems") and ui.button(f"math_code_{s['id']}", x + w - 78, cy, 66, 13,
+                                           T.CODE_SHORT, size=7, enabled=not self.busy):
+            self.game.push(ProblemListScene(self.game, s["id"]))      # bài tập lập trình (M6)
+        going = p.get("status") == "in_progress"
+        if (p.get("offered") or going) and ui.button(
+                f"math_place_{s['id']}", x + w - 174, cy, 90, 13,
+                T.MATH_PLACE_CONTINUE if going else T.MATH_PLACE_BUTTON, size=7, style="gold",
+                enabled=not self.busy):
+            self.placement(s)
 
     def draw_floor_gate(self, ui, x, cy, w, subject: dict, f: dict):
         """The slot between the tiers and the Tàng Thư button (M5): how far the mastery gate
         has come, or the button for the Thiên kiếp nhỏ once the gate is open."""
         gate = f.get("gate")
-        if f["state"] == "cleared":
-            ui.text(T.MATH_CLEARED, x + w - 122, cy + 7, 7, "#C99A3A", anchor="midright")
+        if f["state"] == "cleared":                 # M11: skipped by the bài kiểm tra đầu vào, or passed
+            ui.text(T.MATH_CLEARED_PLACED if f.get("cleared_by") == "placement" else T.MATH_CLEARED,
+                    x + w - 122, cy + 7, 7, "#C99A3A", anchor="midright")
         elif not f["playable"] or not gate:
             return                                  # a locked floor says so on the right
         elif gate["ok"]:

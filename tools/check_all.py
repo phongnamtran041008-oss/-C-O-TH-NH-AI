@@ -117,7 +117,7 @@ def displayed_strings() -> list[tuple[str, str]]:
         out.append((f"math_items.INSTRUCTIONS_VI {qtype}", text))
     for item in math_items.bank().values():
         out += [(item.id, t) for t in (item.prompt_vi, *item.solution_vi, *item.options_vi,
-                                       *(side for pair in item.pairs_vi for side in pair), *item.steps_vi,
+                                       *(side for pair in item.pairs_vi for side in pair), *item.steps_vi, *item.lines_vi,
                                        item.answer_text)]   # answer_text: what the reveal shows
     for spec in math_items.generators().values():
         for seed in range(5):

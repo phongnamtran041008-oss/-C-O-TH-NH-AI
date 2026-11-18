@@ -38,6 +38,15 @@ def _matrices(item: math_items.MathItem) -> list[str]:
 
 def _question(item: math_items.MathItem) -> list[str]:
     lines = [f"  - **Câu hỏi:** {item.prompt_vi}", *_matrices(item)]
+    if item.qtype == "find_mistake":
+        # the lines as the player sees them, numbered, then which one is wrong, then why
+        lines.append("  - **Lời giải đưa ra (có một bước sai):**")
+        lines += [f"    {n}. {line}" + ("   **<- bước sai đầu tiên**" if n - 1 == item.answer else "")
+                  for n, line in enumerate(item.lines_vi, 1)]
+        lines.append(f"  - **Đáp án:** {item.answer_text}")
+        lines.append("  - **Vì sao sai, và bước đúng:**")
+        lines += [f"    {n}. {step}" for n, step in enumerate(item.solution_vi, 1)]
+        return lines
     if item.qtype in ("matching", "ordering"):
         # the data order is the answer, so it is shown whole (the game shuffles what the player sees)
         if item.qtype == "matching":

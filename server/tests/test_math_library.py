@@ -12,7 +12,8 @@ from tests.helpers import answer_key, register
 from tests.test_math_loop import ask, make, play, right_answer, start
 
 SUBJECT = "dai_so_tuyen_tinh"
-WRITTEN_FLOORS = (1, 2, 3)
+WRITTEN_FLOORS = (1, 2, 3)                  # of every subject (M11)
+SUBJECTS = [SUBJECT, "giai_tich", "xac_suat_thong_ke", "toi_uu_roi_rac"]
 
 DOC = """---
 id: thu_nghiem
@@ -167,16 +168,20 @@ def test_the_shipped_library_is_valid():
 
 
 def test_one_document_per_written_floor_covering_every_micro_skill():
-    subject = mp.subject(SUBJECT)
-    assert [d.floor for d in ml.documents().values()] == list(WRITTEN_FLOORS)
-    for floor in WRITTEN_FLOORS:
-        (doc,) = ml.for_floor(SUBJECT, floor)
-        assert list(doc.skills) == [s.id for s in subject.floor(floor).skills]
-        sections = [b for b in doc.blocks if b["type"] == "section"]
-        assert [b["skill"] for b in sections] == list(doc.skills)
-        assert doc.formulas and any(b["type"] == "note" for b in doc.blocks)
-        for skill in doc.skills:
-            assert ml.for_skill(skill) is doc
+    assert [s.id for s in mp.subjects()] == SUBJECTS                   # M11: four subjects, each written to floor 3
+    assert len(ml.documents()) == len(SUBJECTS) * len(WRITTEN_FLOORS)
+    for sid in SUBJECTS:
+        subject = mp.subject(sid)
+        assert sorted(d.floor for d in ml.documents().values() if d.subject == sid) == list(WRITTEN_FLOORS)
+        for floor in WRITTEN_FLOORS:
+            (doc,) = ml.for_floor(sid, floor)
+            assert list(doc.skills) == [s.id for s in subject.floor(floor).skills]
+            sections = [b for b in doc.blocks if b["type"] == "section"]
+            assert [b["skill"] for b in sections] == list(doc.skills)
+            assert any(b["type"] == "note" for b in doc.blocks), doc.id
+            for skill in doc.skills:
+                assert ml.for_skill(skill) is doc
+    assert all(d.formulas for d in ml.documents().values() if d.subject == SUBJECT)
 
 
 def test_every_formula_has_a_picture_that_fits_the_page():
@@ -192,7 +197,7 @@ def test_every_formula_has_a_picture_that_fits_the_page():
 def test_no_floor_that_has_questions_is_left_without_a_document(monkeypatch):
     assert ml._coverage_problems({s: "x" for d in ml.documents().values() for s in d.skills}) == []
     none_at_all = ml._coverage_problems({})
-    assert len(none_at_all) == len(WRITTEN_FLOORS)
+    assert len(none_at_all) == len(WRITTEN_FLOORS) * len(SUBJECTS)
     assert "floor 1 has questions but no document" in none_at_all[0]
     half = {s: "x" for d in ml.documents().values() for s in d.skills if d.floor != 1}
     half["dstt_t1_tap_hop"] = "x"
@@ -232,9 +237,12 @@ async def test_the_library_lists_every_document(client):
     h, _ = await make(client)
     r = await client.get("/math/library", headers=h)
     assert r.status_code == 200
-    (subject,) = r.json()["subjects"]
-    assert subject["id"] == SUBJECT
-    assert [d["floor"] for d in subject["documents"]] == list(WRITTEN_FLOORS)
+    listed = r.json()["subjects"]
+    assert [s["id"] for s in listed] == SUBJECTS                       # in play order (M11: four subjects)
+    for s in listed:
+        assert [d["floor"] for d in s["documents"]] == list(WRITTEN_FLOORS), s["id"]
+        assert all(d["title_vi"] and d["summary_vi"] and d["sections"] for d in s["documents"])
+    subject = listed[0]
     first = subject["documents"][0]
     assert first["title_vi"] and first["summary_vi"] and len(first["sections"]) == 6
     assert (await client.get("/math/library")).status_code == 401

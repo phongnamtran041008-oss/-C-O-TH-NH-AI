@@ -133,6 +133,10 @@ def answer(drv: Driver, server: ServerProcess, correct: bool) -> dict:
         for i in (order if correct else order[::-1]):
             drv.click(f"ord_step_{i}")
         drv.click("mq_submit")
+    elif q["input"] == "find_mistake":
+        line = key_of(server, q)["line"]
+        drv.click(f"fm_line_{line if correct else (line + 1) % len(q['prompt']['lines'])}")
+        drv.click("mq_submit")
     else:
         return answer_card(drv, server, correct)
     drv.wait(lambda: drv.top_is("MathCombatQuizScene") and drv.game.top.result, 10, "the result")

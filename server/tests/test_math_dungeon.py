@@ -129,7 +129,12 @@ def test_every_generated_room_can_be_asked_and_is_one_question_type(floor):
             assert not r["warden"] and r["skill"] in skills
             assert (r["kind"], r["skill"]) in pairs           # askable by anyone on the floor
             seen.add(r["kind"])
-    assert seen == set(math_items.PLAYABLE_TYPES)              # every kind turns up somewhere
+    assert seen == kinds                                       # every kind the floor can ask turns up
+    # find_mistake exists from tier 2: floors 1-2 (lowest tier 1) never get a room for it, floor 3 (tiers 2-3) does
+    assert ("find_mistake" in kinds) == (math_path.floor_tiers(floor)[0] >= 2)
+    if math_path.floor_tiers(floor)[0] == 1:
+        assert not any(r["kind"] == "find_mistake" for seed in range(100)
+                       for r in math_dungeon.generate(seed, SUBJECT, floor)["rooms"])
 
 
 def test_a_kind_the_floor_cannot_ask_at_its_lowest_tier_is_never_generated(monkeypatch):

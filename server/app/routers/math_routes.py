@@ -10,7 +10,7 @@ from ..auth import api_error, current_user, write_user
 from ..db import get_db
 from ..learning import math_library
 from ..models import User
-from ..systems import math_code, math_craft, math_practice
+from ..systems import math_code, math_craft, math_placement, math_practice
 from ..systems import math_combat  # noqa: F401  (registers the quái lỗi sai grader)
 from ..systems import math_skills  # (registers the grader of cast questions, M9)
 
@@ -60,6 +60,37 @@ async def math_run_next(body: RunIn, user: User = Depends(write_user), db: Async
 @router.post("/math/run/end")
 async def math_run_end(body: RunIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
     return await _run(db, math_practice.end(db, user, body.run_id))
+
+
+class SubjectIn(BaseModel):
+    subject_id: str = Field(max_length=40)
+
+
+@router.get("/math/placement")
+async def math_placement_state(subject_id: str, user: User = Depends(current_user),
+                               db: AsyncSession = Depends(get_db)):
+    """Bài kiểm tra đầu vào of a subject (M11, rule 7): offered, in progress or done, and
+    the result floor by floor."""
+    return await _run(db, math_placement.state(db, user, subject_id))
+
+
+@router.post("/math/placement/start")
+async def math_placement_start(body: SubjectIn, user: User = Depends(write_user),
+                               db: AsyncSession = Depends(get_db)):
+    return await _run(db, math_placement.start(db, user, body.subject_id))
+
+
+@router.post("/math/placement/next")
+async def math_placement_next(body: RunIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
+    """The open question, or the next one; `question` is null once the outcome is decided."""
+    return await _run(db, math_placement.next_question(db, user, body.run_id))
+
+
+@router.post("/math/placement/abandon")
+async def math_placement_abandon(body: RunIn, user: User = Depends(write_user),
+                                 db: AsyncSession = Depends(get_db)):
+    """Give the sitting up: nothing is skipped (the player starts on the first floor)."""
+    return await _run(db, math_placement.abandon(db, user, body.run_id))
 
 
 class ProblemsIn(BaseModel):

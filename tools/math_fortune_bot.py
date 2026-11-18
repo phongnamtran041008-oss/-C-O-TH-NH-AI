@@ -35,6 +35,8 @@ def right_answer(q: dict, key: dict) -> dict:
         return {"pairs": list(key["pairs"])}
     if t == "ordering":
         return {"order": list(key["order"])}
+    if t == "find_mistake":
+        return {"line": key["line"]}
     return {"text": ", ".join(key["numbers"])}
 
 
@@ -47,6 +49,8 @@ def wrong_answer(q: dict, key: dict) -> dict:
     if t in ("matching", "ordering"):
         name = "pairs" if t == "matching" else "order"
         return {name: key[name][1:] + key[name][:1]}
+    if t == "find_mistake":                             # the next line: always another line
+        return {"line": (key["line"] + 1) % len(q["prompt"]["lines"])}
     return {"text": "987654"}
 
 

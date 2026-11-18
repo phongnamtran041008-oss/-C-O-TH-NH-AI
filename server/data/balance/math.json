@@ -72,7 +72,14 @@
     "per_skill_tier": 2,
     "generator_variety": 8
   },
-  "placement_test": {"min_questions": 10, "max_questions": 15},
+  "placement_test": {
+    "_comment": "Bài kiểm tra đầu vào (rule 7, app/systems/math_placement.py). per_floor questions for every written main floor, clamped to [min_questions, max_questions] in all (max_questions must cover one per main floor); a floor's bar is pass_pct of its questions right; the start floor is the lowest floor whose bar was not met (at most the last written floor) and the floors below it count as cleared. One sitting per subject: a result that skipped a floor is final; a result on the first floor (or an abandoned sitting) may be taken again after retake_after_days days (null = never).",
+    "min_questions": 10,
+    "max_questions": 15,
+    "per_floor": 5,
+    "pass_pct": 80,
+    "retake_after_days": 7
+  },
   "programming": {
     "_comment": "Bài tập lập trình (M6). The learner's program runs on the learner's own machine, one run per test, with stdin in and stdout out; the server keeps the hidden tests' expected output and decides the verdict. time_limit_ms is the default per test, a problem may ask for more; tolerance is for problems graded as floats; reward is xp_per_correct at the problem's tier times the share of tests passed.",
     "time_limit_ms": 2000,

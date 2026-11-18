@@ -1,0 +1,230 @@
+{
+  "_comment": "Bí cảnh Xác Suất và Thống Kê: 9 main floors plus the optional hidden floor 10. Floor titles follow the chapter outline of HUST MI2021 (floors 1-9; the chapter numbers in syllabus_ref are the outline order of that course) and MI3030 / MI3350 (floor 10); every micro-skill name and description is written for this game. 'requires' lists the micro-skills that must be mastered first (same or earlier floor, no cycles). 'extension': 'ai' marks additions that are not in the MI2021 outline. The tiers a floor may show are in balance/math.json, not here. Display text uses ASCII-safe math: P(A|B), C(n, k), A(n, k), <=; the event 'not A' is written Ā (a precomposed letter the game font has).",
+  "id": "xac_suat_thong_ke",
+  "floors": [
+    {
+      "floor": 1,
+      "title_vi": "Phép thử, sự kiện và giải tích kết hợp",
+      "syllabus_ref": "MI2021, Chương 1",
+      "skills": [
+        {"id": "xs_t1_khong_gian_mau", "name_vi": "Phép thử và không gian mẫu",
+         "desc_vi": "Nói rõ một phép thử cho ra những kết quả nào, liệt kê và đếm các phần tử của không gian mẫu.",
+         "requires": []},
+        {"id": "xs_t1_quan_he_su_kien", "name_vi": "Quan hệ giữa các sự kiện",
+         "desc_vi": "Lập tổng, tích và sự kiện đối; nhận ra hai sự kiện xung khắc và sự kiện này kéo theo sự kiện kia.",
+         "requires": ["xs_t1_khong_gian_mau"]},
+        {"id": "xs_t1_quy_tac_dem", "name_vi": "Quy tắc cộng và quy tắc nhân",
+         "desc_vi": "Đếm số cách làm một việc khi chọn một trong nhiều phương án, hoặc khi làm qua nhiều bước nối tiếp, kể cả chọn có lặp lại.",
+         "requires": []},
+        {"id": "xs_t1_hoan_vi_chinh_hop", "name_vi": "Hoán vị và chỉnh hợp",
+         "desc_vi": "Đếm các cách xếp có thứ tự: xếp cả n vật thành hàng, hoặc chọn k vật trong n vật rồi xếp thứ tự.",
+         "requires": ["xs_t1_quy_tac_dem"]},
+        {"id": "xs_t1_to_hop", "name_vi": "Tổ hợp",
+         "desc_vi": "Đếm các cách chọn k vật không kể thứ tự bằng C(n, k), và biết khi nào thứ tự không quan trọng.",
+         "requires": ["xs_t1_hoan_vi_chinh_hop"]}
+      ]
+    },
+    {
+      "floor": 2,
+      "title_vi": "Định nghĩa xác suất: cổ điển và thống kê",
+      "syllabus_ref": "MI2021, Chương 1",
+      "skills": [
+        {"id": "xs_t2_co_dien", "name_vi": "Xác suất cổ điển",
+         "desc_vi": "Tính xác suất bằng số kết quả thuận lợi chia số kết quả đồng khả năng, với đồng xu, xúc xắc và phiếu đánh số.",
+         "requires": ["xs_t1_khong_gian_mau"]},
+        {"id": "xs_t2_co_dien_to_hop", "name_vi": "Xác suất cổ điển dùng tổ hợp",
+         "desc_vi": "Đếm kết quả thuận lợi và không gian mẫu bằng hoán vị, chỉnh hợp, tổ hợp khi rút bi, rút bài, chọn người.",
+         "requires": ["xs_t2_co_dien", "xs_t1_to_hop"]},
+        {"id": "xs_t2_hoan_lai", "name_vi": "Lấy có hoàn lại và không hoàn lại",
+         "desc_vi": "Phân biệt lấy lần lượt có trả lại, lần lượt không trả lại và lấy đồng thời, rồi đếm không gian mẫu cho đúng từng cách.",
+         "requires": ["xs_t2_co_dien", "xs_t1_hoan_vi_chinh_hop"]},
+        {"id": "xs_t2_tinh_chat", "name_vi": "Tính chất của xác suất và sự kiện đối",
+         "desc_vi": "Dùng 0 <= P(A) <= 1 và P(Ā) = 1 - P(A), nhất là để tính xác suất của sự kiện 'có ít nhất một'.",
+         "requires": ["xs_t2_co_dien", "xs_t1_quan_he_su_kien"]},
+        {"id": "xs_t2_thong_ke", "name_vi": "Định nghĩa thống kê: tần suất",
+         "desc_vi": "Tính tần suất của một sự kiện sau nhiều lần thử và dùng nó để ước lượng xác suất.",
+         "requires": ["xs_t1_khong_gian_mau"]}
+      ]
+    },
+    {
+      "floor": 3,
+      "title_vi": "Công thức cộng, nhân, xác suất có điều kiện và Bernoulli",
+      "syllabus_ref": "MI2021, Chương 1",
+      "skills": [
+        {"id": "xs_t3_cong_thuc_cong", "name_vi": "Công thức cộng xác suất",
+         "desc_vi": "Tính P(A + B) = P(A) + P(B) - P(AB), và chỉ bỏ số hạng cuối khi A, B xung khắc.",
+         "requires": ["xs_t2_tinh_chat"]},
+        {"id": "xs_t3_dieu_kien", "name_vi": "Xác suất có điều kiện",
+         "desc_vi": "Tính P(A|B) = P(AB)/P(B) từ bảng số liệu hoặc bằng cách thu hẹp không gian mẫu, không lẫn với P(B|A).",
+         "requires": ["xs_t2_co_dien_to_hop"]},
+        {"id": "xs_t3_cong_thuc_nhan", "name_vi": "Công thức nhân xác suất",
+         "desc_vi": "Tính P(AB) = P(A) P(B|A) cho các lần lấy nối tiếp không hoàn lại.",
+         "requires": ["xs_t3_dieu_kien", "xs_t2_hoan_lai"]},
+        {"id": "xs_t3_doc_lap", "name_vi": "Sự kiện độc lập",
+         "desc_vi": "Kiểm tra P(AB) = P(A) P(B), nhân xác suất của các sự kiện độc lập, và không lẫn độc lập với xung khắc.",
+         "requires": ["xs_t3_cong_thuc_nhan", "xs_t3_cong_thuc_cong"]},
+        {"id": "xs_t3_bernoulli", "name_vi": "Công thức Bernoulli",
+         "desc_vi": "Tính xác suất có đúng k lần thành công trong n phép thử độc lập: C(n, k) p^k (1 - p)^(n - k).",
+         "requires": ["xs_t3_doc_lap", "xs_t1_to_hop"]}
+      ]
+    },
+    {
+      "floor": 4,
+      "title_vi": "Công thức xác suất đầy đủ và công thức Bayes",
+      "syllabus_ref": "MI2021, Chương 1",
+      "skills": [
+        {"id": "xs_t4_he_day_du", "name_vi": "Hệ đầy đủ các sự kiện",
+         "desc_vi": "Nhận ra một họ sự kiện đôi một xung khắc mà tổng của chúng là sự kiện chắc chắn.",
+         "requires": ["xs_t1_quan_he_su_kien", "xs_t3_cong_thuc_cong"]},
+        {"id": "xs_t4_so_do_cay", "name_vi": "Sơ đồ cây cho phép thử nhiều giai đoạn",
+         "desc_vi": "Vẽ sơ đồ cây, ghi xác suất có điều kiện trên mỗi nhánh và nhân dọc theo một đường đi.",
+         "requires": ["xs_t3_cong_thuc_nhan"]},
+        {"id": "xs_t4_day_du", "name_vi": "Công thức xác suất đầy đủ",
+         "desc_vi": "Tính P(A) bằng cách chia theo một hệ đầy đủ rồi cộng P(H_i) P(A|H_i).",
+         "requires": ["xs_t4_he_day_du", "xs_t4_so_do_cay"]},
+        {"id": "xs_t4_bayes", "name_vi": "Công thức Bayes",
+         "desc_vi": "Biết A đã xảy ra, tính lại xác suất của từng giả thuyết H_i.",
+         "requires": ["xs_t4_day_du", "xs_t3_dieu_kien"]},
+        {"id": "xs_t4_bayes_ung_dung", "name_vi": "Bayes trong xét nghiệm và phân loại",
+         "desc_vi": "Dùng Bayes cho bài xét nghiệm bệnh hiếm và bài lọc thư, thấy vì sao tỷ lệ nền quan trọng.",
+         "requires": ["xs_t4_bayes"]}
+      ]
+    },
+    {
+      "floor": 5,
+      "title_vi": "Biến ngẫu nhiên, bảng phân phối và hàm phân phối",
+      "syllabus_ref": "MI2021, Chương 2",
+      "skills": [
+        {"id": "xs_t5_bien_ngau_nhien", "name_vi": "Biến ngẫu nhiên rời rạc và liên tục",
+         "desc_vi": "Hiểu biến ngẫu nhiên là một con số gắn với mỗi kết quả, và phân biệt loại rời rạc với loại liên tục.",
+         "requires": ["xs_t1_khong_gian_mau"]},
+        {"id": "xs_t5_bang_phan_phoi", "name_vi": "Bảng phân phối xác suất",
+         "desc_vi": "Lập bảng các giá trị và xác suất của một biến rời rạc, kiểm tra tổng các xác suất bằng 1.",
+         "requires": ["xs_t5_bien_ngau_nhien", "xs_t3_cong_thuc_nhan"]},
+        {"id": "xs_t5_ham_phan_phoi", "name_vi": "Hàm phân phối F(x)",
+         "desc_vi": "Tính F(x) = P(X < x), vẽ dạng bậc thang của nó và đọc lại xác suất từ F.",
+         "requires": ["xs_t5_bang_phan_phoi"]},
+        {"id": "xs_t5_mat_do", "name_vi": "Hàm mật độ xác suất",
+         "desc_vi": "Kiểm tra một hàm có là hàm mật độ không, tìm hằng số chuẩn hóa và liên hệ mật độ với F(x).",
+         "requires": ["xs_t5_ham_phan_phoi"]},
+        {"id": "xs_t5_xac_suat_khoang", "name_vi": "Xác suất rơi vào một khoảng",
+         "desc_vi": "Tính P(a <= X < b) bằng hiệu F(b) - F(a) hoặc bằng tích phân của hàm mật độ.",
+         "requires": ["xs_t5_ham_phan_phoi", "xs_t5_mat_do"]}
+      ]
+    },
+    {
+      "floor": 6,
+      "title_vi": "Các số đặc trưng và các phân phối thông dụng",
+      "syllabus_ref": "MI2021, Chương 2",
+      "skills": [
+        {"id": "xs_t6_ky_vong", "name_vi": "Kỳ vọng",
+         "desc_vi": "Tính kỳ vọng của biến rời rạc và liên tục, dùng tính chất E(aX + b) = aE(X) + b.",
+         "requires": ["xs_t5_bang_phan_phoi", "xs_t5_mat_do"]},
+        {"id": "xs_t6_phuong_sai", "name_vi": "Phương sai và độ lệch chuẩn",
+         "desc_vi": "Tính V(X) = E(X^2) - (E(X))^2, độ lệch chuẩn, và biết phương sai đổi thế nào khi nhân X với một số.",
+         "requires": ["xs_t6_ky_vong"]},
+        {"id": "xs_t6_nhi_thuc_poisson", "name_vi": "Phân phối nhị thức và Poisson",
+         "desc_vi": "Nhận ra phân phối nhị thức B(n, p) và Poisson, tính xác suất, kỳ vọng và phương sai của chúng.",
+         "requires": ["xs_t3_bernoulli", "xs_t6_phuong_sai"]},
+        {"id": "xs_t6_deu_mu", "name_vi": "Phân phối đều và phân phối mũ",
+         "desc_vi": "Dùng mật độ của phân phối đều và phân phối mũ để tính xác suất và các số đặc trưng.",
+         "requires": ["xs_t5_xac_suat_khoang", "xs_t6_ky_vong"]},
+        {"id": "xs_t6_chuan", "name_vi": "Phân phối chuẩn",
+         "desc_vi": "Chuẩn hóa về N(0, 1), tra hàm Laplace và tính xác suất của biến có phân phối chuẩn.",
+         "requires": ["xs_t6_phuong_sai", "xs_t5_xac_suat_khoang"]}
+      ]
+    },
+    {
+      "floor": 7,
+      "title_vi": "Tổng thể, mẫu và ước lượng điểm",
+      "syllabus_ref": "MI2021, Chương 4",
+      "skills": [
+        {"id": "xs_t7_tong_the_mau", "name_vi": "Tổng thể và mẫu ngẫu nhiên",
+         "desc_vi": "Phân biệt tổng thể với mẫu, tham số với thống kê, và biết thế nào là một mẫu ngẫu nhiên.",
+         "requires": ["xs_t5_bien_ngau_nhien"]},
+        {"id": "xs_t7_dac_trung_mau", "name_vi": "Trung bình mẫu và phương sai mẫu",
+         "desc_vi": "Tính trung bình mẫu, phương sai mẫu có hiệu chỉnh và độ lệch chuẩn mẫu từ bảng số liệu.",
+         "requires": ["xs_t7_tong_the_mau", "xs_t6_phuong_sai"]},
+        {"id": "xs_t7_phan_phoi_mau", "name_vi": "Phân phối của trung bình mẫu",
+         "desc_vi": "Biết trung bình mẫu có kỳ vọng bằng trung bình tổng thể và phương sai giảm theo cỡ mẫu.",
+         "requires": ["xs_t7_dac_trung_mau", "xs_t6_chuan"]},
+        {"id": "xs_t7_uoc_luong_diem", "name_vi": "Ước lượng điểm không chệch",
+         "desc_vi": "Dùng thống kê mẫu để ước lượng tham số, phân biệt ước lượng chệch và không chệch.",
+         "requires": ["xs_t7_dac_trung_mau"]},
+        {"id": "xs_t7_hop_ly_cuc_dai", "name_vi": "Ước lượng hợp lý cực đại",
+         "desc_vi": "Lập hàm hợp lý của mẫu, lấy logarit và tìm tham số làm nó lớn nhất.",
+         "requires": ["xs_t7_uoc_luong_diem", "xs_t6_nhi_thuc_poisson"],
+         "extension": "ai"}
+      ]
+    },
+    {
+      "floor": 8,
+      "title_vi": "Khoảng tin cậy, luật số lớn và định lý giới hạn trung tâm",
+      "syllabus_ref": "MI2021, Chương 4",
+      "skills": [
+        {"id": "xs_t8_tin_cay_trung_binh", "name_vi": "Khoảng tin cậy cho trung bình",
+         "desc_vi": "Lập khoảng tin cậy cho trung bình khi biết và khi chưa biết phương sai.",
+         "requires": ["xs_t7_phan_phoi_mau"]},
+        {"id": "xs_t8_tin_cay_ty_le", "name_vi": "Khoảng tin cậy cho tỷ lệ",
+         "desc_vi": "Lập khoảng tin cậy cho một tỷ lệ từ tần suất mẫu khi cỡ mẫu đủ lớn.",
+         "requires": ["xs_t8_tin_cay_trung_binh", "xs_t7_uoc_luong_diem"]},
+        {"id": "xs_t8_co_mau", "name_vi": "Chọn cỡ mẫu theo độ chính xác",
+         "desc_vi": "Tìm cỡ mẫu nhỏ nhất để sai số của khoảng tin cậy không vượt một mức cho trước.",
+         "requires": ["xs_t8_tin_cay_trung_binh"]},
+        {"id": "xs_t8_luat_so_lon", "name_vi": "Luật số lớn",
+         "desc_vi": "Thấy vì sao trung bình của nhiều lần thử độc lập tiến gần kỳ vọng, và tần suất tiến gần xác suất.",
+         "requires": ["xs_t2_thong_ke", "xs_t7_dac_trung_mau"],
+         "extension": "ai"},
+        {"id": "xs_t8_gioi_han_trung_tam", "name_vi": "Định lý giới hạn trung tâm",
+         "desc_vi": "Xấp xỉ tổng của nhiều biến độc lập bằng phân phối chuẩn và dùng nó để tính xác suất.",
+         "requires": ["xs_t8_luat_so_lon", "xs_t7_phan_phoi_mau"],
+         "extension": "ai"}
+      ]
+    },
+    {
+      "floor": 9,
+      "title_vi": "Kiểm định giả thuyết thống kê",
+      "syllabus_ref": "MI2021, Chương 5",
+      "skills": [
+        {"id": "xs_t9_gia_thuyet", "name_vi": "Giả thuyết, mức ý nghĩa và hai loại sai lầm",
+         "desc_vi": "Đặt giả thuyết H0 và đối thuyết, hiểu mức ý nghĩa, miền bác bỏ và sai lầm loại một, loại hai.",
+         "requires": ["xs_t8_tin_cay_trung_binh"]},
+        {"id": "xs_t9_kiem_dinh_trung_binh", "name_vi": "Kiểm định trung bình một tổng thể",
+         "desc_vi": "Tính thống kê kiểm định cho trung bình, so với giá trị tới hạn và kết luận.",
+         "requires": ["xs_t9_gia_thuyet"]},
+        {"id": "xs_t9_kiem_dinh_ty_le", "name_vi": "Kiểm định tỷ lệ một tổng thể",
+         "desc_vi": "Kiểm định một tỷ lệ bằng tần suất mẫu khi cỡ mẫu đủ lớn.",
+         "requires": ["xs_t9_gia_thuyet", "xs_t8_tin_cay_ty_le"]},
+        {"id": "xs_t9_so_sanh_trung_binh", "name_vi": "So sánh hai trung bình",
+         "desc_vi": "Kiểm định hai tổng thể có cùng trung bình không từ hai mẫu độc lập.",
+         "requires": ["xs_t9_kiem_dinh_trung_binh"]},
+        {"id": "xs_t9_so_sanh_ty_le", "name_vi": "So sánh hai tỷ lệ",
+         "desc_vi": "Kiểm định hai tổng thể có cùng tỷ lệ không từ hai mẫu độc lập.",
+         "requires": ["xs_t9_kiem_dinh_ty_le"]}
+      ]
+    },
+    {
+      "floor": 10,
+      "hidden": true,
+      "title_vi": "Tài Năng: hàm của biến ngẫu nhiên, tương quan và hồi quy",
+      "syllabus_ref": "MI3030, MI3350",
+      "skills": [
+        {"id": "xs_t10_ham_bien_ngau_nhien", "name_vi": "Hàm của biến ngẫu nhiên",
+         "desc_vi": "Tìm phân phối của Y = g(X) từ phân phối của X, cho cả biến rời rạc và liên tục.",
+         "requires": ["xs_t6_ky_vong", "xs_t5_mat_do"]},
+        {"id": "xs_t10_vecto_ngau_nhien", "name_vi": "Vectơ ngẫu nhiên hai chiều",
+         "desc_vi": "Đọc bảng phân phối đồng thời, tìm phân phối biên và kiểm tra hai biến độc lập.",
+         "requires": ["xs_t5_bang_phan_phoi", "xs_t3_doc_lap"]},
+        {"id": "xs_t10_tuong_quan", "name_vi": "Hiệp phương sai và hệ số tương quan",
+         "desc_vi": "Tính hiệp phương sai, hệ số tương quan và hiểu ý nghĩa dấu và độ lớn của nó.",
+         "requires": ["xs_t10_vecto_ngau_nhien", "xs_t6_phuong_sai"]},
+        {"id": "xs_t10_hoi_quy", "name_vi": "Hồi quy tuyến tính đơn",
+         "desc_vi": "Tìm đường thẳng hồi quy bằng bình phương tối thiểu từ một mẫu số liệu hai chiều.",
+         "requires": ["xs_t10_tuong_quan", "xs_t7_dac_trung_mau"]},
+        {"id": "xs_t10_tien_de", "name_vi": "Tiên đề xác suất",
+         "desc_vi": "Xây dựng xác suất từ ba tiên đề trên một họ sự kiện và suy ra các tính chất quen thuộc.",
+         "requires": ["xs_t2_tinh_chat"]}
+      ]
+    }
+  ]
+}

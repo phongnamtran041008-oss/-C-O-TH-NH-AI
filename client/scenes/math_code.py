@@ -20,6 +20,7 @@ from ..art.palette import UI as UICOL
 from ..engine import coderun
 from ..ui.codebox import CodeBox
 from .base import MessageBox, Scene
+from .math_library import scroll_rows
 
 GREY = "#5A5A5A"
 VERDICT_COLOUR = {"AC": UICOL["green"], "WA": UICOL["accent"], "TLE": "#C99A3A",
@@ -55,6 +56,7 @@ class ProblemListScene(Scene):
         self.subject_id, self.floor = subject_id, floor
         self.data: dict | None = None
         self.busy = False
+        self.first = 0              # M11: the first row shown, when the list scrolls
 
     def on_enter(self):
         self.load()
@@ -87,25 +89,33 @@ class ProblemListScene(Scene):
             ui.text(T.CODE_NONE, x + w / 2, y + h / 2, 9, GREY, anchor="center")
         else:
             ui.text(T.CODE_RUN_HINT, x + 12, y + 21, 7, GREY, max_w=w - 24)
-            cy = y + 34
-            for f in floors:
-                ui.text(f"{T.MATH_FLOOR.format(n=f['floor'])} · {f['title_vi']}", x + 12, cy, 8,
-                        UICOL["accent"], max_w=w - 24)
-                cy += 13
-                for p in f["problems"]:
-                    best = p.get("best") or {}
-                    ui.text(p["title_vi"], x + 18, cy + 7, 8, "#2B2B2B", anchor="midleft", max_w=148)
-                    ui.text(T.MATH_TIER_ONE.format(lo=p["tier"]), x + 176, cy + 7, 7, GREY, anchor="midleft")
-                    ui.text(T.CODE_HIDDEN_TESTS.format(n=p["tests"]), x + 212, cy + 7, 7, GREY,
-                            anchor="midleft")
-                    if best:
-                        ui.text(best["verdict"], x + w - 84, cy + 7, 7,
-                                VERDICT_COLOUR.get(best["verdict"], GREY), anchor="midright")
-                    if ui.button(f"code_open_{p['id']}", x + w - 78, cy, 66, 13, T.CODE_OPEN, size=7,
-                                 style="primary", enabled=not self.busy):
-                        self.game.push(ProblemScene(self.game, p["id"]))
+            # M11: one row per floor title and per exercise; more than fit scroll (wheel, Up / Down)
+            rows = [(f, p) for f in floors for p in [None] + list(f["problems"])]
+            top, bottom = y + 34, y + h - 24
+            shown = int((bottom - top) // 16)
+            self.first = scroll_rows(ui, self.first, len(rows), shown, x, top, w, bottom - top)
+            cy = top
+            for f, p in rows[self.first:self.first + shown]:
+                if p is None:
+                    ui.text(f"{T.MATH_FLOOR.format(n=f['floor'])} · {f['title_vi']}", x + 12, cy + 2, 8,
+                            UICOL["accent"], max_w=w - 24)
                     cy += 16
-                cy += 4
+                    continue
+                best = p.get("best") or {}
+                ui.text(p["title_vi"], x + 18, cy + 7, 8, "#2B2B2B", anchor="midleft", max_w=148)
+                ui.text(T.MATH_TIER_ONE.format(lo=p["tier"]), x + 176, cy + 7, 7, GREY, anchor="midleft")
+                ui.text(T.CODE_HIDDEN_TESTS.format(n=p["tests"]), x + 212, cy + 7, 7, GREY,
+                        anchor="midleft")
+                if best:
+                    ui.text(best["verdict"], x + w - 84, cy + 7, 7,
+                            VERDICT_COLOUR.get(best["verdict"], GREY), anchor="midright")
+                if ui.button(f"code_open_{p['id']}", x + w - 78, cy, 66, 13, T.CODE_OPEN, size=7,
+                             style="primary", enabled=not self.busy):
+                    self.game.push(ProblemScene(self.game, p["id"]))
+                cy += 16
+            if len(rows) > shown:
+                ui.text(T.MATH_LIST_MORE.format(a=self.first + 1, b=min(len(rows), self.first + shown),
+                                                t=len(rows)), x + 12, y + h - 13, 7, GREY, anchor="midleft")
         if ui.button("code_close", x + w - 62, y + h - 20, 50, 14, T.CLOSE, key=pygame.K_ESCAPE):
             self.close()
 

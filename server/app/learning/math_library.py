@@ -65,9 +65,13 @@ SYMBOLS = {
     r"\mathbb{R}": "R", r"\mathbb{C}": "C", r"\mathbb{N}": "N", r"\mathbb{Z}": "Z", r"\mathbb{Q}": "Q",
     r"\forall": "voi moi", r"\exists": "ton tai", r"\mid": "|", r"\circ": "o",
     r"\alpha": "alpha", r"\beta": "beta", r"\lambda": "lambda", r"\theta": "theta", r"\varphi": "phi",
+    r"\Omega": "Omega",                                              # (M11 xác suất: the sample space)
     r"\sum": "tong", r"\prod": "tich", r"\infty": "vo cung", r"\deg": "deg", r"\sin": "sin",
     r"\cos": "cos", r"\tan": "tan", r"\ln": "ln", r"\log": "log", r"\exp": "exp",
     r"\overline": "", r"\bar": "", r"\vec": "", r"\hat": "",
+    r"\neg": "khong", r"\lceil": "tran(", r"\rceil": ")",
+    r"\lim": "lim", r"\sim": "~", r"\pi": "pi", r"\arcsin": "arcsin",       # (M11 giải tích)
+    r"\arccos": "arccos", r"\arctan": "arctan", r"\varepsilon": "epsilon",
 }
 # Dropped: they only change spacing or size.
 IGNORED = (r"\left", r"\right", r"\displaystyle", r"\limits", r"\,", r"\;", r"\!", r"\:",

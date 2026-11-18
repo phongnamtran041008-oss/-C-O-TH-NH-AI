@@ -1207,3 +1207,47 @@ MTD_CONTINUE = "Tiếp"
 MTD_TIER_POWER = "Sức mạnh theo bậc câu đã trả lời: ×{p}"
 MTD_ROLE_NAMES = {"hoa": "Nổ vùng", "thuy": "Làm chậm", "kim": "Bắn mạnh", "son": "Choáng vùng",
                   "quang": "Soi sáng", "ho_tro": "Hỗ trợ", "sinh_khi": "Sinh Linh Khí", "moc": "Chặn đường"}
+
+
+# ---- M11: tìm chỗ sai (agent ENGINE)
+FIND_KEYS = "Phím 1-6: chọn bước · Xóa lùi: bỏ chọn · Enter: trả lời"
+FM_STEP = "Bước {n}"
+
+
+# ---- M11: sảnh toán và kiểm tra đầu vào (agent HUB)
+MATH_LIST_MORE = "{a}-{b} trong {t} · lăn chuột hoặc phím lên/xuống để xem thêm"
+MATH_HUB_AT = "Đang tu ở tầng {n}"
+MATH_HUB_ALL_CLEARED = "Đã qua mọi tầng chính"
+MATH_HUB_NOTHING_YET = "Bí cảnh này chưa có câu hỏi"
+MATH_CLEARED_PLACED = "Được miễn"
+MATH_PLACE_BUTTON = "Kiểm tra đầu vào"
+MATH_PLACE_CONTINUE = "Làm tiếp kiểm tra"
+MATH_PLACE_DONE = "Đầu vào: tầng {n}"
+MATH_PLACE_TITLE = "Kiểm tra đầu vào"
+MATH_PLACE_INTRO = (
+    "Bài kiểm tra đầu vào đặt điểm xuất phát của con trong bí cảnh {name}.",
+    "Tối đa {n} câu, đi từ tầng 1 lên, mỗi tầng từ bậc dễ tới bậc khó; mỗi câu giữ thời gian như thường, hết giờ tính là sai.",
+    "Tầng nào con đúng từ {pct}% số câu trở lên thì được miễn; con bắt đầu ở tầng thấp nhất chưa đạt.",
+    "Không bắt buộc: không làm thì con bắt đầu từ tầng 1.",
+    "Ở tầng xuất phát, cổng thuần thục và Thiên kiếp nhỏ vẫn chờ con như mọi người.",
+    "Mỗi bí cảnh làm một lần. Bỏ dở thì coi như bắt đầu từ tầng 1.",
+)
+MATH_PLACE_RESUME_INTRO = "Bài kiểm tra đầu vào đang dở: đã trả lời {a}/{t} câu."
+MATH_PLACE_START = "Bắt đầu"
+MATH_PLACE_GO_ON = "Làm tiếp"
+MATH_PLACE_LATER = "Để sau"
+MATH_PLACE_ABANDON = "Bỏ dở"
+MATH_PLACE_PROGRESS = "Kiểm tra đầu vào: câu {n}/{t}"
+MATH_PLACE_LOADING = "Đang chuẩn bị câu hỏi..."
+MATH_PLACE_RESULT = "Kết quả kiểm tra đầu vào"
+MATH_PLACE_START_AT = "Con bắt đầu ở tầng {n}."
+MATH_PLACE_SKIPPED = "Được miễn: {floors}."
+MATH_PLACE_WHY_STOP = "Tầng {n} chưa đạt: cần {need}/{planned} câu đúng."
+MATH_PLACE_WHY_TOP = "Mọi tầng đều đạt; tầng {n} là tầng cao nhất đã có câu hỏi."
+MATH_PLACE_ABANDONED = "Bài đã bỏ dở: con bắt đầu từ tầng {n}, không tầng nào được miễn."
+MATH_PLACE_FLOOR = "Tầng {n}: đúng {c}/{a} câu (cần {need}/{planned})"
+MATH_PLACE_FLOOR_NOT_ASKED = "Tầng {n}: chưa hỏi tới"
+MATH_PLACE_MET = "đạt"
+MATH_PLACE_NOT_MET = "chưa đạt"
+MATH_PLACE_GATE_NOTE = "Ở tầng {n}, cổng thuần thục và Thiên kiếp nhỏ vẫn áp dụng như mọi người."
+MATH_PLACE_BACK = "Về sảnh"

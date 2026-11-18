@@ -382,6 +382,9 @@ sau khi trả lời.
 | `true_false` | `truefalse` | `{"value": true}` hoặc `{"value": false}` |
 | `multiple_choice` | `choice` (`options[{id, text}]`, đã xáo) | `{"option": "a"}` |
 | `numeric` | `number` | `{"text": "3/4"}` — số nguyên, số thập phân (dấu chấm), phân số `a/b`, hoặc nhiều số cách nhau bằng dấu phẩy; sai số cho phép `numeric_tolerance` |
+| `matching` | `matching` (`prompt.left[]`, `prompt.right[]` đã xáo) | `{"pairs": [r0, r1, ...]}`: `pairs[k]` = vị trí (trong `right`) của vế phải ghép với vế trái thứ k; một hoán vị của `0..n-1` |
+| `ordering` | `ordering` (`prompt.steps[]` đã xáo, không bao giờ hiện sẵn đúng thứ tự) | `{"order": [i0, i1, ...]}`: vị trí các bước (trong `steps`) theo thứ tự đúng của lời giải; một hoán vị của `0..n-1` |
+| `find_mistake` (M11, từ bậc 2) | `find_mistake` (`prompt.lines[]`: 3-6 dòng của một lời giải, **giữ nguyên thứ tự, không xáo**) | `{"line": i}`: `i` là số nguyên (không phải `true`, `1.0`, chuỗi) từ 0 của dòng đầu tiên bị sai. Sai kiểu, thiếu khoá hay ngoài khoảng chỉ là câu sai, không phải lỗi. `reveal.answer_text` = `"Bước <i+1>: <dòng sai>"`, `reveal.solution_vi` nói vì sao sai và bước đúng |
 
 Hết giờ trên máy khách thì game gửi `{"timed_out": true}`; máy chủ cũng tự tính hết giờ theo `expires_at`
 (`time_limit` + `network_grace`). Cả hai đều là một câu sai và làm mất chuỗi đúng, không mất gì khác.
@@ -710,3 +713,37 @@ bậc của chính người trả lời, không bao giờ theo tầng của quá
 - Thưởng: như bí cảnh cũ (`realm loot`), nhưng chỉ Linh Thạch và vật liệu của `data/math/drops.json`
   (`room_loot_by_realm.toan_tran`, `chest.toan_tran` trong `balance/realm.json`), không Tu Vi, không Ngọc,
   không Mảnh Bảo Vật.
+
+## M11 — Sảnh toán bốn bí cảnh, bài kiểm tra đầu vào (agent HUB)
+
+Luật 7 của lộ trình: bài kiểm tra đầu vào, tùy chọn, mỗi bí cảnh một lần. Luật chi tiết nằm ở docstring của
+`server/app/systems/math_placement.py`, mọi con số ở `balance/math.json` → `placement_test` (`min_questions` 10,
+`max_questions` 15, `per_floor` 5, `pass_pct` 80, `retake_after_days` 7). Một lần làm là một `math_runs` với
+`mode: "placement"`; câu hỏi có `context: "math_placement"`, trả lời qua `POST /quiz/answer`, ghi vào
+`math_answers` với `run_id` của lần làm đó; Tu Vi theo bậc như mọi câu, không tâm ma, không đổi bậc, không cơ duyên.
+
+- `GET /math/placement?subject_id=` → `{subject_id, subject_name_vi, status: "offered" | "in_progress" | "done" |
+  "unavailable", offered, reason: null | "few_floors" | "cleared" | "done" | "retake", planned, written_floors[],
+  pass_pct, run?, progress?, result?}`. `progress = {total, asked, correct, left, decided, start_floor,
+  floors[{floor, planned, asked, correct, needed, met}]}` (`met`: true / false / null = chưa rõ). `result =
+  {start_floor, abandoned, skipped[], asked, correct, floors[{floor, planned, asked, correct, needed, met}],
+  finished_at, retake_at}`. Được mời khi: chưa qua Thiên kiếp nhỏ tầng nào của bí cảnh, chưa có lần làm nào (hoặc
+  lần trước xếp ở tầng 1 / bỏ dở, đã qua `retake_after_days` ngày), và bí cảnh có ít nhất 2 tầng chính có câu.
+  Lỗi `no_subject` (404).
+- `POST /math/placement/start {subject_id}` → `{run, progress}`; `run.placement = {total, asked, correct, left,
+  decided, start_floor}`. Không được mời: `placement_not_offered` (409). Không kết thúc buổi luyện đang dở.
+- `POST /math/placement/next {run_id}` → `{run, question, progress}`: câu đang mở (nếu còn giờ) hoặc câu tiếp theo
+  của kế hoạch (tầng thấp lên cao, trong một tầng bậc thấp lên cao). Câu không ai trả lời mà hết giờ được tính là
+  sai (hết giờ) ngay lúc này. Đã có kết quả thì `question: null` và có thêm `result`. Lỗi `no_run` (404),
+  `run_ended` (409).
+- `POST /math/placement/abandon {run_id}` → trạng thái như `GET /math/placement`: bỏ dở, không tầng nào được miễn.
+  `POST /math/run/end` trên lần làm này cũng là bỏ dở; `POST /math/run/next` trên nó: `wrong_mode` (409).
+- Kết quả `POST /quiz/answer` của câu kiểm tra: `math = {tier, timed_out, parallel: false, parallel_waiting:
+  false, review: false, tier_change: 0, xp_base, placement: progress, run, placement_result?}`;
+  `placement_result` (như `result`) có mặt khi câu này quyết định kết quả. Dừng sớm ngay khi một tầng không thể
+  đạt mức nữa.
+- `GET /math/path`: mỗi bí cảnh có thêm `placement = {status, offered, planned, run_id, start_floor, abandoned}`;
+  mỗi tầng có thêm `cleared_by: null | "trial" | "placement"`. `cleared[]` và `next_floor` tính cả các tầng được
+  miễn, và mọi chế độ hỏi "người chơi đang ở tầng nào" (`math_ask.open_floor`: bí cảnh, hầm ngục, cơ duyên, thủ
+  thành, chiêu thức) đọc cùng một nguồn `math_practice.cleared_floors`. `run` (buổi đang dở) không bao giờ là một
+  lần kiểm tra đầu vào.

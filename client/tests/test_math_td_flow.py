@@ -96,8 +96,12 @@ def run_math_td_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait(lambda: drv.top_is("MathTdScene") and top(drv).data is not None, 10, "Thủ Thành Toán")
         m = top(drv)
         towers = {t["id"]: t for t in m.data["towers"]}
-        assert [k for k, t in towers.items() if t["available"]] == ["tap_hop"]
-        assert all(t["locked_vi"] for k, t in towers.items() if k != "tap_hop")
+        # a new player has the towers of floor 1: Đại Số Tuyến Tính's and, since M11 wrote those
+        # subjects, Xác Suất và Thống Kê's and Giải Tích's; the rest are locked, each with its reason
+        open_now = ["tap_hop", "xac_suat", "gradient"]
+        assert [k for k, t in towers.items() if t["available"]] == open_now
+        assert all(t["locked_vi"] for k, t in towers.items() if k not in open_now)
+        assert not any(towers[k]["locked_vi"] for k in open_now)
         assert drv.has("mtd_tower_vecto") and drv.has("mtd_tower_gradient")
         drv.shot("math_td_map")
 
@@ -105,7 +109,8 @@ def run_math_td_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.click("mtd_start")
         drv.wait(lambda: play_scene(drv) is not None, 10, "the board")
         sc = play_scene(drv)
-        drv.wait(lambda: drv.has("mtd_locked_vecto") and drv.has("mtd_locked_gradient"), 5, "the locked towers")
+        drv.wait(lambda: drv.has("mtd_locked_vecto") and drv.has("mtd_locked_ma_tran"), 5, "the locked towers")
+        assert not drv.has("mtd_locked_gradient") and not drv.has("mtd_locked_xac_suat")    # open since M11
         stats = {"questions": 0, "right": 0, "floors": set(), "placed_wrong": 0, "placed": 0, "upgraded": 0}
         wrong_once = True
         pending = None                   # what the card being answered is for

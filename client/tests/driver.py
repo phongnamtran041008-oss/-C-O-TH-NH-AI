@@ -198,7 +198,8 @@ class Driver:
 
 def fill_math_answer(drv: Driver, q: dict, key: dict, correct: bool) -> None:
     """Give the right (or a wrong) answer to the math question `q` through the card's own
-    widgets, whatever its input: true/false, choice, number, matching (M9) or ordering (M9).
+    widgets, whatever its input: true/false, choice, number, matching (M9), ordering (M9) or
+    find_mistake (M11).
     `key` is the session's answer key, read from the server database by the test."""
     import pygame
     kind = q["input"]
@@ -216,6 +217,10 @@ def fill_math_answer(drv: Driver, q: dict, key: dict, correct: bool) -> None:
     elif kind == "ordering":
         for i in (key["order"] if correct else key["order"][::-1]):
             drv.click(f"ord_step_{i}")
+        drv.click("mq_submit")
+    elif kind == "find_mistake":
+        line = key["line"] if correct else (key["line"] + 1) % len(q["prompt"]["lines"])
+        drv.click(f"fm_line_{line}")
         drv.click("mq_submit")
     else:
         drv.click("quiz_text")

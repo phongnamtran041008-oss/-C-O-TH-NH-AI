@@ -144,11 +144,23 @@ EXPECTED = {
 }
 
 
+# M11: each new subject keeps its recomputations in a module of its own
+for _module in ("math_verify_gt", "math_verify_xs", "math_verify_tr"):
+    import importlib
+    if str(ROOT / "tools") not in sys.path:
+        sys.path.insert(0, str(ROOT / "tools"))
+    _more = importlib.import_module(_module).EXPECTED
+    _clash = set(_more) & set(EXPECTED)
+    if _clash:
+        raise ValueError(f"tools/{_module}.py: {sorted(_clash)} already has a recomputation")
+    EXPECTED.update(_more)
+
+
 def mismatch(item: math_items.MathItem) -> str | None:
     """Why this draw's answer is not what sympy gets from its numbers, or None."""
     if item.qtype not in ("true_false", "numeric"):
-        # (multiple_choice, matching and ordering are hand-written only so far; a generator of
-        # one of them needs its own comparison here before it can be trusted)
+        # (multiple_choice, matching, ordering and find_mistake are hand-written only so far; a
+        # generator of one of them needs its own comparison here before it can be trusted)
         return f"is a {item.qtype} generator, which tools/math_verify.py cannot check yet"
     fn = EXPECTED.get(item.id)
     if fn is None:

@@ -622,6 +622,18 @@ tính vào lộ trình học.
 Bot chơi thử: `tools/realm_bots.py --math`, `tools/math_dungeon_bot.py`, `tools/math_fortune_bot.py`,
 `tools/math_td_bot.py`.
 
+**Bốn bí cảnh của Luyện Khí (M11).** Sảnh toán có bốn thẻ môn: Đại Số Tuyến Tính, Giải Tích, Xác Suất và
+Thống Kê, Tối Ưu và Toán Rời Rạc. Mỗi môn có đủ khung 9 tầng + tầng ẩn 10; **tầng 1-3 đã có câu hỏi và bài
+đọc**, tầng 4-9 hiện "Chưa có câu hỏi". Có sáu loại câu: Đúng/Sai, Trắc nghiệm, Điền số, Ghép cặp, Sắp xếp
+bước giải và **Tìm chỗ sai** (chọn bước đầu tiên bị sai trong một lời giải, từ bậc 2).
+
+**Kiểm tra đầu vào.** Ở môn chưa qua tầng nào có nút "Kiểm tra đầu vào": 10-15 câu khó dần; tầng nào đúng từ
+80% thì được miễn và người chơi bắt đầu ở tầng thấp nhất chưa đạt. Không bắt buộc, và ở tầng xuất phát vẫn
+phải qua cổng thuần thục và Thiên kiếp nhỏ.
+
+Bảng duyệt câu hỏi cho từng môn: `tools/reports/math_review_<môn>.md` (dựng lại bằng
+`python tools/math_review.py`).
+
 **Bài tập lập trình.** Đề nằm trong `server/data/math/problems/`, lời giải mẫu nằm cạnh đó và không bao giờ gửi
 cho game. Bài làm **chạy trên máy người chơi** (cần có Python trên máy), mỗi test một lần chạy có giới hạn thời
 gian; máy chủ giữ đáp án test ẩn và chấm AC / WA / TLE / RE / CE. Bài làm được lưu thành file `.py` thật trong

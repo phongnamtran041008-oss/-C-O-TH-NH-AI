@@ -63,6 +63,8 @@ def right_answer(q: dict, key: dict) -> dict:
         return {"pairs": list(key["pairs"])}
     if q["qtype"] == "ordering":
         return {"order": list(key["order"])}
+    if q["qtype"] == "find_mistake":
+        return {"line": key["line"]}
     return {"text": ", ".join(key["numbers"])}
 
 
@@ -74,6 +76,8 @@ def wrong_answer(q: dict, key: dict) -> dict:
     if q["qtype"] in ("matching", "ordering"):          # rotated: a permutation with every entry wrong
         name = "pairs" if q["qtype"] == "matching" else "order"
         return {name: key[name][1:] + key[name][:1]}
+    if q["qtype"] == "find_mistake":                    # the next line: always another line
+        return {"line": (key["line"] + 1) % len(q["prompt"]["lines"])}
     return {"text": "987654"}
 
 
@@ -247,7 +251,11 @@ async def test_path_lists_the_floors_and_which_have_questions(client):
     r = await client.get("/math/path", headers=h)
     assert r.status_code == 200
     data = r.json()
-    assert [s["id"] for s in data["subjects"]] == [SUBJECT]
+    assert [s["id"] for s in data["subjects"]] == [SUBJECT, "giai_tich", "xac_suat_thong_ke", "toi_uu_roi_rac"]
+    for s in data["subjects"]:      # M11: every subject is written up to floor 3, and only floor 1 is open
+        assert [f["has_questions"] for f in s["floors"]] == [True, True, True] + [False] * 7, s["id"]
+        assert [f["playable"] for f in s["floors"]] == [True] + [False] * 9, s["id"]
+        assert s["cleared"] == [] and s["next_floor"] == 1 and s["placement"]["offered"]
     floors = data["subjects"][0]["floors"]
     assert [f["floor"] for f in floors] == list(range(1, 11))
     assert floors[0]["playable"] and floors[0]["questions"] == len(mi.floor_templates(SUBJECT, 1, True))
@@ -265,7 +273,8 @@ async def test_start_refuses_a_floor_without_questions_or_that_does_not_exist(cl
     h, _ = await make(client)
     for body, status, code in (({"subject_id": SUBJECT, "floor": 4}, 400, "no_questions"),
                                ({"subject_id": SUBJECT, "floor": 11}, 404, "no_floor"),
-                               ({"subject_id": "giai_tich", "floor": 1}, 404, "no_floor")):
+                               ({"subject_id": "giai_tich", "floor": 4}, 400, "no_questions"),
+                               ({"subject_id": "hinh_hoc", "floor": 1}, 404, "no_floor")):
         r = await client.post("/math/run/start", json=body, headers=h)
         assert r.status_code == status and r.json()["error"]["code"] == code, r.text
     assert (await client.post("/math/run/start", json={"subject_id": SUBJECT, "floor": 1})).status_code == 401

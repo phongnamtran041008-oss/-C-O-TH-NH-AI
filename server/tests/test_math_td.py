@@ -114,45 +114,52 @@ def test_data_is_sound_and_the_checks_have_teeth():
 async def test_towers_open_with_the_learning_path(client):
     h, uid = await player(client, "mtd_floors")
     t = await towers_of(client, h)
-    assert [k for k, v in t.items() if v["available"]] == ["tap_hop"]          # a new player: floor 1 only
+    # a new player: the towers of floor 1 - of Đại Số Tuyến Tính and, since M11 wrote them, of
+    # Xác Suất và Thống Kê and Giải Tích
+    assert [k for k, v in t.items() if v["available"]] == ["tap_hop", "xac_suat", "gradient"]
     assert "tầng 1" in t["so_phuc"]["locked_vi"] and "Thiên kiếp nhỏ" in t["so_phuc"]["locked_vi"]
     assert "tầng 2" in t["vecto"]["locked_vi"]
-    for k, subject in (("xac_suat", "Xác Suất và Thống Kê"), ("gradient", "Giải Tích")):
-        assert not t[k]["available"] and subject in t[k]["locked_vi"] and "chưa có câu hỏi" in t[k]["locked_vi"]
+    for k in ("xac_suat", "gradient"):
+        assert t[k]["available"] and t[k]["locked_vi"] is None
     run = await start(client, h)
-    assert set(run["params"]["plants"]) == {"tap_hop"}                          # the simulation knows only what is open
+    assert set(run["params"]["plants"]) == {"tap_hop", "xac_suat", "gradient"}  # the simulation knows only what is open
     assert {x["id"]: x["available"] for x in run["towers"]}["vecto"] is False    # the bar shows the rest, locked
     await clear_floor(uid, 1)
-    assert {k for k, v in (await towers_of(client, h)).items() if v["available"]} == {"tap_hop", "so_phuc"}
+    assert ({k for k, v in (await towers_of(client, h)).items() if v["available"]}
+            == {"tap_hop", "so_phuc", "xac_suat", "gradient"})
     await clear_floor(uid, 2)
     t = await towers_of(client, h)
-    assert {k for k, v in t.items() if v["available"]} == {"tap_hop", "so_phuc", "vecto", "ma_tran"}
-    assert t["xac_suat"]["locked_vi"] and t["gradient"]["locked_vi"]
+    assert {k for k, v in t.items() if v["available"]} == {"tap_hop", "so_phuc", "vecto", "ma_tran", "xac_suat",
+                                                           "gradient"}
     # a tower that is not open in this run cannot be asked about, whatever the client sends
     await ask(client, h, run["run_id"], "place", "vecto", status=400)
-    await ask(client, h, run["run_id"], "place", "gradient", status=400)
+    await ask(client, h, run["run_id"], "place", "ma_tran", status=400)
     await ask(client, h, run["run_id"], "place", "khong_co", status=400)
 
 
 @pytest.mark.asyncio
 async def test_a_locked_subject_tower_opens_by_itself_when_the_subject_gets_questions(client, monkeypatch):
-    """Fake 'Xác Suất và Thống Kê' as a written subject whose floor 1 has questions (borrowed
-    from Đại Số Tuyến Tính): the tower opens with no change to math/td.json."""
-    real_subjects, real_templates = math_path.subjects(), math_practice._templates
-    entry = next(e for e in math_path.load_index()["subjects"] if e["id"] == "xac_suat_thong_ke")
-    raw = math_path._read(math_path.MATH_DIR / "dai_so_tuyen_tinh.json")
-    fake = math_path.build_subject(entry, raw)
-    monkeypatch.setattr(math_path, "subjects", lambda: real_subjects + (fake,))
-    monkeypatch.setattr(math_practice, "_templates",
-                        lambda sid, floor: real_templates(SUBJECT if sid == "xac_suat_thong_ke" else sid, floor))
+    """A tower whose subject has no question is locked, with the reason; it opens with no change
+    to math/td.json once the subject has some. Until M11 the test had to fake a written subject;
+    now Xác Suất và Thống Kê is written, so it hides its questions to see the locked state."""
+    real_templates = math_practice._templates
     h, uid = await player(client, "mtd_new_subject")
+    with monkeypatch.context() as unwritten:
+        unwritten.setattr(math_practice, "_templates",
+                          lambda sid, floor: [] if sid == "xac_suat_thong_ke" else real_templates(sid, floor))
+        t = await towers_of(client, h)
+        assert not t["xac_suat"]["available"]
+        assert "Xác Suất và Thống Kê" in t["xac_suat"]["locked_vi"] and "chưa có câu hỏi" in t["xac_suat"]["locked_vi"]
+        assert t["gradient"]["available"]                                       # Giải Tích is not affected
+        run = await start(client, h)
+        assert "xac_suat" not in run["params"]["plants"]
+        await ask(client, h, run["run_id"], "place", "xac_suat", status=400)
     t = await towers_of(client, h)
     assert t["xac_suat"]["available"] and t["xac_suat"]["locked_vi"] is None
-    assert not t["gradient"]["available"]                                       # Giải Tích is still unwritten
     run = await start(client, h)
     assert "xac_suat" in run["params"]["plants"]
     q = await ask(client, h, run["run_id"], "place", "xac_suat")
-    assert q["math"]["floor"] == 1
+    assert q["math"]["subject"] == "xac_suat_thong_ke" and q["math"]["floor"] == 1
 
 
 # ------------------------------------------------------------------ placing and upgrading

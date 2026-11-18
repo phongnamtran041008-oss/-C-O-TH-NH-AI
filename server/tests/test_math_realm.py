@@ -360,11 +360,11 @@ async def test_a_player_with_no_question_is_told_and_not_waited_for(client, gw, 
 
 # ------------------------------------------------------------------ the boss
 async def test_the_boss_asks_each_player_their_bai_tong_hop(client, gw):
-    """'Tìm chỗ sai' is not a playable question type yet (M11): the boss falls back to the
-    bài tổng hợp, the hardest question the player may be asked - here tier 2 on the one
-    micro-skill where this player has opened tier 2."""
-    assert "find_mistake" not in math_items.PLAYABLE_TYPES
-    assert math_realm.boss_type(secret_realm.realms()[REALM]) is None
+    """A player with no 'Tìm chỗ sai' question at their tier gets the bài tổng hợp, the hardest
+    question the player may be asked - here tier 2 on the one micro-skill where this player has
+    opened tier 2 (find_mistake starts at tier 2 and lives on other micro-skills of the floor)."""
+    assert "find_mistake" in math_items.PLAYABLE_TYPES
+    assert math_realm.boss_type(secret_realm.realms()[REALM]) == "find_mistake"
     ha, a, sa = await math_hero(client, gw, "boss_mot", "Boss Một")
     hb, b, sb = await math_hero(client, gw, "boss_hai", "Boss Hai", floor=2)
     skill = math_path.subject(SUBJECT).floor(1).skills[0].id
@@ -376,11 +376,38 @@ async def test_the_boss_asks_each_player_their_bai_tong_hop(client, gw):
     qa, qb = last(sa, "q")["q"], last(sb, "q")["q"]
     assert qa["math"]["realm_asker"] == qb["math"]["realm_asker"] == "boss"
     assert qa["math"]["floor"] == 1 and qa["math"]["skill"] == skill and qa["math"]["tier"] == 2
+    assert qa["qtype"] != "find_mistake" and qb["qtype"] != "find_mistake"      # neither has one at their tier
     assert qb["math"]["floor"] == 2
     r = await answer(client, ha, qa, True)
     assert r["combat"]["shield_progress"] == [1, 2] and boss.shield
     r = await answer(client, hb, qb, True)
     assert r["combat"]["shield_broken"] and not boss.shield
+
+
+async def test_the_boss_asks_find_mistake_of_a_player_who_has_one(client, gw):
+    """M11: the boss's preferred type is playable now. A player who has opened tier 2 on a
+    micro-skill that has a 'Tìm chỗ sai' gets that question; a player at tier 1 everywhere
+    still gets the bài tổng hợp. The right answer is {"line": i}; a wrong line is wrong."""
+    ha, a, sa = await math_hero(client, gw, "boss_soi", "Boss Soi Lỗi")
+    hb, b, sb = await math_hero(client, gw, "boss_moi", "Boss Mới")
+    mistakes = {i.skill for i in math_items.floor_items(SUBJECT, 1, True) if i.qtype == "find_mistake"}
+    assert mistakes
+    skill = sorted(mistakes)[0]
+    await open_tier_2(a, skill, 1)
+    inst = await enter(gw, sa, sb, rooms=["boss"])
+    await tick(gw, 3.5)
+    boss = inst.boss
+    assert boss is not None and boss.shield
+    qa, qb = last(sa, "q")["q"], last(sb, "q")["q"]
+    assert qa["qtype"] == "find_mistake" and qa["input"] == "find_mistake"
+    assert qa["math"]["skill"] == skill and qa["math"]["tier"] == 2 and qa["math"]["realm_asker"] == "boss"
+    assert 3 <= len(qa["prompt"]["lines"]) <= 6
+    assert qb["qtype"] != "find_mistake" and qb["math"]["tier"] == 1                # b has none: the bài tổng hợp
+    key = await answer_key(qa["session_id"])
+    wrong = (key["line"] + 1) % len(qa["prompt"]["lines"])
+    r = await client.post("/quiz/answer", json={"session_id": qa["session_id"], "answer": {"line": wrong}}, headers=ha)
+    assert r.status_code == 200 and not r.json()["correct"]
+    assert r.json()["reveal"]["answer_text"].startswith(f"Bước {key['line'] + 1}: ")
 
 
 async def test_a_chieu_still_works_on_the_math_boss(client, gw):

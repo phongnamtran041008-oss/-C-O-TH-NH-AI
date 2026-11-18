@@ -31,6 +31,11 @@
    "name_vi": "Phòng Bậc Thang",
    "short_vi": "Bậc Thang",
    "desc_vi": "Các bậc đá bị xáo tung. Xếp lại các bước giải thì cầu thang mới hiện ra."
+  },
+  "find_mistake": {
+   "name_vi": "Phòng Soi Lỗi",
+   "short_vi": "Soi Lỗi",
+   "desc_vi": "Trên vách đá khắc một lời giải, trong đó có một bước lệch. Soi ra bước sai đầu tiên thì vách mới mở."
   }
  },
  "guardians": [

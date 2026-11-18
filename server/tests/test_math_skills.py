@@ -236,7 +236,7 @@ async def test_every_refusal_spends_nothing(client, gw, monkeypatch):
     sk = math_skills.skills()
     monkeypatch.setitem(sk, "thuong_quyen", {**sk["thuong_quyen"], "min_tier": 2})
     assert await code("thuong_quyen", m.eid) == "tier_low"           # a fresh player is at tier 1
-    monkeypatch.setitem(sk, "thuong_quyen", {**sk["thuong_quyen"], "qtypes": ["find_mistake"]})
+    monkeypatch.setitem(sk, "thuong_quyen", {**sk["thuong_quyen"], "qtypes": ["tribulation"]})     # (a type nothing can ask yet)
     assert await code("thuong_quyen", m.eid) == "no_question"
     p.dead = True
     assert await code("kiem_quyet", m.eid) == "cannot"

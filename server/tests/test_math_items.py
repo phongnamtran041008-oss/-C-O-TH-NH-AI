@@ -68,6 +68,9 @@ def test_every_shipped_item_becomes_a_question_its_own_answer_passes():
         elif it.qtype == "ordering":
             right = {"order": list(q.answer_key["order"])}
             wrong = {"order": right["order"][::-1]}
+        elif it.qtype == "find_mistake":
+            right = {"line": it.answer}
+            wrong = {"line": (it.answer + 1) % len(it.lines_vi)}
         elif it.qtype == "true_false":
             right, wrong = {"value": it.answer}, {"value": not it.answer}
         elif it.qtype == "multiple_choice":
@@ -153,6 +156,7 @@ def test_multiple_choice_is_shuffled_but_keeps_exactly_one_right_option():
 
 
 def test_unknown_question_type_is_never_right():
+    assert not mi.grade("tribulation", {"line": 1}, {"line": 1})
     assert not mi.grade("find_mistake", {}, {"pairs": []})
     assert not mi.grade("matching", {}, {"pairs": []})        # (a key without pairs: never right)
     assert not mi.grade("ordering", {"order": "012"}, {"order": "012"})
@@ -253,9 +257,17 @@ def test_validator_passes_the_untouched_file():
     assert check(lambda r: None) == []
 
 
+def copy_paths(folder) -> None:
+    """subjects.json and the path file of every written subject, and no item file at all."""
+    index = (mp.MATH_DIR / "subjects.json").read_text("utf-8")
+    names = [e["file"] for e in json.loads(index)["subjects"] if e.get("file")]
+    assert "dai_so_tuyen_tinh.json" in names and len(names) >= 4      # M11: four subjects are written
+    for name in ("subjects.json", *names):
+        (folder / name).write_text((mp.MATH_DIR / name).read_text("utf-8"), "utf-8")
+
+
 def test_validate_all_reports_a_broken_file_as_one_line(tmp_path):
-    for name in ("subjects.json", "dai_so_tuyen_tinh.json"):
-        (tmp_path / name).write_text((mp.MATH_DIR / name).read_text("utf-8"), "utf-8")
+    copy_paths(tmp_path)
     (tmp_path / "items").mkdir()
     (tmp_path / "items" / "dai_so_tuyen_tinh.json").write_text('{"subject": "dai_so_tuyen_tinh", "items": [,]}', "utf-8")
     (tmp_path / "items" / "mon_la.json").write_text("{}", "utf-8")
@@ -266,8 +278,7 @@ def test_validate_all_reports_a_broken_file_as_one_line(tmp_path):
 
 
 def test_a_subject_without_an_item_file_is_fine(tmp_path):
-    for name in ("subjects.json", "dai_so_tuyen_tinh.json"):
-        (tmp_path / name).write_text((mp.MATH_DIR / name).read_text("utf-8"), "utf-8")
+    copy_paths(tmp_path)
     assert mi.validate_all(tmp_path) == []
 
 
@@ -467,3 +478,166 @@ def test_ordering_questions_with_one_prompt_but_other_steps_are_different_questi
         r["items"].append({**copy.deepcopy(a), "id": "dstt_x_twin",
                            "steps_vi": ["Một bước khác hẳn.", "Bước thứ hai mới.", "Kết luận khác."]})
     assert check(twin) == []
+
+
+# ------------------------------------------------------------------ find_mistake (M11)
+LINES = ("Đặt y = 2x + 1.", "Chuyển vế: 2x = y - 1.", "Chia cho 3: x = (y - 1)/3.", "Vậy g(x) = (x - 1)/3.")
+
+
+def mistake(n: int = 4, answer: int = 2, **over) -> mi.MathItem:
+    base = dict(qtype="find_mistake", tier=2, answer=answer, lines_vi=LINES[:n],
+                prompt_vi="Bước đầu tiên bị sai là bước nào?")
+    base.update(over)
+    return item(**base)
+
+
+def test_find_mistake_is_playable_named_and_starts_at_tier_2():
+    assert "find_mistake" in mi.PLAYABLE_TYPES
+    assert mi.INPUTS["find_mistake"] == "find_mistake" and mi.INSTRUCTIONS_VI["find_mistake"]
+    assert not mp.text_problem(mi.INSTRUCTIONS_VI["find_mistake"])
+    assert mp.time_limit("find_mistake", 1) is None and mp.time_limit("find_mistake", 2) is not None
+
+
+def test_find_mistake_payload_keeps_the_lines_in_order_and_never_shuffles():
+    it = mistake()
+    for seed in range(40):
+        q = mi.to_question(it, random.Random(seed))
+        assert q.input == "find_mistake" and q.options is None and q.qtype == "find_mistake"
+        assert q.prompt == {"text": it.prompt_vi, "lines": list(LINES)}
+        assert q.answer_key["line"] == 2 and q.answer_key["fingerprint"] == it.fingerprint
+        assert q.answer_key["reveal"]["answer_text"] == f"Bước 3: {LINES[2]}"
+        assert q.answer_key["reveal"]["solution_vi"] == list(it.solution_vi)
+        assert q.time_limit == float(mp.time_limit("find_mistake", 2))
+    public = q.public()
+    assert public["instruction_vi"] == mi.INSTRUCTIONS_VI["find_mistake"] and "line" not in public["prompt"] and "line" not in public
+
+
+def test_matrices_still_come_with_a_find_mistake_question():
+    it = mistake(matrices=(("A", (("1", "2"), ("3", "4"))),))
+    q = mi.to_question(it, random.Random(1))
+    assert q.prompt["matrices"] == [{"name": "A", "rows": [["1", "2"], ["3", "4"]]}]
+    assert q.prompt["lines"] == list(LINES)
+
+
+@pytest.mark.parametrize("n,answer", [(3, 0), (3, 2), (4, 1), (4, 3)])
+def test_find_mistake_grades_only_the_wrong_line(n, answer):
+    q = mi.to_question(mistake(n, answer), random.Random(3))
+    assert mi.grade("find_mistake", q.answer_key, {"line": answer}) is True
+    for other in range(n):
+        if other != answer:
+            assert mi.grade("find_mistake", q.answer_key, {"line": other}) is False
+
+
+def test_find_mistake_malformed_answers_are_wrong_never_an_error():
+    q = mi.to_question(mistake(4, 1), random.Random(3))
+    key = json.loads(json.dumps(q.answer_key))                 # as stored in the database
+    assert mi.grade("find_mistake", key, {"line": 1})
+    malformed = [None, [], "1", 1, {}, {"line": None}, {"line": True}, {"line": False}, {"line": 1.0},
+                 {"line": "1"}, {"line": [1]}, {"line": {"i": 1}}, {"line": -1}, {"line": 4}, {"line": 10 ** 30},
+                 {"line": float("nan")}, {"lines": 1}, {"value": True}, {"order": [1]}]
+    for answer in malformed:
+        assert mi.grade("find_mistake", key, answer) is False, answer
+    for broken in ({}, {"line": None}, {"line": "1"}, {"line": 1.0}, {"line": True}):
+        assert not mi.grade("find_mistake", broken, {"line": 1}), broken
+
+
+def test_find_mistake_answer_text_names_the_step():
+    assert mistake(4, 0).answer_text == f"Bước 1: {LINES[0]}"
+    assert mistake(4, 3).answer_text == f"Bước 4: {LINES[3]}"
+
+
+def test_find_mistake_items_build_from_data_and_the_bank_has_them_on_every_floor():
+    raw = raw_items()
+    subject = mp.subject(SUBJECT)
+    data = first(raw, "find_mistake")
+    built = mi.build_item(subject, data)
+    assert built.qtype == "find_mistake" and built.lines_vi == tuple(data["lines_vi"]) and built.answer == data["answer"]
+    assert not built.steps_vi and not built.pairs_vi and not built.options_vi
+    assert mi.bank()[data["id"]] == built
+    for floor in (1, 2, 3):
+        own = [i for i in mi.floor_items(SUBJECT, floor, allow_unreviewed=True) if i.qtype == "find_mistake"]
+        assert len(own) >= 2, floor
+        assert len({i.skill for i in own}) >= 2, floor
+        assert all(i.tier >= 2 and 3 <= len(i.lines_vi) <= 6 and 0 <= i.answer < len(i.lines_vi) for i in own)
+        assert all(not i.reviewed for i in own)
+
+
+def test_every_shipped_find_mistake_item_asks_for_the_first_wrong_step_and_explains_it():
+    for i in mi.bank().values():
+        if i.qtype != "find_mistake":
+            continue
+        assert "đầu tiên" in i.prompt_vi, i.id
+        assert len(i.solution_vi) >= 2, i.id
+        q = mi.to_question(i, random.Random(5))
+        assert mi.grade("find_mistake", q.answer_key, {"line": i.answer})
+        assert q.answer_key["reveal"]["answer_text"].startswith(f"Bước {i.answer + 1}: ")
+
+
+FM_MESSAGES = {
+    "find_mistake without lines": (lambda r: first(r, "find_mistake").pop("lines_vi"), "lines_vi must list 3 to 6 lines"),
+    "find_mistake with two lines": (lambda r: first(r, "find_mistake").update(lines_vi=["a", "b"], answer=0),
+                                    "lines_vi must list 3 to 6 lines"),
+    "find_mistake with seven lines": (lambda r: first(r, "find_mistake").update(lines_vi=list("abcdefg"), answer=0),
+                                      "lines_vi must list 3 to 6 lines"),
+    "find_mistake lines as text": (lambda r: first(r, "find_mistake").update(lines_vi="a b c"),
+                                   "lines_vi must list 3 to 6 lines"),
+    "find_mistake with a repeated line": (lambda r: first(r, "find_mistake").update(lines_vi=["x = 1", "y = 2", "x  =  1"]),
+                                          "two lines have the same text"),
+    "find_mistake with an empty line": (lambda r: first(r, "find_mistake")["lines_vi"].__setitem__(1, " "),
+                                        "line 2 is missing or empty"),
+    "find_mistake line with a bad symbol": (lambda r: first(r, "find_mistake")["lines_vi"].__setitem__(0, "x ∈ A"),
+                                            "line 1 has the character"),
+    "find_mistake without an answer": (lambda r: first(r, "find_mistake").pop("answer"),
+                                       "answer must be the position (from 0) of the one wrong line"),
+    "find_mistake answer out of range": (lambda r: first(r, "find_mistake").update(answer=9),
+                                         "answer must be the position (from 0) of the one wrong line"),
+    "find_mistake answer is negative": (lambda r: first(r, "find_mistake").update(answer=-1),
+                                        "answer must be the position (from 0) of the one wrong line"),
+    "find_mistake answer is a boolean": (lambda r: first(r, "find_mistake").update(answer=True),
+                                         "answer must be the position (from 0) of the one wrong line"),
+    "find_mistake answer is text": (lambda r: first(r, "find_mistake").update(answer="2"),
+                                    "answer must be the position (from 0) of the one wrong line"),
+    "find_mistake with steps": (lambda r: first(r, "find_mistake").update(steps_vi=["a", "b", "c"]),
+                                "only an ordering question has steps_vi"),
+    "find_mistake at tier 1": (lambda r: first(r, "find_mistake").update(tier=1),
+                               "a find_mistake question does not exist at tier 1"),
+    "find_mistake with options": (lambda r: first(r, "find_mistake").update(options_vi=["a", "b"]),
+                                  "only a multiple_choice question has options_vi"),
+    "numeric with lines": (lambda r: first(r, "numeric").update(lines_vi=["a", "b", "c"]),
+                           "only a find_mistake question has lines_vi"),
+    "ordering with lines": (lambda r: first(r, "ordering").update(lines_vi=["a", "b", "c"]),
+                            "only a find_mistake question has lines_vi"),
+    "no solution for the wrong line": (lambda r: first(r, "find_mistake").update(solution_vi=[]),
+                                       "solution_vi must list at least one step"),
+}
+
+
+@pytest.mark.parametrize("name", sorted(FM_MESSAGES))
+def test_validator_explains_find_mistake_problems(name):
+    mutate, message = FM_MESSAGES[name]
+    errors = check(mutate)
+    assert any(message in e for e in errors), errors
+
+
+def test_a_find_mistake_with_the_same_prompt_but_other_lines_is_another_question():
+    def twin(r):
+        a = first(r, "find_mistake")
+        r["items"].append({**copy.deepcopy(a), "id": "dstt_x_twin",
+                           "lines_vi": ["Một dòng khác hẳn.", "Dòng thứ hai mới.", "Kết luận khác."], "answer": 1})
+    assert check(twin) == []
+
+
+def test_find_mistake_items_with_the_same_lines_are_the_same_question():
+    def clone(r):
+        a = first(r, "find_mistake")
+        r["items"].append({**copy.deepcopy(a), "id": "dstt_x_clone"})
+    assert any("has the same question text as" in e for e in check(clone))
+
+
+def test_the_lines_count_towards_near_duplicates_only_when_they_are_alike():
+    a = {"id": "a_1", "skill": "s", "type": "find_mistake", "prompt_vi": "Bước nào sai?",
+         "lines_vi": ["Tính 1 + 2 = 3.", "Nhân 3 với 4 được 12.", "Vậy kết quả là 12."]}
+    b = {**a, "id": "a_2", "lines_vi": ["Tính 5 + 6 = 11.", "Nhân 11 với 7 được 77.", "Vậy kết quả là 77."]}
+    c = {**a, "id": "a_3", "lines_vi": ["Đặt ẩn x là số cần tìm.", "Lập phương trình bậc nhất.", "Giải ra nghiệm x."]}
+    assert mi.near_duplicates([a, b]) and not mi.near_duplicates([a, c])
+    assert mi.question_text(a).endswith("Vậy kết quả là 12.")

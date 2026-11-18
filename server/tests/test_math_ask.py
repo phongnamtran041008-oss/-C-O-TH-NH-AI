@@ -57,7 +57,7 @@ async def test_a_picked_question_is_of_an_allowed_type_and_never_above_the_playe
     rng = random.Random(3)
     async with dbm.SessionLocal() as db:
         user = await db.get(User, uid)
-        for qtype in math_items.PLAYABLE_TYPES:
+        for qtype in [t for t in math_items.PLAYABLE_TYPES if t != "find_mistake"]:
             for _ in range(8):
                 q = await math_ask.pick(db, user, SUBJECT, 1, qtypes=[qtype], rng=rng)
                 assert q is not None, qtype
@@ -70,6 +70,17 @@ async def test_a_picked_question_is_of_an_allowed_type_and_never_above_the_playe
         for _ in range(20):
             q = await math_ask.pick(db, user, SUBJECT, 1, skills=others, rng=rng)
             assert q.public()["math"]["tier"] == 1
+        # Tìm chỗ sai (M11) starts at tier 2: nothing for a player who has not opened tier 2 of a
+        # micro-skill that has one - never a question above their tier instead
+        assert await math_ask.pick(db, user, SUBJECT, 1, qtypes=["find_mistake"], rng=rng) is None
+    with_one = "dstt_t1_tich_descartes"
+    await open_tier_2(uid, with_one, 1)
+    async with dbm.SessionLocal() as db:
+        user = await db.get(User, uid)
+        for _ in range(6):
+            q = await math_ask.pick(db, user, SUBJECT, 1, qtypes=["find_mistake"], rng=rng)
+            meta = q.public()["math"]
+            assert (q.qtype, meta["skill"], meta["tier"]) == ("find_mistake", with_one, 2)
 
 
 @pytest.mark.asyncio

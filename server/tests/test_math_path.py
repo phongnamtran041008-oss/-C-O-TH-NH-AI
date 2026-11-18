@@ -95,6 +95,8 @@ def test_rule_numbers_match_the_plan():
     assert c["spiral_review"]["intervals_days"] == [1, 3, 7, 14]
     assert c["anti_repeat_window"] == 50
     assert (c["placement_test"]["min_questions"], c["placement_test"]["max_questions"]) == (10, 15)
+    assert (c["placement_test"]["per_floor"], c["placement_test"]["pass_pct"],
+            c["placement_test"]["retake_after_days"]) == (5, 80, 7)          # M11: rule 7
     assert c["timeout"]["counts_as_wrong"] is True and c["timeout"]["resets_combo"] is True
     assert (c["skills_per_floor"]["min"], c["skills_per_floor"]["max"]) == (3, 6)
     assert [c["tiers"][str(t)]["name_vi"] for t in mp.TIERS] == \
@@ -106,15 +108,22 @@ def test_shipped_data_is_valid():
     assert mp.validate_all() == []
 
 
-def test_luyen_khi_has_four_subjects_and_linear_algebra_is_written():
+FOUR = [LA, "giai_tich", "xac_suat_thong_ke", "toi_uu_roi_rac"]
+
+
+def test_luyen_khi_has_four_subjects_and_all_four_are_written():
     index = mp.load_index()
     assert index["cultivation_realm"] == "luyen_khi"
     by_order = sorted(index["subjects"], key=lambda e: e["order"])
-    assert [e["id"] for e in by_order] == [LA, "giai_tich", "xac_suat_thong_ke", "toi_uu_roi_rac"]
-    assert [s.id for s in mp.subjects()] == [LA]             # the other three come in M11
-    assert la().name_vi == "Đại Số Tuyến Tính"
+    assert [e["id"] for e in by_order] == FOUR
+    assert [e["file"] for e in by_order] == [f"{sid}.json" for sid in FOUR]      # M11 wrote the other three
+    assert [s.id for s in mp.subjects()] == FOUR
+    assert [s.name_vi for s in mp.subjects()] == ["Đại Số Tuyến Tính", "Giải Tích", "Xác Suất và Thống Kê",
+                                                  "Tối Ưu và Toán Rời Rạc"]
+    for s in mp.subjects():
+        assert [f.number for f in s.main_floors] == list(range(1, 10)) and s.hidden_floor.number == 10
     with pytest.raises(KeyError):
-        mp.subject("giai_tich")
+        mp.subject("hinh_hoc")
 
 
 def test_linear_algebra_has_nine_main_floors_and_a_hidden_tenth():
@@ -409,7 +418,23 @@ def _cfg_timeout_not_a_flag(c):
     c["timeout"]["counts_as_wrong"] = "yes"
 
 
+def _cfg_placement_too_short(c):
+    c["placement_test"]["max_questions"] = 8         # fewer than the 9 main floors (M11)
+    c["placement_test"]["min_questions"] = 8
+
+
+def _cfg_placement_pass_zero(c):
+    c["placement_test"]["pass_pct"] = 0
+
+
+def _cfg_placement_retake_negative(c):
+    c["placement_test"]["retake_after_days"] = -1
+
+
 CONFIG_BREAKS = [
+    (_cfg_placement_too_short, "placement_test: max_questions must allow one question for every main floor"),
+    (_cfg_placement_pass_zero, "placement_test.pass_pct"),
+    (_cfg_placement_retake_negative, "placement_test.retake_after_days"),
     (_cfg_tier_out_of_range, "floor_tiers[9]: must be [low, high]"),
     (_cfg_low_above_high, "floor_tiers[3]: must be [low, high]"),
     (_cfg_floor_easier_than_the_one_below, "floor_tiers[5]: is easier than the floor below it"),
