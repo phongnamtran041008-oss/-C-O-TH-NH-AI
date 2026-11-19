@@ -1,8 +1,8 @@
 """A bot that plays a bí cảnh through the real protocol (stage 9 test criterion: three players
-clear a realm together). It only uses what a player has: the messages its own session gets,
-the map file every client has, and its knowledge of Chinese (the word list). It moves with
-`in` messages, strikes pillars with `ract`, fights with `atk` and answers Vấn Đạo questions
-through POST /quiz/answer like the game does.
+clear a realm together). It only uses what a player has: the messages its own session gets
+and the map file every client has. It moves with `in` messages, fights with `atk`, steps on
+the Trận Nhãn seals and answers the math questions through POST /quiz/answer like the game
+does (the answer key standing in for a player who studied).
 
 Bots in a team share what they see on screen, like players talking in the party chat: the
 `Team` object is that chat.
@@ -12,27 +12,22 @@ from __future__ import annotations
 import math
 from collections import deque
 
-from app.learning.wordbank import bank, senses
 from app.realtime import maps
-from app.realtime.realm import anchor, composable, tone_of
-from tests.helpers import correct_answer
 from tests.test_math_loop import right_answer as math_right_answer
 
-STEP = 4   # path grid in pixels (corridors of the maze are one tile wide)
+STEP = 4   # path grid in pixels
 
 
 def right_answer_any(q: dict, key: dict) -> dict:
-    """The right answer to whatever a bí cảnh asks: a math question (M10) or a word one."""
-    if "math" in q:
-        return math_right_answer(q, key)
-    return correct_answer(q["qtype"], key)
+    """The right answer to what a bí cảnh asks (always a math question)."""
+    return math_right_answer(q, key)
 
 
 def path(col, start, goal, avoid=()) -> list[tuple[float, float]]:
     """Breadth-first path over a 4 px grid of foot positions the collider allows.
 
-    `avoid` keeps the route out of places the bot must not tread on the way - the other stones of
-    Câu Văn Đứt Đoạn, say. What it must not do is keep the bot *where it already is*: a bot that
+    `avoid` keeps the route out of places the bot must not tread on the way - the other seals of
+    a Trận Nhãn, say. What it must not do is keep the bot *where it already is*: a bot that
     has just stepped on a stone is standing inside one of those places, and forbidding it outright
     leaves the search with no legal first step at all, so the bot stays on that stone for ever and
     the room never finishes. So when no route is found, look again while allowing the places the
@@ -107,7 +102,6 @@ class Bot:
         self.seen = 0
         self.room: dict | None = None
         self.puzzle: dict | None = None
-        self.mine: dict | None = None
         self.run: dict | None = None
         self.ended: dict | None = None
         self.loot: list[dict] = []
@@ -139,12 +133,10 @@ class Bot:
             elif t == "realm" and ev == "start":
                 self.run = m["run"]
             elif t == "realm" and ev == "room":
-                self.room, self.puzzle, self.mine = m, m["puzzle"], m["mine"]
+                self.room, self.puzzle = m, m["puzzle"]
                 self.goal, self.route = None, []
             elif t == "realm" and ev == "puzzle":
                 self.puzzle = m["puzzle"]
-            elif t == "realm" and ev == "mine":
-                self.mine = m["mine"]
             elif t == "realm" and ev == "end":
                 self.ended = m
             elif t == "realm" and ev == "loot":
@@ -210,15 +202,7 @@ class Bot:
             await self.send({"t": "atk", "id": m.eid})
         return True
 
-    # ------------------------------------------------------------ puzzles, like a player who knows Chinese
-    def obj(self, kind, **props):
-        inst = self.inst
-        for o in inst.map.realm_objs:
-            if o.props.get("room") == inst.place and o.props.get("kind") == kind and all(
-                    str(o.props.get(k)) == str(v) for k, v in props.items()):
-                return o
-        return None
-
+    # ------------------------------------------------------------ the rooms
     def standby(self):
         a = self.inst.map.rooms[self.inst.place]
         i = self.team.bots.index(self)
@@ -234,98 +218,8 @@ class Bot:
         if await self.fight(inst.monsters) or inst.kind == "boss":
             await self.move()
             return
-        kind = inst.kind
-        getattr(self, f"play_{kind}")()
-        if kind == "tone":
-            await self.strike()
+        getattr(self, f"play_{inst.kind}")()
         await self.move()
-
-    def play_compose(self) -> None:
-        pz, piece = self.puzzle, (self.mine or {}).get("piece")
-        # which character has this meaning and these parts? (what the team works out in chat)
-        pieces = {(b.mine or {}).get("piece") for b in self.team.bots}
-        word = next((w for w in bank().words.values() if composable(w) and w.meaning_vi == pz["meaning"]
-                     and set(composable(w)[1]) <= pieces | {None}), None)
-        if word is None:   # the others have not said what they hold yet
-            return
-        layout, comps = composable(word)
-        slots = ["left", "right"] if layout == "⿰" else ["top", "bottom"]
-        if piece in comps and len(pz["slots"]) > 1:
-            slot = slots[comps.index(piece)]
-            if comps[0] == comps[1]:   # 林: two of the same part, one each
-                holders = [b for b in self.team.bots if (b.mine or {}).get("piece") == piece]
-                slot = slots[holders.index(self)]
-            ped = self.obj("pedestal", slot=slot)
-            self.go(ped.x + ped.w / 2, ped.y + ped.h / 2)
-        elif piece == comps[0]:
-            ped = self.obj("pedestal", slot=pz["slots"][0])
-            self.go(ped.x + ped.w / 2, ped.y + ped.h / 2)
-        else:
-            self.go(*self.standby(), avoid=self.inst.objs("pedestal"))
-
-    def play_sentence(self) -> None:
-        pz = self.puzzle
-        sent = next((s for s in bank().sentences.values() if s.vi == pz["vi"]), None)
-        if sent is None:
-            return
-        tokens = [t for t in sent.tokens if t["word_id"]]
-        mine = [t["t"] for t in (self.mine or {}).get("tokens", [])]
-        k = pz["k"]
-        tiles = self.inst.objs("tile")
-        if k < len(tokens) and tokens[k]["t"] in mine:
-            tile = self.obj("tile", n=k + 1)
-            self.go(tile.x + tile.w / 2, tile.y + tile.h / 2, avoid=[t for t in tiles if t is not tile])
-        else:
-            x, y = self.standby()
-            self.go(x, y, avoid=tiles)
-
-    def play_tone(self) -> None:
-        i = self.team.bots.index(self)
-        r = self.puzzle.get("round")
-        target = i + 1
-        if r:
-            tone = tone_of(bank().by_hanzi[r["hanzi"]]) if r["hanzi"] in bank().by_hanzi else None
-            pil = self.obj("pillar", tone=tone) if tone else None
-            if pil is not None:
-                ax, ay = anchor(pil)
-                nearest = min(self.team.bots, key=lambda b: math.hypot(b.p.x - ax, b.p.y - ay))
-                if nearest is self:
-                    target = tone
-        pil = self.obj("pillar", tone=target)
-        ax, ay = anchor(pil)
-        self.go(ax, ay + 8)
-
-    async def strike(self) -> None:
-        r = self.puzzle.get("round")
-        if not r or r["hanzi"] not in bank().by_hanzi:
-            return
-        pil = self.obj("pillar", tone=tone_of(bank().by_hanzi[r["hanzi"]]))
-        ax, ay = anchor(pil)
-        key = (r["hanzi"], self.puzzle["streak"])
-        if self.near(ax, ay + 8, 6) and getattr(self, "_struck", None) != key:
-            self._struck = key
-            await self.send({"t": "ract", "obj": pil.name})
-
-    def play_mirror(self) -> None:
-        pz, mine = self.puzzle, (self.mine or {}).get("hanzi")
-        mir = self.inst.objs("mirror")[0]
-        w = bank().by_hanzi.get(mine) if mine else None
-        p = self.p
-        inside = mir.x <= p.x <= mir.x + mir.w and mir.y <= p.y <= mir.y + mir.h
-        match = bool(pz.get("meaning")) and w is not None and (
-            w.meaning_vi == pz["meaning"] or bool(w.senses & senses(pz["meaning"])))
-        if not match:
-            self._walking_in = False
-            self.go(*self.standby(), avoid=[mir])
-        elif inside and not getattr(self, "_walking_in", False):
-            self.go(*self.standby(), avoid=[mir])   # still in from before: the mirror only sees someone walk in
-        else:
-            self._walking_in = not inside
-            self.go(mir.x + mir.w / 2, mir.y + mir.h / 2)
-
-    def play_maze(self) -> None:
-        door = self.inst.objs("maze_exit")[0]
-        self.go(door.x + door.w / 2, door.y + door.h / 2)
 
     def play_seal(self) -> None:
         """Trận Nhãn (M10): the ones who have not broken a seal yet pick first, one seal each;

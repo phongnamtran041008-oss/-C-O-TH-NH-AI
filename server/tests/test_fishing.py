@@ -11,11 +11,11 @@ import pytest
 from sqlalchemy import select
 
 from app import clock
-from app.learning.wordbank import bank
-from app.models import Character, Collection, FishCatch, InventoryItem, User
-from app.systems import catalog, fishing
+from app.models import Character, FishCatch, InventoryItem, MathAnswer, User
+from app.systems import catalog, fishing, math_ask
 from app.systems import fishing_sim as fs
-from tests.helpers import answer_key, correct_answer, register, wrong_answer
+from tests.helpers import answer_key, register
+from tests.test_math_skills import right_answer, wrong_answer
 
 LOOK = {"hair_color": "#2B2B2B", "hair_style": "ngan", "body": "nam"}
 DAY = {"night": False, "rain": False}
@@ -23,24 +23,12 @@ NIGHT_RAIN = {"night": True, "rain": True}
 
 
 # ------------------------------------------------------------------ helpers
-async def player(client, name="ngu_phu", learn: list[str] | None = None):
+async def player(client, name="ngu_phu"):
     h, data = await register(client, name)
     r = await client.post("/character/create", json={"display_name": name.replace("_", " ").title(), "appearance": LOOK},
                           headers=h)
     assert r.status_code == 200, r.text
-    uid = data["user_id"]
-    if learn:
-        from app import db as dbm
-        async with dbm.SessionLocal() as db:
-            for hz in learn:
-                wid = bank().by_hanzi[hz].id
-                col = await db.get(Collection, (uid, wid))
-                if col is None:
-                    db.add(Collection(user_id=uid, word_id=wid, introduced=True, mastery=40, first_seen_at=clock.now()))
-                else:
-                    col.introduced, col.mastery = True, 40
-            await db.commit()
-    return h, uid
+    return h, data["user_id"]
 
 
 async def qty(uid: int, item_id: str) -> int:
@@ -142,22 +130,24 @@ def test_thirty_species_five_rarities_and_names():
     sp = catalog.fish()
     assert len(sp) >= 30
     assert {f["rarity"] for f in sp.values()} == set(fishing.RARITIES)
-    words = bank().by_hanzi
     for fid, f in sp.items():
-        assert f["pinyin"] and f["hanzi"] and f["name_vi"]
-        if f["fictional"]:
-            assert f["meaning_en"] is None
-            assert f["hanzi"] not in words, f"{fid}: an invented name must never be a vocabulary word"
-        else:
-            assert f["meaning_en"], f"{fid}: real fish names come from CC-CEDICT"
+        assert f["name_vi"], fid
+        assert not {"hanzi", "pinyin", "pinyin_numeric", "meaning_en"} & set(f), f"{fid}: no Chinese fields any more"
     assert sp["chep_hoa_long"]["fictional"] and sp["chep_hoa_long"]["bait"] == ["linh_qua_vun"]
-    assert sp["ca_chep"]["hanzi"] == "鲤鱼" and sp["ca_vang"]["hanzi"] == "金鱼" and sp["ca_tram_co"]["hanzi"] == "草鱼"
+    assert sp["ca_chep"]["name_vi"] == "Cá Chép" or sp["ca_chep"]["name_vi"]
 
 
-def test_fish_names_are_never_asked():
-    """Fish are not words of the game: no question can be generated about a fish name."""
-    ids = set(bank().words)
-    assert not any(fid in ids or fishing.fish_item(fid) in ids for fid in catalog.fish())
+def test_fish_data_and_payloads_carry_no_chinese():
+    import json
+    import re
+    from app.config import DATA_DIR
+    raw = (DATA_DIR / "creatures" / "fish.json").read_text("utf-8")
+    assert not re.search(r"[\u3400-\u9fff]", raw)
+    for fid in catalog.fish():
+        assert not {"hanzi", "pinyin", "meaning_en"} & set(fishing.public_species(fid))
+        assert "hanzi" not in fishing.silhouette(fid)
+    assert "quiz_types" not in fishing.cfg() and fishing.cfg()["qtypes"]
+    assert json.dumps(fishing.cfg()["qtypes"])
 
 
 # ------------------------------------------------------------------ odds (stage plan: distribution by rod/bait)
@@ -335,9 +325,8 @@ async def test_client_cannot_choose_the_fish_or_claim_a_catch(client, frozen, fo
     assert r.status_code == 404 or r.status_code == 409
 
 
-async def test_rare_fish_ask_a_question_and_never_hurt(client, frozen, force_fish):
-    h, uid = await player(client, learn=["水", "火", "木", "人", "大"])
-    hp_before = None
+async def test_rare_fish_ask_a_math_question_and_never_hurt(client, frozen, force_fish):
+    h, uid = await player(client)
     from app import db as dbm
     async with dbm.SessionLocal() as db:
         hp_before = (await db.get(Character, uid)).hp
@@ -345,12 +334,13 @@ async def test_rare_fish_ask_a_question_and_never_hurt(client, frozen, force_fis
     for right in (True, False):
         force_fish["fish"] = "ca_vang"
         c, hk = await cast_and_hook(client, h, frozen)
-        assert hk["stage"] == "quiz" and hk["need"] == 1 and hk["question"]["context"] == "fishing"
+        assert hk["stage"] == "quiz" and hk["need"] == 1 and hk["question"]["context"] == "math_fishing"
         q = hk["question"]
+        assert q["math"]["tier"] >= 1 and q["qtype"] in fishing.cfg()["qtypes"]
         key = await answer_key(q["session_id"])
-        ans = correct_answer(q["qtype"], key) if right else wrong_answer(q["qtype"], key)
+        ans = right_answer(q, key) if right else wrong_answer(q, key)
         res = (await client.post("/quiz/answer", json={"session_id": q["session_id"], "answer": ans}, headers=h)).json()
-        assert res["correct"] is right
+        assert res["correct"] is right and "math" in res
         f = res["fishing"]
         assert f["stage"] == "reel"
         assert f["params"]["zone"] == pytest.approx(base * (1.3 if right else 0.65), abs=1e-3)
@@ -360,21 +350,23 @@ async def test_rare_fish_ask_a_question_and_never_hurt(client, frozen, force_fis
         assert out["result"] in ("caught", "escaped", "snapped")
     async with dbm.SessionLocal() as db:
         assert (await db.get(Character, uid)).hp == hp_before   # spec 11.1: no health lost
+        rows = (await db.execute(select(MathAnswer).where(MathAnswer.user_id == uid))).scalars().all()
+        assert sorted(r.correct for r in rows) == [False, True]   # the learning log got both answers
 
 
 async def test_thien_fish_needs_two_right_answers_in_a_row(client, frozen, force_fish):
-    h, uid = await player(client, learn=["水", "火", "木", "人", "大", "小"])
+    h, uid = await player(client)
     force_fish["fish"] = "con"
     c, hk = await cast_and_hook(client, h, frozen)
     assert hk["stage"] == "quiz" and hk["need"] == 2
     q = hk["question"]
     key = await answer_key(q["session_id"])
-    res = (await client.post("/quiz/answer", json={"session_id": q["session_id"], "answer": correct_answer(q["qtype"], key)},
+    res = (await client.post("/quiz/answer", json={"session_id": q["session_id"], "answer": right_answer(q, key)},
                              headers=h)).json()
     assert res["fishing"]["stage"] == "quiz" and res["fishing"]["right"] == 1
     q2 = res["fishing"]["next_question"]
     key = await answer_key(q2["session_id"])
-    res = (await client.post("/quiz/answer", json={"session_id": q2["session_id"], "answer": wrong_answer(q2["qtype"], key)},
+    res = (await client.post("/quiz/answer", json={"session_id": q2["session_id"], "answer": wrong_answer(q2, key)},
                              headers=h)).json()
     assert res["fishing"]["stage"] == "reel" and res["fishing"]["quiz_mult"] == 0.65
     # the first question cannot be answered twice to get a second chance
@@ -382,8 +374,12 @@ async def test_thien_fish_needs_two_right_answers_in_a_row(client, frozen, force
                               headers=h)).status_code == 409
 
 
-async def test_no_words_learned_means_no_question(client, frozen, force_fish):
+async def test_no_math_question_for_the_player_means_the_fish_just_bites(client, frozen, force_fish, monkeypatch):
     h, _ = await player(client)
+
+    async def none(*a, **k):
+        return None
+    monkeypatch.setattr(math_ask, "pick_own", none)
     force_fish["fish"] = "ca_koi"
     _, hk = await cast_and_hook(client, h, frozen)
     assert hk["stage"] == "reel" and hk["quiz_mult"] == 1.0
@@ -483,6 +479,12 @@ async def test_scales_small_fish_records_and_milestones(client, frozen, force_fi
     # a Linh fish brings a Vảy Linh Ngư
     force_fish["fish"] = "ca_koi"
     c, hk = await cast_and_hook(client, h, frozen)
+    assert hk["stage"] == "quiz"        # a Linh fish asks its math question first
+    q = hk["question"]
+    res = (await client.post("/quiz/answer", json={"session_id": q["session_id"],
+                                                   "answer": right_answer(q, await answer_key(q["session_id"]))},
+                             headers=h)).json()
+    hk = res["fishing"]
     out, _ = await reel_honestly(client, h, frozen, c["cast_id"], hk["params"])
     if out["result"] == "caught":
         assert await qty(uid, "vay_linh_ngu") == 1 and await qty(uid, "fish_ca_koi") == 1

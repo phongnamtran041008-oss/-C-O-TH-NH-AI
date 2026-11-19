@@ -350,8 +350,8 @@ async def search(db: AsyncSession, user: User, q: str) -> dict:
             out.append({"book": "plant", "id": w.id, "title": w.hanzi, "sub": f"{w.pinyin} · {w.meaning_vi}"})
     caught = set((await db.execute(select(FishCatch.fish_id).where(FishCatch.user_id == user.id))).scalars())
     for fid, f in catalog.fish().items():
-        if fid in caught and matches(q, hanzi=f["hanzi"], pinyin=f["pinyin"], texts=[f["name_vi"], fold(f["pinyin"])]):
-            out.append({"book": "fish", "id": fid, "title": f["name_vi"], "sub": f"{f['hanzi']} {f['pinyin']}"})
+        if fid in caught and matches(q, texts=[f["name_vi"]]):
+            out.append({"book": "fish", "id": fid, "title": f["name_vi"], "sub": f["desc_vi"]})
     met = {e.entry_id for e in (await db.execute(select(CodexEntry).where(
         CodexEntry.user_id == user.id, CodexEntry.codex.in_(["bee", "monster"])))).scalars()}
     for bid, b in catalog.bees().items():

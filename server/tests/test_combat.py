@@ -7,13 +7,14 @@ from sqlalchemy import select
 
 from app import clock
 from app import db as dbm
+from app.learning import math_path
 from app.learning.wordbank import bank
-from app.models import Character, CodexEntry, Collection, InventoryItem, Quest, Skill
+from app.models import Character, CodexEntry, Collection, InventoryItem, MathAnswer, Quest, Skill
 from app.realtime import combat
 from app.realtime import world as wmod
 from app.realtime.world import Session, World
 from app.systems import catalog
-from tests.helpers import answer_key, correct_answer, register, wrong_answer
+from tests.helpers import answer_key, register
 
 FOREST = "rung_muc_loang"
 LOOK = {"hair_color": "#2B2B2B", "hair_style": "ngan", "body": "nam"}
@@ -102,9 +103,11 @@ async def hit(w: World, p, m) -> None:
 
 
 async def answer(client, h, s, right: bool):
+    """Answer the last question a monster asked (a math question since the purge)."""
+    from tests.test_math_loop import right_answer, wrong_answer   # (that module imports this one)
     q = last(s, "q")["q"]
     key = await answer_key(q["session_id"])
-    a = correct_answer(q["qtype"], key) if right else wrong_answer(q["qtype"], key)
+    a = right_answer(q, key) if right else wrong_answer(q, key)
     r = await client.post("/quiz/answer", json={"session_id": q["session_id"], "answer": a}, headers=h)
     assert r.status_code == 200, r.text
     return r.json()
@@ -116,8 +119,8 @@ async def test_shielded_monster_cannot_be_killed(client, gw):
     p, m = at_monster(gw, s)
     await hit(gw, p, m)
     q = last(s, "q")
-    assert q and q["mid"] == m.eid and q["q"]["context"] == "combat"
-    assert "answer_key" not in q["q"]
+    assert q and q["mid"] == m.eid and q["q"]["context"] == "math_combat"
+    assert "answer_key" not in q["q"] and "hanzi" not in q["q"].get("prompt", {})
     assert p.protected(gw.mono())            # Hộ Thể while answering
     # even a thousand hits cannot kill it while the Mặc Thuẫn is up
     p.question, p.protect_until = None, 0     # (pretend the player ignores the question)
@@ -137,7 +140,7 @@ async def test_right_answer_breaks_shield_and_kills(client, gw):
     assert res["correct"] and c["shield_broken"] and not m.shield
     expected = combat.base_damage(p, m) * 2 * (1.5 if c["crit"] else 1)
     assert abs((hp_before - m.hp) - expected) < 0.01 or c["killed"]
-    assert res["xp"]["gained"] == 6                       # Tu Vi from a right combat answer
+    assert res["xp"]["gained"] == math_path.xp_for_tier(res["math"]["tier"])   # Tu Vi of a right answer, by tier
     for _ in range(40):
         if not m.alive:
             break
@@ -238,11 +241,47 @@ async def test_first_right_answer_breaks_for_everyone(client, gw):
     assert last(sb, "q_end")["reason"] == "broken"
 
 
-async def test_no_question_without_learned_words(client, gw):
-    h, uid, s = await fighter(client, gw, "kiem_8", "Kiếm Chín", learned=False)
+async def test_a_forest_monster_asks_math_at_the_players_own_floor_and_logs_it_once(client, gw):
+    """A Mặc Quái of the forest is no quái lỗi sai: it asks a quick question at the player's
+    own floor (math_ask.pick_own), and the answer is written to the learning log once."""
+    from app.systems import math_ask, math_combat
+    h, uid, s = await fighter(client, gw, "kiem_8", "Kiếm Chín", learned=False)   # no word learned at all
     p, m = at_monster(gw, s)
     await hit(gw, p, m)
-    assert last(s, "error")["code"] == "nothing_learned" and p.question is None
+    q = last(s, "q")["q"]
+    async with dbm.SessionLocal() as db:
+        own = await math_ask.own_floor(db, uid)
+    assert (q["math"]["subject"], q["math"]["floor"]) == own
+    assert q["qtype"] in math_combat.QUICK_TYPES and q["math"]["monster_vi"] == "Mực Con"
+    assert q["math"]["tier"] <= await math_combat_tier(uid, q["math"])
+    res = await answer(client, h, s, False)
+    assert not res["correct"] and res["combat"]["mac_kich"] > 0 and res["math"]["tier"] == q["math"]["tier"]
+    async with dbm.SessionLocal() as db:
+        rows = (await db.execute(select(MathAnswer).where(MathAnswer.user_id == uid))).scalars().all()
+        assert len(rows) == 1 and not rows[0].correct and rows[0].run_id is None
+        assert rows[0].skill_id == q["math"]["skill"]
+
+
+async def math_combat_tier(uid: int, meta: dict) -> int:
+    from app.systems import math_combat
+    async with dbm.SessionLocal() as db:
+        return await math_combat.tier_for(db, uid, meta["skill"], meta["floor"])
+
+
+async def test_no_question_when_the_bank_has_none_for_the_player(client, gw, monkeypatch):
+    from app.systems import math_practice
+    h, uid, s = await fighter(client, gw, "kiem_8b", "Kiếm Chín Bis")
+    monkeypatch.setattr(math_practice, "_templates", lambda subject, floor: [])
+    p, m = at_monster(gw, s)
+    await hit(gw, p, m)
+    err = last(s, "error")
+    assert err["code"] == "no_math_question" and p.question is None and not p.q_pending
+    assert "chữ" not in err["message_vi"] and "vườn" not in err["message_vi"]
+    assert p.no_words_until > gw.mono()                  # not asked again at once
+    s.sent.clear()
+    run(gw, 3.0)
+    await hit(gw, p, m)
+    assert last(s, "q") is None and last(s, "error") is None
 
 
 # ------------------------------------------------------------------ death
@@ -337,22 +376,18 @@ async def test_kill_counts_for_quest(client, gw):
 
 
 def test_monster_data_is_complete():
-    """Two kinds of monster now: a Mặc Quái asks about a word and says which question
-    types it may use, while a quái lỗi sai (M7) asks a math question about one
-    micro-skill and drops the ghi chú that explains the mistake. Each has to carry
-    what its own kind of fight needs."""
-    types = __import__("app.balance", fromlist=["quiz"]).quiz()["types"]
+    """Two kinds of monster: a Mặc Quái asks a math question at the player's own floor, while
+    a quái lỗi sai (M7) asks a math question about one micro-skill and drops the ghi chú that
+    explains the mistake. Neither carries anything of the old word game."""
     for kind, m in catalog.monsters().items():
+        for key in ("qtypes", "hanzi", "pinyin") + (() if m.get("skill") else ("tier",)):   # (the word tier)
+            assert key not in m, (kind, key)
         for key in ("hp", "atk", "def", "xp", "rank", "drops", "name_vi"):
             assert key in m, (kind, key)
         if m.get("skill"):
             for key in ("subject", "floor", "note", "mistake_vi", "shape", "look"):
                 assert m.get(key), (kind, key)
             assert catalog.stack_item(m["note"]), (kind, m["note"])
-            assert "qtypes" not in m, (kind, "a math monster does not pick word question types")
-        else:
-            assert "qtypes" in m, (kind, "qtypes")
-            assert all(q in types for q in m["qtypes"])
         for d in m["drops"]:
             if "item" in d:
                 assert catalog.stack_item(d["item"]), d

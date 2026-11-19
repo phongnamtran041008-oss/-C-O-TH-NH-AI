@@ -216,15 +216,6 @@ async def test_ga_adds_tu_vi_to_garden_reviews(client, db):
     assert (await _ripe_review(client, db, h, uid))["xp"]["gained"] == round(plain * 1.1)
 
 
-async def test_khi_gives_more_linh_khi_in_thu_vuon(client, db):
-    h, uid = await player(client, "chu_khi", learn=["水", "火", "木"])
-    lo = [bank().by_hanzi[x].id for x in ("水", "火", "木")]
-    a = (await client.post("/td/start", json={"level_id": "c1_01", "loadout": lo}, headers=h)).json()
-    await give_pet(db, uid, "khi")
-    b = (await client.post("/td/start", json={"level_id": "c1_01", "loadout": lo}, headers=h)).json()
-    assert b["params"]["qi"]["start"] == a["params"]["qi"]["start"] + 20
-
-
 async def test_combat_pets_ran_cho_ngua():
     from app.realtime import combat
     from app.realtime.zone import Player

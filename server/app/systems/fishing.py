@@ -19,16 +19,15 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import balance, clock
-from ..learning import quiz, selection
-from ..learning import question_bank as qb
-from ..learning.wordbank import bank
+from ..learning import quiz
 from ..models import Character, FishCatch, QuizSession, User
-from . import catalog, fishing_sim, inventory, items
+from . import catalog, fishing_sim, inventory, items, math_ask
 
 RARITIES = ["pham", "linh", "huyen", "dia", "thien"]
 STARTER_ROD = "can_truc_tho"
 FISH_PREFIX = "fish_"
 WAITING, QUIZ, REEL, DONE = "waiting", "quiz", "reel", "done"
+CONTEXT = "math_fishing"
 
 
 class FishingError(Exception):
@@ -462,20 +461,13 @@ async def hook(db: AsyncSession, user: User, cast_id: str, rng: random.Random | 
 
 
 async def _question(db: AsyncSession, user: User, cst: Cast, rng: random.Random) -> dict | None:
-    """Spec 11.1: a Linh-or-rarer fish asks a question, harder for rarer fish."""
-    from . import cultivation
-    ch = await _char(db, user)
-    tier = cultivation.tier_of(ch.realm)
-    try:
-        word_id = await selection.pick_word(db, user.id, tier, rng)
-    except selection.NoWordAvailable:
-        return None   # nothing learned yet: the fish just bites, normal zone
-    w = bank().get(word_id)
-    types = balance.quiz()["types"]
-    rarity = species()[cst.fish]["rarity"]
-    allowed = [q for q in cfg()["quiz_types"][rarity] if types[q]["min_tier"] <= tier] or ["Q1", "Q2"]
-    question = qb.generate_any(allowed, w, quiz.gen_context(rng, max_tier=max(tier, w.tier)))
-    return await quiz.create_session(db, user, "fishing", question, ref=cst.id)
+    """Spec 11.1: a Linh-or-rarer fish asks a question. It is a quick math question at the
+    player's own floor; None when the bank has none for them (the fish then just bites, normal
+    zone, as it always did for a player with nothing learned)."""
+    question = await math_ask.pick_own(db, user, qtypes=cfg()["qtypes"], rng=rng)
+    if question is None:
+        return None
+    return await quiz.create_session(db, user, CONTEXT, question, ref=cst.id)
 
 
 def _start_reel(cst: Cast, rng: random.Random) -> dict:
@@ -488,10 +480,10 @@ def _start_reel(cst: Cast, rng: random.Random) -> dict:
 
 
 async def fishing_handler(db: AsyncSession, user: User, s: QuizSession, correct: bool, now: dt.datetime) -> dict:
-    """A fishing question answered: mastery as anywhere outside the garden; right widens the
+    """A fishing question answered: the learning log first (math_ask.record); right widens the
     green zone, wrong narrows it (never costs health: fishing is for relaxing). A Thiên
     fish needs two right answers in a row."""
-    out = await quiz.practice_handler(db, user, s, correct, now)
+    out = {"math": await math_ask.record(db, user, s, correct, now)}
     cst = _casts.get(user.id)
     if cst is None or cst.id != s.ref or cst.state != QUIZ:
         return {**out, "fishing": {"lost": True}}
@@ -509,7 +501,8 @@ async def fishing_handler(db: AsyncSession, user: User, s: QuizSession, correct:
                                "rarity": species()[cst.fish]["rarity"], **_start_reel(cst, random.Random())}}
 
 
-quiz.register_handler("fishing", fishing_handler)
+quiz.register_handler(CONTEXT, fishing_handler)
+quiz.register_xp_rule(CONTEXT, math_ask.xp_rule)
 
 
 def _check_toggles(toggles: list) -> list[int]:
@@ -620,8 +613,8 @@ def hint_vi(f: dict) -> str:
 
 def public_species(fid: str) -> dict:
     f = species()[fid]
-    return {"id": fid, "name_vi": f["name_vi"], "hanzi": f["hanzi"], "pinyin": f["pinyin"],
-            "meaning_en": f["meaning_en"], "fictional": f["fictional"], "mythical": f["mythical"],
+    return {"id": fid, "name_vi": f["name_vi"],
+            "fictional": f["fictional"], "mythical": f["mythical"],
             "rarity": f["rarity"], "shape": f["shape"], "color": f["color"], "color2": f["color2"],
             "desc_vi": f["desc_vi"], "hint_vi": hint_vi(f), "size_cm": f["size_cm"], "sell_price": f["sell_price"]}
 
@@ -663,5 +656,5 @@ async def records(db: AsyncSession, user: User | None = None) -> dict:
     out = []
     for fid in sorted(by, key=lambda k: (order[species()[k]["rarity"]], k)):
         f = species()[fid]
-        out.append({"id": fid, "name_vi": f["name_vi"], "hanzi": f["hanzi"], "rarity": f["rarity"], "top": by[fid]})
+        out.append({"id": fid, "name_vi": f["name_vi"], "rarity": f["rarity"], "top": by[fid]})
     return {"records": out}

@@ -119,7 +119,7 @@ def stack_item(item_id: str) -> dict | None:
     if item_id.startswith("fish_") and item_id[5:] in fish():
         f = fish()[item_id[5:]]
         return {"kind": "fish", "name_vi": f["name_vi"], "rarity": f["rarity"], "sell_price": f["sell_price"],
-                "desc_vi": f"{f['hanzi']} ({f['pinyin']}). {f['desc_vi']}"}
+                "desc_vi": f["desc_vi"]}
     return None
 
 

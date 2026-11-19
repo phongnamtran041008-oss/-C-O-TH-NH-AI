@@ -25,7 +25,7 @@ from client.tests.test_linh_phong_flow import abode
 from client.tests.test_world_flow import make_account
 
 sys.path.insert(0, str(ROOT / "tools"))
-import td_bot  # noqa: E402
+import math_td_bot  # noqa: E402
 
 
 def top(drv: Driver):
@@ -45,12 +45,13 @@ def on_board(drv: Driver, sc, wid: str) -> bool:
     return True
 
 
-def click_card(drv: Driver, sc, word: str | None) -> bool:
-    if sc.card == word:
+def click_card(drv: Driver, sc, tower: str | None) -> bool:
+    """Make `tower` the chosen card (None: no card chosen)."""
+    if sc.card == tower:
         return True
-    if sc.card is not None and not on_board(drv, sc, f"td_card_{sc.words.index(sc.card)}"):
+    if sc.card is not None and not on_board(drv, sc, f"td_card_{sc.bar.index(sc.card)}"):
         return False
-    return word is None or on_board(drv, sc, f"td_card_{sc.words.index(word)}")
+    return tower is None or on_board(drv, sc, f"td_card_{sc.bar.index(tower)}")
 
 
 def answer_card(drv: Driver, server: ServerProcess, right: bool, stats: dict, shot: str | None = None) -> dict:
@@ -119,7 +120,7 @@ def run_math_td_flow(workdir: Path, shots: Path | None = None) -> None:
         while time.time() < end:
             t = top(drv)
             name = type(t).__name__
-            if name == "TdResultScene":
+            if name == "MathTdResultScene":
                 result = t.r
                 break
             if name == "MathTdCard":
@@ -164,7 +165,7 @@ def run_math_td_flow(workdir: Path, shots: Path | None = None) -> None:
                                 assert pl.level == 2 and sc.events[-1]["k"] == "up"
                                 stats["upgraded"] += 1
                         continue
-                acts = td_bot.decide(sim, allow_upgrade=False)
+                acts = math_td_bot.decide(sim, allow_upgrade=False)
                 if acts and acts[0]["k"] == "place":
                     a = acts[0]
                     if click_card(drv, sc, a["w"]) and on_board(drv, sc, f"td_cell_{a['x']}_{a['y']}"):

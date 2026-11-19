@@ -28,11 +28,14 @@ from ..models import MathAnswer, QuizSession, User
 from . import math_practice
 
 CONTEXT = "math_combat"
+# What is asked in the middle of a fight or on a timer (a field monster, đả tọa, Thiên Kiếp):
+# every playable type except the Thiên kiếp question type, which takes 8-12 minutes.
+QUICK_TYPES = tuple(t for t in math_items.PLAYABLE_TYPES if t != "tribulation")
 
 
 def skill_of(info: dict) -> str | None:
-    """The micro-skill a monster is a mistake about, or None for the Mặc Quái of the old
-    game, which ask about words instead."""
+    """The micro-skill a monster is a mistake about, or None for the Mặc Quái of the forest,
+    which ask a question at the player's own floor instead (realtime/combat.py)."""
     return info.get("skill")
 
 

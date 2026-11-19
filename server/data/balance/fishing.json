@@ -12,12 +12,7 @@
   "small_fish_fraction": 0.25,
   "size_curve": 1.6,
   "scales": {"linh": 1, "huyen": 2, "dia": 3, "thien": 5},
-  "quiz_types": {
-    "linh": ["Q1", "Q2", "Q11"],
-    "huyen": ["Q3", "Q4", "Q2"],
-    "dia": ["Q5", "Q6", "Q7", "Q3"],
-    "thien": ["Q5", "Q8", "Q7", "Q6", "Q3"]
-  },
+  "qtypes": ["true_false", "multiple_choice", "numeric", "matching", "ordering", "find_mistake"],
   "quiz_needed": {"pham": 0, "linh": 1, "huyen": 1, "dia": 1, "thien": 2},
   "zone_quiz_right": 1.3,
   "zone_quiz_wrong": 0.65,

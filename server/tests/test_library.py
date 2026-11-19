@@ -144,8 +144,6 @@ async def test_search_finds_fish_and_monsters(client):
         await db.commit()
     r = (await client.get("/library/search", params={"q": "chep"}, headers=h)).json()
     assert any(x["book"] == "fish" and x["id"] == "ca_chep" for x in r["results"])
-    r = (await client.get("/library/search", params={"q": "lǐyú"}, headers=h)).json()
-    assert any(x["id"] == "ca_chep" for x in r["results"])
     r = (await client.get("/library/search", params={"q": "muc dac"}, headers=h)).json()
     assert any(x["id"] == "td_muc_dac" for x in r["results"])
 

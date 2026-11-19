@@ -55,7 +55,7 @@
   "monster_float": ["kiem_linh", "kiem_linh_di", "tam_ma", "tam_ma_di"],
 
   "td_monsters": {
-    "_comment": "Ải Thủ Vườn board (24 px cells): sheet and draw scale",
+    "_comment": "Thủ Thành Toán board (24 px cells): sheet and draw scale",
     "muc_con":   {"sheet": "dau_tu_oa",     "scale": 0.5},
     "muc_phi":   {"sheet": "phong_lang",    "scale": 0.5},
     "muc_dac":   {"sheet": "thach_khoi",    "scale": 0.5},
@@ -139,7 +139,7 @@
     "chest": ["chest_closed", "chest_open"]
   },
   "td": {
-    "_comment": "Ải Thủ Vườn board at its native 24 px cell: tiles/td24 and props/td. Every role has towers 1..3, projectiles shot_<role> (else the plain line), hits hit_<role> (else hit_puff)",
+    "_comment": "Thủ Thành Toán board (the tower defence) at its native 24 px cell: tiles/td24 and props/td. Every role has towers 1..3, projectiles shot_<role> (else the plain line), hits hit_<role> (else hit_puff)",
     "roles": ["hoa", "thuy", "kim", "son", "quang", "ho_tro", "moc"],
     "shots": ["hoa", "thuy", "kim", "son", "quang"]
   },

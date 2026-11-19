@@ -5,7 +5,7 @@ The run is the stage-9 bí cảnh (test_realm.py); what is new is what it asks. 
 it to the learning rules: every question at the answering player's own floor and tier (two
 players on different floors fighting one monster get two different floors), every answer in
 the learning log with no run, a timeout is a wrong answer and nothing else, the boss asks the
-hardest question each player may be asked, and the old word realms are left as they were.
+hardest question each player may be asked, and the party realms (scheduled, rift) ask the same way.
 Like test_realm, the world runs on a fake clock ticked by hand."""
 import os
 
@@ -111,8 +111,8 @@ async def test_the_gate_lists_the_math_realm_open_and_alone(client, gw):
     assert REALM not in {x["id"] for x in v["realms"]}                 # its own list, its own tab
     r = next(x for x in v["math_realms"] if x["id"] == REALM)
     assert r["math"] and r["open"] and r["party_min"] == 1 and r["floor"] == 3 and r["realm_ok"]
-    assert r["min_realm"] is None and r["entries_left"] == secret_realm.daily_limit(REALM)
-    assert v["puzzles"]["seal"]["how_vi"] and v["puzzles"]["math_boss"]["how_vi"]
+    assert "min_realm" not in r and r["entries_left"] == secret_realm.daily_limit(REALM)
+    assert v["puzzles"]["seal"]["how_vi"] and v["puzzles"]["boss"]["how_vi"]
 
 
 async def test_alone_at_the_lowest_realm_and_the_old_realms_still_want_a_party(client, gw):
@@ -459,21 +459,38 @@ async def test_a_chieu_in_the_math_realm_asks_at_the_casters_own_floor(client, g
         await answer(client, h, q, False)       # a miss: the monster keeps its shield for the next cast
 
 
-# ------------------------------------------------------------------ the old realms
-async def test_the_word_realms_still_ask_words(client, gw):
-    hs = [await math_hero(client, gw, f"chu_{i}", f"Chữ {i}", realm_id="truc_co") for i in range(2)]
+# ------------------------------------------------------------------ the party realms
+@pytest.mark.parametrize("realm_id", ["mac_anh_dong", "khe_nut_muc"])
+async def test_the_party_realms_ask_at_each_players_own_floor_too(client, gw, realm_id):
+    """The scheduled realm and the rift realm (which used to ask Chinese words) are math bí cảnh
+    like this one: a seal asks each player at their own floor."""
+    hs = [await math_hero(client, gw, f"tiec_{realm_id[:3]}_{i}", f"Tiệc {i}", floor=OWN[i], realm_id="truc_co")
+          for i in range(2)]
     await make_party(gw, hs[0][2], hs[1][2])
-    gw.realms.room_order = ["mirror", "boss"]
-    await gw.handle(hs[0][2], {"t": "realm", "op": "enter", "realm": "mac_anh_dong"})
+    gw.realms.room_order = None
+    if realm_id == "khe_nut_muc":
+        ch = gw._pick_channel("rung_muc_loang")
+        for _, _, s in hs:
+            gw._place(s, "rung_muc_loang", 300, 330, "down")
+        r = gw.realms.spawn_rift(ch, gw.mono(), 310, 330)
+        await gw.handle(hs[0][2], {"t": "realm", "op": "enter", "rift": r.id})
+    else:
+        await gw.handle(hs[0][2], {"t": "realm", "op": "enter", "realm": realm_id})
     await settle(gw)
     inst = gw.realms.instance_of(gw.players[hs[0][1]])
-    assert not inst.math and inst.question_source is None and "seal" not in inst.rooms
-    assert all(r["place"] == r["kind"] for r in inst.room_specs)
-    m = next(m for m in inst.monsters if m.alive)
-    p = gw.players[hs[0][1]]
-    combat.engage(inst, m, p, gw.mono())
-    await settle(gw)
-    assert last(hs[0][2], "q")["q"]["context"] == "combat"
+    assert inst is not None and inst.realm_id == realm_id and inst.math and inst.question_source is not None
+    assert inst.rooms[0] == "seal" and inst.rooms[-1] == "boss"
+    inst.monsters[:] = []
+    seals = inst.objs(inst.room_spec()["seal"])
+    ps = [gw.players[u] for _, u, _ in hs]
+    away(inst, ps)
+    for i, (h, u, s) in enumerate(hs):
+        stand(ps[i], seals[i])
+        await tick(gw, 0.1)
+        q = last(s, "q")
+        assert q["seal"] == seals[i].name and q["q"]["context"] == math_realm.CONTEXT
+        assert q["q"]["math"]["floor"] == OWN[i]
+        ps[i].y += 60
 
 
 # ------------------------------------------------------------------ bots, over many seeds

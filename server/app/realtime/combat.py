@@ -170,30 +170,21 @@ def request_question(ch: "ChannelZone", p: "Player", m: "Monster", now: float) -
     _world().spawn(_create_question(ch, p, m.eid, m.kind))
 
 
-async def _word_question(db, ch: "ChannelZone", p: "Player", mid: str, rng: random.Random):
-    """The Vấn Đạo question a Mặc Quái asks: a word this player has learned (spec 8.1)."""
-    from ..learning import question_bank as qb
-    from ..learning import quiz, selection
-    from ..learning.wordbank import bank
-    from ..systems import cultivation
-    from .world import zone_defs
-    tier = cultivation.tier_of(p.realm)
-    zone_tier = getattr(ch, "question_tier", None) or zone_defs().get(ch.zone_id, {}).get("tier", tier)
-    try:
-        word_id = await selection.pick_word(db, p.user_id, zone_tier, rng)
-    except selection.NoWordAvailable:
+async def _own_floor_question(db, user, p: "Player", info: dict | None, rng: random.Random):
+    """The Vấn Đạo question a Mặc Quái of the forest asks (spec 8.1): a quick math question at
+    this player's own floor. It is graded like a quái lỗi sai's (math_combat: the learning log,
+    then `on_answer`)."""
+    from ..systems import math_ask, math_combat
+    question = await math_ask.pick_own(db, user, qtypes=math_combat.QUICK_TYPES, rng=rng)
+    if question is None:
         p.no_words_until = _world().mono() + 10
         if p.session:
-            p.session.send({"t": "error", "code": "nothing_learned",
-                            "message_vi": "Con chưa học chữ nào nên chưa phá được Mặc Thuẫn. "
-                                          "Về vườn học ít nhất một chữ đã!"})
+            p.session.send({"t": "error", "code": "no_math_question",
+                            "message_vi": "Con chưa mở được câu toán nào nên chưa phá được Mặc Thuẫn. "
+                                          "Vào Đạo Thụ ở Động Phủ luyện một buổi rồi quay lại!"})
         return None
-    word = bank().get(word_id)
-    types = balance.quiz()["types"]
-    allowed = [q for q in ch.monster(mid).info.get("qtypes", []) if types[q]["min_tier"] <= tier] \
-        if ch.monster(mid) else []
-    return "combat", qb.generate_any(allowed or ["Q1", "Q2"],
-                                     word, quiz.gen_context(rng, max_tier=max(tier, word.tier)))
+    question.meta["monster_vi"] = (info or {}).get("name_vi", "")
+    return math_combat.CONTEXT, question
 
 
 async def _math_question(db, user, p: "Player", info: dict, rng: random.Random):
@@ -227,7 +218,7 @@ async def _create_question(ch: "ChannelZone", p: "Player", mid: str, kind: str) 
             elif math_combat.is_mistake_monster(info):
                 built = await _math_question(db, user, p, info, rng)
             else:
-                built = await _word_question(db, ch, p, mid, rng)
+                built = await _own_floor_question(db, user, p, info, rng)
             if built is None:
                 p.q_pending = False
                 return
@@ -256,7 +247,8 @@ async def _create_question(ch: "ChannelZone", p: "Player", mid: str, kind: str) 
 
 
 def on_answer(p: "Player", sid: str, correct: bool, answer_ms: int | None) -> dict:
-    """Called (in memory) by the 'combat' quiz handler after the answer was graded."""
+    """Called (in memory) by a combat quiz handler (math_combat, a bí cảnh's) after the answer
+    was graded and written to the learning log."""
     w = _world()
     q = p.question
     if q is None or q["sid"] != sid or p.channel is None:
@@ -310,18 +302,6 @@ def break_shield(ch: "ChannelZone", m: "Monster", p: "Player | None", now: float
         if (other is not None and other is not p and other.question and other.question["mid"] == m.eid
                 and not other.question.get("cast")):   # a chiêu being channelled (M9) still lands
             end_question(other, "broken")
-
-
-async def combat_handler(db, user, s, correct: bool, now) -> dict:
-    from ..learning import quiz
-    out = await quiz.practice_handler(db, user, s, correct, now)
-    w = _world()
-    p = w.players.get(user.id)
-    if p is not None:
-        out["combat"] = on_answer(p, s.id, correct, s.answer_ms)
-        if "mastery" in out:
-            w.word_mastery_changed(user.id, s.item_id, out["mastery"])
-    return out
 
 
 async def _grade_timeout(uid: int, sid: str) -> None:
@@ -691,11 +671,3 @@ def tick(ch: "ChannelZone", dt: float, now: float) -> None:
             mult = c["safe_zone_regen_mult"] if ch.safe else 1.0
             p.hp = min(p.max_hp, p.hp + p.max_hp * c["hp_regen_pct_per_second"] / 100 * dt * mult)
             p.qi = min(p.max_qi, p.qi + c["qi_regen_per_second"] * dt * mult)
-
-
-def _register() -> None:
-    from ..learning import quiz
-    quiz.register_handler("combat", combat_handler)
-
-
-_register()

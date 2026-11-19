@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """Bots that clear a bí cảnh together over a real WebSocket (stage 9 criterion: three clients or
 bots clear one realm). Each bot is a separate connection that only knows what the server sends
-it (snapshots, its own puzzle pieces) plus the map file and the word list every client has. They
-"talk" to each other the way a party would in chat, through a shared Team object.
+it (snapshots, the seals of its room) plus the map file every client has. They "talk" to each
+other the way a party would in chat, through a shared Team object. Every realm is a math bí
+cảnh: each bot is asked at its own floor.
 
     # a server with the dev balance (the scheduled realm is always open):
     #   cd server && BALANCE_PROFILE=dev python -m uvicorn app.main:app --port 8000
     python tools/realm_bots.py --url http://127.0.0.1:8000 --db server/dev.db
-    # M10, the math bí cảnh: a party on floors 1, 3 and 4 (one floor = a bot alone)
+    # the always-open Toán Trận Bí Cảnh: a party on floors 1, 3 and 4 (one floor = a bot alone)
     python tools/realm_bots.py --math --floors 1,3,4
 
-The bots read Vấn Đạo answer keys from the server's database file (a stand-in for players who
-know their words), so this only works next to a local server.
+The bots read the answer keys from the server's database file (a stand-in for players who
+studied), so this only works next to a local server.
 """
 from __future__ import annotations
 
@@ -266,8 +267,6 @@ def make_hero(url: str, db: Path, username: str, display: str, realm: str = "tru
     gate = maps.load("truc_lam_thon").interacts["realm"]
     sql(db, "update characters set realm=?, realm_stage=1, zone_id='truc_lam_thon', x=?, y=?, hp=400 "
             "where user_id=?", (realm, gate[0], gate[1] + 14, uid))
-    sql(db, "insert or ignore into collection(user_id, word_id, introduced, mastery, times_correct, times_wrong, "
-            "needs_review, first_seen_at) select ?, id, 1, 60, 0, 0, 0, datetime('now') from words where tier=1", (uid,))
     # a good staff and robe, so a test run is about the rules rather than the fight
     for item, slot in (("gay_truc", "weapon"), ("mac_anh_bao", "body")):
         sql(db, "insert into equipment_instances(user_id, item_id, rarity, enhance_level, inscriptions, equipped_slot) "

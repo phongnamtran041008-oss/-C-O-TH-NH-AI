@@ -1,5 +1,5 @@
 """Stage 6 through the real client UI: fish in the Động Phủ pond (F, wait for the float, strike,
-answer the question a rare fish asks, reel it in with the button), read the Ngư Phổ; then at
+answer the math question a rare fish asks, reel it in with the button), read the Ngư Phổ; then at
 Hồ Nghiên Mực talk to Ngư Ông, buy worms in his shop and fish from the end of the dock.
 The server runs with BALANCE_PROFILE=dev (fast bites, rare fish more often)."""
 from __future__ import annotations
@@ -12,8 +12,8 @@ from pathlib import Path
 import httpx
 import pygame
 
-from client.tests.driver import Driver, ServerProcess, answer_current_quiz
-from client.tests.test_linh_phong_flow import abode, give, learn
+from client.tests.driver import Driver, ServerProcess, fill_math_answer
+from client.tests.test_linh_phong_flow import abode, give
 from client.tests.test_world_flow import make_account
 
 
@@ -37,7 +37,13 @@ def one_cast(drv: Driver, server: ServerProcess) -> dict:
         drv.wait(lambda: drv.top_is("FishQuizScene") or fsc.phase != "quiz", 10, "fish question")
         if drv.top_is("FishQuizScene"):
             quiz = True
-            answer_current_quiz(drv, server, correct=True)
+            card = drv.game.top
+            q = card.q
+            assert q["context"] == "math_fishing" and q.get("math"), q
+            key = json.loads(server.sql("select answer_key from quiz_sessions where id=?", (q["session_id"],))[0][0])
+            fill_math_answer(drv, q, key, True)
+            drv.wait(lambda: card.result is not None, 10, "the answer is graded")
+            assert card.result["correct"]
             drv.wait(lambda: not drv.top_is("FishQuizScene") or fsc.phase != "quiz", 10, "question closes")
             drv.step(3)
     end = time.time() + 70
@@ -67,8 +73,6 @@ def run_fishing_flow(workdir: Path, shots: Path | None = None) -> None:
         h = {"Authorization": f"Bearer {token}"}
         httpx.get(url + "/garden", headers=h).raise_for_status()
         httpx.get(url + "/quests", headers=h).raise_for_status()
-        for hz in ("水", "火", "木", "人", "大", "小"):
-            learn(server, uid, hz)
         give(server, uid, "can_long_cot", 1)
         server.sql("update users set flags=? where id=?",
                    (json.dumps({"tutorial": 5, "fishing": {"rod": "can_long_cot", "bait": None, "levels": {}}}), uid))

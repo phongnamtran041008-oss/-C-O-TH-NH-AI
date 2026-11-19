@@ -1,19 +1,13 @@
 {
-  "_comment": "Mặc Quái (spec 8). qtypes = question types each monster asks (spec 8.2); rank sets the Mặc Kích %; shield_regen = HP % at which the Mặc Thuẫn comes back (elites).",
+  "_comment": "Mặc Quái (spec 8). Each one asks a math question at the player's own floor (the quái lỗi sai of Loạn Số Cốc live in math/monsters.json); rank sets the Mặc Kích %; shield_regen = HP % at which the Mặc Thuẫn comes back (elites).",
   "ink_slime": {
     "name_vi": "Mực Con",
     "sprite": "ink_slime",
-    "tier": 1,
     "rank": "normal",
     "speed": 20.0,
     "idle_seconds": [
       1.5,
       4.5
-    ],
-    "qtypes": [
-      "Q1",
-      "Q2",
-      "Q3"
     ],
     "hp": 40,
     "atk": 6,
@@ -28,7 +22,7 @@
     ],
     "respawn_seconds": 20,
     "shield_regen": [],
-    "weakness_vi": "Chậm chạp, sợ Thủy Chữ Quyết làm loãng mực.",
+    "weakness_vi": "Chậm chạp, mực loãng nên Mặc Thuẫn mỏng.",
     "drops": [
       {
         "item": "muc_tinh",
@@ -82,18 +76,13 @@
     ]
   },
   "tone_wisp": {
-    "name_vi": "Thanh Điệu Yêu",
+    "name_vi": "Lân Hỏa Yêu",
     "sprite": "tone_wisp",
-    "tier": 1,
     "rank": "normal",
     "speed": 30.0,
     "idle_seconds": [
       0.8,
       3.0
-    ],
-    "qtypes": [
-      "Q3",
-      "Q11"
     ],
     "hp": 55,
     "atk": 9,
@@ -108,7 +97,7 @@
     ],
     "respawn_seconds": 25,
     "shield_regen": [],
-    "weakness_vi": "Bay lượn khó đoán, nhưng yếu trước Hỏa Chữ Quyết.",
+    "weakness_vi": "Đốm lửa mực bay lượn khó đoán, nhưng thân mỏng, vài đòn là tan.",
     "drops": [
       {
         "item": "muc_tinh",
@@ -179,19 +168,11 @@
   "ink_fox": {
     "name_vi": "Mặc Hồ",
     "sprite": "ink_fox",
-    "tier": 1,
     "rank": "elite",
     "speed": 34.0,
     "idle_seconds": [
       1.0,
       3.5
-    ],
-    "qtypes": [
-      "Q1",
-      "Q2",
-      "Q3",
-      "Q4",
-      "Q11"
     ],
     "hp": 220,
     "atk": 14,
@@ -273,19 +254,11 @@
   "muc_anh": {
     "name_vi": "Mặc Ảnh",
     "sprite": "muc_anh",
-    "tier": 1,
     "rank": "normal",
     "speed": 28.0,
     "idle_seconds": [
       0.8,
       2.5
-    ],
-    "qtypes": [
-      "Q1",
-      "Q2",
-      "Q3",
-      "Q4",
-      "Q11"
     ],
     "hp": 70,
     "atk": 10,
@@ -324,20 +297,11 @@
   "but_yeu": {
     "name_vi": "Bút Yêu",
     "sprite": "but_yeu",
-    "tier": 2,
     "rank": "normal",
     "speed": 34.0,
     "idle_seconds": [
       0.6,
       2.0
-    ],
-    "qtypes": [
-      "Q1",
-      "Q2",
-      "Q3",
-      "Q5",
-      "Q6",
-      "Q7"
     ],
     "hp": 95,
     "atk": 13,
@@ -353,7 +317,7 @@
     "respawn_seconds": 999999,
     "shield_regen": [],
     "realm_only": true,
-    "weakness_vi": "Cây bút thành tinh, viết bậy lên tường bí cảnh. Hỏi lượng từ, điền chỗ trống, gõ pinyin.",
+    "weakness_vi": "Cây bút thành tinh, viết bậy lên tường bí cảnh.",
     "drops": [
       {
         "item": "muc_tinh",
@@ -376,23 +340,11 @@
   "nghien_ma": {
     "name_vi": "Nghiên Ma",
     "sprite": "nghien_ma",
-    "tier": 1,
     "rank": "boss",
     "speed": 18.0,
     "idle_seconds": [
       1.0,
       2.0
-    ],
-    "qtypes": [
-      "Q1",
-      "Q2",
-      "Q3",
-      "Q4",
-      "Q11",
-      "Q5",
-      "Q6",
-      "Q7",
-      "Q8"
     ],
     "hp": 520,
     "atk": 16,

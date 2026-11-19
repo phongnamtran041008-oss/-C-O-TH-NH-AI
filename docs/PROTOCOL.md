@@ -186,7 +186,7 @@ Client → server:
 |---|---|---|
 | `party` | `op`: `invite` (`name` = đạo hiệu) \| `accept` / `decline` (`uid` = người mời) \| `leave` \| `kick` (`uid`) \| `promote` (`uid`) | tổ đội, tối đa 5 người |
 | `realm` | `op`: `enter` \| `queue` \| `unqueue` \| `leave`; `realm` (id bí cảnh định kỳ) hoặc `rift` (id khe nứt) | đội trưởng dẫn đội vào; người đi một mình vào hàng chờ; rời bí cảnh |
-| `ract` | `obj` (tên đồ vật câu đố trên bản đồ, vd `tone_pillar3`) | dùng đồ vật câu đố đứng cạnh (đánh trụ thanh điệu) |
+| `ract` | `obj` | (còn trong giao thức nhưng bị bỏ qua: không gian nào của bí cảnh toán có đồ vật để đánh) |
 | `mark` | `x`, `y`, `i` (0–3) | ping cho đội, tối đa 1 lần/giây |
 | `chat` | `ch: "party"` | kênh Tổ Đội |
 
@@ -199,22 +199,19 @@ Server → client:
 - `{t: "notice", text}`: thông báo (bí cảnh sắp mở/đã mở, khe nứt vừa xuất hiện gần đây).
 - `{t: "realm", event: ...}`:
   - `entering{realm, name_vi}`, `queued{key, realm, waiting}`, `unqueued` (ngoài bí cảnh);
-  - `start{run{id, realm, name_vi, hanzi, left (giây), rooms[{kind, name_vi}], members[{uid, name, in}]}}`;
-  - `room{i, n, kind, name_vi, hanzi, how_vi, left, phase, puzzle, mine}`: vào phòng (ngay sau `zone`). `puzzle` là phần
-    mọi người thấy, `mine` là phần riêng của người nhận: `compose` → `{piece}`, `sentence` → `{tokens[{t, py}]}` (đã xáo),
-    `mirror` → `{hanzi, pinyin}`, loại khác `null`;
-  - `puzzle{i, puzzle}` và `mine{i, mine}` khi đổi. `puzzle` theo loại: `compose{meaning, layout, slots[], window,
-    answer (sau khi giải)}`, `sentence{vi, n, k, done[{t, py}]}`, `tone{streak, need, round{hanzi, syllable, left}}`,
-    `mirror{meaning, correct, need, left}`, `maze{carriers[uid], radius, lantern, self_radius, in_exit, need}`, `boss{boss,
-    hp, shield, phase, hits, need}`; loại nào cũng có `kind, solved, fails`. Không bao giờ có đáp án trước khi giải;
-  - `tone{ok, tone, pinyin, hanzi, by}` và `mirror{ok, by, hanzi, pinyin, meaning}` sau mỗi lượt; `hint{code, text_vi}`;
+  - `start{run{id, realm, name_vi, left (giây), math: true, rooms[{kind, name_vi}], members[{uid, name, in, floor}]}}`;
+  - `room{i, n, kind, place, math, name_vi, how_vi, left, phase, puzzle}`: vào phòng (ngay sau `zone`). Mọi bí cảnh là
+    bí cảnh toán (M10, xem API.md): phòng là `seal` (Trận Nhãn) hoặc `boss`;
+  - `puzzle{i, puzzle}` khi đổi: `seal{seal_kind, seals[{name, broken, busy}], broken, need, missing[uid]}`, `boss{boss,
+    hp, shield, phase, hits, need}`; loại nào cũng có `kind, solved, fails`;
+  - `seal{ok, by}` sau mỗi câu của một ấn; `hint{code, text_vi}`;
   - `cleared{i, flawless, next_in}`; `loot{loot{stage: roomN|chest, stones, spirit_stones, items[], equipment[], jade?,
     immortal_jade?, fast?, xp?}}` (chỉ phần của người nhận); `member_left{uid, name, reason}`; `revived{hp}`;
   - `end{result: won|failed|timeout|abandoned, time, flawless, puzzles, fast, fragments, exit_in}`; `left` khi đã ra ngoài.
 - `{t: "dead", ghost: 1}`: gục trong bí cảnh, thành hồn ma (không về làng).
 - Snapshot: `me` có thêm phần tử thứ 9 (cờ hồn ma); thực thể người chơi có `gh`; khe nứt là thực thể `{id, k: "r", x, y,
   realm, n, left}` trong vùng quan tâm như quái.
-- Hiệu ứng mới trong `fx`: `mark{by, x, y, i}`, `pz{e: solve|fail|step|strike|open|wave, x, y, ...}`, `gshield{id, n, need,
+- Hiệu ứng mới trong `fx`: `mark{by, x, y, i}`, `pz{e: solve|fail|ask|seal|open|wave, x, y, ...}`, `gshield{id, n, need,
   by}` (tiến độ khiên lớn của boss); `tele` có thêm `big: 1` cho Mặc Triều.
 - Lỗi mới (`error.code`): `need_party`, `not_leader`, `party_full`, `already_in_party`, `player_offline`, `no_invite`,
   `party_self`, `cannot_enter`, `realm_closed`, `daily_limit`, `too_far`, `rift_gone`, `no_realm`, `in_party`,

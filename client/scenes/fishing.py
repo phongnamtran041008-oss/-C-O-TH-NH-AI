@@ -12,9 +12,9 @@ import random
 import pygame
 
 from .. import strings_vi as T
-from ..engine import art2, fishing_sim as fs
+from ..engine import fishing_sim as fs
 from .base import Scene
-from .quiz import QuizScene
+from .math_practice import MathQuizScene
 
 REACH = 18          # px from the water's edge; the server allows a little more
 CAST_SECONDS = 0.6
@@ -172,23 +172,52 @@ def conditions_text(c: dict) -> str:
 
 
 # ------------------------------------------------------------------ the fishing session
-class FishQuizScene(QuizScene):
-    """A rare fish bit: the question card sits low, the lake stays visible."""
-    compact = True
+class FishQuizScene(MathQuizScene):
+    """A rare fish bit: the math card sits low, the lake stays visible. It names what a right
+    answer does along the top, closes itself a moment after the answer (a wrong one stays a
+    little longer, so the solution can be read) and Enter / Esc closes it sooner."""
     modal = False
+    draws_world = False
     toast_y = 70
+    in_combat = True            # no "Nghỉ" and no "Tiếp": the line is waiting
+    can_stop = False
+    solution_margin = 30
+    CLOSE_RIGHT = 1.6
+    CLOSE_WRONG = 3.5
+
+    def panel_rect(self):
+        return (24, 56, 432, 202)
 
     def __init__(self, game, question: dict, hint: str, on_result=None):
-        super().__init__(game, question, on_result=on_result, show_timer=True)
+        super().__init__(game, question, run=None, on_result=None)
         self.hint = hint
-        self.auto_close_after = 1.6
+        self.on_fish_result = on_result
+        self._done = False
+
+    def update(self, dt, top):
+        super().update(dt, top)
+        if self.result:
+            after = self.CLOSE_RIGHT if self.result.get("correct") else self.CLOSE_WRONG
+            if self.result_t >= after:
+                self.finish()
+
+    def finish(self, stop: bool = False):
+        if self._done:
+            return
+        self._done = True
+        self.close()
+        self.tell_fortune()
+        if self.on_fish_result and self.result:
+            self.on_fish_result(self.result)
 
     def draw_ui(self, ui):
         super().draw_ui(ui)
         x, y, w, h = self.panel_rect()
         if not self.result:
             ui.fill(x, y - 14, w, 12, (20, 18, 15, 190))
-            ui.text(self.hint, x + w / 2, y - 8, 7, "#E9C46A", anchor="center")
+            ui.text(self.hint, x + w / 2, y - 8, 7, "#E9C46A", anchor="center", max_w=w - 12)
+        elif self.result_t >= 0.5 and (ui.key(pygame.K_RETURN) or ui.key(pygame.K_ESCAPE)):
+            self.finish()
 
 
 class FishingScene(Scene):
@@ -400,7 +429,7 @@ class FishingScene(Scene):
 
 
 class CatchScene(Scene):
-    """The fish that was landed: name, characters, size, records, what went into the bag."""
+    """The fish that was landed: name, size, records, what went into the bag."""
 
     def __init__(self, game, r: dict):
         super().__init__(game)
@@ -422,7 +451,6 @@ class CatchScene(Scene):
         k = min(1.0, self.t / 0.4)
         ui.image(fish_icon(f["shape"], f["color"], f.get("color2")), x + 52, y + 46, zoom=2 + 1.5 * k, anchor="center")
         ui.text(f["name_vi"], x + 104, y + 18, 11, col)
-        ui.text(f"{f['hanzi']}  {f['pinyin']}" if not art2.on() else f["pinyin"], x + 104, y + 33, 10, "#BC4749", kind="han")
         note = T.FISH_FICTIONAL if f.get("fictional") else (T.FISH_MYTHICAL if f.get("mythical") else "")
         if note:
             ui.text(note, x + 104, y + 47, 6, "#8E877A")
@@ -665,10 +693,8 @@ class FishBookScene(Scene):
                 ui.border(cx, cy, cw - 2, chh, col)
                 if e["caught"]:
                     ui.image(fish_icon(e["shape"], e["color"], e.get("color2")), cx + 13, cy + 10, zoom=1, anchor="center")
-                    if not art2.on():       # the old game's Chinese name: not on the v2 (math game) screen
-                        ui.text(e["hanzi"], cx + 26, cy + 3, 8, "#BC4749", kind="han")
                     ui.text(e["name_vi"], cx + 3, cy + 20, 6, max_w=cw - 6)
-                    tip = (f"{e['name_vi']} · {'' if art2.on() else e['hanzi'] + ' '}({e['pinyin']}) · {T.RARITY_NAMES[e['rarity']]}\n"
+                    tip = (f"{e['name_vi']} · {T.RARITY_NAMES[e['rarity']]}\n"
                            f"{T.FISH_BOOK_ENTRY.format(n=e['count'], cm=e['best_size_cm'])}\n{e['hint_vi']}\n{e['desc_vi']}")
                     if e.get("fictional"):
                         tip += "\n" + T.FISH_FICTIONAL
@@ -693,7 +719,7 @@ class FishBookScene(Scene):
                     cx = x + 12 + (i % 2) * 214
                     cy = y + 26 + (i // 2) * 13
                     col = T.RARITY_COLORS.get(rec["rarity"], "#7D7468")
-                    ui.text(rec["name_vi"] if art2.on() else f"{rec['name_vi']} {rec['hanzi']}", cx, cy, 7, col, kind="han")
+                    ui.text(rec["name_vi"], cx, cy, 7, col)
                     best = rec["top"][0]
                     ui.text(f"{best['size_cm']} cm · {best['name']}", cx + 200, cy, 7,
                             "#BC4749" if best.get("me") else "#2B2B2B", anchor="topright")

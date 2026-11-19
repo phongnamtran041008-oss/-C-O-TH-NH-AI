@@ -2,8 +2,8 @@
 mình; boss cuối là câu 'Tìm chỗ sai' hoặc bài tổng hợp."
 
 The run itself is the bí cảnh of stage 9 (app/realtime/realm.py: matchmaking, instances,
-rooms, ghosts, the boss's group shield, loot). A realm of kind "math" in data/realms.json
-changes only *what is asked*, and this module is that part:
+rooms, ghosts, the boss's group shield, loot). Every realm of data/realms.json is a math
+bí cảnh (its `kind` only says how it is entered), and this module is what it asks:
 
   * every question - a Mặc Quái's, a Trận Nhãn seal's, the boss's - comes from
     math_ask.pick_own, i.e. the answering player's own floor and their own tier for the
@@ -141,9 +141,14 @@ def validate(realms_data: dict | None = None, realm_cfg: dict | None = None) -> 
         out.append("balance/realm.json: seal needs base, per_member, fail_pct, retry_seconds >= 0")
         seal = {"base": 1}
     for rid, r in raw.get("realms", {}).items():
-        if r.get("kind") != "math":
-            continue
         here = f"realm {rid}"
+        if r.get("kind") not in ("math", "scheduled", "rift"):
+            out.append(f"{here}: kind must be math, scheduled or rift")
+        if r.get("kind") == "rift" and c.get("rift", {}).get("realm") != rid:
+            out.append(f"{here}: a rift realm must be balance/realm.json rift.realm, or nothing opens it")
+        for key in ("hanzi", "pinyin"):
+            if key in r:
+                out.append(f"{here}: {key} belongs to the old word game")
         if "min_realm" in r:
             out.append(f"{here}: a math bí cảnh must not depend on the cultivation realms (min_realm)")
         for key in ("name_vi", "desc_vi"):
@@ -189,8 +194,8 @@ def validate(realms_data: dict | None = None, realm_cfg: dict | None = None) -> 
         for kind in r.get("room_monsters", {}):
             if kind not in mons:
                 out.append(f"{here}: unknown room monster {kind!r}")
-        if not puzzles.get("math_boss") and not puzzles.get("boss"):
-            out.append(f"{here}: puzzles.math_boss missing")
+        if not puzzles.get("boss"):
+            out.append(f"{here}: puzzles.boss missing")
         # rule 7: Linh Thạch, Tu Vi through the answers, and the M7 materials only
         chest = c.get("chest", {}).get(rid)
         loot = c.get("room_loot_by_realm", {}).get(rid)

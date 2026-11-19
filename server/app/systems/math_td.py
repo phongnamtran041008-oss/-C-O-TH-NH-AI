@@ -1,15 +1,13 @@
 """Thủ thành toán (M10, kế hoạch 4.3): tower defense where every tower stands for an area of
 mathematics, and a tower is placed or upgraded by answering a question of that area.
 
-It is the Ải Thủ Vườn (systems/td.py) with math instead of words, and it shares the parts
-that keep a run honest rather than copying them:
+The parts that keep a run honest live in systems/td.py and td_sim.py:
 
-  * the same simulation, td_sim.py, run by the client and replayed by the server, with
-    `params["place_needs_answer"]` set: a "place" event must carry a question about that
-    tower that the server recorded as answered right (an upgrade already worked that way);
-  * the same run table and log handling (td.save_events / td.verify, `math=True` keeps the
-    two editions apart), so a log is checked against the saved part, the server's own
-    answers, the claimed result and real time exactly as in the old edition.
+  * the simulation, td_sim.py, run by the client and replayed by the server: a "place" or
+    "up" event must carry a question about that tower that the server recorded as answered
+    right;
+  * the run table and log handling (td.save_events / td.verify), so a log is checked against
+    the saved part, the server's own answers, the claimed result and real time.
 
 The learning rules (contract M10):
 
@@ -23,8 +21,7 @@ The learning rules (contract M10):
     micro-skills of its area the player has open. Towers of subjects without questions are in the data,
     shown locked with the reason, and open by themselves the day the subject gets questions;
   * a wrong answer or a timeout places / upgrades nothing. The Linh Khí of the attempt is
-    spent, as an upgrade of the old edition is ("Linh Khí bỏ ra không hoàn lại") and as a
-    missed chiêu of M9 is; nothing else is lost (no Linh Mạch point, no tower). A wrong
+    spent ("Linh Khí bỏ ra không hoàn lại"), as a missed chiêu of M9 is; nothing else is lost (no Linh Mạch point, no tower). A wrong
     Tụ Khí costs nothing here (`tu_khi_wrong_loss` 0 in the data).
 
 A tower's strength never reads word mastery: it is the tower's `power` from the data times
@@ -37,10 +34,8 @@ from __future__ import annotations
 import datetime as dt
 import json
 import random
-import uuid
 from functools import lru_cache
 
-from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import clock
@@ -164,20 +159,35 @@ async def tower_views(db: AsyncSession, user_id: int) -> list[dict]:
 
 
 def sim_towers(views: list[dict]) -> dict[str, dict]:
-    """What td_sim needs of the towers this player may build (its `plants`)."""
-    return {v["id"]: {"role": v["role"], "hanzi": v["label"], "pinyin": v["name_vi"], "power": float(v["power"]),
-                      "rarity": "common"} for v in views if v["available"]}
+    """What td_sim needs of the towers this player may build (its `plants`), with the label
+    and name the board shows."""
+    return {v["id"]: {"role": v["role"], "label": v["label"], "name_vi": v["name_vi"], "power": float(v["power"])}
+            for v in views if v["available"]}
+
+
+def _client_params(params: dict) -> dict:
+    """The params of a run as the client gets them. A run saved before the tower cards got
+    their own key names (it lives at most anti_cheat.run_hours) is shown with the new ones;
+    the simulation reads neither."""
+    defs = params.get("plants") or {}
+    if all("label" in d for d in defs.values()):
+        return params
+    old = ("hanzi", "pinyin", "rarity")
+    return {**params, "plants": {k: {**{f: v for f, v in d.items() if f not in old},
+                                     "label": d.get("label", d.get("hanzi", k)),
+                                     "name_vi": d.get("name_vi", d.get("pinyin", k))}
+                                 for k, d in defs.items()}}
 
 
 def build_params(level: dict, defs: dict[str, dict], seed: int) -> dict:
     """Everything td_sim needs, sent to the client as is. Monsters and the two safety numbers
-    of the simulation are the Ải Thủ Vườn's (balance/td.json); the rest is math/td.json."""
+    of the simulation are in balance/td.json; the rest is math/td.json."""
     d, c = data(), td.cfg()
     return {"level": level["id"], "cols": d["grid"]["cols"], "rows": d["grid"]["rows"], "path": level["path"],
             "rocks": level.get("rocks", []), "core_hp": d["core_hp"], "qi": d["qi"], "upgrade": d["upgrade"],
-            "sell_refund": d["sell_refund"], "roles": d["roles"], "monsters": c["monsters"], "combos": [],
+            "sell_refund": d["sell_refund"], "roles": d["roles"], "monsters": c["monsters"],
             "boss_stun_mult": c["boss_stun_mult"], "wave_max_seconds": c["wave_max_seconds"], "plants": defs,
-            "seed": seed, "waves": level["waves"], "hp_mult": 1.0, "place_needs_answer": True}
+            "seed": seed, "waves": level["waves"], "hp_mult": 1.0}
 
 
 # ------------------------------------------------------------------ levels
@@ -234,7 +244,7 @@ async def view(db: AsyncSession, user: User) -> dict:
                     "best_wave": pr.best_wave if pr else 0,
                     "monsters": [td.monster_card(k) for k in td.monster_kinds(lv)],
                     "first_rewards": [reward_view(r) for r in lv["first_rewards"]]})
-    run = await td.current_run(db, user.id, math=True)
+    run = await td.current_run(db, user.id)
     active = None
     if run is not None:
         active = {"run_id": run.id, "level_id": run.level_id, "name_vi": levels()[run.level_id]["name_vi"],
@@ -246,7 +256,7 @@ async def view(db: AsyncSession, user: User) -> dict:
 
 async def run_view(db: AsyncSession, user: User, row: TdRun) -> dict:
     lv = levels()[row.level_id]
-    return {"run_id": row.id, "level_id": row.level_id, "params": row.params, "step_ms": td_sim.STEP_MS,
+    return {"run_id": row.id, "level_id": row.level_id, "params": _client_params(row.params), "step_ms": td_sim.STEP_MS,
             "max_speed": td.cfg()["anti_cheat"]["max_speed"], "name_vi": lv["name_vi"],
             "monsters": [td.monster_card(k) for k in td.monster_kinds(lv)],
             "towers": await tower_views(db, user.id)}
@@ -263,13 +273,12 @@ async def start(db: AsyncSession, user: User, level_id: str, rng: random.Random 
     defs = sim_towers(await tower_views(db, user.id))
     if not defs:
         raise TdError(400, "no_tower", "Chưa có tháp nào dựng được: mảng toán của con chưa có câu hỏi.")
-    await db.execute(delete(TdRun).where(TdRun.user_id == user.id, td._edition(True)))   # one math run at a time
-    now = clock.now()
-    row = TdRun(id=uuid.uuid4().hex, user_id=user.id, level_id=level_id,
-                params=build_params(levels()[level_id], defs, rng.randrange(1, 2 ** 31)),
-                questions={}, events=[], started_at=now, updated_at=now)
-    db.add(row)
-    await db.flush()
+    params = build_params(levels()[level_id], defs, rng.randrange(1, 2 ** 31))
+    from . import pets
+    bonus = await pets.skill_value(db, user.id, "td_qi")   # Khỉ (stage 8): more Linh Khí to start with
+    if bonus:
+        params["qi"] = {**params["qi"], "start": params["qi"]["start"] + int(bonus)}
+    row = await td.new_run(db, user, level_id, params)       # one run at a time
     return await run_view(db, user, row)
 
 
@@ -279,7 +288,7 @@ async def ask(db: AsyncSession, user: User, run_id: str, kind: str, tower_id: st
     'break' (between waves) / 'tu_khi' (the button during a wave): at the player's own floor.
     The answer comes back through /quiz/answer; the run remembers it for the replay."""
     rng = rng or random.Random()
-    run = await td._get_run(db, user.id, run_id, math=True)
+    run = await td.get_run(db, user.id, run_id)
     if len(run.questions or {}) >= td.cfg()["anti_cheat"]["max_questions"]:
         raise TdError(400, "too_many", "Đã hỏi quá nhiều câu trong lượt này.")
     if kind in ("place", "upgrade"):
@@ -325,30 +334,30 @@ quiz.register_xp_rule(CONTEXT, math_ask.xp_rule)
 
 
 async def save_events(db: AsyncSession, user: User, run_id: str, start_at: int, events: list) -> dict:
-    return await td.save_events(db, user, run_id, start_at, events, math=True)
+    return await td.save_events(db, user, run_id, start_at, events)
 
 
 async def resume(db: AsyncSession, user: User) -> dict:
-    """Continue the run left unfinished (as td.resume): a question asked after the last save
-    was never applied, so it is dropped."""
-    row = await td.current_run(db, user.id, math=True)
+    """Continue the run left unfinished: its parameters, the saved log and the answers the log
+    uses (a question asked after the last save was never applied, so it is dropped)."""
+    row = await td.current_run(db, user.id)
     if row is None:
         raise TdError(404, "no_run", "Không có lượt thủ thành nào đang dở.")
-    used = {ev.get("q") for ev in row.events or [] if isinstance(ev, dict)}
-    row.questions = {sid: q for sid, q in (row.questions or {}).items() if sid in used}
-    return {**(await run_view(db, user, row)), "events": row.events, "answers": td._answers(row)}
+    td.drop_unlogged_questions(row)
+    return {**(await run_view(db, user, row)), "events": row.events, "answers": td.answers(row)}
 
 
 async def cancel(db: AsyncSession, user: User) -> dict:
-    return await td.cancel(db, user, math=True)
+    return await td.cancel(db, user)
 
 
 async def finish(db: AsyncSession, user: User, run_id: str, events: list, claim: dict) -> dict:
     """The server replays the log (td.verify) and only then pays: first-time stars give the
     level's `first_rewards`; a level won again pays `replay_stones` a few times a day. A lost
-    run pays nothing here (its right answers already paid Tu Vi)."""
-    sim, got, level_id = await td.verify(db, user, run_id, events, claim, math=True)
-    await td._record_monsters(db, user.id, sim)
+    run pays nothing here (its right answers already paid Tu Vi). A win counts for the
+    "td_win" quests."""
+    sim, got, level_id = await td.verify(db, user, run_id, events, claim)
+    await td.record_monsters(db, user.id, sim)
     lv = levels()[level_id]
     row = await db.get(TdProgress, (user.id, level_id))
     if row is None:
@@ -362,15 +371,18 @@ async def finish(db: AsyncSession, user: User, run_id: str, events: list, claim:
     new_stars = []
     if stars > prev:
         for s in range(prev + 1, stars + 1):
-            rewards = td._merge(rewards, await td._grant(db, user, lv["first_rewards"][s - 1], level_id))
+            rewards = td.merge(rewards, await td.grant(db, user, lv["first_rewards"][s - 1], level_id))
             new_stars.append(s)
         row.stars = stars
         if row.cleared_at is None:
             row.cleared_at = clock.now()
     elif won and daily_left(user) > 0:
         _use_daily(user)
-        rewards = await td._grant(db, user, {"spirit_stones": data()["rewards"]["replay_stones"]}, level_id)
+        rewards = await td.grant(db, user, {"spirit_stones": data()["rewards"]["replay_stones"]}, level_id)
         rewards["replay"] = True
+    if won:
+        from . import quests
+        await quests.on_event(db, user.id, "td_win", "*")
     await db.flush()
     ids = [x["id"] for x in data()["levels"]]
     i = ids.index(level_id)

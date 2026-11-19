@@ -53,7 +53,7 @@
      "id": "nm3_thanh_dieu",
      "title_vi": "Kẻ trộm thanh điệu",
      "giver": "truc_lao",
-     "desc_vi": "Thanh Điệu Yêu hay đổi dấu của chữ. Hạ 2 con.",
+     "desc_vi": "Lân Hỏa Yêu chập chờn trong rừng, hay dẫn người lạc lối. Hạ 2 con.",
      "objective": {
       "type": "kill",
       "target": "tone_wisp",

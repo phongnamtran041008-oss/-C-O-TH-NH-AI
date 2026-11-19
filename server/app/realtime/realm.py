@@ -1,14 +1,18 @@
-"""Bí cảnh, the live part (spec 14): matchmaking, Khe Nứt Mực rifts, and one instance per run.
+"""Bí cảnh, the live part (spec 14, M10): matchmaking, Khe Nứt Mực rifts, and one instance per run.
 
 An instance is a private copy of the `bi_canh` map (a ChannelZone of its own, so movement,
-Vấn Đạo combat, guard bees and snapshots work exactly as in the world). A run is 3-5 puzzle
-rooms in a random order and then the boss's den; the party is moved from room to room when
-one is cleared (its puzzle solved and its Mặc Quái beaten). Puzzles are decided here, on
-the server, from what the players do: where they stand, which pillar they strike. Each
-player only receives the part of a puzzle meant for them (their piece, their words).
+Vấn Đạo combat, guard bees and snapshots work exactly as in the world). A run is the Trận Nhãn
+rooms its realm lists in data/realms.json (`math.rooms`) and then the boss's den; the party is
+moved from room to room when one is cleared (its seals broken and its Mặc Quái beaten). Every
+question of a run - a monster's, a seal's, the boss's - is a math question at the answering
+player's own floor (app/systems/math_realm.py).
 
-Like the rest of the tick, nothing here waits for the database: entering a run, paying loot
-and recording what was learned run as background tasks (app/systems/secret_realm.py).
+Every realm is a math bí cảnh; its `kind` only says how it is entered: "math" at the Cổng Bí
+Cảnh whenever the gate is there, "scheduled" at the gate during the opening hours of
+balance/realm.json, "rift" through a Khe Nứt Mực that opens now and then in the wild.
+
+Like the rest of the tick, nothing here waits for the database: entering a run and paying loot
+run as background tasks (app/systems/secret_realm.py).
 """
 from __future__ import annotations
 
@@ -17,14 +21,10 @@ import itertools
 import logging
 import math
 import random
-import re
-from collections import deque
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from .. import balance, clock
-from ..config import settings
-from ..learning.wordbank import Word, bank
 from . import ai, combat, maps, protocol
 from .maps import Area
 from .zone import ChannelZone, Player
@@ -35,8 +35,7 @@ if TYPE_CHECKING:
 log = logging.getLogger("khu_vuon.realm")
 MAP = "bi_canh"
 VILLAGE = "truc_lam_thon"
-PUZZLE_KINDS = ("compose", "sentence", "tone", "mirror", "maze")
-TONE_RE = re.compile(r"^([a-z:üv]+)([1-4])$")
+GATE_KINDS = ("math", "scheduled")      # entered at the Cổng Bí Cảnh (a "rift" realm only through a rift)
 
 
 def cfg() -> dict:
@@ -80,37 +79,12 @@ def window_status(now: dt.datetime) -> dict:
     return {"open": False, "opens_in": int((nxt - local).total_seconds()), "closes_in": None}
 
 
-# ------------------------------------------------------------------ words for puzzles
-def tone_of(w: Word) -> int | None:
-    if not w.single_char:
-        return None
-    m = TONE_RE.match(w.pinyin_numeric.strip().lower())
-    return int(m.group(2)) if m else None
-
-
-def toneless(w: Word) -> str:
-    """'ma1' -> 'ma', 'lu:4' -> 'lü': what the stone statue reads out (spec 14.2)."""
-    return re.sub(r"[0-9]", "", w.pinyin_numeric.strip().lower()).replace("u:", "ü").replace("v", "ü")
-
-
-def composable(w: Word) -> tuple[str, list[str]] | None:
-    """A character made of two parts side by side (⿰) or stacked (⿱), e.g. 好 = 女 + 子."""
-    if not w.single_char or not w.chars:
-        return None
-    c = w.chars[0]
-    dec, comps = c.get("decomposition") or "", c.get("components") or []
-    if len(dec) == 3 and dec[0] in "⿰⿱" and len(comps) == 2 and all(len(x) == 1 and x != "？" for x in comps):
-        return dec[0], list(comps)
-    return None
-
-
 @dataclass
 class Member:
     uid: int
     name: str
-    learned: dict[str, int]          # word id -> mastery (introduced words only)
     state: str = "in"                # in | left
-    floor: int | None = None         # M10, a math bí cảnh: the floor this player's questions come from
+    floor: int | None = None         # the floor this player's questions come from
 
 
 @dataclass
@@ -133,7 +107,7 @@ class Rift:
                 "n": r["name_vi"], "left": int(max(0.0, self.expires - self.now))}
 
 
-# ------------------------------------------------------------------ puzzles
+# ------------------------------------------------------------------ rooms
 class Puzzle:
     kind = ""
 
@@ -146,13 +120,7 @@ class Puzzle:
     def public(self, now: float) -> dict:
         return {"kind": self.kind, "solved": self.solved, "fails": self.mistakes}
 
-    def private(self, uid: int) -> dict | None:
-        return None
-
     def tick(self, dt_: float, now: float) -> None:
-        pass
-
-    def act(self, p: Player, obj: Area, now: float) -> None:
         pass
 
     def solve(self, now: float) -> None:
@@ -165,437 +133,6 @@ class Puzzle:
         self.mistakes += 1
         cx, cy = self.inst.room_center()
         self.inst.event(k="pz", e="fail", x=cx if x is None else x, y=cy if y is None else y)
-
-
-class ComposePuzzle(Puzzle):
-    """Cửa Ghép Chữ: the door shows a meaning, the right holders stand on the right stones."""
-    kind = "compose"
-
-    def __init__(self, inst: "RealmInstance", now: float):
-        super().__init__(inst)
-        self.word = self.rng.choice(inst.compose_candidates())
-        self.layout, comps = composable(self.word)
-        self.slots = ["left", "right"] if self.layout == "⿰" else ["top", "bottom"]
-        self.need = dict(zip(self.slots, comps))
-        parts = {c for w in bank().words.values() if (x := composable(w)) for c in x[1]}
-        self.decoys = sorted(parts - set(comps)) or ["口"]
-        self.pieces: dict[int, str] = {}
-        self.dealt: set[int] = set()
-        self.required: list[str] = list(self.slots)
-        self.window_end: float | None = None
-        self.cool_until = 0.0
-        self.deal()
-
-    def deal(self) -> None:
-        uids = [p.user_id for p in self.inst.active()]
-        self.rng.shuffle(uids)
-        self.required = list(self.slots) if len(uids) >= 2 else self.slots[:1]   # alone: one stone is enough
-        self.pieces = {}
-        for i, uid in enumerate(uids):
-            self.pieces[uid] = self.need[self.required[i]] if i < len(self.required) else self.rng.choice(self.decoys)
-        self.dealt = set(uids)
-        self.inst.push_private(uids)
-
-    def public(self, now: float) -> dict:
-        return {**super().public(now), "meaning": self.word.meaning_vi, "layout": self.layout,
-                "slots": self.required, "answer": self.word.hanzi if self.solved else None,
-                "window": round(self.window_end - now, 1) if self.window_end else None}
-
-    def private(self, uid: int) -> dict | None:
-        return {"piece": self.pieces.get(uid)}
-
-    def _fail(self, now: float, hurt: list[Player], pct: float) -> None:
-        for p in hurt:
-            self.inst.hurt(p, pct, now)
-            self.inst.record(p.user_id, self.word.id, False)
-        self.mistake(now)
-        self.window_end = None
-        self.cool_until = now + 2.5
-        self.deal()
-        self.inst.push_puzzle(now)
-
-    def tick(self, dt_: float, now: float) -> None:
-        if self.solved or now < self.cool_until:
-            return
-        act = {p.user_id: p for p in self.inst.active()}
-        if not self.dealt <= set(act):         # a holder fell or left: the pieces are dealt again
-            self.deal()
-            self.window_end = None
-            self.inst.push_puzzle(now)
-            return
-        stones = {o.props.get("slot"): o for o in self.inst.objs("pedestal")}
-        occ: dict[str, Player] = {}
-        anyone = False
-        for slot, ped in stones.items():
-            on = [p for p in act.values() if self.inst.on(p, ped)]
-            anyone = anyone or bool(on)
-            if on and slot in self.required:
-                occ[slot] = on[0]
-        if not anyone:
-            if self.window_end is not None:    # everyone stepped off: no harm done, start over
-                self.window_end = None
-                self.inst.push_puzzle(now)
-            return
-        if self.window_end is None:
-            self.window_end = now + cfg()["compose"]["window_seconds"]
-            self.inst.push_puzzle(now)
-        if len(occ) == len(self.required):
-            wrong = [occ[s] for s in self.required if self.pieces.get(occ[s].user_id) != self.need[s]]
-            if not wrong:
-                for p in occ.values():
-                    self.inst.record(p.user_id, self.word.id, True)
-                self.window_end = None
-                self.solve(now)
-                return
-            self._fail(now, wrong, cfg()["puzzle_fail_pct"])
-            return
-        if now >= self.window_end:              # too slow: the stones throw everyone off
-            self._fail(now, list(occ.values()), cfg()["puzzle_fail_pct"] / 2)
-
-
-class SentencePuzzle(Puzzle):
-    """Câu Văn Đứt Đoạn: everyone holds a few words of a sentence; in turn, each steps on the
-    numbered stone of the next word's place."""
-    kind = "sentence"
-
-    def __init__(self, inst: "RealmInstance", now: float):
-        super().__init__(inst)
-        self.sentence = self.rng.choice(inst.sentence_candidates())
-        self.tokens = [t for t in self.sentence.tokens if t["word_id"]]
-        self.n = len(self.tokens)
-        self.k = 0
-        self.owner: list[int] = [0] * self.n
-        self.on_tile: dict[int, int | None] = {}
-        self.assign(range(self.n))
-
-    def assign(self, indexes) -> None:
-        act = [p.user_id for p in self.inst.active()] or [m.uid for m in self.inst.members.values()
-                                                           if m.state == "in"]
-        counts = {u: sum(1 for i, o in enumerate(self.owner) if o == u and i >= self.k) for u in act}
-        order = list(indexes)
-        self.rng.shuffle(order)
-        for idx in order:
-            wid = self.tokens[idx]["word_id"]
-            knows = [u for u in act if wid in self.inst.members[u].learned]
-            u = min(knows or act, key=lambda u: (counts[u], self.rng.random()))
-            self.owner[idx] = u
-            counts[u] += 1
-        self.inst.push_private(act)
-
-    def public(self, now: float) -> dict:
-        return {**super().public(now), "vi": self.sentence.vi, "n": self.n, "k": self.k,
-                "done": [{"t": t["t"], "py": t["pinyin"]} for t in self.tokens[:self.k]]}
-
-    def private(self, uid: int) -> dict | None:
-        mine = [{"t": t["t"], "py": t["pinyin"]} for i, t in enumerate(self.tokens) if self.owner[i] == uid and i >= self.k]
-        self.rng.shuffle(mine)   # the player learns the words, not their places
-        return {"tokens": mine}
-
-    def tick(self, dt_: float, now: float) -> None:
-        if self.solved:
-            return
-        act = {p.user_id: p for p in self.inst.active()}
-        gone = [i for i in range(self.k, self.n) if self.owner[i] not in act]
-        if gone and act:
-            self.assign(gone)
-        tiles = {int(o.props.get("n", 0)): o for o in self.inst.objs("tile")}
-        for uid, p in act.items():
-            here = next((n for n, o in tiles.items() if n <= self.n and self.inst.on(p, o)), None)
-            if here != self.on_tile.get(uid):
-                self.on_tile[uid] = here
-                if here:
-                    self.step(p, here, now)
-                    if self.solved:
-                        return
-
-    def step(self, p: Player, n: int, now: float) -> None:
-        if n <= self.k:
-            return
-        if n > self.k + 1:
-            if self.owner[n - 1] == p.user_id and p.session is not None:
-                p.session.send({"t": "realm", "event": "hint", "code": "not_yet",
-                                "text_vi": f"Đúng chỗ rồi, nhưng còn chờ ô {self.k + 1} trước đã."})
-            return
-        tok = self.tokens[self.k]
-        if self.owner[self.k] == p.user_id:
-            self.inst.record(p.user_id, tok["word_id"], True)
-            self.k += 1
-            self.inst.event(k="pz", e="step", x=p.x, y=p.y, t=tok["t"])
-            if self.k >= self.n:
-                self.solve(now)
-            else:
-                self.inst.push_puzzle(now)
-                self.inst.push_private([p.user_id])
-            return
-        self.inst.hurt(p, cfg()["puzzle_fail_pct"], now)
-        self.mistake(now, p.x, p.y)
-        self.inst.push_puzzle(now)
-
-
-class TonePuzzle(Puzzle):
-    """Trụ Thanh Điệu: the statue reads a syllable; whoever stands nearest the pillar of its
-    tone must strike it within 5 seconds. Eight right in a row open the door."""
-    kind = "tone"
-
-    def __init__(self, inst: "RealmInstance", now: float):
-        super().__init__(inst)
-        c = cfg()["tone"]
-        self.need = c["streak"]
-        self.streak = 0
-        self.round: dict | None = None
-        self.next_at = now + 3.0
-        self.recent: deque = deque(maxlen=4)
-
-    def pillars(self) -> dict[int, Area]:
-        return {int(o.props.get("tone", 0)): o for o in self.inst.objs("pillar")}
-
-    def _words(self, wids, tone: int) -> list[Word]:
-        b = bank()
-        out = [b.words[w] for w in wids if w in b.words and b.words[w].tier <= self.inst.question_tier]
-        return [w for w in out if tone_of(w) == tone]
-
-    def new_round(self, now: float) -> None:
-        act = self.inst.active()
-        if not act:
-            return
-        union = self.inst.union_learned()
-        tones = [t for t in (1, 2, 3, 4) if self._words(union, t)] or [1, 2, 3, 4]
-        tone = self.rng.choice(tones)
-        ax, ay = anchor(self.pillars()[tone])
-        resp = min(act, key=lambda p: dist(p.x, p.y, ax, ay))
-        pool = (self._words(self.inst.members[resp.user_id].learned, tone) or self._words(union, tone)
-                or [w for w in bank().words.values() if not w.hidden and w.tier <= self.inst.question_tier
-                    and tone_of(w) == tone])
-        fresh = [w for w in pool if w.id not in self.recent] or pool
-        w = self.rng.choice(fresh)
-        self.recent.append(w.id)
-        c = cfg()["tone"]
-        self.round = {"tone": tone, "word": w, "resp": resp.user_id, "asked": now,
-                      "deadline": now + c["answer_seconds"] + c["grace"]}
-        self.inst.push_puzzle(now)
-
-    def public(self, now: float) -> dict:
-        out = {**super().public(now), "streak": self.streak, "need": self.need, "round": None}
-        r = self.round
-        if r is not None:
-            out["round"] = {"hanzi": r["word"].hanzi, "syllable": toneless(r["word"]),
-                            "left": round(max(0.0, r["asked"] + cfg()["tone"]["answer_seconds"] - now), 1)}
-        return out
-
-    def _end_round(self, now: float, ok: bool, who: Player | None) -> None:
-        r = self.round
-        self.round = None
-        c = cfg()["tone"]
-        if who is not None:
-            self.inst.record(who.user_id, r["word"].id, ok)
-        if ok:
-            self.streak += 1
-            self.next_at = now + c["pause_seconds"]
-            if self.streak >= self.need:
-                self.solve(now)
-                return
-        else:
-            self.streak = 0
-            self.mistake(now, who.x if who else None, who.y if who else None)
-            if who is not None:
-                self.inst.hurt(who, cfg()["puzzle_fail_pct"], now)
-            self.next_at = now + c["pause_seconds"] * 1.5
-        self.inst.send_all({"t": "realm", "event": "tone", "ok": ok, "tone": r["tone"],
-                            "pinyin": r["word"].pinyin, "hanzi": r["word"].hanzi, "by": who.name if who else None})
-        self.inst.push_puzzle(now)
-
-    def tick(self, dt_: float, now: float) -> None:
-        if self.solved:
-            return
-        if self.round is None:
-            if now >= self.next_at:
-                self.new_round(now)
-            return
-        if now >= self.round["deadline"]:        # nobody struck in time: the one nearest pays
-            resp = self.inst.players.get(self.round["resp"])
-            self._end_round(now, False, resp if resp is not None and not resp.dead else None)
-
-    def act(self, p: Player, obj: Area, now: float) -> None:
-        if self.solved or self.round is None or obj.props.get("kind") != "pillar":
-            return
-        ax, ay = anchor(obj)
-        if dist(p.x, p.y, ax, ay) > cfg()["tone"]["reach"]:
-            if p.session is not None:
-                p.session.send({"t": "realm", "event": "hint", "code": "too_far", "text_vi": "Đứng sát trụ hơn mới đánh được."})
-            return
-        tone = int(obj.props.get("tone", 0))
-        self.inst.event(k="pz", e="strike", x=ax, y=ay - 20, tone=tone, by=p.eid)
-        self._end_round(now, tone == self.round["tone"], p)
-
-
-class MirrorPuzzle(Puzzle):
-    """Gương Nghĩa: each player sees one word of their own, the mirror shows a meaning; the
-    one whose word means it walks into the mirror. The wrong one costs everyone health."""
-    kind = "mirror"
-
-    def __init__(self, inst: "RealmInstance", now: float):
-        super().__init__(inst)
-        self.need = cfg()["mirror"]["rounds"]
-        self.correct = 0
-        self.assigned: dict[int, Word] = {}
-        self.target: Word | None = None
-        self.deadline = 0.0
-        self.next_at = now + 2.0
-        self.inside: set[int] = set()
-        self.used: set[str] = set()
-
-    def mirror(self) -> Area:
-        return self.inst.objs("mirror")[0]
-
-    def new_round(self, now: float) -> None:
-        act = self.inst.active()
-        if not act:
-            return
-        b = bank()
-        tier = self.inst.question_tier
-        union = [w for w in (b.words.get(x) for x in self.inst.union_learned()) if w and not w.hidden]
-        everyone = [w for w in b.words.values() if not w.hidden and w.tier <= tier]
-        self.assigned, taken = {}, set()
-        order = list(act)
-        self.rng.shuffle(order)
-        for p in order:
-            own = [b.words[x] for x in self.inst.members[p.user_id].learned if x in b.words]
-            for pool in (own, union, everyone):
-                ok = [w for w in pool if w.tier <= tier and not w.hidden and not (w.senses & taken)
-                      and w.id not in self.used]
-                ok = ok or [w for w in pool if w.tier <= tier and not w.hidden and not (w.senses & taken)]
-                if ok:
-                    w = self.rng.choice(ok)
-                    self.assigned[p.user_id] = w
-                    taken |= w.senses or {w.id}
-                    break
-        uid = self.rng.choice(list(self.assigned))
-        self.target = self.assigned[uid]
-        self.used.add(self.target.id)
-        self.deadline = now + cfg()["mirror"]["round_seconds"]
-        m = self.mirror()
-        self.inside = {p.user_id for p in act if self.inst.on(p, m)}   # those already in must step out first
-        self.inst.push_private(list(self.assigned))
-        self.inst.push_puzzle(now)
-
-    def public(self, now: float) -> dict:
-        return {**super().public(now), "correct": self.correct, "need": self.need,
-                "meaning": self.target.meaning_vi if self.target else None,
-                "left": round(max(0.0, self.deadline - now), 1) if self.target else None}
-
-    def private(self, uid: int) -> dict | None:
-        w = self.assigned.get(uid)
-        return {"hanzi": w.hanzi, "pinyin": w.pinyin} if w else {"hanzi": None}
-
-    def tick(self, dt_: float, now: float) -> None:
-        if self.solved:
-            return
-        if self.target is None:
-            if now >= self.next_at:
-                self.new_round(now)
-            return
-        m = self.mirror()
-        act = self.inst.active()
-        for p in act:
-            inside = self.inst.on(p, m, pad=0)
-            if inside and p.user_id not in self.inside:
-                self.inside.add(p.user_id)
-                self.judge(p, now)
-                return
-            if not inside:
-                self.inside.discard(p.user_id)
-        if now >= self.deadline:     # nobody dared: the mirror clouds over and everyone feels it
-            for p in act:
-                self.inst.hurt(p, cfg()["team_fail_pct"] / 2, now)
-            self.mistake(now)
-            self.target = None
-            self.next_at = now + 1.5
-            self.inst.push_puzzle(now)
-
-    def judge(self, p: Player, now: float) -> None:
-        mine, target = self.assigned.get(p.user_id), self.target
-        ok = mine is not None and (mine.id == target.id or bool(mine.senses & target.senses))
-        self.inst.send_all({"t": "realm", "event": "mirror", "ok": ok, "by": p.name, "hanzi": target.hanzi,
-                            "pinyin": target.pinyin, "meaning": target.meaning_vi})
-        if ok:
-            self.inst.record(p.user_id, target.id, True)
-            self.correct += 1
-            self.target = None
-            if self.correct >= self.need:
-                self.solve(now)
-                return
-            self.next_at = now + 1.5
-        else:
-            if mine is not None:
-                self.inst.record(p.user_id, mine.id, False)
-            for q in self.inst.active():
-                self.inst.hurt(q, cfg()["team_fail_pct"], now)
-            self.mistake(now, p.x, p.y)
-            self.target = None
-            self.next_at = now + 2.0
-        self.inst.push_puzzle(now)
-
-
-class MazePuzzle(Puzzle):
-    """Mê Cung Mực: dark corridors. Players who learned 明 (or 光) shed light; whoever stands
-    in the dark loses a little health every second. Everyone at the exit opens the door."""
-    kind = "maze"
-
-    def __init__(self, inst: "RealmInstance", now: float):
-        super().__init__(inst)
-        c = cfg()["maze"]
-        b = bank()
-        self.light_ids = {b.by_hanzi[h].id for h in c["light_words"] if h in b.by_hanzi}
-        self.carriers: list[int] = []
-        self.lantern = False
-        self.radius = c["light_radius"]
-        self.dark: dict[int, float] = {}
-        self.in_exit = -1
-        self.pick_carriers()
-
-    def pick_carriers(self) -> None:
-        c = cfg()["maze"]
-        act = self.inst.active()
-        self.carriers = [p.user_id for p in act if self.light_ids & set(self.inst.members[p.user_id].learned)]
-        self.lantern = not self.carriers
-        if self.lantern and act:   # nobody knows 明 yet: the most learned one gets a weak lantern
-            best = max(act, key=lambda p: (len(self.inst.members[p.user_id].learned), -p.user_id))
-            self.carriers = [best.user_id]
-        self.radius = c["lantern_radius"] if self.lantern else c["light_radius"]
-
-    def public(self, now: float) -> dict:
-        return {**super().public(now), "carriers": self.carriers, "radius": self.radius, "lantern": self.lantern,
-                "self_radius": cfg()["maze"]["self_radius"], "in_exit": max(0, self.in_exit),
-                "need": len(self.inst.active())}
-
-    def tick(self, dt_: float, now: float) -> None:
-        if self.solved:
-            return
-        act = self.inst.active()
-        if not act:
-            return
-        lights = [p for p in act if p.user_id in self.carriers]
-        if not lights:
-            self.pick_carriers()
-            self.inst.push_puzzle(now)
-            return
-        pct = cfg()["maze"]["dark_dps_pct"]
-        for p in act:
-            if any(dist(p.x, p.y, q.x, q.y) <= self.radius for q in lights):
-                self.dark.pop(p.user_id, None)
-                continue
-            acc = self.dark.get(p.user_id, 0.0) + dt_
-            if acc >= 1.0:   # the ink bites once a second (one hit event, not twenty)
-                acc -= 1.0
-                self.inst.hurt(p, pct, now, kind="hit")
-            self.dark[p.user_id] = acc
-        door = self.inst.objs("maze_exit")[0]
-        n = sum(1 for p in act if self.inst.on(p, door, pad=6))
-        if n != self.in_exit:
-            self.in_exit = n
-            self.inst.push_puzzle(now)
-        if n >= len(act):
-            self.solve(now)
 
 
 class BossPuzzle(Puzzle):
@@ -617,10 +154,10 @@ class BossPuzzle(Puzzle):
 
 
 class SealPuzzle(Puzzle):
-    """Trận Nhãn (M10, the math bí cảnh): seals lie on the floor of the room. Whoever stands
-    on an unbroken one is asked one question of *their own* floor (math_ask.pick_own, never
-    the room's or a monster's); a right answer breaks the seal, a wrong one (or running out
-    of time) hurts the one who answered and the seal holds.
+    """Trận Nhãn (M10): seals lie on the floor of the room. Whoever stands on an unbroken one
+    is asked one question of *their own* floor (math_ask.pick_own, never the room's or a
+    monster's); a right answer breaks the seal, a wrong one (or running out of time) hurts the
+    one who answered and the seal holds.
 
     The room opens when the party has broken `need` seals - `base`, plus `per_member` for
     every other member who can be asked, never more than the room has - and at least
@@ -785,8 +322,7 @@ class SealPuzzle(Puzzle):
         super().solve(now)
 
 
-PUZZLES = {"compose": ComposePuzzle, "sentence": SentencePuzzle, "tone": TonePuzzle, "mirror": MirrorPuzzle,
-           "maze": MazePuzzle, "seal": SealPuzzle}
+PUZZLES = {"seal": SealPuzzle}      # the rooms before the boss a realm may list in `math.rooms`
 
 
 # ------------------------------------------------------------------ one run
@@ -800,13 +336,11 @@ class RealmInstance(ChannelZone):
         self.world = world
         self.run_id, self.realm_id = run_id, realm_id
         self.rdef = realm_defs()[realm_id]
-        self.question_tier = int(self.rdef["tier"])
         self.members = members
-        self._union: set[str] | None = None
-        # M10: a math bí cảnh asks every question at the answering player's own floor, whatever
-        # asks it (combat.py calls `question_source` instead of the monster's own question)
-        self.math = self.rdef.get("kind") == "math"
-        self.question_source = self.math_question if self.math else None
+        # every question of the run is asked at the answering player's own floor, whatever asks
+        # it (combat.py calls `question_source` instead of the monster's own question)
+        self.math = True
+        self.question_source = self.math_question
         self.no_question: set[int] = set()     # members the bank has no question for right now
         self.rooms = list(rooms) if rooms else self._pick_rooms()
         self.room_specs = self._room_specs()
@@ -825,46 +359,18 @@ class RealmInstance(ChannelZone):
         self.aoes: list[tuple] = []
         self._mid = itertools.count()
 
-    # ------------------------------------------------------------ words
-    def union_learned(self) -> set[str]:
-        if self._union is None:
-            b = bank()
-            self._union = {w for m in self.members.values() for w in m.learned
-                           if w in b.words and b.words[w].tier <= self.question_tier}
-        return self._union
-
-    def compose_candidates(self) -> list[Word]:
-        b = bank()
-        return [b.words[w] for w in sorted(self.union_learned()) if composable(b.words[w])]
-
-    def sentence_candidates(self) -> list:
-        c = cfg()["sentence"]
-        known = self.union_learned()
-        tiles = len([o for o in self.map.realm_objs if o.props.get("kind") == "tile"])
-        out = []
-        for s in bank().sentences.values():
-            words = [t["word_id"] for t in s.tokens if t["word_id"]]
-            if (s.tier <= self.question_tier and (s.reviewed or settings.allow_unreviewed)
-                    and c["min_tokens"] <= len(words) <= min(c["max_tokens"], tiles) and set(words) <= known):
-                out.append(s)
-        return out
-
     def _pick_rooms(self) -> list[str]:
-        if self.math:   # M10: the math bí cảnh plays the rooms its data lists, in that order
-            return [r["kind"] for r in self.rdef["math"]["rooms"]] + ["boss"]
-        kinds = [k for k in PUZZLE_KINDS if (k != "compose" or self.compose_candidates())
-                 and (k != "sentence" or self.sentence_candidates())]
-        self.rng.shuffle(kinds)
-        return kinds[:max(1, min(int(self.rdef["puzzles"]), len(kinds)))] + ["boss"]
+        """The rooms the realm's data lists, in that order, then the boss."""
+        return [r["kind"] for r in self.rdef["math"]["rooms"]] + ["boss"]
 
     def _room_specs(self) -> list[dict]:
-        """Where each room is played. A word puzzle has a room of the bi_canh map named after it;
-        a math one (M10) borrows a room of the map and its stones, as realms.json says
-        ({"kind": "seal", "place": "compose", "seal": "pedestal"}), so no new map is needed."""
+        """Where each room is played. A room borrows a room of the bi_canh map and its stones, as
+        realms.json says ({"kind": "seal", "place": "compose", "seal": "pedestal"}); the boss has
+        its own den."""
         spec = [dict(r) for r in (self.rdef.get("math") or {}).get("rooms", [])]
         out, used = [], set()
         for k in self.rooms:
-            if k in self.map.rooms:
+            if k == "boss":
                 out.append({"kind": k, "place": k})
                 continue
             mine = [j for j, r in enumerate(spec) if r["kind"] == k]
@@ -882,16 +388,11 @@ class RealmInstance(ChannelZone):
 
     @property
     def place(self) -> str | None:
-        """The room of the map the current room is played in (its kind, for the word puzzles)."""
+        """The room of the map the current room is played in."""
         return self.room_specs[self.room_i]["place"] if 0 <= self.room_i < len(self.rooms) else None
 
     def room_spec(self) -> dict:
         return self.room_specs[self.room_i] if 0 <= self.room_i < len(self.rooms) else {}
-
-    def info_key(self, kind: str) -> str:
-        """realms.json `puzzles` entry of a room: a math bí cảnh may word it its own way ("math_boss")."""
-        from ..systems import secret_realm
-        return f"math_{kind}" if self.math and secret_realm.puzzle_info(f"math_{kind}") else kind
 
     def objs(self, kind: str) -> list[Area]:
         return [o for o in self.map.realm_objs if o.props.get("room") == self.place and o.props.get("kind") == kind]
@@ -914,11 +415,11 @@ class RealmInstance(ChannelZone):
 
     def group_need(self, m: ai.Monster) -> int:
         """Spec 14.2: the boss's big shield needs as many right answers (from different players)
-        as there are members still alive. M10: a member the bank has no question for cannot
-        answer, so the shield does not wait for them."""
+        as there are members still alive. A member the bank has no question for cannot answer,
+        so the shield does not wait for them."""
         return max(1, len([p for p in self.active() if p.user_id not in self.no_question]))
 
-    # ------------------------------------------------------------ M10: math questions
+    # ------------------------------------------------------------ questions
     async def math_question(self, db, user, p: Player, m: "ai.Monster | None", rng: random.Random):
         """combat.py's question for a monster of this run: at this player's own floor; the
         boss asks their "bài tổng hợp" (the hardest question they may be asked)."""
@@ -956,31 +457,21 @@ class RealmInstance(ChannelZone):
     def run_msg(self, now: float) -> dict:
         return {"t": "realm", "event": "start", "run": {
             "id": self.run_id, "realm": self.realm_id, "name_vi": self.rdef["name_vi"],
-            "hanzi": self.rdef.get("hanzi", ""), "left": int(max(0, self.deadline - now)), "math": self.math,
-            "rooms": [{"kind": k, "name_vi": puzzle_info(self.info_key(k)).get("name_vi", k)} for k in self.rooms],
+            "left": int(max(0, self.deadline - now)), "math": True,
+            "rooms": [{"kind": k, "name_vi": puzzle_info(k).get("name_vi", k)} for k in self.rooms],
             "members": [{"uid": m.uid, "name": m.name, "in": m.state == "in", "floor": m.floor}
                         for m in self.members.values()]}}
 
     def room_msg(self, uid: int, now: float) -> dict:
-        info = puzzle_info(self.info_key(self.kind))
+        info = puzzle_info(self.kind)
         return {"t": "realm", "event": "room", "i": self.room_i, "n": len(self.rooms), "kind": self.kind,
-                "place": self.place, "math": self.math,
-                "name_vi": info.get("name_vi", self.kind), "hanzi": info.get("hanzi", ""),
+                "place": self.place, "math": True, "name_vi": info.get("name_vi", self.kind),
                 "how_vi": info.get("how_vi", ""), "left": int(max(0, self.deadline - now)), "phase": self.phase,
-                "puzzle": self.puzzle.public(now) if self.puzzle else None,
-                "mine": self.puzzle.private(uid) if self.puzzle else None}
+                "puzzle": self.puzzle.public(now) if self.puzzle else None}
 
     def push_puzzle(self, now: float) -> None:
         if self.puzzle is not None:
             self.send_all({"t": "realm", "event": "puzzle", "i": self.room_i, "puzzle": self.puzzle.public(now)})
-
-    def push_private(self, uids) -> None:
-        if self.puzzle is None:
-            return
-        for uid in uids:
-            p = self.players.get(uid)
-            if p is not None and p.session is not None:
-                p.session.send({"t": "realm", "event": "mine", "i": self.room_i, "mine": self.puzzle.private(uid)})
 
     def resync(self, p: Player) -> None:
         """A player came back after losing the connection (spec 14.3): everything again."""
@@ -997,12 +488,6 @@ class RealmInstance(ChannelZone):
     def hurt(self, p: Player, pct: float, now: float, kind: str = "mk") -> None:
         if not p.dead:
             combat.hurt_player(self, p, p.max_hp * pct / 100, now, kind=kind, by="pz")
-
-    def record(self, uid: int, word_id: str, correct: bool) -> None:
-        m = self.members.get(uid)
-        if m is not None and word_id in m.learned:
-            from ..systems import secret_realm
-            self.world.spawn(secret_realm.record_answer(uid, word_id, correct))
 
     def _ghost_changed(self, p: Player) -> None:
         for other in self.players.values():
@@ -1061,11 +546,8 @@ class RealmInstance(ChannelZone):
             self.world._send_zone(p.session, p)
 
     def _spawn_monsters(self, now: float) -> None:
-        kind = self.kind
         area = self.map.rooms[self.place]
-        if kind == "maze":
-            return
-        if kind == "boss":
+        if self.kind == "boss":
             bs = self.objs("boss_spawn")[0]
             m = ai.Monster(f"m{self.run_id}_{next(self._mid)}", self.rdef["boss"], area, bs.x + 8, bs.y + 12)
             extra = max(0, len(self.present()) - 1)
@@ -1225,13 +707,6 @@ class RealmInstance(ChannelZone):
         else:
             self.world._leave_world(p)
 
-    def act(self, p: Player, name: str, now: float) -> None:
-        if self.phase != "running" or p.dead or self.puzzle is None:
-            return
-        obj = next((o for o in self.map.realm_objs if o.name == name and o.props.get("room") == self.place), None)
-        if obj is not None:
-            self.puzzle.act(p, obj, now)
-
     # ------------------------------------------------------------ tick
     def _boss_tick(self, now: float) -> None:
         b = self.boss
@@ -1304,12 +779,12 @@ class RealmService:
         self.world = world
         self.instances: dict[int, RealmInstance] = {}
         self.rifts: dict[str, Rift] = {}
-        self.queues: dict[str, list[list]] = {}          # key (realm id or 'rift:<id>') -> [[uid, realm idx, since]]
+        self.queues: dict[str, list[list]] = {}          # key (realm id or 'rift:<id>') -> [[uid, since]]
         self.queued: dict[int, str] = {}                 # uid -> key
         self.starting: set[int] = set()                  # players whose entry is being written
         self.rng = random.Random()
         self.room_order: list[str] | None = None         # tests: a fixed room order
-        self.seed: int | None = None                     # tests and bots: the next runs' random rooms and monsters
+        self.seed: int | None = None                     # tests and bots: the next runs' random monsters
         self._rift_ids = itertools.count(1)
         self._next_rift = 0.0
         self._next_queue = 0.0
@@ -1325,8 +800,8 @@ class RealmService:
         s.send(protocol.error(code, text))
 
     def check_members(self, uids: list[int], rdef: dict, starting_ok: bool = False) -> str | None:
-        from ..systems import cultivation
-        from .world import realm_index
+        """Can these players step in right now? (Nothing here reads the cultivation realms: every
+        question is asked at the player's own math floor.)"""
         for uid in uids:
             s = self.world.sessions.get(uid)
             p = self.world.players.get(uid)
@@ -1340,9 +815,6 @@ class RealmService:
                 return f"{s.name} đang trọng thương."
             if uid in self.starting and not starting_ok:
                 return f"{s.name} đang vào một bí cảnh khác."
-            # (M10: the math bí cảnh has no min_realm: nothing in it reads the cultivation realms)
-            if rdef.get("min_realm") and realm_index(s.realm) < realm_index(rdef["min_realm"]):
-                return f"{s.name} chưa đạt {cultivation.realm_name(rdef['min_realm'])}."
         return None
 
     def _near_gate(self, p: Player) -> bool:
@@ -1367,10 +839,9 @@ class RealmService:
                 return None
             return r.realm_id, f"rift:{r.id}"
         rdef = realm_defs().get(m.realm or "")
-        if rdef is None or rdef["kind"] not in ("scheduled", "math"):
+        if rdef is None or rdef["kind"] not in GATE_KINDS:
             self._err(s, "no_realm", "Không có bí cảnh này.")
             return None
-        # the math bí cảnh (M10) is a place to review, open whenever the gate is
         if rdef["kind"] == "scheduled" and not window_status(clock.now())["open"]:
             self._err(s, "realm_closed", "Bí cảnh chưa mở cửa. Xem giờ mở ở Cổng Bí Cảnh.")
             return None
@@ -1407,16 +878,13 @@ class RealmService:
                 self._err(s, "cannot_enter", err)
                 return
             self.unqueue(s.user_id, notify=False)
-            from .world import realm_index
-            # the math bí cảnh groups nobody by cultivation realm: each one is asked at their own floor
-            group = 0 if rdef["kind"] == "math" else realm_index(s.realm)
-            self.queues.setdefault(key, []).append([s.user_id, group, now])
+            self.queues.setdefault(key, []).append([s.user_id, now])
             self.queued[s.user_id] = key
             self._queue_news(key)
             return
         c = cfg()
         pmin = int(rdef.get("party_min", c["party_min"]))
-        if party is None and pmin <= 1:   # M10: a realm one may also enter alone
+        if party is None and pmin <= 1:   # a realm one may also enter alone
             err = self.check_members([s.user_id], rdef)
             if err:
                 self._err(s, "cannot_enter", err)
@@ -1437,9 +905,8 @@ class RealmService:
         self.start(list(party.members), realm_id)
 
     def act(self, s: "Session", m: protocol.RealmAct) -> None:
-        inst = self.instance_of(s.player)
-        if inst is not None:
-            inst.act(s.player, m.obj, self.world.mono())
+        """`ract` (striking a prop) belonged to the old word rooms; no room of a math bí cảnh
+        has anything to strike, so it is ignored."""
 
     # ------------------------------------------------------------ entering
     def start(self, uids: list[int], realm_id: str) -> None:
@@ -1465,18 +932,15 @@ class RealmService:
                                 "daily_limit", f"{names} đã vào {rdef['name_vi']} "
                                                f"{secret_realm.daily_limit(realm_id)} lần hôm nay rồi."))
                         return
-                    floors: dict[int, int | None] = {}
-                    if rdef["kind"] == "math":   # M10: everyone must have a floor with questions
-                        floors = await secret_realm.math_floors(db, uids)
-                        none = [u for u in uids if floors.get(u) is None]
-                        if none:
-                            names = ", ".join(self.world.sessions[u].name for u in none if u in self.world.sessions)
-                            for uid in uids:
-                                self.world.notify(uid, protocol.error(
-                                    "no_math_question", f"{names} chưa có tầng toán nào có câu hỏi."))
-                            return
+                    floors = await secret_realm.math_floors(db, uids)   # everyone must have a floor with questions
+                    none = [u for u in uids if floors.get(u) is None]
+                    if none:
+                        names = ", ".join(self.world.sessions[u].name for u in none if u in self.world.sessions)
+                        for uid in uids:
+                            self.world.notify(uid, protocol.error(
+                                "no_math_question", f"{names} chưa có tầng toán nào có câu hỏi."))
+                        return
                     run_id = await secret_realm.create_run(db, realm_id, uids)
-                    learned = await secret_realm.learned_words(db, uids)
                     await db.commit()
             except Exception:
                 log.exception("could not open a realm run")
@@ -1489,8 +953,7 @@ class RealmService:
                 for uid in uids:
                     self.world.notify(uid, protocol.error("cannot_enter", err))
                 return
-            members = {uid: Member(uid, self.world.sessions[uid].name, learned.get(uid, {}), floor=floors.get(uid))
-                       for uid in uids}
+            members = {uid: Member(uid, self.world.sessions[uid].name, floor=floors.get(uid)) for uid in uids}
             try:
                 rng = random.Random(self.seed) if self.seed is not None else random.Random()
                 inst = RealmInstance(self.world, run_id, realm_id, members, rng, rooms=self.room_order)
@@ -1530,6 +993,9 @@ class RealmService:
             self.world.notify(e[0], {"t": "realm", "event": "queued", **(self.queue_of(e[0]) or {})})
 
     def _queue_tick(self, now: float) -> None:
+        """Solo players waiting for the same realm (or rift) become a party once `party_max`
+        wait, or `party_min` have waited `fill_seconds`. Nobody is grouped by cultivation realm:
+        each one is asked at their own floor."""
         c = cfg()
         pmin, pmax, fill = c["party_min"], c["party_max"], c["queue"]["fill_seconds"]
         for key in list(self.queues):
@@ -1547,17 +1013,11 @@ class RealmService:
                 else:
                     self.queued.pop(e[0], None)
                     self.world.notify(e[0], {"t": "realm", "event": "unqueued"})
-            groups: dict[int, list] = {}
-            for e in keep:
-                groups.setdefault(e[1], []).append(e)
-            ready = [g for g in groups.values() if len(g) >= pmax or (len(g) >= pmin and now - min(x[2] for x in g) >= fill)]
-            if not ready and len(keep) >= pmin and now - min(x[2] for x in keep) >= fill * 2:
-                ready = [keep]   # few people online: after a while, mix the realms
-            taken = set()
-            for g in ready:
-                g = sorted(g, key=lambda x: x[2])[:pmax]
+            taken: set[int] = set()
+            if len(keep) >= pmax or (len(keep) >= pmin and now - min(x[1] for x in keep) >= fill):
+                g = sorted(keep, key=lambda x: x[1])[:pmax]
                 uids = [x[0] for x in g]
-                taken |= set(uids)
+                taken = set(uids)
                 for uid in uids:
                     self.queued.pop(uid, None)
                 self.world.parties.form(uids)
@@ -1565,8 +1025,8 @@ class RealmService:
                 if err:
                     for uid in uids:
                         self.world.notify(uid, protocol.error("cannot_enter", err))
-                    continue
-                self.start(uids, realm_id)
+                else:
+                    self.start(uids, realm_id)
             self.queues[key] = [e for e in keep if e[0] not in taken]
             if not self.queues[key]:
                 del self.queues[key]

@@ -1,8 +1,7 @@
-"""Stage 7 REST: Ải Thủ Vườn (spec 9, 16) and Tàng Thư Các (spec 9.3). Questions in a run are
-answered through /quiz/answer like every other question (docs/API.md)."""
+"""Tàng Thư Các (spec 9.3) REST. This module once also served the word tower defence (/td/*),
+which was removed; the tower defence is Thủ Thành Toán now (routers/math_td_routes.py). The
+module keeps its name because app/main.py registers it."""
 from __future__ import annotations
-
-from typing import Literal
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
@@ -11,36 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..auth import api_error, current_user, write_user
 from ..db import get_db
 from ..models import User
-from ..systems import library, td
+from ..systems import library
 
-router = APIRouter(tags=["td"])
-
-
-class LoadoutIn(BaseModel):
-    slots: list[str] = Field(default_factory=list, max_length=20)
-
-
-class StartIn(BaseModel):
-    level_id: str = Field(max_length=32)
-    loadout: list[str] | None = Field(default=None, max_length=20)
-
-
-class QuestionIn(BaseModel):
-    run_id: str = Field(max_length=40)
-    kind: Literal["break", "tu_khi", "upgrade"]
-    word_id: str | None = Field(default=None, max_length=40)
-
-
-class EventIn(BaseModel):
-    run_id: str = Field(max_length=40)
-    start: int = Field(ge=0, le=6000)
-    events: list[dict] = Field(default_factory=list, max_length=6000)
-
-
-class FinishIn(BaseModel):
-    run_id: str = Field(max_length=40)
-    events: list[dict] = Field(default_factory=list, max_length=6000)
-    claim: dict = Field(default_factory=dict)
+router = APIRouter(tags=["library"])
 
 
 class WearIn(BaseModel):
@@ -60,64 +32,11 @@ class ClaimIn(BaseModel):
 async def _run(db: AsyncSession, coro):
     try:
         out = await coro
-    except (td.TdError, library.LibraryError) as e:
+    except library.LibraryError as e:
         await db.rollback()
         raise api_error(e.status, e.code, e.message_vi)
     await db.commit()
     return out
-
-
-@router.get("/td/levels")
-async def td_levels(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
-    user = await db.merge(user)
-    return await _run(db, td.levels_view(db, user))
-
-
-@router.post("/td/loadout")
-async def td_loadout(body: LoadoutIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
-    user = await db.merge(user)
-    return await _run(db, td.save_loadout(db, user, body.slots))
-
-
-@router.post("/td/start")
-async def td_start(body: StartIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
-    user = await db.merge(user)
-    return await _run(db, td.start(db, user, body.level_id, body.loadout))
-
-
-@router.post("/td/question")
-async def td_question(body: QuestionIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
-    user = await db.merge(user)
-    return await _run(db, td.ask(db, user, body.run_id, body.kind, body.word_id))
-
-
-@router.post("/td/event")
-async def td_event(body: EventIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
-    user = await db.merge(user)
-    return await _run(db, td.save_events(db, user, body.run_id, body.start, body.events))
-
-
-@router.post("/td/resume")
-async def td_resume(user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
-    user = await db.merge(user)
-    return await _run(db, td.resume(db, user))
-
-
-@router.post("/td/finish")
-async def td_finish(body: FinishIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
-    user = await db.merge(user)
-    return await _run(db, td.finish(db, user, body.run_id, body.events, body.claim))
-
-
-@router.post("/td/cancel")
-async def td_cancel(user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
-    user = await db.merge(user)
-    return await _run(db, td.cancel(db, user))
-
-
-@router.get("/td/endless/board")
-async def td_board(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
-    return await td.board(db, user)
 
 
 # ------------------------------------------------------------------ Tàng Thư Các

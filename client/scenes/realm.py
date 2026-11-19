@@ -2,12 +2,13 @@
 
 - PartyScene (key Y): members with their health, invite by name, leave, kick, promote.
 - RealmGateScene: the Cổng Bí Cảnh in Trúc Lâm Thôn (or a Khe Nứt Mực rift in the wild):
-  realms, opening hours, entries left today, enter with the party or join the queue, the puzzle
-  guide, and the forge that turns Mảnh Bảo Vật into the Mặc Ảnh set.
+  the party realms (opening hours, entries left today, enter with the party or join the
+  queue), the always-open math realm with its room guide, and the forge that turns Mảnh Bảo
+  Vật into the Mặc Ảnh set. Every realm is a math bí cảnh: the card shows the player's floor.
 - RealmView: lives inside the WorldScene while it shows the bi_canh map. It keeps what the
-  server said about the run (room, puzzle, this player's own part of it), draws the puzzle
-  props, the darkness of the maze, the room banner, the puzzle card and the result.
-Everything is decided by the server; the client only shows it and sends intents (`ract`).
+  server said about the run (room, its Trận Nhãn seals or the boss), draws the seals on the
+  stones of the borrowed room, the room banner, the room card and the result.
+Everything is decided by the server; the client only shows it (a seal asks whoever stands on it).
 """
 from __future__ import annotations
 
@@ -18,15 +19,6 @@ import pygame
 from .. import strings_vi as T
 from ..engine import sprites
 from .base import Scene
-
-ROOM_ORDER = ("compose", "sentence", "tone", "mirror", "maze")
-
-
-def no_cjk(text: str) -> str:
-    """The old game's Chinese (room and realm names, tone syllables): not shown with the v2 art,
-    where the screen is the math game's and its Vietnamese names say the same."""
-    from ..engine import art2
-    return "" if art2.on() else text
 
 
 def realm_v2_name(name: str, *args) -> tuple[str, int]:
@@ -186,7 +178,7 @@ class RealmGateScene(Scene):
         if not self.rift:
             tx = x + 10
             for key, label in (("realms", T.REALM_TAB_REALMS), ("math", T.REALM_TAB_MATH),
-                               ("puzzles", T.REALM_TAB_PUZZLES), ("forge", T.REALM_TAB_FORGE)):
+                               ("forge", T.REALM_TAB_FORGE)):
                 bw = ui.text_size(label, 8)[0] + 14
                 if ui.button(f"rg_tab_{key}", tx, y + 8, bw, 13, label, selected=self.tab == key):
                     self.tab = key
@@ -198,8 +190,6 @@ class RealmGateScene(Scene):
             self.draw_realms(ui, x, body_y, w)
         elif self.tab == "math":
             self.draw_math(ui, x, body_y, w)
-        elif self.tab == "puzzles":
-            self.draw_puzzles(ui, x, body_y, w)
         else:
             self.draw_forge(ui, x, body_y, w)
         if ui.button("rg_party", x + 12, y + h - 18, 70, 13, f"{T.PARTY_TITLE} (Y)", key=pygame.K_y):
@@ -217,11 +207,13 @@ class RealmGateScene(Scene):
             realms = [r for r in realms if r["id"] == self.rift["realm"]]
         for r in realms:
             ui.fill(x + 10, y, w - 20, 74, "#EFE6D2")
-            ui.text(no_cjk(r["hanzi"]), x + 16, y + 4, 16, "#2B2B2B", kind="han")
-            ui.text(r["name_vi"], x + 70, y + 4, 10, "#2B2B2B")
-            ui.text(r["desc_vi"], x + 70, y + 17, 7, "#5A5A5A", max_w=w - 92)
-            ui.text(T.REALM_INFO.format(realm=r["min_realm_vi"], p=r["puzzles"], m=r["time_limit_minutes"],
-                                        tier=r["tier"]), x + 16, y + 38, 7, "#6A994E" if r["realm_ok"] else "#BC4749")
+            ui.text(r["name_vi"], x + 16, y + 4, 10, "#2B2B2B")
+            ui.text(r["desc_vi"], x + 16, y + 16, 7, "#5A5A5A", max_w=w - 40)
+            floor = r.get("floor") or 0
+            ui.text(T.REALM_INFO.format(p=r["puzzles"], m=r["time_limit_minutes"], n=r.get("party_min", 2)),
+                    x + 16, y + 38, 7, "#5A5A5A")
+            ui.text(T.REALM_MATH_FLOOR.format(f=floor) if floor else T.REALM_MATH_NO_FLOOR, x + 16, y + 62, 7,
+                    "#6A994E" if r["realm_ok"] else "#BC4749")
             ui.text(T.REALM_ENTRIES.format(n=r["entries_left"], d=r["daily"]), x + w - 18, y + 38, 7,
                     "#2B2B2B", anchor="topright")
             is_rift = r["kind"] == "rift"
@@ -276,9 +268,8 @@ class RealmGateScene(Scene):
         me = g.state.me.get("id")
         for r in self.data.get("math_realms", []):
             ui.fill(x + 10, y, w - 20, 74, "#EFE6D2")
-            ui.text(no_cjk(r["hanzi"]), x + 16, y + 4, 16, "#2B2B2B", kind="han")
-            ui.text(r["name_vi"], x + 70, y + 4, 10, "#2B2B2B")
-            ui.text(r["desc_vi"], x + 70, y + 17, 7, "#5A5A5A", max_w=w - 92)
+            ui.text(r["name_vi"], x + 16, y + 4, 10, "#2B2B2B")
+            ui.text(r["desc_vi"], x + 16, y + 16, 7, "#5A5A5A", max_w=w - 40)
             floor = r.get("floor") or 0
             ui.text(T.REALM_MATH_FLOOR.format(f=floor) if floor else T.REALM_MATH_NO_FLOOR, x + 16, y + 40, 7,
                     "#6A994E" if floor else "#BC4749")
@@ -294,25 +285,13 @@ class RealmGateScene(Scene):
                 g.toast(T.REALM_ENTERING.format(name=r["name_vi"]), "#4A7CC8")
             y += 80
         puzzles = self.data.get("puzzles", {})
-        for kind in ("seal", "math_boss"):
+        for kind in ("seal", "boss"):
             p = puzzles.get(kind)
             if not p:
                 continue
-            ui.text(no_cjk(p.get("hanzi", "")), x + 14, y + 1, 10, "#BC4749", kind="han")
-            ui.text(p["name_vi"], x + 70, y, 8, "#2B2B2B")
-            rr = ui.text(p["how_vi"], x + 70, y + 10, 6.5, "#5A5A5A", max_w=w - 84)
+            ui.text(p["name_vi"], x + 14, y, 8, "#2B2B2B")
+            rr = ui.text(p["how_vi"], x + 14, y + 10, 6.5, "#5A5A5A", max_w=w - 28)
             y = max(y + 22, rr.bottom + 4)
-
-    def draw_puzzles(self, ui, x, y, w):
-        puzzles = self.data.get("puzzles", {})
-        for kind in ROOM_ORDER + ("boss",):
-            p = puzzles.get(kind)
-            if not p:
-                continue
-            ui.text(no_cjk(p.get("hanzi", "")), x + 14, y + 1, 10, "#BC4749", kind="han")
-            ui.text(p["name_vi"], x + 70, y, 8, "#2B2B2B")
-            r = ui.text(p["how_vi"], x + 70, y + 10, 6.5, "#5A5A5A", max_w=w - 84)
-            y = max(y + 22, r.bottom + 4)
 
     def draw_forge(self, ui, x, y, w):
         f = self.data["forge"]
@@ -358,7 +337,6 @@ class RealmView:
         self.run: dict | None = None
         self.room: dict | None = None
         self.puzzle: dict | None = None
-        self.mine: dict | None = None
         self.ended: dict | None = None
         self.loot: list[dict] = []
         self.left = 0.0                 # seconds left in the run, counted down locally
@@ -384,18 +362,14 @@ class RealmView:
             self.run = m["run"]
             self.left, self.left_at = float(self.run.get("left", 0)), g.now
         elif ev == "room":
-            self.room, self.puzzle, self.mine = m, m.get("puzzle"), m.get("mine")
+            self.room, self.puzzle = m, m.get("puzzle")
             self.left, self.left_at = float(m.get("left", self.left)), g.now
             self.room_shown, self.cleared_at, self.puzzle_at = g.now, None, g.now
         elif ev == "puzzle" and self.room and m.get("i") == self.room.get("i"):
             self.puzzle, self.puzzle_at = m.get("puzzle"), g.now
-        elif ev == "mine" and self.room and m.get("i") == self.room.get("i"):
-            self.mine = m.get("mine")
         elif ev == "cleared":
             self.cleared_at, self.cleared_in = g.now, float(m.get("next_in", 4))
             g.audio.play("coin")
-            if m.get("flawless") and not (self.run or {}).get("math"):   # (M10: no Mảnh Bảo Vật there)
-                self.note(T.REALM_CLEARED_FLAWLESS, "#E9C46A")
         elif ev == "end":
             self.ended = m
             self.end_at = g.now + float(m.get("exit_in", 30))
@@ -410,16 +384,7 @@ class RealmView:
             if lt.get("stage", "").startswith("room"):
                 self.note(T.REALM_ROOM_LOOT.format(i=int(lt["stage"][4:]) + 1, n=lt.get("stones", 0)), "#E9C46A")
             g.refresh_inv()
-        elif ev == "tone":
-            if m.get("ok"):
-                self.note(T.REALM_TONE_OK.format(hz=no_cjk(m["hanzi"]), py=m["pinyin"], t=m["tone"]), "#B5D67A")
-            else:
-                self.note(T.REALM_TONE_BAD.format(hz=no_cjk(m["hanzi"]), py=m["pinyin"], t=m["tone"]), "#F08A8C")
-        elif ev == "mirror":
-            text = (T.REALM_MIRROR_OK if m.get("ok") else T.REALM_MIRROR_BAD).format(
-                by=m.get("by", ""), hz=no_cjk(m["hanzi"]), py=m.get("pinyin", ""), m=m.get("meaning", ""))
-            self.note(text, "#B5D67A" if m.get("ok") else "#F08A8C")
-        elif ev == "seal":      # M10: someone answered a Trận Nhãn seal
+        elif ev == "seal":      # someone answered a Trận Nhãn seal
             self.note((T.REALM_SEAL_OK if m.get("ok") else T.REALM_SEAL_BAD).format(by=m.get("by", "")),
                       "#B5D67A" if m.get("ok") else "#F08A8C")
         elif ev == "hint":
@@ -438,17 +403,13 @@ class RealmView:
             self.marks.append([x, y, self.MARKS[int(ev.get("i", 0)) % 4], self.game.now + 3.0])
         elif k == "pz":
             e = ev.get("e")
-            if e in ("solve", "open"):
+            if e in ("solve", "open", "seal"):
                 fx.ink_to_light(x, y - 8)
             elif e == "fail":
                 fx.burst(x, y - 8, "r", 16, 30)
                 fx.shake = 0.3
-            elif e == "step":
+            elif e == "ask":
                 fx.burst(x, y - 4, "o", 10, 20)
-                if ev.get("t"):
-                    self.scene.big_chars.append([ev["t"], x, y - 34, 1.0])
-            elif e == "strike":
-                fx.burst(x, y, "o", 8, 18)
             elif e == "wave":
                 r = ev.get("r", 40)
                 for i in range(18):
@@ -464,11 +425,11 @@ class RealmView:
 
     @property
     def place(self) -> str | None:
-        """The room of the map this room is played in (M10: a math room borrows one)."""
+        """The room of the map this room is played in (a seal room borrows one)."""
         return (self.room.get("place") or self.kind) if self.room else None
 
     def seal(self, o) -> dict | None:
-        """M10 Trận Nhãn: what the server says about this map object as a seal, if it is one."""
+        """Trận Nhãn: what the server says about this map object as a seal, if it is one."""
         if self.kind != "seal":
             return None
         return next((s for s in (self.puzzle or {}).get("seals", []) if s["name"] == o.name), None)
@@ -503,30 +464,6 @@ class RealmView:
     def time_left(self) -> float:
         return self.left - (self.game.now - self.left_at)
 
-    def puzzle_left(self, key: str) -> float | None:
-        v = (self.puzzle or {}).get(key)
-        if v is None:
-            return None
-        return max(0.0, float(v) - (self.game.now - self.puzzle_at))
-
-    def standing_on(self, o) -> bool:
-        p = self.scene.player
-        return o.x - 3 <= p.x <= o.x + o.w + 3 and o.y - 3 <= p.y <= o.y + o.h + 3
-
-    def target(self, fx: float, fy: float):
-        """A pillar in reach for the E key (only the tone room has things to strike)."""
-        best, bd = None, 30.0
-        for o in self.room_objs("pillar"):
-            d = math.hypot(o.x + o.w / 2 - fx, o.y + o.h - fy)
-            if d < bd:
-                best, bd = o, d
-        return best
-
-    def act(self, obj) -> None:
-        if self.game.net is not None:
-            self.scene.flush_inputs()
-            self.game.net.send({"t": "ract", "obj": obj.name})
-
     def mark(self, wx: float, wy: float, icon: int = 0) -> None:
         if self.game.net is not None:
             self.game.net.send({"t": "mark", "x": max(0.0, wx), "y": max(0.0, wy), "i": icon})
@@ -544,101 +481,50 @@ class RealmView:
 
     # ------------------------------------------------------------ drawing in the world
     def floor(self, surf, cx: int, cy: int, frame: int) -> None:
-        """Props lying on the floor, drawn under everyone."""
-        pz = self.puzzle or {}
+        """Props lying on the floor, drawn under everyone: the seals (the stones of the borrowed
+        room: pedestals or the row of floor stones), the den's chest and the door."""
         kind = self.kind
         v = self.scene.view
         for o in self.room_objs():
             k = o.props.get("kind")
             x, y = v.to_screen(o.x, o.y)
             st = self.seal(o)
-            if st is not None:   # M10: a seal - glowing while unbroken, gold once broken
-                if k == "pedestal":
-                    surf.blit(realm_img(v, "pedestal", not st["broken"], st["busy"] or st["broken"]), (x, y))
-                else:
-                    state = "done" if st["broken"] else ("next" if st["busy"] else "idle")
-                    surf.blit(realm_img(v, "rune_tile", state), (x, y))
-            elif k == "pedestal":
-                active = o.props.get("slot") in (pz.get("slots") or [])
-                surf.blit(realm_img(v, "pedestal", active, active and self._someone_on(o)), (x, y))
-            elif k == "tile":
-                n = int(o.props.get("n", 0))
-                total, done = pz.get("n", 0), pz.get("k", 0)
-                state = "off" if n > total else ("done" if n <= done else ("next" if n == done + 1 else "idle"))
+            if st is not None and k == "pedestal":   # glowing while unbroken, gold once broken
+                surf.blit(realm_img(v, "pedestal", not st["broken"], st["busy"] or st["broken"]), (x, y))
+            elif st is not None and k == "tile":
+                state = "done" if st["broken"] else ("next" if st["busy"] else "idle")
                 surf.blit(realm_img(v, "rune_tile", state), (x, y))
-            elif k == "mirror":
-                surf.blit(realm_img(v, "mirror", frame % 4), (x, y - int(v.len(24))))
             elif k == "chest" and kind == "boss" and self.ended and self.ended.get("result") == "won":
                 surf.blit(realm_img(v, "chest", True), (x, y))
             elif k == "exit":
-                opened = self.cleared_at is not None or (kind == "maze" and pz.get("solved"))
-                surf.blit(realm_img(v, "realm_exit", opened, frame % 2), (x, y - int(v.len(8))))
-            elif k == "maze_exit":
-                pygame.draw.rect(surf, (233, 196, 106), (x, y, int(v.len(o.w)), int(v.len(o.h))), 1)
-
-    def _someone_on(self, o) -> bool:
-        if self.standing_on(o):
-            return True
-        return any(o.x - 3 <= e.pos[0] <= o.x + o.w + 3 and o.y - 3 <= e.pos[1] <= o.y + o.h + 3
-                   for e in self.scene.entities.values() if e.kind == "p")
+                surf.blit(realm_img(v, "realm_exit", self.cleared_at is not None, frame % 2), (x, y - int(v.len(8))))
 
     def drawables(self, cx: int, cy: int, frame: int) -> list:
-        """Standing props, sorted with the characters by their feet."""
+        """Standing props, sorted with the characters by their feet: the pillars (lit once their
+        seal is broken or asking) and the statue of the pillar room."""
         out = []
         v = self.scene.view
         for o in self.room_objs():
             k = o.props.get("kind")
             if k == "pillar":
-                tone = int(o.props.get("tone", 1))
-                out.append((o.y + o.h, realm_img(v, "pillar", tone, False), v.to_screen(o.x, o.y)))
+                st = self.seal(o)
+                lit = st is not None and (st["broken"] or st["busy"])
+                out.append((o.y + o.h, realm_img(v, "pillar", int(o.props.get("tone", 1)), lit), v.to_screen(o.x, o.y)))
             elif k == "statue":
                 out.append((o.y + o.h, realm_img(v, "statue", frame % 2), v.to_screen(o.x, o.y)))
         return out
-
-    def dark(self, surf, cx: int, cy: int) -> None:
-        """Mê Cung Mực: black ink everywhere except around those who shed light."""
-        pz = self.puzzle or {}
-        if self.kind != "maze" or pz.get("solved"):
-            return
-        scene = self.scene
-        me = scene.game.state.me.get("id")
-        shade = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
-        shade.fill((8, 8, 14, 238))
-        lights = []
-        carriers = set(pz.get("carriers") or [])
-        r = int(pz.get("radius", 64))
-        if me in carriers:
-            lights.append((scene.player.x, scene.player.y, r))
-        for e in scene.entities.values():
-            if e.kind == "p" and e.uid in carriers:
-                lights.append((e.pos[0], e.pos[1], r))
-        lights.append((scene.player.x, scene.player.y, int(pz.get("self_radius", 18))))
-        for lx, ly, lr in lights:
-            for k, a in ((1.0, 150), (0.8, 70), (0.6, 0)):
-                v = scene.view
-                pygame.draw.circle(shade, (8, 8, 14, a), v.to_screen(lx, ly - 10), int(v.len(lr * k)))
-        surf.blit(shade, (0, 0))
 
     # ------------------------------------------------------------ the HUD
     def draw_ui(self, ui, top: bool) -> None:
         g = self.game
         v = self.scene.view
         now = g.now
-        # floor labels: tile numbers, pedestal slots, pillar tones (sharp, at window resolution)
-        pz = self.puzzle or {}
-        for o in self.room_objs():
-            k = o.props.get("kind")
-            ox, oy = v.to_screen(o.x + o.w / 2, o.y + o.h / 2)
+        for o in self.room_objs():   # the seal marks (sharp, at window resolution)
             st = self.seal(o)
             if st is not None:
+                ox, oy = v.to_screen(o.x + o.w / 2, o.y + o.h / 2)
                 ui.text(T.REALM_SEAL_BROKEN if st["broken"] else T.REALM_SEAL_MARK, ox, oy, 7,
                         "#6A994E" if st["broken"] else "#2B2B2B", anchor="center")
-            elif k == "tile" and int(o.props["n"]) <= pz.get("n", 0):
-                ui.text(o.props["n"], ox, oy, 8, "#2B2B2B", anchor="center")
-            elif k == "pedestal" and o.props.get("slot") in (pz.get("slots") or []):
-                ui.text(T.REALM_SLOTS.get(o.props["slot"], ""), ox, oy + 13, 6, "#E9C46A", anchor="center")
-            elif k == "pillar":
-                ui.text(f"{o.props['tone']}", ox, v.sy(o.y) - 6, 7, "#E9C46A", anchor="center")
         for mk in list(self.marks):
             if mk[3] < now:
                 self.marks.remove(mk)
@@ -677,97 +563,43 @@ class RealmView:
             self.leave()
 
     def draw_card(self, ui) -> None:
-        """The puzzle card, top right: what everyone sees, and this player's own part."""
+        """The room card, top right: the seals broken so far, or the boss's phase and shield."""
         if not self.room or self.ended:
             return
         pz = self.puzzle or {}
-        mine = self.mine or {}
         x, y, w = 346, 22, 130
-        lines: list[tuple] = []          # (text, size, color, kind)
+        lines: list[tuple] = []          # (text, size, color)
         kind = self.kind
-        if kind == "compose":
-            lines.append((T.REALM_COMPOSE_DOOR.format(m=pz.get("meaning", "")), 7, "#F4EBD9", "ui"))
-            lines.append((T.REALM_COMPOSE_STONES.format(slots=" + ".join(T.REALM_SLOTS.get(s, s) for s in pz.get("slots", []))),
-                          7, "#8CB8DA", "ui"))
-            if pz.get("answer"):
-                lines.append((T.REALM_COMPOSE_ANSWER.format(hz=pz["answer"]), 8, "#E9C46A", "ui"))
-            else:
-                lines.append((T.REALM_COMPOSE_PIECE if mine.get("piece") else T.REALM_COMPOSE_NOPIECE, 7, "#E3D5BA", "ui"))
-                if mine.get("piece"):
-                    lines.append((mine["piece"], 20, "#E9C46A", "han"))
-                left = self.puzzle_left("window")
-                if left is not None:
-                    lines.append((T.REALM_COMPOSE_WINDOW.format(t=int(left) + 1), 7, "#F08A8C", "ui"))
-        elif kind == "sentence":
-            lines.append((T.REALM_SENTENCE_VI.format(vi=pz.get("vi", "")), 7, "#F4EBD9", "ui"))
-            done = " ".join(t["t"] for t in pz.get("done", []))
-            if done:
-                lines.append((T.REALM_SENTENCE_DONE.format(text=done), 8, "#E9C46A", "han"))
+        if kind == "seal":
+            lines.append((T.REALM_SEAL_COUNT.format(n=pz.get("broken", 0), need=pz.get("need", 0)), 8, "#E9C46A"))
             if not pz.get("solved"):
-                lines.append((T.REALM_SENTENCE_NEXT.format(n=pz.get("k", 0) + 1, total=pz.get("n", 0)), 7, "#8CB8DA", "ui"))
-                toks = mine.get("tokens") or []
-                if toks:
-                    lines.append((T.REALM_SENTENCE_MINE, 7, "#E3D5BA", "ui"))
-                    lines.append(("  ".join(t["t"] for t in toks), 12, "#E9C46A", "han"))
-                    lines.append(("  ".join(t["py"] for t in toks), 7, "#B5D67A", "ui"))
-        elif kind == "tone":
-            lines.append((T.REALM_TONE_STREAK.format(s=pz.get("streak", 0), n=pz.get("need", 8)), 8, "#E9C46A", "ui"))
-            r = pz.get("round")
-            if r:
-                lines.append((T.REALM_TONE_READ, 7, "#E3D5BA", "ui"))
-                lines.append((f"{no_cjk(r['hanzi'])}  {r['syllable']}".strip(), 18, "#F4EBD9", "han"))
-                left = max(0.0, r.get("left", 0) - (self.game.now - self.puzzle_at))
-                lines.append((f"{left:.1f}s", 8, "#F08A8C" if left < 2 else "#F4EBD9", "ui"))
-            elif not pz.get("solved"):
-                lines.append((T.REALM_TONE_WAIT, 7, "#8E877A", "ui"))
-        elif kind == "mirror":
-            if pz.get("meaning"):
-                lines.append((T.REALM_MIRROR_SHOWS.format(m=pz["meaning"]), 7, "#F4EBD9", "ui"))
-            lines.append((T.REALM_MIRROR_COUNT.format(c=pz.get("correct", 0), n=pz.get("need", 3)), 7, "#8CB8DA", "ui"))
-            if no_cjk(mine.get("hanzi") or ""):
-                lines.append((T.REALM_MIRROR_MINE, 7, "#E3D5BA", "ui"))
-                lines.append((mine["hanzi"], 18, "#E9C46A", "han"))
-                lines.append((mine.get("pinyin", ""), 7, "#B5D67A", "ui"))
-        elif kind == "maze":
-            names = self._names(pz.get("carriers") or [])
-            if pz.get("lantern"):
-                lines.append((T.REALM_MAZE_LANTERN.format(name=names), 7, "#E9C46A", "ui"))
-            else:
-                lines.append((T.REALM_MAZE_LIGHT.format(names=names), 7, "#E9C46A", "ui"))
-            lines.append((T.REALM_MAZE_EXIT.format(n=pz.get("in_exit", 0), need=pz.get("need", 0)), 7, "#8CB8DA", "ui"))
-        elif kind == "seal":     # M10 Trận Nhãn
-            lines.append((T.REALM_SEAL_COUNT.format(n=pz.get("broken", 0), need=pz.get("need", 0)), 8, "#E9C46A", "ui"))
-            if not pz.get("solved"):
-                lines.append((T.REALM_SEAL_HOW, 7, "#F4EBD9", "ui"))
+                lines.append((T.REALM_SEAL_HOW, 7, "#F4EBD9"))
                 missing = pz.get("missing") or []
                 if missing and len((self.run or {}).get("members", [])) > 1:
-                    lines.append((T.REALM_SEAL_WAIT.format(names=self._names(missing)), 7, "#8CB8DA", "ui"))
+                    lines.append((T.REALM_SEAL_WAIT.format(names=self._names(missing)), 7, "#8CB8DA"))
             if self.my_floor():
-                lines.append((T.REALM_MATH_FLOOR.format(f=self.my_floor()), 7, "#B5D67A", "ui"))
+                lines.append((T.REALM_MATH_FLOOR.format(f=self.my_floor()), 7, "#B5D67A"))
         elif kind == "boss":
-            lines.append((T.REALM_BOSS_PHASE.format(p=min(4, pz.get("phase", 1))), 8, "#F08A8C", "ui"))
-            if self.room.get("math"):
-                lines.append((T.REALM_BOSS_TONG_HOP, 7, "#E3D5BA", "ui"))
+            lines.append((T.REALM_BOSS_PHASE.format(p=min(4, pz.get("phase", 1))), 8, "#F08A8C"))
+            lines.append((T.REALM_BOSS_TONG_HOP, 7, "#E3D5BA"))
             if pz.get("shield"):
-                lines.append((T.REALM_BOSS_SHIELD.format(n=pz.get("hits", 0), need=pz.get("need", 1)), 7, "#8CB8DA", "ui"))
+                lines.append((T.REALM_BOSS_SHIELD.format(n=pz.get("hits", 0), need=pz.get("need", 1)), 7, "#8CB8DA"))
             elif "hp" in pz:
-                lines.append((T.REALM_BOSS_OPEN, 7, "#E9C46A", "ui"))
+                lines.append((T.REALM_BOSS_OPEN, 7, "#E9C46A"))
         if pz.get("fails"):
-            lines.append((T.REALM_FAILS.format(n=pz["fails"]), 6, "#F08A8C", "ui"))
-        def height(text: str, size: float, kind_: str) -> float:
-            if kind_ == "han" or size >= 12:
-                return 28 if size >= 18 else 19 if size >= 12 else 13
+            lines.append((T.REALM_FAILS.format(n=pz["fails"]), 6, "#F08A8C"))
+
+        def height(text: str, size: float) -> float:
             n = len(ui.f.wrap(text, size, int((w - 12) * ui.s), ui.s)) or 1
             return n * size * 1.4 + 1
-        h = 20 + sum(height(t, size, k) for t, size, _, k in lines) + (8 if kind == "boss" and "hp" in pz else 0)
+        h = 20 + sum(height(t, size) for t, size, _ in lines) + (8 if kind == "boss" and "hp" in pz else 0)
         ui.fill(x, y, w, h, (20, 18, 15, 200))
         ui.border(x, y, w, h, "#8B5A2B")
         ui.text(self.room.get("name_vi", ""), x + 6, y + 4, 8, "#E9C46A")
-        ui.text(no_cjk(self.room.get("hanzi", "")), x + w - 6, y + 4, 8, "#BC4749", kind="han", anchor="topright")
         cy = y + 16
-        for text, size, col, kind_ in lines:
-            r = ui.text(text, x + 6, cy, size, col, kind=kind_, max_w=w - 12)
-            cy += max(height(text, size, kind_), r.h + 1)
+        for text, size, col in lines:
+            r = ui.text(text, x + 6, cy, size, col, max_w=w - 12)
+            cy += max(height(text, size), r.h + 1)
         if kind == "boss" and "hp" in pz:
             ui.progress(x + 6, y + h - 9, w - 12, 4, pz["hp"] / 100, "#BC4749")
 
@@ -796,7 +628,7 @@ class RealmView:
         if won and e.get("fast"):
             ui.text(T.REALM_FAST, x + w / 2, cy, 7, "#6A994E", anchor="midtop")
             cy += 11
-        if won and (e.get("fragments") or not (self.run or {}).get("math")):   # (M10: the math one pays none)
+        if won and e.get("fragments"):
             ui.text(T.REALM_FRAGMENTS.format(n=e.get("fragments", 0)), x + w / 2, cy, 8, "#8E5AC8", anchor="midtop")
             cy += 13
         ui.text(T.REALM_YOUR_LOOT, x + 12, cy, 8, "#8B5A2B")

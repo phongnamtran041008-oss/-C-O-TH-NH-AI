@@ -1,6 +1,7 @@
 """Stage 4 through the real client UI: fight a Mực Con (attack, Vấn Đạo card, Hộ Thể,
 shield break, kill, loot), take a Mặc Kích from a wrong answer, look at the cultivation,
-bag, quest and Yêu Quái Phổ screens, then pass Thiên Kiếp from Luyện Khí 9 to Trúc Cơ."""
+bag, quest and Yêu Quái Phổ screens, then pass Thiên Kiếp from Luyện Khí 9 to Trúc Cơ.
+Every question on the way is a math question at the player's own floor, on the math card."""
 from __future__ import annotations
 
 import json
@@ -10,12 +11,25 @@ from pathlib import Path
 
 import pygame
 
-from client.tests.driver import Driver, ServerProcess, answer_current_quiz
+from client.tests.driver import Driver, ServerProcess, fill_math_answer
 from client.tests.test_world_flow import make_account
+
+
+CARD = "MathCombatQuizScene"       # the card every monster's question opens
 
 
 def world(drv):
     return drv.game.world_scene()
+
+
+def answer_math(drv: Driver, server: ServerProcess, correct: bool = True) -> dict:
+    """Answer the math question of the card on top through its widgets, reading the key from
+    the database (test only), and wait for the verdict."""
+    card = drv.game.top
+    key = json.loads(server.sql("select answer_key from quiz_sessions where id=?", (card.q["session_id"],))[0][0])
+    fill_math_answer(drv, card.q, key, correct)
+    drv.wait(lambda: drv.game.top is card and card.result, 10, "the verdict")
+    return card.result
 
 
 def walk_to(drv: Driver, tx: float, ty: float, near: float = 26, timeout: float = 8.0) -> None:
@@ -65,7 +79,7 @@ def engage(drv: Driver, server: ServerProcess, kind: str = "ink_slime"):
         drv.click_at(drv.game.display.to_window(*ws.world_to_screen(m.pos[0], m.pos[1] - 8)))   # left click = attack
         for _ in range(40):                 # longer than any weapon cooldown, then attack again
             drv.step(3)
-            if drv.top_is("CombatQuizScene"):
+            if drv.top_is(CARD):
                 asked = getattr(drv.game.top, "monster_id", "")
                 return ws.entities.get(asked) or m
     open_q = server.sql("select ref, created_at from quiz_sessions where answered_at is null")
@@ -84,12 +98,12 @@ def beat(drv: Driver, ws, m, server: ServerProcess | None = None) -> None:
     for _ in range(60):
         if not m.alive or m.id not in ws.entities:
             return
-        if drv.top_is("CombatQuizScene"):
+        if drv.top_is(CARD):
             asked = getattr(drv.game.top, "monster_id", "")
             assert asked != m.id, f"the Mặc Thuẫn of {m.id} came back"
             assert server is not None, f"{asked} asked a question and this test cannot answer it"
-            answer_current_quiz(drv, server, correct=True)
-            drv.wait(lambda: not drv.top_is("CombatQuizScene"), 5, f"the card of {asked} closes")
+            answer_math(drv, server, correct=True)
+            drv.wait(lambda: not drv.top_is(CARD), 6, f"the card of {asked} closes")
             continue
         drv.press(pygame.K_SPACE)
         drv.step(20)
@@ -100,11 +114,7 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
     server = ServerProcess(workdir)
     try:
         url = server.url
-        token, uid = make_account(url, "detu_c", "Chiến Sĩ")
-        for hz in "水火木山人日口大":
-            server.sql("insert or replace into collection(user_id, word_id, introduced, mastery, times_correct, "
-                       "times_wrong, needs_review, first_seen_at) select ?, id, 1, 60, 0, 0, 0, datetime('now') "
-                       "from words where hanzi=?", (uid, hz))
+        token, uid = make_account(url, "detu_c", "Chiến Sĩ")     # no word learned: none is needed
         # stand at the edge of the Mực Con area in Rừng Mực Loang, with the quest-1 brush
         server.sql("update characters set zone_id='rung_muc_loang', x=?, y=? where user_id=?", (16 * 18, 16 * 20, uid))
         h = {"Authorization": f"Bearer {token}"}
@@ -131,12 +141,16 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         # fight: the first hit brings the Vấn Đạo card, the character is protected meanwhile
         m = engage(drv, server)
         drv.shot("combat_question")
-        assert drv.game.top.compact and drv.game.top.q["context"] == "combat"
-        res = answer_current_quiz(drv, server, correct=True)
+        q = drv.game.top.q
+        assert q["context"] == "math_combat" and q["math"]["floor"] == 1 and "hanzi" not in q["prompt"], q
+        assert q["math"]["monster_vi"] == "Mực Con"
+        res = answer_math(drv, server, correct=True)
         assert res["combat"]["shield_broken"]
+        rows = server.sql("select skill_id, correct, run_id from math_answers where user_id=?", (uid,))
+        assert rows == [(q["math"]["skill"], 1, None)], rows        # the learning log, once
         drv.step(8)
         drv.shot("shield_broken")
-        drv.wait(lambda: not drv.top_is("CombatQuizScene"), 5, "card closes by itself")
+        drv.wait(lambda: not drv.top_is(CARD), 6, "card closes by itself")
         beat(drv, ws, m, server)
         drv.wait(lambda: any("Linh Thạch" in t or "Nhận" in t for t in drv.toast_log) or
                  any(f.text.startswith("+") for f in ws.fx.texts), 6, "loot")
@@ -145,18 +159,18 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         # a wrong answer: Mặc Kích (10% of max HP, minus Kháng Mực), red flash
         hp0 = drv.game.state.character.get("hp")
         m2 = engage(drv, server)
-        res = answer_current_quiz(drv, server, correct=False)
+        res = answer_math(drv, server, correct=False)
         assert res["combat"]["mac_kich"] > 0
         drv.step(6)
         drv.shot("mac_kich")
-        drv.wait(lambda: not drv.top_is("CombatQuizScene"), 5, "wrong card closes")
+        drv.wait(lambda: not drv.top_is(CARD), 6, "wrong card closes")
         drv.wait(lambda: drv.game.state.character.get("hp", 0) < hp0, 5, "hp drops")
         drv.press(pygame.K_q)              # Hồi Huyết Đan
         drv.wait_api()
         # the next question comes after a short pause; answer it and finish the fight
-        drv.wait_scene("CombatQuizScene", 8)
-        answer_current_quiz(drv, server, correct=True)
-        drv.wait(lambda: not drv.top_is("CombatQuizScene"), 5, "card closes")
+        drv.wait_scene(CARD, 8)
+        answer_math(drv, server, correct=True)
+        drv.wait(lambda: not drv.top_is(CARD), 6, "card closes")
         beat(drv, ws, m2, server)
 
         # the screens
@@ -182,7 +196,9 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait_scene("BookScene")
         drv.click("book_to_monsters")
         drv.wait(lambda: drv.top_is("MonsterBookScene") and drv.game.top.data, 5, "monster book")
+        drv.step(3)
         drv.shot("monster_book")
+        assert not any("qtypes_vi" in e or "hanzi" in e for e in drv.game.top.data["entries"])
         drv.press(pygame.K_ESCAPE)
         from client.scenes.rpg import ForgeScene
         drv.game.push(ForgeScene(drv.game))
@@ -205,11 +221,18 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.shot("tribulation_intro")
         drv.click("trib_go")
         for i in range(20):
-            drv.wait_scene("QuizScene", 8)
+            drv.wait_scene("TribulationQuizScene", 8)
+            card = drv.game.top
+            assert card.q["context"] == "math_tribulation" and card.storm.progress[0] == i + 1, card.q
+            assert "math_stop" not in drv.game.ui.widgets               # no pausing a Thiên Kiếp
             if i == 3:
                 drv.shot("tribulation_question")
-            answer_current_quiz(drv, server, correct=(i != 5))       # 19/20
-            drv.click("quiz_continue")
+            res = answer_math(drv, server, correct=(i != 5))            # 19/20
+            if i == 5:                                                  # a wrong answer: the lightning
+                drv.wait(lambda: card.storm.bolts, 3, "lightning")
+                drv.shot("tribulation_lightning")
+            assert res["correct_so_far"] == (i + 1 if i < 5 else i)
+            drv.click("math_next")
         drv.wait(lambda: drv.top_is("TribulationScene") and drv.game.top.state == "done", 8, "result")
         drv.step(10)
         drv.shot("tribulation_passed")

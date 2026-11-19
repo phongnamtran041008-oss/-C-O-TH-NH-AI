@@ -1,7 +1,7 @@
 """Stage 7 through the real client UI, part 2: at the Thủ Thư in Trúc Lâm Thôn wear a title and
-an avatar frame, buy a bí kíp from her shelf, read the Bảo Vật Phổ; then start a Thủ Vườn level,
-plant, start a wave, close the game in the middle, open it again and continue the same run
-from the saved log to the end."""
+an avatar frame, buy a bí kíp from her shelf, read the Bảo Vật Phổ; then start a level of Thủ
+Thành Toán, build towers by answering their questions, start a wave, close the game in the
+middle, open it again and continue the same run from the saved log to the end."""
 from __future__ import annotations
 
 import json
@@ -13,17 +13,18 @@ import pygame
 from client.engine import td_sim
 from client.tests.driver import Driver, ServerProcess
 from client.tests.test_combat_flow import world
-from client.tests.test_linh_phong_flow import give, learn
-from client.tests.test_td_flow import BEGINNER, answer_and_close, on_board, perform, play_level, play_scene, top
+from client.tests.test_linh_phong_flow import give
+from client.tests.test_math_td_flow import answer_card, click_card, on_board, play_scene, top
+from client.tests.test_td_flow import play_level
 from client.tests.test_world_flow import make_account
 
-import td_bot  # noqa: E402  (tools/ is on the path: test_td_flow put it there)
+import math_td_bot  # noqa: E402  (tools/ is on the path: test_td_flow put it there)
 
 
-def open_td_map(drv: Driver):
-    from client.scenes.td import TdMapScene
-    drv.game.push(TdMapScene(drv.game))
-    drv.wait(lambda: drv.top_is("TdMapScene") and top(drv).data is not None, 10, "the level map")
+def open_td(drv: Driver):
+    from client.scenes.math_td import MathTdScene
+    drv.game.push(MathTdScene(drv.game))
+    drv.wait(lambda: drv.top_is("MathTdScene") and top(drv).data is not None, 10, "Thủ Thành Toán")
     return top(drv)
 
 
@@ -34,10 +35,7 @@ def run_resume_flow(workdir: Path, shots: Path | None = None) -> None:
         token, uid = make_account(url, "thu_thu_khach", "Khách Thư Các")
         import httpx
         h = {"Authorization": f"Bearer {token}"}
-        httpx.get(url + "/garden", headers=h).raise_for_status()
         httpx.get(url + "/quests", headers=h).raise_for_status()
-        for hz in BEGINNER:
-            learn(server, uid, hz)
         server.sql("update users set spirit_stones=3000, flags=? where id=?",
                    (json.dumps({"tutorial": 5, "titles": ["Kẻ Săn Mực"], "frames": ["khung_muc"]}), uid))
         give(server, uid, "hoi_huyet_dan", 2)    # a treasure for the Bảo Vật Phổ
@@ -91,30 +89,30 @@ def run_resume_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.shot("hud_title_frame")
 
         # ---- a level, closed in the middle of a wave
-        m = open_td_map(drv)
-        m.data["loadout"] = [p["word_id"] for p in m.data["plants"] if p["hanzi"] in BEGINNER]
-        drv.click("td_lv_c1_01")
-        drv.click("td_start")
+        open_td(drv)
+        drv.click("mtd_start")
         drv.wait(lambda: play_scene(drv) is not None, 10, "the board")
         sc = play_scene(drv)
+        stats = {"questions": 0, "right": 0, "floors": set()}
         while sc.speed < sc.speeds[-1] or sc.sim.phase == td_sim.BUILD:
             t = top(drv)
-            if type(t).__name__ == "TdQuizScene":
-                answer_and_close(drv, server)
+            if type(t).__name__ == "MathTdCard":
+                answer_card(drv, server, True, stats)
             elif t is sc and not sc.busy and sc.speed < sc.speeds[-1]:
                 on_board(drv, sc, "td_speed")
-            elif t is sc and not sc.busy and len(sc.sim.plants) < 3:
-                acts = td_bot.decide(sc.sim, allow_upgrade=False)
-                if acts:
-                    perform(drv, sc, acts[0])
-            elif t is sc and not sc.busy:
+            elif t is sc and not sc.busy and len(sc.sim.plants) < 2:
+                acts = math_td_bot.decide(sc.sim, allow_upgrade=False)
+                if acts and click_card(drv, sc, acts[0]["w"]):
+                    on_board(drv, sc, f"td_cell_{acts[0]['x']}_{acts[0]['y']}")
+            elif t is sc and not sc.busy and click_card(drv, sc, None):
                 on_board(drv, sc, "td_wave")
             else:
                 drv.step(1)
         drv.wait(lambda: sc.sim.step_n > 40 and sc.saved == len(sc.events) and not sc.saving, 15, "log saved")
         sc.speed = 1                       # (keep the board where it is while the game closes)
         saved_events = list(sc.events)
-        plants = sorted((c, pl.word) for c, pl in sc.sim.plants.items())
+        towers = sorted((c, pl.word) for c, pl in sc.sim.plants.items())
+        assert towers
         drv.shot("td_before_close")
         drv.close()
 
@@ -123,20 +121,19 @@ def run_resume_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.click("menu_start")
         drv.wait(lambda: world(drv) is not None and world(drv).joined, 20, "the village again")
         drv.wait_api()
-        m = open_td_map(drv)
-        assert m.data["active_run"] and m.data["active_run"]["level_id"] == "c1_01"
+        m = open_td(drv)
+        assert m.data["active_run"] and m.data["active_run"]["level_id"] == "math_td_01"
         drv.shot("td_resume_offer")
-        drv.click("td_resume")
+        drv.click("mtd_resume")
         drv.wait(lambda: play_scene(drv) is not None, 10, "the board again")
         sc = play_scene(drv)
         assert sc.events == saved_events
-        assert sorted((c, pl.word) for c, pl in sc.sim.plants.items()) == plants
+        assert sorted((c, pl.word) for c, pl in sc.sim.plants.items()) == towers
         assert sc.sim.step_n >= saved_events[-1]["s"] and sc.sim.wave == sum(e["k"] == "wave" for e in saved_events)
-        stats = {"questions": 0, "right": 0, "tu_khi": 0}
         res = play_level(drv, server, stats)
         assert res["result"] == "won", res
         rows = dict(server.sql("select level_id, stars from td_progress where user_id=?", (uid,)))
-        assert rows.get("c1_01", 0) >= 1
+        assert rows.get("math_td_01", 0) >= 1
         assert server.sql("select count(*) from td_runs where user_id=?", (uid,))[0][0] == 0
         drv.click("td_result_map")
         drv.close()

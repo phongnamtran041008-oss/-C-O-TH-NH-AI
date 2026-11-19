@@ -1,10 +1,10 @@
-"""Yêu Quái Phổ (spec 9.3): monsters met, how many beaten, what they ask and drop."""
+"""Yêu Quái Phổ (spec 9.3): monsters met, how many beaten, what they get wrong and drop."""
 from __future__ import annotations
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .. import balance, clock
+from .. import clock
 from ..models import CodexEntry, User
 from . import catalog
 
@@ -32,7 +32,6 @@ async def monster_killed(db: AsyncSession, user_id: int, kind: str) -> int:
 async def monster_book(db: AsyncSession, user: User) -> dict:
     rows = {e.entry_id: e for e in (await db.execute(select(CodexEntry).where(
         CodexEntry.user_id == user.id, CodexEntry.codex == "monster"))).scalars().all()}
-    qnames = {k: v["name_vi"] for k, v in balance.quiz()["types"].items()}
     out = []
     for kind, m in catalog.monsters().items():
         e = rows.get(kind)
@@ -45,7 +44,6 @@ async def monster_book(db: AsyncSession, user: User) -> dict:
                 else:
                     drops.append("Trang bị: " + ", ".join(catalog.item_name(i) for i in d["equipment"]))
             entry.update({"name_vi": m["name_vi"], "kills": int((e.progress or {}).get("kills", 0)),
-                          "qtypes_vi": [qnames.get(q, q) for q in m.get("qtypes", [])],
                           "weakness_vi": m.get("weakness_vi", ""), "drops_vi": drops, "hp": m.get("hp"),
                           "mistake_vi": m.get("mistake_vi", ""),   # M7: what this one gets wrong
                           "rank_vi": {"normal": "Thường", "elite": "Tinh anh", "boss": "Thủ lĩnh"}.get(m.get("rank"), "")})
@@ -57,7 +55,7 @@ async def monster_book(db: AsyncSession, user: User) -> dict:
                  "rank": "boss" if m.get("boss") else "normal"}
         if e is not None:
             entry.update({"name_vi": m["name_vi"], "kills": int((e.progress or {}).get("kills", 0)),
-                          "qtypes_vi": [], "weakness_vi": m["weakness_vi"], "drops_vi": [], "hp": m["hp"],
+                          "weakness_vi": m["weakness_vi"], "drops_vi": [], "hp": m["hp"],
                           "rank_vi": "Thủ lĩnh · Thủ Vườn" if m.get("boss") else "Thủ Vườn"})
         out.append(entry)
     found = sum(1 for x in out if x["found"])

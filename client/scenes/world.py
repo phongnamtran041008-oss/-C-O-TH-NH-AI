@@ -378,7 +378,6 @@ class WorldScene(Scene):
         """Put the card of a `q` message on the screen. `waited`: seconds the question was held
         back behind the previous card - the server's clock ran meanwhile, so the card gets less."""
         from .math_practice import MathCombatQuizScene
-        from .rpg import CombatQuizScene
         while self.game.top is not None and self.game.top is not self and self in self.game.scenes:
             self.game.pop()      # the fight comes first: close bag/menus so the card sits over the world
         if m.get("first_meet"):
@@ -387,13 +386,9 @@ class WorldScene(Scene):
         if waited > 0:
             q = {**q, "time_limit": max(1.0, float(q.get("time_limit") or 10) - waited)}
         self.start_cooldown((m.get("cast") or {}).get("k"))
-        # M7: a quái lỗi sai asks a math question, so it gets the math card
-        if (q.get("context") == "math_combat" or m.get("cast")     # M9: a chiêu asks it too
-                or q.get("context") == "math_realm"):               # M10 realm: a math bí cảnh's question
-            self.game.push(MathCombatQuizScene(self.game, q, m.get("mid") or "",
-                                               on_result=self.on_combat_result, cast=m.get("cast")))
-        else:
-            self.game.push(CombatQuizScene(self.game, q, m.get("mid", ""), on_result=self.on_combat_result))
+        # every monster, chiêu (M9) and bí cảnh (M10) asks a math question: the math card
+        self.game.push(MathCombatQuizScene(self.game, q, m.get("mid") or "",
+                                           on_result=self.on_combat_result, cast=m.get("cast")))
 
     def show_waiting_question(self) -> None:
         """A question can arrive while the card of the previous one still shows its result: a
@@ -1137,10 +1132,6 @@ class WorldScene(Scene):
             d = math.hypot(x - fx, y - fy)
             if d < min(best_d, 26 if e.kind == "r" else 18):
                 best, best_d = ("ent", e), d
-        if self.realm is not None and not self.ghost:   # a tone pillar to strike
-            o = self.realm.target(fx, fy)
-            if o is not None:
-                best = ("object", o)
         return best
 
     # ------------------------------------------------------------ fighting (stage 4)
@@ -1188,8 +1179,6 @@ class WorldScene(Scene):
             return "player" if obj.kind == "p" else ("rift" if obj.kind == "r" else "monster")
         if obj.type == "sign":
             return "sign"
-        if obj.type == "realm_obj":
-            return "pillar"
         return obj.props.get("action") or ("talk_master" if obj.props.get("npc") == "truc_lao" else "talk_guide")
 
     def interact(self, target) -> None:
@@ -1207,10 +1196,6 @@ class WorldScene(Scene):
                                                "left": obj.left, "seen": obj.seen}))
             else:
                 self.attack(obj)
-            return
-        if action == "pillar":
-            if self.realm is not None:
-                self.realm.act(obj)
             return
         if action == "realm":
             from .realm import RealmGateScene
@@ -1240,11 +1225,11 @@ class WorldScene(Scene):
             g.push(DialogScene(g, T.LIBRARIAN_LINES if first else [random.choice(T.LIBRARIAN_IDLE)],
                                speaker=T.LIBRARIAN_NAME, portrait=npc_head("librarian"),
                                on_done=g.open_library))
-        elif action == "td":
-            from .td import TdMapScene
+        elif action == "td":     # the Cổng Thủ Thành: the tower defence (Thủ Thành Toán)
+            from .math_td import MathTdScene
             first = not g.state.me.get("met_td")
             g.state.me["met_td"] = True
-            g.push(TdMapScene(g))
+            g.push(MathTdScene(g))
             if first:
                 g.push(DialogScene(g, T.TD_GATE_LINES))
         elif action == "gacha":
@@ -1742,8 +1727,7 @@ class WorldScene(Scene):
             self.draw_world_v1(surf, cx, cy)
         self.fx.draw(surf, (cx, cy), lambda t, c: self.game.fonts.render(t, 7, c, 1), self.t,
                      view=self.view if v2 else None)
-        if self.realm is not None:   # underground: no sky, but the maze is dark, other rooms unseen
-            self.realm.dark(surf, cx, cy)
+        if self.realm is not None:   # underground: no sky, and the other rooms unseen
             self.realm.outside(surf, cx, cy)
         d = darkness(self.game.day_phase()) if self.realm is None else 0.0
         if d > 0:

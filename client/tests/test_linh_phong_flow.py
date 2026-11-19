@@ -11,8 +11,8 @@ from pathlib import Path
 import httpx
 import pygame
 
-from client.tests.driver import Driver, ServerProcess, answer_current_quiz
-from client.tests.test_combat_flow import beat, engage, world
+from client.tests.driver import Driver, ServerProcess
+from client.tests.test_combat_flow import CARD, answer_math, beat, engage, world
 from client.tests.test_world_flow import make_account
 
 
@@ -178,9 +178,9 @@ def run_bee_flow(workdir: Path, shots: Path | None = None) -> None:
         assert len(ws.flock.bees) == 2
         drv.shot("guards_follow")
         m = engage(drv, server)
-        res = answer_current_quiz(drv, server, correct=True)
+        res = answer_math(drv, server, correct=True)
         assert res["combat"]["shield_broken"]
-        drv.wait(lambda: not drv.top_is("CombatQuizScene"), 5, "card closes")
+        drv.wait(lambda: not drv.top_is(CARD), 5, "card closes")
         drv.wait(lambda: ws.bee_hits > 0, 6, "bees sting the monster")
         drv.shot("guards_sting")
         if m.alive and m.id in ws.entities:

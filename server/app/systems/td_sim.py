@@ -1,23 +1,23 @@
-"""Ải Thủ Vườn (spec 9): the tower-defense simulation, shared by server and client
+"""Thủ Thành Toán: the tower-defence simulation, shared by server and client
 (client/engine/td_sim.py is a byte-for-byte copy; tests check they agree).
 
-Mặc Quái walk a path of grid cells from the ink gate to the Linh Mạch; plants placed beside
+Mặc Quái walk a path of grid cells from the ink gate to the Linh Mạch; towers placed beside
 the path (Mộc ones on it) hold them back. Time runs in fixed steps of STEP_MS, but only
 during a wave: between waves (and while a question card is open, which the client handles
 by not stepping) nothing moves.
 
-The server sends `params` (the level, every number from balance/td.json and the power of
-each plant the player brought). The client plays live and records its actions as events
-`{"s": step, "k": kind, ...}`; the server replays the same events with the same code and
-must reach the same end (`replay`). Question results come from the server's own records
-(`answers`), so a client cannot claim a right answer it did not give. Only + - * / and
+The server sends `params` (the level, every number from math/td.json and balance/td.json,
+and the towers this player may build, as `plants`). The client plays live and records its
+actions as events `{"s": step, "k": kind, ...}`; the server replays the same events with the
+same code and must reach the same end (`replay`). Question results come from the server's
+own records (`answers`), so a client cannot claim a right answer it did not give: a tower
+is placed only by a "place" event that carries a question answered right about that tower,
+and upgraded only by an "up" event that does the same. An answer may carry a `power`
+multiplier (from the tier of the question) that the tower keeps. Only + - * / and
 random.Random.random() are used, so both sides compute exactly the same floats.
 
-The math edition (M10, systems/math_td.py) runs this same simulation with
-`params["place_needs_answer"]`: a tower is placed only by a "place" event that carries a
-question answered right about that tower (like an upgrade), and an answer may carry a
-`power` multiplier (from the tier of the question) that the piece keeps. Without that flag
-and without `power` in the answers, every number is exactly what it was before.
+Field names of the saved logs and answers are kept as they were first stored: an event names
+its tower in "w" and an answer in "word".
 """
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ STEP_MS = 50
 DT = STEP_MS / 1000
 
 BUILD, WAVE, WON, LOST = "build", "wave", "won", "lost"
-BLOCK_GAP = 0.6       # a blocked monster waits this far (in cells) before the Mộc plant
+BLOCK_GAP = 0.6       # a blocked monster waits this far (in cells) before the Mộc tower
 
 
 class LogError(Exception):
@@ -35,6 +35,8 @@ class LogError(Exception):
 
 
 class Plant:
+    """A tower on the board (`word` is the id of its tower type)."""
+
     def __init__(self, x: int, y: int, word: str, role: str, spent: float):
         self.x, self.y, self.word, self.role = x, y, word, role
         self.level = 1
@@ -42,14 +44,10 @@ class Plant:
         self.cd = 0.0
         self.hp = 0.0
         self.max_hp = 0.0
-        self.buff = 1.0       # combo power (好)
-        self.light = 1.0      # combo light radius (明)
-        self.hp_mult = 1.0    # combo max hp (森)
-        self.regen = 0.0      # combo regen per second (休)
         self.haste = 0.0      # attack speed from Hỗ Trợ neighbours
         self.heal = 0.0       # hp per second from Hỗ Trợ neighbours
         self.reach: set[int] = set()   # path indices in range
-        self.mult = 1.0       # math edition: from the tier of the question that placed / upgraded it
+        self.mult = 1.0       # from the tier of the question that placed / upgraded it
 
 
 class Monster:
@@ -60,31 +58,8 @@ class Monster:
         self.slow = 1.0
         self.slow_until = 0
         self.stun_until = 0
-        self.blocked = -1            # path index of the Mộc plant holding it, or -1
+        self.blocked = -1            # path index of the Mộc tower holding it, or -1
         self.dead = False
-
-
-def endless_wave(n: int, e: dict, rng: random.Random) -> list[dict]:
-    """Wave n (0-based) of the Vô Tận Trận: more and tougher monsters every wave, a boss every
-    `boss_every` waves. Kinds come from the seeded rng, so a week's endless run is the same
-    for everybody (a fair leaderboard)."""
-    kinds = [k for k, first in e["kinds"] if first <= n]
-    count = int(e["base_count"] + n * e["count_per_wave"])
-    gap = e["gap_ms"] - n * e["gap_per_wave_ms"]
-    if gap < e["gap_min_ms"]:
-        gap = e["gap_min_ms"]
-    hpx = 1 + n * e["hp_growth"]
-    groups = []
-    left, at = count, 0
-    while left > 0:
-        kind = kinds[int(rng.random() * len(kinds))]
-        k = 3 if left > 3 else left
-        groups.append({"m": kind, "n": k, "gap": gap, "at": at, "x": hpx})
-        at += k * gap + 400
-        left -= k
-    if (n + 1) % e["boss_every"] == 0:
-        groups.append({"m": "mac_vuong", "n": 1, "gap": gap, "at": at + 600, "x": hpx})
-    return groups
 
 
 class Sim:
@@ -97,7 +72,7 @@ class Sim:
         self.rocks = set((int(c[0]), int(c[1])) for c in p.get("rocks", []))
         self.roles = p["roles"]
         self.kinds = p["monsters"]
-        self.defs = p["plants"]               # word_id -> {role, hanzi, power, skill?}
+        self.defs = p["plants"]               # tower id -> {role, power, label, name_vi}
         self.answers = answers if answers is not None else {}
         self.rng = random.Random(p["seed"])
         q = p["qi"]
@@ -105,10 +80,10 @@ class Sim:
         self.hp = int(p["core_hp"])
         self.step_n = 0
         self.wave = 0                          # waves started so far
-        self.total = len(p["waves"]) if p.get("waves") else int(p["endless"]["max_waves"])
+        self.total = len(p["waves"])
         self.phase = BUILD
         self.plants: dict[tuple[int, int], Plant] = {}
-        self.order: list[tuple[int, int]] = []  # plant cells in a fixed order (row, column)
+        self.order: list[tuple[int, int]] = []  # tower cells in a fixed order (row, column)
         self.monsters: list[Monster] = []
         self.spawns: list[list] = []           # [step, kind, hp multiplier], in spawn order
         self.next_id = 1
@@ -116,10 +91,8 @@ class Sim:
         self.break_q = 0
         self.last_tu_khi = -10 ** 9
         self.used_q: set[str] = set()
-        self.skills_used: list[str] = []
-        self.combos: list[str] = []            # combo ids active now (for display)
         self.lit: set[int] = set()             # path indices inside light
-        self.moc_at: dict[int, Plant] = {}     # path index -> Mộc plant standing there
+        self.moc_at: dict[int, Plant] = {}     # path index -> Mộc tower standing there
         self.kills = 0
         self.leaked = 0
         self.killed: dict[str, int] = {}
@@ -135,7 +108,7 @@ class Sim:
         return self.p["upgrade"]["level_mult"][pl.level - 1]
 
     def strength(self, pl: Plant) -> float:
-        return self.defs[pl.word]["power"] * self.level_mult(pl) * pl.buff * pl.mult
+        return self.defs[pl.word]["power"] * self.level_mult(pl) * pl.mult
 
     def cost_to_place(self, word: str) -> float:
         return float(self.role(word)["cost"])
@@ -163,14 +136,12 @@ class Sim:
         return not self.kinds[m.kind].get("hidden") or self.cell_of(m) in self.lit
 
     def can_place(self, x: int, y: int, word: str) -> str | None:
-        """None if a plant of `word` may go on (x, y) now, else the reason."""
+        """None if a tower of type `word` may go on (x, y) now, else the reason."""
         if self.phase in (WON, LOST):
             return "over"
         if word not in self.defs:
             return "not_in_loadout"
         r = self.role(word)
-        if r.get("skill_only"):
-            return "skill_only"
         if not (0 <= x < self.cols and 0 <= y < self.rows) or (x, y) in self.rocks:
             return "bad_cell"
         if (x, y) in self.plants:
@@ -185,49 +156,14 @@ class Sim:
             return "no_qi"
         return None
 
-    # ------------------------------------------------------------ plants and combos
+    # ------------------------------------------------------------ the board
     def _refresh(self) -> None:
-        """Recompute everything that depends on where plants stand: ranges, light, combos,
-        Hỗ Trợ bonuses, the Mộc blockers. Called after every change of the board."""
+        """Recompute everything that depends on where towers stand: ranges, light, Hỗ Trợ
+        bonuses, the Mộc blockers. Called after every change of the board."""
         self.order = sorted(self.plants, key=lambda c: (c[1], c[0]))
-        hz = {c: self.defs[self.plants[c].word]["hanzi"] for c in self.order}
         for c in self.order:
             pl = self.plants[c]
-            pl.buff, pl.light, pl.hp_mult, pl.regen, pl.haste, pl.heal = 1.0, 1.0, 1.0, 0.0, 0.0, 0.0
-        active: list[str] = []
-        for cb in self.p["combos"]:
-            hit = False
-            if cb["kind"] == "pair":
-                for c in self.order:
-                    if hz[c] not in cb["a"]:
-                        continue
-                    for nb in ((c[0] + 1, c[1]), (c[0] - 1, c[1]), (c[0], c[1] + 1), (c[0], c[1] - 1)):
-                        if nb in self.plants and hz[nb] in cb["b"]:
-                            hit = True
-                            self._combo(self.plants[c], cb)
-                            if cb["effect"] == "power":
-                                self._combo(self.plants[nb], cb)
-            else:   # cluster: connected cells of the listed characters
-                seen: set[tuple[int, int]] = set()
-                for c in self.order:
-                    if c in seen or hz[c] not in cb["a"]:
-                        continue
-                    group, stack = [], [c]
-                    seen.add(c)
-                    while stack:
-                        cur = stack.pop()
-                        group.append(cur)
-                        for nb in ((cur[0] + 1, cur[1]), (cur[0] - 1, cur[1]), (cur[0], cur[1] + 1), (cur[0], cur[1] - 1)):
-                            if nb in self.plants and nb not in seen and hz[nb] in cb["a"]:
-                                seen.add(nb)
-                                stack.append(nb)
-                    if len(group) >= cb["size"]:
-                        hit = True
-                        for g in group:
-                            self._combo(self.plants[g], cb)
-            if hit:
-                active.append(cb["id"])
-        self.combos = active
+            pl.haste, pl.heal = 0.0, 0.0
         for c in self.order:   # Hỗ Trợ neighbours
             pl = self.plants[c]
             if pl.role != "ho_tro":
@@ -245,13 +181,13 @@ class Sim:
             r = self.roles[pl.role]
             if pl.role == "moc":
                 self.moc_at[self.path_at[c]] = pl
-                new_max = r["hp"] * self.strength(pl) * pl.hp_mult
+                new_max = r["hp"] * self.strength(pl)
                 if pl.max_hp > 0:
                     pl.hp = pl.hp * new_max / pl.max_hp
                 else:
                     pl.hp = new_max
                 pl.max_hp = new_max
-            rng = r.get("range", 0) * (pl.light if pl.role == "quang" else 1.0)
+            rng = r.get("range", 0)
             rr = rng * rng
             pl.reach = set()
             for i, (px, py) in enumerate(self.path):
@@ -260,17 +196,6 @@ class Sim:
                     pl.reach.add(i)
             if pl.role == "quang":
                 self.lit |= pl.reach
-
-    def _combo(self, pl: Plant, cb: dict) -> None:
-        e = cb["effect"]
-        if e == "power" and pl.buff == 1.0:
-            pl.buff = cb["value"]
-        elif e == "light" and pl.light == 1.0:
-            pl.light = cb["value"]
-        elif e == "hp":
-            pl.hp_mult = cb["value"]
-        elif e == "regen":
-            pl.regen = cb["value"]
 
     # ------------------------------------------------------------ events
     def apply(self, ev: dict) -> None:
@@ -284,16 +209,14 @@ class Sim:
             if why:
                 raise LogError(why)
             cost = self.cost_to_place(word)
-            a = None
-            if self.p.get("place_needs_answer"):   # math edition: placing is earned by a right answer
-                a = self._answer(ev.get("q"), "place")
-                if a["word"] != word:
-                    raise LogError("wrong_word")
+            a = self._answer(ev.get("q"), "place")   # placing is earned by a right answer
+            if a["word"] != word:
+                raise LogError("wrong_word")
             self.qi -= cost                       # an attempt costs its Linh Khí, as an upgrade does
-            if a is not None and not a["ok"]:
+            if not a["ok"]:
                 return
             pl = Plant(x, y, word, self.defs[word]["role"], cost)
-            if a is not None and "power" in a:
+            if "power" in a:
                 pl.mult = float(a["power"])
             self.plants[(x, y)] = pl
             self._refresh()
@@ -344,13 +267,6 @@ class Sim:
                         self.qi = 0.0
             else:
                 raise LogError("wrong_kind")
-        elif k == "skill":
-            word = ev.get("w")
-            if self.phase != WAVE or word not in self.defs or word in self.skills_used \
-                    or not self.defs[word].get("skill"):
-                raise LogError("no_skill")
-            self.skills_used.append(word)
-            self._skill(self.defs[word]["skill"])
         elif k == "wave":
             if self.phase != BUILD or self.wave >= self.total:
                 raise LogError("no_wave")
@@ -370,30 +286,8 @@ class Sim:
         self.used_q.add(sid)
         return a
 
-    def _skill(self, s: dict) -> None:
-        live = [m for m in self.monsters if not m.dead]
-        if s["type"] == "strike_strongest":
-            live.sort(key=lambda m: (-m.hp, m.id))
-            for m in live[:s["targets"]]:
-                self._hurt(m, s["dmg"], None)
-                if self.record_fx:
-                    self.fx.append(("skill", self.pos(m)))
-        elif s["type"] == "slow_all":
-            until = self.step_n + int(s["seconds"] * 1000) // STEP_MS
-            for m in live:
-                m.slow, m.slow_until = s["mult"], until
-        elif s["type"] == "stun_all":
-            until = self.step_n + int(s["seconds"] * 1000) // STEP_MS
-            for m in live:
-                if m.stun_until < until:
-                    m.stun_until = until
-        self._bury()
-
     def _start_wave(self) -> None:
-        if self.p.get("waves"):
-            groups = self.p["waves"][self.wave]
-        else:
-            groups = endless_wave(self.wave, self.p["endless"], self.rng)
+        groups = self.p["waves"][self.wave]
         hpx = self.p.get("hp_mult", 1.0)
         out = []
         for g in groups:
@@ -431,7 +325,7 @@ class Sim:
             self.phase = WON if self.wave >= self.total else BUILD
         elif self.phase == WAVE and self.step_n - self.wave_start > \
                 int(self.p["wave_max_seconds"] * 1000) // STEP_MS:
-            self.hp = 0          # a wave that never ends (should not happen): the garden falls
+            self.hp = 0          # a wave that never ends (should not happen): the Linh Mạch falls
             self.phase = LOST
 
     def _act(self, pl: Plant) -> None:
@@ -439,11 +333,11 @@ class Sim:
         role = pl.role
         if role == "moc":
             if pl.hp < pl.max_hp:
-                pl.hp += (pl.regen + pl.heal) * DT
+                pl.hp += pl.heal * DT
                 if pl.hp > pl.max_hp:
                     pl.hp = pl.max_hp
             return
-        if role in ("ho_tro", "thanh_ngu"):
+        if role == "ho_tro":
             return
         if pl.cd > 0:
             pl.cd -= DT * (1 + pl.haste)

@@ -250,22 +250,13 @@ cần đúng 2 câu liên tiếp) hoặc `{stage: "reel", params, quiz_mult, rig
 strain_down, max_ms` — đầu vào của `fishing_sim.Reel` (file giống hệt nhau ở `server/app/systems/` và `client/engine/`).
 Cá câu được vào túi là `fish_<loài>` (bán được); cá Phàm quá nhỏ thành `ca_nho`; cá từ Linh trở lên cho `vay_linh_ngu`.
 
-## Giai đoạn 7 — Ải Thủ Vườn và Tàng Thư Các (mục 9)
+## Giai đoạn 7 — Tàng Thư Các (mục 9)
 
-Trò thủ vườn chạy ở client bằng `td_sim.py` (file giống hệt nhau ở `server/app/systems/` và `client/engine/`). Máy chủ
-chọn hạt giống, gửi mọi số liệu, tự hỏi và chấm mọi câu hỏi, rồi chạy lại nhật ký của client trước khi trao thưởng.
+Ải Thủ Vườn (tháp là cây chữ, `/td/*`) đã bỏ cùng trò học chữ cũ; thủ thành bây giờ chỉ còn Thủ Thành Toán
+(`/math/td/*`, mục M10 bên dưới), vào từ cửa Thủ Thành của Động Phủ toán hoặc Cổng Thủ Thành ở Trúc Lâm Thôn.
 
 | Method | Đường dẫn | Body | Ghi chú |
 |---|---|---|---|
-| GET | `/td/levels` | — | `{active_run{run_id, level_id, name_vi, waves}?, chapters[], levels[{id, chapter, index, name_vi, waves, unlocked, locked_vi, stars, best_wave, monsters[], first_rewards[3]}], endless{unlocked, locked_vi, week, best_wave}, loadout[], loadout_max, plants[{word_id, hanzi, pinyin, meaning_vi, rarity, role, mastery, wither, power, skill?}], roles, role_stats, stars_need, daily_left, daily_max}` |
-| POST | `/td/loadout` | `{slots[]}` | tối đa 8 `word_id` đã học (trùng thì bỏ). Lỗi `too_many`, `not_learned` |
-| POST | `/td/start` | `{level_id, loadout?}` | `level_id` = `c1_01`…`c3_10` hoặc `endless`. → `{run_id, params, step_ms, max_speed, name_vi, monsters[]}`. Lỗi `locked`, `no_level`, `empty_loadout` |
-| POST | `/td/question` | `{run_id, kind, word_id?}` | `kind` = `break` (3 câu giữa các đợt), `tu_khi` (nút Tụ Khí), `upgrade` (luôn hỏi đúng chữ `word_id` của cây). → một phiên câu hỏi `context: "td"`, trả lời qua `/quiz/answer` |
-| POST | `/td/finish` | `{run_id, events[], claim{result, core_hp, wave, steps}}` | máy chủ chạy lại `td_sim.replay`. → `{result, core_hp, wave, steps, waves_cleared, stars, prev_stars, new_stars[], rewards, daily_left, next_level}` (Vô Tận Trận: `waves_cleared, record, rewards, board`). Lỗi `bad_log` (sự kiện trái luật, câu hỏi không có hoặc dùng hai lần, bỏ sót câu đã trả lời), `log_mismatch` (kết quả khác khi chơi lại), `too_fast`, `unfinished`, `no_run` |
-| POST | `/td/event` | `{run_id, start, events[]}` | lưu phần nhật ký từ chỉ số `start` → `{saved}`. Gửi lại đoạn đã lưu phải giống hệt. Lỗi `log_conflict`, `log_gap`, `bad_log`, `too_many` |
-| POST | `/td/resume` | — | chơi tiếp lượt dở: như `/td/start` cộng `events[]` (đã lưu) và `answers{session_id: {kind, word, ok}}`. Lỗi `no_run` |
-| POST | `/td/cancel` | — | bỏ lượt đang chơi (không thưởng) |
-| GET | `/td/endless/board` | — | `{week, top[{rank, name, waves, me}]}` — giữ được nhiều đợt nhất trong tuần |
 | GET | `/library` | — | Tàng Thư Các: `{books[{id, name_vi, found, total, pct, milestones[{pct, reward, reward_vi, ready, claimed}]}], titles[], frames[], title, frame, shop[{item_id, name_vi, desc_vi, price, have, learned}], at_desk}`; `id` = `plant, monster, bee, fish, discovery, treasure` |
 | POST | `/library/wear` | `{title?, frame?}` | đeo danh hiệu/khung đã có (`""` = bỏ). Lỗi `no_title`, `no_frame` |
 | POST | `/library/buy` | `{item_id}` | mua bí kíp ở kệ Thủ Thư (phải đứng cạnh bà ở Trúc Lâm Thôn). Lỗi `too_far`, `not_sold`, `not_enough` |
@@ -275,12 +266,8 @@ chọn hạt giống, gửi mọi số liệu, tự hỏi và chấm mọi câu 
 | GET | `/library/search?q=` | — | tìm theo chữ Hán, pinyin có/không dấu/dạng số, nghĩa tiếng Việt có/không dấu, tên cá/ong/quái; chỉ trong những gì đã phát hiện. `{q, results[{book, id, title, sub}], more}` |
 | GET | `/library/mistakes` | — | Sổ Lỗi `{words[{word_id, hanzi, pinyin, meaning_vi, times_wrong, times_correct, accuracy, mastery, needs_review}]}`; luyện bằng `POST /quiz/practice {word_id}` |
 
-Khi trả lời câu hỏi thủ vườn, `/quiz/answer` có thêm `td: {kind, ok, qi}` (`qi` là Linh Khí được/mất; câu nâng cấp
-`qi = 0`). `GET /me` có thêm `title`, `frame`. `GET /codex/monster` giờ có cả quái của ải (`id` bắt đầu bằng `td_`, `td: true`).
-
-**Sự kiện trong nhật ký** (mỗi sự kiện có `s` = số bước 50 ms lúc nó xảy ra; giữa các đợt thời gian không trôi):
-`{k: "place", x, y, w}`, `{k: "sell", x, y}`, `{k: "up", x, y, q}`, `{k: "qi", q}`, `{k: "skill", w}`, `{k: "wave"}`.
-`q` là `session_id` của câu hỏi; máy chủ dùng kết quả đúng/sai mà nó đã chấm, không dùng của client.
+`GET /me` có thêm `title`, `frame`. `GET /codex/monster` có cả Mặc Quái của Thủ Thành Toán (`id` bắt
+đầu bằng `td_`, `td: true`).
 
 ## Giai đoạn 8 — Luyện đan, khắc văn, Linh Thú, kinh tế (mục 12, 13)
 
@@ -655,12 +642,14 @@ không mất. `rewards_per_day` hầm đầu tiên mỗi ngày (UTC) có Linh Th
 
 ## M10 — Thủ thành toán (tháp ứng với mảng toán)
 
-Ải Thủ Vườn của bản toán: cùng mô phỏng `td_sim.py` (client chơi, máy chủ chơi lại nhật ký), cùng bảng `td_runs`
-/ `td_progress` (mã ải bắt đầu bằng `math_`; hai bản không bao giờ thấy lượt của nhau). Dữ liệu:
+Thủ thành chạy ở client bằng `td_sim.py` (file giống hệt nhau ở `server/app/systems/` và `client/engine/`). Máy
+chủ chọn hạt giống, gửi mọi số liệu, tự hỏi và chấm mọi câu hỏi, rồi chạy lại nhật ký của client trước khi trao
+thưởng (`systems/td.py`). Lượt đang chơi ở bảng `td_runs`, sao ở `td_progress` (mã ải bắt đầu bằng `math_`; dòng
+còn sót của Ải Thủ Vườn cũ không bao giờ hiện hay chơi tiếp, và bị xoá khi người chơi vào ải mới). Dữ liệu:
 `server/data/math/td.json`. Mỗi tháp có một mảng toán (`subject`, `floor`, `skills`); tháp dùng được khi mảng có
 câu và người chơi đã tới tầng ấy (`math_ask.open_floor`). Đặt tháp và nâng tháp mỗi lần cần một câu đúng của
 mảng ấy, ở bậc của chính người chơi (không bao giờ cao hơn); sai / hết giờ thì không đặt / không nâng, Linh Khí
-của lần thử không hoàn lại (như nâng cấp ở Ải Thủ Vườn), ngoài ra không mất gì. Mọi câu ghi vào `math_answers`
+của lần thử không hoàn lại, ngoài ra không mất gì. Mọi câu ghi vào `math_answers`
 với `run_id = NULL` và cho Tu Vi theo bậc.
 
 - `GET /math/td` -> `{levels: [{id, name_vi, desc_vi, waves, unlocked, locked_vi, stars, best_wave, monsters,
@@ -669,37 +658,47 @@ với `run_id = NULL` và cho Tu Vi theo bậc.
 - `<tower>` = `{id, name_vi, label, role, desc_vi, power, cost, subject, subject_name_vi, floor, available,
   locked_vi}`; `locked_vi` nói vì sao chưa dựng được (tầng chưa tới, hoặc môn / tầng chưa có câu hỏi).
 - `POST /math/td/start {level_id}` -> `{run_id, level_id, params, step_ms, max_speed, name_vi, monsters, towers}`.
-  `params` như `/td/start` với `plants` = các tháp dựng được (`{role, hanzi: nhãn, pinyin: tên, power}`),
-  `combos: []` và `place_needs_answer: true`. Lượt toán đang dở bị thay; lượt Ải Thủ Vườn không bị đụng tới.
-  Lỗi: 404 `no_level`, 400 `locked`, 400 `no_tower`.
+  `params` = mọi số `td_sim` cần: lưới, đường đi, đá, Linh Mạch, `qi` (Khỉ đeo theo cộng thêm Linh Khí lúc
+  vào ải), nâng cấp, `roles`, `monsters`, `waves`, `seed` và `plants` = các tháp dựng được (`{role, label, name_vi,
+  power}`). Lượt đang dở bị thay. Lỗi: 404 `no_level`, 400 `locked`, 400 `no_tower`.
 - `POST /math/td/question {run_id, kind, tower_id?}` -> một phiên câu hỏi `context: "math_td"` (khối `math` như
   M7) cộng `math_td: {kind, tower, power}`. `kind` = `place` / `upgrade` (câu về mảng của `tower_id`), `break`
   (đầu mỗi lúc nghỉ) / `tu_khi` (nút Tụ Khí): câu ở tầng của chính người chơi. `power` = hệ số sức mạnh theo bậc
   (`tier_power`) mà tháp nhận nếu trả lời đúng. Lỗi: 400 `no_tower` (tháp không mở trong lượt này), 400
   `no_question`, 400 `too_many`, 404 `no_run`.
 - Trả lời: `POST /quiz/answer`. Kết quả có `math` (như M7) và `math_td: {kind, tower, ok, power, qi}`.
-- Sự kiện trong nhật ký như Ải Thủ Vườn, trừ `{"k": "place", x, y, w, q}`: `q` bắt buộc là một câu `place` về
-  đúng tháp `w`; câu đúng thì tháp đứng lên với `power` của câu, câu sai thì chỉ trừ Linh Khí. `{"k": "up", x, y,
-  q}`: câu `upgrade` về đúng tháp ấy; đúng thì lên cấp và giữ `power` cao nhất. Mỗi câu chỉ dùng được một lần.
-- `POST /math/td/event {run_id, start, events}`, `POST /math/td/resume`, `POST /math/td/cancel`: như `/td/*`.
+- Sự kiện trong nhật ký (mỗi sự kiện có `s` = số bước 50 ms lúc nó xảy ra; giữa các đợt thời gian không trôi):
+  `{"k": "place", x, y, w, q}`: `q` bắt buộc là một câu `place` về đúng tháp `w`; câu đúng thì tháp đứng lên với
+  `power` của câu, câu sai thì chỉ trừ Linh Khí. `{"k": "up", x, y, q}`: câu `upgrade` về đúng tháp ấy; đúng thì
+  lên cấp và giữ `power` cao nhất. `{"k": "sell", x, y}`, `{"k": "qi", q}` (câu `break` / `tu_khi`), `{"k":
+  "wave"}`. `q` là `session_id`; máy chủ dùng kết quả đúng/sai nó đã chấm. Mỗi câu chỉ dùng được một lần.
+- `POST /math/td/event {run_id, start, events}`: lưu phần nhật ký từ chỉ số `start` -> `{saved}`; gửi lại đoạn đã
+  lưu phải giống hệt (lỗi `log_conflict`, `log_gap`, `bad_log`, `too_many`). `POST /math/td/resume`: như
+  `/math/td/start` cộng `events` (đã lưu) và `answers{session_id: {kind, word, ok, power}}`; câu hỏi sau lần lưu
+  cuối bị bỏ (lỗi `no_run`). `POST /math/td/cancel`: bỏ lượt (không thưởng).
 - `POST /math/td/finish {run_id, events, claim}` -> `{result, core_hp, wave, steps, waves_cleared, stars,
   prev_stars, new_stars, rewards, daily_left, next_level}`. Máy chủ chơi lại nhật ký với câu trả lời nó đã ghi;
   nhật ký có tháp không do câu đúng nào dựng nên, kết quả không khớp hay nhanh hơn thời gian thật: 400
   (`bad_log`, `log_mismatch`, `too_fast`) và lượt bị xoá. Thưởng: lần đầu đạt mỗi sao nhận `first_rewards` của
   ải; thắng lại nhận `replay_stones` Linh Thạch, tối đa `daily_rewarded_plays` lần mỗi ngày; thua không có thưởng.
+  Lượt thắng tính cho nhiệm vụ `td_win`; Mặc Quái gặp được ghi vào Yêu Quái Phổ (`td_<loài>`). Lỗi thêm:
+  `unfinished` (ải chưa kết thúc), `no_run`.
 
 ## M10 — Bí cảnh toán (tổ đội)
 
 Bí cảnh của giai đoạn 9 (ghép đội, khe nứt, mỗi lượt một bản, phòng, hồn ma, khiên nhóm của boss, phần thưởng)
-dùng lại nguyên vẹn; bí cảnh `kind: "math"` trong `server/data/realms.json` (hiện có `toan_tran`, Toán Trận Bí Cảnh)
-chỉ đổi *câu được hỏi*. Mọi câu — của Mặc Quái, của ấn Trận Nhãn, của boss — lấy bằng `math_ask.pick_own`: tầng và
+dùng lại nguyên vẹn, chỉ đổi *câu được hỏi*. Từ đợt xoá game chữ cũ, **mọi** bí cảnh trong `server/data/realms.json`
+là bí cảnh toán; `kind` chỉ nói cách vào: `math` (Toán Trận Bí Cảnh `toan_tran`, mở suốt ở Cổng Bí Cảnh, một mình
+hay cả đội), `scheduled` (Mặc Ảnh Động `mac_anh_dong`, giờ mở cửa, tổ đội 2-5, ba gian Trận Nhãn rồi boss), `rift`
+(Khe Nứt Mực `khe_nut_muc`, chỉ vào qua khe nứt, tổ đội 2-5, một gian Trận Nhãn rồi boss). Không còn phòng câu đố chữ. Mọi câu — của Mặc Quái, của ấn Trận Nhãn, của boss — lấy bằng `math_ask.pick_own`: tầng và
 bậc của chính người trả lời, không bao giờ theo tầng của quái hay của phòng. Câu có `context: "math_realm"` (khối
 `math` như M7, thêm `realm_asker`: `monster` / `seal` / `boss`), trả lời qua `POST /quiz/answer`, ghi vào
 `math_answers` với `run_id = NULL`, Tu Vi theo bậc; hết giờ là câu sai, ngoài ra không mất gì.
 
-- `GET /realms` thêm `math_realms: [{id, name_vi, hanzi, kind: "math", math: true, floor, rooms, party_min,
-  min_realm: null, realm_ok, entries_left, daily, open: true, ...}]` (không nằm trong `realms`). `floor` = tầng câu
-  hỏi của người chơi (0: chưa có tầng nào có câu, `realm_ok` false). `puzzles` có thêm `seal` và `math_boss`.
+- `GET /realms`: mỗi hàng là `{id, name_vi, kind, math: true, floor, rooms, puzzles (số gian trước boss),
+  time_limit_minutes, party_min, realm_ok, entries_left, daily, open, opens_in?, closes_in?, desc_vi}`; `realms` là
+  hai bí cảnh tổ đội (`rift`, `scheduled`), `math_realms` là bí cảnh `math`. `floor` = tầng câu hỏi của người chơi
+  (0: chưa có tầng nào có câu, `realm_ok` false). `puzzles` (bản giải thích) chỉ còn `seal` và `boss`.
 - WebSocket `{"t": "realm", "op": "enter", "realm": "toan_tran"}` ở Cổng Bí Cảnh: một mình (không cần tổ đội,
   `party_min` 1) hoặc đội trưởng dẫn cả đội; không có giờ mở cửa, không đòi cảnh giới. Ai không có tầng nào có
   câu hỏi thì cả đội bị từ chối: lỗi `no_math_question`, không mất lượt. `op: "queue"` cũng dùng được.
@@ -720,7 +719,7 @@ bậc của chính người trả lời, không bao giờ theo tầng của quá
 - Người chơi mà ngân hàng không có câu: `{"t": "error", "code": "no_math_question"}`; phòng và khiên boss không
   chờ người đó.
 - Thưởng: như bí cảnh cũ (`realm loot`), nhưng chỉ Linh Thạch và vật liệu của `data/math/drops.json`
-  (`room_loot_by_realm.toan_tran`, `chest.toan_tran` trong `balance/realm.json`), không Tu Vi, không Ngọc,
+  (`room_loot_by_realm.<id>`, `chest.<id>` trong `balance/realm.json`, cho cả ba bí cảnh), không Tu Vi, không Ngọc,
   không Mảnh Bảo Vật.
 
 ## M11 — Sảnh toán bốn bí cảnh, bài kiểm tra đầu vào (agent HUB)

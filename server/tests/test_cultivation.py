@@ -3,11 +3,14 @@ import random
 
 from sqlalchemy import select
 
+from app import clock
 from app import db as dbm
-from app.models import Character, EquipmentInstance, InventoryItem, Quest, TribulationRun
-from app.systems import cultivation, inventory, items
-from tests.helpers import answer_key, correct_answer, register, wrong_answer
+from app.learning import math_path
+from app.models import Character, EquipmentInstance, InventoryItem, MathAnswer, Quest, TribulationRun
+from app.systems import cultivation, inventory, items, math_ask, math_combat, math_practice
+from tests.helpers import answer_key, correct_answer, register
 from tests.test_combat import LOOK, learn
+from tests.test_math_loop import right_answer, wrong_answer
 
 
 async def make(client, name="tu_1", display="Tu Sĩ"):
@@ -69,16 +72,23 @@ async def bottleneck(uid):
 
 
 async def run_tribulation(client, h, right: int):
+    """Answer a whole Thiên Kiếp: the first `right` questions right, the others wrong. Every
+    question is a quick math question with its own time limit, and no answer pays Tu Vi."""
     r = await client.post("/cultivation/breakthrough/start", headers=h)
     assert r.status_code == 200, r.text
     q = r.json()["question"]
-    assert q["time_limit"] == 30 and q["total"] == 20
+    assert q["total"] == 20 and q["number"] == 1
     res = None
     for i in range(20):
+        assert q["context"] == cultivation.TRIBULATION_CONTEXT and q["number"] == i + 1, q
+        assert q["qtype"] in math_combat.QUICK_TYPES and "hanzi" not in q["prompt"]
+        assert q["time_limit"] == math_path.time_limit(q["qtype"], q["math"]["tier"])
         key = await answer_key(q["session_id"])
-        ans = correct_answer(q["qtype"], key) if i < right else wrong_answer(q["qtype"], key)
+        ans = right_answer(q, key) if i < right else wrong_answer(q, key)
         res = (await client.post("/quiz/answer", json={"session_id": q["session_id"], "answer": ans},
                                  headers=h)).json()
+        assert res["correct"] == (i < right) and "xp" not in res          # the realm is the prize
+        assert res["math"]["tier"] == q["math"]["tier"]                   # written to the learning log
         q = res.get("next")
     assert q is None
     return res["tribulation"]
@@ -149,12 +159,76 @@ async def test_tribulation_timeout_counts_wrong_and_resumes(client, frozen):
     await bottleneck(uid)
     await give(uid, "truc_co_dan")
     q = (await client.post("/cultivation/breakthrough/start", headers=h)).json()["question"]
-    frozen.advance(seconds=40)                                   # walked away: the question expired
+    r = (await client.post("/cultivation/breakthrough/start", headers=h)).json()
+    assert r["resumed"] and r["question"]["session_id"] == q["session_id"]      # still open: the same one
+    frozen.advance(seconds=q["time_limit"] + 10)                 # walked away: the question expired
     r = (await client.post("/cultivation/breakthrough/start", headers=h)).json()
     assert r["resumed"] and r["question"]["number"] == 2 and r["question"]["session_id"] != q["session_id"]
     async with dbm.SessionLocal() as db:
         run = (await db.execute(select(TribulationRun).where(TribulationRun.user_id == uid))).scalar_one()
-        assert (run.index, run.correct) == (1, 0)
+        assert (run.index, run.correct) == (1, 0) and len(run.words) == 20
+        a = (await db.execute(select(MathAnswer).where(MathAnswer.user_id == uid))).scalar_one()
+        assert a.timed_out and not a.correct                      # the timeout is in the learning log
+
+
+async def test_a_tribulation_asks_the_hardest_question_this_player_may_get(client):
+    """highest=True: one micro-skill of the player's own part has tier 2 open, so every
+    question of the run is from that skill at tier 2, never above what the player opened."""
+    h, uid = await make(client, "tu_12", "Tu Mười Hai")
+    async with dbm.SessionLocal() as db:
+        part = await math_ask.own_part(db, uid)
+    quick = [t for t in math_practice._templates(part.subject_id, part.floor) if t.qtype in math_combat.QUICK_TYPES]
+    skill = next(k for k in part.skills if any(t.skill == k and t.tier == 2 for t in quick))
+    window = math_path.cfg()["tier_unlock"]["window"]
+    async with dbm.SessionLocal() as db:
+        for n in range(window):                      # a full window of right answers at tier 1
+            db.add(MathAnswer(user_id=uid, run_id=None, subject_id=part.subject_id, skill_id=skill,
+                              floor=part.floor, tier=1, item_id=f"x{n}", qtype="true_false", fingerprint=f"f{n}",
+                              correct=True, timed_out=False, review=False, answer_ms=800,
+                              answered_at=clock.now()))
+        await db.commit()
+    await bottleneck(uid)
+    await give(uid, "truc_co_dan")
+    q = (await client.post("/cultivation/breakthrough/start", headers=h)).json()["question"]
+    for _ in range(3):
+        assert (q["math"]["skill"], q["math"]["tier"], q["math"]["floor"]) == (skill, 2, part.floor), q["math"]
+        key = await answer_key(q["session_id"])
+        q = (await client.post("/quiz/answer", json={"session_id": q["session_id"], "answer": right_answer(q, key)},
+                               headers=h)).json()["next"]
+
+
+async def test_no_math_question_means_no_tribulation(client, monkeypatch):
+    h, uid = await make(client, "tu_13", "Tu Mười Ba")
+    await bottleneck(uid)
+    await give(uid, "truc_co_dan")
+    monkeypatch.setattr(math_practice, "_templates", lambda subject, floor: [])
+    r = await client.post("/cultivation/breakthrough/start", headers=h)
+    assert r.status_code == 400 and r.json()["error"]["code"] == "no_math_question"
+    assert "chữ" not in r.json()["error"]["message_vi"]
+    async with dbm.SessionLocal() as db:            # refused before a run or a cooldown exists
+        assert (await db.execute(select(TribulationRun).where(TribulationRun.user_id == uid))).first() is None
+        assert (await db.get(Character, uid)).tribulation_retry_at is None
+    monkeypatch.undo()
+    assert (await client.post("/cultivation/breakthrough/start", headers=h)).status_code == 200
+
+
+async def test_a_run_whose_bank_runs_dry_ends_without_a_verdict(client, monkeypatch):
+    h, uid = await make(client, "tu_14", "Tu Mười Bốn")
+    await bottleneck(uid)
+    await give(uid, "truc_co_dan")
+    q = (await client.post("/cultivation/breakthrough/start", headers=h)).json()["question"]
+    key = await answer_key(q["session_id"])
+    monkeypatch.setattr(math_practice, "_templates", lambda subject, floor: [])
+    res = (await client.post("/quiz/answer", json={"session_id": q["session_id"], "answer": right_answer(q, key)},
+                             headers=h)).json()
+    assert "next" not in res and res["tribulation"]["aborted"] and res["tribulation"]["xp_lost"] == 0
+    ch = await getchar(uid)
+    assert ch.realm == "luyen_khi" and ch.cultivation_xp == 500 and ch.tribulation_retry_at is None
+    async with dbm.SessionLocal() as db:
+        run = (await db.execute(select(TribulationRun).where(TribulationRun.user_id == uid))).scalar_one()
+        assert run.result == "aborted" and run.finished_at is not None
+        assert (await db.execute(select(InventoryItem.quantity).where(
+            InventoryItem.user_id == uid, InventoryItem.item_id == "truc_co_dan"))).scalar_one() == 1
 
 
 
@@ -270,14 +344,20 @@ async def test_a_character_climbs_from_luyện_khí_to_the_last_stage_of_đại_
 
 # ------------------------------------------------------------------ đả tọa
 async def test_meditation(client, frozen):
+    """One quick math question at the player's own floor (no word learned at all); a right
+    answer pays Tu Vi by tier, counts for the quest and is written to the learning log."""
     h, uid = await make(client, "tu_7", "Tu Bảy")
-    await learn(uid, ("水",))
     r = (await client.post("/cultivation/meditate", headers=h)).json()
-    assert r["context"] == "meditate"
+    assert r["context"] == cultivation.MEDITATE_CONTEXT and r["qtype"] in math_combat.QUICK_TYPES
+    async with dbm.SessionLocal() as db:
+        assert (r["math"]["subject"], r["math"]["floor"]) == await math_ask.own_floor(db, uid)
     key = await answer_key(r["session_id"])
     res = (await client.post("/quiz/answer", json={"session_id": r["session_id"],
-                                                  "answer": correct_answer(r["qtype"], key)}, headers=h)).json()
-    assert res["xp"]["gained"] == 15 and res["next_in"] > 0
+                                                  "answer": right_answer(r, key)}, headers=h)).json()
+    assert res["xp"]["gained"] == math_path.xp_for_tier(r["math"]["tier"]) and res["next_in"] > 0
+    async with dbm.SessionLocal() as db:
+        a = (await db.execute(select(MathAnswer).where(MathAnswer.user_id == uid))).scalar_one()
+        assert a.correct and a.run_id is None and a.skill_id == r["math"]["skill"]
     again = await client.post("/cultivation/meditate", headers=h)
     assert again.json()["error"]["code"] == "meditate_wait"      # one question every 2 minutes, no AFK Tu Vi
     frozen.advance(seconds=121)
@@ -285,6 +365,26 @@ async def test_meditation(client, frozen):
     await setchar(uid, zone_id="truc_lam_thon")
     frozen.advance(seconds=121)
     assert (await client.post("/cultivation/meditate", headers=h)).json()["error"]["code"] == "not_home"
+
+
+async def test_meditation_counts_for_the_quest_and_says_when_there_is_no_question(client, frozen, monkeypatch):
+    h, uid = await make(client, "tu_7b", "Tu Bảy Bis")
+    async with dbm.SessionLocal() as db:
+        db.add(Quest(user_id=uid, quest_id="nm4_da_toa", state="active", progress={"n": 1}))   # one right answer to go
+        await db.commit()
+    r = (await client.post("/cultivation/meditate", headers=h)).json()
+    key = await answer_key(r["session_id"])
+    await client.post("/quiz/answer", json={"session_id": r["session_id"], "answer": right_answer(r, key)}, headers=h)
+    async with dbm.SessionLocal() as db:
+        assert (await db.get(Quest, (uid, "nm4_da_toa"))).state == "done"
+    frozen.advance(seconds=121)
+    monkeypatch.setattr(math_practice, "_templates", lambda subject, floor: [])
+    r = await client.post("/cultivation/meditate", headers=h)
+    err = r.json()["error"]
+    assert r.status_code == 400 and err["code"] == "no_math_question"
+    assert "chữ" not in err["message_vi"] and "vườn" not in err["message_vi"]
+    monkeypatch.undo()
+    assert (await client.post("/cultivation/meditate", headers=h)).status_code == 200   # no cooldown was spent
 
 
 # ------------------------------------------------------------------ equipment
@@ -367,4 +467,5 @@ async def test_monster_book_hides_unmet(client):
         await db.commit()
     b = (await client.get("/codex/monster", headers=h)).json()
     e = next(x for x in b["entries"] if x["id"] == "tone_wisp")
-    assert e["found"] and e["name_vi"] == "Thanh Điệu Yêu" and "Chọn thanh điệu" in e["qtypes_vi"]
+    assert e["found"] and e["name_vi"] == "Lân Hỏa Yêu" and "qtypes_vi" not in e and e["weakness_vi"]
+    assert not any(k in x for x in b["entries"] for k in ("hanzi", "pinyin", "qtypes_vi"))

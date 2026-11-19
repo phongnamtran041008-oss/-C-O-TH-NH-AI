@@ -2,9 +2,9 @@
 server (WebSocket + REST), with BALANCE_PROFILE=dev and TIME_SCALE.
 
 The bot walks with a path search on the same Tiled maps, finishes the main quest chain
-(talk to Trúc Lão, hunt Mực Con and Thanh Điệu Yêu, meditate at home, beat the Mặc Hồ
-for a Trúc Cơ Đan) and passes Thiên Kiếp. It reads answers from the database, as a
-player who knows the words would."""
+(talk to Trúc Lão, hunt Mực Con and Lân Hỏa Yêu, meditate at home, beat the Mặc Hồ
+for a Trúc Cơ Đan) and passes Thiên Kiếp. Every question on the way is a math question at
+the player's own floor; the bot reads the answers from the database."""
 from __future__ import annotations
 
 import asyncio
@@ -25,7 +25,7 @@ from websockets.asyncio.client import connect
 
 from app.config import PROTOCOL_VERSION
 from app.realtime import maps, movement
-from tests.helpers import correct_answer
+from tests.test_math_loop import right_answer
 from tests.test_ws import LOOK, SERVER_DIR, free_port
 
 SPEED = 74.0
@@ -88,7 +88,7 @@ class Bot:
         await self.wait_for(lambda: any(m["t"] == "welcome" for m in self.log), 5, "welcome")
 
     async def _read(self):
-        names = {"Mực Con": "ink_slime", "Thanh Điệu Yêu": "tone_wisp", "Mặc Hồ": "ink_fox"}
+        names = {"Mực Con": "ink_slime", "Lân Hỏa Yêu": "tone_wisp", "Mặc Hồ": "ink_fox"}
         async for raw in self.ws:
             m = json.loads(raw)
             t = m.get("t")
@@ -136,7 +136,7 @@ class Bot:
             key = json.loads(sql(self.s["db"], "select answer_key from quiz_sessions where id=?",
                                  (q["session_id"],))[0][0])
             r = await self.http.post("/quiz/answer", json={"session_id": q["session_id"],
-                                                          "answer": correct_answer(q["qtype"], key)})
+                                                          "answer": right_answer(q, key)})
             assert r.status_code in (200, 409), r.text   # 409: the shield broke from another question
         await asyncio.sleep(0)
 
@@ -254,12 +254,6 @@ async def test_pham_nhan_to_truc_co(dev_server):
     h = {"Authorization": f"Bearer {token}"}
     httpx.post(s["url"] + "/character/create", json={"display_name": "Lữ Khách", "appearance": LOOK},
                headers=h).raise_for_status()
-    # words the player has learned in the garden (the garden flow itself is tested in stage 2)
-    words = sql(s["db"], "select id from words where tier=1 and hanzi in ('水','火','木','山','人','日','口','大')")
-    for (wid,) in words:
-        sql(s["db"], "insert or replace into collection(user_id, word_id, introduced, mastery, times_correct, "
-                     "times_wrong, needs_review, first_seen_at) values (?, ?, 1, 60, 0, 0, 0, datetime('now'))",
-            (uid, wid))
     bot = Bot(s, token, uid)
     await bot.open()
     assert (await bot.http.get("/cultivation")).json()["label"] == "Phàm Nhân"
@@ -277,7 +271,7 @@ async def test_pham_nhan_to_truc_co(dev_server):
     assert (await bot.http.post("/equipment/equip", json={"instance_id": brush["id"]})).json()["stats"]["weapon"] \
         == "brush"
 
-    # 2-3. the forest: Mực Con and Thanh Điệu Yêu
+    # 2-3. the forest: Mực Con and Lân Hỏa Yêu
     await bot.go_portal("rung_muc_loang")
     await bot.hunt("ink_slime", 3)
     await bot.claim("nm2_muc_con")
@@ -297,7 +291,7 @@ async def test_pham_nhan_to_truc_co(dev_server):
         q = r.json()
         key = json.loads(sql(s["db"], "select answer_key from quiz_sessions where id=?", (q["session_id"],))[0][0])
         res = (await bot.http.post("/quiz/answer", json={"session_id": q["session_id"],
-                                                        "answer": correct_answer(q["qtype"], key)})).json()
+                                                        "answer": right_answer(q, key)})).json()
         assert res["correct"]
     await bot.claim("nm4_da_toa")
 
@@ -311,13 +305,13 @@ async def test_pham_nhan_to_truc_co(dev_server):
     assert cult["realm"] == "luyen_khi" and cult["stage"] == 9 and cult["xp"] == cult["need"], cult
     assert cult["can_tribulation"] and cult["has_pill"]
 
-    # 6. Thiên Kiếp: 20 questions over the whole HSK 1 list, 30 s each
+    # 6. Thiên Kiếp: 20 math questions, the hardest this player may be asked
     q = (await bot.http.post("/cultivation/breakthrough/start")).json()["question"]
     res = None
     while q:
         key = json.loads(sql(s["db"], "select answer_key from quiz_sessions where id=?", (q["session_id"],))[0][0])
         res = (await bot.http.post("/quiz/answer", json={"session_id": q["session_id"],
-                                                        "answer": correct_answer(q["qtype"], key)})).json()
+                                                        "answer": right_answer(q, key)})).json()
         q = res.get("next")
     assert res["tribulation"]["passed"] and res["tribulation"]["realm"] == "truc_co"
     await bot.wait_for(lambda: any(m["t"] == "stats" and m["realm"] == "truc_co" for m in bot.log), 5, "stats")

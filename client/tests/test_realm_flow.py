@@ -1,9 +1,10 @@
 """Stage 9 through the real client: at the Cổng Bí Cảnh in Trúc Lâm Thôn the player opens the
 gate, makes a party with two bots from the Tổ đội panel (typing their names), leads them into
 Mặc Ảnh Động, looks around the first room, and walks out (keeping the entry's loot so far);
-the two bots carry on over their own WebSockets and clear the realm. Then the game replays
-everything one bot saw, room by room until the result screen, so every puzzle card is drawn
-from real server messages.
+the two bots carry on over their own WebSockets and clear the realm (three Trận Nhãn rooms on
+pedestals, a row of stones and pillars, then the boss; every question a math one at the bot's
+own floor). Then the game replays everything one bot saw, room by room until the result
+screen, so every room card and seal is drawn from real server messages.
 
     python -m client.tests.test_realm_flow OUT_DIR      # with screenshots
 """
@@ -18,7 +19,8 @@ from pathlib import Path
 
 import pygame
 
-from client.tests.driver import ROOT, Driver, ServerProcess, answer_current_quiz
+from client.tests.driver import ROOT, Driver, ServerProcess
+from client.tests.test_math_combat_flow import answer_card
 from client.tests.test_world_flow import make_account
 
 sys.path.insert(0, str(ROOT / "tools"))
@@ -73,9 +75,6 @@ def run_realm_flow(workdir: Path, shots: Path | None = None) -> None:
         server.sql("update characters set realm='truc_co', realm_stage=1, zone_id='truc_lam_thon', x=?, y=?, "
                    "facing='up' where user_id=?", (gx, gy + 14, uid))
         server.sql("update users set flags=? where id=?", (json.dumps({"tutorial": 5}), uid))
-        server.sql("insert or ignore into collection(user_id, word_id, introduced, mastery, times_correct, times_wrong,"
-                   " needs_review, first_seen_at) select ?, id, 1, 60, 0, 0, 0, datetime('now') from words where tier=1",
-                   (uid,))
         team = BotTeam(url, server.db)
         team.start()
         assert team.ready.wait(60) and team.error is None, team.error
@@ -95,9 +94,11 @@ def run_realm_flow(workdir: Path, shots: Path | None = None) -> None:
         gate = drv.game.top
         ids = [r["id"] for r in gate.data["realms"]]
         assert ids == ["khe_nut_muc", "mac_anh_dong"] and gate.data["realms"][1]["open"]
+        assert all(r["math"] and r["floor"] == 1 and "hanzi" not in r for r in gate.data["realms"])
+        assert set(gate.data["puzzles"]) == {"seal", "boss"}
         drv.shot("realm_gate")
-        drv.click("rg_tab_puzzles")
-        drv.shot("realm_gate_puzzles")
+        drv.click("rg_tab_math")
+        drv.shot("realm_gate_math")
         drv.click("rg_tab_forge")
         drv.shot("realm_gate_forge")
         drv.click("rg_tab_realms")
@@ -119,10 +120,11 @@ def run_realm_flow(workdir: Path, shots: Path | None = None) -> None:
                  is not None, 20, "the first room")
         ws = world(drv)
         assert ws.realm.run["name_vi"] == "Mặc Ảnh Động" and len(ws.realm.run["members"]) == 3
+        assert ws.realm.kind == "seal" and ws.realm.puzzle["seals"]
         drv.step(30)
         drv.shot("realm_first_room")
-        if drv.top_is("CombatQuizScene"):
-            answer_current_quiz(drv, server)
+        if drv.top_is("MathCombatQuizScene") and not drv.game.top.result:   # a Mặc Quái asked at once
+            answer_card(drv, server, correct=True)
         # ---- out again (the bots go on without us)
         drv.wait(lambda: drv.has("realm_leave") and drv.top_is("WorldScene"), 10, "the leave button")
         drv.click("realm_leave")
@@ -131,7 +133,7 @@ def run_realm_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait(lambda: world(drv) is not None and world(drv).zone_id == "truc_lam_thon", 15, "back in the village")
         drv.shot("back_in_village")
         if not team.done.wait(600):
-            info = [(b.name, b.room and b.room["kind"], b.puzzle, b.mine, round(b.me.x), round(b.me.y), b.me.hp,
+            info = [(b.name, b.room and b.room["kind"], b.puzzle, round(b.me.x), round(b.me.y), b.me.hp,
                      b.q_open, len(b.route)) for b in team.bots]
             raise AssertionError(f"the bots did not finish: {info}")
         assert team.error is None, team.error

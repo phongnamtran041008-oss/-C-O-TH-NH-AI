@@ -4,6 +4,10 @@ Tu Vi comes mostly from right answers (any context), plus kills, harvests, quest
 meditation. Inside a realm the next stage comes by itself when Tu Vi is full; entering a
 new realm (Luyện Khí 9 -> Trúc Cơ...) needs full Tu Vi, the realm's pill and a 20-question
 Thiên Kiếp. There is no way to gain Tu Vi without answering (meditation asks a question).
+
+Both questions are math questions at the player's own floor (math_ask.pick_own): meditation
+asks a quick one, each question of a Thiên Kiếp is the hardest one this player may be asked
+(highest=True), picked when it is asked. Each answer is written to the learning log first.
 """
 from __future__ import annotations
 
@@ -15,15 +19,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import balance, clock
 from ..config import settings
-from ..learning import question_bank as qb
-from ..learning import quiz, selection
-from ..learning.wordbank import bank
+from ..learning import quiz
 from ..models import Character, EquipmentInstance, InventoryItem, QuizSession, TribulationRun, User
 from . import catalog, inventory
 
+MEDITATE_CONTEXT = "math_meditate"
+TRIBULATION_CONTEXT = "math_tribulation"
+
 STAGE_LABELS = ["sơ kỳ", "trung kỳ", "hậu kỳ"]
-# The old word game's vocabulary tier for each realm. The realms after Nguyen Anh reuse the
-# highest tier (4): no word content is planned for them.
+# The old word game's vocabulary tier for each realm, still read by modes of later purge waves
+# (fishing, classic Thủ Vườn); meditation and Thiên Kiếp no longer use it.
 REALM_TIER = {"pham_nhan": 1, "luyen_khi": 1, "truc_co": 2, "kim_dan": 3, "nguyen_anh": 4,
               "hoa_than": 4, "luyen_hu": 4, "hop_the": 4, "dai_thua": 4}
 
@@ -235,21 +240,20 @@ async def meditate(db: AsyncSession, user: User, rng: random.Random | None = Non
         if now < ready:
             wait = int((ready - now).total_seconds()) + 1
             raise CultivationError(400, "meditate_wait", f"Tâm còn xao động, {wait} giây nữa mới có câu tiếp.")
-    tier = tier_of(ch.realm)
-    try:
-        word_id = await selection.pick_word(db, user.id, tier, rng)
-    except selection.NoWordAvailable:
-        raise CultivationError(400, "nothing_learned", "Hãy học ít nhất một chữ trong vườn trước đã.")
-    w = bank().get(word_id)
-    allowed = [q for q in cfg()["meditate_qtypes"] if balance.quiz()["types"][q]["min_tier"] <= tier]
-    question = qb.generate_any(allowed, w, quiz.gen_context(rng, max_tier=max(tier, w.tier)))
+    from . import math_ask, math_combat
+    question = await math_ask.pick_own(db, user, qtypes=math_combat.QUICK_TYPES, rng=rng)
+    if question is None:
+        raise CultivationError(400, "no_math_question",
+                               "Tâm chưa có đề để ngộ: con chưa mở được câu toán nào. "
+                               "Vào Đạo Thụ luyện một buổi rồi quay lại đả tọa.")
     flags["meditate_at"] = now.isoformat()
     user.flags = flags
-    return await quiz.create_session(db, user, "meditate", question)
+    return await quiz.create_session(db, user, MEDITATE_CONTEXT, question)
 
 
 async def meditate_handler(db: AsyncSession, user: User, s: QuizSession, correct: bool, now: dt.datetime) -> dict:
-    out = await quiz.practice_handler(db, user, s, correct, now)
+    from . import math_ask
+    out: dict = {"math": await math_ask.record(db, user, s, correct, now)}   # the learning log first
     if correct:
         from . import quests
         await quests.on_event(db, user.id, "meditate", "")
@@ -259,7 +263,14 @@ async def meditate_handler(db: AsyncSession, user: User, s: QuizSession, correct
     return out
 
 
-quiz.register_handler("meditate", meditate_handler)
+def _math_xp(s: QuizSession) -> int:
+    """Tu Vi of a right meditation answer: the math rule, by tier (math_ask.xp_rule)."""
+    from . import math_ask
+    return math_ask.xp_rule(s)
+
+
+quiz.register_handler(MEDITATE_CONTEXT, meditate_handler)
+quiz.register_xp_rule(MEDITATE_CONTEXT, _math_xp)
 
 
 # ------------------------------------------------------------------ Thiên Kiếp
@@ -269,33 +280,28 @@ async def _pill_count(db: AsyncSession, user_id: int, item_id: str) -> int:
     return sum(rows)
 
 
-def _tribulation_pool(tier: int) -> list[str]:
-    """Words of the realm's tier; when that tier has no words (only HSK 1-2 exist, while Kết Đan
-    and later realms ask for tier 3-4), the highest tier below it that has some. Without this a
-    Thiên Kiếp out of Kết Đan or later had no question at all and crashed."""
-    visible = [w for w in bank().words.values() if not w.hidden]
-    for t in range(tier, 0, -1):
-        pool = [w.id for w in visible if w.tier == t]
-        if pool:
-            return pool
-    return [w.id for w in visible]
-
-
-def _tribulation_question(run: TribulationRun, rng: random.Random) -> qb.Question:
-    t = cfg()["tribulation"]
-    w = bank().get(run.words[run.index])
-    tier = tier_of(run.from_realm)
-    allowed = [q for q, c in balance.quiz()["types"].items() if c["min_tier"] <= tier]
-    q = qb.generate_any(allowed, w, quiz.gen_context(rng, max_tier=tier))
-    q.time_limit = float(t["time_limit"])
+async def _tribulation_question(db: AsyncSession, user: User, rng: random.Random):
+    """A breakthrough question: the hardest quick question this player may be asked at their
+    own floor, else any quick one. None when the bank has nothing for them. The question keeps
+    its own time limit (math.json, by type and tier)."""
+    from . import math_ask, math_combat
+    q = await math_ask.pick_own(db, user, qtypes=math_combat.QUICK_TYPES, highest=True, rng=rng)
+    if q is None:
+        q = await math_ask.pick_own(db, user, qtypes=math_combat.QUICK_TYPES, rng=rng)
     return q
 
 
-async def _ask(db: AsyncSession, user: User, run: TribulationRun, rng: random.Random) -> dict:
-    q = _tribulation_question(run, rng)
-    out = await quiz.create_session(db, user, "tribulation", q, ref=str(run.id))
+async def _ask(db: AsyncSession, user: User, run: TribulationRun, rng: random.Random, question=None) -> dict | None:
+    q = question or await _tribulation_question(db, user, rng)
+    if q is None:
+        return None
+    out = await quiz.create_session(db, user, TRIBULATION_CONTEXT, q, ref=str(run.id))
     out.update({"run_id": run.id, "number": run.index + 1, "total": len(run.words), "correct_so_far": run.correct})
     return out
+
+
+NO_QUESTION_VI = ("Thiên Kiếp chưa giáng được: con chưa mở được câu toán nào. "
+                  "Vào Đạo Thụ luyện một buổi rồi hãy đột phá.")
 
 
 async def tribulation_start(db: AsyncSession, user: User, rng: random.Random | None = None) -> dict:
@@ -308,7 +314,7 @@ async def tribulation_start(db: AsyncSession, user: User, rng: random.Random | N
         TribulationRun.user_id == user.id, TribulationRun.finished_at.is_(None)))).scalars().first()
     if run is not None:  # resume: the open question, or count an expired one as wrong and go on
         s = (await db.execute(select(QuizSession).where(
-            QuizSession.user_id == user.id, QuizSession.context == "tribulation", QuizSession.ref == str(run.id),
+            QuizSession.user_id == user.id, QuizSession.context == TRIBULATION_CONTEXT, QuizSession.ref == str(run.id),
             QuizSession.answered_at.is_(None)).order_by(QuizSession.created_at.desc()))).scalars().first()
         if s is not None and s.expires_at > now:
             out = quiz.public_session(s)
@@ -320,7 +326,10 @@ async def tribulation_start(db: AsyncSession, user: User, rng: random.Random | N
             if res.get("next"):
                 return {"question": res["next"], "resumed": True}
             return {"result": res.get("tribulation"), "resumed": True}
-        return {"question": await _ask(db, user, run, rng), "resumed": True}
+        q = await _ask(db, user, run, rng)
+        if q is None:
+            raise CultivationError(400, "no_math_question", NO_QUESTION_VI)
+        return {"question": q, "resumed": True}
     need = xp_needed(ch.realm, ch.realm_stage)
     nxt = next_step(ch.realm, ch.realm_stage)
     if nxt is None or not nxt[2]:
@@ -333,18 +342,21 @@ async def tribulation_start(db: AsyncSession, user: User, rng: random.Random | N
     if await _pill_count(db, user.id, nxt[2]) <= 0:
         raise CultivationError(400, "no_pill", f"Cần {catalog.item_name(nxt[2])} để đột phá.")
     t = cfg()["tribulation"]
-    tier = tier_of(ch.realm)
-    pool = _tribulation_pool(tier)
-    words = rng.sample(pool, min(t["questions"], len(pool)))
-    run = TribulationRun(user_id=user.id, from_realm=ch.realm, to_realm=nxt[0], words=words, index=0, correct=0,
-                         started_at=now)
+    first = await _tribulation_question(db, user, rng)
+    if first is None:     # nothing to ask: refuse before a run (and its cooldown) exists
+        raise CultivationError(400, "no_math_question", NO_QUESTION_VI)
+    # `words` (a column of the old word game) only holds one placeholder per question now:
+    # its length is the number of questions; each one is picked when it is asked.
+    run = TribulationRun(user_id=user.id, from_realm=ch.realm, to_realm=nxt[0], words=["math"] * t["questions"],
+                         index=0, correct=0, started_at=now)
     db.add(run)
     await db.flush()
-    return {"question": await _ask(db, user, run, rng), "resumed": False}
+    return {"question": await _ask(db, user, run, rng, first), "resumed": False}
 
 
 async def tribulation_handler(db: AsyncSession, user: User, s: QuizSession, correct: bool, now: dt.datetime) -> dict:
-    out = await quiz.practice_handler(db, user, s, correct, now)
+    from . import math_ask
+    out: dict = {"math": await math_ask.record(db, user, s, correct, now)}   # the learning log first
     run = await db.get(TribulationRun, int(s.ref)) if s.ref else None
     if run is None or run.finished_at is not None or run.user_id != user.id:
         return out
@@ -352,7 +364,15 @@ async def tribulation_handler(db: AsyncSession, user: User, s: QuizSession, corr
     run.correct += int(correct)
     out["number"], out["total"], out["correct_so_far"] = run.index, len(run.words), run.correct
     if run.index < len(run.words):
-        out["next"] = await _ask(db, user, run, random.Random())
+        nxt = await _ask(db, user, run, random.Random())
+        if nxt is not None:
+            out["next"] = nxt
+            return out
+        # the bank ran dry in the middle of a run (it cannot today: the first question came from
+        # the same floor). Nobody is punished for that: the run ends with no verdict, pill kept.
+        run.finished_at, run.result = now, "aborted"
+        out["tribulation"] = {"passed": False, "aborted": True, "correct": run.correct, "total": len(run.words),
+                              "pass_pct": cfg()["tribulation"]["pass_pct"], "xp_lost": 0, "retry_in": 0}
         return out
     t = cfg()["tribulation"]
     ch = await db.get(Character, user.id)
@@ -380,4 +400,4 @@ async def tribulation_handler(db: AsyncSession, user: User, s: QuizSession, corr
     return out
 
 
-quiz.register_handler("tribulation", tribulation_handler)
+quiz.register_handler(TRIBULATION_CONTEXT, tribulation_handler)   # Tu Vi: xp_per_correct (0), the realm is the prize

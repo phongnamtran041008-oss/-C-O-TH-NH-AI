@@ -1,5 +1,6 @@
-"""Stage 4 screens: the combat question card, death, cultivation (Tu Vi, stats, Pháp Chữ,
-Thiên Kiếp), forge, quests, Yêu Quái Phổ and meditation."""
+"""Stage 4 screens: death, cultivation (Tu Vi, stats, Thiên Kiếp), forge, quests, Yêu Quái
+Phổ and meditation. Every question here is a math question on the math card
+(math_practice.MathQuizScene); a monster's question card lives in math_practice too."""
 from __future__ import annotations
 
 import math
@@ -10,46 +11,12 @@ import pygame
 from .. import strings_vi as T
 from ..engine import art2, sprites
 from .base import Scene
-from .quiz import CombatCard, QuizScene
+from .math_practice import MathQuizScene
 
 
 def fmt_wait(s: float) -> str:
     s = max(0, int(s))
     return f"{s // 60}:{s % 60:02d}" if s >= 60 else f"{s} giây"
-
-
-# ------------------------------------------------------------------ combat question
-class CombatQuizScene(CombatCard, QuizScene):
-    """The Vấn Đạo card (spec 8.1): lower part of the screen, the fight stays visible; the
-    answer and its explanation show for 2 seconds, then the fight goes on."""
-    compact = True
-    modal = False
-    toast_y = 70
-    draws_world = False
-
-    def __init__(self, game, question: dict, monster_id: str, on_result=None):
-        super().__init__(game, question, on_result=on_result, show_timer=True)
-        self.monster_id = monster_id
-        self.auto_close_after = 2.0
-
-    def submit(self, answer: dict):
-        super().submit(answer)
-
-    def draw_result_extra(self, ui, bx, by, bw, bh):
-        c = (self.result or {}).get("combat") or {}
-        if c.get("shield_broken"):
-            txt = f"{T.SHIELD_BROKEN} {T.NGO_DAO} -{c.get('damage', 0)}" + (" (chí mạng!)" if c.get("crit") else "")
-            ui.text(txt, bx + bw - 10, by + 8, 9, "#6A994E", anchor="topright")
-        elif c.get("mac_kich"):
-            ui.text(f"{T.MAC_KICH} -{c['mac_kich']}", bx + bw - 10, by + 8, 9, "#BC4749", anchor="topright")
-        if self.result and self.result.get("correct") and self.result_t < 0.05:
-            self.auto_close_after = 1.2  # a right answer gets back to the fight a little faster
-
-    def draw_ui(self, ui):
-        super().draw_ui(ui)
-        x, y, w, h = self.panel_rect()
-        if not self.result:
-            ui.text(T.HOI_THE, x + w - 12, y + 8, 7, "#6A994E", anchor="topright")
 
 
 class DeathOverlay(Scene):
@@ -187,8 +154,37 @@ class CharacterScene(Scene):
             self.close()
 
 
+class TribulationQuizScene(MathQuizScene):
+    """One question of a Thiên Kiếp: the math card, with the trial's counter along its bottom
+    edge and the storm of the Thiên Kiếp screen drawn over it - a wrong answer (or running out
+    of time) brings the lightning the moment the verdict arrives."""
+    can_stop = False         # a Thiên Kiếp cannot be paused half way
+
+    def __init__(self, game, question: dict, storm: "TribulationScene"):
+        super().__init__(game, question, run=None, on_result=lambda res, stop: storm.on_result(res))
+        self.storm = storm
+        self.struck = False
+
+    def update(self, dt, top):
+        super().update(dt, top)
+        if self.result and not self.struck:
+            self.struck = True
+            if not self.result.get("correct"):
+                self.storm.strike()
+
+    def draw_ui(self, ui):
+        super().draw_ui(ui)
+        x, y, w, h = self.panel_rect()
+        n, total, right = self.storm.progress
+        if self.result:              # the verdict of this question counts already
+            right = self.result.get("correct_so_far", right)
+        ui.text(T.TRIB_PROGRESS.format(n=n, total=total, c=right), x + 12, y + h - 12, 7, "#C99A3A",
+                anchor="midleft")
+        self.storm.draw_storm(ui)
+
+
 class TribulationScene(Scene):
-    """Thiên Kiếp (spec 7.3): 20 questions, lightning for every wrong answer."""
+    """Thiên Kiếp (spec 7.3): 20 math questions, lightning for every wrong answer."""
 
     def __init__(self, game):
         super().__init__(game)
@@ -233,11 +229,10 @@ class TribulationScene(Scene):
 
     def ask(self, q: dict):
         self.progress = (q.get("number", 1), q.get("total", 20), q.get("correct_so_far", 0))
-        self.game.push(QuizScene(self.game, q, on_result=self.on_result, show_timer=True))
+        self.game.push(TribulationQuizScene(self.game, q, self))
 
     def on_result(self, res: dict):
-        if not res.get("correct"):
-            self.strike()
+        """The card of one question closed (its lightning already struck)."""
         if res.get("tribulation"):
             self.finish(res["tribulation"])
         elif res.get("next"):
@@ -250,19 +245,23 @@ class TribulationScene(Scene):
         if result.get("passed"):
             self.game.audio.play("discover")
 
-    def draw_ui(self, ui):
-        ui.fill(0, 0, 480, 270, (16, 16, 30, 220))
+    def draw_storm(self, ui):
+        """The lightning of the wrong answers, and the white flash after each."""
         for life, pts in self.bolts:
             win = [ui.d.to_window(px, py) for px, py in pts]
             if len(win) > 1:
                 pygame.draw.lines(ui.win, pygame.Color("#FFF6B0"), False, win, max(2, ui.s * 2))
         if self.flash:
             ui.fill(0, 0, 480, 270, (255, 255, 230, int(140 * self.flash)))
+
+    def draw_ui(self, ui):
+        ui.fill(0, 0, 480, 270, (16, 16, 30, 220))
+        self.draw_storm(ui)
         x, y, w, h = 80, 30, 320, 210
         ui.panel(x, y, w, h, T.TRIB_TITLE)
         c = self.game.state.cult or {}
         if self.state == "intro":
-            ui.text(T.TRIB_INTRO.format(n=20, t=30, p=80), x + 16, y + 20, 8, max_w=w - 32)
+            ui.text(T.TRIB_INTRO.format(n=20, p=80), x + 16, y + 20, 8, max_w=w - 32)
             ui.text(f"{c.get('label', '')} → {T.REALMS.get(c.get('next_realm') or '', c.get('next_realm') or '')}", x + w / 2, y + 110, 10, "#6A994E",
                     anchor="center")
             if ui.button("trib_go", x + w / 2 - 50, y + 140, 100, 18, T.TRIB_START, style="gold",
@@ -287,7 +286,8 @@ class TribulationScene(Scene):
 
 
 class MeditateScene(Scene):
-    """Bàn đả tọa: one review question at a time, Tu Vi only for right answers (spec 7.3)."""
+    """Bàn đả tọa: one math question at the player's own floor at a time, Tu Vi only for right
+    answers (spec 7.3)."""
 
     def __init__(self, game):
         super().__init__(game)
@@ -303,7 +303,9 @@ class MeditateScene(Scene):
 
         def ok(q):
             self.busy = False
-            self.game.push(QuizScene(self.game, q, on_result=self.done, show_timer=True))
+            card = MathQuizScene(self.game, q, on_result=lambda res, stop: self.done(res))
+            card.can_stop = False            # one question, nothing to stop
+            self.game.push(card)
 
         def err(e):
             self.busy = False
@@ -321,7 +323,7 @@ class MeditateScene(Scene):
         ui.dim(120)
         x, y, w, h = 120, 60, 240, 150
         ui.panel(x, y, w, h, T.MEDITATE_TITLE)
-        ui.text(T.MEDITATE_TEXT.format(xp=15), x + 14, y + 16, 8, max_w=w - 28)
+        ui.text(T.MEDITATE_TEXT, x + 14, y + 16, 8, max_w=w - 28)
         if self.last and self.last.get("xp"):
             ui.text(T.LOOT_XP.format(n=self.last["xp"]["gained"]), x + w / 2, y + 66, 10, "#C99A3A", anchor="center")
         label = T.MEDITATE_GO if self.wait <= 0 else T.MEDITATE_WAIT.format(t=fmt_wait(math.ceil(self.wait)))
@@ -556,8 +558,8 @@ class MonsterBookScene(Scene):
                 rank = f" · {e['rank_vi']}" if e.get("rank_vi") and e["rank"] != "normal" else ""
                 ui.text(e["name_vi"] + rank, x + 70, ry + 4, 9)
                 ui.text(T.MB_KILLS.format(n=e["kills"]), x + w - 18, ry + 4, 8, "#6A994E", anchor="topright")
-                if e["qtypes_vi"]:
-                    ui.text(T.MB_QTYPES.format(q=", ".join(e["qtypes_vi"])), x + 70, ry + 16, 7, "#5A5A5A",
+                if e.get("mistake_vi"):         # a quái lỗi sai (M7): the mistake it stands for
+                    ui.text(T.MB_MISTAKE.format(m=e["mistake_vi"]), x + 70, ry + 16, 7, "#5A5A5A",
                             max_w=w - 90)
                 ui.text(T.MB_WEAK.format(w=e["weakness_vi"]), x + 70, ry + 27, 7, "#5A5A5A", max_w=w - 90)
                 if e["drops_vi"]:

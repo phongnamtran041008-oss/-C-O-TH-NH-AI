@@ -371,6 +371,9 @@ Quy tắc sinh câu:
 
 ## 9. Ải "Thủ Vườn" (tower defense) và Bách Thảo Phổ
 
+> Đã bỏ cùng trò học chữ cũ: tower defense bây giờ là Thủ Thành Toán (tháp là mảng toán, docs/API.md mục M10).
+> Phần dưới đây chỉ còn là lịch sử thiết kế.
+
 Thủ Vườn là **một chế độ chơi riêng** (vào từ cổng ở Trúc Lâm Thôn), không thay thế thế giới chính. Đơn người chơi ở v1 (có thể mở co-op 2 người ở giai đoạn mở rộng).
 
 ### 9.1 Luật chơi

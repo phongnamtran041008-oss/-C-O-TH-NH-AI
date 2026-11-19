@@ -298,6 +298,86 @@ def test_a_timeout_reveal_says_which_parts_had_no_answer():
                                        "c) Chưa trả lời. Đáp án: Sai"]
 
 
+# ------------------------------------------------------------------ Thiên Kiếp (breakthrough) and đả tọa
+def quick(number: int, so_far: int, context: str = "math_tribulation") -> dict:
+    """A quick math question as the breakthrough / meditation endpoints send it."""
+    return {"session_id": f"s{number}", "context": context, "time_limit": 15, "input": "truefalse",
+            "options": None, "qtype": "true_false", "instruction_vi": "Đúng hay sai?",
+            "prompt": {"text": "Tập {1, 2} có hai phần tử."}, "number": number, "total": 20,
+            "correct_so_far": so_far,
+            "math": {"subject_name_vi": "Đại Số Tuyến Tính", "floor": 1, "skill_name_vi": "Tập hợp", "tier": 1,
+                     "tier_name_vi": "Nhập môn"}}
+
+
+def scene_game(ui):
+    from types import SimpleNamespace
+    game = make_game(ui)
+    game.scenes = []
+    game.push = game.scenes.append
+    game.pop = lambda sc=None: game.scenes.remove(sc) if sc in game.scenes else None
+    game.state = SimpleNamespace(cult={"label": "Luyện Khí tầng 9", "next_realm": "truc_co"})
+    game.refresh_cult = game.refresh_me = lambda: None
+    game.on_xp = lambda xp: None
+    return game
+
+
+def test_a_breakthrough_asks_on_the_math_card_counts_and_strikes_lightning_on_a_miss():
+    from client.scenes.math_practice import MathQuizScene
+    from client.scenes.rpg import TribulationQuizScene, TribulationScene
+    ui = make_ui()
+    game = scene_game(ui)
+    storm = TribulationScene(game)
+    game.push(storm)
+    storm.ask(quick(3, 2))
+    card = game.scenes[-1]
+    assert isinstance(card, TribulationQuizScene) and isinstance(card, MathQuizScene) and not card.can_stop
+    assert storm.progress == (3, 20, 2)
+    rects = collect(ui)
+    frame(ui, lambda: card.draw_ui(ui))
+    ui.text = type(ui).text.__get__(ui)
+    assert "Câu 3/20 · đúng 2" in [t for t, _ in rects] and "math_true" in ui.widgets
+    frame(ui, lambda: card.draw_ui(ui), click="math_false")
+    assert game.api.posts == [("/quiz/answer", {"session_id": "s3", "answer": {"value": False}})]
+    # the verdict: wrong - the lightning strikes at once, over the card
+    card.result = {"correct": False, "correct_so_far": 2, "next": quick(4, 2),
+                   "reveal": {"answer_text": "Đúng", "solution_vi": ["Đếm: 1 và 2."]}}
+    card.update(0.016, True)
+    assert storm.flash == 1.0 and storm.bolts
+    card.update(0.016, True)
+    assert len(storm.bolts) == 1                                         # once per answer
+    frame(ui, lambda: card.draw_ui(ui))
+    assert "math_next" in ui.widgets and "math_stop" not in ui.widgets   # no pausing a Thiên Kiếp
+    frame(ui, lambda: card.draw_ui(ui), click="math_next")              # closing it asks the next one
+    nxt = game.scenes[-1]
+    assert card not in game.scenes and isinstance(nxt, TribulationQuizScene) and nxt.q["session_id"] == "s4"
+    assert storm.progress == (4, 20, 2)
+    nxt.result = {"correct": True, "correct_so_far": 3, "reveal": {"answer_text": "Đúng"},
+                  "tribulation": {"passed": True, "label": "Trúc Cơ sơ kỳ", "jade": 50}}
+    nxt.update(0.016, True)
+    assert len(storm.bolts) == 1                                         # a right answer: no lightning
+    nxt.finish()
+    assert storm.state == "done" and storm.result["passed"] and game.scenes == [storm]
+
+
+def test_meditation_asks_on_the_math_card_with_nothing_to_stop():
+    from client.scenes.math_practice import MathQuizScene
+    from client.scenes.rpg import MeditateScene
+    ui = make_ui()
+    game = scene_game(ui)
+    calls = []
+    game.api.post = lambda path, body, ok, err: calls.append(path) or ok(quick(1, 0, "math_meditate"))
+    med = MeditateScene(game)
+    game.push(med)
+    med.ask()
+    card = game.scenes[-1]
+    assert calls == ["/cultivation/meditate"] and type(card) is MathQuizScene and not card.can_stop
+    card.result = {"correct": True, "xp": {"gained": 6}, "next_in": 120, "reveal": {"answer_text": "Đúng"}}
+    frame(ui, lambda: card.draw_ui(ui))
+    assert "math_stop" not in ui.widgets
+    frame(ui, lambda: card.draw_ui(ui), click="math_next")
+    assert game.scenes == [med] and med.wait == 120.0 and med.last["xp"]["gained"] == 6
+
+
 # ------------------------------------------------------------------ the combat card of a missed Thiên kiếp
 def test_a_missed_thien_kiep_stays_up_long_enough_to_read_and_closes_on_enter():
     """An ordinary combat card closes itself after two seconds; the reveal of a Thiên kiếp (which

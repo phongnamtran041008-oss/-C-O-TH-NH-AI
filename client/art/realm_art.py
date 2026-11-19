@@ -1,7 +1,9 @@
 """Bí cảnh art (stage 9), drawn with code from the palette like the rest of client/art: the
 three realm Mặc Quái (Mặc Ảnh, Bút Yêu and the boss Nghiên Ma, 48x48), the gate in the
-village, the Khe Nứt Mực rift, and the puzzle props (stones, numbered tiles, tone pillars,
-the statue, the mirror, the door and the chest)."""
+village, the Khe Nứt Mực rift, and the room props: the pedestals, floor stones and pillars
+that serve as Trận Nhãn seals, the statue, the door and the chest. (`mirror` belonged to a
+word room that is gone; it stays only while client/tests/test_art2.py still checks its v2
+twin.)"""
 from __future__ import annotations
 
 import math

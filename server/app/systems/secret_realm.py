@@ -18,8 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .. import balance, clock
 from .. import db as dbm
 from ..config import DATA_DIR
-from ..learning import quiz
-from ..models import Character, Collection, RealmClaim, RealmMember, RealmRun, User
+from ..models import Character, RealmClaim, RealmMember, RealmRun, User
 from . import catalog, cultivation, inventory, items
 
 
@@ -93,16 +92,6 @@ async def create_run(db: AsyncSession, realm_id: str, user_ids: list[int]) -> in
     return run.id
 
 
-async def learned_words(db: AsyncSession, user_ids: list[int]) -> dict[int, dict[str, int]]:
-    """Which words each member has been introduced to (puzzles only use those, spec 14.2)."""
-    out: dict[int, dict[str, int]] = {uid: {} for uid in user_ids}
-    rows = (await db.execute(select(Collection.user_id, Collection.word_id, Collection.mastery).where(
-        Collection.user_id.in_(user_ids), Collection.introduced.is_(True)))).all()
-    for uid, wid, mastery in rows:
-        out[uid][wid] = int(mastery or 0)
-    return out
-
-
 async def abort_run(run_id: int) -> None:
     """The party fell apart before stepping in: the entry is given back."""
     async with dbm.SessionLocal() as db:
@@ -171,12 +160,10 @@ async def _grant_table(db: AsyncSession, uid: int, rng: random.Random, entries: 
         out["equipment"].append(await items.grant_equipment(db, uid, rng.choice(e["equipment"]), rar, "realm", ref))
 
 
-async def claim_room(run_id: int, user_id: int, room_index: int, room_kind: str,
-                     realm_id: str | None = None) -> dict | None:
-    """A cleared room's loot. A realm may have its own table (`room_loot_by_realm`, M10: the
-    math bí cảnh pays Linh Thạch and the materials of data/math/drops.json, and its Tu Vi
-    comes from the answers alone, so its `xp` is 0)."""
-    c = cfg().get("room_loot_by_realm", {}).get(realm_id or "") or cfg()["room_loot"]
+async def claim_room(run_id: int, user_id: int, room_index: int, room_kind: str, realm_id: str) -> dict | None:
+    """A cleared room's loot, from the realm's own table (`room_loot_by_realm`: Linh Thạch and
+    the materials of data/math/drops.json; Tu Vi comes from the answers alone, so its `xp` is 0)."""
+    c = cfg()["room_loot_by_realm"][realm_id]
     ref = f"run{run_id}:room{room_index}"
 
     async def roll(db, rng):
@@ -231,61 +218,31 @@ async def claims(db: AsyncSession, run_id: int, user_id: int) -> list[dict]:
     return [{"stage": r.stage, **(r.loot or {})} for r in rows]
 
 
-# ------------------------------------------------------------------ learning
-async def record_answer(user_id: int, word_id: str, correct: bool) -> int | None:
-    """A puzzle move about a word counts like a combat answer (spec 8.3): mastery ±2, the
-    garden stage never changes. Only for words the player owns."""
-    q = balance.quiz()
-    async with dbm.SessionLocal() as db:
-        col = await quiz.get_collection(db, user_id, word_id)
-        if col is None:
-            return None
-        col.times_correct += int(correct)
-        col.times_wrong += int(not correct)
-        col.last_answered_at = clock.now()
-        quiz.bump_mastery(col, q["non_garden_mastery_correct"] if correct else q["non_garden_mastery_wrong"])
-        if not correct:
-            col.needs_review = True
-        mastery = col.mastery
-        await db.commit()
-    from ..realtime.world import world
-    world.word_mastery_changed(user_id, word_id, mastery)
-    return mastery
-
-
 # ------------------------------------------------------------------ the gate
 async def view(db: AsyncSession, user: User) -> dict:
     from ..realtime.realm import window_status
     from ..realtime.world import world
     ch = await db.get(Character, user.id)
     used = await entries_used(db, user.id)
-    order = cultivation.order()
     out, math_out = [], []
-    floor = None
+    floor = (await math_floors(db, [user.id]))[user.id] or 0
     for rid, r in realms().items():
         limit = daily_limit(rid)
         if r["kind"] == "scheduled":
             st = window_status(clock.now())
-        elif r["kind"] == "math":   # M10: open whenever the gate is; entered alone or with the party
+        elif r["kind"] == "math":   # open whenever the gate is; entered alone or with the party
             st = {"open": True, "opens_in": 0, "closes_in": None}
-        else:
+        else:                       # a rift: open while one is there
             st = {"open": None}
-        row = {"id": rid, "name_vi": r["name_vi"], "hanzi": r.get("hanzi", ""), "kind": r["kind"],
-               "min_realm": r.get("min_realm"),
-               "min_realm_vi": cultivation.realm_name(r["min_realm"]) if r.get("min_realm") else "",
-               "realm_ok": ch is not None and (not r.get("min_realm")
-                                               or order.index(ch.realm) >= order.index(r["min_realm"])),
-               "tier": r["tier"], "puzzles": r["puzzles"], "time_limit_minutes": r["time_limit_minutes"],
-               "desc_vi": r.get("desc_vi", ""), "entries_left": max(0, limit - used.get(rid, 0)),
-               "daily": limit, "party_min": int(r.get("party_min", cfg()["party_min"])), **st}
-        if r["kind"] == "math":
-            if floor is None:
-                floor = (await math_floors(db, [user.id]))[user.id] or 0
-            row.update(math=True, floor=floor, realm_ok=row["realm_ok"] and floor > 0,
-                       rooms=[puzzle_info(x["kind"]).get("name_vi", x["kind"]) for x in r["math"]["rooms"]])
-            math_out.append(row)   # (their own list: the gate shows them on their own tab)
-            continue
-        out.append(row)
+        rooms = r["math"]["rooms"]
+        row = {"id": rid, "name_vi": r["name_vi"], "kind": r["kind"], "math": True, "floor": floor,
+               "realm_ok": ch is not None and floor > 0, "puzzles": len(rooms),
+               "rooms": [puzzle_info(x["kind"]).get("name_vi", x["kind"]) for x in rooms],
+               "time_limit_minutes": r["time_limit_minutes"], "desc_vi": r.get("desc_vi", ""),
+               "entries_left": max(0, limit - used.get(rid, 0)), "daily": limit,
+               "party_min": int(r.get("party_min", cfg()["party_min"])), **st}
+        # the always-open one on its own tab; the party ones (rift, scheduled) on the first
+        (math_out if r["kind"] == "math" else out).append(row)
     fc = cfg()["forge"]
     eq = catalog.equipment()
     s = eq["sets"]["mac_anh"]

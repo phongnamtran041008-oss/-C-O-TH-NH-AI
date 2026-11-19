@@ -10,20 +10,29 @@ The rules under test:
     Khí of the attempt is spent, nothing else is lost); every answer is in `math_answers`;
   * the server replays the log: a run whose events claim a tower that no right answer
     earned is refused;
-  * rewards after the replay; the editions never touch each other's runs;
+  * rewards after the replay; one run at a time; leftovers of the removed word tower defence
+    are never shown or continued;
   * the bot (tools/math_td_bot.py) plays 20 seeds through the API and every run ends clean.
+
+And the run plumbing (systems/td.py, td_sim.py), on this mode's levels: the simulation is the
+client's file byte for byte and replays a log to the same end; fake logs are refused by the
+simulation and by the API (false claims, forged events, unasked or hidden questions, a run
+faster than real time, an unfinished run); the saved log lets a closed game continue, cannot
+be rewritten, and forgets a question asked after the last save.
 """
 import copy
+import json
 import sys
 from pathlib import Path
 
 import pytest
 from sqlalchemy import func, select
 
+from app import clock
 from app import db as dbm
 from app.learning import math_path
-from app.models import InventoryItem, MathAnswer, TdProgress, TdRun, User
-from app.systems import math_combat, math_practice, math_td, td, td_sim
+from app.models import CodexEntry, InventoryItem, MathAnswer, Pet, TdProgress, TdRun, User
+from app.systems import math_combat, math_practice, math_td, quests, td, td_sim
 from tests.helpers import answer_key, register
 from tests.test_math_ask import open_tier_2
 from tests.test_math_skills import clear_floor, right_answer, wrong_answer
@@ -31,7 +40,6 @@ from tests.test_math_skills import clear_floor, right_answer, wrong_answer
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
 import math_td_bot  # noqa: E402
-import td_bot  # noqa: E402
 
 SUBJECT = "dai_so_tuyen_tinh"
 LOOK = {"hair_color": "#2B2B2B", "hair_style": "ngan", "body": "nam"}
@@ -69,7 +77,7 @@ async def start(client, h) -> dict:
 
 
 def open_cell(sim: td_sim.Sim, tower: str) -> tuple[int, int]:
-    return td_bot.best_cell(sim, tower)
+    return math_td_bot.best_cell(sim, tower)
 
 
 def bot_api(client, h, frozen) -> math_td_bot.Api:
@@ -220,7 +228,7 @@ async def test_place_and_upgrade_each_need_a_right_answer(client, frozen):
     # the server's own record of the answers replays to the same board
     async with dbm.SessionLocal() as db:
         row = await db.get(TdRun, rid)
-        again = td_sim.replay(row.params, td._answers(row), row.events, finish=False)
+        again = td_sim.replay(row.params, td.answers(row), row.events, finish=False)
     assert again.plants[cell].level == 2 and again.qi == sim.qi
     # resuming hands back the same log and answers
     r = await client.post("/math/td/resume", headers=h)
@@ -394,32 +402,35 @@ async def test_rewards_after_the_replay(client, frozen):
 
 
 @pytest.mark.asyncio
-async def test_the_two_editions_never_touch_each_others_runs(client, frozen):
-    from tests.test_td import BEGINNER, wid
-    from tests.test_td import player as word_player
-    h, uid = await word_player(client, "mtd_editions")
-    old = await client.post("/td/start", json={"level_id": "c1_01", "loadout": [wid(hz) for hz in BEGINNER]},
-                            headers=h)
-    assert old.status_code == 200, old.text
-    run = await start(client, h)
-    # each edition sees only its own run
-    assert (await client.get("/td/levels", headers=h)).json()["active_run"]["run_id"] == old.json()["run_id"]
-    assert (await client.get("/math/td", headers=h)).json()["active_run"]["run_id"] == run["run_id"]
-    r = await client.post("/td/question", json={"run_id": run["run_id"], "kind": "break"}, headers=h)
-    assert r.status_code == 404
-    r = await client.post("/math/td/question", json={"run_id": old.json()["run_id"], "kind": "break"}, headers=h)
-    assert r.status_code == 404
-    await client.post("/math/td/cancel", headers=h)
+async def test_one_run_at_a_time_and_word_leftovers_are_ignored(client, frozen):
+    """A run of the removed word tower defence left in td_runs is never shown, asked about or
+    continued; starting a run deletes it. A new run replaces an unfinished one; a run left
+    too long is gone."""
+    h, uid = await player(client, "mtd_runs")
     async with dbm.SessionLocal() as db:
-        assert await db.get(TdRun, old.json()["run_id"]) is not None and await db.get(TdRun, run["run_id"]) is None
-    # a new math run replaces an unfinished math run; an old one stays
+        db.add(TdRun(id="old_word_run", user_id=uid, level_id="c1_01", params={}, questions={}, events=[],
+                     started_at=clock.now(), updated_at=clock.now()))
+        await db.commit()
+    assert (await client.get("/math/td", headers=h)).json()["active_run"] is None
+    assert (await client.post("/math/td/resume", headers=h)).status_code == 404
+    await ask(client, h, "old_word_run", "break", status=404)
+    r = await client.post("/math/td/event", json={"run_id": "old_word_run", "start": 0, "events": []}, headers=h)
+    assert r.status_code == 404
+    run = await start(client, h)
+    assert (await client.get("/math/td", headers=h)).json()["active_run"]["run_id"] == run["run_id"]
+    async with dbm.SessionLocal() as db:
+        assert await db.get(TdRun, "old_word_run") is None                  # gone with the new run
+    # a new run replaces an unfinished one
     a = await start(client, h)
     b = await start(client, h)
     await ask(client, h, a["run_id"], "break", status=404)
     await ask(client, h, b["run_id"], "break")
-    # a run left too long is gone
-    frozen.advance(hours=td.cfg()["anti_cheat"]["run_hours"] + 1)
+    assert (await client.post("/math/td/cancel", headers=h)).json() == {"cancelled": True}
     await ask(client, h, b["run_id"], "break", status=404)
+    # a run left too long is gone
+    c = await start(client, h)
+    frozen.advance(hours=td.cfg()["anti_cheat"]["run_hours"] + 1)
+    await ask(client, h, c["run_id"], "break", status=404)
     assert (await client.post("/math/td/resume", headers=h)).status_code == 404
 
 
@@ -474,9 +485,296 @@ async def test_every_question_of_the_mode_is_asked_with_its_qtypes(monkeypatch):
 
     async def get_run(*a, **k):
         return run
-    monkeypatch.setattr(math_td.td, "_get_run", get_run)
+    monkeypatch.setattr(math_td.td, "get_run", get_run)
     user = type("U", (), {"id": 1})()
     for kind, tower in (("place", "tap_hop"), ("break", None), ("tu_khi", None)):
         with pytest.raises(Exception):                       # (no question: refused after asking)
             await math_td.ask(None, user, "r", kind, tower)
     assert seen == [math_td.qtypes()] * 3
+
+
+# ------------------------------------------------------------------ the simulation (td_sim.py)
+def sim_params(seed: int = 1, level: str = LEVEL, towers: list[str] | None = None) -> dict:
+    """A level's params with every tower of the data open (as math_td.start builds them)."""
+    views = [math_td.tower_view(t, None) for t in math_td.data()["towers"] if towers is None or t["id"] in towers]
+    return math_td.build_params(math_td.levels()[level], math_td.sim_towers(views), seed)
+
+
+def test_client_simulation_is_the_same_file():
+    server = (ROOT / "server" / "app" / "systems" / "td_sim.py").read_bytes()
+    client = (ROOT / "client" / "engine" / "td_sim.py").read_bytes()
+    assert server == client
+
+
+def test_the_tower_cards_carry_a_label_and_a_name():
+    defs = sim_params()["plants"]
+    t = math_td.towers()["tap_hop"]
+    assert defs["tap_hop"] == {"role": t["role"], "label": t["label"], "name_vi": t["name_vi"],
+                               "power": float(t["power"])}
+    # a run saved with the old key names is shown to the client with the new ones
+    old = {**sim_params(), "plants": {"tap_hop": {"role": "hoa", "hanzi": "{}", "pinyin": "Tháp Tập Hợp",
+                                                  "power": 1.0, "rarity": "common"}}}
+    assert math_td._client_params(old)["plants"] == {"tap_hop": {"role": "hoa", "label": "{}",
+                                                                 "name_vi": "Tháp Tập Hợp", "power": 1.0}}
+    assert math_td._client_params(sim_params()) == sim_params()
+
+
+@pytest.mark.parametrize("seed", [1, 7, 12345])
+def test_replaying_a_valid_log_gives_the_same_result(seed):
+    params = sim_params(seed)
+    sim, answers, events = math_td_bot.play(td_sim, params, accuracy=0.8, seed=seed)
+    assert sim.phase in (td_sim.WON, td_sim.LOST) and sim.plants
+    again = td_sim.replay(json.loads(json.dumps(params)), json.loads(json.dumps(answers)),
+                          json.loads(json.dumps(events)))
+    assert again.summary() == sim.summary()
+    assert (again.kills, again.leaked, again.qi) == (sim.kills, sim.leaked, sim.qi)
+
+
+def test_fake_logs_are_refused_by_the_simulation():
+    params = sim_params()
+    fire = "tap_hop"
+    path = [tuple(c) for c in params["path"]]
+    free = next((x, y) for y in range(7) for x in range(12)
+                if (x, y) not in path and [x, y] not in params["rocks"])
+    good = {"p1": {"kind": "place", "word": fire, "ok": True}, "p2": {"kind": "place", "word": fire, "ok": True},
+            "q1": {"kind": "break", "word": "", "ok": True}, "q2": {"kind": "upgrade", "word": fire, "ok": True}}
+
+    def refused(events, answers=None):
+        with pytest.raises(td_sim.LogError):
+            td_sim.replay(params, answers if answers is not None else good, events)
+
+    refused([{"s": 0, "k": "place", "x": free[0], "y": free[1], "w": "khong_co", "q": "p1"}])  # no such tower
+    refused([{"s": 0, "k": "place", "x": path[3][0], "y": path[3][1], "w": fire, "q": "p1"}])  # on the path
+    refused([{"s": 0, "k": "place", "x": free[0], "y": free[1], "w": fire, "q": "p1"},       # same cell twice
+             {"s": 0, "k": "place", "x": free[0], "y": free[1], "w": fire, "q": "p2"}])
+    refused([{"s": 0, "k": "place", "x": x, "y": y, "w": fire, "q": f"m{i}"}                 # more than the Linh Khí
+             for i, (x, y) in enumerate([(x, y) for y in range(7) for x in range(12) if (x, y) not in path][:6])],
+            {f"m{i}": {"kind": "place", "word": fire, "ok": True} for i in range(6)})
+    refused([{"s": 0, "k": "qi", "q": "made_up"}])                                       # never asked
+    refused([{"s": 0, "k": "sell", "x": [1], "y": 2}])                                   # wrong types
+    refused([{"s": 0, "k": "place", "x": 1, "y": 1, "w": {"a": 1}}])
+    refused([{"s": 0, "k": "skill", "w": fire}])                                         # no such action
+    refused(["wave"])
+    refused([{"s": 0, "k": "qi", "q": "q1"}, {"s": 0, "k": "qi", "q": "q1"}])            # used twice
+    refused([{"s": 0, "k": "qi", "q": "q2"}])                                            # an upgrade question
+    refused([{"s": 0, "k": "place", "x": free[0], "y": free[1], "w": fire, "q": "p1"},  # upgrade about another tower
+             {"s": 0, "k": "up", "x": free[0], "y": free[1], "q": "q3"}],
+            {**good, "q3": {"kind": "upgrade", "word": "gradient", "ok": True}})
+    refused([{"s": 5, "k": "wave"}])                                                     # time passes only in waves
+    refused([{"s": 0, "k": "wave"}, {"s": 40, "k": "qi", "q": "q1"}])                    # a break question mid-wave
+    refused([{"s": 0, "k": "wave"}, {"s": 3, "k": "wave"}])
+    refused([{"s": 0, "k": "place", "x": free[0], "y": free[1], "w": fire, "q": "p1"}, {"s": 0, "k": "wave"},
+             {"s": 9, "k": "sell", "x": free[0], "y": free[1]}, {"s": 4, "k": "wave"}])  # going back in time
+    tk = {"t1": {"kind": "tu_khi", "word": "", "ok": True}, "t2": {"kind": "tu_khi", "word": "", "ok": True}}
+    refused([{"s": 0, "k": "wave"}, {"s": 10, "k": "qi", "q": "t1"}, {"s": 50, "k": "qi", "q": "t2"}], tk)  # cooldown
+    # the honest version of the same actions is fine
+    ok = td_sim.replay(params, tk, [{"s": 0, "k": "wave"}, {"s": 10, "k": "qi", "q": "t1"},
+                                    {"s": 10 + td_sim.Sim(params).tu_khi_cd(), "k": "qi", "q": "t2"}])
+    assert ok.phase in (td_sim.WON, td_sim.LOST, td_sim.BUILD)
+
+
+def test_a_wrong_answer_is_a_wrong_answer_in_the_replay():
+    """The replay uses the server's record of each answer, never the client's."""
+    params = sim_params()
+    path = [tuple(c) for c in params["path"]]
+    free = next((x, y) for y in range(7) for x in range(12) if (x, y) not in path and [x, y] not in params["rocks"])
+    evs = [{"s": 0, "k": "place", "x": free[0], "y": free[1], "w": "tap_hop", "q": "p"},
+           {"s": 0, "k": "up", "x": free[0], "y": free[1], "q": "u"}]
+    placed = {"kind": "place", "word": "tap_hop", "ok": True}
+    right = td_sim.replay(params, {"p": placed, "u": {"kind": "upgrade", "word": "tap_hop", "ok": True}}, evs)
+    wrong = td_sim.replay(params, {"p": placed, "u": {"kind": "upgrade", "word": "tap_hop", "ok": False}}, evs)
+    assert right.plants[free].level == 2 and wrong.plants[free].level == 1
+    assert right.qi == wrong.qi          # the Linh Khí is spent either way
+
+
+def test_hidden_monsters_need_light():
+    """Mực Ẩn walks past every tower unless a Quang tower (xac_suat) lights the path."""
+    lv = {"id": "t", "path": [[x, 3] for x in range(12)], "rocks": [],
+          "waves": [[{"m": "muc_an", "n": 1, "gap": 1000, "at": 0}]]}
+    defs = math_td.sim_towers([math_td.tower_view(t, None) for t in math_td.data()["towers"]])
+    assert defs["xac_suat"]["role"] == "quang" and defs["vecto"]["role"] == "kim"
+
+    def play(towers):
+        answers = {f"q{i}": {"kind": "place", "word": w, "ok": True} for i, (_, w) in enumerate(towers)}
+        sim = td_sim.Sim(math_td.build_params(lv, defs, 1), answers)
+        sim.qi = 1000
+        for i, ((x, y), w) in enumerate(towers):
+            sim.apply({"k": "place", "x": x, "y": y, "w": w, "q": f"q{i}"})
+        sim.apply({"k": "wave"})
+        while sim.phase == td_sim.WAVE:
+            sim.step()
+        return sim
+    kim = [((4, 2), "vecto"), ((5, 2), "vecto"), ((6, 2), "vecto")]
+    dark = play(kim)
+    assert dark.leaked == 1 and dark.kills == 0
+    lit = play(kim + [((5, 4), "xac_suat")])
+    assert lit.kills == 1 and lit.leaked == 0
+
+
+# ------------------------------------------------------------------ the run plumbing through the API
+class StopBeforeFinish(Exception):
+    pass
+
+
+async def played_not_finished(client, h, frozen, seed: int = 2, wrong_rate: float = 0.0) -> dict:
+    """The bot plays a whole level through the API (every question asked and answered, the log
+    saved as it goes) and stops right before /math/td/finish: returns the finish body."""
+    api = bot_api(client, h, frozen)
+    real_post, body = api.post, {}
+
+    async def post(path, b):
+        if path == "/math/td/finish":
+            body.update(b)
+            raise StopBeforeFinish
+        return await real_post(path, b)
+    api.post = post
+    with pytest.raises(StopBeforeFinish):
+        await math_td_bot.play_round(api, seed=seed, wrong_rate=wrong_rate)
+    return body
+
+
+async def finish(client, h, body: dict):
+    return await client.post("/math/td/finish", json=body, headers=h)
+
+
+@pytest.mark.asyncio
+async def test_saved_log_lets_a_closed_game_continue(client, frozen):
+    """/math/td/event saves the log as it grows; /math/td/resume gives it back after the game
+    was closed, and the run finishes normally from there; the monsters met go into the Yêu
+    Quái Phổ."""
+    h, uid = await player(client, "mtd_resume")
+    body = await played_not_finished(client, h, frozen)
+    rid, events = body["run_id"], body["events"]
+    v = (await client.get("/math/td", headers=h)).json()
+    assert v["active_run"]["level_id"] == LEVEL and v["active_run"]["run_id"] == rid
+    assert v["active_run"]["waves"] == sum(e["k"] == "wave" for e in events)
+    async with dbm.SessionLocal() as db:            # saved in the database, not in memory
+        assert (await db.get(TdRun, rid)).events == events
+    # saving the end again from an earlier index is fine (the overlap is the same)
+    r = await client.post("/math/td/event", json={"run_id": rid, "start": len(events) - 2, "events": events[-2:]},
+                          headers=h)
+    assert r.status_code == 200 and r.json()["saved"] == len(events)
+    res = (await client.post("/math/td/resume", headers=h)).json()          # the game was closed and opened again
+    assert res["run_id"] == rid and res["events"] == events
+    used = {e["q"] for e in events if "q" in e}
+    assert set(res["answers"]) == used and all("power" in a for a in res["answers"].values())
+    # the client rebuilds the board from the saved log, stopping where the log stops
+    half = len(events) // 2
+    mid = td_sim.replay(res["params"], res["answers"], res["events"][:half], finish=False)
+    assert mid.step_n == events[half - 1]["s"] and len(mid.plants) > 0
+    out = await finish(client, h, body)
+    assert out.status_code == 200 and out.json()["stars"] >= 1, out.text
+    assert (await client.get("/math/td", headers=h)).json()["active_run"] is None
+    async with dbm.SessionLocal() as db:
+        met = (await db.execute(select(CodexEntry).where(CodexEntry.user_id == uid, CodexEntry.codex == "monster",
+                                                         CodexEntry.entry_id.startswith("td_")))).scalars().all()
+        assert met and all(e.progress["kills"] >= 0 for e in met)
+        assert sum(e.progress["kills"] for e in met) > 0
+
+
+@pytest.mark.asyncio
+async def test_a_saved_move_cannot_be_taken_back(client, frozen):
+    h, uid = await player(client, "mtd_no_undo")
+    body = await played_not_finished(client, h, frozen)
+    rid, events = body["run_id"], body["events"]
+    n = len(events) // 2
+    changed = [dict(e, x=e.get("x", 0) + 1) if e.get("k") == "place" else e for e in events[:n]]
+    r = await client.post("/math/td/event", json={"run_id": rid, "start": 0, "events": changed}, headers=h)
+    assert r.status_code == 409 and r.json()["error"]["code"] == "log_conflict"
+    r = await client.post("/math/td/event", json={"run_id": rid, "start": len(events) + 5, "events": events[n:]},
+                          headers=h)
+    assert r.status_code == 409 and r.json()["error"]["code"] == "log_gap"
+    # finishing with a different past than the one saved is refused (and the run is gone)
+    r = await finish(client, h, {**body, "events": changed + events[n:]})
+    assert r.status_code == 400 and r.json()["error"]["code"] == "bad_log"
+    assert (await finish(client, h, body)).status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_the_api_refuses_fake_logs(client, frozen):
+    h, uid = await player(client, "mtd_fake")
+    # a question the server never asked
+    body = await played_not_finished(client, h, frozen)
+    forged = [dict(e, q="khong-co-cau-nay") if e.get("k") == "qi" else e for e in body["events"]]
+    async with dbm.SessionLocal() as db:            # (the saved part must match, so the forgery is unsaved)
+        (await db.get(TdRun, body["run_id"])).events = []
+        await db.commit()
+    r = await finish(client, h, {**body, "events": forged})
+    assert r.status_code == 400 and r.json()["error"]["code"] == "bad_log"
+    # a log that leaves out an answered question (a wrong one it wanted to hide)
+    body = await played_not_finished(client, h, frozen, seed=3, wrong_rate=0.3)
+    first_q = next(e for e in body["events"] if e.get("k") == "qi")
+    async with dbm.SessionLocal() as db:
+        (await db.get(TdRun, body["run_id"])).events = []
+        await db.commit()
+    r = await finish(client, h, {**body, "events": [e for e in body["events"] if e is not first_q]})
+    assert r.status_code == 400 and r.json()["error"]["code"] == "bad_log"
+    # the whole level in no time at all
+    run = await start(client, h)
+    events = [{"s": 0, "k": "wave"}]      # no towers: the wave walks in
+    local = td_sim.replay(run["params"], {}, events)
+    claim = {k: local.summary()[k] for k in ("result", "core_hp", "wave", "steps")}
+    r = await finish(client, h, {"run_id": run["run_id"], "events": events, "claim": claim})
+    assert r.status_code == 400 and r.json()["error"]["code"] == "too_fast"
+    # an unfinished log
+    run = await start(client, h)
+    frozen.advance(seconds=10)
+    r = await finish(client, h, {"run_id": run["run_id"], "events": [],
+                                 "claim": {"result": "build", "core_hp": 20, "wave": 0, "steps": 0}})
+    assert r.status_code == 400 and r.json()["error"]["code"] == "unfinished"
+    async with dbm.SessionLocal() as db:            # nothing was ever rewarded
+        assert (await db.execute(select(TdProgress).where(TdProgress.user_id == uid))).first() is None
+
+
+@pytest.mark.asyncio
+async def test_resume_drops_questions_asked_after_the_last_save(client, frozen):
+    h, uid = await player(client, "mtd_drop_q")
+    run = await start(client, h)
+    q = await ask(client, h, run["run_id"], "break")
+    await reply(client, h, q, right=True)
+    res = (await client.post("/math/td/resume", headers=h)).json()      # closed before the answer was logged
+    assert res["events"] == [] and res["answers"] == {}
+    local, events = td_sim.Sim(run["params"], {}), []                  # no towers at all: lost, but a valid log
+    while local.phase not in (td_sim.WON, td_sim.LOST):
+        events.append({"s": local.step_n, "k": "wave"})
+        local.apply(events[-1])
+        while local.phase == td_sim.WAVE:
+            local.step()
+    frozen.advance(seconds=local.step_n * td_sim.STEP_MS / 1000)
+    claim = {k: local.summary()[k] for k in ("result", "core_hp", "wave", "steps")}
+    r = await finish(client, h, {"run_id": run["run_id"], "events": events, "claim": claim})
+    assert r.status_code == 200 and r.json()["result"] == "lost", r.text
+    assert r.json()["rewards"] == {}
+    assert (await client.post("/math/td/resume", headers=h)).status_code == 404
+
+
+# ------------------------------------------------------------------ what other loops get from a run
+@pytest.mark.asyncio
+async def test_khi_gives_more_linh_khi_to_start_with(client, frozen):
+    """The Khỉ pet's skill (td_qi) adds Linh Khí at the start of a run."""
+    h, uid = await player(client, "mtd_khi")
+    a = await start(client, h)
+    async with dbm.SessionLocal() as db:
+        db.add(Pet(user_id=uid, pet_type="khi", level=1, equipped=True))
+        await db.commit()
+    b = await start(client, h)
+    assert b["params"]["qi"]["start"] == a["params"]["qi"]["start"] + 20
+    assert a["params"]["qi"]["start"] == math_td.data()["qi"]["start"]
+
+
+@pytest.mark.asyncio
+async def test_a_won_run_counts_for_the_td_win_quests(client, frozen, monkeypatch):
+    seen = []
+    real = quests.on_event
+
+    async def on_event(db, user_id, kind, target, n=1):
+        seen.append((user_id, kind, target))
+        return await real(db, user_id, kind, target, n)
+    monkeypatch.setattr(quests, "on_event", on_event)
+    h, uid = await player(client, "mtd_quest")
+    api = bot_api(client, h, frozen)
+    rep = await math_td_bot.play_round(api, seed=2, wrong_rate=0.0)
+    assert rep["server"]["result"] == "won"
+    assert seen.count((uid, "td_win", "*")) == 1
+    rep = await math_td_bot.play_round(api, seed=3, wrong_rate=1.0)
+    assert rep["server"]["result"] == "lost" and seen.count((uid, "td_win", "*")) == 1
