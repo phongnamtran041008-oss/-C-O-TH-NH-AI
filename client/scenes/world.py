@@ -18,6 +18,7 @@ import pygame
 from .. import strings_vi as T
 from ..art import skill_fx
 from ..art.palette import rgb
+from ..engine import art2
 from ..engine import movement as mv
 from ..engine import sprites
 from ..engine.beeflock import Flock
@@ -73,6 +74,10 @@ class Ent:
     realm_id: str = ""                         # a Khe Nứt Mực rift ("r"): where it leads
     left: float = 0.0                          # rift: seconds until it closes, when first seen
     seen: float = 0.0
+    # v2 animation state (game clock times; None = not playing)
+    die_t0: float | None = None                # the die clip started
+    atk_t0: float | None = None                # a monster's blow landed / a player's attack swing
+    aim: tuple | None = None                   # where a winding-up monster is aiming
 
 
 _GHOST: dict = {}
@@ -176,6 +181,21 @@ def weapon_pos(x: float, y: float, facing: str, cx: int, cy: int) -> tuple[int, 
     return int(x + ox) - cx, int(y + oy) - cy
 
 
+def npc_head(kind: str) -> pygame.Surface:
+    """The dialog portrait of an NPC: its v2 head when there is one, else the old 16x24 sprite."""
+    return art2.npc_portrait(kind) or sprites.npc(kind)[("down", 0)]
+
+
+def face_to(dx: float, dy: float, default: str = "down") -> str:
+    if abs(dx) < 0.5 and abs(dy) < 0.5:
+        return default
+    return ("right" if dx > 0 else "left") if abs(dx) > abs(dy) else ("down" if dy > 0 else "up")
+
+
+V2_HEAD = 55                       # a v2 character's name tag sits this far above the feet
+V2_TELE_RELEASE = 0.25             # how long the hit zone flashes after the blow lands
+
+
 class WorldScene(Scene):
     draws_world = True
     modal = False
@@ -211,8 +231,11 @@ class WorldScene(Scene):
         self.channels: list[dict] = []
         self.zone_name = T.ZONE_NAMES.get(zone_id, zone_id)
         self.cam = [0, 0]
+        from ..engine.view import View
+        self.view = View(2 if art2.on() else 1)   # world <-> screen (2x with the v2 art)
         self.t = 0.0
         self.fx = Effects()
+        self.fx.stack_texts = art2.on()
         self.target = None
         self.minimap = self._build_minimap()
         self.teles: list[list] = []          # [x, y, r, time_left, total]
@@ -220,6 +243,10 @@ class WorldScene(Scene):
         self.hurt_flash = 0.0
         self.swing_t = 0.0
         self.dead = False
+        self.my_die_t0: float | None = None       # v2: my die clip started
+        self.my_atk_t0: float | None = None       # v2: my attack swing started
+        self.my_hurt_t0: float | None = None      # v2: my hit clip started
+        self.sparks: list[list] = []              # v2 one-shot FX: [fx id, x, y, t0]
         self.skill_ready: dict[str, float] = {}
         self.mskills: list[dict] | None = None    # M9: GET /math/skills (None: not loaded, or an old server)
         self.mskill_ready: dict[str, float] = {}
@@ -321,6 +348,8 @@ class WorldScene(Scene):
                 self.game.toast(T.REALM_GHOST, "#8C8C8C")
                 return
             self.dead = True
+            if self.my_die_t0 is None:
+                self.my_die_t0 = self.game.now
             self.game.push(DeathOverlay(self.game, m.get("respawn_in", 3)))
         elif t == "realm":
             if self.realm is not None:
@@ -437,6 +466,7 @@ class WorldScene(Scene):
             ch["hp"], ch["max_hp"], ch["qi"], ch["max_qi"] = int(round(me[3])), int(me[4]), int(round(me[5])), int(me[6])
             if me[3] > 0:
                 self.dead = False
+                self.my_die_t0 = None
         if len(me) >= 8:
             self.my_bees = me[7]
         if len(me) >= 9:
@@ -463,6 +493,8 @@ class WorldScene(Scene):
                     ent.hp = row[5]
                 if len(row) >= 8:
                     ent.shield, ent.alive = row[6], row[7]
+                    if ent.alive and ent.die_t0 is not None and now - ent.die_t0 > 1.0:
+                        ent.die_t0 = None          # respawned
                 elif len(row) == 7 and ent.kind == "p":
                     ent.bees = row[6] or []
                 self.interp.push(eid, st, ex, ey, f, mvng)
@@ -511,12 +543,18 @@ class WorldScene(Scene):
         if k == "stun":
             self.fx.float_text(T.BEE_STUN, x, y - 30, "#B5A0E0")
             return
+        v2 = art2.on()
+        now = self.game.now
+        z = self.z                       # screen pixels per world pixel: a lift in screen px / z = world px
         if k in ("hit", "mk") and ev.get("id") == me:   # we were hit
             self.fx.shake = 0.6 if k == "mk" else 0.3
             self.hurt_flash = 0.45 if k == "mk" else 0.2
-            self.fx.float_text(f"-{ev.get('v', '')}", x, y - 30, "#F08A8C")
+            self.fx.float_text(f"-{ev.get('v', '')}", x, y - ((V2_HEAD - 6) / z if v2 else 30), "#F08A8C")
             if k == "mk":
-                self.fx.float_text(T.MAC_KICH, x, y - 40, "#BC4749")
+                self.fx.float_text(T.MAC_KICH, x, y - ((V2_HEAD + 4) / z if v2 else 40), "#BC4749")
+            if v2:
+                self.my_hurt_t0 = now
+                self.spark(art2.combat_fx("hit"), x, y - 26 / z)
         elif k in ("hit", "mk"):
             ent = self.entities.get(ev.get("id"))
             if ent is not None:
@@ -524,23 +562,43 @@ class WorldScene(Scene):
             col = "#9A9A9A" if ev.get("sh") else ("#E9C46A" if ev.get("c") else "#FFFFFF")
             if k == "mk" or (ent is not None and ent.kind == "p"):
                 col = "#F08A8C"
-            self.fx.float_text(str(ev.get("v", "")), x + random.uniform(-4, 4), y - 22, col)
+            lift = self.ent_extent(ent)[1] / z if (v2 and ent is not None) else 22
+            self.fx.float_text(str(ev.get("v", "")), x + random.uniform(-4, 4), y - lift, col)
+            if v2:
+                self.spark(art2.combat_fx("crit" if ev.get("c") else "hit"), x, y - lift * 0.5)
         elif k == "tele":
-            self.teles.append([x, y, ev.get("r", 20), ev.get("d", 0.8), ev.get("d", 0.8)])
+            self.teles.append([x, y, ev.get("r", 20), ev.get("d", 0.8), ev.get("d", 0.8), ev.get("id")])
+            ent = self.entities.get(ev.get("id"))
+            if ent is not None:
+                ent.aim = (x, y)
         elif k == "shield":
             if ev.get("on"):
-                self.fx.burst(x, y - 8, "K", 16, 25)
+                if not v2:
+                    self.fx.burst(x, y - 8, "K", 16, 25)
                 self.fx.float_text(T.SHIELD_BACK, x, y - 34, "#5A5A5A")
             else:  # "mực tan thành hạt sáng khi phá khiên"
-                self.fx.ink_to_light(x, y - 8)
+                if v2:   # over the head, a beat after the blow, so it does not pile onto the hit spark
+                    ent = self.entities.get(ev.get("id"))
+                    top = self.ent_extent(ent)[1] / z if ent is not None else 14
+                    self.spark(art2.combat_fx("shield_broken"), x, y - top, delay=0.18, scale=0.75)
+                else:
+                    self.fx.ink_to_light(x, y - 8)
                 self.fx.float_text(T.SHIELD_BROKEN, x, y - 34, "#E9C46A")
         elif k == "die":
-            self.fx.burst(x, y - 8, "K", 22, 40)
-            self.fx.burst(x, y - 8, "W", 10, 30)
+            ent = self.entities.get(ev.get("id"))
+            if v2 and ev.get("id") == me:
+                if self.my_die_t0 is None:
+                    self.my_die_t0 = now
+            elif v2 and ent is not None:
+                ent.die_t0 = now                    # the die clip plays once, then it is gone
+            else:
+                self.fx.burst(x, y - 8, "K", 22, 40)
+                self.fx.burst(x, y - 8, "W", 10, 30)
         elif k == "atk":
             ent = self.entities.get(ev.get("by"))
             if ent is not None:
                 ent.swing_t = 0.25
+                ent.atk_t0 = now
         elif k == "skill":
             sid = ev.get("s")
             if sid == "hoa":
@@ -560,11 +618,65 @@ class WorldScene(Scene):
                 self.fx.burst(x, y + 8, "T", 16, 20)
         elif k == "heal":
             self.fx.float_text(f"+{ev.get('v', '')}", x, y - 30, "#4A7CC8" if ev.get("q") else "#B5D67A")
-            self.fx.burst(x, y - 10, "l", 8, 15)
+            if v2 and art2.fx(art2.combat_fx("heal")) is not None:
+                self.spark(art2.combat_fx("heal"), x, y - 24 / z, once=True)
+            else:
+                self.fx.burst(x, y - 10, "l", 8, 15)
+
+    # ------------------------------------------------------------ v2 helpers
+    @property
+    def z(self) -> int:
+        """Screen pixels per world pixel (2 with the v2 art)."""
+        v = getattr(self, "view", None)
+        return v.zoom if v is not None else 1
+
+    def spark(self, fid: str | None, x: float, y: float, once: bool = False, delay: float = 0.0,
+              scale: float = 1.0) -> None:
+        """A one-shot v2 effect at a world point (a looping sheet is played through once)."""
+        s = art2.fx(fid)
+        if s is not None:
+            self.sparks.append([fid, x, y, self.game.now + delay, s.duration if (once or s.loop) else None, scale])
+            if len(self.sparks) > 40:
+                del self.sparks[0]
+
+    def ent_sheet(self, e: Ent):
+        """The v2 sheet an entity is drawn from (cached on first use), or None."""
+        key = (e.kind, e.mtype, e.rank, e.realm)
+        if getattr(e, "_sheet_key", None) != key:
+            e._sheet_key = key
+            if e.kind == "m":
+                e._sheet = art2.monster_for(e.mtype, e.rank)
+            elif e.kind == "p":
+                e._sheet = art2.char_for(e.realm)
+            else:
+                e._sheet = None
+        return e._sheet
+
+    def ent_extent(self, e: Ent | None) -> tuple[int, int]:
+        """(width, height above the feet) of what an entity looks like now."""
+        if e is None or not art2.on():
+            return 16, 24
+        if e.kind == "p":
+            return 30, V2_HEAD - 2
+        if e.kind == "m":
+            s = self.ent_sheet(e)
+            if s is not None:
+                return art2.extent(s)
+        return 16, 24
+
+    def tele_of(self, eid: str) -> list | None:
+        for tl in self.teles:
+            if len(tl) > 5 and tl[5] == eid and tl[3] > 0:
+                return tl
+        return None
 
     # ------------------------------------------------------------ chiêu thức (M9)
     def cast_sheet(self):
-        """The Đạo Sĩ sheet a caster is drawn from, or None when this checkout has none."""
+        """The Đạo Sĩ sheet that times a chiêu (all looks share the clips): my realm's v2 look,
+        else the M8 sheet, else None when this checkout has neither."""
+        v2 = art2.char_for((self.game.state.character or {}).get("realm")) if art2.on() else None
+        if v2 is not None:
+            return v2
         from ..engine import charsheet
         return charsheet.load(CAST_SHEET)
 
@@ -668,7 +780,16 @@ class WorldScene(Scene):
         bx, by = cs.blit_pos(x, y)
         return img, (bx - cx, by - cy)
 
-    def draw_skill_fx(self, surf, cx: int, cy: int) -> None:
+    def draw_skill_fx(self, surf, cx: int = 0, cy: int = 0, ground: bool = False) -> None:
+        """The chiêu effects in flight. With the 2x v2 world the camera's View places them and the
+        ground part (formation circles) is drawn in a first pass under the bodies (`ground`)."""
+        from ..engine.view import View
+        v = getattr(self, "view", None)
+        if v is None or v.zoom == 1:
+            if ground:
+                return
+            v = View(1)
+            v.ox, v.oy = cx, cy
         now = self.game.now
         me = f"p{self.game.state.me.get('id')}"
         keep = []
@@ -685,9 +806,84 @@ class WorldScene(Scene):
                 sx, sy = self.player.x, self.player.y         # the ward follows the caster
             elif f["by"] in self.entities:
                 sx, sy = self.entities[f["by"]].pos[0], self.entities[f["by"]].pos[1]
-            dst = None if f["tx"] is None else (f["tx"] - cx, f["ty"] - cy)
-            skill_fx.draw(surf, f["fx"], max(0.0, p), (sx - cx, sy - cy), dst, ok=f["ok"], radius=f["r"])
-        self.skill_fx = keep
+            dst = None if f["tx"] is None else v.to_screen(f["tx"], f["ty"])
+            src = v.to_screen(sx, sy)
+            if f["ok"] and self.draw_skill_v2(surf, f, max(0.0, p), src, dst, "ground" if ground else "over"):
+                continue
+            if not ground:
+                skill_fx.draw(surf, f["fx"], max(0.0, p), src, dst, ok=f["ok"], radius=v.len(f["r"]))
+        if not ground:
+            self.skill_fx = keep
+
+    def draw_skill_v2(self, surf, f: dict, p: float, src, dst, layer: str = "over") -> bool:
+        """A chiêu drawn from the v2 FX sheets named in wiring.skill_fx (positions already on screen).
+        False: no mapping (or no sheets), and the code-drawn effect is used. A fizzle always keeps
+        the code effect. `layer` "ground" draws only the formation circle, "over" the rest."""
+        spec = art2.skill_fx(f["fx"])
+        if spec is None or art2.fx(spec.get("fx")) is None:
+            return False
+        kind, main, imp = spec.get("kind"), spec.get("fx"), spec.get("impact")
+        z = getattr(getattr(self, "view", None), "zoom", 1)
+        t = p * f["dur"]
+        if dst is None:
+            dst = (src[0] + 28 * z, src[1])
+        sx, sy = src
+        dx, dy = dst
+        chest = 26 if z == 1 else V2_HEAD // 2         # where hands and chests are above the feet (screen px)
+        if kind in ("circle", "ward"):            # a ground circle stretched to the radius
+            if layer == "ground":
+                r = (f["r"] or skill_fx.DEFAULT_RADIUS.get(f["fx"], 40.0)) * z
+                cx_, cy_ = (sx, sy) if kind == "ward" else (dx, dy)
+                sh = art2.fx(main)
+                size = (int(2 * r * sh.fw / 90), int(2 * r * sh.fh / 90))     # the circle fills ~90 of 96 px
+                art2.draw_fx(surf, main, t, cx_, cy_, size=size)
+            elif kind == "ward":
+                art2.draw_fx(surf, imp, t, sx, sy - chest)
+            elif t > f["dur"] * 0.3:
+                art2.draw_fx(surf, imp, t - f["dur"] * 0.3, dx, dy - 12)
+            return True
+        if layer == "ground":
+            return True
+        if kind == "bolt":                          # flies from the caster's hands to the target
+            fly = f["dur"] * 0.55
+            if t < fly:
+                k = t / fly
+                bx, by = sx + (dx - sx) * k, (sy - chest) + ((dy - 12) - (sy - chest)) * k
+                ang = -math.degrees(math.atan2((dy - 12) - (sy - chest), dx - sx))
+                art2.draw_fx(surf, main, t, bx, by, angle=ang)
+            else:
+                art2.draw_fx(surf, imp, t - fly, dx, dy - 12)
+        else:                                       # strike: lands on the target
+            ms = art2.fx(main)
+            art2.draw_fx(surf, main, t, dx, dy - (0 if ms.pivot[1] > ms.fh * 0.6 else 12))
+            land = ms.duration * 0.5
+            if t > land:
+                art2.draw_fx(surf, imp, t - land, dx, dy - 12)
+        return True
+
+    def draw_sparks(self, surf, cx: int = 0, cy: int = 0, ground: bool = False) -> None:
+        """One-shot v2 effects at world points; `ground` sheets (cracks) go in the first pass."""
+        now = self.game.now
+        v = getattr(self, "view", None)
+        keep = []
+        for s in self.sparks:
+            fid, x, y, t0, dur, scale = s
+            sheet = art2.fx(fid)
+            if sheet is None:
+                continue
+            if sheet.ground != ground:
+                keep.append(s)
+                continue
+            t = now - t0
+            if t < 0:                            # delayed
+                keep.append(s)
+                continue
+            if dur is not None and t > dur:
+                continue
+            px, py = v.to_screen(x, y) if v is not None else (x - cx, y - cy)
+            if art2.draw_fx(surf, fid, t, px, py, scale=scale):
+                keep.append(s)
+        self.sparks = keep
 
     def cast_mskill(self, slot: int, hovered: Ent | None) -> None:
         """A chiêu thức key. The server decides everything (floor, qi, cooldown, range): a locked
@@ -718,7 +914,9 @@ class WorldScene(Scene):
         without the icon sheet (it is built by a tool that needs Blender) shows the initials
         of the chiêu's Vietnamese name instead - never a Chinese character."""
         from ..engine import icons
-        img = icons.icon(sk.get("icon") or "", int(sk.get("icon_variant") or 0))
+        img = art2.skill_icon(sk.get("id")) if art2.on() else None
+        if img is None:
+            img = icons.icon(sk.get("icon") or "", int(sk.get("icon_variant") or 0))
         if img is not None:
             ui.image(img, x + 11, y + 11, zoom=0.625, anchor="center")       # a 32 px icon, drawn at 20
         else:
@@ -824,8 +1022,14 @@ class WorldScene(Scene):
         self.portal_cool = max(0.0, self.portal_cool - dt)
         self.hurt_flash = max(0.0, self.hurt_flash - dt)
         for tl in self.teles:
+            was = tl[3]
             tl[3] -= dt
-        self.teles = [tl for tl in self.teles if tl[3] > -0.15]
+            if was > 0 >= tl[3] and len(tl) > 5:        # the blow lands: the monster plays its attack
+                ent = self.entities.get(tl[5])
+                if ent is not None:
+                    ent.atk_t0 = self.game.now
+        keep_for = -V2_TELE_RELEASE if art2.on() else -0.15
+        self.teles = [tl for tl in self.teles if tl[3] > keep_for]
         for b in self.big_chars:
             b[3] -= dt
         self.big_chars = [b for b in self.big_chars if b[3] > 0]
@@ -947,6 +1151,7 @@ class WorldScene(Scene):
         self.net.send({"t": "atk", "id": ent.id})
         self.attack_ready = self.game.now + 0.45
         self.swing_t = 0.25
+        self.my_atk_t0 = self.game.now
         dx, dy = ent.pos[0] - self.player.x, ent.pos[1] - self.player.y
         self.player.facing = ("right" if dx > 0 else "left") if abs(dx) > abs(dy) else ("down" if dy > 0 else "up")
 
@@ -975,6 +1180,8 @@ class WorldScene(Scene):
 
     def interact(self, target) -> None:
         kind, obj = target
+        if kind == "object":
+            self.talking_to = obj          # v2: that NPC plays its talk clip while the dialog is up
         action = self.action_of(target)
         g = self.game
         if kind == "ent":
@@ -1012,12 +1219,12 @@ class WorldScene(Scene):
         elif action == "quests":
             g.open_quests()
         elif action == "talk_guide":
-            g.push(DialogScene(g, T.GUIDE_LINES, speaker=T.GUIDE_NAME, portrait=sprites.npc("guide")[("down", 0)]))
+            g.push(DialogScene(g, T.GUIDE_LINES, speaker=T.GUIDE_NAME, portrait=npc_head("guide")))
         elif action == "library":
             first = not g.state.me.get("met_librarian")
             g.state.me["met_librarian"] = True
             g.push(DialogScene(g, T.LIBRARIAN_LINES if first else [random.choice(T.LIBRARIAN_IDLE)],
-                               speaker=T.LIBRARIAN_NAME, portrait=sprites.npc("librarian")[("down", 0)],
+                               speaker=T.LIBRARIAN_NAME, portrait=npc_head("librarian"),
                                on_done=g.open_library))
         elif action == "td":
             from .td import TdMapScene
@@ -1038,7 +1245,7 @@ class WorldScene(Scene):
                 if r.get("finished"):
                     g.refresh_quests()
                 g.push(DialogScene(g, T.FISHER_LINES if first else [random.choice(T.FISHER_IDLE)],
-                                   speaker=T.FISHER_NAME, portrait=sprites.npc("fisher")[("down", 0)],
+                                   speaker=T.FISHER_NAME, portrait=npc_head("fisher"),
                                    on_done=lambda: g.push(FishShopScene(g))))
             g.api.post("/quests/talk", {"npc": "fisher"}, talked, lambda e: g.push(FishShopScene(g)))
         elif action == "fish_book":
@@ -1051,7 +1258,7 @@ class WorldScene(Scene):
                 if r.get("finished"):
                     g.refresh_quests()
                 g.push(DialogScene(g, T.ALCHEMIST_LINES if first else [random.choice(T.ALCHEMIST_IDLE)],
-                                   speaker=T.ALCHEMIST_NAME, portrait=sprites.npc("alchemist")[("down", 0)],
+                                   speaker=T.ALCHEMIST_NAME, portrait=npc_head("alchemist"),
                                    on_done=g.open_alchemy))
             g.api.post("/quests/talk", {"npc": "alchemist"}, talked, lambda e: g.open_alchemy())
         elif action == "shop":
@@ -1059,7 +1266,7 @@ class WorldScene(Scene):
             first = not g.state.me.get("met_shopkeeper")
             g.state.me["met_shopkeeper"] = True
             if first:
-                g.push(DialogScene(g, T.SHOP_LINES, speaker=T.SHOP_NAME, portrait=sprites.npc("shopkeeper")[("down", 0)],
+                g.push(DialogScene(g, T.SHOP_LINES, speaker=T.SHOP_NAME, portrait=npc_head("shopkeeper"),
                                    on_done=lambda: g.push(ShopScene(g))))
             else:
                 g.push(ShopScene(g))
@@ -1080,7 +1287,8 @@ class WorldScene(Scene):
         built from a .blend by a tool that needs Blender, so a clone without them must
         still play."""
         from ..engine import charsheet
-        cs = charsheet.load(o.props.get("sheet", ""))
+        sheet_id = o.props.get("sheet", "")
+        cs = (art2.char_sheet(sheet_id) if art2.on() else None) or charsheet.load(sheet_id)
         if cs is None:
             return None, None
         idle_for = 3.0
@@ -1103,7 +1311,19 @@ class WorldScene(Scene):
         return pygame.transform.smoothscale(base, (w, h))
 
     def _cam(self, surf) -> tuple[int, int]:
+        """Place the camera (self.view) and return its top-left in screen pixels of the zoomed
+        world (= world pixels at zoom 1, exactly as before the v2 art)."""
         w, h = surf.get_size()
+        v = self.view
+        if art2.on():             # the 2x world: follow the player, kept inside the map or the room
+            v.zoom = 2
+            room = self.realm.room_rect() if self.realm is not None else None
+            v.follow(self.player.x, self.player.y - 12, self.map.px_w, self.map.px_h, w, h, bounds=room)
+            if self.fx.shake:
+                v.shake(random.randint(-3, 3), random.randint(-3, 3))
+            self.cam = v.cam
+            return v.ox, v.oy
+        v.zoom = 1
         cx = int(self.player.x - w / 2)
         cy = int(self.player.y - 12 - h / 2)
         cx = max(0, min(self.map.px_w - w, cx))
@@ -1115,6 +1335,7 @@ class WorldScene(Scene):
             cx += random.randint(-2, 2)
             cy += random.randint(-2, 2)
         self.cam = [cx, cy]
+        v.ox, v.oy = cx, cy
         return cx, cy
 
     def _ent_frame(self, e: Ent, facing: int, moving: int) -> pygame.Surface:
@@ -1132,9 +1353,8 @@ class WorldScene(Scene):
         img = frames[(FACING[facing % 4], f)]
         return white(img) if e.hurt_t > 0 else img
 
-    def draw_world(self, surf):
-        cx, cy = self._cam(surf)
-        self.map.draw_ground(surf, (cx, cy), self.t)
+    def draw_world_v1(self, surf, cx: int, cy: int) -> None:
+        """The world as drawn before the v2 art (a checkout without client/assets/v2/)."""
         frame = int(self.t * 3) % 4
         drawables = []
         if self.realm is not None:   # stage 9: puzzle stones, tiles, pillars
@@ -1248,7 +1468,259 @@ class WorldScene(Scene):
             pygame.draw.polygon(surf, rgb("o"), [(int(tx) - cx - 3, int(ty) - cy - 8 + bob),
                                                  (int(tx) - cx + 3, int(ty) - cy - 8 + bob),
                                                  (int(tx) - cx, int(ty) - cy - 4 + bob)])
-        self.fx.draw(surf, (cx, cy), lambda t, c: self.game.fonts.render(t, 7, c, 1), self.t)
+
+    # ------------------------------------------------------------ drawing with the v2 art (the 2x world)
+    def world_to_screen(self, wx: float, wy: float) -> tuple[int, int]:
+        """Where a world point is on the 480x270 screen (the one conversion; tests click through it)."""
+        return self.view.to_screen(wx, wy)
+
+    def screen_to_world(self, sx: float, sy: float) -> tuple[float, float]:
+        return self.view.to_world(sx, sy)
+
+    def char_pose(self, eid: str, sheet, moving: bool, walk_t: float, weapon: str | None,
+                  die_t0: float | None, atk_t0: float | None, hurt_t0: float | None) -> tuple[str, float]:
+        """Which clip a v2 character plays now and how far into it: die (held on its last frame)
+        > a chiêu > the weapon's attack > the hit flinch > walk / idle."""
+        now = self.game.now
+        if die_t0 is not None:
+            return "die", now - die_t0
+        c = self.casting.get(eid)
+        if c is not None:
+            if now < c["until"]:
+                clip = c["anim"] if sheet.has(c["anim"]) else "slash"
+                return clip, now - c["t0"]
+            del self.casting[eid]
+        _, attack = art2.weapon_for(weapon)
+        if atk_t0 is not None and now - atk_t0 < sheet.seconds(attack):
+            return attack, now - atk_t0
+        if hurt_t0 is not None and now - hurt_t0 < sheet.seconds("hit"):
+            return "hit", now - hurt_t0
+        return ("walk", walk_t) if moving else ("idle", self.t)
+
+    def char_v2(self, drawables: list, eid: str, realm: str, x: float, y: float, facing: str, moving: bool,
+                walk_t: float, weapon: str | None, die_t0, atk_t0, hurt_t0, ghost: bool, flash: bool) -> bool:
+        """Append the layers of one character (aura back, glow, body, weapon, aura front)."""
+        sheet = art2.char_for(realm)
+        if sheet is None:
+            return False
+        clip, t = self.char_pose(eid, sheet, moving, walk_t, weapon, die_t0, atk_t0, hurt_t0)
+        layers = art2.char_layers(realm, clip, t, facing, weapon, aura_t=self.t, flash=flash, sheet=sheet,
+                                  aura=not ghost and die_t0 is None)
+        ix, iy = self.view.to_screen(x, y)
+        for img, (ox, oy), flags in layers or ():
+            drawables.append((y, ghostly(img) if ghost else img, (ix + ox, iy + oy), flags))
+        return True
+
+    def monster_v2(self, e: Ent, x: float, y: float, f: int, moving: int, drawables: list, bars: list) -> None:
+        sheet = self.ent_sheet(e)
+        now = self.game.now
+        v = self.view
+        if sheet is None:                         # no v2 sheet for it: the old sprite, at the zoom
+            if e.alive:
+                img = self._ent_frame(e, f, moving)
+                drawables.append((y, v.img(img), v.to_screen(x - img.get_width() / 2, y - img.get_height())))
+            return
+        w, h = art2.extent(sheet)
+        facing = FACING[f % 4]
+        tl = self.tele_of(e.id)
+        if e.die_t0 is not None:
+            clip, t = "die", now - e.die_t0
+            if t > sheet.seconds("die") + 0.4:
+                return                            # played once: gone until it respawns
+        elif not e.alive:
+            return
+        elif e.hurt_t > 0 and sheet.has("hit"):
+            clip, t = "hit", 0.15 - e.hurt_t
+        elif e.atk_t0 is not None and now - e.atk_t0 < sheet.seconds("attack"):
+            clip, t = "attack", now - e.atk_t0
+        elif tl is not None:
+            clip, t = "windup", tl[4] - tl[3]     # held on its last frame while the zone fills
+        elif moving:
+            clip, t = "walk", e.walk_t
+        else:
+            clip, t = "idle", self.t + (sum(map(ord, e.id)) % 7) * 0.13
+        if clip in ("windup", "attack") and e.aim is not None:
+            facing = face_to(e.aim[0] - x, e.aim[1] - y, facing)
+        n = sheet.index(clip, t, facing)
+        img = sheet.white(n) if e.hurt_t > 0.1 else sheet.frame(n)
+        sx, sy = v.to_screen(x, y)
+        drawables.append((y, img, (int(sx - sheet.pivot[0]), int(sy - sheet.pivot[1]))))
+        if not e.alive or e.die_t0 is not None:
+            return
+        if e.shield:
+            ring = w + 10
+            drawables.append((y + 0.1, shield_ring(ring, int(self.t * 6) % 4),
+                              (int(sx - ring / 2), int(sy - h / 2 - ring / 2))))
+        if e.hp < 100:
+            bars.append((sx, sy - h - 5, max(16, min(30, w)), e.hp, "#BC4749"))
+
+    def draw_teles_v2(self, surf, over: bool = False) -> None:
+        """Hit zones: the warn_circle sheet stretched to the real hit radius (the server hits
+        everyone within r + 5 of the point), drawn on the ground under the bodies. While the
+        monster winds up the ring loops and grows more opaque and a second copy fills it from the
+        centre; when the blow lands it flashes. `over`: the second pass after the bodies - only a
+        thin bright rim, so the edge of the zone stays visible when someone stands in it."""
+        charge = art2.fx(art2.combat_fx("telegraph"))
+        release = art2.fx(art2.combat_fx("telegraph_land")) or charge
+        if charge is None:
+            return
+        v = self.view
+        for tl in self.teles:
+            tx, ty, r, left, total = tl[:5]
+            cx_, cy_ = v.to_screen(tx, ty)
+            rad = v.len(r + 5)
+            if over:
+                if left > 0:
+                    pygame.draw.circle(surf, (255, 214, 120), (cx_, cy_), int(rad), 1)
+                continue
+            d = max(8, int(2 * rad * charge.fw / 92))      # the artwork's circle is 92 of 96 px
+            if left > 0:
+                k = 1 - left / max(0.01, total)
+                ring = art2.scaled(charge.frame(charge.fx_index(self.t)), d, d)
+                surf.blit(art2.alpha_copy(ring, 150 + 105 * k), (int(cx_ - d / 2), int(cy_ - d / 2)))
+                inner = int(d * k) // 4 * 4
+                if inner >= 8:
+                    fill = art2.scaled(charge.frame(charge.fx_index(self.t)), inner, inner)
+                    surf.blit(art2.alpha_copy(fill, 190), (int(cx_ - inner / 2), int(cy_ - inner / 2)))
+            else:
+                img = art2.scaled(release.frame(release.fx_index(-left)), d, d)
+                surf.blit(img, (int(cx_ - d / 2), int(cy_ - d / 2)))
+
+    def npc_talking(self, o) -> bool:
+        """Is this NPC's dialog on screen (it plays `talk` then)?"""
+        if getattr(self, "talking_to", None) is not o:
+            return False
+        return any(type(sc).__name__ == "DialogScene" for sc in self.game.scenes)
+
+    def draw_world_v2(self, surf) -> None:
+        """The world at 2x from the v2 Blender art: autotiled ground (drawn by draw_world), props
+        and buildings anchored by their pivots, characters with realm aura, glow and weapon layer,
+        monsters that wind up, strike, flinch and die, hit zones and ground FX under the bodies.
+        Anything with no v2 picture keeps its old sprite, scaled 2x so its size is right."""
+        now = self.game.now
+        v = self.view
+        frame = int(self.t * 3) % 4
+        drawables = []
+        if self.realm is not None:   # stage 9: puzzle stones, tiles, pillars
+            self.realm.floor(surf, v.ox, v.oy, frame)
+            drawables += self.realm.drawables(v.ox, v.oy, frame)
+        sw, sh = surf.get_size()
+        self.draw_teles_v2(surf)
+        self.draw_skill_fx(surf, ground=True)      # formation circles lie on the ground
+        self.draw_sparks(surf, ground=True)
+        vw, vh = v.span(sw, sh)
+        for o in self.map.objects:
+            if o.x + o.w < v.x - 40 or o.x > v.x + vw + 40 or o.y + o.h < v.y - 8 or o.y > v.y + vh + 80:
+                continue
+            d = art2.object_drawable(o, v, self.t, talking=self.npc_talking(o) if o.type == "npc" else False)
+            if d is not None:
+                drawables.append(d)
+            elif o.props.get("sprite"):
+                name = o.props["sprite"]
+                img = sprites.prop(name, int(o.props.get("variant", 0) or 0),
+                                   frame if name in sprites.ANIMATED_PROPS else 0)
+                drawables.append((o.foot_y, v.img(img), v.to_screen(o.x, o.y)))
+            elif o.type == "char":      # M8: a character rendered out of Blender
+                img, _pos = self._char_frame(o, 0, 0)
+                if img is not None:
+                    cs = art2.char_sheet(o.props.get("sheet", ""))
+                    sx, sy = v.to_screen(o.x + o.w / 2, o.y + o.h)
+                    piv = cs.pivot if cs is not None else (img.get_width() / 2, img.get_height())
+                    drawables.append((o.foot_y, img if cs is not None else v.img(img),
+                                      (int(sx - piv[0]), int(sy - piv[1]))))
+            elif o.type == "npc":
+                look = o.props.get("npc", "guide")
+                img = sprites.truc_lao()[1 if int(self.t * 10) % 37 == 0 else 0] if look == "truc_lao" \
+                    else sprites.npc(look)[("down", 0)]
+                drawables.append((o.foot_y, v.img(img), v.to_screen(o.x, o.y)))
+        bars = []
+        for e in self.entities.values():
+            s = self.interp.sample(e.id, now)
+            if s is None:
+                continue
+            e.pos = s
+            x, y, f, m = s
+            if e.kind == "r":
+                if e.alive:
+                    drawables.append((y, v.img(self._ent_frame(e, f, m)), v.to_screen(x - 12, y - 32)))
+                continue
+            if e.kind == "m":
+                self.monster_v2(e, x, y, f, m, drawables, bars)
+                continue
+            if not e.alive:
+                continue
+            if e.die_t0 is not None and e.hp > 0 and now - e.die_t0 > 1.0:
+                e.die_t0 = None                    # back on their feet
+            drawn = self.char_v2(drawables, e.id, e.realm, x, y, FACING[f % 4], bool(m), e.walk_t, e.weapon,
+                                 e.die_t0, e.atk_t0, now - (0.15 - e.hurt_t) if e.hurt_t > 0 else None,
+                                 e.ghost, e.hurt_t > 0.1)
+            if not drawn:
+                img = self._ent_frame(e, f, m)
+                drawables.append((y, v.img(ghostly(img) if e.ghost else img), v.to_screen(x - 8, y - 24)))
+            if e.hp < 100 and e.die_t0 is None:
+                sx, sy = v.to_screen(x, y)
+                bars.append((sx, sy - V2_HEAD + 6, 16, e.hp, "#6A994E"))
+        p = self.player
+        me = f"p{self.game.state.me.get('id')}"
+        ch = self.game.state.character or {}
+        if self.dead and not self.ghost and self.my_die_t0 is None:
+            self.my_die_t0 = now                   # dead: the fallen body stays until the respawn
+        die_t0 = self.my_die_t0 if self.dead and not self.ghost else None
+        wp = (self.game.state.cult or {}).get("stats", {}).get("weapon")
+        if not self.char_v2(drawables, me, ch.get("realm", "pham_nhan"), p.x, p.y, p.facing, p.moving, p.walk_t,
+                            wp, die_t0, self.my_atk_t0, self.my_hurt_t0, self.ghost, False) and not self.dead:
+            drawables.append((p.y, v.img(ghostly(p.frame()) if self.ghost else p.frame()),
+                              v.to_screen(p.x - 8, p.y - 24)))
+        for pf in self.pet_follow.values():
+            bd = art2.beast_drawable(pf.kind, pf.x, pf.y, pf.moving, pf.walk_t, self.t, pf.left, v)
+            if bd is not None:
+                drawables.append(bd)
+            else:
+                sx, sy = v.to_screen(pf.x - 5, pf.y - 1)
+                pygame.draw.ellipse(surf, (30, 36, 26), (sx, sy, int(v.len(10)), int(v.len(3))))
+                drawables.append((pf.y, v.img(sprites.pet(pf.kind, pf.frame, pf.left)),
+                                  v.to_screen(pf.x - 8, pf.y - 13)))
+        species = self.game.state.bee_species
+        for fb in self.flock.bees.values():
+            look = (species.get(fb.sp) or {}).get("look")
+            sx, sy = v.to_screen(fb.x - 2, fb.y)
+            pygame.draw.ellipse(surf, (30, 36, 26), (sx, sy, int(v.len(4)), int(v.len(2))))
+            drawables.append((fb.y + 6, v.img(sprites.bee(look, fb.frame(), fb.left)),
+                              v.to_screen(fb.x - 4, fb.y - fb.z - 4)))
+        for d in sorted(drawables, key=lambda d: d[0]):
+            surf.blit(d[1], d[2], None, d[3] if len(d) > 3 else 0)
+        self.draw_teles_v2(surf, over=True)        # the zone's rim stays visible over whoever stands in it
+        self.draw_skill_fx(surf)                   # M9: the effect of a chiêu thức, over the bodies
+        self.draw_sparks(surf)
+        if self.fishing is not None:
+            from .fishing import draw_rod
+            draw_rod(surf, self.fishing, v.ox, v.oy, self.t, view=v)
+        for x, y, w, hp, col in bars:  # small health bars over the hurt ones (already on screen)
+            bx, by = int(x - w / 2), int(y)
+            pygame.draw.rect(surf, rgb("K"), (bx - 1, by - 1, w + 2, 4))
+            pygame.draw.rect(surf, pygame.Color(col), (bx, by, max(1, int(w * hp / 100)), 2))
+        if self.target and self.game.top is self:
+            kind, obj = self.target
+            if kind == "object":
+                tx, ty = v.to_screen(obj.x + obj.w / 2, obj.y + obj.h)
+                ty -= art2.object_height(obj, v)
+            else:
+                tx, ty = v.to_screen(obj.pos[0], obj.pos[1])
+                ty -= self.ent_extent(obj)[1] + (8 if obj.kind == "m" else 2)
+            bob = int(math.sin(self.t * 6) * 2)
+            pygame.draw.polygon(surf, rgb("o"), [(tx - 3, ty - 8 + bob), (tx + 3, ty - 8 + bob), (tx, ty - 4 + bob)])
+
+    def draw_world(self, surf):
+        cx, cy = self._cam(surf)
+        v2 = art2.on()
+        if v2:
+            self.map.draw_ground_view(surf, self.view, self.t)
+            self.draw_world_v2(surf)
+        else:
+            self.map.draw_ground(surf, (cx, cy), self.t)
+            self.draw_world_v1(surf, cx, cy)
+        self.fx.draw(surf, (cx, cy), lambda t, c: self.game.fonts.render(t, 7, c, 1), self.t,
+                     view=self.view if v2 else None)
         if self.realm is not None:   # underground: no sky, but the maze is dark, other rooms unseen
             self.realm.dark(surf, cx, cy)
             self.realm.outside(surf, cx, cy)
@@ -1272,36 +1744,59 @@ class WorldScene(Scene):
         cx, cy = self.cam
         now = g.now
         # names and chat bubbles over heads (window resolution, so text stays sharp)
+        v2 = art2.on()
         heads = [(self.player.x, self.player.y, g.state.character.get("display_name", ""), "#FFFFFF",
-                  f"p{g.state.me.get('id')}", 25)]
+                  f"p{g.state.me.get('id')}", V2_HEAD if v2 else 25)]
         for e in self.entities.values():
             if not e.alive:
                 continue
             col = "#F4EBD9" if e.kind == "p" else ("#E9C46A" if e.rank == "elite" else "#F08A8C")
             name = e.name if e.rank == "normal" or e.kind == "p" else f"{e.name} · {T.MONSTER_RANK.get(e.rank, '')}"
-            heads.append((e.pos[0], e.pos[1], name, col, e.id, 25 if e.kind == "p" else 22))
+            if v2 and e.kind in ("p", "m"):
+                lift = V2_HEAD if e.kind == "p" else self.ent_extent(e)[1] + 7
+            else:
+                lift = 25 if e.kind == "p" else 22
+            heads.append((e.pos[0], e.pos[1], name, col, e.id, lift))
         for o in self.map.objects:
             if o.type == "npc":
-                heads.append((o.x + o.w / 2, o.y + o.h, o.name, "#E9C46A", None, 25))
-        for x, y, name, col, eid, lift in heads:
-            bx, by = x - cx, y - cy - lift
+                lift = 25
+                if v2:
+                    ns = art2.npc(o.props.get("npc", "guide"))
+                    lift = art2.extent(ns)[1] + 4 if ns is not None else 25 * self.z
+                heads.append((o.x + o.w / 2, o.y + o.h, o.name, "#E9C46A", None, lift))
+        placed: list = []            # name tags already drawn: a tag that would cover one moves up
+        for x, y, name, col, eid, lift in (sorted(heads, key=lambda h: -h[1]) if v2 else heads):
+            sx, sy = self.view.to_screen(x, y) if v2 else (x - cx, y - cy)
+            bx, by = sx, sy - lift
             if not (-40 < bx < 520 and -20 < by < 290):
                 continue
+            if v2:
+                tw = ui.text_size(name, 7)[0]
+                for _ in range(3):
+                    if not any(abs(bx - px) < (tw + pw) / 2 and abs(by - py) < 8 for px, py, pw in placed):
+                        break
+                    by -= 8
+                placed.append((bx, by, tw))
             ui.text(name, bx + 0.5, by + 0.5, 7, "#1A1A1A", anchor="midbottom")
             ui.text(name, bx, by, 7, col, anchor="midbottom")
             b = self.bubbles.get(eid) if eid else None
             if b and b[1] > now:
                 self._bubble(ui, b[0], bx, by - 9)
         for hz, bx_, by_, life in self.big_chars:  # spec 18: the skill's character, big, above the caster
-            ui.text(hz, bx_ - cx, by_ - cy - (1 - life) * 8, 18, "#E9C46A", kind="han", anchor="center")
+            hx, hy = self.view.to_screen(bx_, by_) if v2 else (bx_ - cx, by_ - cy)
+            ui.text(hz, hx, hy - (1 - life) * 8, 18, "#E9C46A", kind="han", anchor="center")
         # player card: portrait, realm, Sinh Lực / Linh Lực / Tu Vi
         ch, me = g.state.character, g.state.me
         cult = g.state.cult or {}
         ui.fill(4, 4, 136, 50, (244, 235, 217, 235))
         ui.border(4, 4, 136, 50, "#8B5A2B")
-        head = sprites.character(self.player.appearance)[("down", 0)].subsurface(pygame.Rect(2, 1, 12, 11))
         ui.fill(7, 7, 28, 28, "#E3D5BA")
-        ui.image(head, 21, 21, zoom=2, anchor="center")
+        head = art2.portrait(ch.get("realm")) if art2.on() else None
+        if head is not None:            # cropped from the v2 idle-down frame of my realm's look
+            ui.image(head, 21, 21, zoom=1, anchor="center")
+        else:
+            head = sprites.character(self.player.appearance)[("down", 0)].subsurface(pygame.Rect(2, 1, 12, 11))
+            ui.image(head, 21, 21, zoom=2, anchor="center")
         from .library import portrait_frame, title_after
         portrait_frame(ui, me.get("frame"), 7, 7, 28, 28)
         title_after(ui, me.get("title"), ui.text(ch.get("display_name", ""), 39, 6, 8), 7.5)
@@ -1389,6 +1884,19 @@ class WorldScene(Scene):
         if top and not typing and ui.key(pygame.K_l):
             g.open_library()
 
+    def entity_at(self, wx: float, wy: float) -> Ent | None:
+        """The entity whose picture covers a world point (mouse picking). Its box is the picture on
+        screen turned back into world pixels, so it follows the zoom (16 x 24 with the old sprites)."""
+        hovered = None
+        z = self.z
+        for e in self.entities.values():
+            w_, tall = self.ent_extent(e)
+            tall /= z
+            reach = (12 if e.kind == "m" else 8) if z == 1 else max(5.0, w_ / 2 / z)
+            if e.alive and abs(e.pos[0] - wx) < reach and e.pos[1] - tall < wy < e.pos[1] + 2:
+                hovered = e
+        return hovered
+
     def _hud_input(self, ui, top: bool) -> None:
         g = self.game
         typing = g.chatbox.typing
@@ -1401,11 +1909,9 @@ class WorldScene(Scene):
             return
         # hover tooltips on entities
         mxw, myw = ui.inp.mouse
-        wx, wy = mxw + cx, myw + cy
-        hovered = None
-        for e in self.entities.values():
-            if e.alive and abs(e.pos[0] - wx) < (12 if e.kind == "m" else 8) and e.pos[1] - 24 < wy < e.pos[1] + 2:
-                hovered = e
+        wx, wy = self.view.to_world(mxw, myw) if art2.on() else (mxw + cx, myw + cy)
+        hovered = self.entity_at(wx, wy)
+        z = self.z
         if hovered is not None and ui.hover(0, 60, 480, 180):
             tip = hovered.name
             if hovered.kind == "p":
@@ -1443,7 +1949,11 @@ class WorldScene(Scene):
                 self.interact(("ent", hovered))   # a monster: attack (spec 7.2: left click)
                 return
             for o in self.map.objects:
-                if o.type in ("npc", "interact", "sign") and o.rect.collidepoint(wx, wy):
+                r = o.rect
+                if o.type == "npc" and z > 1:     # a v2 NPC stands taller than its map rect
+                    up = art2.object_height(o, self.view) / z
+                    r = pygame.Rect(r.x, int(r.bottom - max(r.h, up)), r.w, int(max(r.h, up)))
+                if o.type in ("npc", "interact", "sign") and r.collidepoint(wx, wy):
                     ui.consume_click()
                     self.interact(("object", o))
                     return

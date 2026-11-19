@@ -1,0 +1,19 @@
+{
+ "id": "pickup_glow",
+ "name_vi": "Anh sang nhat do",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 50
+ },
+ "sheet": "pickup_glow.png",
+ "cols": 6,
+ "frames": 6,
+ "fps": 8,
+ "loop": true,
+ "blend": "add",
+ "ground": false
+}

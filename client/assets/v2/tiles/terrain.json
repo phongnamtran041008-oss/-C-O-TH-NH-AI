@@ -1,0 +1,243 @@
+{
+ "sheet": "terrain.png",
+ "tile": 16,
+ "cols": 8,
+ "tiles": {
+  "grass_path_nw": [
+   0
+  ],
+  "grass_path_n": [
+   1
+  ],
+  "grass_path_ne": [
+   2
+  ],
+  "grass_path_w": [
+   3
+  ],
+  "grass_path_e": [
+   4
+  ],
+  "grass_path_sw": [
+   5
+  ],
+  "grass_path_s": [
+   6
+  ],
+  "grass_path_se": [
+   7
+  ],
+  "grass_path_in_nw": [
+   8
+  ],
+  "grass_path_in_ne": [
+   9
+  ],
+  "grass_path_in_sw": [
+   10
+  ],
+  "grass_path_in_se": [
+   11
+  ],
+  "grass_dirt_nw": [
+   12
+  ],
+  "grass_dirt_n": [
+   13
+  ],
+  "grass_dirt_ne": [
+   14
+  ],
+  "grass_dirt_w": [
+   15
+  ],
+  "grass_dirt_e": [
+   16
+  ],
+  "grass_dirt_sw": [
+   17
+  ],
+  "grass_dirt_s": [
+   18
+  ],
+  "grass_dirt_se": [
+   19
+  ],
+  "grass_dirt_in_nw": [
+   20
+  ],
+  "grass_dirt_in_ne": [
+   21
+  ],
+  "grass_dirt_in_sw": [
+   22
+  ],
+  "grass_dirt_in_se": [
+   23
+  ],
+  "shore_nw": [
+   24
+  ],
+  "shore_n": [
+   25
+  ],
+  "shore_ne": [
+   26
+  ],
+  "shore_w": [
+   27
+  ],
+  "shore_e": [
+   28
+  ],
+  "shore_sw": [
+   29
+  ],
+  "shore_s": [
+   30
+  ],
+  "shore_se": [
+   31
+  ],
+  "shore_in_nw": [
+   32
+  ],
+  "shore_in_ne": [
+   33
+  ],
+  "shore_in_sw": [
+   34
+  ],
+  "shore_in_se": [
+   35
+  ],
+  "cliff_nw": [
+   36
+  ],
+  "cliff_n": [
+   37
+  ],
+  "cliff_ne": [
+   38
+  ],
+  "cliff_w": [
+   39
+  ],
+  "cliff_e": [
+   40
+  ],
+  "cliff_face_a_l": [
+   41
+  ],
+  "cliff_face_a": [
+   42
+  ],
+  "cliff_face_a2": [
+   43
+  ],
+  "cliff_face_a_r": [
+   44
+  ],
+  "stairs_a": [
+   45
+  ],
+  "cliff_face_b_l": [
+   46
+  ],
+  "cliff_face_b": [
+   47
+  ],
+  "cliff_face_b2": [
+   48
+  ],
+  "cliff_face_b_r": [
+   49
+  ],
+  "stairs_b": [
+   50
+  ],
+  "cliff_shadow_l": [
+   51
+  ],
+  "cliff_shadow": [
+   52
+  ],
+  "cliff_shadow_r": [
+   53
+  ],
+  "plateau_top": [
+   54,
+   55,
+   56
+  ],
+  "bridge_h": [
+   57
+  ],
+  "bridge_v": [
+   58
+  ],
+  "bridge_h_w": [
+   59
+  ],
+  "bridge_h_e": [
+   60
+  ],
+  "bridge_v_n": [
+   61
+  ],
+  "bridge_v_s": [
+   62
+  ],
+  "snow_0": [
+   63
+  ],
+  "snow_1": [
+   64
+  ],
+  "sand_0": [
+   65
+  ],
+  "sand_1": [
+   66
+  ],
+  "lava_rock_0": [
+   67
+  ],
+  "lava_rock_1": [
+   68
+  ],
+  "cloud_0": [
+   69
+  ],
+  "cloud_1": [
+   70
+  ]
+ },
+ "render": {
+  "tile_m": 0.42105263157894735,
+  "wrap_check": {
+   "plateau_top[0]": 0.46,
+   "plateau_top[1]": 0.44,
+   "plateau_top[2]": 0.44,
+   "snow_0[0]": 0.92,
+   "snow_1[0]": 1.82,
+   "sand_0[0]": 0.55,
+   "sand_1[0]": 0.31,
+   "lava_rock_0[0]": 0.72,
+   "lava_rock_1[0]": 0.85,
+   "cloud_0[0]": 0.89,
+   "cloud_1[0]": 1.12
+  }
+ },
+ "id": "terrain",
+ "autotile": {
+  "naming": "suffix = where the OUTER material lies (grass_path_n has grass to the north of the path); nw/ne/sw/se are convex corners of the inner blob, in_nw.. concave (notch) corners. Blob edge is 5 px inside the tile ring.",
+  "pairs": {
+   "grass_path": "path",
+   "grass_dirt": "dirt",
+   "shore": "water (static frame; use base water_anim inside)"
+  },
+  "plateau": "cliff_nw..cliff_e = back and side edges of raised land (lighter top); the front is cliff_face_a (upper, with the grass lip) over cliff_face_b, ends _l/_r, variants a2/b2, then cliff_shadow(_l/_r) on the ground below; stairs_a/b are worn steps cut into the face (put a face tile on each side)",
+  "bridge": "bridge_h / bridge_v middle tiles carry a frame of water (the ground layer is opaque); bridge_h_w/e and bridge_v_n/s sit on the shore bank"
+ }
+}

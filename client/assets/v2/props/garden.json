@@ -1,0 +1,1870 @@
+{
+ "sheet": "garden.png",
+ "props": {
+  "plot_locked": {
+   "rect": [
+    1,
+    1,
+    64,
+    64
+   ],
+   "pivot": [
+    32,
+    64
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Luống đất hoang",
+   "old": "plot_bed(True)"
+  },
+  "plot_open": {
+   "rect": [
+    66,
+    1,
+    64,
+    64
+   ],
+   "pivot": [
+    32,
+    64
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Luống đất",
+   "old": "plot_bed(False)"
+  },
+  "plot_dry": {
+   "rect": [
+    131,
+    1,
+    64,
+    64
+   ],
+   "pivot": [
+    32,
+    64
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Luống đất khô cằn",
+   "old": "plot_bed(False) when the plant is withered"
+  },
+  "herb_0": {
+   "rect": [
+    82,
+    66,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 0",
+   "family": "herb",
+   "stage": 0,
+   "rarity": null
+  },
+  "herb_1": {
+   "rect": [
+    1,
+    119,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 1",
+   "family": "herb",
+   "stage": 1,
+   "rarity": null
+  },
+  "herb_2": {
+   "rect": [
+    98,
+    119,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 2",
+   "family": "herb",
+   "stage": 2,
+   "rarity": null
+  },
+  "herb_3_common": {
+   "rect": [
+    1,
+    168,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 3",
+   "family": "herb",
+   "stage": 3,
+   "rarity": "common"
+  },
+  "herb_3_rare": {
+   "rect": [
+    98,
+    168,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 3",
+   "family": "herb",
+   "stage": 3,
+   "rarity": "rare"
+  },
+  "herb_3_epic": {
+   "rect": [
+    1,
+    217,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 3",
+   "family": "herb",
+   "stage": 3,
+   "rarity": "epic"
+  },
+  "herb_3_legendary": {
+   "rect": [
+    98,
+    217,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 3",
+   "family": "herb",
+   "stage": 3,
+   "rarity": "legendary"
+  },
+  "herb_4_common": {
+   "rect": [
+    1,
+    266,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 4",
+   "family": "herb",
+   "stage": 4,
+   "rarity": "common"
+  },
+  "herb_4_rare": {
+   "rect": [
+    98,
+    266,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 4",
+   "family": "herb",
+   "stage": 4,
+   "rarity": "rare"
+  },
+  "herb_4_epic": {
+   "rect": [
+    1,
+    315,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 4",
+   "family": "herb",
+   "stage": 4,
+   "rarity": "epic"
+  },
+  "herb_4_legendary": {
+   "rect": [
+    98,
+    315,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 4",
+   "family": "herb",
+   "stage": 4,
+   "rarity": "legendary"
+  },
+  "herb_5_common": {
+   "rect": [
+    1,
+    364,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 5",
+   "family": "herb",
+   "stage": 5,
+   "rarity": "common"
+  },
+  "herb_5_rare": {
+   "rect": [
+    98,
+    364,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 5",
+   "family": "herb",
+   "stage": 5,
+   "rarity": "rare"
+  },
+  "herb_5_epic": {
+   "rect": [
+    1,
+    413,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 5",
+   "family": "herb",
+   "stage": 5,
+   "rarity": "epic"
+  },
+  "herb_5_legendary": {
+   "rect": [
+    98,
+    413,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh thảo lá, giai đoạn 5",
+   "family": "herb",
+   "stage": 5,
+   "rarity": "legendary"
+  },
+  "flower_0": {
+   "rect": [
+    1,
+    462,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 0",
+   "family": "flower",
+   "stage": 0,
+   "rarity": null
+  },
+  "flower_1": {
+   "rect": [
+    98,
+    462,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 1",
+   "family": "flower",
+   "stage": 1,
+   "rarity": null
+  },
+  "flower_2": {
+   "rect": [
+    1,
+    511,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 2",
+   "family": "flower",
+   "stage": 2,
+   "rarity": null
+  },
+  "flower_3_common": {
+   "rect": [
+    98,
+    511,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 3",
+   "family": "flower",
+   "stage": 3,
+   "rarity": "common"
+  },
+  "flower_3_rare": {
+   "rect": [
+    1,
+    560,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 3",
+   "family": "flower",
+   "stage": 3,
+   "rarity": "rare"
+  },
+  "flower_3_epic": {
+   "rect": [
+    98,
+    560,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 3",
+   "family": "flower",
+   "stage": 3,
+   "rarity": "epic"
+  },
+  "flower_3_legendary": {
+   "rect": [
+    1,
+    609,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 3",
+   "family": "flower",
+   "stage": 3,
+   "rarity": "legendary"
+  },
+  "flower_4_common": {
+   "rect": [
+    98,
+    609,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 4",
+   "family": "flower",
+   "stage": 4,
+   "rarity": "common"
+  },
+  "flower_4_rare": {
+   "rect": [
+    1,
+    658,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 4",
+   "family": "flower",
+   "stage": 4,
+   "rarity": "rare"
+  },
+  "flower_4_epic": {
+   "rect": [
+    98,
+    658,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 4",
+   "family": "flower",
+   "stage": 4,
+   "rarity": "epic"
+  },
+  "flower_4_legendary": {
+   "rect": [
+    1,
+    707,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 4",
+   "family": "flower",
+   "stage": 4,
+   "rarity": "legendary"
+  },
+  "flower_5_common": {
+   "rect": [
+    98,
+    707,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 5",
+   "family": "flower",
+   "stage": 5,
+   "rarity": "common"
+  },
+  "flower_5_rare": {
+   "rect": [
+    1,
+    756,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 5",
+   "family": "flower",
+   "stage": 5,
+   "rarity": "rare"
+  },
+  "flower_5_epic": {
+   "rect": [
+    98,
+    756,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 5",
+   "family": "flower",
+   "stage": 5,
+   "rarity": "epic"
+  },
+  "flower_5_legendary": {
+   "rect": [
+    1,
+    805,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh hoa, giai đoạn 5",
+   "family": "flower",
+   "stage": 5,
+   "rarity": "legendary"
+  },
+  "root_0": {
+   "rect": [
+    98,
+    805,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 0",
+   "family": "root",
+   "stage": 0,
+   "rarity": null
+  },
+  "root_1": {
+   "rect": [
+    1,
+    854,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 1",
+   "family": "root",
+   "stage": 1,
+   "rarity": null
+  },
+  "root_2": {
+   "rect": [
+    98,
+    854,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 2",
+   "family": "root",
+   "stage": 2,
+   "rarity": null
+  },
+  "root_3_common": {
+   "rect": [
+    1,
+    903,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 3",
+   "family": "root",
+   "stage": 3,
+   "rarity": "common"
+  },
+  "root_3_rare": {
+   "rect": [
+    98,
+    903,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 3",
+   "family": "root",
+   "stage": 3,
+   "rarity": "rare"
+  },
+  "root_3_epic": {
+   "rect": [
+    1,
+    952,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 3",
+   "family": "root",
+   "stage": 3,
+   "rarity": "epic"
+  },
+  "root_3_legendary": {
+   "rect": [
+    98,
+    952,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 3",
+   "family": "root",
+   "stage": 3,
+   "rarity": "legendary"
+  },
+  "root_4_common": {
+   "rect": [
+    1,
+    1001,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 4",
+   "family": "root",
+   "stage": 4,
+   "rarity": "common"
+  },
+  "root_4_rare": {
+   "rect": [
+    98,
+    1001,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 4",
+   "family": "root",
+   "stage": 4,
+   "rarity": "rare"
+  },
+  "root_4_epic": {
+   "rect": [
+    1,
+    1050,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 4",
+   "family": "root",
+   "stage": 4,
+   "rarity": "epic"
+  },
+  "root_4_legendary": {
+   "rect": [
+    98,
+    1050,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 4",
+   "family": "root",
+   "stage": 4,
+   "rarity": "legendary"
+  },
+  "root_5_common": {
+   "rect": [
+    1,
+    1099,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 5",
+   "family": "root",
+   "stage": 5,
+   "rarity": "common"
+  },
+  "root_5_rare": {
+   "rect": [
+    98,
+    1099,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 5",
+   "family": "root",
+   "stage": 5,
+   "rarity": "rare"
+  },
+  "root_5_epic": {
+   "rect": [
+    1,
+    1148,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 5",
+   "family": "root",
+   "stage": 5,
+   "rarity": "epic"
+  },
+  "root_5_legendary": {
+   "rect": [
+    98,
+    1148,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh căn, giai đoạn 5",
+   "family": "root",
+   "stage": 5,
+   "rarity": "legendary"
+  },
+  "vine_0": {
+   "rect": [
+    1,
+    1197,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 0",
+   "family": "vine",
+   "stage": 0,
+   "rarity": null
+  },
+  "vine_1": {
+   "rect": [
+    98,
+    1197,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 1",
+   "family": "vine",
+   "stage": 1,
+   "rarity": null
+  },
+  "vine_2": {
+   "rect": [
+    1,
+    1246,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 2",
+   "family": "vine",
+   "stage": 2,
+   "rarity": null
+  },
+  "vine_3_common": {
+   "rect": [
+    98,
+    1246,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 3",
+   "family": "vine",
+   "stage": 3,
+   "rarity": "common"
+  },
+  "vine_3_rare": {
+   "rect": [
+    1,
+    1295,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 3",
+   "family": "vine",
+   "stage": 3,
+   "rarity": "rare"
+  },
+  "vine_3_epic": {
+   "rect": [
+    98,
+    1295,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 3",
+   "family": "vine",
+   "stage": 3,
+   "rarity": "epic"
+  },
+  "vine_3_legendary": {
+   "rect": [
+    1,
+    1344,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 3",
+   "family": "vine",
+   "stage": 3,
+   "rarity": "legendary"
+  },
+  "vine_4_common": {
+   "rect": [
+    98,
+    1344,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 4",
+   "family": "vine",
+   "stage": 4,
+   "rarity": "common"
+  },
+  "vine_4_rare": {
+   "rect": [
+    1,
+    1393,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 4",
+   "family": "vine",
+   "stage": 4,
+   "rarity": "rare"
+  },
+  "vine_4_epic": {
+   "rect": [
+    98,
+    1393,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 4",
+   "family": "vine",
+   "stage": 4,
+   "rarity": "epic"
+  },
+  "vine_4_legendary": {
+   "rect": [
+    1,
+    1442,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 4",
+   "family": "vine",
+   "stage": 4,
+   "rarity": "legendary"
+  },
+  "vine_5_common": {
+   "rect": [
+    98,
+    1442,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 5",
+   "family": "vine",
+   "stage": 5,
+   "rarity": "common"
+  },
+  "vine_5_rare": {
+   "rect": [
+    1,
+    1491,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 5",
+   "family": "vine",
+   "stage": 5,
+   "rarity": "rare"
+  },
+  "vine_5_epic": {
+   "rect": [
+    98,
+    1491,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 5",
+   "family": "vine",
+   "stage": 5,
+   "rarity": "epic"
+  },
+  "vine_5_legendary": {
+   "rect": [
+    1,
+    1540,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh đằng, giai đoạn 5",
+   "family": "vine",
+   "stage": 5,
+   "rarity": "legendary"
+  },
+  "shroom_0": {
+   "rect": [
+    98,
+    1540,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 0",
+   "family": "shroom",
+   "stage": 0,
+   "rarity": null
+  },
+  "shroom_1": {
+   "rect": [
+    1,
+    1589,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 1",
+   "family": "shroom",
+   "stage": 1,
+   "rarity": null
+  },
+  "shroom_2": {
+   "rect": [
+    98,
+    1589,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 2",
+   "family": "shroom",
+   "stage": 2,
+   "rarity": null
+  },
+  "shroom_3_common": {
+   "rect": [
+    1,
+    1638,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 3",
+   "family": "shroom",
+   "stage": 3,
+   "rarity": "common"
+  },
+  "shroom_3_rare": {
+   "rect": [
+    98,
+    1638,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 3",
+   "family": "shroom",
+   "stage": 3,
+   "rarity": "rare"
+  },
+  "shroom_3_epic": {
+   "rect": [
+    1,
+    1687,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 3",
+   "family": "shroom",
+   "stage": 3,
+   "rarity": "epic"
+  },
+  "shroom_3_legendary": {
+   "rect": [
+    98,
+    1687,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 3",
+   "family": "shroom",
+   "stage": 3,
+   "rarity": "legendary"
+  },
+  "shroom_4_common": {
+   "rect": [
+    1,
+    1736,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 4",
+   "family": "shroom",
+   "stage": 4,
+   "rarity": "common"
+  },
+  "shroom_4_rare": {
+   "rect": [
+    98,
+    1736,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 4",
+   "family": "shroom",
+   "stage": 4,
+   "rarity": "rare"
+  },
+  "shroom_4_epic": {
+   "rect": [
+    1,
+    1785,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 4",
+   "family": "shroom",
+   "stage": 4,
+   "rarity": "epic"
+  },
+  "shroom_4_legendary": {
+   "rect": [
+    98,
+    1785,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 4",
+   "family": "shroom",
+   "stage": 4,
+   "rarity": "legendary"
+  },
+  "shroom_5_common": {
+   "rect": [
+    1,
+    1834,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 5",
+   "family": "shroom",
+   "stage": 5,
+   "rarity": "common"
+  },
+  "shroom_5_rare": {
+   "rect": [
+    98,
+    1834,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 5",
+   "family": "shroom",
+   "stage": 5,
+   "rarity": "rare"
+  },
+  "shroom_5_epic": {
+   "rect": [
+    1,
+    1883,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 5",
+   "family": "shroom",
+   "stage": 5,
+   "rarity": "epic"
+  },
+  "shroom_5_legendary": {
+   "rect": [
+    98,
+    1883,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh chi, giai đoạn 5",
+   "family": "shroom",
+   "stage": 5,
+   "rarity": "legendary"
+  },
+  "shrub_0": {
+   "rect": [
+    1,
+    1932,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 0",
+   "family": "shrub",
+   "stage": 0,
+   "rarity": null
+  },
+  "shrub_1": {
+   "rect": [
+    98,
+    1932,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 1",
+   "family": "shrub",
+   "stage": 1,
+   "rarity": null
+  },
+  "shrub_2": {
+   "rect": [
+    1,
+    1981,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 2",
+   "family": "shrub",
+   "stage": 2,
+   "rarity": null
+  },
+  "shrub_3_common": {
+   "rect": [
+    98,
+    1981,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 3",
+   "family": "shrub",
+   "stage": 3,
+   "rarity": "common"
+  },
+  "shrub_3_rare": {
+   "rect": [
+    1,
+    2030,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 3",
+   "family": "shrub",
+   "stage": 3,
+   "rarity": "rare"
+  },
+  "shrub_3_epic": {
+   "rect": [
+    98,
+    2030,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 3",
+   "family": "shrub",
+   "stage": 3,
+   "rarity": "epic"
+  },
+  "shrub_3_legendary": {
+   "rect": [
+    1,
+    2079,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 3",
+   "family": "shrub",
+   "stage": 3,
+   "rarity": "legendary"
+  },
+  "shrub_4_common": {
+   "rect": [
+    98,
+    2079,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 4",
+   "family": "shrub",
+   "stage": 4,
+   "rarity": "common"
+  },
+  "shrub_4_rare": {
+   "rect": [
+    1,
+    2128,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 4",
+   "family": "shrub",
+   "stage": 4,
+   "rarity": "rare"
+  },
+  "shrub_4_epic": {
+   "rect": [
+    98,
+    2128,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 4",
+   "family": "shrub",
+   "stage": 4,
+   "rarity": "epic"
+  },
+  "shrub_4_legendary": {
+   "rect": [
+    1,
+    2177,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 4",
+   "family": "shrub",
+   "stage": 4,
+   "rarity": "legendary"
+  },
+  "shrub_5_common": {
+   "rect": [
+    98,
+    2177,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 5",
+   "family": "shrub",
+   "stage": 5,
+   "rarity": "common"
+  },
+  "shrub_5_rare": {
+   "rect": [
+    1,
+    2226,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 5",
+   "family": "shrub",
+   "stage": 5,
+   "rarity": "rare"
+  },
+  "shrub_5_epic": {
+   "rect": [
+    98,
+    2226,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 5",
+   "family": "shrub",
+   "stage": 5,
+   "rarity": "epic"
+  },
+  "shrub_5_legendary": {
+   "rect": [
+    1,
+    2275,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Linh quả, giai đoạn 5",
+   "family": "shrub",
+   "stage": 5,
+   "rarity": "legendary"
+  },
+  "seed_common": {
+   "rect": [
+    1,
+    2324,
+    32,
+    32
+   ],
+   "pivot": [
+    16,
+    32
+   ],
+   "frames": 3,
+   "solid": null,
+   "name_vi": "Túi hạt giống",
+   "rarity": "common",
+   "old": "seed_frames"
+  },
+  "seed_rare": {
+   "rect": [
+    98,
+    2324,
+    32,
+    32
+   ],
+   "pivot": [
+    16,
+    32
+   ],
+   "frames": 3,
+   "solid": null,
+   "name_vi": "Túi hạt giống",
+   "rarity": "rare",
+   "old": "seed_frames"
+  },
+  "seed_epic": {
+   "rect": [
+    1,
+    2357,
+    32,
+    32
+   ],
+   "pivot": [
+    16,
+    32
+   ],
+   "frames": 3,
+   "solid": null,
+   "name_vi": "Túi hạt giống",
+   "rarity": "epic",
+   "old": "seed_frames"
+  },
+  "seed_legendary": {
+   "rect": [
+    98,
+    2357,
+    32,
+    32
+   ],
+   "pivot": [
+    16,
+    32
+   ],
+   "frames": 3,
+   "solid": null,
+   "name_vi": "Túi hạt giống",
+   "rarity": "legendary",
+   "old": "seed_frames"
+  },
+  "tag": {
+   "rect": [
+    74,
+    2423,
+    26,
+    26
+   ],
+   "pivot": [
+    13,
+    26
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Thẻ tên cây"
+  },
+  "egg_common": {
+   "rect": [
+    1,
+    2390,
+    24,
+    32
+   ],
+   "pivot": [
+    12,
+    32
+   ],
+   "frames": 3,
+   "solid": null,
+   "name_vi": "Trứng ong",
+   "rarity": "common"
+  },
+  "egg_rare": {
+   "rect": [
+    74,
+    2390,
+    24,
+    32
+   ],
+   "pivot": [
+    12,
+    32
+   ],
+   "frames": 3,
+   "solid": null,
+   "name_vi": "Trứng ong",
+   "rarity": "rare"
+  },
+  "egg_epic": {
+   "rect": [
+    147,
+    2390,
+    24,
+    32
+   ],
+   "pivot": [
+    12,
+    32
+   ],
+   "frames": 3,
+   "solid": null,
+   "name_vi": "Trứng ong",
+   "rarity": "epic"
+  },
+  "egg_legendary": {
+   "rect": [
+    1,
+    2423,
+    24,
+    32
+   ],
+   "pivot": [
+    12,
+    32
+   ],
+   "frames": 3,
+   "solid": null,
+   "name_vi": "Trứng ong",
+   "rarity": "legendary"
+  },
+  "hoa_sen": {
+   "rect": [
+    101,
+    2423,
+    28,
+    24
+   ],
+   "pivot": [
+    14,
+    24
+   ],
+   "frames": 4,
+   "solid": null,
+   "name_vi": "Chậu sen",
+   "old": "decoration('hoa_sen')"
+  },
+  "chuong_gio": {
+   "rect": [
+    98,
+    2275,
+    20,
+    36
+   ],
+   "pivot": [
+    10,
+    36
+   ],
+   "frames": 4,
+   "solid": null,
+   "name_vi": "Chuông gió",
+   "old": "decoration('chuong_gio')"
+  },
+  "co_phuong": {
+   "rect": [
+    1,
+    66,
+    20,
+    52
+   ],
+   "pivot": [
+    10,
+    52
+   ],
+   "frames": 4,
+   "solid": null,
+   "name_vi": "Cờ phướn",
+   "old": "decoration('co_phuong')"
+  }
+ },
+ "id": "garden",
+ "note": "2x the old sprites. plants: <family>_<stage> (stages 0-2) and <family>_<stage>_<rarity> (stages 3-5), 2 frames of sway laid side by side (frame i at rect.x + i * rect.w); pivot = ground point, bottom centre of the rect"
+}

@@ -1,0 +1,19 @@
+{
+ "id": "warn_line_charge",
+ "name_vi": "Canh bao duong thang (tich luc)",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 4,
+  "y": 48
+ },
+ "sheet": "warn_line_charge.png",
+ "cols": 4,
+ "frames": 4,
+ "fps": 8,
+ "loop": true,
+ "blend": "alpha",
+ "ground": true
+}

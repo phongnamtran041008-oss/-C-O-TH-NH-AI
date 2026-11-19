@@ -46,13 +46,19 @@ class DialogScene(Scene):
         ui.fill(x + 2, y + 2, w, h, (0, 0, 0, 90))
         ui.fill(x, y, w, h, "#F4EBD9")
         ui.border(x, y, w, h, "#8B5A2B", 2)
-        if self.portrait is not None:
+        from ..engine import art2
+        zoom = 3
+        if self.portrait is not None and self.portrait.get_width() > 16:
+            head, zoom = self.portrait, 2          # a v2 head (art2.npc_portrait), already cropped
+        elif self.portrait is not None:
             head = self.portrait.subsurface(pygame.Rect(2, 1, 12, 11))
+        elif art2.npc_portrait("truc_lao") is not None:
+            head, zoom = art2.npc_portrait("truc_lao"), 2
         else:
             head = sprites.truc_lao()[0 if int(ui.time * 0.7) % 6 else 1].subsurface(pygame.Rect(0, 0, 16, 12))
         ui.fill(x + 8, y + 8, 54, 42, "#E3D5BA")
         ui.border(x + 8, y + 8, 54, 42)
-        ui.image(head, x + 35, y + 29, zoom=3, anchor="center")
+        ui.image(head, x + 35, y + 29, zoom=zoom, anchor="center")
         ui.fill(x + 8, y + 52, 54, 12, "#BC4749")
         ui.text(self.speaker, x + 35, y + 58, 8, "#FFFFFF", anchor="center")
         line = self.lines[self.i]

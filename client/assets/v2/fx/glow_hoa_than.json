@@ -1,0 +1,22 @@
+{
+ "id": "glow_hoa_than",
+ "name_vi": "Anh sang vong sang Hoa Than",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 82
+ },
+ "sheet": "glow_hoa_than.png",
+ "cols": 16,
+ "frames": 204,
+ "fps": 10,
+ "loop": false,
+ "blend": "alpha",
+ "ground": false,
+ "layer": "back",
+ "follows": "dao_si_hoa_than",
+ "draw": "frame i is drawn directly BEHIND frame i of dao_si_hoa_than (same index, same pivot) with a normal alpha blit"
+}

@@ -1,0 +1,9 @@
+game sẽ có 8 tầng tu vi:
+1	Luyện Khí
+2	Trúc Cơ	
+3	Kết Đan	
+4	Nguyên Anh	
+5	Hóa Thần	
+6	Luyện Hư	
+7	Hợp Thể	
+8	Đại Thừa

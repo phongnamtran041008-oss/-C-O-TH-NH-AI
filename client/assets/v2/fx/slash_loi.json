@@ -1,0 +1,19 @@
+{
+ "id": "slash_loi",
+ "name_vi": "Kiem quang Loi",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 32
+ },
+ "sheet": "slash_loi.png",
+ "cols": 5,
+ "frames": 5,
+ "fps": 18,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

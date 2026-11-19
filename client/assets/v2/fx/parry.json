@@ -1,0 +1,19 @@
+{
+ "id": "parry",
+ "name_vi": "Do don",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 32
+ },
+ "sheet": "parry.png",
+ "cols": 5,
+ "frames": 5,
+ "fps": 16,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

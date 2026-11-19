@@ -1,0 +1,572 @@
+{
+ "sheet": "terrain32.png",
+ "tile": 32,
+ "cols": 8,
+ "tiles": {
+  "grass_path_nw": [
+   0
+  ],
+  "grass_path_n": [
+   1
+  ],
+  "grass_path_ne": [
+   2
+  ],
+  "grass_path_w": [
+   3
+  ],
+  "grass_path_e": [
+   4
+  ],
+  "grass_path_sw": [
+   5
+  ],
+  "grass_path_s": [
+   6
+  ],
+  "grass_path_se": [
+   7
+  ],
+  "grass_path_in_nw": [
+   8
+  ],
+  "grass_path_in_ne": [
+   9
+  ],
+  "grass_path_in_sw": [
+   10
+  ],
+  "grass_path_in_se": [
+   11
+  ],
+  "grass_dirt_nw": [
+   12
+  ],
+  "grass_dirt_n": [
+   13
+  ],
+  "grass_dirt_ne": [
+   14
+  ],
+  "grass_dirt_w": [
+   15
+  ],
+  "grass_dirt_e": [
+   16
+  ],
+  "grass_dirt_sw": [
+   17
+  ],
+  "grass_dirt_s": [
+   18
+  ],
+  "grass_dirt_se": [
+   19
+  ],
+  "grass_dirt_in_nw": [
+   20
+  ],
+  "grass_dirt_in_ne": [
+   21
+  ],
+  "grass_dirt_in_sw": [
+   22
+  ],
+  "grass_dirt_in_se": [
+   23
+  ],
+  "shore_nw": [
+   24
+  ],
+  "shore_n": [
+   25
+  ],
+  "shore_ne": [
+   26
+  ],
+  "shore_w": [
+   27
+  ],
+  "shore_e": [
+   28
+  ],
+  "shore_sw": [
+   29
+  ],
+  "shore_s": [
+   30
+  ],
+  "shore_se": [
+   31
+  ],
+  "shore_in_nw": [
+   32
+  ],
+  "shore_in_ne": [
+   33
+  ],
+  "shore_in_sw": [
+   34
+  ],
+  "shore_in_se": [
+   35
+  ],
+  "cliff_nw": [
+   36
+  ],
+  "cliff_n": [
+   37
+  ],
+  "cliff_ne": [
+   38
+  ],
+  "cliff_w": [
+   39
+  ],
+  "cliff_e": [
+   40
+  ],
+  "cliff_face_a_l": [
+   41
+  ],
+  "cliff_face_a": [
+   42
+  ],
+  "cliff_face_a2": [
+   43
+  ],
+  "cliff_face_a_r": [
+   44
+  ],
+  "stairs_a": [
+   45
+  ],
+  "cliff_face_b_l": [
+   46
+  ],
+  "cliff_face_b": [
+   47
+  ],
+  "cliff_face_b2": [
+   48
+  ],
+  "cliff_face_b_r": [
+   49
+  ],
+  "stairs_b": [
+   50
+  ],
+  "cliff_shadow_l": [
+   51
+  ],
+  "cliff_shadow": [
+   52
+  ],
+  "cliff_shadow_r": [
+   53
+  ],
+  "plateau_top": [
+   54,
+   55,
+   56
+  ],
+  "bridge_h": [
+   57
+  ],
+  "bridge_v": [
+   58
+  ],
+  "bridge_h_w": [
+   59
+  ],
+  "bridge_h_e": [
+   60
+  ],
+  "bridge_v_n": [
+   61
+  ],
+  "bridge_v_s": [
+   62
+  ],
+  "snow_0": [
+   63
+  ],
+  "snow_1": [
+   64
+  ],
+  "sand_0": [
+   65
+  ],
+  "sand_1": [
+   66
+  ],
+  "lava_rock_0": [
+   67
+  ],
+  "lava_rock_1": [
+   68
+  ],
+  "cloud_0": [
+   69
+  ],
+  "cloud_1": [
+   70
+  ],
+  "grass_path_island": [
+   71
+  ],
+  "grass_path_h": [
+   72
+  ],
+  "grass_path_v": [
+   73
+  ],
+  "grass_path_cap_n": [
+   74
+  ],
+  "grass_path_cap_s": [
+   75
+  ],
+  "grass_path_cap_e": [
+   76
+  ],
+  "grass_path_cap_w": [
+   77
+  ],
+  "grass_dirt_island": [
+   78
+  ],
+  "grass_dirt_h": [
+   79
+  ],
+  "grass_dirt_v": [
+   80
+  ],
+  "grass_dirt_cap_n": [
+   81
+  ],
+  "grass_dirt_cap_s": [
+   82
+  ],
+  "grass_dirt_cap_e": [
+   83
+  ],
+  "grass_dirt_cap_w": [
+   84
+  ],
+  "grass_stone_nw": [
+   85
+  ],
+  "grass_stone_n": [
+   86
+  ],
+  "grass_stone_ne": [
+   87
+  ],
+  "grass_stone_w": [
+   88
+  ],
+  "grass_stone_e": [
+   89
+  ],
+  "grass_stone_sw": [
+   90
+  ],
+  "grass_stone_s": [
+   91
+  ],
+  "grass_stone_se": [
+   92
+  ],
+  "grass_stone_in_nw": [
+   93
+  ],
+  "grass_stone_in_ne": [
+   94
+  ],
+  "grass_stone_in_sw": [
+   95
+  ],
+  "grass_stone_in_se": [
+   96
+  ],
+  "grass_stone_island": [
+   97
+  ],
+  "grass_stone_h": [
+   98
+  ],
+  "grass_stone_v": [
+   99
+  ],
+  "grass_stone_cap_n": [
+   100
+  ],
+  "grass_stone_cap_s": [
+   101
+  ],
+  "grass_stone_cap_e": [
+   102
+  ],
+  "grass_stone_cap_w": [
+   103
+  ],
+  "grass_plaza_nw": [
+   104
+  ],
+  "grass_plaza_n": [
+   105
+  ],
+  "grass_plaza_ne": [
+   106
+  ],
+  "grass_plaza_w": [
+   107
+  ],
+  "grass_plaza_e": [
+   108
+  ],
+  "grass_plaza_sw": [
+   109
+  ],
+  "grass_plaza_s": [
+   110
+  ],
+  "grass_plaza_se": [
+   111
+  ],
+  "grass_plaza_in_nw": [
+   112
+  ],
+  "grass_plaza_in_ne": [
+   113
+  ],
+  "grass_plaza_in_sw": [
+   114
+  ],
+  "grass_plaza_in_se": [
+   115
+  ],
+  "grass_plaza_island": [
+   116
+  ],
+  "grass_plaza_h": [
+   117
+  ],
+  "grass_plaza_v": [
+   118
+  ],
+  "grass_plaza_cap_n": [
+   119
+  ],
+  "grass_plaza_cap_s": [
+   120
+  ],
+  "grass_plaza_cap_e": [
+   121
+  ],
+  "grass_plaza_cap_w": [
+   122
+  ],
+  "grass_dark_nw": [
+   123
+  ],
+  "grass_dark_n": [
+   124
+  ],
+  "grass_dark_ne": [
+   125
+  ],
+  "grass_dark_w": [
+   126
+  ],
+  "grass_dark_e": [
+   127
+  ],
+  "grass_dark_sw": [
+   128
+  ],
+  "grass_dark_s": [
+   129
+  ],
+  "grass_dark_se": [
+   130
+  ],
+  "grass_dark_in_nw": [
+   131
+  ],
+  "grass_dark_in_ne": [
+   132
+  ],
+  "grass_dark_in_sw": [
+   133
+  ],
+  "grass_dark_in_se": [
+   134
+  ],
+  "grass_dark_island": [
+   135
+  ],
+  "grass_dark_h": [
+   136
+  ],
+  "grass_dark_v": [
+   137
+  ],
+  "grass_dark_cap_n": [
+   138
+  ],
+  "grass_dark_cap_s": [
+   139
+  ],
+  "grass_dark_cap_e": [
+   140
+  ],
+  "grass_dark_cap_w": [
+   141
+  ],
+  "dark_ink_nw": [
+   142
+  ],
+  "dark_ink_n": [
+   143
+  ],
+  "dark_ink_ne": [
+   144
+  ],
+  "dark_ink_w": [
+   145
+  ],
+  "dark_ink_e": [
+   146
+  ],
+  "dark_ink_sw": [
+   147
+  ],
+  "dark_ink_s": [
+   148
+  ],
+  "dark_ink_se": [
+   149
+  ],
+  "dark_ink_in_nw": [
+   150
+  ],
+  "dark_ink_in_ne": [
+   151
+  ],
+  "dark_ink_in_sw": [
+   152
+  ],
+  "dark_ink_in_se": [
+   153
+  ],
+  "dark_ink_island": [
+   154
+  ],
+  "dark_ink_h": [
+   155
+  ],
+  "dark_ink_v": [
+   156
+  ],
+  "dark_ink_cap_n": [
+   157
+  ],
+  "dark_ink_cap_s": [
+   158
+  ],
+  "dark_ink_cap_e": [
+   159
+  ],
+  "dark_ink_cap_w": [
+   160
+  ],
+  "realm_edge_nw": [
+   161
+  ],
+  "realm_edge_n": [
+   162
+  ],
+  "realm_edge_ne": [
+   163
+  ],
+  "realm_edge_w": [
+   164
+  ],
+  "realm_edge_e": [
+   165
+  ],
+  "realm_edge_sw": [
+   166
+  ],
+  "realm_edge_s": [
+   167
+  ],
+  "realm_edge_se": [
+   168
+  ],
+  "realm_edge_in_nw": [
+   169
+  ],
+  "realm_edge_in_ne": [
+   170
+  ],
+  "realm_edge_in_sw": [
+   171
+  ],
+  "realm_edge_in_se": [
+   172
+  ]
+ },
+ "cell": 32,
+ "render": {
+  "tile_m": 0.42105263157894735,
+  "px_per_tile": 32,
+  "wrap_check": {
+   "plateau_top[0]": 0.53,
+   "plateau_top[1]": 0.41,
+   "plateau_top[2]": 0.88,
+   "snow_0[0]": 0.62,
+   "snow_1[0]": 1.49,
+   "sand_0[0]": 0.44,
+   "sand_1[0]": 0.6,
+   "lava_rock_0[0]": 0.96,
+   "lava_rock_1[0]": 1.21,
+   "cloud_0[0]": 0.66,
+   "cloud_1[0]": 1.27
+  }
+ },
+ "id": "terrain32",
+ "autotile": {
+  "naming": "suffix = where the OUTER material lies (grass_path_n has grass to the north of the path); nw/ne/sw/se are convex corners, in_nw.. concave (notch) corners. The blob edge is 5 px (of 16) inside the tile ring.",
+  "pairs": {
+   "grass_path": "path (centre tile: base32 'path')",
+   "grass_dirt": "dirt (centre tiles: base32 'dirt')",
+   "shore": "water (static frame; use base32 water_anim inside)",
+   "grass_stone": "cobbles (centre: base32 'stone')",
+   "grass_plaza": "flagstones (centre: base32 'plaza')",
+   "grass_dark": "dark_grass inside grass (centre: base32 'dark_grass')",
+   "dark_ink": "ink ground inside dark_grass (outer = dark_grass, centre: base32 'ink')",
+   "realm_edge": "bi canh: slate floor outside, wall block inside (12 tiles: 8 sides + 4 inner corners); wall interior = base32 realm_wall"
+  },
+  "isolated_cells": {
+   "island": "all four sides grass: a soft round 10 px patch",
+   "h": "grass north and south: a horizontal strip 8 px wide",
+   "v": "grass east and west: a vertical strip",
+   "cap_n/cap_s/cap_e/cap_w": "end of a strip; the name is the side that is open (grass), e.g. cap_e ends the strip on its east side"
+  },
+  "rule": [
+   "n, s, e, w = the 4 neighbours belong to the same material",
+   "0 neighbours -> <pair>_island",
+   "1 neighbour -> N present: _cap_s | S present: _cap_n | E present: _cap_w | W present: _cap_e",
+   "2 opposite neighbours -> N+S: _v | E+W: _h",
+   "2 adjacent neighbours (a corner) -> _ + the missing sides in the order n s w e: _nw _ne _sw _se",
+   "3 neighbours -> _ + the missing side: _n _s _w _e",
+   "4 neighbours -> the first missing diagonal in the order nw ne sw se gives _in_<it>; none missing -> the centre tile",
+   "1-wide strips are 8 px wide and blob edges 11 px: paint paths at least 2 cells wide where they turn, branch or meet a wider area"
+  ],
+  "plateau": "cliff_nw..cliff_e = back and side edges of raised land (lighter top: plateau_top); the front is cliff_face_a (upper, with the grass lip) over cliff_face_b, ends _l/_r, variants a2/b2, then cliff_shadow(_l/_r); stairs_a/b are worn steps cut into the face (put a face tile on each side)",
+  "bridge": "bridge_h / bridge_v middle tiles carry a frame of water; bridge_h_w/e and bridge_v_n/s sit on the shore bank"
+ }
+}

@@ -1,0 +1,19 @@
+{
+ "id": "bolt_thuy",
+ "name_vi": "Phap cau Thuy",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 32
+ },
+ "sheet": "bolt_thuy.png",
+ "cols": 4,
+ "frames": 4,
+ "fps": 14,
+ "loop": true,
+ "blend": "add",
+ "ground": false
+}

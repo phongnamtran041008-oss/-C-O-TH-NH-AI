@@ -1,0 +1,359 @@
+{
+ "sheet": "realm.png",
+ "props": {
+  "rift": {
+   "rect": [
+    1,
+    82,
+    48,
+    64
+   ],
+   "pivot": [
+    24,
+    64
+   ],
+   "frames": 8,
+   "solid": null,
+   "name_vi": "Khe Nứt Mực",
+   "old": "rift(frame)"
+  },
+  "pedestal_off": {
+   "rect": [
+    259,
+    212,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Đài đá",
+   "old": "pedestal(False, *)"
+  },
+  "pedestal_on": {
+   "rect": [
+    308,
+    212,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Đài đá",
+   "old": "pedestal(True, False)"
+  },
+  "pedestal_lit": {
+   "rect": [
+    1,
+    261,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Đài đá",
+   "old": "pedestal(True, True)"
+  },
+  "rune_off": {
+   "rect": [
+    50,
+    261,
+    40,
+    40
+   ],
+   "pivot": [
+    20,
+    40
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Phiến đá chữ",
+   "old": "rune_tile('off')"
+  },
+  "rune_idle": {
+   "rect": [
+    91,
+    261,
+    40,
+    40
+   ],
+   "pivot": [
+    20,
+    40
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Phiến đá chữ",
+   "old": "rune_tile('idle')"
+  },
+  "rune_next": {
+   "rect": [
+    132,
+    261,
+    40,
+    40
+   ],
+   "pivot": [
+    20,
+    40
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Phiến đá chữ",
+   "old": "rune_tile('next')"
+  },
+  "rune_done": {
+   "rect": [
+    173,
+    261,
+    40,
+    40
+   ],
+   "pivot": [
+    20,
+    40
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Phiến đá chữ",
+   "old": "rune_tile('done')"
+  },
+  "pillar_1_off": {
+   "rect": [
+    98,
+    147,
+    32,
+    64
+   ],
+   "pivot": [
+    16,
+    64
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Trụ Thanh Điệu",
+   "old": "pillar(1, False)"
+  },
+  "pillar_1_on": {
+   "rect": [
+    131,
+    147,
+    32,
+    64
+   ],
+   "pivot": [
+    16,
+    64
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Trụ Thanh Điệu",
+   "old": "pillar(1, True)"
+  },
+  "pillar_2_off": {
+   "rect": [
+    164,
+    147,
+    32,
+    64
+   ],
+   "pivot": [
+    16,
+    64
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Trụ Thanh Điệu",
+   "old": "pillar(2, False)"
+  },
+  "pillar_2_on": {
+   "rect": [
+    197,
+    147,
+    32,
+    64
+   ],
+   "pivot": [
+    16,
+    64
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Trụ Thanh Điệu",
+   "old": "pillar(2, True)"
+  },
+  "pillar_3_off": {
+   "rect": [
+    230,
+    147,
+    32,
+    64
+   ],
+   "pivot": [
+    16,
+    64
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Trụ Thanh Điệu",
+   "old": "pillar(3, False)"
+  },
+  "pillar_3_on": {
+   "rect": [
+    263,
+    147,
+    32,
+    64
+   ],
+   "pivot": [
+    16,
+    64
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Trụ Thanh Điệu",
+   "old": "pillar(3, True)"
+  },
+  "pillar_4_off": {
+   "rect": [
+    296,
+    147,
+    32,
+    64
+   ],
+   "pivot": [
+    16,
+    64
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Trụ Thanh Điệu",
+   "old": "pillar(4, False)"
+  },
+  "pillar_4_on": {
+   "rect": [
+    329,
+    147,
+    32,
+    64
+   ],
+   "pivot": [
+    16,
+    64
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Trụ Thanh Điệu",
+   "old": "pillar(4, True)"
+  },
+  "statue": {
+   "rect": [
+    1,
+    147,
+    48,
+    64
+   ],
+   "pivot": [
+    24,
+    64
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Tượng đọc sách",
+   "old": "statue(frame) (frame % 2)"
+  },
+  "mirror": {
+   "rect": [
+    1,
+    1,
+    96,
+    80
+   ],
+   "pivot": [
+    48,
+    80
+   ],
+   "frames": 4,
+   "solid": null,
+   "name_vi": "Gương Ý Nghĩa",
+   "old": "mirror(frame)"
+  },
+  "exit_closed": {
+   "rect": [
+    1,
+    212,
+    64,
+    48
+   ],
+   "pivot": [
+    32,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Cửa phong mực",
+   "old": "realm_exit(False, frame) (frame % 2)"
+  },
+  "exit_open": {
+   "rect": [
+    130,
+    212,
+    64,
+    48
+   ],
+   "pivot": [
+    32,
+    48
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Cửa mở",
+   "old": "realm_exit(True, frame)"
+  },
+  "chest_closed": {
+   "rect": [
+    214,
+    261,
+    48,
+    36
+   ],
+   "pivot": [
+    24,
+    36
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Rương báu",
+   "old": "chest(False)"
+  },
+  "chest_open": {
+   "rect": [
+    263,
+    261,
+    48,
+    36
+   ],
+   "pivot": [
+    24,
+    36
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Rương báu mở",
+   "old": "chest(True)"
+  }
+ },
+ "id": "realm",
+ "note": "2x the old sprites (rift, pedestal, rune, pillar, statue, mirror, exit, chest). Frames sit side by side: frame i at rect.x + i * rect.w. pivot = bottom centre of the rect (ground point); rune_* are drawn straight down like tiles"
+}

@@ -1,0 +1,195 @@
+{
+  "_comment": "Which v2 picture the game draws for what. Data only: change a mapping here, no code. Every id named here must exist under client/assets/v2/ (client/tests/test_art2.py checks it). null = keep the old code-drawn art for that thing.",
+  "version": 1,
+
+  "realms": {
+    "_comment": "server realm id -> player look (chars/dao_si_<look>) and realm aura (fx/aura_<aura>_back/_front). The server has pham_nhan..nguyen_anh today; the rest are the 8-realm ladder of the future.",
+    "pham_nhan":  {"look": "luyen_khi",  "aura": null},
+    "luyen_khi":  {"look": "luyen_khi",  "aura": "luyen_khi"},
+    "truc_co":    {"look": "truc_co",    "aura": "truc_co"},
+    "kim_dan":    {"look": "ket_dan",    "aura": "ket_dan"},
+    "ket_dan":    {"look": "ket_dan",    "aura": "ket_dan"},
+    "nguyen_anh": {"look": "nguyen_anh", "aura": "nguyen_anh"},
+    "hoa_than":   {"look": "hoa_than",   "aura": "hoa_than"},
+    "luyen_hu":   {"look": "luyen_hu",   "aura": "luyen_hu"},
+    "hop_the":    {"look": "hop_the",    "aura": "hop_the"},
+    "dai_thua":   {"look": "dai_thua",   "aura": "dai_thua"}
+  },
+  "default_look": "luyen_khi",
+  "glow": {
+    "_comment": "look -> per-frame silhouette glow sheet drawn directly behind the character frame",
+    "hoa_than": "glow_hoa_than",
+    "luyen_hu": "glow_luyen_hu",
+    "hop_the": "glow_hop_the",
+    "dai_thua": "glow_dai_thua"
+  },
+  "portrait": {"_comment": "HUD head: crop of the idle-down frame (x, y, w, h)", "rect": [37, 30, 22, 22]},
+
+  "monsters": {
+    "_comment": "server monster type -> monsters/<sheet>. Linear algebra: sets and complex numbers are vectors (Kiếm Linh), matrices the 3x3 stone golem (Thạch Khôi), elites the guardian lion; the second normal of a tier is the dị chủng colour. Old ink creatures: the closest body.",
+    "dstt_phan_tu_ma": "kiem_linh",
+    "dstt_nghich_hieu_ma": "kiem_linh_di",
+    "dstt_anh_trung_ma": "ma_tran_thu",
+    "dstt_phan_ao_ma": "kiem_linh",
+    "dstt_binh_phuong_ma": "kiem_linh_di",
+    "dstt_modun_ma": "ma_tran_thu_di",
+    "dstt_chi_so_ma": "thach_khoi",
+    "dstt_chuyen_vi_ma": "thach_khoi_di",
+    "dstt_doi_xung_ma": "ma_tran_thu",
+    "ink_slime": "dau_tu_oa",
+    "tone_wisp": "ho_lo_tinh",
+    "ink_fox": "phong_lang_di",
+    "muc_anh": "tam_ma",
+    "but_yeu": "moc_yeu",
+    "nghien_ma": "loi_long"
+  },
+  "monster_subjects": {
+    "_comment": "a monster type not listed above goes by its subject (and rank)",
+    "dai_so_tuyen_tinh": {"normal": "kiem_linh", "elite": "ma_tran_thu", "boss": "loi_long"},
+    "giai_tich": {"normal": "van_xa", "elite": "phong_lang_di", "boss": "loi_long"},
+    "xac_suat_thong_ke": {"normal": "dau_tu_oa", "elite": "ho_lo_tinh_di", "boss": "loi_long"},
+    "toi_uu_roi_rac": {"normal": "moc_yeu", "elite": "tri_chu_tinh", "boss": "loi_long"},
+    "lap_trinh": {"normal": "co_quan_nhan", "elite": "co_quan_nhan_di", "boss": "loi_long"}
+  },
+  "monster_default": {"normal": "kiem_linh", "elite": "ma_tran_thu", "boss": "loi_long"},
+  "monster_float": ["kiem_linh", "kiem_linh_di", "tam_ma", "tam_ma_di"],
+
+  "td_monsters": {
+    "_comment": "Ải Thủ Vườn board (24 px cells): sheet and draw scale",
+    "muc_con":   {"sheet": "dau_tu_oa",     "scale": 0.5},
+    "muc_phi":   {"sheet": "phong_lang",    "scale": 0.5},
+    "muc_dac":   {"sheet": "thach_khoi",    "scale": 0.5},
+    "muc_an":    {"sheet": "tam_ma",        "scale": 0.5},
+    "thach_mac": {"sheet": "thach_khoi_di", "scale": 0.5},
+    "mac_vuong": {"sheet": "loi_long",      "scale": 0.5}
+  },
+
+  "props": {
+    "_comment": "old map sprite name -> v2 nature props, picked by the object's variant; buildings, lanterns, portals... have no v2 art yet",
+    "bamboo": ["bamboo_1", "bamboo_2", "bamboo_3"],
+    "tree": ["tree_1", "pine_1", "tree_2", "pine_2", "peach_tree"],
+    "ink_tree": ["dead_tree"],
+    "rock": ["rock_1", "rock_3", "rock_2"]
+  },
+
+  "buildings": {
+    "_comment": "old map sprite name -> props/buildings.png entries (2x the old sprite, pivot at the base), picked by variant",
+    "hut": ["hut"], "house": ["house_0", "house_1", "house_2"], "pavilion": ["pavilion"], "library": ["library"],
+    "stall": ["stall_0", "stall_1"], "shrine": ["shrine"], "furnace": ["furnace"], "anvil": ["anvil"],
+    "board": ["board"], "well": ["well"], "lantern": ["lantern"], "portal": ["portal"], "td_gate": ["td_gate"],
+    "realm_gate": ["realm_gate"], "sign": ["sign"], "tablet": ["tablet"], "table": ["table"], "gate": ["gate"],
+    "mat": ["mat"], "hive": ["hive"]
+  },
+  "npcs": {
+    "_comment": "map NPC (its npc property) -> npcs/<id> on the v2 body (idle, walk, talk)",
+    "shopkeeper": "shopkeeper", "alchemist": "alchemist", "smith": "smith", "librarian": "librarian",
+    "guide": "guide", "fisher": "fisher", "truc_lao": "truc_lao", "villager": "villager"
+  },
+  "autotile": {
+    "_comment": "2x ground: a cell of this tile gets the pair's transition tiles toward neighbours whose tile is in outer (client/engine/autotile.py)",
+    "path": {"pair": "grass_path", "outer": ["grass", "flowers", "dark_grass"]},
+    "dirt": {"pair": "grass_dirt", "outer": ["grass", "flowers", "dark_grass"]},
+    "water": {"pair": "shore", "outer": ["grass", "flowers", "dark_grass", "path", "dirt"]}
+  },
+
+  "weapons": {
+    "_comment": "equipped weapon kind (what the server sends) -> layer sheet weapons/<layer> and the clip its attack plays",
+    "sword":  {"layer": "kiem_1",   "clip": "slash"},
+    "brush":  {"layer": "truong_1", "clip": "cast"},
+    "staff":  {"layer": "truong_1", "clip": "cast"},
+    "fan":    {"layer": "phien_1",  "clip": "cast"},
+    "spear":  {"layer": "thuong_1", "clip": "slash"},
+    "bow":    {"layer": "cung_1",   "clip": "shoot"},
+    "hammer": {"layer": "chuy_1",   "clip": "slash"},
+    "mace":   {"layer": "chuy_1",   "clip": "slash"},
+    "sabre":  {"layer": "dao_1",    "clip": "slash"},
+    "gourd":  {"layer": "ho_lo_1",  "clip": "cast"}
+  },
+
+  "pets": {
+    "_comment": "Linh Thú kind -> beasts/<id>; only where the animal really is the same kind of creature, the rest keep the old art",
+    "rong": "tieu_long",
+    "ngua": "ky_lan_con",
+    "ga": "hoa_tuoc",
+    "cho": "linh_ho"
+  },
+
+  "skill_fx": {
+    "_comment": "chiêu fx id -> v2 effect. kind: strike (at the target), bolt (flies caster -> target, then impact), circle (ground circle at the target, stretched to the radius), ward (ground circle + bubble on the caster)",
+    "chem":      {"kind": "strike", "fx": "slash_tho", "impact": "hit_spark"},
+    "kiem_khi":  {"kind": "bolt",   "fx": "bolt_kim",  "impact": "slash_kim"},
+    "hoa_cau":   {"kind": "bolt",   "fx": "bolt_hoa",  "impact": "burst_hoa"},
+    "tran_do":   {"kind": "circle", "fx": "tran_3",    "impact": "burst_moc"},
+    "ho_tran":   {"kind": "ward",   "fx": "tran_2",    "impact": "linh_thuan"},
+    "thien_loi": {"kind": "strike", "fx": "loi_kiep",  "impact": "burst_loi"}
+  },
+  "combat_fx": {
+    "hit": "hit_spark",
+    "crit": "hit_crit",
+    "shield_broken": "guard_break",
+    "heal": "heal",
+    "telegraph": "warn_circle_charge",
+    "telegraph_land": "warn_circle_release"
+  },
+
+  "skill_icons": {
+    "_comment": "chiêu id -> [icon atlas, icon id]",
+    "thuong_quyen": ["trang_bi", "gang_1"],
+    "kiem_quyet": ["weapons_a", "kiem_3"],
+    "hoa_cau_thuat": ["weapons_b", "phien_6"],
+    "ngu_hanh_tran": ["cong_phap", "gian_3"],
+    "ho_than_tran": ["misc", "phong_an_phu"],
+    "thien_loi_tuyet_ky": ["cong_phap", "cuon_5"]
+  },
+  "item_icons": {
+    "_comment": "an item gets its icon by id first, then weapon kind, then stack kind, then gear slot; anything else keeps the old picture",
+    "by_id": {
+      "kiem_go_dao": ["weapons_a", "kiem_1"],
+      "but_long_go": ["weapons_b", "truong_1"],
+      "gay_truc": ["weapons_b", "truong_1"],
+      "quat_giay": ["weapons_b", "phien_1"],
+      "but_tap_hop": ["weapons_b", "truong_3"],
+      "non_la": ["trang_bi", "mu_1"],
+      "ao_truc_van": ["trang_bi", "ao_1"],
+      "giay_co": ["trang_bi", "giay_1"],
+      "nhan_dong": ["trang_bi", "nhan_1"],
+      "ngoc_muc": ["trang_bi", "day_chuyen_1"],
+      "mac_anh_quan": ["trang_bi", "mu_3"],
+      "mac_anh_bao": ["trang_bi", "ao_3"],
+      "mac_anh_ngoa": ["trang_bi", "giay_3"],
+      "mac_anh_boi": ["trang_bi", "day_chuyen_3"],
+      "ngoc_so_phuc": ["trang_bi", "day_chuyen_3"],
+      "nhan_ma_tran": ["trang_bi", "nhan_3"],
+      "hoi_huyet_dan": ["dan_duoc", "dan_1"],
+      "hoi_khi_dan": ["dan_duoc", "dan_2"],
+      "tu_linh_dan": ["dan_duoc", "dan_3"],
+      "khang_muc_dan": ["dan_duoc", "dan_4"],
+      "ngo_tinh_dan": ["dan_duoc", "dan_5"],
+      "truc_co_dan": ["misc", "pha_canh_dan"],
+      "kim_dan_dan": ["dan_duoc", "dan_6"],
+      "phong_vuong_dan": ["dan_duoc", "binh_3"],
+      "truc_diep_thao": ["linh_thao", "co_linh"],
+      "mac_linh_chi": ["linh_thao", "nam_do"],
+      "linh_qua": ["linh_thao", "qua_do"],
+      "muc_tinh": ["misc", "linh_thach_2"],
+      "manh_tap_hop": ["misc", "linh_thach_1"],
+      "tinh_so_phuc": ["misc", "linh_thach_3"],
+      "loi_ma_tran": ["misc", "linh_thach_3"],
+      "an_ruong_de": ["misc", "chia_khoa"]
+    },
+    "by_weapon": {
+      "sword": ["weapons_a", "kiem_1"], "brush": ["weapons_b", "truong_1"], "staff": ["weapons_b", "truong_1"],
+      "fan": ["weapons_b", "phien_1"], "spear": ["weapons_a", "thuong_1"], "bow": ["weapons_b", "cung_1"],
+      "hammer": ["weapons_a", "chuy_1"], "mace": ["weapons_a", "chuy_1"]
+    },
+    "by_kind": {
+      "pill": ["dan_duoc", "dan_1"], "manual": ["cong_phap", "sach_1"], "note": ["cong_phap", "cuon_1"],
+      "herb": ["linh_thao", "co_linh"], "recipe": ["cong_phap", "gian_1"], "egg": ["misc", "trung_linh_thu"]
+    },
+    "by_slot": {
+      "body": ["trang_bi", "ao_1"], "hat": ["trang_bi", "mu_1"], "shoes": ["trang_bi", "giay_1"],
+      "jade": ["trang_bi", "day_chuyen_1"], "ring": ["trang_bi", "nhan_1"]
+    },
+    "spirit_stone": ["misc", "linh_thach_1"]
+  }
+}

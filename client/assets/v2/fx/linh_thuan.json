@@ -1,0 +1,19 @@
+{
+ "id": "linh_thuan",
+ "name_vi": "Linh thuan",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 32
+ },
+ "sheet": "linh_thuan.png",
+ "cols": 6,
+ "frames": 6,
+ "fps": 8,
+ "loop": true,
+ "blend": "add",
+ "ground": false
+}

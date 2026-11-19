@@ -15,7 +15,7 @@ from client.tests.driver import Driver, ServerProcess, answer_current_quiz
 def plot_window_pos(drv: Driver, plot: dict) -> tuple[int, int]:
     abode = drv.game.scenes[0]
     r = abode.plot_rect(plot)
-    return drv.game.display.to_window(r.centerx - abode.cam[0], r.centery - abode.cam[1])
+    return drv.game.display.to_window(*abode.world_to_screen(r.centerx, r.centery))
 
 
 def first_open_plot(drv: Driver) -> dict:

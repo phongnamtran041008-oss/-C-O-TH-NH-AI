@@ -62,8 +62,7 @@ def engage(drv: Driver, server: ServerProcess, kind: str = "ink_slime"):
             walk_to(drv, m.pos[0], m.pos[1])
             drv.step(5)
             continue
-        cx, cy = ws.cam
-        drv.click_at(drv.game.display.to_window(m.pos[0] - cx, m.pos[1] - cy - 8))   # left click = attack
+        drv.click_at(drv.game.display.to_window(*ws.world_to_screen(m.pos[0], m.pos[1] - 8)))   # left click = attack
         for _ in range(40):                 # longer than any weapon cooldown, then attack again
             drv.step(3)
             if drv.top_is("CombatQuizScene"):

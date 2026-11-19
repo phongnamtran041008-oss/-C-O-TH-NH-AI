@@ -1,0 +1,3 @@
+Tôi muốn tạo game với model nhân vật pixel như thế này
+đây sẽ là model nhân vật với 8 tầng tu vi khác nhau
+đây chỉ là mô tả bên ngoài tôi muốn bạn làm như thế nào để giữ nguyên vibe của tu vi đó nhma trang bị kia phải chế tạo thì mới có thể mặc được nó chỉ là bản thiết kế sao cho đẹp nhân vật chứ k phải cứ tăng tu vi lên như v là có trang phục đẹp mặc.

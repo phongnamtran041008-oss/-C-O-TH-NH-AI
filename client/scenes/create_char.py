@@ -3,7 +3,7 @@ from __future__ import annotations
 import pygame
 
 from .. import strings_vi as T
-from ..engine import sprites
+from ..engine import art2, sprites
 from .base import Scene
 from .menu import TitleBackground
 
@@ -44,7 +44,12 @@ class CreateCharScene(Scene):
         f = (0, 1, 0, 2)[int(self.t * 6) % 4]
         ui.fill(x + 20, y + 22, 90, 110, "#E3D5BA")
         ui.border(x + 20, y + 22, 90, 110)
-        ui.image(frames[(d, f)], x + 65, y + 125, zoom=4, anchor="midbottom")
+        v2 = art2.char_for("pham_nhan")
+        if v2 is not None:      # the v2 Đạo Sĩ a newcomer starts as (hair and body do not change it yet)
+            fr = v2.frame(v2.index("walk", self.t, d))
+            ui.image(fr, x + 65 - v2.pivot[0] * 2, y + 128 - v2.pivot[1] * 2, zoom=2)
+        else:
+            ui.image(frames[(d, f)], x + 65, y + 125, zoom=4, anchor="midbottom")
         ui.text("Áo Vải Phàm Nhân", x + 65, y + 140, 7, "#5A5A5A", anchor="center")
         rx = x + 125
         ui.text(T.CHAR_NAME, rx, y + 20, 8)

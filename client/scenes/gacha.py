@@ -8,7 +8,7 @@ import pygame
 
 from .. import strings_vi as T
 from ..art.palette import RARITY_COLORS
-from ..engine import sprites
+from ..engine import art2, sprites
 from ..ui.kit import rarity_name
 from .base import Scene
 
@@ -185,8 +185,12 @@ class GachaScene(Scene):
         kinds = list(((self.game.state.pets or {}).get("looks") or {}).keys())
         for i, kind in enumerate(kinds):
             ang = t * 0.4 + i * 6.283 / max(1, len(kinds))
-            ui.image(sprites.pet(kind, int(t * 4 + i) % 2, math.sin(ang) < 0), x + 60 + math.cos(ang) * 44,
-                     y + 104 + math.sin(ang) * 30, zoom=1.2, anchor="center")
+            v2 = art2.beast_picture(kind, t, "walk", "left" if math.sin(ang) < 0 else "right")
+            if v2 is not None:      # a Linh Thú rendered out of Blender
+                ui.image(v2, x + 60 + math.cos(ang) * 44, y + 104 + math.sin(ang) * 30, zoom=1, anchor="center")
+            else:
+                ui.image(sprites.pet(kind, int(t * 4 + i) % 2, math.sin(ang) < 0), x + 60 + math.cos(ang) * 44,
+                         y + 104 + math.sin(ang) * 30, zoom=1.2, anchor="center")
         ui.image(sprites.prop("shrine", 0, int(t * 3) % 4), x + 60, y + 100, zoom=1.6, anchor="center")
         rx, rw = x + 120, w - 132
         yy = ui.text(T.GACHA_PET_RATES, rx, y + 16, 8, max_w=rw).bottom + 3
@@ -240,7 +244,11 @@ class GachaScene(Scene):
             self._glow(ui, cx, cy, col, 0.6 + 0.4 * max(0.0, k), n)
             if k <= 0:
                 continue
-            ui.image(sprites.pet(p["pet_type"], int(t * 4) % 2), cx, cy - 4, zoom=zoom * k, anchor="center")
+            v2 = art2.beast_picture(p["pet_type"], t, "happy")
+            if v2 is not None:
+                ui.image(v2, cx, cy - 4, zoom=max(0.25, zoom * k * 0.5), anchor="center")
+            else:
+                ui.image(sprites.pet(p["pet_type"], int(t * 4) % 2), cx, cy - 4, zoom=zoom * k, anchor="center")
             if k >= 1:
                 ui.text(f"{p['name_vi']} {p['hanzi']}", cx, cy + cell / 2 - 10, 7 if n > 1 else 10, col, kind="han",
                         anchor="center")

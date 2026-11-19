@@ -1,0 +1,457 @@
+{
+ "sheet": "buildings.png",
+ "props": {
+  "hut": {
+   "rect": [
+    1,
+    130,
+    128,
+    112
+   ],
+   "pivot": [
+    64,
+    112
+   ],
+   "frames": 1,
+   "solid": [
+    10,
+    86,
+    108,
+    26
+   ],
+   "name_vi": "Nhà tranh"
+  },
+  "house_0": {
+   "rect": [
+    259,
+    130,
+    96,
+    96
+   ],
+   "pivot": [
+    48,
+    96
+   ],
+   "frames": 1,
+   "solid": [
+    8,
+    76,
+    80,
+    20
+   ],
+   "name_vi": "Nhà gỗ"
+  },
+  "house_1": {
+   "rect": [
+    356,
+    130,
+    96,
+    96
+   ],
+   "pivot": [
+    48,
+    96
+   ],
+   "frames": 1,
+   "solid": [
+    8,
+    76,
+    80,
+    20
+   ],
+   "name_vi": "Nhà gỗ"
+  },
+  "house_2": {
+   "rect": [
+    1,
+    243,
+    96,
+    96
+   ],
+   "pivot": [
+    48,
+    96
+   ],
+   "frames": 1,
+   "solid": [
+    8,
+    76,
+    80,
+    20
+   ],
+   "name_vi": "Nhà gỗ"
+  },
+  "pavilion": {
+   "rect": [
+    1,
+    1,
+    128,
+    128
+   ],
+   "pivot": [
+    64,
+    128
+   ],
+   "frames": 4,
+   "solid": [
+    14,
+    88,
+    100,
+    40
+   ],
+   "name_vi": "Đình"
+  },
+  "library": {
+   "rect": [
+    130,
+    130,
+    128,
+    112
+   ],
+   "pivot": [
+    64,
+    112
+   ],
+   "frames": 1,
+   "solid": [
+    10,
+    68,
+    108,
+    44
+   ],
+   "name_vi": "Tàng Kinh Các"
+  },
+  "stall_0": {
+   "rect": [
+    1,
+    583,
+    80,
+    64
+   ],
+   "pivot": [
+    40,
+    64
+   ],
+   "frames": 1,
+   "solid": [
+    6,
+    46,
+    68,
+    18
+   ],
+   "name_vi": "Quầy hàng"
+  },
+  "stall_1": {
+   "rect": [
+    82,
+    583,
+    80,
+    64
+   ],
+   "pivot": [
+    40,
+    64
+   ],
+   "frames": 1,
+   "solid": [
+    6,
+    46,
+    68,
+    18
+   ],
+   "name_vi": "Quầy hàng"
+  },
+  "shrine": {
+   "rect": [
+    98,
+    243,
+    64,
+    88
+   ],
+   "pivot": [
+    32,
+    88
+   ],
+   "frames": 4,
+   "solid": [
+    8,
+    66,
+    48,
+    22
+   ],
+   "name_vi": "Miếu thờ"
+  },
+  "furnace": {
+   "rect": [
+    228,
+    583,
+    48,
+    56
+   ],
+   "pivot": [
+    24,
+    56
+   ],
+   "frames": 4,
+   "solid": [
+    8,
+    44,
+    32,
+    12
+   ],
+   "name_vi": "Lò luyện đan"
+  },
+  "anvil": {
+   "rect": [
+    148,
+    648,
+    48,
+    40
+   ],
+   "pivot": [
+    24,
+    40
+   ],
+   "frames": 1,
+   "solid": [
+    13,
+    30,
+    22,
+    10
+   ],
+   "name_vi": "Đe rèn"
+  },
+  "board": {
+   "rect": [
+    421,
+    583,
+    48,
+    56
+   ],
+   "pivot": [
+    24,
+    56
+   ],
+   "frames": 1,
+   "solid": [
+    6,
+    50,
+    36,
+    6
+   ],
+   "name_vi": "Bảng thông báo"
+  },
+  "well": {
+   "rect": [
+    66,
+    648,
+    48,
+    48
+   ],
+   "pivot": [
+    24,
+    48
+   ],
+   "frames": 1,
+   "solid": [
+    7,
+    32,
+    34,
+    16
+   ],
+   "name_vi": "Giếng nước"
+  },
+  "lantern": {
+   "rect": [
+    1,
+    648,
+    16,
+    48
+   ],
+   "pivot": [
+    8,
+    48
+   ],
+   "frames": 4,
+   "solid": [
+    5,
+    43,
+    6,
+    5
+   ],
+   "name_vi": "Đèn lồng"
+  },
+  "portal": {
+   "rect": [
+    1,
+    502,
+    64,
+    80
+   ],
+   "pivot": [
+    32,
+    80
+   ],
+   "frames": 4,
+   "solid": [
+    6,
+    72,
+    52,
+    8
+   ],
+   "name_vi": "Cổng dịch chuyển"
+  },
+  "td_gate": {
+   "rect": [
+    1,
+    340,
+    80,
+    80
+   ],
+   "pivot": [
+    40,
+    80
+   ],
+   "frames": 4,
+   "solid": [
+    4,
+    70,
+    72,
+    10
+   ],
+   "name_vi": "Cổng thủ thành"
+  },
+  "realm_gate": {
+   "rect": [
+    1,
+    421,
+    80,
+    80
+   ],
+   "pivot": [
+    40,
+    80
+   ],
+   "frames": 4,
+   "solid": [
+    6,
+    70,
+    68,
+    10
+   ],
+   "name_vi": "Cổng Bí Cảnh"
+  },
+  "sign": {
+   "rect": [
+    197,
+    648,
+    32,
+    40
+   ],
+   "pivot": [
+    16,
+    40
+   ],
+   "frames": 1,
+   "solid": [
+    13,
+    36,
+    6,
+    4
+   ],
+   "name_vi": "Biển chỉ đường"
+  },
+  "tablet": {
+   "rect": [
+    115,
+    648,
+    32,
+    48
+   ],
+   "pivot": [
+    16,
+    48
+   ],
+   "frames": 1,
+   "solid": [
+    8,
+    42,
+    16,
+    6
+   ],
+   "name_vi": "Bia đá"
+  },
+  "table": {
+   "rect": [
+    230,
+    648,
+    48,
+    32
+   ],
+   "pivot": [
+    24,
+    32
+   ],
+   "frames": 1,
+   "solid": [
+    6,
+    20,
+    36,
+    12
+   ],
+   "name_vi": "Bàn trà"
+  },
+  "gate": {
+   "rect": [
+    163,
+    583,
+    64,
+    64
+   ],
+   "pivot": [
+    32,
+    64
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Cổng làng"
+  },
+  "mat": {
+   "rect": [
+    279,
+    648,
+    48,
+    32
+   ],
+   "pivot": [
+    24,
+    32
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Chiếu"
+  },
+  "hive": {
+   "rect": [
+    258,
+    502,
+    48,
+    64
+   ],
+   "pivot": [
+    24,
+    64
+   ],
+   "frames": 4,
+   "solid": [
+    12,
+    56,
+    24,
+    8
+   ],
+   "name_vi": "Tổ ong"
+  }
+ },
+ "id": "buildings",
+ "note": "each rect is exactly 2x the old code-drawn sprite; pivot = bottom-centre of the rect; animated props lay their frames side by side: frame i is at rect.x + i * rect.w; solid = [x, y, w, h] relative to the rect"
+}

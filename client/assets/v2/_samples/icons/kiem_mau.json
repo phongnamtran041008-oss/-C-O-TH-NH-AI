@@ -1,0 +1,22 @@
+{
+ "sheet": "kiem_mau.png",
+ "cell": 32,
+ "cols": 3,
+ "icons": {
+  "kiem_go": {
+   "index": 0,
+   "name_vi": "Kiếm Gỗ",
+   "grade": 1
+  },
+  "kiem_thep": {
+   "index": 1,
+   "name_vi": "Kiếm Thép",
+   "grade": 2
+  },
+  "kiem_linh": {
+   "index": 2,
+   "name_vi": "Linh Kiếm",
+   "grade": 5
+  }
+ }
+}

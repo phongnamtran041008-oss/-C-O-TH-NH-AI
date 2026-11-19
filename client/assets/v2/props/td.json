@@ -1,0 +1,657 @@
+{
+ "sheet": "td.png",
+ "props": {
+  "tower_hoa_1": {
+   "rect": [
+    1,
+    1,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Tập Hợp cấp 1",
+   "role": "hoa",
+   "math_tower": "tap_hop",
+   "level": 1,
+   "silhouette": "bronze cauldron on a tripod, an orbit of embers"
+  },
+  "tower_hoa_2": {
+   "rect": [
+    26,
+    1,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Tập Hợp cấp 2",
+   "role": "hoa",
+   "math_tower": "tap_hop",
+   "level": 2,
+   "silhouette": "bronze cauldron on a tripod, an orbit of embers"
+  },
+  "tower_hoa_3": {
+   "rect": [
+    51,
+    1,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Tập Hợp cấp 3",
+   "role": "hoa",
+   "math_tower": "tap_hop",
+   "level": 3,
+   "silhouette": "bronze cauldron on a tripod, an orbit of embers"
+  },
+  "tower_thuy_1": {
+   "rect": [
+    76,
+    1,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Số Phức cấp 1",
+   "role": "thuy",
+   "math_tower": "so_phuc",
+   "level": 1,
+   "silhouette": "spiral coil of blue light around a rod"
+  },
+  "tower_thuy_2": {
+   "rect": [
+    101,
+    1,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Số Phức cấp 2",
+   "role": "thuy",
+   "math_tower": "so_phuc",
+   "level": 2,
+   "silhouette": "spiral coil of blue light around a rod"
+  },
+  "tower_thuy_3": {
+   "rect": [
+    126,
+    1,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Số Phức cấp 3",
+   "role": "thuy",
+   "math_tower": "so_phuc",
+   "level": 3,
+   "silhouette": "spiral coil of blue light around a rod"
+  },
+  "tower_kim_1": {
+   "rect": [
+    151,
+    1,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Vectơ cấp 1",
+   "role": "kim",
+   "math_tower": "vecto",
+   "level": 1,
+   "silhouette": "arrow ballista on a swivel"
+  },
+  "tower_kim_2": {
+   "rect": [
+    176,
+    1,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Vectơ cấp 2",
+   "role": "kim",
+   "math_tower": "vecto",
+   "level": 2,
+   "silhouette": "arrow ballista on a swivel"
+  },
+  "tower_kim_3": {
+   "rect": [
+    201,
+    1,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Vectơ cấp 3",
+   "role": "kim",
+   "math_tower": "vecto",
+   "level": 3,
+   "silhouette": "arrow ballista on a swivel"
+  },
+  "tower_son_1": {
+   "rect": [
+    226,
+    1,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Ma Trận cấp 1",
+   "role": "son",
+   "math_tower": "ma_tran",
+   "level": 1,
+   "silhouette": "cube-lattice pylon with glowing nodes"
+  },
+  "tower_son_2": {
+   "rect": [
+    1,
+    32,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Ma Trận cấp 2",
+   "role": "son",
+   "math_tower": "ma_tran",
+   "level": 2,
+   "silhouette": "cube-lattice pylon with glowing nodes"
+  },
+  "tower_son_3": {
+   "rect": [
+    26,
+    32,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Ma Trận cấp 3",
+   "role": "son",
+   "math_tower": "ma_tran",
+   "level": 3,
+   "silhouette": "cube-lattice pylon with glowing nodes"
+  },
+  "tower_quang_1": {
+   "rect": [
+    51,
+    32,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Xác Suất cấp 1",
+   "role": "quang",
+   "math_tower": "xac_suat",
+   "level": 1,
+   "silhouette": "urn mortar with dice rising from the mouth"
+  },
+  "tower_quang_2": {
+   "rect": [
+    76,
+    32,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Xác Suất cấp 2",
+   "role": "quang",
+   "math_tower": "xac_suat",
+   "level": 2,
+   "silhouette": "urn mortar with dice rising from the mouth"
+  },
+  "tower_quang_3": {
+   "rect": [
+    101,
+    32,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Xác Suất cấp 3",
+   "role": "quang",
+   "math_tower": "xac_suat",
+   "level": 3,
+   "silhouette": "urn mortar with dice rising from the mouth"
+  },
+  "tower_ho_tro_1": {
+   "rect": [
+    126,
+    32,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Gradient cấp 1",
+   "role": "ho_tro",
+   "math_tower": "gradient",
+   "level": 1,
+   "silhouette": "slope ramp with a lens throwing a beam"
+  },
+  "tower_ho_tro_2": {
+   "rect": [
+    151,
+    32,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Gradient cấp 2",
+   "role": "ho_tro",
+   "math_tower": "gradient",
+   "level": 2,
+   "silhouette": "slope ramp with a lens throwing a beam"
+  },
+  "tower_ho_tro_3": {
+   "rect": [
+    176,
+    32,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tháp Gradient cấp 3",
+   "role": "ho_tro",
+   "math_tower": "gradient",
+   "level": 3,
+   "silhouette": "slope ramp with a lens throwing a beam"
+  },
+  "tower_moc_1": {
+   "rect": [
+    201,
+    32,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tường Mộc cấp 1",
+   "role": "moc",
+   "math_tower": "moc",
+   "level": 1,
+   "silhouette": "palisade of stakes (the wall tower)"
+  },
+  "tower_moc_2": {
+   "rect": [
+    226,
+    32,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tường Mộc cấp 2",
+   "role": "moc",
+   "math_tower": "moc",
+   "level": 2,
+   "silhouette": "palisade of stakes (the wall tower)"
+  },
+  "tower_moc_3": {
+   "rect": [
+    1,
+    63,
+    24,
+    30
+   ],
+   "pivot": [
+    12,
+    30
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Tường Mộc cấp 3",
+   "role": "moc",
+   "math_tower": "moc",
+   "level": 3,
+   "silhouette": "palisade of stakes (the wall tower)"
+  },
+  "td_core": {
+   "rect": [
+    26,
+    63,
+    24,
+    28
+   ],
+   "pivot": [
+    12,
+    28
+   ],
+   "frames": 4,
+   "solid": null,
+   "name_vi": "Lõi linh khí",
+   "old": "the blue circle at the core cell"
+  },
+  "td_spawn": {
+   "rect": [
+    123,
+    63,
+    24,
+    24
+   ],
+   "pivot": [
+    12,
+    24
+   ],
+   "frames": 4,
+   "solid": null,
+   "name_vi": "Cửa quái",
+   "old": "the dark circle at the spawn cell"
+  },
+  "td_rock_0": {
+   "rect": [
+    195,
+    144,
+    20,
+    16
+   ],
+   "pivot": [
+    10,
+    16
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Đá",
+   "old": "B.rock(0)"
+  },
+  "td_rock_1": {
+   "rect": [
+    216,
+    144,
+    20,
+    16
+   ],
+   "pivot": [
+    10,
+    16
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Đá",
+   "old": "B.rock(1)"
+  },
+  "shot_hoa": {
+   "rect": [
+    1,
+    169,
+    14,
+    14
+   ],
+   "pivot": [
+    7,
+    7
+   ],
+   "frames": 3,
+   "solid": null,
+   "name_vi": "Đạn",
+   "role": "hoa",
+   "note": "points to the right; the game rotates it to the target; pivot = centre"
+  },
+  "shot_thuy": {
+   "rect": [
+    44,
+    169,
+    14,
+    14
+   ],
+   "pivot": [
+    7,
+    7
+   ],
+   "frames": 3,
+   "solid": null,
+   "name_vi": "Đạn",
+   "role": "thuy",
+   "note": "points to the right; the game rotates it to the target; pivot = centre"
+  },
+  "shot_kim": {
+   "rect": [
+    173,
+    169,
+    18,
+    10
+   ],
+   "pivot": [
+    9,
+    5
+   ],
+   "frames": 2,
+   "solid": null,
+   "name_vi": "Đạn",
+   "role": "kim",
+   "note": "points to the right; the game rotates it to the target; pivot = centre"
+  },
+  "shot_son": {
+   "rect": [
+    87,
+    169,
+    14,
+    14
+   ],
+   "pivot": [
+    7,
+    7
+   ],
+   "frames": 3,
+   "solid": null,
+   "name_vi": "Đạn",
+   "role": "son",
+   "note": "points to the right; the game rotates it to the target; pivot = centre"
+  },
+  "shot_quang": {
+   "rect": [
+    130,
+    169,
+    14,
+    14
+   ],
+   "pivot": [
+    7,
+    7
+   ],
+   "frames": 3,
+   "solid": null,
+   "name_vi": "Đạn",
+   "role": "quang",
+   "note": "points to the right; the game rotates it to the target; pivot = centre"
+  },
+  "hit_hoa": {
+   "rect": [
+    1,
+    94,
+    24,
+    24
+   ],
+   "pivot": [
+    12,
+    12
+   ],
+   "frames": 4,
+   "solid": null,
+   "name_vi": "Hiệu ứng trúng",
+   "role": "hoa",
+   "note": "4 frames, expanding; pivot = centre; draw additively or normally"
+  },
+  "hit_thuy": {
+   "rect": [
+    98,
+    94,
+    24,
+    24
+   ],
+   "pivot": [
+    12,
+    12
+   ],
+   "frames": 4,
+   "solid": null,
+   "name_vi": "Hiệu ứng trúng",
+   "role": "thuy",
+   "note": "4 frames, expanding; pivot = centre; draw additively or normally"
+  },
+  "hit_kim": {
+   "rect": [
+    1,
+    119,
+    24,
+    24
+   ],
+   "pivot": [
+    12,
+    12
+   ],
+   "frames": 4,
+   "solid": null,
+   "name_vi": "Hiệu ứng trúng",
+   "role": "kim",
+   "note": "4 frames, expanding; pivot = centre; draw additively or normally"
+  },
+  "hit_son": {
+   "rect": [
+    98,
+    119,
+    24,
+    24
+   ],
+   "pivot": [
+    12,
+    12
+   ],
+   "frames": 4,
+   "solid": null,
+   "name_vi": "Hiệu ứng trúng",
+   "role": "son",
+   "note": "4 frames, expanding; pivot = centre; draw additively or normally"
+  },
+  "hit_quang": {
+   "rect": [
+    1,
+    144,
+    24,
+    24
+   ],
+   "pivot": [
+    12,
+    12
+   ],
+   "frames": 4,
+   "solid": null,
+   "name_vi": "Hiệu ứng trúng",
+   "role": "quang",
+   "note": "4 frames, expanding; pivot = centre; draw additively or normally"
+  },
+  "hit_puff": {
+   "rect": [
+    98,
+    144,
+    24,
+    24
+   ],
+   "pivot": [
+    12,
+    12
+   ],
+   "frames": 4,
+   "solid": null,
+   "name_vi": "Hiệu ứng trúng",
+   "role": "puff",
+   "note": "4 frames, expanding; pivot = centre; draw additively or normally"
+  }
+ },
+ "id": "td",
+ "note": "native 24 px board cell. towers: tower_<role>_<level>; frames sit side by side (frame i at rect.x + i * rect.w); pivot = ground point"
+}

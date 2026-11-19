@@ -15,7 +15,7 @@ import pygame
 from .. import strings_vi as T
 from ..art import build as B
 from ..art.palette import RARITY_COLORS, rgb
-from ..engine import sprites, td_sim
+from ..engine import art2, sprites, td_sim
 from .base import Scene
 from .quiz import QuizScene
 
@@ -39,6 +39,16 @@ def monster_frames(kind: str) -> list[pygame.Surface]:
     """Mặc Quái of the garden trial: the world's ink monsters, tinted and resized by kind."""
     if kind in _MON:
         return _MON[kind]
+    v2, scale = art2.td_monster(kind)
+    if v2 is not None:      # a creature rendered out of Blender, walking, shrunk to the 24 px cells
+        clip = v2.clips.get("walk") or v2.clips.get("idle")
+        frames = []
+        for n in clip.frames.get("right") or clip.frames.get("down"):
+            f = v2.frame(n)                 # whole frames: the feet stay put
+            frames.append(pygame.transform.scale(f, (max(1, int(f.get_width() * scale)),
+                                                     max(1, int(f.get_height() * scale)))))
+        _MON[kind] = frames
+        return frames
     base, tint, k = SPRITE_OF.get(kind, ("ink_slime", None, 1.0))
     frames = []
     for f in sprites.monster(base):

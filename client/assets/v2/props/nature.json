@@ -1,0 +1,522 @@
+{
+ "sheet": "nature.png",
+ "props": {
+  "bamboo_1": {
+   "rect": [
+    159,
+    67,
+    35,
+    48
+   ],
+   "pivot": [
+    18,
+    43
+   ],
+   "frames": 1,
+   "solid": [
+    12,
+    39,
+    12,
+    4
+   ],
+   "name_vi": "Trúc cao"
+  },
+  "bamboo_2": {
+   "rect": [
+    40,
+    67,
+    34,
+    52
+   ],
+   "pivot": [
+    18,
+    47
+   ],
+   "frames": 1,
+   "solid": [
+    12,
+    43,
+    12,
+    4
+   ],
+   "name_vi": "Khóm trúc"
+  },
+  "bamboo_3": {
+   "rect": [
+    189,
+    1,
+    38,
+    52
+   ],
+   "pivot": [
+    20,
+    47
+   ],
+   "frames": 1,
+   "solid": [
+    15,
+    43,
+    10,
+    4
+   ],
+   "name_vi": "Trúc thấp"
+  },
+  "pine_1": {
+   "rect": [
+    152,
+    1,
+    36,
+    59
+   ],
+   "pivot": [
+    18,
+    52
+   ],
+   "frames": 1,
+   "solid": [
+    15,
+    48,
+    6,
+    4
+   ],
+   "name_vi": "Cây tùng cao"
+  },
+  "pine_2": {
+   "rect": [
+    75,
+    67,
+    34,
+    52
+   ],
+   "pivot": [
+    17,
+    45
+   ],
+   "frames": 1,
+   "solid": [
+    14,
+    41,
+    6,
+    4
+   ],
+   "name_vi": "Cây tùng"
+  },
+  "tree_1": {
+   "rect": [
+    1,
+    1,
+    47,
+    65
+   ],
+   "pivot": [
+    24,
+    59
+   ],
+   "frames": 1,
+   "solid": [
+    20,
+    54,
+    8,
+    5
+   ],
+   "name_vi": "Cây lá rộng"
+  },
+  "tree_2": {
+   "rect": [
+    106,
+    1,
+    45,
+    64
+   ],
+   "pivot": [
+    23,
+    57
+   ],
+   "frames": 1,
+   "solid": [
+    19,
+    52,
+    8,
+    5
+   ],
+   "name_vi": "Cây lá vàng"
+  },
+  "peach_tree": {
+   "rect": [
+    49,
+    1,
+    56,
+    64
+   ],
+   "pivot": [
+    26,
+    54
+   ],
+   "frames": 1,
+   "solid": [
+    22,
+    49,
+    8,
+    5
+   ],
+   "name_vi": "Cây đào"
+  },
+  "dead_tree": {
+   "rect": [
+    1,
+    67,
+    38,
+    52
+   ],
+   "pivot": [
+    22,
+    47
+   ],
+   "frames": 1,
+   "solid": [
+    18,
+    42,
+    8,
+    5
+   ],
+   "name_vi": "Cây khô"
+  },
+  "bush_1": {
+   "rect": [
+    1,
+    202,
+    45,
+    36
+   ],
+   "pivot": [
+    23,
+    26
+   ],
+   "frames": 1,
+   "solid": [
+    15,
+    21,
+    16,
+    5
+   ],
+   "name_vi": "Bụi cây"
+  },
+  "bush_2": {
+   "rect": [
+    71,
+    163,
+    39,
+    38
+   ],
+   "pivot": [
+    20,
+    27
+   ],
+   "frames": 1,
+   "solid": [
+    12,
+    22,
+    16,
+    5
+   ],
+   "name_vi": "Bụi quả đỏ"
+  },
+  "rock_1": {
+   "rect": [
+    115,
+    202,
+    30,
+    29
+   ],
+   "pivot": [
+    14,
+    19
+   ],
+   "frames": 1,
+   "solid": [
+    6,
+    14,
+    16,
+    5
+   ],
+   "name_vi": "Đá nhỏ"
+  },
+  "rock_2": {
+   "rect": [
+    175,
+    120,
+    41,
+    40
+   ],
+   "pivot": [
+    20,
+    25
+   ],
+   "frames": 1,
+   "solid": [
+    11,
+    19,
+    18,
+    6
+   ],
+   "name_vi": "Đá vừa"
+  },
+  "rock_3": {
+   "rect": [
+    47,
+    202,
+    34,
+    33
+   ],
+   "pivot": [
+    13,
+    22
+   ],
+   "frames": 1,
+   "solid": [
+    6,
+    17,
+    14,
+    5
+   ],
+   "name_vi": "Đá rêu"
+  },
+  "boulder": {
+   "rect": [
+    110,
+    67,
+    48,
+    48
+   ],
+   "pivot": [
+    22,
+    34
+   ],
+   "frames": 1,
+   "solid": [
+    8,
+    26,
+    28,
+    8
+   ],
+   "name_vi": "Tảng đá lớn"
+  },
+  "linh_thao_1": {
+   "rect": [
+    143,
+    120,
+    31,
+    41
+   ],
+   "pivot": [
+    15,
+    35
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Lam Tinh Thảo"
+  },
+  "linh_thao_2": {
+   "rect": [
+    82,
+    202,
+    32,
+    33
+   ],
+   "pivot": [
+    16,
+    25
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Thanh Lộ Thảo"
+  },
+  "linh_thao_3": {
+   "rect": [
+    108,
+    120,
+    34,
+    41
+   ],
+   "pivot": [
+    17,
+    35
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Dạ Quang Nấm"
+  },
+  "linh_thao_4": {
+   "rect": [
+    36,
+    120,
+    28,
+    42
+   ],
+   "pivot": [
+    16,
+    35
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Kim Tuệ Thảo"
+  },
+  "tall_grass": {
+   "rect": [
+    65,
+    120,
+    42,
+    41
+   ],
+   "pivot": [
+    24,
+    35
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Cỏ cao"
+  },
+  "lotus": {
+   "rect": [
+    1,
+    239,
+    43,
+    20
+   ],
+   "pivot": [
+    21,
+    12
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Lá sen"
+  },
+  "stump": {
+   "rect": [
+    192,
+    202,
+    27,
+    24
+   ],
+   "pivot": [
+    13,
+    17
+   ],
+   "frames": 1,
+   "solid": [
+    7,
+    13,
+    12,
+    4
+   ],
+   "name_vi": "Gốc cây"
+  },
+  "log": {
+   "rect": [
+    146,
+    202,
+    45,
+    25
+   ],
+   "pivot": [
+    22,
+    18
+   ],
+   "frames": 1,
+   "solid": [
+    7,
+    13,
+    30,
+    5
+   ],
+   "name_vi": "Thân cây đổ"
+  },
+  "crystal_1": {
+   "rect": [
+    1,
+    120,
+    34,
+    42
+   ],
+   "pivot": [
+    16,
+    32
+   ],
+   "frames": 1,
+   "solid": [
+    9,
+    28,
+    14,
+    4
+   ],
+   "name_vi": "Tinh thạch lam"
+  },
+  "crystal_2": {
+   "rect": [
+    195,
+    67,
+    35,
+    42
+   ],
+   "pivot": [
+    17,
+    32
+   ],
+   "frames": 1,
+   "solid": [
+    10,
+    28,
+    14,
+    4
+   ],
+   "name_vi": "Tinh thạch tím"
+  },
+  "cloud_puff_1": {
+   "rect": [
+    172,
+    163,
+    54,
+    36
+   ],
+   "pivot": [
+    29,
+    27
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Cụm mây nhỏ"
+  },
+  "cloud_puff_2": {
+   "rect": [
+    1,
+    163,
+    69,
+    38
+   ],
+   "pivot": [
+    33,
+    29
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Cụm mây lớn"
+  },
+  "mushroom_ring": {
+   "rect": [
+    111,
+    163,
+    60,
+    36
+   ],
+   "pivot": [
+    29,
+    23
+   ],
+   "frames": 1,
+   "solid": null,
+   "name_vi": "Vòng nấm"
+  }
+ },
+ "id": "nature",
+ "note": "pivot = ground point at the base and solid = [x, y, w, h] (walk-blocking footprint), both relative to rect"
+}

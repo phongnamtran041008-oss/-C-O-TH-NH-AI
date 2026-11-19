@@ -77,9 +77,42 @@ def fish_icon(shape: str, color: str, color2: str | None = None, dark: bool = Fa
     return s
 
 
-def draw_rod(surf: pygame.Surface, scene: "FishingScene", cx: int, cy: int, t: float) -> None:
+def _draw_rod_view(surf: pygame.Surface, scene: "FishingScene", view, t: float) -> None:
+    p = scene.host.player
+    z = view.zoom
+    side = 1 if p.facing != "left" else -1
+    hx, hy = view.to_screen(p.x + side * 6, p.y)
+    hy -= 28
+    tip = (hx + side * 8 * z, hy - 10 * z)
+    pygame.draw.line(surf, (110, 84, 46), (hx, hy), tip, z)
+    bob_x, bob_y = view.to_screen(*scene.bob)
+    if scene.phase == "casting":
+        k = min(1.0, scene.t / CAST_SECONDS)
+        bx = tip[0] + (bob_x - tip[0]) * k
+        by = tip[1] + (bob_y - tip[1]) * k - math.sin(k * math.pi) * 18 * z
+    else:
+        bx, by = bob_x, bob_y
+        if scene.phase == "bite":
+            by += (2 + int(t * 20) % 2) * z
+        elif scene.phase == "reel":
+            bx += math.sin(t * 9) * 2 * z
+            by += z
+        else:
+            by += math.sin(t * 3) * z
+    pygame.draw.line(surf, (235, 235, 235), tip, (int(bx), int(by)), 1)
+    if scene.phase in ("waiting", "bite", "reel"):
+        r = 3 + (int(t * 4) % 3 if scene.phase == "bite" else 0)
+        pygame.draw.circle(surf, (210, 230, 240), (int(bx), int(by) + 2 * z), (r + 2) * z, 1)
+    pygame.draw.circle(surf, (188, 71, 73), (int(bx), int(by)), 2 * z)
+    pygame.draw.rect(surf, (244, 235, 217), (int(bx) - 1, int(by) - 2 * z - 1, z, z))
+
+
+def draw_rod(surf: pygame.Surface, scene: "FishingScene", cx: int, cy: int, t: float, view=None) -> None:
     """The line from the hand to the float, the float bobbing (dipping when a fish bites)."""
     p = scene.host.player
+    if view is not None and view.zoom != 1:   # the 2x v2 world: the v2 hand is ~28 px above the feet
+        _draw_rod_view(surf, scene, view, t)
+        return
     hx, hy = p.x + (6 if p.facing != "left" else -6) - cx, p.y - 18 - cy
     tip = (hx + (8 if p.facing != "left" else -8), hy - 10)
     pygame.draw.line(surf, (110, 84, 46), (hx, hy), tip, 1)

@@ -1,0 +1,87 @@
+{
+ "sheet": "dan_duoc.png",
+ "cell": 32,
+ "cols": 8,
+ "icons": {
+  "dan_1": {
+   "index": 0,
+   "name_vi": "Phàm Đan",
+   "grade": 1
+  },
+  "binh_1": {
+   "index": 1,
+   "name_vi": "Phàm Bình",
+   "grade": 1
+  },
+  "dan_2": {
+   "index": 2,
+   "name_vi": "Hoàng Đan",
+   "grade": 2
+  },
+  "binh_2": {
+   "index": 3,
+   "name_vi": "Hoàng Bình",
+   "grade": 2
+  },
+  "dan_3": {
+   "index": 4,
+   "name_vi": "Huyền Đan",
+   "grade": 3
+  },
+  "binh_3": {
+   "index": 5,
+   "name_vi": "Huyền Bình",
+   "grade": 3
+  },
+  "dan_4": {
+   "index": 6,
+   "name_vi": "Địa Đan",
+   "grade": 4
+  },
+  "binh_4": {
+   "index": 7,
+   "name_vi": "Địa Bình",
+   "grade": 4
+  },
+  "dan_5": {
+   "index": 8,
+   "name_vi": "Linh Đan",
+   "grade": 5
+  },
+  "binh_5": {
+   "index": 9,
+   "name_vi": "Linh Bình",
+   "grade": 5
+  },
+  "dan_6": {
+   "index": 10,
+   "name_vi": "Bảo Đan",
+   "grade": 6
+  },
+  "binh_6": {
+   "index": 11,
+   "name_vi": "Bảo Bình",
+   "grade": 6
+  },
+  "dan_7": {
+   "index": 12,
+   "name_vi": "Tiên Đan",
+   "grade": 7
+  },
+  "binh_7": {
+   "index": 13,
+   "name_vi": "Tiên Bình",
+   "grade": 7
+  },
+  "dan_8": {
+   "index": 14,
+   "name_vi": "Thiên Đan",
+   "grade": 8
+  },
+  "binh_8": {
+   "index": 15,
+   "name_vi": "Thiên Bình",
+   "grade": 8
+  }
+ }
+}

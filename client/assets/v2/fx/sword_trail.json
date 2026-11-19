@@ -1,0 +1,19 @@
+{
+ "id": "sword_trail",
+ "name_vi": "Vet kiem bay",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 32
+ },
+ "sheet": "sword_trail.png",
+ "cols": 4,
+ "frames": 4,
+ "fps": 14,
+ "loop": true,
+ "blend": "add",
+ "ground": false
+}

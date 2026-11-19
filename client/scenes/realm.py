@@ -457,7 +457,7 @@ class RealmView:
         r = self.room_rect()
         if r is None:
             return
-        r = r.move(-cx, -cy)
+        r = self.scene.view.rect(r)          # the camera's zoom (2x with the v2 art)
         w, h = surf.get_size()
         black = (10, 9, 12)
         for rect in ((0, 0, w, max(0, r.top)), (0, r.bottom, w, max(0, h - r.bottom)),
@@ -512,33 +512,34 @@ class RealmView:
         """Props lying on the floor, drawn under everyone."""
         pz = self.puzzle or {}
         kind = self.kind
+        v = self.scene.view
         for o in self.room_objs():
             k = o.props.get("kind")
-            x, y = int(o.x) - cx, int(o.y) - cy
+            x, y = v.to_screen(o.x, o.y)
             st = self.seal(o)
             if st is not None:   # M10: a seal - glowing while unbroken, gold once broken
                 if k == "pedestal":
-                    surf.blit(sprites.realm("pedestal", not st["broken"], st["busy"] or st["broken"]), (x, y))
+                    surf.blit(v.img(sprites.realm("pedestal", not st["broken"], st["busy"] or st["broken"])), (x, y))
                 else:
                     state = "done" if st["broken"] else ("next" if st["busy"] else "idle")
-                    surf.blit(sprites.realm("rune_tile", state), (x, y))
+                    surf.blit(v.img(sprites.realm("rune_tile", state)), (x, y))
             elif k == "pedestal":
                 active = o.props.get("slot") in (pz.get("slots") or [])
-                surf.blit(sprites.realm("pedestal", active, active and self._someone_on(o)), (x, y))
+                surf.blit(v.img(sprites.realm("pedestal", active, active and self._someone_on(o))), (x, y))
             elif k == "tile":
                 n = int(o.props.get("n", 0))
                 total, done = pz.get("n", 0), pz.get("k", 0)
                 state = "off" if n > total else ("done" if n <= done else ("next" if n == done + 1 else "idle"))
-                surf.blit(sprites.realm("rune_tile", state), (x, y))
+                surf.blit(v.img(sprites.realm("rune_tile", state)), (x, y))
             elif k == "mirror":
-                surf.blit(sprites.realm("mirror", frame % 4), (x - 0, y - 24))
+                surf.blit(v.img(sprites.realm("mirror", frame % 4)), (x, y - int(v.len(24))))
             elif k == "chest" and kind == "boss" and self.ended and self.ended.get("result") == "won":
-                surf.blit(sprites.realm("chest", True), (x, y))
+                surf.blit(v.img(sprites.realm("chest", True)), (x, y))
             elif k == "exit":
                 opened = self.cleared_at is not None or (kind == "maze" and pz.get("solved"))
-                surf.blit(sprites.realm("realm_exit", opened, frame % 2), (x, y - 8))
+                surf.blit(v.img(sprites.realm("realm_exit", opened, frame % 2)), (x, y - int(v.len(8))))
             elif k == "maze_exit":
-                pygame.draw.rect(surf, (233, 196, 106), (x, y, int(o.w), int(o.h)), 1)
+                pygame.draw.rect(surf, (233, 196, 106), (x, y, int(v.len(o.w)), int(v.len(o.h))), 1)
 
     def _someone_on(self, o) -> bool:
         if self.standing_on(o):
@@ -549,13 +550,14 @@ class RealmView:
     def drawables(self, cx: int, cy: int, frame: int) -> list:
         """Standing props, sorted with the characters by their feet."""
         out = []
+        v = self.scene.view
         for o in self.room_objs():
             k = o.props.get("kind")
             if k == "pillar":
                 tone = int(o.props.get("tone", 1))
-                out.append((o.y + o.h, sprites.realm("pillar", tone, False), (int(o.x) - cx, int(o.y) - cy)))
+                out.append((o.y + o.h, v.img(sprites.realm("pillar", tone, False)), v.to_screen(o.x, o.y)))
             elif k == "statue":
-                out.append((o.y + o.h, sprites.realm("statue", frame % 2), (int(o.x) - cx, int(o.y) - cy)))
+                out.append((o.y + o.h, v.img(sprites.realm("statue", frame % 2)), v.to_screen(o.x, o.y)))
         return out
 
     def dark(self, surf, cx: int, cy: int) -> None:
@@ -578,19 +580,20 @@ class RealmView:
         lights.append((scene.player.x, scene.player.y, int(pz.get("self_radius", 18))))
         for lx, ly, lr in lights:
             for k, a in ((1.0, 150), (0.8, 70), (0.6, 0)):
-                pygame.draw.circle(shade, (8, 8, 14, a), (int(lx - cx), int(ly - 10 - cy)), int(lr * k))
+                v = scene.view
+                pygame.draw.circle(shade, (8, 8, 14, a), v.to_screen(lx, ly - 10), int(v.len(lr * k)))
         surf.blit(shade, (0, 0))
 
     # ------------------------------------------------------------ the HUD
     def draw_ui(self, ui, top: bool) -> None:
         g = self.game
-        cx, cy = self.scene.cam
+        v = self.scene.view
         now = g.now
         # floor labels: tile numbers, pedestal slots, pillar tones (sharp, at window resolution)
         pz = self.puzzle or {}
         for o in self.room_objs():
             k = o.props.get("kind")
-            ox, oy = o.x + o.w / 2 - cx, o.y + o.h / 2 - cy
+            ox, oy = v.to_screen(o.x + o.w / 2, o.y + o.h / 2)
             st = self.seal(o)
             if st is not None:
                 ui.text(T.REALM_SEAL_BROKEN if st["broken"] else T.REALM_SEAL_MARK, ox, oy, 7,
@@ -600,13 +603,14 @@ class RealmView:
             elif k == "pedestal" and o.props.get("slot") in (pz.get("slots") or []):
                 ui.text(T.REALM_SLOTS.get(o.props["slot"], ""), ox, oy + 13, 6, "#E9C46A", anchor="center")
             elif k == "pillar":
-                ui.text(f"{o.props['tone']}", ox, o.y - cy - 6, 7, "#E9C46A", anchor="center")
+                ui.text(f"{o.props['tone']}", ox, v.sy(o.y) - 6, 7, "#E9C46A", anchor="center")
         for mk in list(self.marks):
             if mk[3] < now:
                 self.marks.remove(mk)
                 continue
             bob = math.sin(now * 8) * 2
-            ui.text(mk[2], mk[0] - cx, mk[1] - cy - 30 + bob, 12, "#E9C46A", anchor="center")
+            mx_, my_ = v.to_screen(mk[0], mk[1])
+            ui.text(mk[2], mx_, my_ - v.len(30) + bob, 12, "#E9C46A", anchor="center")
         if self.run:
             name = self.run.get("name_vi", "")
             if self.room:

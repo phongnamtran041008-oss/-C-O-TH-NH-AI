@@ -111,7 +111,7 @@ class VisitScene(AbodeScene):
         if not top:
             return
         mx, my = ui.inp.mouse
-        wx, wy = mx + self.cam[0], my + self.cam[1]
+        wx, wy = self.screen_to_world(mx, my)
         hp = self.plot_at_world(wx, wy)
         if hp and ui.hover(0, 36, 480, 210):
             ui.set_tooltip(self.plot_tooltip(hp))

@@ -1,0 +1,22 @@
+{
+ "id": "chem_mau",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 32
+ },
+ "sheet": "chem_mau.png",
+ "cols": 5,
+ "frames": 5,
+ "fps": 14,
+ "loop": false,
+ "blend": "add",
+ "ground": false,
+ "render": {
+  "ppm": 38.0,
+  "scale": 6
+ }
+}

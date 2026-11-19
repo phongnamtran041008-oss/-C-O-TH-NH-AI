@@ -1,0 +1,19 @@
+{
+ "id": "crack_ground",
+ "name_vi": "Vet nut dat",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 48
+ },
+ "sheet": "crack_ground.png",
+ "cols": 5,
+ "frames": 5,
+ "fps": 12,
+ "loop": false,
+ "blend": "alpha",
+ "ground": true
+}

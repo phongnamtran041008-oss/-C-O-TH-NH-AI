@@ -1,0 +1,19 @@
+{
+ "id": "tran_3",
+ "name_vi": "Phap tran tam cap",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 48
+ },
+ "sheet": "tran_3.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 6,
+ "loop": true,
+ "blend": "add",
+ "ground": true
+}

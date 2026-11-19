@@ -1,0 +1,19 @@
+{
+ "id": "warn_cone_release",
+ "name_vi": "Canh bao hinh quat (tung don)",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 4,
+  "y": 48
+ },
+ "sheet": "warn_cone_release.png",
+ "cols": 3,
+ "frames": 3,
+ "fps": 14,
+ "loop": false,
+ "blend": "alpha",
+ "ground": true
+}

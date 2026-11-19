@@ -154,7 +154,13 @@ def run_world_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.step(10)
         drv.shot("visit_friend")
         r = visit.plot_rect(plot)
-        drv.click_at(drv.game.display.to_window(r.centerx - visit.cam[0], r.centery - visit.cam[1]))
+        for _ in range(40):     # the 2x world (v2 art) shows less of the garden: walk until the plot is in view
+            sx, sy = visit.world_to_screen(r.centerx, r.centery)
+            if 30 < sx < 450 and 40 < sy < 240:
+                break
+            keys = ([pygame.K_d if sx > 240 else pygame.K_a] if not 30 < sx < 450 else []) +                    ([pygame.K_s if sy > 135 else pygame.K_w] if not 40 < sy < 240 else [])
+            drv.hold(keys, 0.1)
+        drv.click_at(drv.game.display.to_window(*visit.world_to_screen(r.centerx, r.centery)))
         drv.wait_scene("HelpPanel")
         drv.click("help_go")
         drv.wait_scene("QuizScene")

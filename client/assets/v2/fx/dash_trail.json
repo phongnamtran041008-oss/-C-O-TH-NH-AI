@@ -1,0 +1,19 @@
+{
+ "id": "dash_trail",
+ "name_vi": "Vet luot",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 32
+ },
+ "sheet": "dash_trail.png",
+ "cols": 4,
+ "frames": 4,
+ "fps": 16,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

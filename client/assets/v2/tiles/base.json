@@ -1,0 +1,105 @@
+{
+ "sheet": "base.png",
+ "tile": 16,
+ "cols": 8,
+ "tiles": {
+  "grass": [
+   0,
+   1,
+   2
+  ],
+  "flowers": [
+   3,
+   4
+  ],
+  "path": [
+   5,
+   6
+  ],
+  "water": [
+   7
+  ],
+  "bamboo_floor": [
+   8
+  ],
+  "stone": [
+   9,
+   25
+  ],
+  "wood": [
+   10
+  ],
+  "plaza": [
+   11,
+   12,
+   26
+  ],
+  "dirt": [
+   13
+  ],
+  "dark_grass": [
+   14,
+   15
+  ],
+  "ink": [
+   16,
+   17
+  ],
+  "realm_floor": [
+   18,
+   19
+  ],
+  "realm_wall": [
+   20
+  ],
+  "water_anim": [
+   21,
+   22,
+   23,
+   24
+  ]
+ },
+ "render": {
+  "tile_m": 0.42105263157894735,
+  "wrap_check": {
+   "grass[0]": 0.46,
+   "grass[1]": 0.63,
+   "grass[2]": 0.74,
+   "flowers[0]": 1.64,
+   "flowers[1]": 1.16,
+   "path[0]": 0.43,
+   "path[1]": 0.91,
+   "water[0]": 0.54,
+   "bamboo_floor[0]": 1.0,
+   "stone[0]": 0.47,
+   "wood[0]": 0.15,
+   "plaza[0]": 1.75,
+   "plaza[1]": 1.77,
+   "dirt[0]": 0.33,
+   "dark_grass[0]": 1.04,
+   "dark_grass[1]": 0.87,
+   "ink[0]": 0.36,
+   "ink[1]": 0.64,
+   "realm_floor[0]": 1.82,
+   "realm_floor[1]": 1.89,
+   "realm_wall[0]": 1.23,
+   "water_anim[0]": 0.54,
+   "water_anim[1]": 0.57,
+   "water_anim[2]": 0.55,
+   "water_anim[3]": 0.26,
+   "stone_alt[0]": 0.69,
+   "plaza_alt[0]": 1.48
+  }
+ },
+ "id": "base",
+ "note": "indices 0..20 are the TILESET of client/art/build.py in the same order and grid (gid = index + 1); water_anim = 4 frames; stone / plaza list their extra variants after the original index",
+ "water_anim": {
+  "frames": [
+   21,
+   22,
+   23,
+   24
+  ],
+  "fps": 2
+ }
+}

@@ -4,7 +4,7 @@ from __future__ import annotations
 import pygame
 
 from .. import strings_vi as T
-from ..engine import sprites
+from ..engine import art2, sprites
 from .base import Scene
 
 RARITY_COLORS = {"common": "#7D7468", "rare": "#4A7CC8", "epic": "#8E5AC8", "legendary": "#C99A3A"}
@@ -57,8 +57,12 @@ class PetScene(Scene):
                 col = RARITY_COLORS.get(p["rarity"], "#7D7468")
                 ui.fill(cx, cy, 42, 50, "#FFFDF7" if i != self.sel else "#F4E6C2")
                 ui.border(cx, cy, 42, 50, col, 2 if p["equipped"] else 1)
-                ui.image(sprites.pet(p["pet_type"], int(ui.time * 3) % 2 if p["equipped"] else 0),
-                         cx + 21, cy + 20, zoom=2, anchor="center")
+                v2 = art2.beast_picture(p["pet_type"], ui.time if p["equipped"] else 0.0)
+                if v2 is not None:        # a Linh Thú rendered out of Blender
+                    ui.image(v2, cx + 21, cy + 33, zoom=1, anchor="midbottom")
+                else:
+                    ui.image(sprites.pet(p["pet_type"], int(ui.time * 3) % 2 if p["equipped"] else 0),
+                             cx + 21, cy + 20, zoom=2, anchor="center")
                 ui.text(p["name_vi"], cx + 21, cy + 38, 7, col, anchor="center")
                 ui.text(T.PETS_LEVEL.format(l=p["level"], m=p["max_level"]), cx + 21, cy + 45, 6, "#8E877A",
                         anchor="center")
@@ -69,7 +73,11 @@ class PetScene(Scene):
             col = RARITY_COLORS.get(p["rarity"], "#7D7468")
             ui.fill(px, y + 30, w - 214, 160, "#FFFDF7")
             ui.border(px, y + 30, w - 214, 160, col)
-            ui.image(sprites.pet(p["pet_type"], int(ui.time * 4) % 2), px + 30, y + 62, zoom=3.5, anchor="center")
+            v2 = art2.beast_picture(p["pet_type"], ui.time, "happy" if p["equipped"] else "idle")
+            if v2 is not None:
+                ui.image(v2, px + 30, y + 88, zoom=2, anchor="midbottom")
+            else:
+                ui.image(sprites.pet(p["pet_type"], int(ui.time * 4) % 2), px + 30, y + 62, zoom=3.5, anchor="center")
             ui.text(p["hanzi"], px + 88, y + 52, 22, "#2B2B2B", kind="han", anchor="center")
             ui.text(p["pinyin"], px + 88, y + 72, 9, "#5A5A5A", kind="han", anchor="center")
             ui.text(f"{p['name_vi']} · {p['zodiac_vi']}", px + 120, y + 44, 9, col)
@@ -110,11 +118,15 @@ class PetBookScene(Scene):
             col = RARITY_COLORS.get(b["rarity"], "#7D7468")
             ui.fill(cx, cy, 60, 88, "#FFFDF7" if b["found"] else "#E3D5BA")
             ui.border(cx, cy, 60, 88, col)
-            img = sprites.pet(b["id"], 0)
+            v2 = art2.beast_picture(b["id"])
+            img = v2 if v2 is not None else sprites.pet(b["id"], 0)
             if not b["found"]:
                 img = img.copy()
                 img.fill((40, 34, 28, 255), special_flags=pygame.BLEND_RGBA_MIN)
-            ui.image(img, cx + 30, cy + 22, zoom=2.5, anchor="center")
+            if v2 is not None:
+                ui.image(img, cx + 30, cy + 38, zoom=1, anchor="midbottom")
+            else:
+                ui.image(img, cx + 30, cy + 22, zoom=2.5, anchor="center")
             ui.text(b["zodiac_vi"], cx + 30, cy + 44, 7, "#8E877A", anchor="center")
             if b["found"]:
                 ui.text(f"{b['hanzi']} {b['pinyin']}", cx + 30, cy + 56, 9, "#2B2B2B", kind="han", anchor="center")

@@ -1,0 +1,19 @@
+{
+ "id": "loi_kiep",
+ "name_vi": "Loi kiep",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 66
+ },
+ "sheet": "loi_kiep.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 12,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

@@ -1,0 +1,111 @@
+{
+ "sheet": "base32.png",
+ "tile": 32,
+ "cols": 8,
+ "tiles": {
+  "grass": [
+   0,
+   1,
+   2
+  ],
+  "flowers": [
+   3,
+   4
+  ],
+  "path": [
+   5,
+   6
+  ],
+  "water": [
+   7
+  ],
+  "bamboo_floor": [
+   8
+  ],
+  "stone": [
+   9,
+   25
+  ],
+  "wood": [
+   10
+  ],
+  "plaza": [
+   11,
+   12,
+   26
+  ],
+  "dirt": [
+   13,
+   27,
+   28
+  ],
+  "dark_grass": [
+   14,
+   15
+  ],
+  "ink": [
+   16,
+   17
+  ],
+  "realm_floor": [
+   18,
+   19
+  ],
+  "realm_wall": [
+   20
+  ],
+  "water_anim": [
+   21,
+   22,
+   23,
+   24
+  ]
+ },
+ "cell": 32,
+ "render": {
+  "tile_m": 0.42105263157894735,
+  "px_per_tile": 32,
+  "wrap_check": {
+   "grass[0]": 0.77,
+   "grass[1]": 0.4,
+   "grass[2]": 0.95,
+   "flowers[0]": 0.99,
+   "flowers[1]": 0.68,
+   "path[0]": 0.47,
+   "path[1]": 0.48,
+   "water[0]": 0.39,
+   "bamboo_floor[0]": 0.78,
+   "stone[0]": 0.3,
+   "wood[0]": 0.19,
+   "plaza[0]": 0.22,
+   "plaza[1]": 0.43,
+   "dirt[0]": 0.67,
+   "dark_grass[0]": 0.85,
+   "dark_grass[1]": 0.9,
+   "ink[0]": 0.67,
+   "ink[1]": 0.94,
+   "realm_floor[0]": 0.22,
+   "realm_floor[1]": 0.21,
+   "realm_wall[0]": 1.56,
+   "water_anim[0]": 0.39,
+   "water_anim[1]": 0.38,
+   "water_anim[2]": 0.39,
+   "water_anim[3]": 0.38,
+   "stone_alt[0]": 0.81,
+   "plaza_alt[0]": 0.33,
+   "dirt_alt[0]": 0.52,
+   "dirt_alt[1]": 0.92
+  }
+ },
+ "id": "base32",
+ "note": "32 px per tile. Indices 0..20 are the TILESET of client/art/build.py (same order as base.png, gid = index + 1); water_anim = 4 frames; stone / plaza / dirt list their extra variants after the original index (dirt has 3 variants that tile with each other; only the third has two tiny off-centre stones)",
+ "water_anim": {
+  "frames": [
+   21,
+   22,
+   23,
+   24
+  ],
+  "fps": 2
+ }
+}
