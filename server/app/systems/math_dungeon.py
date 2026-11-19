@@ -9,7 +9,9 @@ when the room is entered, through math_ask, at the player's own tier and with th
 anti-repeat window, like every other question of the game.
 
   * A room is one question type (data/math/dungeon.json `room_kinds`, one per playable type).
-    Its questions come from the room's micro-skill. A room is only generated when it can be
+    Its questions come from the room's micro-skill; a kind may ask fewer than
+    `questions_per_room` (its own `questions`: a Thiên kiếp room asks one, as its one question
+    takes 8-12 minutes - and so does a trấn thủ of that kind). A room is only generated when it can be
     asked by *anyone* standing on that floor: its (type, micro-skill) has a template at the
     floor's lowest tier, which is always open (math_adaptive.open_tier). A player whose tier
     is higher gets the harder template - the tier is theirs, never above it (math_ask.pick).
@@ -123,8 +125,13 @@ def validate(raw: dict | None = None, drops: dict | None = None) -> list[str]:
     for q, k in kinds.items():
         if q not in math_items.PLAYABLE_TYPES:
             out.append(f"room_kinds: {q!r} is not a playable question type")
-        if not isinstance(k, dict) or set(k) != {"name_vi", "short_vi", "desc_vi"} or not all(map(_text, k.values())):
-            out.append(f"room_kinds.{q}: must be {{name_vi, short_vi, desc_vi}}, all non-empty text")
+        texts = {"name_vi", "short_vi", "desc_vi"}
+        if (not isinstance(k, dict) or not texts <= set(k) <= texts | {"questions"}
+                or not all(_text(k[t]) for t in texts)):
+            out.append(f"room_kinds.{q}: must be {{name_vi, short_vi, desc_vi}}, all non-empty text "
+                       f"(and may have questions)")
+        elif "questions" in k and not _whole(k["questions"], 1):
+            out.append(f"room_kinds.{q}.questions: must be a whole number >= 1")
     for key in ("guardians", "wardens"):
         table = raw.get(key)
         if not isinstance(table, list) or not table:
@@ -215,10 +222,10 @@ def generate(seed: int, subject_id: str, floor: int, raw: dict | None = None) ->
         skill = rng.choice(fresh)
         used.add(skill)
         rooms.append(_room(kind, names[kind], skill, subject.skills[skill].name_vi, d["guardians"][g],
-                           False, d["questions_per_room"]))
+                           False, names[kind].get("questions", d["questions_per_room"])))
     kind = _deal(rng, sorted(kinds), 1, avoid_first=order[-1] if order else None)[0]
     warden = d["wardens"][rng.randrange(len(d["wardens"]))]
-    rooms.append(_room(kind, names[kind], None, None, warden, True, d["warden_questions"]))
+    rooms.append(_room(kind, names[kind], None, None, warden, True, names[kind].get("questions", d["warden_questions"])))
     rewards = d["rewards"].get(str(floor), {"room": {"stones": 0, "items": {}}, "chests": []})
     chest = (dict(rewards["chests"][rng.randrange(len(rewards["chests"]))]) if rewards["chests"]
              else {"name_vi": "", "stones": 0, "items": {}})

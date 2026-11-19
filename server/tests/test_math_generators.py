@@ -71,7 +71,7 @@ def test_the_written_subjects_are_the_four_of_luyen_khi():
 
 @pytest.mark.parametrize("subject", SUBJECTS)
 def test_floors_not_written_yet_have_no_templates(subject):
-    for floor in range(4, 11):
+    for floor in range(10, 11):
         assert mi.floor_templates(subject, floor, allow_unreviewed=True) == []
 
 
@@ -264,8 +264,10 @@ BREAKAGE = {
                                                     "tier 3 is not allowed on floor 1"),
     "generator of an unknown skill": (lambda r: r["generators"][0].update(skill="dstt_t1_khong_co"),
                                       "is not a micro-skill"),
-    "generator of a type that is not playable": (lambda r: r["generators"][0].update(type="tribulation"),
+    "generator of a type that is not playable": (lambda r: r["generators"][0].update(type="chung_minh"),
                                                  "type must be one of"),
+    "generator of a tribulation question": (lambda r: r["generators"][0].update(type="tribulation", tier=1),
+                                            "a tribulation question can only be hand-written for now"),
     "generator of a find_mistake question": (lambda r: r["generators"][0].update(type="find_mistake"),
                                              "a find_mistake question can only be hand-written for now"),
     "generator of a matching question": (lambda r: r["generators"][0].update(type="matching"),

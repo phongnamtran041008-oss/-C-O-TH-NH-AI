@@ -108,7 +108,7 @@ def run_math_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait(lambda: drv.top_is("MathPracticeScene") and top(drv).path is not None, 10, "the math path")
         subject = top(drv).path["subjects"][0]
         floors = subject["floors"]
-        assert [f["has_questions"] for f in floors[:4]] == [True, True, True, False]
+        assert [f["has_questions"] for f in floors] == [True] * 9 + [False]      # floors 1-9 are written
         assert [f["state"] for f in floors[:3]] == ["open", "locked", "locked"]      # M5
         assert [f["playable"] for f in floors[:4]] == [True, False, False, False]
         assert subject["cleared"] == [] and subject["next_floor"] == 1

@@ -437,3 +437,37 @@ async def test_the_bot_plays_twenty_seeds_and_every_run_ends_clean(client, froze
     assert td_sim.WON in results and td_sim.LOST in results
     async with dbm.SessionLocal() as db:
         assert (await db.execute(select(func.count()).select_from(TdRun).where(TdRun.user_id == uid))).scalar_one() == 0
+
+
+# ------------------------------------------------------------------ Thiên kiếp (M11 đợt 2)
+def test_the_thu_thanh_never_asks_a_thien_kiep():
+    """A tower, an upgrade, a break question, Tụ Khí: short questions only (td.json qtypes)."""
+    kinds = math_td.qtypes()
+    assert "tribulation" not in kinds and set(kinds) == set(math_td.math_items.PLAYABLE_TYPES) - {"tribulation"}
+    raw = copy.deepcopy(math_td._read())
+    raw["qtypes"] = kinds + ["tribulation"]
+    assert any("too long for a tower" in e for e in math_td.validate(raw))
+    raw["qtypes"] = ["riddle"]
+    assert any(e.startswith("qtypes must be a non-empty list of playable question types") for e in math_td.validate(raw))
+    raw.pop("qtypes")
+    assert "missing qtypes" in math_td.validate(raw)
+
+
+async def test_every_question_of_the_mode_is_asked_with_its_qtypes(monkeypatch):
+    seen = []
+
+    async def fake_pick(*a, **k):
+        seen.append(k.get("qtypes"))
+        return None
+    monkeypatch.setattr(math_td.math_ask, "pick", fake_pick)
+    monkeypatch.setattr(math_td.math_ask, "pick_own", fake_pick)
+    run = type("Run", (), {"questions": {}, "params": {"plants": ["tap_hop"]}, "id": "r"})()
+
+    async def get_run(*a, **k):
+        return run
+    monkeypatch.setattr(math_td.td, "_get_run", get_run)
+    user = type("U", (), {"id": 1})()
+    for kind, tower in (("place", "tap_hop"), ("break", None), ("tu_khi", None)):
+        with pytest.raises(Exception):                       # (no question: refused after asking)
+            await math_td.ask(None, user, "r", kind, tower)
+    assert seen == [math_td.qtypes()] * 3

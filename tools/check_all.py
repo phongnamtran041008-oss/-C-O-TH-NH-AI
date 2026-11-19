@@ -119,6 +119,7 @@ def displayed_strings() -> list[tuple[str, str]]:
         out += [(item.id, t) for t in (item.prompt_vi, *item.solution_vi, *item.options_vi,
                                        *(side for pair in item.pairs_vi for side in pair), *item.steps_vi, *item.lines_vi,
                                        item.answer_text)]   # answer_text: what the reveal shows
+        out += [(item.id, t) for part in item.parts for t in (part.prompt_vi, *part.options_vi)]   # Thiên kiếp
     for spec in math_items.generators().values():
         for seed in range(5):
             drawn = math_items.draw(spec, random.Random(seed))
@@ -448,9 +449,23 @@ def check_math_crafting() -> list[str]:
 
 
 MIN_CHIEU = 5                      # the M9 milestone: at least five chiêu from data
-CHIEU_FLOORS = range(1, 4)         # the floors whose question bank is written today
-# chiêu that may not be castable yet, and why (the only one allowed: contract M9 section 2)
-UNCASTABLE_OK = {"thien_loi_tuyet_ky": "'tribulation' is not playable yet and tier 4 starts at floor 5 (M11)"}
+# chiêu that may not be castable yet, and why (the only one allowed: contract M9 section 2). The
+# exception lasts only while NO question anywhere casts the chiêu: the day a Thiên kiếp of tier 4+
+# lands on floor 7 or above, Thiên Lôi is checked on every floor like any other chiêu.
+UNCASTABLE_OK = {"thien_loi_tuyet_ky": "no Thiên kiếp (tribulation) of tier 4+ on floor 7 or above yet "
+                                       "(floors 7-9 are written in M11 đợt 2)"}
+
+
+def chieu_floors() -> dict[int, list[str]]:
+    """floor number -> the subjects that have questions on that floor today: where a chiêu is
+    checked. A player reaching floor n can cast from any subject's floor n (the unlock floor is
+    the best over all subjects), so a floor passes when one of its subjects has the question."""
+    out: dict[int, list[str]] = {}
+    for s in math_path.subjects():
+        for f in s.main_floors:
+            if math_items.floor_templates(s.id, f.number, True):
+                out.setdefault(f.number, []).append(s.id)
+    return dict(sorted(out.items()))
 
 
 def check_chieu() -> list[str]:
@@ -459,9 +474,10 @@ def check_chieu() -> list[str]:
     is one client/art/skill_fx.py can draw, its picture is an icon of the item sheet (never a
     Chinese character), its animation is a clip of every Đạo Sĩ sheet,
     and - the point of a chiêu gắn câu hỏi - there really is a question that casts it: on
-    each of floors 1-3 where it is unlocked, at least one template of one of its types at a
-    tier it accepts and that a player who has just reached the floor is asked (the floor's
-    lowest tier). Only the documented exception may have no question anywhere."""
+    every floor that has questions where it is unlocked, at least one template (of some subject
+    written on that floor) of one of its types at a tier it accepts and that a player who has just
+    reached the floor is asked (the floor's lowest tier). Only the documented exception may have no question
+    anywhere, and only for as long as it has none."""
     if math_path.validate_all() or math_items.validate_all():
         return ["skipped: the learning path and question bank checks above must pass first"]
     try:
@@ -491,8 +507,8 @@ def check_chieu() -> list[str]:
         out.append("no client/assets/icons/items.json, so no chiêu has a picture")
     if not clips:
         out.append("no Đạo Sĩ sheet in client/assets/chars/, so no chiêu can be animated")
-    subject = math_path.subject("dai_so_tuyen_tinh")
     playable = set(math_items.PLAYABLE_TYPES)
+    floors = chieu_floors()
     for sid, sk in skills.items():
         where = f"chiêu {sid}"
         if fx_ids is not None and sk["fx"] not in fx_ids:
@@ -504,16 +520,18 @@ def check_chieu() -> list[str]:
         if lacking:
             out.append(f"{where}: anim {sk['anim']!r} is not a clip of {', '.join(lacking)}")
         types = set(sk["qtypes"]) & playable
-        for n in CHIEU_FLOORS:
+        if sid in UNCASTABLE_OK and not math_skills.castable_floors(sk):     # (excused only while nothing casts it)
+            continue
+        for n, subject_ids in floors.items():
             if n < sk["unlock"]["floor"]:
                 continue
             lo, _ = math_path.floor_tiers(n)
-            templates = math_items.floor_templates(subject.id, n, True)
+            templates = [t for sid_ in subject_ids for t in math_items.floor_templates(sid_, n, True)]
             if not any(t.qtype in types and sk["min_tier"] <= t.tier <= lo for t in templates):
-                if sid not in UNCASTABLE_OK:
-                    out.append(f"{where}: unlocked on floor {n} but no {'/'.join(sk['qtypes'])} question of "
-                               f"tier {sk['min_tier']}..{lo} there, so a player there cannot cast it")
-        if not math_skills.castable_floors(sk) and sid not in UNCASTABLE_OK:
+                out.append(f"{where}: unlocked on floor {n} but no {'/'.join(sk['qtypes'])} question of "
+                           f"tier {sk['min_tier']}..{lo} on floor {n} of any subject, so a player there "
+                           f"cannot cast it")
+        if not math_skills.castable_floors(sk):
             out.append(f"{where}: no question anywhere can cast it")
     return out
 

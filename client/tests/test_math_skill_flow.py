@@ -19,7 +19,7 @@ from pathlib import Path
 import pygame
 
 from client import strings_vi as T
-from client.tests.driver import ROOT, Driver, ServerProcess
+from client.tests.driver import ROOT, Driver, ServerProcess, fill_tribulation
 from client.tests.test_combat_flow import nearest, walk_to, world
 from client.tests.test_math_combat_flow import MA, VALLEY, answer_card
 from client.tests.test_world_flow import make_account
@@ -137,6 +137,8 @@ def answer(drv: Driver, server: ServerProcess, correct: bool) -> dict:
         line = key_of(server, q)["line"]
         drv.click(f"fm_line_{line if correct else (line + 1) % len(q['prompt']['lines'])}")
         drv.click("mq_submit")
+    elif q["input"] == "tribulation":                  # M11 đợt 2: Thiên Lôi Tuyệt Kỹ asks a Thiên kiếp
+        fill_tribulation(drv, q, key_of(server, q), correct)
     else:
         return answer_card(drv, server, correct)
     drv.wait(lambda: drv.top_is("MathCombatQuizScene") and drv.game.top.result, 10, "the result")

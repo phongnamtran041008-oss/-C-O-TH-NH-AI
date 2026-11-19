@@ -72,6 +72,11 @@ SYMBOLS = {
     r"\neg": "khong", r"\lceil": "tran(", r"\rceil": ")",
     r"\lim": "lim", r"\sim": "~", r"\pi": "pi", r"\arcsin": "arcsin",       # (M11 giải tích)
     r"\arccos": "arccos", r"\arctan": "arctan", r"\varepsilon": "epsilon",
+    r"\max": "max",                                                          # (M11 giải tích tầng 4-6)
+    r"\mu": "mu", r"\sigma": "sigma", r"\Phi": "Phi", r"\int": "tich phan",   # (M11 xác suất tầng 4-6)
+    r"\|": "||", r"\Sigma": "Sigma",                                         # (M11 đại số tuyến tính tầng 7-9)
+    r"\partial": "d", r"\nabla": "grad",                                     # (M11 giải tích tầng 7-9)
+    r"\min": "min", r"\eta": "eta",                                          # (M11 tối ưu tầng 7-9)
 }
 # Dropped: they only change spacing or size.
 IGNORED = (r"\left", r"\right", r"\displaystyle", r"\limits", r"\,", r"\;", r"\!", r"\:",

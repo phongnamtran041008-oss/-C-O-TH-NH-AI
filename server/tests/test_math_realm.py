@@ -565,3 +565,31 @@ async def test_bots_clear_the_math_realm_over_websockets(dev_server):  # noqa: F
     finally:
         for b in bots:
             await b.close()
+
+
+# ------------------------------------------------------------------ Thiên kiếp (M11 đợt 2)
+def test_a_math_realm_never_asks_a_thien_kiep_and_the_data_cannot_ask_for_one():
+    assert "tribulation" not in math_realm.QUICK_TYPES
+    assert set(math_realm.QUICK_TYPES) == set(math_items.PLAYABLE_TYPES) - {"tribulation"}
+    import copy
+    import json
+    from app.config import DATA_DIR
+    bad = copy.deepcopy(json.loads((DATA_DIR / "realms.json").read_text("utf-8")))
+    bad["realms"][REALM]["math"]["boss_question"]["prefer"] = "tribulation"
+    assert any("takes too long for a bí cảnh" in e for e in math_realm.validate(bad))
+    assert math_realm.boss_type(bad["realms"][REALM]) is None
+
+
+@pytest.mark.parametrize("asker", ["monster", "seal", "boss"])
+async def test_every_asker_of_a_math_realm_asks_only_quick_types(asker, monkeypatch):
+    seen = []
+
+    async def fake_pick_own(db, user, **k):
+        seen.append(k.get("qtypes"))
+        return None
+    monkeypatch.setattr(math_realm.math_ask, "pick_own", fake_pick_own)
+    from app.config import DATA_DIR
+    import json
+    rdef = json.loads((DATA_DIR / "realms.json").read_text("utf-8"))["realms"][REALM]
+    assert await math_realm.question_for(None, None, rdef, asker) is None
+    assert seen and all(q is not None and "tribulation" not in q for q in seen), seen

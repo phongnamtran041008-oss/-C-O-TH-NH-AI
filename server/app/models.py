@@ -416,6 +416,7 @@ class MathRun(Base):
     correct: Mapped[int] = mapped_column(Integer, default=0)
     review_asked: Mapped[int] = mapped_column(Integer, default=0)  # of those, spiral review (rule 6)
     xp_gained: Mapped[int] = mapped_column(Integer, default=0)
+    ladders: Mapped[int] = mapped_column(Integer, default=0, server_default="0")  # rule 8 ladders climbed (M11 đợt 2)
     passed: Mapped[bool | None] = mapped_column(Boolean, nullable=True)   # a trial: passed, failed, still going
     started_at: Mapped[dt.datetime] = mapped_column(DateTime)
     ended_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
@@ -513,3 +514,27 @@ class MathDungeonRun(Base):
     rewarded: Mapped[bool] = mapped_column(Boolean, default=True)
     started_at: Mapped[dt.datetime] = mapped_column(DateTime)
     ended_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
+
+
+class MathLadder(Base):
+    """The ladder of a tier-5 question the player got wrong in a buổi luyện (learning-path
+    rule 8, M11 đợt 2; systems/math_practice.py). `steps` are the ids of the tier 3-4
+    questions to ask, in order; `step` how many have been answered. Kept in the database so
+    the ladder goes on after the game is closed. `retry_id` is the rule-6 mistake (MathRetry)
+    through which the tier-5 idea comes back once the ladder is climbed."""
+    __tablename__ = "math_ladders"
+    __table_args__ = (Index("ix_math_ladders_open", "user_id", "subject_id", "floor", "finished_at"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(UserFK())
+    subject_id: Mapped[str] = mapped_column(String(40))
+    floor: Mapped[int] = mapped_column(Integer)                   # the floor of the sittings that climb it
+    item_id: Mapped[str] = mapped_column(String(40))              # the tier-5 question that was missed
+    skill_id: Mapped[str] = mapped_column(String(40))
+    steps: Mapped[list] = mapped_column(JSON)                     # rung ids, in order
+    step: Mapped[int] = mapped_column(Integer, default=0)         # rungs answered so far
+    missed: Mapped[int] = mapped_column(Integer, default=0)       # of those, answered wrong (or timed out)
+    retry_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    started_run_id: Mapped[int | None] = mapped_column(Integer, nullable=True)   # the sitting of the miss
+    run_id: Mapped[int | None] = mapped_column(Integer, nullable=True)           # the sitting of the latest rung
+    created_at: Mapped[dt.datetime] = mapped_column(DateTime)
+    finished_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)

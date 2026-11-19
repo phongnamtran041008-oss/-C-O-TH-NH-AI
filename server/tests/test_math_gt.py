@@ -1,4 +1,4 @@
-"""M11: Giải Tích (bí cảnh 2) - its path, the question bank of floors 1-3, its generators
+"""M11: Giải Tích (bí cảnh 2) - its path, the question bank of floors 1-9, its generators
 (valid, repeatable, varied, answers recomputed with sympy), its library, and a fresh player
 really playing floor 1 through the API."""
 import json
@@ -17,7 +17,7 @@ from tests.test_math_loop import ask, make, right_answer, start, wrong_answer
 
 ROOT = Path(__file__).resolve().parents[2]
 SUBJECT = "giai_tich"
-WRITTEN = (1, 2, 3)
+WRITTEN = tuple(range(1, 10))                  # every floor but the hidden tenth
 TYPES = ("true_false", "multiple_choice", "numeric", "matching", "ordering", "find_mistake")
 DRAWS = 200
 
@@ -35,7 +35,8 @@ def expected():
     pytest.importorskip("sympy", reason="pip install -r server/requirements-dev.txt")
     sys.path.insert(0, str(ROOT / "tools"))
     try:
-        import math_verify_gt as module
+        # tools/math_verify.py gathers math_verify_gt.py (floors 1-3), _gt_t4.py and _gt_t7.py
+        import math_verify as module
         yield module.EXPECTED
     finally:
         sys.path.remove(str(ROOT / "tools"))
@@ -87,10 +88,11 @@ def test_each_written_floor_mixes_every_question_type(floor):
     assert all(i.tier >= 2 for i in items if i.qtype == "find_mistake")
 
 
-def test_floors_four_to_ten_have_no_questions_yet():
-    for floor in subject().floors:
-        if floor.number not in WRITTEN:
-            assert not mi.floor_templates(SUBJECT, floor.number, allow_unreviewed=True)
+def test_the_hidden_floor_has_no_questions_yet():
+    unwritten = [f.number for f in subject().floors if f.number not in WRITTEN]
+    assert unwritten == [10]
+    for number in unwritten:
+        assert not mi.floor_templates(SUBJECT, number, allow_unreviewed=True)
 
 
 def test_find_mistake_items_point_at_a_line():

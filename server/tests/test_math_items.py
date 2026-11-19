@@ -71,6 +71,9 @@ def test_every_shipped_item_becomes_a_question_its_own_answer_passes():
         elif it.qtype == "find_mistake":
             right = {"line": it.answer}
             wrong = {"line": (it.answer + 1) % len(it.lines_vi)}
+        elif it.qtype == "tribulation":            # M11 đợt 2: every part right / the last part wrong
+            right = {"parts": [part_right(k) for k in q.answer_key["parts"]]}
+            wrong = {"parts": right["parts"][:-1] + [part_wrong(q.prompt["parts"][-1], q.answer_key["parts"][-1])]}
         elif it.qtype == "true_false":
             right, wrong = {"value": it.answer}, {"value": not it.answer}
         elif it.qtype == "multiple_choice":
@@ -156,7 +159,8 @@ def test_multiple_choice_is_shuffled_but_keeps_exactly_one_right_option():
 
 
 def test_unknown_question_type_is_never_right():
-    assert not mi.grade("tribulation", {"line": 1}, {"line": 1})
+    assert not mi.grade("chung_minh", {"line": 1}, {"line": 1})
+    assert not mi.grade("tribulation", {"line": 1}, {"line": 1})     # (a key without parts: never right)
     assert not mi.grade("find_mistake", {}, {"pairs": []})
     assert not mi.grade("matching", {}, {"pairs": []})        # (a key without pairs: never right)
     assert not mi.grade("ordering", {"order": "012"}, {"order": "012"})
@@ -189,7 +193,8 @@ BREAKAGE = {
     "tier not on this floor": lambda r: r["items"][0].update(tier=3),
     "tier out of range": lambda r: r["items"][0].update(tier=6),
     "tier is a boolean": lambda r: r["items"][0].update(tier=True),
-    "type not playable yet": lambda r: r["items"][0].update(type="tribulation"),
+    "type not playable": lambda r: r["items"][0].update(type="chung_minh"),
+    "tribulation without parts": lambda r: r["items"][0].update(type="tribulation"),
     "true_false turned matching without pairs": lambda r: first(r, "true_false").update(type="matching"),
     "empty prompt": lambda r: r["items"][0].update(prompt_vi=" "),
     "symbol the font may lack": lambda r: r["items"][0].update(prompt_vi="Cho x ∈ A."),
@@ -641,3 +646,386 @@ def test_the_lines_count_towards_near_duplicates_only_when_they_are_alike():
     c = {**a, "id": "a_3", "lines_vi": ["Đặt ẩn x là số cần tìm.", "Lập phương trình bậc nhất.", "Giải ra nghiệm x."]}
     assert mi.near_duplicates([a, b]) and not mi.near_duplicates([a, c])
     assert mi.question_text(a).endswith("Vậy kết quả là 12.")
+
+
+# ------------------------------------------------------------------ a subject in several files
+def test_a_subject_may_keep_its_floors_in_several_item_files(tmp_path):
+    """`<subject>.json` plus parts `<subject>.<part>.json`: one bank, checked as one."""
+    copy_paths(tmp_path)
+    folder = tmp_path / "items"
+    folder.mkdir()
+    whole = json.loads((mp.MATH_DIR / "items" / f"{SUBJECT}.json").read_text("utf-8"))
+    floor3 = {s.id for s in mp.subject(SUBJECT).floor(3).skills}
+    part = {"subject": SUBJECT,
+            "items": [i for i in whole["items"] if i["skill"] in floor3],
+            "generators": [g for g in whole["generators"] if g["skill"] in floor3]}
+    main = {**whole, "items": [i for i in whole["items"] if i["skill"] not in floor3],
+            "generators": [g for g in whole["generators"] if g["skill"] not in floor3]}
+    (folder / f"{SUBJECT}.json").write_text(json.dumps(main), "utf-8")
+    (folder / f"{SUBJECT}.t3.json").write_text(json.dumps(part), "utf-8")
+    assert [p.name for p in mi.item_files(SUBJECT, tmp_path)] == [f"{SUBJECT}.json", f"{SUBJECT}.t3.json"]
+    merged = mi.read_items(SUBJECT, tmp_path)
+    assert sorted(i["id"] for i in merged["items"]) == sorted(i["id"] for i in whole["items"])
+    assert sorted(g["id"] for g in merged["generators"]) == sorted(g["id"] for g in whole["generators"])
+    assert mi.validate_all(tmp_path) == []
+    # the rules hold across the files: an id used in both is caught ...
+    twice = {**part, "items": part["items"] + [main["items"][0]]}
+    (folder / f"{SUBJECT}.t3.json").write_text(json.dumps(twice), "utf-8")
+    assert any("used twice" in e for e in mi.validate_all(tmp_path))
+    # ... a part that names another subject is refused, and one of an unknown subject too
+    (folder / f"{SUBJECT}.t3.json").write_text(json.dumps({**part, "subject": "giai_tich"}), "utf-8")
+    assert any(f"{SUBJECT}.t3.json" in e and '"subject" must be' in e for e in mi.validate_all(tmp_path))
+    (folder / f"{SUBJECT}.t3.json").write_text(json.dumps(part), "utf-8")
+    (folder / "mon_la.t1.json").write_text("{}", "utf-8")
+    assert mi.validate_all(tmp_path) == ["math/items/mon_la.t1.json: no written subject has this id"]
+
+
+# ------------------------------------------------------------------ Thiên kiếp (M11 đợt 2) and tolerance
+PART_TYPES = {"truefalse": "true_false", "choice": "multiple_choice", "number": "numeric"}
+TRIB_PARTS = (
+    mi.MathPart(qtype="numeric", prompt_vi="a) Tìm k.", answer="2"),
+    mi.MathPart(qtype="multiple_choice", prompt_vi="b) Với m = 2, hệ có bao nhiêu nghiệm?",
+                options_vi=("Vô số nghiệm", "Đúng một nghiệm", "Vô nghiệm"), answer=0),
+    mi.MathPart(qtype="numeric", prompt_vi="c) Nhập x, y, z.", answer="-3, 2, 0"),
+    mi.MathPart(qtype="true_false", prompt_vi="d) Có m làm hệ vô nghiệm.", answer=False),
+)
+
+
+def trib(parts=TRIB_PARTS, **over) -> mi.MathItem:
+    base = dict(qtype="tribulation", tier=4, floor=5, skill="dstt_t5_so_nghiem", answer=None, parts=tuple(parts),
+                prompt_vi="Cho hệ có tham số m.", solution_vi=("a) ...", "b) ...", "c) ...", "d) ..."))
+    base.update(over)
+    return item(**base)
+
+
+def part_right(key: dict) -> dict:
+    if "value" in key:
+        return {"value": key["value"]}
+    if "option" in key:
+        return {"option": key["option"]}
+    return {"text": ", ".join(key["numbers"])}
+
+
+def part_wrong(shown: dict, key: dict) -> dict:
+    if "value" in key:
+        return {"value": not key["value"]}
+    if "option" in key:
+        return {"option": next(o["id"] for o in shown["options"] if o["id"] != key["option"])}
+    return {"text": "987654"}
+
+
+def test_tribulation_is_playable_named_and_only_at_tiers_4_and_5():
+    assert "tribulation" in mi.PLAYABLE_TYPES
+    assert mi.INPUTS["tribulation"] == "tribulation" and mi.INSTRUCTIONS_VI["tribulation"]
+    assert not mp.text_problem(mi.INSTRUCTIONS_VI["tribulation"])
+    assert [mp.time_limit("tribulation", t) for t in (1, 2, 3)] == [None, None, None]
+    assert mp.time_limit("tribulation", 4) and mp.time_limit("tribulation", 5) > mp.time_limit("tribulation", 4)
+    for tier in (1, 2, 3):
+        with pytest.raises(ValueError):
+            mi.to_question(trib(tier=tier))
+
+
+def test_tribulation_payload_has_the_parts_in_order_and_keeps_the_keys_on_the_server():
+    q = mi.to_question(trib(matrices=(("A", (("1", "2"), ("3", "4"))),)), random.Random(3))
+    public = q.public()
+    assert public["input"] == "tribulation" and public["options"] is None and public["qtype"] == "tribulation"
+    assert public["prompt"]["text"] == "Cho hệ có tham số m."
+    assert public["prompt"]["matrices"] == [{"name": "A", "rows": [["1", "2"], ["3", "4"]]}]
+    parts = public["prompt"]["parts"]
+    assert [p["text"] for p in parts] == [p.prompt_vi for p in TRIB_PARTS]
+    assert [p["input"] for p in parts] == ["number", "choice", "number", "truefalse"]
+    assert [set(p) for p in parts] == [{"text", "input", "options"}] * 4
+    assert parts[0]["options"] is None and parts[3]["options"] is None
+    assert sorted(o["text"] for o in parts[1]["options"]) == sorted(TRIB_PARTS[1].options_vi)
+    text = json.dumps(public, ensure_ascii=False)
+    assert "solution_vi" not in text and "fingerprint" not in text and "numbers" not in text
+    key = q.answer_key
+    assert set(key) == {"parts", "reveal", "fingerprint"} and key["fingerprint"] == trib().fingerprint
+    assert key["parts"][0] == {"numbers": ["2"], "unordered": False, "tolerance": mp.cfg()["numeric_tolerance"]}
+    assert set(key["parts"][1]) == {"option"} and key["parts"][3] == {"value": False}
+    assert key["parts"][2]["numbers"] == ["-3", "2", "0"]
+    right_text = next(o["text"] for o in parts[1]["options"] if o["id"] == key["parts"][1]["option"])
+    assert right_text == "Vô số nghiệm"
+    assert key["reveal"]["answer_text"] == "a) 2; b) Vô số nghiệm; c) -3, 2, 0; d) Sai"
+    assert [p["answer_text"] for p in key["reveal"]["parts"]] == ["2", "Vô số nghiệm", "-3, 2, 0", "Sai"]
+    assert [p["key"] for p in key["reveal"]["parts"]] == key["parts"]
+    assert json.loads(json.dumps(key)) == key                    # the key survives the database
+
+
+def test_a_choice_part_is_shuffled_like_a_choice_question_and_keeps_one_right_option():
+    orders = set()
+    for seed in range(40):
+        q = mi.to_question(trib(), random.Random(seed))
+        shown = q.prompt["parts"][1]["options"]
+        assert [o["id"] for o in shown] == list("abc")
+        right = [o["text"] for o in shown if mi.grade("multiple_choice", q.answer_key["parts"][1], {"option": o["id"]})]
+        assert right == ["Vô số nghiệm"]
+        orders.add(tuple(o["text"] for o in shown))
+        # the same rng discipline as a choice question: the options of a lone choice question
+        # drawn with the same seed come out in the same order
+        alone = mi.to_question(item(qtype="multiple_choice", options_vi=TRIB_PARTS[1].options_vi, answer=0),
+                               random.Random(seed))
+        first_choice = mi.to_question(trib(parts=TRIB_PARTS[1:]), random.Random(seed)).prompt["parts"][0]["options"]
+        assert [o["text"] for o in first_choice] == [o["text"] for o in alone.options]
+    assert len(orders) == 6                                      # every order of three options shows up
+
+
+def test_tribulation_is_right_only_when_every_part_is_right():
+    for seed in range(10):
+        q = mi.to_question(trib(), random.Random(seed))
+        keys, shown = q.answer_key["parts"], q.prompt["parts"]
+        right = [part_right(k) for k in keys]
+        assert mi.grade("tribulation", q.answer_key, {"parts": right})
+        for k in range(len(keys)):                               # each single part wrong
+            one_wrong = right[:k] + [part_wrong(shown[k], keys[k])] + right[k + 1:]
+            assert not mi.grade("tribulation", q.answer_key, {"parts": one_wrong}), k
+        assert mi.grade("tribulation", q.answer_key,                 # each part by its own rule: equal forms count
+                        {"parts": [{"text": "4/2"}, right[1], {"text": "-3; 2.0; 0"}, right[3]]})
+
+
+MALFORMED = {
+    "nothing": None, "not a dict": [1, 2], "empty": {}, "timed out": {"timed_out": True},
+    "parts not a list": {"parts": {"0": {"text": "2"}}}, "parts as text": {"parts": "2, a, -3 2 0, sai"},
+    "parts empty": {"parts": []}, "a part short": "short", "a part extra": "long", "part not a dict": "list",
+    "part None": "none", "true/false as text": "tf_text", "true/false as 0": "tf_int",
+    "option as an index": "opt_int", "number as a number": "num_int", "number not a number": "num_text",
+    "another type's shape": "shape", "parts as tuple of the right answers": "nested",
+}
+
+
+def malformed(name: str, right: list[dict]):
+    v = MALFORMED[name]
+    if not isinstance(v, str) or name == "parts as text":
+        return v
+    p = [dict(a) for a in right]
+    if v == "short":
+        return {"parts": p[:-1]}
+    if v == "long":
+        return {"parts": p + [{"value": True}]}
+    if v == "list":
+        return {"parts": [list(p[0].values())] + p[1:]}
+    if v == "none":
+        return {"parts": [None] + p[1:]}
+    if v == "tf_text":
+        return {"parts": p[:3] + [{"value": "false"}]}
+    if v == "tf_int":
+        return {"parts": p[:3] + [{"value": 0}]}
+    if v == "opt_int":
+        return {"parts": [p[0], {"option": 0}] + p[2:]}
+    if v == "num_int":
+        return {"parts": [{"text": 2}] + p[1:]}
+    if v == "num_text":
+        return {"parts": [{"text": "hai"}] + p[1:]}
+    if v == "shape":
+        return {"parts": [{"value": True}] + p[1:]}
+    return {"parts": [p]}
+
+
+@pytest.mark.parametrize("name", sorted(MALFORMED))
+def test_a_malformed_tribulation_answer_is_wrong_never_an_error(name):
+    q = mi.to_question(trib(), random.Random(1))
+    right = [part_right(k) for k in q.answer_key["parts"]]
+    assert not mi.grade("tribulation", q.answer_key, malformed(name, right))
+
+
+def test_a_broken_tribulation_key_is_never_right():
+    for key in ({}, {"parts": []}, {"parts": "x"}, {"parts": [{"line": 1}]}, {"parts": [None, None]}):
+        for given in ({"parts": [{"line": 1}]}, {"parts": [None, None]}, {"parts": []}):
+            assert not mi.grade("tribulation", key, given)
+
+
+def test_tribulation_items_build_from_data_and_the_seed_items_are_right():
+    seed = json.loads((mp.MATH_DIR / "items" / f"{SUBJECT}.trib_seed.json").read_text("utf-8"))
+    assert seed["subject"] == SUBJECT and len(seed["items"]) == 2 and seed["generators"] == []
+    for raw in seed["items"]:
+        it = mi.bank()[raw["id"]]
+        assert it.qtype == "tribulation" and it.tier == 4 and it.floor == 5 and not it.reviewed
+        assert [p.qtype for p in it.parts] == [p["type"] for p in raw["parts"]]
+        assert mi.content_problems(raw, raw["id"]) == []
+        assert mi._slot_problems(mp.subject(SUBJECT), raw, mp.cfg(), raw["id"]) == []
+        q = mi.to_question(it, random.Random(0))
+        assert mi.grade("tribulation", q.answer_key, {"parts": [part_right(k) for k in q.answer_key["parts"]]})
+    assert mi.bank()["dstt_t5_so_nghiem_91"].answer_text == "a) 2; b) Vô số nghiệm; c) -3, 2, 0; d) Sai"
+
+
+def raw_trib(**over) -> dict:
+    base = {"id": "dstt_t5_so_nghiem_99", "skill": "dstt_t5_so_nghiem", "tier": 4, "type": "tribulation",
+            "prompt_vi": "Cho hệ có tham số m.",
+            "parts": [{"type": "numeric", "prompt_vi": "a) Tìm k.", "answer": "2"},
+                      {"type": "multiple_choice", "prompt_vi": "b) Bao nhiêu nghiệm?",
+                       "options_vi": ["Vô số", "Một", "Không"], "answer": 0},
+                      {"type": "true_false", "prompt_vi": "c) Có m làm hệ vô nghiệm.", "answer": False}],
+            "solution_vi": ["a) k = 2.", "b) Vô số.", "c) Sai."], "reviewed": False}
+    base.update(over)
+    return base
+
+
+def trib_problems(raw: dict) -> list[str]:
+    """Every rule of the validator that does not need a whole floor around the item."""
+    return (mi._slot_problems(mp.subject(SUBJECT), raw, mp.cfg(), raw["id"])
+            + mi.content_problems(raw, raw["id"]))
+
+
+def with_part(k: int, **over) -> dict:
+    raw = raw_trib()
+    raw["parts"][k] = {**raw["parts"][k], **over}
+    return raw
+
+
+def without(k: int, field: str) -> dict:
+    raw = raw_trib()
+    raw["parts"][k].pop(field)
+    return raw
+
+
+I = "dstt_t5_so_nghiem_99"
+TRIB_MESSAGES = {
+    "one part": (raw_trib(parts=raw_trib()["parts"][:1]), f"{I}: parts must list 2 to 4 parts"),
+    "five parts": (raw_trib(parts=raw_trib()["parts"] * 2), f"{I}: parts must list 2 to 4 parts"),
+    "no parts": (raw_trib(parts=None), f"{I}: parts must list 2 to 4 parts"),
+    "parts as text": (raw_trib(parts="a, b"), f"{I}: parts must list 2 to 4 parts"),
+    "a part not a question": (raw_trib(parts=raw_trib()["parts"][:2] + ["c) ..."]),
+                              f"{I} part 3: must be a question {{type, prompt_vi, answer, ...}}"),
+    "a matching part": (with_part(0, type="matching"),
+                        f"{I} part 1: type must be one of true_false, multiple_choice, numeric"),
+    "a tribulation part": (with_part(0, type="tribulation"),
+                           f"{I} part 1: type must be one of true_false, multiple_choice, numeric"),
+    "a part with a solution": (with_part(2, solution_vi=["x"]),
+                               f"{I} part 3: unknown key 'solution_vi' (a part has only the fields of its type)"),
+    "a part with an id": (with_part(2, id="p3"), f"{I} part 3: unknown key 'id'"),
+    "a part with matrices": (with_part(0, matrices={"A": [[1]]}), f"{I} part 1: unknown key 'matrices'"),
+    "options on a true/false part": (with_part(2, options_vi=["Đúng", "Sai"]),
+                                     f"{I} part 3: only a multiple_choice question has options_vi"),
+    "unordered on a choice part": (with_part(1, unordered=True),
+                                   f"{I} part 2: only a numeric question has unordered"),
+    "tolerance on a true/false part": (with_part(2, tolerance=0.5),
+                                       f"{I} part 3: only a numeric question has tolerance"),
+    "a part without a prompt": (without(0, "prompt_vi"), f"{I} part 1: prompt_vi "),
+    "a part with a bad symbol": (with_part(0, prompt_vi="a) Tìm k ∈ R."), f"{I} part 1: prompt_vi has the character"),
+    "a numeric part without an answer": (without(0, "answer"),
+                                         f"{I} part 1: answer must be a number, a fraction a/b or numbers separated by commas"),
+    "a choice part with one option": (with_part(1, options_vi=["x"]), f"{I} part 2: options_vi must list 2 to 6 options"),
+    "a choice answer out of range": (with_part(1, answer=5),
+                                     f"{I} part 2: answer must be the position (from 0) of the one right option"),
+    "a true/false part answered in words": (with_part(2, answer="Sai"),
+                                            f"{I} part 3: the answer of a true_false question must be true or false"),
+    "a numeric set with a repeat": (with_part(0, answer="1, 1", unordered=True),
+                                    f"{I} part 1: an unordered answer lists the same number twice"),
+    "two parts alike": (with_part(1, type="numeric", prompt_vi="A) TÌM  K.", answer="2", options_vi=None),
+                        f"{I}: two parts have the same text"),
+    "an answer of its own": (raw_trib(answer=0),
+                             f"{I}: a tribulation question has no answer of its own: each part has its answer"),
+    "options of its own": (raw_trib(options_vi=["a", "b"]), f"{I}: only a multiple_choice question has options_vi"),
+    "a tolerance of its own": (raw_trib(tolerance=0.01), f"{I}: only a numeric question has tolerance"),
+    "no solution": (raw_trib(solution_vi=[]), f"{I}: solution_vi must list at least one step"),
+    "at tier 3": (raw_trib(tier=3), f"{I}: a tribulation question does not exist at tier 3"),
+    "at tier 5 on floor 5": (raw_trib(tier=5), f"{I}: tier 5 is not allowed on floor 5 (tiers 3-4)"),
+    "parts on a numeric item": (raw_trib(type="numeric", answer="2"), f"{I}: only a tribulation question has parts"),
+}
+
+
+@pytest.mark.parametrize("name", sorted(TRIB_MESSAGES))
+def test_validator_explains_tribulation_problems(name):
+    raw, message = TRIB_MESSAGES[name]
+    errors = trib_problems(copy.deepcopy(raw))
+    assert any(e.startswith(message) for e in errors), errors
+
+
+def test_a_well_formed_tribulation_passes_and_tier_5_is_fine_where_the_floor_has_it():
+    assert trib_problems(raw_trib()) == []
+    assert trib_problems(raw_trib(parts=raw_trib()["parts"][:2])) == []
+    four = raw_trib()["parts"] + [{"type": "numeric", "prompt_vi": "d) Nhập x, y, z.", "answer": "-3, 2, 0",
+                                   "unordered": False, "tolerance": 0.001}]
+    assert trib_problems(raw_trib(parts=four)) == []
+    assert trib_problems(raw_trib(skill=mp.subject(SUBJECT).floor(7).skills[0].id, tier=5)) == []
+
+
+def test_tribulation_and_its_keys_in_a_whole_file():
+    """Through validate_items: the new keys are allowed, a generator of the type is refused, and
+    a part-level problem is reported once with the item's id."""
+    def add(r):
+        r["items"].append(raw_trib())
+    assert not [e for e in check(add) if "dstt_t5_so_nghiem_99" in e]
+    def gen(r):
+        r["generators"].append({"id": "dstt_g5_kiep", "skill": "dstt_t5_so_nghiem", "tier": 4, "type": "tribulation"})
+    assert any("dstt_g5_kiep: a tribulation question can only be hand-written for now" in e for e in check(gen))
+    def parts_on_tf(r):
+        first(r, "true_false")["parts"] = raw_trib()["parts"]
+    assert any("only a tribulation question has parts" in e for e in check(parts_on_tf))
+
+
+def test_two_tribulations_on_one_situation_are_different_questions_unless_their_parts_are_alike():
+    a = raw_trib()
+    other = raw_trib(id="dstt_t5_so_nghiem_98", parts=[
+        {"type": "numeric", "prompt_vi": "a) Với m = 7, tìm z.", "answer": "0"},
+        {"type": "true_false", "prompt_vi": "b) Hệ có nghiệm duy nhất với mọi m khác 2.", "answer": True}])
+    assert mi.near_duplicates([a, other]) == []
+    a3 = raw_trib(prompt_vi="Cho hệ 3 phương trình có tham số m.")
+    a4 = raw_trib(id="dstt_t5_so_nghiem_97", prompt_vi="Cho hệ 4 phương trình có tham số m.")
+    assert mi.near_duplicates([a3, a4])                            # the same parts, other numbers: one question twice
+    assert " | a) Tìm k. | " in mi.question_text(a) and "Vô số" in mi.question_text(a)
+
+
+# ------------------------------------------------------------------ tolerance
+def test_tolerance_replaces_the_global_one_only_for_its_question():
+    exact = mi.to_question(item(answer="12.35")).answer_key
+    assert exact["tolerance"] == mp.cfg()["numeric_tolerance"] and exact["numbers"] == ["247/20"]
+    assert mi.grade("numeric", exact, {"text": "12.35"}) and not mi.grade("numeric", exact, {"text": "12.354"})
+    rounded = item(answer="12.35", tolerance=0.005)
+    key = mi.to_question(rounded).answer_key
+    assert key["tolerance"] == 0.005 and key["numbers"] == ["247/20"]
+    for text in ("12.35", "12.354", "12.346", "12.355", "247/20", "12.3500"):
+        assert mi.grade("numeric", key, {"text": text}), text
+    for text in ("12.356", "12.344", "12.4", "12,35", "12.35, 1", "mười hai"):
+        assert not mi.grade("numeric", key, {"text": text}), text
+    assert rounded.answer_text == "12.35"                            # shown as written, not 247/20
+    assert item(answer="0.5").answer_text == "1/2"                   # (an exact answer: unchanged)
+
+
+def test_tolerance_on_a_numeric_part_and_a_list():
+    parts = (mi.MathPart(qtype="numeric", prompt_vi="a) Làm tròn đến 2 chữ số thập phân.", answer="0.68, 1.96",
+                         tolerance=0.005),
+             mi.MathPart(qtype="numeric", prompt_vi="b) Tìm n.", answer="3"))
+    q = mi.to_question(trib(parts=parts), random.Random(0))
+    a, b = q.answer_key["parts"]
+    assert a["tolerance"] == 0.005 and b["tolerance"] == mp.cfg()["numeric_tolerance"]
+    assert mi.grade("tribulation", q.answer_key, {"parts": [{"text": "0.684, 1.958"}, {"text": "3"}]})
+    assert not mi.grade("tribulation", q.answer_key, {"parts": [{"text": "0.69, 1.96"}, {"text": "3"}]})
+    assert not mi.grade("tribulation", q.answer_key, {"parts": [{"text": "0.68, 1.96"}, {"text": "3.001"}]})
+    assert q.answer_key["reveal"]["answer_text"] == "a) 0.68, 1.96; b) 3"
+
+
+@pytest.mark.parametrize("value", [0, -0.1, 1.5, "0.01", True, None, [0.1]])
+def test_a_bad_tolerance_is_refused(value):
+    raw = {"type": "numeric", "prompt_vi": "Tính.", "answer": "1.41", "solution_vi": ["x"], "tolerance": value}
+    errors = mi.content_problems(raw, "it")
+    if value is None:                                                # (null: no tolerance at all)
+        assert errors == []
+    else:
+        assert errors == ["it: tolerance must be a number above 0 and at most 1"]
+
+
+@pytest.mark.parametrize("value", [0.005, 1, 0.5, 1e-9])
+def test_a_good_tolerance_is_accepted_and_only_on_numeric(value):
+    raw = {"type": "numeric", "prompt_vi": "Tính.", "answer": "1.41", "solution_vi": ["x"], "tolerance": value}
+    assert mi.content_problems(raw, "it") == []
+    assert mi.content_problems({**raw, "type": "true_false", "answer": True}, "it") == \
+        ["it: only a numeric question has tolerance"]
+
+
+def test_tolerance_is_an_item_key_and_builds_from_data():
+    def add(r):
+        it = copy.deepcopy(first(r, "numeric"))
+        r["items"].append({**it, "id": "dstt_x_round", "prompt_vi": "Làm tròn căn 2 đến 2 chữ số thập phân.",
+                           "answer": "1.41", "tolerance": 0.005})
+    assert not [e for e in check(add) if "dstt_x_round" in e]
+    raw = {**first(raw_items(), "numeric"), "answer": "1.41", "tolerance": 0.005}
+    assert mi.build_item(mp.subject(SUBJECT), raw).tolerance == 0.005
+    assert mi.build_item(mp.subject(SUBJECT), first(raw_items(), "numeric")).tolerance is None
+
+
+def test_parse_number_reads_a_rounded_decimal_the_way_the_prompt_asks_for_it():
+    assert mi.parse_number("12.35") == Fraction(1235, 100)
+    assert mi.parse_number("-0.05") == Fraction(-1, 20) and mi.parse_number("3.") == 3
+    assert mi.parse_number("12,35") is None                          # the comma separates numbers
+    assert mi.parse_numbers("12,35") == [12, 35]

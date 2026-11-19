@@ -171,8 +171,12 @@ def test_the_formula():
 
 
 def test_only_the_documented_chieu_cannot_be_cast_today():
+    # floors 7-9 now hold Thiên kiếp questions, so even the documented exception is castable
     uncastable = [k for k, s in math_skills.skills().items() if not math_skills.castable_floors(s)]
-    assert uncastable == ["thien_loi_tuyet_ky"]
+    assert uncastable == []
+    tl = math_skills.skills()["thien_loi_tuyet_ky"]
+    want = [(s.id, n) for s in math_path.subjects() for n in (7, 8, 9)]
+    assert sorted(math_skills.castable_floors(tl)) == sorted(want)
 
 
 # ------------------------------------------------------------------ the view
@@ -497,8 +501,15 @@ async def test_question_type_is_the_chieus_and_tier_never_above_the_players(clie
     rng = random.Random(7)
     async with dbm.SessionLocal() as db:
         user = await db.get(User, uid)
+        open_floor = await math_skills.open_floor(db, uid)
+        assert open_floor == 2
         for k, sk in math_skills.skills().items():
             if not math_skills.castable_floors(sk):
+                continue
+            if sk["unlock"]["floor"] > open_floor:          # Thiên Lôi (floor 7): locked for this player,
+                for target in (info, None):                  # and nothing on floors 1-2 may cast it
+                    q, code = await math_skills.question_for(db, user, sk, target, rng)
+                    assert q is None and code == "no_question", (k, code)
                 continue
             for target in (info, catalog.monsters()["dstt_chi_so_ma"], catalog.monsters()["ink_slime"], None):
                 for _ in range(6):

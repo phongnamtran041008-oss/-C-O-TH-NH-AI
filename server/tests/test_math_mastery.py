@@ -383,8 +383,8 @@ async def test_a_trial_pays_tu_vi_like_any_question(client):
 
 async def test_a_trial_cannot_be_started_on_a_floor_without_questions(client):
     h, uid = await make(client)
-    await clear_below(uid, 4)
-    r = await start_trial(client, h, 4)
+    await clear_below(uid, 10)                      # floors 1-9 are written; the hidden floor 10 is not
+    r = await start_trial(client, h, 10)
     assert r.status_code == 400 and r.json()["error"]["code"] == "no_questions"
 
 

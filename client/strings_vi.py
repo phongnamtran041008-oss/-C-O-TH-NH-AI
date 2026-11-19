@@ -1251,3 +1251,28 @@ MATH_PLACE_MET = "đạt"
 MATH_PLACE_NOT_MET = "chưa đạt"
 MATH_PLACE_GATE_NOTE = "Ở tầng {n}, cổng thuần thục và Thiên kiếp nhỏ vẫn áp dụng như mọi người."
 MATH_PLACE_BACK = "Về sảnh"
+
+# ---- M11 đợt 2: thiên kiếp (agent TRIB)
+TRIB_PART = "Phần {k} / {n}"                 # k is the part's letter
+TRIB_PREV = "Phần trước"
+TRIB_NEXT = "Phần sau"
+TRIB_KEYS = "Trái/Phải: đổi phần · Lên/Xuống: cuộn đề"
+TRIB_NEED_ALL = "Trả lời đủ mọi phần mới nộp được"
+TRIB_PART_RIGHT = "{k}) Đúng: {a}"
+TRIB_PART_WRONG = "{k}) Sai. Đáp án: {a}"
+TRIB_PART_GIVEN = "con trả lời: {a}"
+TRIB_PART_BLANK = "{k}) Chưa trả lời. Đáp án: {a}"
+TRIB_PART_ANSWER = "{k}) Đáp án: {a}"
+
+# ---- M11 đợt 2: bậc thang và kiểm tra đầu vào (agent LADDER)
+MATH_LADDER_STEP = "Bậc thang {n}/{t} dẫn tới câu vừa sai"
+MATH_LADDER_OPENED = "Tiếp theo: {t} bậc thang dẫn tới câu này"
+MATH_LADDER_COUNT = "Bậc thang đã leo: {n}"
+MATH_PLACE_INTRO_CLIMB = (
+    "Bài kiểm tra đầu vào đặt điểm xuất phát của con trong bí cảnh {name}.",
+    "Nhiều nhất {n} câu, mỗi tầng vài câu từ bậc dễ tới bậc khó; hết giờ tính là sai.",
+    "Đạt {pct}% thì nhảy lên tầng cao hơn, chưa đạt thì dừng (có khi lùi một tầng để chắc). Con bắt đầu ở tầng thấp nhất chưa đạt.",
+    "Không bắt buộc: không làm thì con bắt đầu từ tầng 1.",
+    "Ở tầng xuất phát, cổng thuần thục và Thiên kiếp nhỏ vẫn chờ con như mọi người.",
+    "Mỗi bí cảnh làm một lần. Bỏ dở thì coi như bắt đầu từ tầng 1.",
+)

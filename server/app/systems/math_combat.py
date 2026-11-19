@@ -65,7 +65,8 @@ async def question_for(db: AsyncSession, user: User, info: dict,
     config = math_path.cfg()
     skill_id, floor, subject_id = info["skill"], int(info["floor"]), info["subject"]
     tier = await tier_for(db, user.id, skill_id, floor, config)
-    templates = math_practice._templates(subject_id, floor)
+    # a monster asks a quick question in the middle of a fight, never a Thiên kiếp (8-12 minutes)
+    templates = [t for t in math_practice._templates(subject_id, floor) if t.qtype != "tribulation"]
     pool = math_practice._at_tier(templates, skill_id, tier)
     if not pool:
         return None

@@ -61,6 +61,21 @@ def read_whole_document(drv: Driver, shots_name: str | None = None) -> dict:
     return seen
 
 
+def scroll_to(drv, wid: str, rows: int = 12) -> None:
+    """Bring a row of the document list into view with the arrow keys, as a player would."""
+    for _ in range(rows):
+        if drv.has(wid):
+            return
+        drv.press(pygame.K_UP)
+        drv.step(2)
+    for _ in range(rows):
+        if drv.has(wid):
+            return
+        drv.press(pygame.K_DOWN)
+        drv.step(2)
+    assert drv.has(wid), f"{wid} cannot be scrolled into view"
+
+
 def run_library_flow(workdir: Path, shots: Path | None = None) -> None:
     server = ServerProcess(workdir, time_scale=1)
     try:
@@ -83,11 +98,11 @@ def run_library_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.click("math_library")
         drv.wait(lambda: drv.top_is("LibraryListScene") and top(drv).data is not None, 10, "the library")
         listed = top(drv).data["subjects"]
-        # M11: four subjects, each written to floor 3, one tab each; the list opens on the hub's subject
+        # four subjects, each written to floor 9, one tab each; the list opens on the hub's subject
         assert [s["id"] for s in listed] == ["dai_so_tuyen_tinh", "giai_tich", "xac_suat_thong_ke", "toi_uu_roi_rac"]
         assert top(drv).tab == 0
         for s in listed:
-            assert [d["floor"] for d in s["documents"]] == [1, 2, 3], s["id"]
+            assert [d["floor"] for d in s["documents"]] == list(range(1, 10)), s["id"]
             assert all(len(d["sections"]) == len(d["skills"]) for d in s["documents"])
         assert all(len(d["sections"]) == 6 for d in listed[0]["documents"])
         drv.shot("library_list")
@@ -97,12 +112,14 @@ def run_library_flow(workdir: Path, shots: Path | None = None) -> None:
         for s in listed:
             drv.click(f"lib_tab_{s['id']}")
             assert top(drv).tab == listed.index(s)
-            assert all(drv.has(f"lib_open_{d['id']}") for d in s["documents"])
+            for d in s["documents"]:            # nine documents do not fit the panel: the list scrolls
+                scroll_to(drv, f"lib_open_{d['id']}")
             if s is listed[1]:
                 drv.shot("library_list_second_subject")
             docs += [(s["id"], d) for d in s["documents"]]
         for sid, doc in docs:
             drv.click(f"lib_tab_{sid}")
+            scroll_to(drv, f"lib_open_{doc['id']}")
             drv.click(f"lib_open_{doc['id']}")
             drv.wait_scene("DocScene")
             seen = read_whole_document(drv, f"library_{sid}_t{doc['floor']}" if doc["floor"] == 3 else None)

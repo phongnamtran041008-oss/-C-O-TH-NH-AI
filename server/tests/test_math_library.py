@@ -12,7 +12,7 @@ from tests.helpers import answer_key, register
 from tests.test_math_loop import ask, make, play, right_answer, start
 
 SUBJECT = "dai_so_tuyen_tinh"
-WRITTEN_FLOORS = (1, 2, 3)                  # of every subject (M11)
+WRITTEN_FLOORS = tuple(range(1, 10))        # of every subject: all but the hidden floor 10
 SUBJECTS = [SUBJECT, "giai_tich", "xac_suat_thong_ke", "toi_uu_roi_rac"]
 
 DOC = """---
@@ -168,7 +168,7 @@ def test_the_shipped_library_is_valid():
 
 
 def test_one_document_per_written_floor_covering_every_micro_skill():
-    assert [s.id for s in mp.subjects()] == SUBJECTS                   # M11: four subjects, each written to floor 3
+    assert [s.id for s in mp.subjects()] == SUBJECTS                   # four subjects, each written to floor 9
     assert len(ml.documents()) == len(SUBJECTS) * len(WRITTEN_FLOORS)
     for sid in SUBJECTS:
         subject = mp.subject(sid)
@@ -265,7 +265,7 @@ async def test_a_document_arrives_ready_to_draw(client):
 async def test_the_floor_list_points_at_its_document(client):
     h, _ = await make(client)
     floors = (await client.get("/math/path", headers=h)).json()["subjects"][0]["floors"]
-    assert [f["doc_id"] for f in floors[:4]] == ["dstt_lib_t1", "dstt_lib_t2", "dstt_lib_t3", None]
+    assert [f["doc_id"] for f in floors] == [f"dstt_lib_t{n}" for n in range(1, 10)] + [None]   # hidden 10: none
 
 
 async def test_a_question_carries_the_way_into_the_library(client):

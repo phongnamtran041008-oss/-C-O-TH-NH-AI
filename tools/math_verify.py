@@ -144,8 +144,9 @@ EXPECTED = {
 }
 
 
-# M11: each new subject keeps its recomputations in a module of its own
-for _module in ("math_verify_gt", "math_verify_xs", "math_verify_tr"):
+# M11: the recomputations of the other floors and subjects live in modules of their own,
+# tools/math_verify_<prefix>[_t<first floor>].py, each with an EXPECTED dict; all are merged here
+for _module in sorted(p.stem for p in (ROOT / "tools").glob("math_verify_*.py")):
     import importlib
     if str(ROOT / "tools") not in sys.path:
         sys.path.insert(0, str(ROOT / "tools"))
@@ -159,9 +160,11 @@ for _module in ("math_verify_gt", "math_verify_xs", "math_verify_tr"):
 def mismatch(item: math_items.MathItem) -> str | None:
     """Why this draw's answer is not what sympy gets from its numbers, or None."""
     if item.qtype not in ("true_false", "numeric"):
-        # (multiple_choice, matching, ordering and find_mistake are hand-written only so far; a
-        # generator of one of them needs its own comparison here before it can be trusted)
-        return f"is a {item.qtype} generator, which tools/math_verify.py cannot check yet"
+        # (multiple_choice, matching, ordering, find_mistake and tribulation are hand-written only
+        # so far - math_items rejects a generator of the last four; a generator of one of them
+        # needs its own comparison here before it can be trusted)
+        return (f"is a {item.qtype} generator, which tools/math_verify.py cannot check yet (only "
+                f"true_false and numeric generators can be verified)")
     fn = EXPECTED.get(item.id)
     if fn is None:
         return "has no recomputation in tools/math_verify.py"

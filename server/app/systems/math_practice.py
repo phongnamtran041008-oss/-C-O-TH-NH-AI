@@ -29,9 +29,50 @@ Leaving a floor (M5, rules 3 and 6; the rules themselves are in learning/math_ma
   * an ordinary sitting mixes in **spiral review**: every fourth question or so comes from
     a micro-skill of a floor below, chosen by the spaced-repetition schedule.
 
-So one question of a sitting is chosen in this order: the parallel question of a mistake
-that has waited long enough (rule 6a), then a review question when the sitting is due one
-(rule 6b), then the ordinary next question of this floor (rules 2 and 3).
+Rule 8, the ladder (M11 đợt 2): "Bài khó luôn có bậc thang". Every hand-written tier-5 item
+lists 2-4 tier 3-4 questions that lead to it (`ladder`, learning/math_items.py).
+
+  * A tier-5 hand-written question answered wrong in a buổi luyện (or left to time out)
+    opens a ladder (MathLadder, kept in the database: closing the game mid-ladder loses
+    nothing). The next questions of the sittings of that floor are exactly its rungs, in
+    order, before anything else: a hand-written rung as it is (even if seen lately), a
+    generator rung as one fresh draw. A rung id that is no longer in the bank is passed by.
+    A tier-5 generator has no ladder (only hand-written items have one), so missing one
+    opens nothing beyond rule 6.
+  * A rung answered wrong is an ordinary wrong answer: rule 6 remembers it - keyed to the
+    floor of the sitting, so its parallel question comes back in this sitting even when the
+    rung lives on a floor below. The remaining rungs still come: the ladder is the teaching.
+  * Rules 6 and 8 together: the tier-5 mistake is remembered by rule 6 as always, but its
+    parallel question is *held* while its ladder is being climbed. Climbed with every rung
+    right, the hold ends and that parallel question is the very next one (it goes ahead of
+    other waiting mistakes): the same generator with new numbers, or another tier-5 template
+    of the micro-skill (the same item only when it is the only one). Climbed with a rung
+    missed, the tier-5 idea does not come back in this sitting: the missed rungs' own
+    parallel questions come first, and the tier-5 one waits for the next sitting.
+  * At most one ladder is being climbed per floor, and a tier-5 item opens a ladder at most
+    once per sitting (a second miss of it in the same sitting is plain rule 6), so ladders
+    and parallel questions can never chase each other for ever.
+  * Rungs do not move the sitting's adaptive tier (they are below the floor's range when
+    they come from a floor below); they are logged and paid like any answer.
+  * Only a buổi luyện opens a ladder. A Thiên kiếp nhỏ, the placement test, a chiêu, a
+    monster, a dungeon room, the tower, cơ duyên: none, and none is stored for later - like
+    rule 6 since M7, those have no sitting to come back into, and a tier-5 question there
+    was not part of the player's own climb.
+
+  Rule 4 and the ladder. A rung is tier 3 or 4 on the item's floor or below. A player asked
+  tier 5 has opened those tiers in the ordinary course - except a player placed high by the
+  bài kiểm tra đầu vào, and anyone on floor 9, whose lowest tier is 5 and so always open.
+  For them a rung may be a tier the log has not opened: that is the point (the step they are
+  missing), and it is the second stated exception to rule 4 after the placement test. No
+  other path here asks above the player's tier: an ordinary question is capped by
+  math_adaptive.question_tier, a review question by the open tier of its own floor, and a
+  parallel question repeats a tier the player was already asked at.
+
+So one question of a sitting is chosen in this order: the next rung of a ladder being
+climbed on this floor (rule 8), then the parallel question of a mistake that has waited long
+enough (rule 6a; a mistake held by its ladder waits, one released by a clean climb goes
+first), then a review question when the sitting is due one (rule 6b), then the ordinary next
+question of this floor (rules 2 and 3).
 """
 from __future__ import annotations
 
@@ -46,7 +87,7 @@ from ..config import settings
 from ..learning import (math_adaptive, math_items, math_library, math_mastery, math_path,
                         math_problems, quiz)
 from ..learning.math_items import GeneratorSpec, MathItem, Template
-from ..models import MathAnswer, MathRetry, MathRun, QuizSession, User
+from ..models import MathAnswer, MathLadder, MathRetry, MathRun, QuizSession, User
 
 CONTEXT = "math"
 PRACTICE, TRIAL = "practice", "trial"
@@ -72,7 +113,8 @@ def run_view(run: MathRun) -> dict:
            "tier": run.tier, "tier_name_vi": math_path.cfg()["tiers"][str(run.tier)]["name_vi"],
            "tier_min": lo, "tier_max": hi, "combo": run.combo, "best_combo": run.best_combo,
            "asked": run.asked, "correct": run.correct, "review_asked": run.review_asked,
-           "xp_gained": run.xp_gained, "passed": run.passed, "ended": run.ended_at is not None}
+           "xp_gained": run.xp_gained, "passed": run.passed, "ended": run.ended_at is not None,
+           "ladders": run.ladders or 0}
     if run.mode == TRIAL:
         total = math_mastery.trial_total(math_path.subject(run.subject_id), run.floor)
         out["trial"] = {"total": total, "left": max(0, total - run.asked),
@@ -460,11 +502,15 @@ async def _trial_item(db: AsyncSession, run: MathRun, recent: list[str], rng: ra
 
 
 async def _due_retry(db: AsyncSession, user_id: int, run: MathRun) -> MathRetry | None:
-    """The oldest open mistake of this floor that has waited long enough."""
+    """The oldest open mistake of this floor that has waited long enough. A tier-5 mistake
+    whose ladder is being climbed (or was climbed in this sitting with a rung missed) is held;
+    one whose ladder was just climbed cleanly goes first (rule 8, see the module docstring)."""
     wait = math_path.cfg()["parallel_question"]["after_answers"]
+    held, first = await _ladder_holds(db, user_id, run)
     retries = (await db.execute(select(MathRetry).where(
         MathRetry.user_id == user_id, MathRetry.subject_id == run.subject_id, MathRetry.floor == run.floor,
         MathRetry.cleared_at.is_(None)).order_by(MathRetry.id))).scalars().all()
+    retries = sorted((r for r in retries if r.id not in held), key=lambda r: (r.id not in first, r.id))
     for retry in retries:
         since = (await db.execute(select(func.count()).select_from(MathAnswer).where(
             MathAnswer.user_id == user_id, MathAnswer.id > retry.after_answer_id))).scalar_one()
@@ -494,13 +540,19 @@ async def next_question(db: AsyncSession, user: User, run_id: int, rng: random.R
                              .order_by(MathAnswer.id.desc()).limit(cfg["anti_repeat_window"]))).all()
     recent = [r[0] for r in rows]
     rng = rng or random.Random()
-    item, retry, review = None, None, False
+    item, retry, review, ladder = None, None, False, None
     if run.mode == TRIAL:
         item = await _trial_item(db, run, recent, rng, cfg)
     else:
-        retry = await _due_retry(db, user.id, run)
+        ladder = await _open_ladder(db, user.id, run.subject_id, run.floor)
+        if ladder is not None:
+            item = _next_rung(ladder, run, recent, rng, now)
+            if item is None:                # no rung of it is in the bank any more: climbed
+                ladder = None
+        if item is None:
+            retry = await _due_retry(db, user.id, run)
         if retry is not None:
-            item = parallel_item(templates, retry, recent, rng)
+            item = parallel_item(_retry_templates(run, retry, templates), retry, recent, rng)
             if item is None:                # its micro-skill has no question any more
                 retry.cleared_at, retry = now, None
         if item is None and math_mastery.wants_review(run.asked, run.review_asked, cfg):
@@ -515,41 +567,160 @@ async def next_question(db: AsyncSession, user: User, run_id: int, rng: random.R
     question.meta["doc"] = doc_link(item.skill)          # "Đọc Tàng Thư" on the answer card
     if retry is not None:
         question.answer_key["retry_id"] = retry.id
+    if ladder is not None:
+        question.meta["ladder"] = _ladder_view(ladder, ladder.step + 1)     # "Bậc thang 2/3" on the card
+        question.answer_key["ladder_id"], question.answer_key["ladder_step"] = ladder.id, ladder.step
     out = await quiz.create_session(db, user, CONTEXT, question, ref=str(run.id))
     return {"run": run_view(run), "question": out}
 
 
+# ------------------------------------------------------------------ rule 8: the ladder
+def _ladder_view(ladder: MathLadder, step: int) -> dict:
+    return {"of": ladder.item_id, "step": step, "steps": len(ladder.steps or [])}
+
+
+def _template(subject_id: str, template_id: str) -> Template | None:
+    """A hand-written item or a generator of this subject that this server may ask."""
+    t = math_items.bank().get(template_id) or math_items.generators().get(template_id)
+    if t is None or t.subject != subject_id or not (t.reviewed or settings.allow_unreviewed):
+        return None
+    return t
+
+
+def _retry_templates(run: MathRun, retry: MathRetry, templates: list[Template]) -> list[Template]:
+    """The templates a parallel question is found among: this floor's, or - for a missed rung
+    that lives on a floor below (rule 8 keys it to the sitting's floor) - that floor's."""
+    skill = math_path.subject(run.subject_id).skills.get(retry.skill_id)
+    if skill is None or skill.floor == run.floor:
+        return templates
+    return _templates(run.subject_id, skill.floor)
+
+
+async def _open_ladder(db: AsyncSession, user_id: int, subject_id: str, floor: int) -> MathLadder | None:
+    """The ladder being climbed on this floor (there is at most one)."""
+    return (await db.execute(select(MathLadder).where(
+        MathLadder.user_id == user_id, MathLadder.subject_id == subject_id, MathLadder.floor == floor,
+        MathLadder.finished_at.is_(None)).order_by(MathLadder.id))).scalars().first()
+
+
+def _finish_ladder(ladder: MathLadder, run: MathRun, now: dt.datetime) -> None:
+    ladder.finished_at, ladder.run_id = now, run.id
+    run.ladders = (run.ladders or 0) + 1
+
+
+def _next_rung(ladder: MathLadder, run: MathRun, recent: list[str], rng: random.Random,
+               now: dt.datetime) -> MathItem | None:
+    """The next rung as a question: a hand-written rung as it is, a generator rung as one
+    fresh draw. Rungs that are no longer in the bank are passed by; None (and the ladder is
+    finished) when none is left."""
+    steps = list(ladder.steps or [])
+    while ladder.step < len(steps):
+        t = _template(run.subject_id, steps[ladder.step])
+        if isinstance(t, MathItem):
+            return t
+        if isinstance(t, GeneratorSpec):
+            seen = {fp: i for i, fp in enumerate(recent)}
+            return _fresh(t, seen, rng) or math_items.draw(t, rng)
+        ladder.step += 1
+    _finish_ladder(ladder, run, now)
+    return None
+
+
+async def _ladder_holds(db: AsyncSession, user_id: int, run: MathRun) -> tuple[set[int], set[int]]:
+    """Rule 6 meets rule 8: (the mistakes held back, the mistakes to ask first). A tier-5
+    mistake is held while its ladder is climbed, and for the rest of the sitting when a rung
+    was missed; a clean climb in this sitting puts it first."""
+    rows = (await db.execute(select(MathLadder).where(
+        MathLadder.user_id == user_id, MathLadder.subject_id == run.subject_id,
+        MathLadder.retry_id.is_not(None),
+        (MathLadder.finished_at.is_(None)) | (MathLadder.run_id == run.id)))).scalars().all()
+    held, first = set(), set()
+    for ladder in rows:
+        if ladder.finished_at is None or ladder.missed:
+            held.add(ladder.retry_id)
+        else:
+            first.add(ladder.retry_id)
+    return held, first - held
+
+
+async def _ladder_after_answer(db: AsyncSession, user: User, s: QuizSession, meta: dict, run: MathRun,
+                               correct: bool, retry: MathRetry | None, now: dt.datetime) -> dict | None:
+    """Rule 8 after one answer of a buổi luyện: a rung moves its ladder on; a tier-5
+    hand-written question answered wrong opens its ladder. Returns `math.ladder` for the
+    client, or None when this answer had nothing to do with a ladder."""
+    if s.answer_key.get("ladder_id") is not None:
+        ladder = await db.get(MathLadder, s.answer_key["ladder_id"])
+        if (ladder is None or ladder.user_id != user.id or ladder.finished_at is not None
+                or ladder.step != s.answer_key.get("ladder_step")):
+            return None
+        ladder.step += 1
+        ladder.missed += int(not correct)
+        ladder.run_id = run.id
+        done = ladder.step >= len(ladder.steps or [])
+        out = {**_ladder_view(ladder, ladder.step), "rung": True, "done": done, "missed": ladder.missed,
+               "returns": False}
+        if done:
+            _finish_ladder(ladder, run, now)
+            back = await db.get(MathRetry, ladder.retry_id) if ladder.retry_id is not None else None
+            out["returns"] = not ladder.missed and back is not None and back.cleared_at is None
+        return out
+    if correct or meta["tier"] != math_path.TOP_TIER:
+        return None
+    item = math_items.bank().get(s.item_id)
+    if item is None or not item.ladder or item.subject != meta["subject"]:
+        return None                     # a generator (no ladder), or a stale id
+    if await _open_ladder(db, user.id, run.subject_id, run.floor) is not None:
+        return None
+    again = (await db.execute(select(MathLadder.id).where(
+        MathLadder.user_id == user.id, MathLadder.item_id == item.id,
+        MathLadder.started_run_id == run.id))).scalars().first()
+    if again is not None:               # once per item and sitting: a second miss is plain rule 6
+        return None
+    ladder = MathLadder(user_id=user.id, subject_id=run.subject_id, floor=run.floor, item_id=item.id,
+                        skill_id=item.skill, steps=list(item.ladder), step=0, missed=0,
+                        retry_id=retry.id if retry is not None else None, started_run_id=run.id,
+                        run_id=run.id, created_at=now)
+    db.add(ladder)
+    return {**_ladder_view(ladder, 0), "started": True, "rung": False, "done": False}
+
+
 # ------------------------------------------------------------------ after an answer
 async def _remember_mistake(db: AsyncSession, user_id: int, s: QuizSession, meta: dict,
-                            answer: MathAnswer, correct: bool, now: dt.datetime) -> bool:
-    """Rule 6 bookkeeping. Returns True when a parallel question is now waiting."""
+                            answer: MathAnswer, correct: bool, now: dt.datetime,
+                            floor: int | None = None) -> MathRetry | None:
+    """Rule 6 bookkeeping. Returns the mistake whose parallel question is now waiting, if
+    any. `floor` = the floor whose sittings bring it back (a missed rung of a ladder: the
+    sitting's floor, rule 8); by default the floor of the question."""
     retry_id = s.answer_key.get("retry_id")
     fingerprint = s.answer_key.get("fingerprint", "")
     if retry_id is not None:
         retry = await db.get(MathRetry, retry_id)
         if retry is None or retry.cleared_at is not None or retry.user_id != user_id:
-            return False
+            return None
         if correct:
             retry.cleared_at = now
-            return False
+            return None
         retry.after_answer_id, retry.fingerprint, retry.misses = answer.id, fingerprint, retry.misses + 1
-        return True
+        return retry
     if correct:
-        return False
+        return None
+    floor = meta["floor"] if floor is None else floor
     open_ = (await db.execute(select(MathRetry).where(
-        MathRetry.user_id == user_id, MathRetry.subject_id == meta["subject"], MathRetry.floor == meta["floor"],
+        MathRetry.user_id == user_id, MathRetry.subject_id == meta["subject"], MathRetry.floor == floor,
         MathRetry.cleared_at.is_(None)).order_by(MathRetry.id))).scalars().all()
     same = next((r for r in open_ if r.item_id == s.item_id), None)
     if same is not None:
         same.after_answer_id, same.fingerprint, same.misses = answer.id, fingerprint, same.misses + 1
-        return True
-    db.add(MathRetry(user_id=user_id, subject_id=meta["subject"], floor=meta["floor"], skill_id=meta["skill"],
-                     tier=meta["tier"], item_id=s.item_id, fingerprint=fingerprint,
-                     after_answer_id=answer.id, misses=1, created_at=now))
+        return same
+    retry = MathRetry(user_id=user_id, subject_id=meta["subject"], floor=floor, skill_id=meta["skill"],
+                      tier=meta["tier"], item_id=s.item_id, fingerprint=fingerprint,
+                      after_answer_id=answer.id, misses=1, created_at=now)
+    db.add(retry)
     keep = math_path.cfg()["parallel_question"]["max_open"] - 1
     for old in open_[:max(0, len(open_) - keep)]:       # the queue is short: the oldest mistakes are let go
         old.cleared_at = now
-    return True
+    await db.flush()                                    # (a ladder keeps its id)
+    return retry
 
 
 async def math_handler(db: AsyncSession, user: User, s: QuizSession, correct: bool, now: dt.datetime) -> dict:
@@ -568,15 +739,23 @@ async def math_handler(db: AsyncSession, user: User, s: QuizSession, correct: bo
     db.add(answer)
     await db.flush()                      # the mistake queue counts answers by their id
     trial = run is not None and run.mode == TRIAL
-    waiting = False if trial else await _remember_mistake(db, user.id, s, meta, answer, correct, now)
+    live = run is not None and run.ended_at is None and run.user_id == user.id
+    rung = live and s.answer_key.get("ladder_id") is not None
+    retry = None if trial else await _remember_mistake(db, user.id, s, meta, answer, correct, now,
+                                                       floor=run.floor if rung else None)
     out: dict = {"tier": meta["tier"], "timed_out": timed_out, "parallel": bool(meta.get("parallel")),
-                 "parallel_waiting": waiting, "review": review,
+                 "parallel_waiting": retry is not None, "review": review,
                  "xp_base": math_path.xp_for_tier(meta["tier"]) if correct else 0}
+    if live and run.mode == PRACTICE:       # rule 8: only a buổi luyện climbs ladders
+        ladder = await _ladder_after_answer(db, user, s, meta, run, correct, retry, now)
+        if ladder is not None:
+            out["ladder"] = ladder
     from . import math_combat      # M10: cơ duyên listens to every right answer (math_combat.add_answer_listener)
     out.update(await math_combat.notify_answer(db, user, s, correct, now))
-    if run is not None and run.ended_at is None and run.user_id == user.id:
+    if live:
         before = run.tier
-        if not trial:                       # the tier of a trial is the floor's hardest, all the way
+        if not trial and not rung:          # the tier of a trial is the floor's hardest, all the way;
+            # a rung (rule 8) is below the floor's range when it comes from a floor below
             state = math_adaptive.after_answer(
                 math_adaptive.TierState(run.tier, run.correct_streak, run.wrong_streak), correct, run.floor)
             run.tier, run.correct_streak, run.wrong_streak = state.tier, state.correct_streak, state.wrong_streak

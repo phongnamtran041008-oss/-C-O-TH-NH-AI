@@ -44,7 +44,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import clock
 from ..config import DATA_DIR
-from ..learning import math_path, quiz
+from ..learning import math_items, math_path, quiz
 from ..models import QuizSession, TdProgress, TdRun, User
 from . import catalog, math_ask, math_practice, td, td_sim
 from .td import TdError
@@ -81,6 +81,12 @@ def tier_power(tier: int) -> float:
     return float(data()["tier_power"][str(tier)])
 
 
+def qtypes() -> list[str]:
+    """The question types this mode asks (td.json `qtypes`): short ones only - no Thiên kiếp
+    in the middle of a wave."""
+    return list(data()["qtypes"])
+
+
 def area_skills(t: dict) -> list[str]:
     """The micro-skills a tower asks about: the listed ones, or every one of its floor."""
     a = t["area"]
@@ -104,7 +110,8 @@ def content_lock(t: dict) -> str | None:
     if floor not in math_ask.playable_floors(sid):
         return f"Tầng {floor} của {name} chưa có câu hỏi: tháp này mở khi tầng ấy có câu."
     skills = set(area_skills(t))
-    if not any(tp.skill in skills for tp in math_practice._templates(sid, floor)):
+    kinds = set(qtypes())
+    if not any(tp.skill in skills and tp.qtype in kinds for tp in math_practice._templates(sid, floor)):
         return f"Mảng này ở tầng {floor} của {name} chưa có câu hỏi."
     return None
 
@@ -261,10 +268,11 @@ async def ask(db: AsyncSession, user: User, run_id: str, kind: str, tower_id: st
         t = towers()[tower_id]
         skills = area_skills(t)
         rng.shuffle(skills)
-        question = await math_ask.pick(db, user, t["area"]["subject"], int(t["area"]["floor"]), skills=skills, rng=rng)
+        question = await math_ask.pick(db, user, t["area"]["subject"], int(t["area"]["floor"]), skills=skills,
+                                       qtypes=qtypes(), rng=rng)
     elif kind in ("break", "tu_khi"):
         tower_id = ""
-        question = await math_ask.pick_own(db, user, rng=rng)
+        question = await math_ask.pick_own(db, user, qtypes=qtypes(), rng=rng)
     else:
         raise TdError(400, "bad_kind", "Loại câu hỏi không hợp lệ.")
     if question is None:
@@ -368,12 +376,17 @@ def validate(raw: dict | None = None) -> list[str]:
     rewards of real items, and at least one tower a brand-new player can build."""
     d = raw if raw is not None else _read()
     errs: list[str] = []
-    for key in ("grid", "core_hp", "qi", "upgrade", "sell_refund", "tier_power", "roles", "towers", "stars",
-                "rewards", "levels"):
+    for key in ("grid", "core_hp", "qtypes", "qi", "upgrade", "sell_refund", "tier_power", "roles", "towers",
+                "stars", "rewards", "levels"):
         if key not in d:
             errs.append(f"missing {key}")
     if errs:
         return errs
+    kinds = d["qtypes"]
+    if not isinstance(kinds, list) or not kinds or not all(k in math_items.PLAYABLE_TYPES for k in kinds):
+        errs.append(f"qtypes must be a non-empty list of playable question types ({', '.join(math_items.PLAYABLE_TYPES)})")
+    elif "tribulation" in kinds:
+        errs.append("qtypes: a Thiên kiếp (tribulation) takes 8-12 minutes, too long for a tower or a break")
     cols, rows = d["grid"].get("cols"), d["grid"].get("rows")
     if (cols, rows) != (12, 7):
         errs.append("grid must be 12 x 7 (the client draws that board)")

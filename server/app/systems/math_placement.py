@@ -1,4 +1,5 @@
-"""Bài kiểm tra đầu vào: learning-path rule 7 (milestone M11).
+"""Bài kiểm tra đầu vào: learning-path rule 7 (milestone M11; redesigned for nine written
+floors in M11 đợt 2).
 
 "10-15 câu rải các bậc để đặt điểm xuất phát; ai đã giỏi thì được nhảy tầng, nhưng vẫn
 phải qua cổng thuần thục của tầng đích." The rules this module plays, every number from
@@ -13,38 +14,54 @@ phải qua cổng thuần thục của tầng đích." The rules this module pla
   * and the subject has at least two written main floors (floors that have questions):
     with one, the only possible outcome is the first floor, and the test says nothing.
 
-**What it asks.** A sitting plans `per_floor` questions for every written main floor,
-clamped to [min_questions, max_questions] in all and shared out evenly (a lower floor gets
-the odd one). Inside a floor the questions go tier by tier, lowest first (the odd one goes
-to the higher tier), and the micro-skills of the floor take turns in path order. So the
-whole sitting rises: floor by floor, and tier by tier inside a floor. Each question is a
-real question of the shared quiz service (context `math_placement`, answered through
-`POST /quiz/answer`) with the normal time limit of its type and tier. The plan is a pure
-function of the path and the bank (`plan`), so nothing about it is stored.
+**What it asks: a climb in blocks.** M11 gave every written floor its own questions; with
+nine written floors that leaves one or two questions a floor, so the sitting now climbs:
 
-**Rule 4's one exception.** Everywhere else a tier-N question of a micro-skill appears only
-after right answers at tier N-1 (math_adaptive, math_ask.pick). A placement question is
-asked at the tier its slot says, whatever the player's log - that is what lets a strong
-player show it. So this module picks its questions itself (`_question`) and is the only
-place that does. Its answers are real answers: they go to `math_answers` with the
-placement sitting's `run_id`, so they count for the tiers the player opens and for the
-mastery gate like any other answer, and an audit of rule 4 can tell them apart (the run's
-`mode` is "placement").
+  * A *block* is `block` questions on one floor, tier by tier, lowest first (the odd one
+    goes to the higher tier), the micro-skills of the floor taking turns in path order.
+  * The climb starts on the first written floor. A block passed jumps `stride` written
+    floors up (never past the last written floor). A block failed stops the climb; if the
+    floor just below the failed one was jumped over, the sitting steps back to it to
+    confirm, and so on down until it reaches a floor that was passed (or the first floor).
+  * `block` and `stride` follow from the number of written floors `n`: the smallest stride,
+    then the smallest block from `block_min` to `per_floor`, such that **every** possible
+    sitting asks at most `max_questions` and a sitting answered all right asks at least
+    `min_questions` (when no block can reach it, the largest that keeps the bound). So 3
+    written floors: blocks of 4, every floor (12 questions all right); 6 floors: blocks of
+    3, floors 1-3-5-6; 9 floors: blocks of 3, floors 1-4-7-9 - a beginner stops after one
+    or two questions, a strong player reaches floor 9 in 12, and no sitting passes 15
+    (`layout`, `walk`; the test file checks every pattern of passes and failures).
+  * Each question is a real question of the shared quiz service (context `math_placement`,
+    answered through `POST /quiz/answer`) with the normal time limit of its type and tier.
+    A Thiên kiếp (`tribulation`, 8-12 minutes, a whole problem) is never a placement
+    question. What comes next is a pure function of the path, the bank and the answers so
+    far, so nothing about the plan is stored.
 
-**When it stops.** A floor's bar is `pass_pct` of its planned questions right (80% of 5 =
-4). The sitting stops as soon as the bar of a floor can no longer be met - the floors above
-cannot change the outcome any more - or when every question has been asked. Questions are
-not skipped when a floor's bar is already met: the hardest tier of the floor is still
-asked. A question whose time runs out is wrong (the client sends `{"timed_out": true}`; a
-question nobody answered is settled as a timeout when the sitting next asks for one).
+**Rule 4's exception.** Everywhere else a tier-N question of a micro-skill appears only
+after right answers at tier N-1 (math_adaptive, math_ask.pick; the one other exception is a
+ladder rung of rule 8, systems/math_practice.py). A placement question is asked at the tier
+its slot says, whatever the player's log - that is what lets a strong player show it. So
+this module picks its questions itself (`_question`). Its answers are real answers: they go
+to `math_answers` with the placement sitting's `run_id`, so they count for the tiers the
+player opens and for the mastery gate like any other answer, and an audit of rule 4 can
+tell them apart (the run's `mode` is "placement").
 
-**The outcome.** The start floor is the lowest written floor whose bar was not met; when
-every bar was met, the last written floor - never a floor without questions. The main
-floors below the start floor count as **cleared by placement** (math_practice.
-cleared_floors, the single source everything reads: path_view, math_ask.open_floor and so
-bí cảnh, hầm ngục, cơ duyên, thủ thành, chiêu thức). They are told apart from floors cleared
-by a Thiên kiếp nhỏ in the path view (`cleared_by`). On the start floor nothing is waived:
-its mastery gate and its Thiên kiếp nhỏ work exactly as for anyone.
+**When a block is decided.** Its bar is `pass_pct` of its questions right (80% of 3 = 3, of
+4 = 4, of 5 = 4). A block fails as soon as its bar can no longer be met (the rest of it is
+not asked); a block whose bar is met is still asked to its end, hardest tier included. A
+question whose time runs out is wrong (the client sends `{"timed_out": true}`; a question
+nobody answered is settled as a timeout when the sitting next asks for one).
+
+**The outcome.** The start floor is the lowest floor whose block failed; when the climb
+passed the last written floor, that floor - never a floor without questions. The main floors
+below the start floor count as **cleared by placement**, including floors the climb jumped
+over (a passed floor above them vouches for them) and unwritten floors in between
+(math_practice.cleared_floors, the single source everything reads: path_view,
+math_ask.open_floor and so bí cảnh, hầm ngục, cơ duyên, thủ thành, chiêu thức). They are told
+apart from floors cleared by a Thiên kiếp nhỏ in the path view (`cleared_by`). On the start
+floor nothing is waived: its mastery gate and its Thiên kiếp nhỏ work exactly as for anyone.
+(Should the bank change in the middle of a sitting so that a whole block no longer fits in
+`max_questions`, the sitting ends on the lowest floor not yet passed - the cautious answer.)
 
 **Leaving a sitting.** "Nghỉ" only pauses it (the question that was open runs out and
 counts as wrong). Abandoning it (`/math/placement/abandon`, or `/math/run/end` on it) ends
@@ -75,13 +92,19 @@ from .math_practice import PLACEMENT, MathError
 
 CONTEXT = "math_placement"
 OFFERED, IN_PROGRESS, DONE, UNAVAILABLE = "offered", "in_progress", "done", "unavailable"
+NOT_ASKED = ("tribulation",)        # a Thiên kiếp (8-12 minutes) is never a placement question
 
 
 def cfg(config: dict | None = None) -> dict:
     return (config or math_path.cfg())["placement_test"]
 
 
-# ------------------------------------------------------------------ the plan (pure)
+def askable(templates: list[Template]) -> list[Template]:
+    """The templates a placement question may come from."""
+    return [t for t in templates if t.qtype not in NOT_ASKED]
+
+
+# ------------------------------------------------------------------ the climb (pure)
 @dataclass(frozen=True)
 class Slot:
     """One planned question: which floor, micro-skill and tier."""
@@ -90,43 +113,102 @@ class Slot:
     tier: int
 
 
-def floor_counts(n_floors: int, config: dict | None = None) -> list[int]:
-    """How many questions each of `n_floors` written floors gets, lowest floor first."""
-    if n_floors <= 0:
-        return []
-    p = cfg(config)
-    total = min(max(n_floors * p["per_floor"], p["min_questions"]), p["max_questions"])
-    base, extra = divmod(total, n_floors)
-    return [base + (1 if i < extra else 0) for i in range(n_floors)]
-
-
-def plan(subject: math_path.Subject, templates_by_floor: dict[int, list[Template]],
-         config: dict | None = None) -> list[Slot]:
-    """The questions of a sitting, in the order they are asked. `templates_by_floor` = the
-    question templates this server can ask, by floor (a floor without any is not written)."""
-    config = config or math_path.cfg()
-    floors = [f for f in subject.main_floors if templates_by_floor.get(f.number)]
-    out: list[Slot] = []
-    for f, count in zip(floors, floor_counts(len(floors), config)):
-        temps = templates_by_floor[f.number]
-        lo, hi = math_path.floor_tiers(f.number, config)
-        tiers = [t for t in range(lo, hi + 1) if any(x.tier == t for x in temps)]
-        if not tiers:
-            continue
-        base, extra = divmod(count, len(tiers))
-        n = 0
-        for i, tier in enumerate(tiers):
-            k = base + (1 if i >= len(tiers) - extra else 0)       # the odd one: the harder tier
-            skills = [s.id for s in f.skills if any(x.skill == s.id and x.tier == tier for x in temps)]
-            for _ in range(k):
-                out.append(Slot(f.number, skills[n % len(skills)], tier))
-                n += 1
-    return out
-
-
 def needed(planned: int, config: dict | None = None) -> int:
-    """Right answers a floor's bar wants out of its `planned` questions (80% of 5 = 4)."""
+    """Right answers a block's bar wants out of its `planned` questions (80% of 5 = 4)."""
     return math.ceil(planned * cfg(config)["pass_pct"] / 100 - 1e-9)
+
+
+def after_block(n: int, stride: int, i: int, ok: bool, passed: int, failed: int | None
+                ) -> tuple[int | None, int | None, int, int | None]:
+    """One step of the climb over `n` written floors (indices 0..n-1): block `i` was passed
+    (`ok`) or failed; `passed` = highest index passed so far (-1: none), `failed` = lowest
+    index failed (None: none). Returns (next index to ask, the start index once decided,
+    passed, failed)."""
+    if ok:
+        passed = max(passed, i)
+    else:
+        failed = i if failed is None else min(failed, i)
+    if failed is None:
+        if i >= n - 1:
+            return None, n - 1, passed, failed
+        return min(i + stride, n - 1), None, passed, failed
+    if failed - 1 <= passed:
+        return None, failed, passed, failed
+    return failed - 1, None, passed, failed           # step back to confirm a floor jumped over
+
+
+def block_counts(n: int, stride: int) -> tuple[int, int]:
+    """(the most blocks any sitting asks, the blocks of a sitting answered all right)."""
+    def most(i: int, passed: int, failed: int | None) -> int:
+        best = 0
+        for ok in (True, False):
+            nxt, _, p, f = after_block(n, stride, i, ok, passed, failed)
+            best = max(best, 1 + (0 if nxt is None else most(nxt, p, f)))
+        return best
+
+    right, i, p, f = 0, 0, -1, None
+    while i is not None:
+        right += 1
+        i, _, p, f = after_block(n, stride, i, True, p, f)
+    return (most(0, -1, None), right) if n > 0 else (0, 0)
+
+
+def shape(n: int, config: dict | None = None) -> tuple[int, int]:
+    """(block, stride) for `n` written floors: see the module docstring."""
+    p = cfg(config)
+    least = p["block_min"]
+    sizes = range(least, max(least, p["per_floor"]) + 1)
+    fallback: tuple[int, int] | None = None
+    for stride in range(1, max(1, n - 1) + 1):
+        most, right = block_counts(n, stride)
+        fits = [b for b in sizes if most * b <= p["max_questions"]]
+        if fits:
+            return next((b for b in fits if right * b >= p["min_questions"]), fits[-1]), stride
+        if fallback is None or most < fallback[0]:
+            fallback = (most, stride)
+    return least, fallback[1] if fallback else 1
+
+
+def block_slots(floor: math_path.Floor, temps: list[Template], size: int, config: dict | None = None
+                ) -> tuple[Slot, ...]:
+    """The `size` questions of one floor's block: tier by tier, lowest first (the odd one
+    to the harder tier), the micro-skills taking turns in path order."""
+    lo, hi = math_path.floor_tiers(floor.number, config)
+    tiers = [t for t in range(lo, hi + 1) if any(x.tier == t for x in temps)]
+    if not tiers:
+        return ()
+    base, extra = divmod(size, len(tiers))
+    out, n = [], 0
+    for i, tier in enumerate(tiers):
+        k = base + (1 if i >= len(tiers) - extra else 0)
+        skills = [s.id for s in floor.skills if any(x.skill == s.id and x.tier == tier for x in temps)]
+        for _ in range(k):
+            out.append(Slot(floor.number, skills[n % len(skills)], tier))
+            n += 1
+    return tuple(out)
+
+
+@dataclass(frozen=True)
+class Layout:
+    """How a sitting of one subject climbs: the written floors, the block size, the stride,
+    each floor's block (same order as `floors`) and the most questions any sitting asks."""
+    floors: tuple[int, ...]
+    block: int
+    stride: int
+    blocks: tuple[tuple[Slot, ...], ...]
+    most: int
+
+
+def layout(subject: math_path.Subject, templates_by_floor: dict[int, list[Template]],
+           config: dict | None = None) -> Layout:
+    """`templates_by_floor` = the question templates this server can ask, by floor (a floor
+    without any placement-askable template is not written)."""
+    config = config or math_path.cfg()
+    floors = [f for f in subject.main_floors if askable(templates_by_floor.get(f.number) or [])]
+    block, stride = shape(len(floors), config)
+    blocks = tuple(block_slots(f, askable(templates_by_floor[f.number]), block, config) for f in floors)
+    most = min(block_counts(len(floors), stride)[0] * block, cfg(config)["max_questions"])
+    return Layout(tuple(f.number for f in floors), block, stride, blocks, most)
 
 
 @dataclass(frozen=True)
@@ -151,36 +233,54 @@ class FloorScore:
                 "correct": self.correct, "needed": self.needed, "met": self.met}
 
 
-def score(slots: list[Slot], results: list[bool], config: dict | None = None
-          ) -> tuple[list[FloorScore], int | None]:
-    """The floors' scores after these answers (in slot order), and the start floor once the
-    outcome is decided (None while it is not)."""
-    floors: dict[int, list[bool | None]] = {}
-    for i, slot in enumerate(slots):
-        floors.setdefault(slot.floor, []).append(results[i] if i < len(results) else None)
-    scores = [FloorScore(n, len(r), sum(1 for x in r if x is not None), sum(1 for x in r if x),
-                         needed(len(r), config)) for n, r in floors.items()]
-    for s in scores:
-        if s.met is False:
-            return scores, s.floor
-        if s.met is None:
-            return scores, None
-    return scores, (scores[-1].floor if scores else None)
+@dataclass(frozen=True)
+class Walk:
+    """Where a sitting stands: the blocks asked so far (in the order asked), the next
+    question's slot (None once decided) and the start floor once decided."""
+    scores: tuple[FloorScore, ...]
+    next: Slot | None
+    start: int | None
+
+
+def walk(lay: Layout, results: list[bool], config: dict | None = None) -> Walk:
+    """The climb after these answers (in the order they were given)."""
+    n = len(lay.floors)
+    if n == 0:
+        return Walk((), None, None)
+    need, limit = needed(lay.block, config), cfg(config)["max_questions"]
+    i: int | None = 0
+    passed, failed, pos, scores = -1, None, 0, []
+    while True:
+        asked = correct = 0
+        for ok in results[pos:pos + lay.block]:
+            asked, correct = asked + 1, correct + int(bool(ok))
+            if FloorScore(lay.floors[i], lay.block, asked, correct, need).met is not None:
+                break
+        score = FloorScore(lay.floors[i], lay.block, asked, correct, need)
+        scores.append(score)
+        if score.met is None:
+            return Walk(tuple(scores), lay.blocks[i][asked], None)
+        pos += asked
+        i, start, passed, failed = after_block(n, lay.stride, i, score.met, passed, failed)
+        if start is not None:
+            return Walk(tuple(scores), None, lay.floors[start])
+        if pos + lay.block > limit:                     # (only when the bank changed mid-sitting)
+            return Walk(tuple(scores), None, lay.floors[passed + 1])
 
 
 # ------------------------------------------------------------------ reading the database
 def _templates_by_floor(subject: math_path.Subject) -> dict[int, list[Template]]:
-    return {f.number: math_practice._templates(subject.id, f.number) for f in subject.main_floors}
+    return {f.number: askable(math_practice._templates(subject.id, f.number)) for f in subject.main_floors}
 
 
 def written_floors(subject_id: str) -> list[int]:
     subject = math_path.subject(subject_id)
-    return [f.number for f in subject.main_floors if math_practice._templates(subject_id, f.number)]
+    return [f.number for f in subject.main_floors if askable(math_practice._templates(subject_id, f.number))]
 
 
-def subject_plan(subject_id: str) -> list[Slot]:
+def subject_layout(subject_id: str) -> Layout:
     subject = math_path.subject(subject_id)
-    return plan(subject, _templates_by_floor(subject))
+    return layout(subject, _templates_by_floor(subject))
 
 
 async def _sittings(db: AsyncSession, user_id: int, subject_id: str) -> list[MathRun]:
@@ -212,22 +312,19 @@ def _retake_at(run: MathRun, config: dict | None = None) -> dt.datetime | None:
 
 
 async def result_view(db: AsyncSession, run: MathRun) -> dict:
-    """What a sitting found, floor by floor (the answers it really got), and where it put
-    the player."""
+    """What a sitting found, floor by floor (the floors it really asked about, lowest
+    first), and where it put the player."""
     answers = await _results(db, run)
     by_floor: dict[int, list[bool]] = {}
     for a in answers:
         by_floor.setdefault(a.floor, []).append(bool(a.correct))
     start = start_floor_of(run)
     subject = math_path.subject(run.subject_id)
-    slots = subject_plan(run.subject_id)
-    planned = {}
-    for s in slots:
-        planned[s.floor] = planned.get(s.floor, 0) + 1
+    block = subject_layout(run.subject_id).block
     floors = []
-    for n in sorted(set(planned) | set(by_floor)):
-        got = by_floor.get(n, [])
-        p = planned.get(n, len(got))
+    for n in sorted(by_floor):
+        got = by_floor[n]
+        p = max(block, len(got))
         floors.append({"floor": n, "planned": p, "asked": len(got), "correct": sum(got), "needed": needed(p),
                        "met": len(got) >= p and sum(got) >= needed(p)})     # the bar, as answered
     retake = _retake_at(run)
@@ -238,15 +335,21 @@ async def result_view(db: AsyncSession, run: MathRun) -> dict:
             "retake_at": retake.isoformat(timespec="seconds") if retake else None}
 
 
-async def progress(db: AsyncSession, run: MathRun) -> dict:
-    """Where a sitting stands: questions asked of the plan and each floor's score."""
-    slots = subject_plan(run.subject_id)
+async def _walk(db: AsyncSession, run: MathRun) -> tuple[Layout, list[bool], Walk]:
+    lay = subject_layout(run.subject_id)
     results = [bool(a.correct) for a in await _results(db, run)]
-    scores, start = score(slots, results)
-    return {"total": len(slots), "asked": len(results), "correct": sum(results),
-            "left": max(0, len(slots) - len(results)) if start is None else 0,
-            "decided": start is not None, "start_floor": start,
-            "floors": [s.view() for s in scores]}
+    return lay, results, walk(lay, results)
+
+
+async def progress(db: AsyncSession, run: MathRun) -> dict:
+    """Where a sitting stands: questions asked, the most it can still ask, each block's
+    score."""
+    lay, results, w = await _walk(db, run)
+    return {"total": lay.most, "asked": len(results), "correct": sum(results),
+            "left": max(0, lay.most - len(results)) if w.start is None else 0,
+            "decided": w.start is not None, "start_floor": w.start,
+            "block": lay.block, "stride": lay.stride,
+            "floors": [s.view() for s in w.scores]}
 
 
 def run_view(run: MathRun, prog: dict | None = None) -> dict:
@@ -268,9 +371,10 @@ async def state(db: AsyncSession, user: User, subject_id: str) -> dict:
     last = next((r for r in sittings if r.ended_at is not None), None)
     written = written_floors(subject_id)
     trials = await math_practice.trial_floors(db, user.id, subject_id)
-    slots = subject_plan(subject_id)
+    lay = subject_layout(subject_id)
     out = {"subject_id": subject_id, "subject_name_vi": subject.name_vi, "status": UNAVAILABLE,
-           "offered": False, "reason": None, "planned": len(slots), "written_floors": written,
+           "offered": False, "reason": None, "planned": lay.most, "written_floors": written,
+           "block": lay.block, "stride": lay.stride,
            "pass_pct": cfg()["pass_pct"], "run": None, "progress": None, "result": None}
     if last is not None:
         out["result"] = await result_view(db, last)
@@ -304,7 +408,7 @@ async def start(db: AsyncSession, user: User, subject_id: str) -> dict:
                "done": "Con đã làm bài kiểm tra đầu vào của bí cảnh này rồi."}.get(
             st["reason"], "Bài kiểm tra đầu vào đang dở, hãy làm tiếp.")
         raise MathError(409, "placement_not_offered", why)
-    first = subject_plan(subject_id)[0]
+    first = walk(subject_layout(subject_id), []).next
     # not math_practice._new_run: a placement sitting lives beside a buổi luyện and ends none
     run = MathRun(user_id=user.id, subject_id=subject_id, floor=first.floor, mode=PLACEMENT, tier=first.tier,
                   correct_streak=0, wrong_streak=0, combo=0, best_combo=0, asked=0, correct=0,
@@ -343,8 +447,8 @@ async def _settle_all(db: AsyncSession, user: User, subject_id: str) -> None:
 def _question(subject_id: str, slot: Slot, seen_at: dict[str, int], rng: random.Random
               ) -> math_items.MathQuestion:
     """The question of one slot, at the slot's tier whatever the player's log says (rule 4's
-    one exception, see the module docstring). Anti-repeat as everywhere else."""
-    pool = [t for t in math_practice._templates(subject_id, slot.floor)
+    exception, see the module docstring). Anti-repeat as everywhere else; never a Thiên kiếp."""
+    pool = [t for t in askable(math_practice._templates(subject_id, slot.floor))
             if t.skill == slot.skill and t.tier == slot.tier]
     item = math_practice._pick(pool, seen_at, rng)
     if item is None:
@@ -356,7 +460,7 @@ def _question(subject_id: str, slot: Slot, seen_at: dict[str, int], rng: random.
 
 
 async def next_question(db: AsyncSession, user: User, run_id: int, rng: random.Random | None = None) -> dict:
-    """The sitting's open question if it still has one, else the next one of the plan.
+    """The sitting's open question if it still has one, else the next one of the climb.
     `question` is None once the outcome is decided (the sitting is then over)."""
     run = await _own(db, user, run_id)
     if run.ended_at is not None:
@@ -375,7 +479,7 @@ async def next_question(db: AsyncSession, user: User, run_id: int, rng: random.R
         await _finish(run, prog, now)
         return {"run": run_view(run, prog), "question": None, "progress": prog,
                 "result": await result_view(db, run)}
-    slot = subject_plan(run.subject_id)[prog["asked"]]
+    slot = (await _walk(db, run))[2].next
     rows = (await db.execute(select(MathAnswer.fingerprint).where(MathAnswer.user_id == user.id)
                              .order_by(MathAnswer.id.desc())
                              .limit(math_path.cfg()["anti_repeat_window"]))).scalars().all()
@@ -431,8 +535,8 @@ async def _on_answer(db: AsyncSession, user: User, s: QuizSession, correct: bool
 
 async def placement_handler(db: AsyncSession, user: User, s: QuizSession, correct: bool,
                             now: dt.datetime) -> dict:
-    """Grading a placement question. No tâm ma, no adaptive tier, no cơ duyên: a test only
-    measures (its Tu Vi is the usual Tu Vi of the tier)."""
+    """Grading a placement question. No tâm ma, no ladder, no adaptive tier, no cơ duyên: a
+    test only measures (its Tu Vi is the usual Tu Vi of the tier)."""
     return {"math": await _on_answer(db, user, s, correct, now)}
 
 
