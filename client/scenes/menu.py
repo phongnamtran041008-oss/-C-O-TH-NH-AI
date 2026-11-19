@@ -4,7 +4,7 @@ import pygame
 
 from .. import strings_vi as T
 from ..config import GAME_VERSION
-from ..engine import sprites
+from ..engine import art2, sprites
 from ..engine.tilemap import load_map
 from .base import Scene
 
@@ -20,15 +20,35 @@ class TitleBackground:
         self.t += dt
         cx = int(80 + 60 * pygame.math.Vector2(1, 0).rotate(self.t * 4).x)
         cy = 40
-        self.map.draw_ground(surf, (cx, cy), self.t)
-        for o in sorted(self.map.objects, key=lambda o: o.foot_y):
-            name = o.props.get("sprite")
-            if name:
+        if not art2.on():
+            self.map.draw_ground(surf, (cx, cy), self.t)
+            for o in sorted(self.map.objects, key=lambda o: o.foot_y):
+                name = o.props.get("sprite")
+                if name:
+                    img = sprites.prop(name, int(o.props.get("variant", 0) or 0), int(self.t * 2) % 4)
+                    surf.blit(img, (int(o.x) - cx, int(o.y) - cy))
+            tl = sprites.truc_lao()[0]
+            for o in self.map.find("npc"):
+                surf.blit(tl, (int(o.x) - cx, int(o.y) - cy))
+            return
+        # the 2x world of the v2 art, through the same View as the abode and the shared world
+        from ..engine.view import View
+        v = View(2)
+        v.set(cx + 60, cy + 30)
+        self.map.draw_ground_view(surf, v, self.t)
+        drawables = []
+        for o in self.map.objects:
+            d = art2.object_drawable(o, v, self.t)
+            if d is not None:
+                drawables.append(d)
+            elif o.props.get("sprite"):
+                name = o.props["sprite"]
                 img = sprites.prop(name, int(o.props.get("variant", 0) or 0), int(self.t * 2) % 4)
-                surf.blit(img, (int(o.x) - cx, int(o.y) - cy))
-        tl = sprites.truc_lao()[0]
-        for o in self.map.find("npc"):
-            surf.blit(tl, (int(o.x) - cx, int(o.y) - cy))
+                drawables.append((o.foot_y, v.img(img), v.to_screen(o.x, o.y)))
+            elif o.type == "npc":
+                drawables.append((o.foot_y, v.img(sprites.truc_lao()[0]), v.to_screen(o.x, o.y)))
+        for d in sorted(drawables, key=lambda d: d[0]):
+            surf.blit(d[1], d[2])
 
 
 class MenuScene(Scene):
@@ -69,7 +89,6 @@ class MenuScene(Scene):
     def draw_ui(self, ui):
         ui.fill(0, 0, 480, 270, (20, 18, 15, 120))
         ui.panel(130, 30, 220, 205)
-        ui.text(T.SUBTITLE, 240, 52, 16, "#BC4749", kind="han", anchor="center")
         ui.text(T.TITLE, 240, 80, 18, "#2B2B2B", anchor="center")
         ui.text(T.TAGLINE, 240, 98, 8, "#5A5A5A", anchor="center")
         y = 114

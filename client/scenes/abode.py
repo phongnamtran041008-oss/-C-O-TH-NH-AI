@@ -9,7 +9,7 @@ import pygame
 
 from .. import strings_vi as T
 from ..art.palette import rgb
-from ..engine import sprites
+from ..engine import art2, sprites
 from ..engine.beeflock import Flock
 from ..engine.effects import Effects
 from ..engine.tilemap import load_map
@@ -59,6 +59,8 @@ class AbodeScene(Scene):
         g = self.map.find("area", "garden")[0]
         self.garden_origin = (g.x, g.y)
         self.cam = [0, 0]
+        from ..engine.view import View
+        self.view = View(2 if art2.on() else 1)     # world <-> screen (2x with the v2 art)
         self.t = 0.0
         self.fx = Effects()
         self.target = None
@@ -139,7 +141,7 @@ class AbodeScene(Scene):
                 if p:
                     cx, cy = self.plot_center(p)
                     self.fx.burst(cx, cy, "r", 18, 30)
-                    self.game.toast("Lửa bén sang cây 木! Sương mực tăng lên.", "#BC4749")
+                    self.game.toast("Lửa bén sang cây Mộc! Sương mực tăng lên.", "#BC4749")
             if then:
                 then()
         self.api.get("/garden", ok, self.game.api_error)
@@ -233,7 +235,7 @@ class AbodeScene(Scene):
     def play_mishap(self, m: dict, cx: float, cy: float) -> None:
         eff = m.get("effect")
         if eff in ("horse_run", "horse_blush"):
-            self.fx.run_across("horse", cy + 20, self.cam[0], "妈?" if eff == "horse_run" else "♥")
+            self.fx.run_across("horse", cy + 20, self.cam[0], "Mẹ?" if eff == "horse_run" else "♥")
         elif eff in ("villager_blush", "merchant_confused"):
             self.fx.run_across("villager", cy + 24, self.cam[0], "!!" if eff == "villager_blush" else "?")
         elif eff == "plants_sleep":
@@ -248,7 +250,7 @@ class AbodeScene(Scene):
             for p in self.plots()[:6]:
                 if p.get("word"):
                     x, y = self.plot_center(p)
-                    self.fx.bubble(random.choice(["blablabla", "nói gì cơ?", "话话话"]), x, y - 12)
+                    self.fx.bubble(random.choice(["blablabla", "nói gì cơ?", "lảm nhảm..."]), x, y - 12)
         elif eff == "lose_stones":
             self.fx.float_text(f"-{m.get('stones_lost', 0)} Linh Thạch", cx, cy - 4, "#BC4749")
             if m.get("stones_lost"):
@@ -259,7 +261,7 @@ class AbodeScene(Scene):
                     x, y = self.plot_center(p)
                     self.fx.burst(x, y, "a", 6, 15)
         elif eff == "flower_in_teapot":
-            self.fx.bubble("🌸?" if self.game.fonts._ui_has("🌸") else "茶+花?", cx, cy - 12)
+            self.fx.bubble("🌸?" if self.game.fonts._ui_has("🌸") else "Trà + Hoa?", cx, cy - 12)
         self.fx.bubble(f"{m.get('wrong_hanzi', '')} {m.get('wrong_pinyin', '')} = {m.get('wrong_vi', '')}", cx, cy - 26, 3.5)
 
     # ------------------------------------------------------------ update
@@ -355,10 +357,12 @@ class AbodeScene(Scene):
             self.pet_follow.kind = kind
         self.pet_follow.update(dt, self.player.x, self.player.y, self.player.facing)
 
-    def bee_drawables(self, cx: int, cy: int) -> list:
+    def bee_drawables(self, cx: int, cy: int, only: set | None = None) -> list:
         out = []
         species = self.game.state.bee_species
         for fb in self.flock.bees.values():
+            if only is not None and id(fb) not in only:
+                continue
             look = (species.get(fb.sp) or {}).get("look")
             img = sprites.bee(look, fb.frame(), fb.left)
             out.append((fb.y + 6, img, (int(fb.x - 4) - cx, int(fb.y - fb.z - 4) - cy), (fb.x, fb.y)))
@@ -383,6 +387,7 @@ class AbodeScene(Scene):
     # ------------------------------------------------------------ interaction
     def interact(self, target) -> None:
         kind, obj = target
+        self.talking_to = obj if kind != "plot" else None     # v2: that NPC talks while its dialog is up
         if kind == "plot":
             self.open_plot(obj)
             return
@@ -428,8 +433,22 @@ class AbodeScene(Scene):
         self.game.push(PlotPanel(self.game, self, plot["id"]))
 
     # ------------------------------------------------------------ drawing
+    def npc_talking(self, o) -> bool:
+        if o.type != "npc" or getattr(self, "talking_to", None) is not o:
+            return False
+        return any(type(sc).__name__ == "DialogScene" for sc in self.game.scenes)
+
     def _cam(self, surf) -> tuple[int, int]:
         w, h = surf.get_size()
+        v = self.view
+        if art2.on():             # the 2x world (v2 art): the same camera rule as the shared world
+            v.zoom = 2
+            v.follow(self.player.x, self.player.y - 12, self.map.px_w, self.map.px_h, w, h)
+            if self.fx.shake:
+                v.shake(random.randint(-3, 3), random.randint(-3, 3))
+            self.cam = v.cam
+            return v.ox, v.oy
+        v.zoom = 1
         cx = int(self.player.x - w / 2)
         cy = int(self.player.y - 12 - h / 2)
         cx = max(0, min(self.map.px_w - w, cx))
@@ -438,6 +457,7 @@ class AbodeScene(Scene):
             cx += random.randint(-2, 2)
             cy += random.randint(-2, 2)
         self.cam = [cx, cy]
+        v.ox, v.oy = cx, cy
         return cx, cy
 
     def _label(self, hanzi: str) -> pygame.Surface:
@@ -457,60 +477,130 @@ class AbodeScene(Scene):
     def _small_text(self, text: str, color: str) -> pygame.Surface:
         return self.game.fonts.render(text, 7, color, 1)
 
+    def world_to_screen(self, wx: float, wy: float) -> tuple[int, int]:
+        """Where a world point is on the 480x270 screen (2x world with the v2 art)."""
+        return self.view.to_screen(wx, wy)
+
+    def screen_to_world(self, sx: float, sy: float) -> tuple[float, float]:
+        return self.view.to_world(sx, sy)
+
+    def _garden_layer(self, surf, v) -> None:
+        """The garden (old art: beds, plants, labels, fog) at the view's zoom: drawn at 1x into a
+        small layer covering the camera, then scaled 2x nearest, so every detail lands where it did."""
+        if v.zoom == 1:
+            self.draw_garden(surf, v.ox, v.oy)
+            return
+        if self.draw_garden_v2(surf, v):    # the v2 garden atlas, drawn natively: no 1x layer needed
+            return
+        sw, sh = surf.get_size()
+        wx0, wy0 = int(math.floor(v.x)), int(math.floor(v.y))
+        size = (sw // v.zoom + 2, sh // v.zoom + 2)
+        layer = getattr(self, "_glayer", None)
+        if layer is None or layer.get_size() != size:
+            layer = self._glayer = pygame.Surface(size, pygame.SRCALPHA)
+        layer.fill((0, 0, 0, 0))
+        self.draw_garden(layer, wx0, wy0)
+        surf.blit(pygame.transform.scale(layer, (size[0] * v.zoom, size[1] * v.zoom)), v.to_screen(wx0, wy0))
+
     def draw_world(self, surf):
         cx, cy = self._cam(surf)
-        self.map.draw_ground(surf, (cx, cy), self.t)
-        self.draw_garden(surf, cx, cy)
+        v = self.view
+        if v.zoom == 1:
+            self.map.draw_ground(surf, (cx, cy), self.t)
+        else:
+            self.map.draw_ground_view(surf, v, self.t)
+        self._garden_layer(surf, v)
         # y-sorted props, NPC and player
         drawables = []
         for o in self.map.objects:
             name = o.props.get("sprite")
-            if name:
+            d2 = art2.object_drawable(o, v, self.t, talking=self.npc_talking(o)) if v.zoom != 1 else None
+            if d2 is not None:          # a prop, building or NPC rendered out of Blender
+                drawables.append(d2)
+            elif name:
                 img = sprites.prop(name, int(o.props.get("variant", 0) or 0),
                                    int(self.t * 3) % 4 if name in sprites.ANIMATED_PROPS else 0)
-                drawables.append((o.foot_y, img, (int(o.x) - cx, int(o.y) - cy)))
+                drawables.append((o.foot_y, v.img(img), v.to_screen(o.x, o.y)))
             elif o.type == "npc":
                 img = sprites.truc_lao()[1 if int(self.t * 10) % 37 == 0 else 0]
-                drawables.append((o.foot_y, img, (int(o.x) - cx, int(o.y) - cy)))
+                drawables.append((o.foot_y, v.img(img), v.to_screen(o.x, o.y)))
         deco = self.decorations()
         if "small_forest" in deco:
             gx, gy = self.garden_origin
             for i in range(3):
+                pr = art2.prop_for("bamboo", i) if v.zoom != 1 else None
+                if pr is not None:
+                    bx, by = v.to_screen(gx - 12 + i * 8, gy)
+                    drawables.append((gy - 8, pr.img, (int(bx - pr.pivot[0]), int(by - pr.pivot[1]))))
+                    continue
                 img = sprites.prop("bamboo", 30 + i)
-                drawables.append((gy - 8, img, (int(gx - 20 + i * 8) - cx, int(gy - 40) - cy)))
-        img = self.player.frame()
-        drawables.append((self.player.y, img, (int(self.player.x - 8) - cx, int(self.player.y - 24) - cy)))
+                drawables.append((gy - 8, v.img(img), v.to_screen(gx - 20 + i * 8, gy - 40)))
+        pl = self.player
+        me = art2.walker_drawables(self.game.state.character.get("realm"), pl.x, pl.y, pl.facing, pl.moving,
+                                   pl.walk_t, self.t, (self.game.state.cult or {}).get("stats", {}).get("weapon"),
+                                   v) if v.zoom != 1 else None
+        if me is not None:             # the v2 Đạo Sĩ of my realm: aura, glow, body, weapon
+            drawables += me
+        else:
+            img = self.player.frame()
+            drawables.append((self.player.y, v.img(img), v.to_screen(self.player.x - 8, self.player.y - 24)))
         pf = self.pet_follow
-        if pf is not None:             # the worn Linh Thú (stage 8)
-            pygame.draw.ellipse(surf, (40, 50, 30), (int(pf.x - 5) - cx, int(pf.y - 1) - cy, 10, 3))
-            drawables.append((pf.y, sprites.pet(pf.kind, pf.frame, pf.left), (int(pf.x - 8) - cx, int(pf.y - 13) - cy)))
+        bd = art2.beast_drawable(pf.kind, pf.x, pf.y, pf.moving, pf.walk_t, self.t, pf.left, v) \
+            if pf is not None and v.zoom != 1 else None
+        if bd is not None:
+            drawables.append(bd)
+        elif pf is not None:             # the worn Linh Thú (stage 8)
+            ex, ey = v.to_screen(pf.x - 5, pf.y - 1)
+            pygame.draw.ellipse(surf, (40, 50, 30), (ex, ey, int(v.len(10)), int(v.len(3))))
+            drawables.append((pf.y, v.img(sprites.pet(pf.kind, pf.frame, pf.left)), v.to_screen(pf.x - 8, pf.y - 13)))
         hive = self.hive_info()
         if self.hive_obj is not None:
             for i, d in enumerate(hive.get("decorations", [])):   # spec 10.1: trang trí tổ ong
                 dimg = sprites.decoration(d, int(self.t * 3) % 4)
                 ox = self.hive_obj.x + (-14 - i * 10 if i % 2 == 0 else 28 + (i // 2) * 10)
                 oy = self.hive_obj.y + self.hive_obj.h - dimg.get_height()
-                drawables.append((oy + dimg.get_height(), dimg, (int(ox) - cx, int(oy) - cy)))
-        for fy, bimg, pos, ground in self.bee_drawables(cx, cy):
-            pygame.draw.ellipse(surf, (40, 50, 30), (int(ground[0] - 2) - cx, int(ground[1]) - cy, 4, 2))
-            drawables.append((fy, bimg, pos))
-        for _, img, pos in sorted(drawables, key=lambda d: d[0]):
-            surf.blit(img, pos)
+                dp = art2.decoration(d) if v.zoom != 1 else None
+                if dp is not None:     # v2 decoration: its pivot on the old sprite's bottom-centre
+                    sx, sy = v.to_screen(ox + dimg.get_width() / 2, oy + dimg.get_height())
+                    drawables.append((oy + dimg.get_height(), dp.at(self.t), (sx - dp.pivot[0], sy - dp.pivot[1])))
+                    continue
+                drawables.append((oy + dimg.get_height(), v.img(dimg), v.to_screen(ox, oy)))
+        bcx, bcy = (0, 0) if v.zoom != 1 else (cx, cy)     # at 2x: world positions, converted below
+        old_bees = []
+        for fb in self.flock.bees.values():
+            img = art2.bee_frame(fb.sp, fb.t, fb.left) if v.zoom != 1 else None
+            if img is None:
+                old_bees.append(fb)
+                continue
+            ex, ey = v.to_screen(fb.x - 2, fb.y)
+            pygame.draw.ellipse(surf, (40, 50, 30), (ex, ey, int(v.len(4)), int(v.len(2))))
+            bx, by = v.to_screen(fb.x, fb.y - fb.z)
+            drawables.append((fb.y + 6, img, (bx - 16, by - 16)))       # the bee's pivot is its body centre
+        keep = {id(fb) for fb in old_bees}
+        for fy, bimg, pos, ground in self.bee_drawables(bcx, bcy, keep):
+            ex, ey = v.to_screen(ground[0] - 2, ground[1])
+            pygame.draw.ellipse(surf, (40, 50, 30), (ex, ey, int(v.len(4)), int(v.len(2))))
+            drawables.append((fy, v.img(bimg), v.to_screen(*pos) if v.zoom != 1 else pos))
+        for d in sorted(drawables, key=lambda d: d[0]):
+            surf.blit(d[1], d[2], None, d[3] if len(d) > 3 else 0)
         if self.fishing is not None:
             from .fishing import draw_rod
-            draw_rod(surf, self.fishing, cx, cy, self.t)
+            draw_rod(surf, self.fishing, cx, cy, self.t, view=v)
         # interaction marker
         if self.target and self.game.top is self:
             kind, obj = self.target
             if kind == "plot":
-                r = self.plot_rect(obj).move(-cx, -cy)
+                r = v.rect(self.plot_rect(obj))
                 pygame.draw.rect(surf, rgb("o"), r, 1)
             else:
                 bob = int(math.sin(self.t * 6) * 2)
-                pygame.draw.polygon(surf, rgb("o"), [(int(obj.x + obj.w / 2) - cx - 3, int(obj.y) - cy - 8 + bob),
-                                                     (int(obj.x + obj.w / 2) - cx + 3, int(obj.y) - cy - 8 + bob),
-                                                     (int(obj.x + obj.w / 2) - cx, int(obj.y) - cy - 4 + bob)])
-        self.fx.draw(surf, (cx, cy), self._small_text, self.t)
+                tx, ty = v.to_screen(obj.x + obj.w / 2, obj.y)
+                if v.zoom != 1:
+                    tx, ty = v.to_screen(obj.x + obj.w / 2, obj.y + obj.h)
+                    ty -= art2.object_height(obj, v)
+                pygame.draw.polygon(surf, rgb("o"), [(tx - 3, ty - 8 + bob), (tx + 3, ty - 8 + bob),
+                                                     (tx, ty - 4 + bob)])
+        self.fx.draw(surf, (cx, cy), self._small_text, self.t, view=v if v.zoom != 1 else None)
         from .world import darkness
         d = darkness(self.game.day_phase())
         if d > 0:  # same day/night as the shared world (spec 7.1)
@@ -563,6 +653,75 @@ class AbodeScene(Scene):
             if p.get("ripe") and random.random() < 0.15:
                 self.fx.sparkle(r.centerx + cx, r.y + 10 + cy, "o" if w.get("rarity") != "common" else "W")
 
+    def draw_garden_v2(self, surf, v) -> bool:
+        """The garden from the v2 garden atlas, natively at the 2x world: beds, the plant of each
+        word (its family by a stable hash, its stage and rarity, swaying), the paper tag with the
+        word, and the marks (auras, pollen, review, due, fog) at the same places as the old 1x
+        garden, scaled by the zoom. False when there is no garden atlas (the caller draws the old)."""
+        if art2.bed(False) is None:
+            return False
+        z = v.zoom
+        sw, sh = surf.get_size()
+        for p in self.plots():
+            R = v.rect(self.plot_rect(p))
+            if R.right < 0 or R.bottom < 0 or R.left > sw or R.top > sh:
+                continue
+            wither = p.get("wither", 0) or 0
+            w = p.get("word")
+            surf.blit(art2.bed(not p["unlocked"], dry=bool(w) and wither >= 30), R.topleft)
+
+            def at(lx, ly):
+                return R.x + lx * z, R.y + ly * z
+            if not p["unlocked"]:
+                if p.get("can_unlock") and int(self.t * 2) % 2:
+                    pygame.draw.rect(surf, rgb("o"), R, z)
+                continue
+            for aura in p.get("auras", []):
+                col = rgb("a") if aura == "water" else rgb("r")
+                pygame.draw.rect(surf, col, R.inflate(-2 * z, -2 * z), z)
+            if not w:
+                continue
+            pl = art2.plant(p.get("stage", 0), w.get("rarity", "common"), w["id"], self.t)
+            if pl is not None:
+                img, (px, py) = pl
+                if wither >= 30:
+                    img = art2.withered(img, wither)
+                surf.blit(img, (R.centerx - px, R.centery + 6 * z - py))
+            if wither >= 30:
+                fog = pygame.Surface((PLOT, PLOT), pygame.SRCALPHA)
+                self.draw_fog(fog, p, fog.get_rect(), wither)
+                surf.blit(pygame.transform.scale(fog, R.size), R.topleft)
+            tag = art2.garden_prop("tag")
+            if tag is not None:      # the paper tag on its stake, the word written on it
+                tx, ty = at(1, 17)
+                surf.blit(tag.img, (tx, ty))
+                txt = self.game.fonts.render(w["hanzi"][:2], 10 if len(w["hanzi"]) == 1 else 6, (43, 43, 43), 1,
+                                             kind="han", antialias=False)
+                surf.blit(txt, (tx + (tag.img.get_width() - txt.get_width()) // 2,
+                                ty + (tag.img.get_height() - 6 - txt.get_height()) // 2))
+            if p.get("pollinated"):           # spec 10.2: Đã thụ phấn
+                pygame.draw.circle(surf, rgb("O"), at(PLOT - 5, PLOT - 5), 3 * z)
+                pygame.draw.circle(surf, rgb("o"), at(PLOT - 5, PLOT - 5), 2 * z)
+                if random.random() < 0.04:
+                    r = self.plot_rect(p)
+                    self.fx.sparkle(r.right - 5, r.bottom - 8, "o")
+            elif p.get("stage", 0) >= 3 and (p.get("pollen") or 0) > 0:
+                pygame.draw.rect(surf, rgb("k"), (*at(15, PLOT - 4), 15 * z, 3 * z))
+                pygame.draw.rect(surf, rgb("o"), (*at(16, PLOT - 3), max(1, int(13 * p["pollen"] / 100)) * z, z))
+            if p.get("needs_review"):
+                pygame.draw.circle(surf, rgb("r"), at(12, 20), 2 * z)
+            if self.is_due(p):
+                bob = int(abs(math.sin(self.t * 4)) * 3)
+                bx, by = at(PLOT - 9, 1 - bob)
+                pygame.draw.rect(surf, rgb("o"), (bx, by, 7 * z, 9 * z))
+                pygame.draw.rect(surf, rgb("k"), (bx, by, 7 * z, 9 * z), z)
+                pygame.draw.rect(surf, rgb("k"), (bx + 3 * z, by + 2 * z, z, 4 * z))
+                pygame.draw.rect(surf, rgb("k"), (bx + 3 * z, by + 7 * z, z, z))
+            if p.get("ripe") and random.random() < 0.15:
+                r = self.plot_rect(p)
+                self.fx.sparkle(r.centerx, r.y + 10, "o" if w.get("rarity") != "common" else "W")
+        return True
+
     def draw_fog(self, surf, p, r, wither):
         blobs = self.fog.setdefault(p["id"], [(random.uniform(0, 6.28), random.uniform(4, 10)) for _ in range(4)])
         fog = pygame.Surface((PLOT, PLOT), pygame.SRCALPHA)
@@ -581,19 +740,25 @@ class AbodeScene(Scene):
         # player card
         ui.fill(4, 4, 128, 34, (244, 235, 217, 235))
         ui.border(4, 4, 128, 34, "#8B5A2B")
-        head = self.player.frame().subsurface(pygame.Rect(2, 1, 12, 11)) if self.player.facing != "up" else \
-            sprites.character(self.player.appearance)[("down", 0)].subsurface(pygame.Rect(2, 1, 12, 11))
         ui.fill(7, 7, 28, 28, "#E3D5BA")
-        ui.image(head, 21, 21, zoom=2, anchor="center")
+        head = art2.portrait(ch.get("realm")) if art2.on() else None
+        if head is not None:              # cropped from the v2 idle-down frame of my realm's look
+            ui.image(head, 21, 21, zoom=1, anchor="center")
+        else:
+            head = self.player.frame().subsurface(pygame.Rect(2, 1, 12, 11)) if self.player.facing != "up" else \
+                sprites.character(self.player.appearance)[("down", 0)].subsurface(pygame.Rect(2, 1, 12, 11))
+            ui.image(head, 21, 21, zoom=2, anchor="center")
         from .library import portrait_frame
         portrait_frame(ui, me.get("frame"), 7, 7, 28, 28)
         ui.text(ch.get("display_name", ""), 39, 7, 9)
         if me.get("title"):
             ui.text(f"«{me['title']}»", 39, 28, 6, "#B8862E")
         ui.text(T.REALMS.get(ch.get("realm", "pham_nhan"), ""), 39, 19, 8, "#6A994E")
-        ui.image(sprites.icon("stone"), 7, 41, zoom=1)
-        ui.text(f"{me.get('spirit_stones', 0):,}".replace(",", "."), 18, 44, 9, "#FFFFFF", anchor="midleft")
-        ui.text(f"{me.get('spirit_stones', 0):,}".replace(",", "."), 17.5, 43.5, 9, "#2B2B2B", anchor="midleft")
+        ui.image((art2.stone_small() or sprites.icon("stone")), 7, 41, zoom=1)
+        ui.text(f"{me.get('spirit_stones', 0):,}".replace(",", "."), 22 if art2.stone_small() else 18, 44, 9, "#FFFFFF",
+                anchor="midleft")
+        ui.text(f"{me.get('spirit_stones', 0):,}".replace(",", "."), 21.5 if art2.stone_small() else 17.5, 43.5, 9,
+                "#2B2B2B", anchor="midleft")
         # chat first: while typing, letters must not trigger the hotkeys below
         self.game.chatbox.draw(ui, in_zone=False, enabled=top)
         typing = self.game.chatbox.typing
@@ -621,7 +786,7 @@ class AbodeScene(Scene):
             return
         # hover tooltip for plots
         mx, my = ui.inp.mouse
-        wx, wy = mx + self.cam[0], my + self.cam[1]
+        wx, wy = self.screen_to_world(mx, my)
         hp = self.plot_at_world(wx, wy)
         if hp and ui.hover(0, 0, 480, 245):
             ui.set_tooltip(self.plot_tooltip(hp))
@@ -645,7 +810,7 @@ class AbodeScene(Scene):
                 return
         # tutorial hint
         if self.tutorial_step in (1, 2, 3):
-            hint = {1: "Gieo hạt 水 vào một ô đất trong vườn",
+            hint = {1: "Gieo hạt chữ Thủy (nước) vào một ô đất trong vườn",
                     2: "Bấm vào cây vừa gieo để xem thẻ chữ",
                     3: "Đợi cây đến giờ ôn (dấu ! vàng) rồi bấm vào để ôn"}[self.tutorial_step]
             w = ui.text_size(hint, 8)[0] + 12

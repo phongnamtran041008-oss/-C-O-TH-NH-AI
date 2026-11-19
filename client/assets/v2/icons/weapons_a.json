@@ -1,0 +1,167 @@
+{
+ "sheet": "weapons_a.png",
+ "cell": 32,
+ "cols": 8,
+ "icons": {
+  "kiem_1": {
+   "index": 0,
+   "name_vi": "Mộc Kiếm",
+   "grade": 1
+  },
+  "kiem_2": {
+   "index": 1,
+   "name_vi": "Thiết Kiếm",
+   "grade": 2
+  },
+  "kiem_3": {
+   "index": 2,
+   "name_vi": "Bích Ngọc Kiếm",
+   "grade": 3
+  },
+  "kiem_4": {
+   "index": 3,
+   "name_vi": "Kim Lam Kiếm",
+   "grade": 4
+  },
+  "kiem_5": {
+   "index": 4,
+   "name_vi": "Linh Quang Kiếm",
+   "grade": 5
+  },
+  "kiem_6": {
+   "index": 5,
+   "name_vi": "Hỏa Diệm Kiếm",
+   "grade": 6
+  },
+  "kiem_7": {
+   "index": 6,
+   "name_vi": "Băng Dực Kiếm",
+   "grade": 7
+  },
+  "kiem_8": {
+   "index": 7,
+   "name_vi": "Tinh Không Kiếm",
+   "grade": 8
+  },
+  "dao_1": {
+   "index": 8,
+   "name_vi": "Mộc Đao",
+   "grade": 1
+  },
+  "dao_2": {
+   "index": 9,
+   "name_vi": "Thiết Đao",
+   "grade": 2
+  },
+  "dao_3": {
+   "index": 10,
+   "name_vi": "Bích Ngọc Đao",
+   "grade": 3
+  },
+  "dao_4": {
+   "index": 11,
+   "name_vi": "Kim Lam Đao",
+   "grade": 4
+  },
+  "dao_5": {
+   "index": 12,
+   "name_vi": "Linh Quang Đao",
+   "grade": 5
+  },
+  "dao_6": {
+   "index": 13,
+   "name_vi": "Hỏa Diệm Đao",
+   "grade": 6
+  },
+  "dao_7": {
+   "index": 14,
+   "name_vi": "Băng Dực Đao",
+   "grade": 7
+  },
+  "dao_8": {
+   "index": 15,
+   "name_vi": "Tinh Không Đao",
+   "grade": 8
+  },
+  "thuong_1": {
+   "index": 16,
+   "name_vi": "Mộc Thương",
+   "grade": 1
+  },
+  "thuong_2": {
+   "index": 17,
+   "name_vi": "Thiết Thương",
+   "grade": 2
+  },
+  "thuong_3": {
+   "index": 18,
+   "name_vi": "Bích Ngọc Thương",
+   "grade": 3
+  },
+  "thuong_4": {
+   "index": 19,
+   "name_vi": "Kim Lam Thương",
+   "grade": 4
+  },
+  "thuong_5": {
+   "index": 20,
+   "name_vi": "Linh Quang Thương",
+   "grade": 5
+  },
+  "thuong_6": {
+   "index": 21,
+   "name_vi": "Hỏa Diệm Thương",
+   "grade": 6
+  },
+  "thuong_7": {
+   "index": 22,
+   "name_vi": "Băng Dực Thương",
+   "grade": 7
+  },
+  "thuong_8": {
+   "index": 23,
+   "name_vi": "Tinh Không Thương",
+   "grade": 8
+  },
+  "chuy_1": {
+   "index": 24,
+   "name_vi": "Mộc Chùy",
+   "grade": 1
+  },
+  "chuy_2": {
+   "index": 25,
+   "name_vi": "Thiết Chùy",
+   "grade": 2
+  },
+  "chuy_3": {
+   "index": 26,
+   "name_vi": "Bích Ngọc Chùy",
+   "grade": 3
+  },
+  "chuy_4": {
+   "index": 27,
+   "name_vi": "Kim Lam Chùy",
+   "grade": 4
+  },
+  "chuy_5": {
+   "index": 28,
+   "name_vi": "Linh Quang Chùy",
+   "grade": 5
+  },
+  "chuy_6": {
+   "index": 29,
+   "name_vi": "Hỏa Diệm Chùy",
+   "grade": 6
+  },
+  "chuy_7": {
+   "index": 30,
+   "name_vi": "Băng Dực Chùy",
+   "grade": 7
+  },
+  "chuy_8": {
+   "index": 31,
+   "name_vi": "Tinh Không Chùy",
+   "grade": 8
+  }
+ }
+}

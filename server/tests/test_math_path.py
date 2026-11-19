@@ -503,9 +503,9 @@ def test_index_problems_are_reported(tmp_path):
 def test_unknown_cultivation_realm_is_reported(tmp_path):
     d = _write_math_dir(tmp_path, [_entry(LA, 1, f"{LA}.json")], {f"{LA}.json": raw_la()})
     index = json.loads((d / "subjects.json").read_text("utf-8"))
-    index["cultivation_realm"] = "hoa_than"                   # not a realm of the game yet
+    index["cultivation_realm"] = "phi_thang"                  # not a realm of the game
     (d / "subjects.json").write_text(json.dumps(index), "utf-8")
-    assert any("cultivation_realm: 'hoa_than' is not a realm" in e for e in mp.validate_all(d))
+    assert any("cultivation_realm: 'phi_thang' is not a realm" in e for e in mp.validate_all(d))
 
 
 def test_file_id_must_match_the_index_and_skill_ids_are_unique_across_subjects(tmp_path):

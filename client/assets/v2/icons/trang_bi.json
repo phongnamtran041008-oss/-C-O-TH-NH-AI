@@ -1,0 +1,127 @@
+{
+ "sheet": "trang_bi.png",
+ "cell": 32,
+ "cols": 8,
+ "icons": {
+  "ao_1": {
+   "index": 0,
+   "name_vi": "Áo Vải Thô",
+   "grade": 1
+  },
+  "mu_1": {
+   "index": 1,
+   "name_vi": "Mũ Vải Thô",
+   "grade": 1
+  },
+  "giay_1": {
+   "index": 2,
+   "name_vi": "Giày Vải Thô",
+   "grade": 1
+  },
+  "gang_1": {
+   "index": 3,
+   "name_vi": "Găng Vải Thô",
+   "grade": 1
+  },
+  "nhan_1": {
+   "index": 4,
+   "name_vi": "Nhẫn Vải Thô",
+   "grade": 1
+  },
+  "day_chuyen_1": {
+   "index": 5,
+   "name_vi": "Dây Chuyền Vải Thô",
+   "grade": 1
+  },
+  "ao_3": {
+   "index": 6,
+   "name_vi": "Áo Bích Lụa",
+   "grade": 3
+  },
+  "mu_3": {
+   "index": 7,
+   "name_vi": "Mũ Bích Lụa",
+   "grade": 3
+  },
+  "giay_3": {
+   "index": 8,
+   "name_vi": "Giày Bích Lụa",
+   "grade": 3
+  },
+  "gang_3": {
+   "index": 9,
+   "name_vi": "Găng Bích Lụa",
+   "grade": 3
+  },
+  "nhan_3": {
+   "index": 10,
+   "name_vi": "Nhẫn Bích Lụa",
+   "grade": 3
+  },
+  "day_chuyen_3": {
+   "index": 11,
+   "name_vi": "Dây Chuyền Bích Lụa",
+   "grade": 3
+  },
+  "ao_5": {
+   "index": 12,
+   "name_vi": "Áo Linh Quang",
+   "grade": 5
+  },
+  "mu_5": {
+   "index": 13,
+   "name_vi": "Mũ Linh Quang",
+   "grade": 5
+  },
+  "giay_5": {
+   "index": 14,
+   "name_vi": "Giày Linh Quang",
+   "grade": 5
+  },
+  "gang_5": {
+   "index": 15,
+   "name_vi": "Găng Linh Quang",
+   "grade": 5
+  },
+  "nhan_5": {
+   "index": 16,
+   "name_vi": "Nhẫn Linh Quang",
+   "grade": 5
+  },
+  "day_chuyen_5": {
+   "index": 17,
+   "name_vi": "Dây Chuyền Linh Quang",
+   "grade": 5
+  },
+  "ao_7": {
+   "index": 18,
+   "name_vi": "Áo Băng Dực",
+   "grade": 7
+  },
+  "mu_7": {
+   "index": 19,
+   "name_vi": "Mũ Băng Dực",
+   "grade": 7
+  },
+  "giay_7": {
+   "index": 20,
+   "name_vi": "Giày Băng Dực",
+   "grade": 7
+  },
+  "gang_7": {
+   "index": 21,
+   "name_vi": "Găng Băng Dực",
+   "grade": 7
+  },
+  "nhan_7": {
+   "index": 22,
+   "name_vi": "Nhẫn Băng Dực",
+   "grade": 7
+  },
+  "day_chuyen_7": {
+   "index": 23,
+   "name_vi": "Dây Chuyền Băng Dực",
+   "grade": 7
+  }
+ }
+}

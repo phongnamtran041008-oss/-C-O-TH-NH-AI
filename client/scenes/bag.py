@@ -120,8 +120,10 @@ class BagScene(Scene):
 
         The icons are rendered from 3D models by a tool that needs Blender, so a
         checkout without them falls back to the colour bar this row always had."""
-        from ..engine import icons
-        img = icons.for_item(r)
+        from ..engine import art2, icons
+        img = art2.item_icon(r) if art2.on() else None      # the v2 atlases first
+        if img is None:
+            img = icons.for_item(r)
         if img is None:
             ui.fill(lx, ry, 3, 16, fallback)
             return lx + 8

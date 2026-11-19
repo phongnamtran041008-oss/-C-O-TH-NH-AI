@@ -1,0 +1,167 @@
+{
+ "sheet": "weapons_b.png",
+ "cell": 32,
+ "cols": 8,
+ "icons": {
+  "truong_1": {
+   "index": 0,
+   "name_vi": "Mộc Trượng",
+   "grade": 1
+  },
+  "truong_2": {
+   "index": 1,
+   "name_vi": "Thiết Trượng",
+   "grade": 2
+  },
+  "truong_3": {
+   "index": 2,
+   "name_vi": "Bích Ngọc Trượng",
+   "grade": 3
+  },
+  "truong_4": {
+   "index": 3,
+   "name_vi": "Kim Lam Trượng",
+   "grade": 4
+  },
+  "truong_5": {
+   "index": 4,
+   "name_vi": "Linh Quang Trượng",
+   "grade": 5
+  },
+  "truong_6": {
+   "index": 5,
+   "name_vi": "Hỏa Diệm Trượng",
+   "grade": 6
+  },
+  "truong_7": {
+   "index": 6,
+   "name_vi": "Băng Dực Trượng",
+   "grade": 7
+  },
+  "truong_8": {
+   "index": 7,
+   "name_vi": "Tinh Không Trượng",
+   "grade": 8
+  },
+  "cung_1": {
+   "index": 8,
+   "name_vi": "Mộc Cung",
+   "grade": 1
+  },
+  "cung_2": {
+   "index": 9,
+   "name_vi": "Thiết Cung",
+   "grade": 2
+  },
+  "cung_3": {
+   "index": 10,
+   "name_vi": "Bích Ngọc Cung",
+   "grade": 3
+  },
+  "cung_4": {
+   "index": 11,
+   "name_vi": "Kim Lam Cung",
+   "grade": 4
+  },
+  "cung_5": {
+   "index": 12,
+   "name_vi": "Linh Quang Cung",
+   "grade": 5
+  },
+  "cung_6": {
+   "index": 13,
+   "name_vi": "Hỏa Diệm Cung",
+   "grade": 6
+  },
+  "cung_7": {
+   "index": 14,
+   "name_vi": "Băng Dực Cung",
+   "grade": 7
+  },
+  "cung_8": {
+   "index": 15,
+   "name_vi": "Tinh Không Cung",
+   "grade": 8
+  },
+  "phien_1": {
+   "index": 16,
+   "name_vi": "Mộc Phiến",
+   "grade": 1
+  },
+  "phien_2": {
+   "index": 17,
+   "name_vi": "Thiết Phiến",
+   "grade": 2
+  },
+  "phien_3": {
+   "index": 18,
+   "name_vi": "Bích Ngọc Phiến",
+   "grade": 3
+  },
+  "phien_4": {
+   "index": 19,
+   "name_vi": "Kim Lam Phiến",
+   "grade": 4
+  },
+  "phien_5": {
+   "index": 20,
+   "name_vi": "Linh Quang Phiến",
+   "grade": 5
+  },
+  "phien_6": {
+   "index": 21,
+   "name_vi": "Hỏa Diệm Phiến",
+   "grade": 6
+  },
+  "phien_7": {
+   "index": 22,
+   "name_vi": "Băng Dực Phiến",
+   "grade": 7
+  },
+  "phien_8": {
+   "index": 23,
+   "name_vi": "Tinh Không Phiến",
+   "grade": 8
+  },
+  "ho_lo_1": {
+   "index": 24,
+   "name_vi": "Mộc Hồ Lô",
+   "grade": 1
+  },
+  "ho_lo_2": {
+   "index": 25,
+   "name_vi": "Thiết Hồ Lô",
+   "grade": 2
+  },
+  "ho_lo_3": {
+   "index": 26,
+   "name_vi": "Bích Ngọc Hồ Lô",
+   "grade": 3
+  },
+  "ho_lo_4": {
+   "index": 27,
+   "name_vi": "Kim Lam Hồ Lô",
+   "grade": 4
+  },
+  "ho_lo_5": {
+   "index": 28,
+   "name_vi": "Linh Quang Hồ Lô",
+   "grade": 5
+  },
+  "ho_lo_6": {
+   "index": 29,
+   "name_vi": "Hỏa Diệm Hồ Lô",
+   "grade": 6
+  },
+  "ho_lo_7": {
+   "index": 30,
+   "name_vi": "Băng Dực Hồ Lô",
+   "grade": 7
+  },
+  "ho_lo_8": {
+   "index": 31,
+   "name_vi": "Tinh Không Hồ Lô",
+   "grade": 8
+  }
+ }
+}

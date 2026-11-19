@@ -108,8 +108,7 @@ def fight_step(drv: Driver, server: ServerProcess, asked: list) -> bool:
     if math.hypot(m.pos[0] - ws.player.x, m.pos[1] - ws.player.y) >= 30:
         walk_to(drv, m.pos[0], m.pos[1] + 6, near=18, timeout=3)
         return True
-    cx, cy = ws.cam
-    drv.click_at(drv.game.display.to_window(m.pos[0] - cx, m.pos[1] - cy - 8))
+    drv.click_at(drv.game.display.to_window(*ws.world_to_screen(m.pos[0], m.pos[1] - 8)))
     drv.step(6)
     drv.press(pygame.K_SPACE)
     drv.step(6)

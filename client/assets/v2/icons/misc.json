@@ -1,0 +1,57 @@
+{
+ "sheet": "misc.png",
+ "cell": 32,
+ "cols": 8,
+ "icons": {
+  "linh_thach_1": {
+   "index": 0,
+   "name_vi": "Hạ Phẩm Linh Thạch",
+   "grade": 1
+  },
+  "linh_thach_2": {
+   "index": 1,
+   "name_vi": "Trung Phẩm Linh Thạch",
+   "grade": 3
+  },
+  "linh_thach_3": {
+   "index": 2,
+   "name_vi": "Thượng Phẩm Linh Thạch",
+   "grade": 5
+  },
+  "trung_linh_thu": {
+   "index": 3,
+   "name_vi": "Trứng Linh Thú",
+   "grade": 3
+  },
+  "phong_an_phu": {
+   "index": 4,
+   "name_vi": "Phong Ấn Phù",
+   "grade": 3
+  },
+  "ruong_dong": {
+   "index": 5,
+   "name_vi": "Rương Đồng",
+   "grade": 3
+  },
+  "ruong_mo": {
+   "index": 6,
+   "name_vi": "Rương Đồng Mở",
+   "grade": 3
+  },
+  "chia_khoa": {
+   "index": 7,
+   "name_vi": "Chìa Khóa",
+   "grade": 2
+  },
+  "ngu_kiem_lenh": {
+   "index": 8,
+   "name_vi": "Ngự Kiếm Lệnh",
+   "grade": 5
+  },
+  "pha_canh_dan": {
+   "index": 9,
+   "name_vi": "Phá Cảnh Đan",
+   "grade": 6
+  }
+ }
+}

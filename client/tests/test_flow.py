@@ -15,7 +15,7 @@ from client.tests.driver import Driver, ServerProcess, answer_current_quiz
 def plot_window_pos(drv: Driver, plot: dict) -> tuple[int, int]:
     abode = drv.game.scenes[0]
     r = abode.plot_rect(plot)
-    return drv.game.display.to_window(r.centerx - abode.cam[0], r.centery - abode.cam[1])
+    return drv.game.display.to_window(*abode.world_to_screen(r.centerx, r.centery))
 
 
 def first_open_plot(drv: Driver) -> dict:
@@ -54,9 +54,6 @@ def run_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait_scene("CreateCharScene")
         drv.click("cc_name")
         drv.type("Tiểu Trúc")
-        drv.click("hc_2")
-        drv.click("hs_buoi")
-        drv.click("bd_nu")
         drv.step(30)
         drv.shot("create_character")
         drv.click("cc_go")

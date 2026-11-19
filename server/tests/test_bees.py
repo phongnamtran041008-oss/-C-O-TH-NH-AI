@@ -477,17 +477,18 @@ async def test_pollinate_quest_and_bee_xp(client, db, frozen):
 
 # ------------------------------------------------------------------ guard slots (spec 7.3, 10.2.3)
 @pytest.mark.parametrize("realm,slots", [("pham_nhan", 0), ("luyen_khi", 2), ("truc_co", 3), ("kim_dan", 4),
-                                         ("nguyen_anh", 5)])
+                                         ("nguyen_anh", 5), ("hoa_than", 6), ("luyen_hu", 7), ("hop_the", 8),
+                                         ("dai_thua", 9)])
 async def test_guard_slots_follow_realm(client, db, realm, slots):
-    h, uid = await player(client, db, f"ho_ve_{realm[:4]}")
+    h, uid = await player(client, db, f"ho_ve_{realm[:4]}{slots}")
     await client.get("/hive", headers=h)
     hive = await db.get(Hive, uid)
     await db.refresh(hive)
-    hive.cells = 10
+    hive.cells = 12
     ch = await db.get(Character, uid)
     ch.realm, ch.realm_stage = realm, 0 if realm == "pham_nhan" else 1
     await db.commit()
-    ids = [(await give_bee(db, uid, "muc")).id for _ in range(6)]
+    ids = [(await give_bee(db, uid, "muc")).id for _ in range(max(6, slots + 1))]
     ok = 0
     for bid in ids:
         r = await client.post("/bees/role", json={"bee_id": bid, "role": "guard"}, headers=h)
@@ -503,7 +504,8 @@ async def test_guard_slots_follow_realm(client, db, realm, slots):
 
 def test_guard_slot_table_matches_spec():
     assert beesys.cfg()["guard"]["slots_by_realm"] == {"pham_nhan": 0, "luyen_khi": 2, "truc_co": 3,
-                                                        "kim_dan": 4, "nguyen_anh": 5}
+                                                        "kim_dan": 4, "nguyen_anh": 5, "hoa_than": 6,
+                                                        "luyen_hu": 7, "hop_the": 8, "dai_thua": 9}
 
 
 async def test_pollinator_cap(client, db):

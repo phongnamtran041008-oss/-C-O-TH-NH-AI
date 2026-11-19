@@ -1,0 +1,61 @@
+{
+ "id": "bee_thao",
+ "name_vi": "Ong Thảo",
+ "frame": {
+  "w": 32,
+  "h": 32
+ },
+ "pivot": {
+  "x": 16,
+  "y": 16
+ },
+ "sheet": "bee_thao.png",
+ "cols": 12,
+ "frames": 12,
+ "clips": {
+  "fly": {
+   "fps": 12,
+   "loop": true,
+   "frames": {
+    "left": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "right": [
+     4,
+     5,
+     6,
+     7
+    ]
+   }
+  },
+  "sting": {
+   "fps": 12,
+   "loop": false,
+   "frames": {
+    "left": [
+     8,
+     9
+    ],
+    "right": [
+     10,
+     11
+    ]
+   }
+  }
+ },
+ "events": {
+  "sting": {
+   "hit": 0
+  }
+ },
+ "render": {
+  "ppm": 38.0,
+  "scale": 6,
+  "kind": "bee",
+  "layer": false,
+  "elevation": 12.0
+ }
+}

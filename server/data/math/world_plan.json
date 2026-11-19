@@ -1,0 +1,132 @@
+{
+ "_comment": "Thiên Địa Đồ: tu vi mở khoá cái gì, vùng đất nào có vũ khí gì, linh thú ở đâu, và luật đánh quái mới. Đi cùng tree.json (cây giáo trình): mọi 'nodes' ở đây là nút của cây ấy, nên yêu cầu của một món vũ khí luôn là một phần giáo trình đã học xong. 'wired': false nghĩa là game chưa chạy theo file này; nó là bản thiết kế đã được kiểm (server/app/learning/math_tree.py), chờ duyệt rồi mới nối vào game. 'status' của từng mục: 'co' = game đã có, 'chua_co' = chưa làm. Tầng 0 của một cảnh giới là lúc vừa độ kiếp lên cảnh giới ấy, chưa xong tầng 1.",
+ "version": 1,
+ "wired": false,
+ "combat": {
+  "_comment": "Luật mới theo yêu cầu: chỉ phải trả lời câu hỏi khi bị quái đánh trúng.",
+  "question_rule": "on_hit",
+  "rules_vi": [
+   "Người chơi đánh thường và dùng chiêu thức tự do, không phải trả lời câu hỏi để ra đòn.",
+   "Quái ra đòn có báo trước: vùng đánh (hình tròn, hình quạt hoặc đường thẳng) hiện trên mặt đất và đầy dần trong thời gian 'windup'.",
+   "Né ra khỏi vùng đánh trước khi nó đầy: không mất máu, không có câu hỏi.",
+   "Bị đánh trúng: thế giới dừng lại và một câu hỏi hiện ra (đúng vi kỹ năng mà con quái ấy đại diện).",
+   "Trả lời đúng = Phản Đòn: không mất máu, quái choáng và nhận đòn phản, người chơi được tu vi và linh lực.",
+   "Trả lời sai hoặc hết giờ = trúng đòn: mất máu, và xem lời giải.",
+   "Sau mỗi câu hỏi có thời gian nghỉ; trong lúc ấy đòn trúng chỉ gây nửa sát thương và không hỏi.",
+   "Quái thường có thể hạ bằng đòn thường, nhưng tu vi chủ yếu đến từ Phản Đòn. Khiên của tinh anh và trùm chỉ vỡ khi Phản Đòn."
+  ],
+  "question_cooldown_seconds": 8,
+  "telegraph_min_seconds": 0.8,
+  "telegraph_shapes": ["circle", "cone", "line"],
+  "right_answer": {"damage_taken": 0.0, "counter_multiplier": 3.0, "stun_seconds": 1.5, "gives_tu_vi": true, "fx": "parry"},
+  "wrong_answer": {"damage_taken": 1.0, "shows_solution": true, "fx": "guard_break"},
+  "hit_during_cooldown": {"damage_taken": 0.5, "question": false},
+  "dodge": {"clip": "dodge", "invulnerable_seconds": 0.25, "cooldown_seconds": 1.2},
+  "elite_shield_breaks_on": "parry"
+ },
+ "grades": [
+  {"grade": 1, "realm": "luyen_khi", "prefix_vi": "Mộc"},
+  {"grade": 2, "realm": "truc_co", "prefix_vi": "Thiết"},
+  {"grade": 3, "realm": "ket_dan", "prefix_vi": "Bích Ngọc"},
+  {"grade": 4, "realm": "nguyen_anh", "prefix_vi": "Kim Lam"},
+  {"grade": 5, "realm": "hoa_than", "prefix_vi": "Linh Quang"},
+  {"grade": 6, "realm": "luyen_hu", "prefix_vi": "Hỏa Diệm"},
+  {"grade": 7, "realm": "hop_the", "prefix_vi": "Băng Dực"},
+  {"grade": 8, "realm": "dai_thua", "prefix_vi": "Tinh Không"}
+ ],
+ "qualities": [
+  {"id": "ha", "name_vi": "Hạ phẩm", "power": 1.0},
+  {"id": "trung", "name_vi": "Trung phẩm", "power": 1.35},
+  {"id": "thuong", "name_vi": "Thượng phẩm", "power": 1.8}
+ ],
+ "weapon_types": [
+  {"id": "kiem", "name_vi": "Kiếm", "branch": "ds", "land": "kiem_trung_son", "clip": "slash", "why_vi": "Vectơ là mũi tên thẳng: kiếm là binh khí của Đại Số Tuyến Tính."},
+  {"id": "dao", "name_vi": "Đao", "branch": "gt", "land": "luu_van_coc", "clip": "slash", "why_vi": "Lưỡi đao là một đường cong: binh khí của Giải Tích."},
+  {"id": "ho_lo", "name_vi": "Hồ Lô", "branch": "xs", "land": "van_tuong_trach", "clip": "cast", "why_vi": "Rút bi từ trong bình: binh khí của Xác Suất."},
+  {"id": "thuong", "name_vi": "Thương", "branch": "tr", "land": "me_do_lam", "clip": "slash", "why_vi": "Đi thẳng tới đích theo đường ngắn nhất: binh khí của Thuật Toán và Tối Ưu."},
+  {"id": "chuy", "name_vi": "Chùy", "branch": "lt", "land": "thien_cong_phuong", "clip": "slash", "why_vi": "Búa của thợ rèn: lập trình là tự tay rèn ra công cụ."},
+  {"id": "cung", "name_vi": "Cung", "branch": "ud", "land": "linh_xa_nguyen", "clip": "shoot", "why_vi": "Nhắm vào đích và chỉnh dần cho trúng: đó chính là huấn luyện một mô hình."},
+  {"id": "truong", "name_vi": "Trượng", "branch": "ml", "land": "van_hai_thien_dao", "clip": "cast", "why_vi": "Pháp trượng của người điều khiển mô hình, từ Trúc Cơ."},
+  {"id": "phien", "name_vi": "Phiến", "branch": "dl", "land": null, "clip": "cast", "why_vi": "Quạt nhiều nan xếp lớp như mạng nhiều tầng, từ Nguyên Anh."}
+ ],
+ "lands": [
+  {"id": "truc_lam_thon", "name_vi": "Trúc Lâm Thôn", "kind": "hub", "realm": "luyen_khi", "branch": null, "map": "truc_lam_thon", "opens": {"stage": 0, "nodes": []}, "status": "co",
+   "desc_vi": "Thôn tre: nơi bắt đầu, có Tàng Thư Các, lò rèn và động phủ."},
+  {"id": "kiem_trung_son", "name_vi": "Kiếm Trủng Sơn", "kind": "wild", "realm": "luyen_khi", "branch": "ds", "map": "loan_so_coc", "opens": {"stage": 0, "nodes": []}, "status": "chua_co",
+   "desc_vi": "Núi mộ kiếm: kiếm gãy cắm đầy sườn đá. Quái: Kiếm Linh, Thạch Khôi; tinh anh: Ma Trận Thú.", "monsters": ["kiem_linh", "thach_khoi", "ma_tran_thu"]},
+  {"id": "luu_van_coc", "name_vi": "Lưu Vân Cốc", "kind": "wild", "realm": "luyen_khi", "branch": "gt", "map": null, "opens": {"stage": 0, "nodes": []}, "status": "chua_co",
+   "desc_vi": "Thung lũng mây trôi: suối uốn lượn, gió không ngừng. Quái: Vân Xà, Phong Lang.", "monsters": ["van_xa", "phong_lang"]},
+  {"id": "van_tuong_trach", "name_vi": "Vạn Tượng Trạch", "kind": "wild", "realm": "luyen_khi", "branch": "xs", "map": "ho_nghien_muc", "opens": {"stage": 0, "nodes": []}, "status": "chua_co",
+   "desc_vi": "Đầm vạn tượng: sương mù, mỗi bước một điều chưa chắc. Quái: Đầu Tử Oa, Hồ Lô Tinh.", "monsters": ["dau_tu_oa", "ho_lo_tinh"]},
+  {"id": "me_do_lam", "name_vi": "Mê Đồ Lâm", "kind": "wild", "realm": "luyen_khi", "branch": "tr", "map": "rung_muc_loang", "opens": {"stage": 0, "nodes": []}, "status": "chua_co",
+   "desc_vi": "Rừng mê cung: lối đi chằng chịt như một đồ thị. Quái: Tri Chu Tinh, Mộc Yêu.", "monsters": ["tri_chu_tinh", "moc_yeu"]},
+  {"id": "thien_cong_phuong", "name_vi": "Thiên Công Phường", "kind": "wild", "realm": "luyen_khi", "branch": "lt", "map": null, "opens": {"stage": 1, "nodes": ["lt_python_co_ban"]}, "status": "chua_co",
+   "desc_vi": "Phường thợ bỏ hoang: lò rèn, bánh răng và những cơ quan nhân còn chạy. Quái: Cơ Quan Nhân.", "monsters": ["co_quan_nhan"]},
+  {"id": "linh_xa_nguyen", "name_vi": "Linh Xạ Nguyên", "kind": "wild", "realm": "luyen_khi", "branch": "ud", "map": null, "opens": {"stage": 2, "nodes": ["lt_cau_truc_du_lieu", "ds_vecto_ma_tran"]}, "status": "chua_co",
+   "desc_vi": "Thảo nguyên bia bắn: nơi luyện Thực Chiến AI. Quái: Tâm Ma của chính mình.", "monsters": ["tam_ma"]},
+  {"id": "loi_kiep_dai", "name_vi": "Lôi Kiếp Đài", "kind": "boss", "realm": "luyen_khi", "branch": null, "map": null, "opens": {"stage": 9, "nodes": ["du_an_luyen_khi"]}, "status": "chua_co",
+   "desc_vi": "Đài độ kiếp: nơi đối mặt Thiên Kiếp Lôi Long để lên Trúc Cơ.", "monsters": ["loi_long"]},
+  {"id": "van_hai_thien_dao", "name_vi": "Vân Hải Thiên Đảo", "kind": "sky", "realm": "truc_co", "branch": "ml", "map": null, "opens": {"stage": 0, "nodes": ["du_an_luyen_khi"]}, "needs": "ngu_kiem_phi_hanh", "status": "chua_co",
+   "desc_vi": "Quần đảo trên biển mây: chỉ tới được bằng ngự kiếm phi hành.", "monsters": []}
+ ],
+ "weapons_placed": [
+  {"weapon": "kiem_1", "quality": "ha", "land": "kiem_trung_son", "spot_vi": "Cắm trên bia đá ngay cổng núi.", "requires": {"realm": "luyen_khi", "stage": 1, "nodes": ["ds_ngon_ngu"]}},
+  {"weapon": "kiem_1", "quality": "trung", "land": "kiem_trung_son", "spot_vi": "Trong hang sau thác, do Thạch Khôi canh.", "requires": {"realm": "luyen_khi", "stage": 4, "nodes": ["ds_he_gauss"]}},
+  {"weapon": "kiem_1", "quality": "thuong", "land": "kiem_trung_son", "spot_vi": "Giữa bãi kiếm gãy, do Ma Trận Thú canh.", "requires": {"realm": "luyen_khi", "stage": 7, "nodes": ["ds_anh_xa_tuyen_tinh", "ds_truc_giao_chieu"]}},
+  {"weapon": "kiem_2", "quality": "ha", "land": "kiem_trung_son", "spot_vi": "Trên đỉnh núi, phải Đạp Kiếm Lướt qua vực mới tới.", "needs": "dap_kiem_luot", "requires": {"realm": "luyen_khi", "stage": 9, "nodes": ["ds_pca_svd"]}},
+
+  {"weapon": "dao_1", "quality": "ha", "land": "luu_van_coc", "spot_vi": "Gác trên tảng đá đầu suối.", "requires": {"realm": "luyen_khi", "stage": 1, "nodes": ["gt_ham_so"]}},
+  {"weapon": "dao_1", "quality": "trung", "land": "luu_van_coc", "spot_vi": "Dưới đáy khúc suối cong nhất.", "requires": {"realm": "luyen_khi", "stage": 4, "nodes": ["gt_cuc_tri"]}},
+  {"weapon": "dao_1", "quality": "thuong", "land": "luu_van_coc", "spot_vi": "Trên mỏm đá cao nhất thung lũng: điểm cực đại.", "requires": {"realm": "luyen_khi", "stage": 7, "nodes": ["gt_gradient"]}},
+  {"weapon": "dao_2", "quality": "ha", "land": "luu_van_coc", "spot_vi": "Trong mây trên đầu thác, phải Đạp Kiếm Lướt.", "needs": "dap_kiem_luot", "requires": {"realm": "luyen_khi", "stage": 9, "nodes": ["gt_gradient", "gt_tich_phan_ung_dung"]}},
+
+  {"weapon": "ho_lo_1", "quality": "ha", "land": "van_tuong_trach", "spot_vi": "Treo trên cành liễu ở bến đầm.", "requires": {"realm": "luyen_khi", "stage": 1, "nodes": ["xs_dem_su_kien"]}},
+  {"weapon": "ho_lo_1", "quality": "trung", "land": "van_tuong_trach", "spot_vi": "Trên đảo sương giữa đầm.", "requires": {"realm": "luyen_khi", "stage": 4, "nodes": ["xs_bayes"]}},
+  {"weapon": "ho_lo_1", "quality": "thuong", "land": "van_tuong_trach", "spot_vi": "Trong miếu chìm, do Hồ Lô Tinh canh.", "requires": {"realm": "luyen_khi", "stage": 7, "nodes": ["xs_ky_vong_phan_phoi"]}},
+  {"weapon": "ho_lo_2", "quality": "ha", "land": "van_tuong_trach", "spot_vi": "Dưới gốc cổ thụ giữa đầm sâu.", "requires": {"realm": "luyen_khi", "stage": 9, "nodes": ["xs_kiem_dinh"]}},
+
+  {"weapon": "thuong_1", "quality": "ha", "land": "me_do_lam", "spot_vi": "Dựng ở ngã ba đầu tiên của rừng.", "requires": {"realm": "luyen_khi", "stage": 1, "nodes": ["tr_logic_dem"]}},
+  {"weapon": "thuong_1", "quality": "trung", "land": "me_do_lam", "spot_vi": "Ở ngõ cụt sâu nhất, phải tìm đúng đường.", "requires": {"realm": "luyen_khi", "stage": 4, "nodes": ["tr_thuat_toan", "tr_do_thi"]}},
+  {"weapon": "thuong_1", "quality": "thuong", "land": "me_do_lam", "spot_vi": "Trong hốc cây mẹ, do Mộc Yêu canh.", "requires": {"realm": "luyen_khi", "stage": 7, "nodes": ["tr_toi_uu_loi"]}},
+  {"weapon": "thuong_2", "quality": "ha", "land": "me_do_lam", "spot_vi": "Dưới đáy thung lũng thấp nhất của rừng: điểm cực tiểu.", "requires": {"realm": "luyen_khi", "stage": 9, "nodes": ["tr_gradient_descent"]}},
+
+  {"weapon": "chuy_1", "quality": "ha", "land": "thien_cong_phuong", "spot_vi": "Trên đe của lò rèn nguội.", "requires": {"realm": "luyen_khi", "stage": 1, "nodes": ["lt_python_co_ban"]}},
+  {"weapon": "chuy_1", "quality": "trung", "land": "thien_cong_phuong", "spot_vi": "Trong xưởng bánh răng, sau cơ quan cửa.", "requires": {"realm": "luyen_khi", "stage": 4, "nodes": ["lt_numpy", "lt_ma_tran_gauss"]}},
+  {"weapon": "chuy_1", "quality": "thuong", "land": "thien_cong_phuong", "spot_vi": "Trong tay Cơ Quan Nhân đầu đàn.", "requires": {"realm": "luyen_khi", "stage": 6, "nodes": ["lt_do_thi"]}},
+  {"weapon": "chuy_2", "quality": "ha", "land": "thien_cong_phuong", "spot_vi": "Trong lò lớn, chỉ mở khi đốt lại được lò.", "requires": {"realm": "luyen_khi", "stage": 9, "nodes": ["lt_do_thi", "ud_mang_no_ron"]}},
+
+  {"weapon": "cung_1", "quality": "ha", "land": "linh_xa_nguyen", "spot_vi": "Trên giá cung ở trường bắn.", "requires": {"realm": "luyen_khi", "stage": 3, "nodes": ["ud_knn"]}},
+  {"weapon": "cung_1", "quality": "trung", "land": "linh_xa_nguyen", "spot_vi": "Sau hàng bia thứ hai.", "requires": {"realm": "luyen_khi", "stage": 5, "nodes": ["ud_hoi_quy_1_bien", "ud_naive_bayes"]}},
+  {"weapon": "cung_1", "quality": "thuong", "land": "linh_xa_nguyen", "spot_vi": "Trong tay Tâm Ma của chính mình.", "requires": {"realm": "luyen_khi", "stage": 8, "nodes": ["ud_mang_no_ron"]}},
+  {"weapon": "cung_2", "quality": "ha", "land": "loi_kiep_dai", "spot_vi": "Rơi ra khi vượt Thiên Kiếp Luyện Khí.", "requires": {"realm": "luyen_khi", "stage": 9, "nodes": ["du_an_luyen_khi"]}},
+
+  {"weapon": "truong_2", "quality": "ha", "land": "van_hai_thien_dao", "spot_vi": "Trên đảo mây đầu tiên.", "needs": "ngu_kiem_phi_hanh", "requires": {"realm": "truc_co", "stage": 1, "nodes": ["tc_hoc_co_giam_sat"]}},
+  {"weapon": "truong_2", "quality": "trung", "land": "van_hai_thien_dao", "spot_vi": "Trên đảo có cây quyết định cổ thụ.", "needs": "ngu_kiem_phi_hanh", "requires": {"realm": "truc_co", "stage": 2, "nodes": ["tc_cay_quyet_dinh", "tc_phan_loai"]}},
+  {"weapon": "truong_2", "quality": "thuong", "land": "van_hai_thien_dao", "spot_vi": "Trên đảo cao nhất.", "needs": "ngu_kiem_phi_hanh", "requires": {"realm": "truc_co", "stage": 3, "nodes": ["tc_danh_gia"]}}
+ ],
+ "beasts": [
+  {"id": "linh_ho", "name_vi": "Linh Hồ", "land": "me_do_lam", "where_vi": "Sâu trong rừng, chỉ hiện ở ngõ cụt.", "requires": {"realm": "luyen_khi", "stage": 3}, "needs": null, "parries_to_tame": 3, "gift_vi": "Đánh hơi vũ khí và rương ẩn ở gần."},
+  {"id": "huyen_quy", "name_vi": "Huyền Quy", "land": "van_tuong_trach", "where_vi": "Phơi mình trên đảo sương.", "requires": {"realm": "luyen_khi", "stage": 4}, "needs": null, "parries_to_tame": 3, "gift_vi": "Giảm sát thương khi trả lời sai."},
+  {"id": "bach_hac", "name_vi": "Bạch Hạc", "land": "luu_van_coc", "where_vi": "Đậu trên mỏm đá cao.", "requires": {"realm": "luyen_khi", "stage": 5}, "needs": null, "parries_to_tame": 4, "gift_vi": "Né đòn hồi nhanh hơn."},
+  {"id": "hoa_tuoc", "name_vi": "Hỏa Tước", "land": "kiem_trung_son", "where_vi": "Tổ trên vách núi, phải Đạp Kiếm Lướt mới tới.", "requires": {"realm": "luyen_khi", "stage": 6}, "needs": "dap_kiem_luot", "parries_to_tame": 4, "gift_vi": "Đòn phản thêm sát thương hoả."},
+  {"id": "tieu_long", "name_vi": "Tiểu Long", "land": "thien_cong_phuong", "where_vi": "Cuộn trong lò lớn của phường.", "requires": {"realm": "luyen_khi", "stage": 8}, "needs": null, "parries_to_tame": 5, "gift_vi": "Cưỡi được: chạy nhanh trên mặt đất."},
+  {"id": "ky_lan_con", "name_vi": "Kỳ Lân Con", "land": "van_hai_thien_dao", "where_vi": "Trên đảo mây xa nhất.", "requires": {"realm": "truc_co", "stage": 1}, "needs": "ngu_kiem_phi_hanh", "parries_to_tame": 6, "gift_vi": "Mỗi ngày tặng một lần trả lời lại câu vừa sai."}
+ ],
+ "beast_taming_vi": "Thu phục linh thú cũng theo luật đánh mới: không có câu hỏi riêng. Để linh thú đánh trúng rồi Phản Đòn đủ số lần là nó chịu phục; sau đó dùng Phong Ấn Phù để thu.",
+ "unlocks": [
+  {"id": "ne_don", "name_vi": "Né Đòn", "realm": "luyen_khi", "stage": 1, "status": "chua_co", "desc_vi": "Lướt nhanh ra khỏi vùng đánh của quái."},
+  {"id": "nhat_vu_khi", "name_vi": "Nhặt binh khí", "realm": "luyen_khi", "stage": 1, "status": "chua_co", "desc_vi": "Nhặt và dùng vũ khí nằm rải rác ở các vùng đất, nếu đủ yêu cầu."},
+  {"id": "thu_phuc_linh_thu", "name_vi": "Thu phục linh thú", "realm": "luyen_khi", "stage": 3, "status": "chua_co", "desc_vi": "Dùng Phong Ấn Phù để thu linh thú đã chịu phục."},
+  {"id": "nang_pham", "name_vi": "Rèn nâng phẩm", "realm": "luyen_khi", "stage": 4, "status": "chua_co", "desc_vi": "Lò rèn nâng vũ khí từ hạ phẩm lên trung phẩm."},
+  {"id": "phap_tran", "name_vi": "Bày pháp trận", "realm": "luyen_khi", "stage": 5, "status": "chua_co", "desc_vi": "Đặt một pháp trận trên mặt đất: quái trong trận ra đòn chậm lại, dễ né và dễ Phản Đòn hơn."},
+  {"id": "dap_kiem_luot", "name_vi": "Đạp Kiếm Lướt", "realm": "luyen_khi", "stage": 6, "status": "chua_co", "desc_vi": "Đứng trên kiếm lướt một quãng ngắn qua vực và mặt nước: tới được các vùng cao."},
+  {"id": "cuoi_linh_thu", "name_vi": "Cưỡi linh thú", "realm": "luyen_khi", "stage": 8, "status": "chua_co", "desc_vi": "Cưỡi linh thú đã thu phục để đi nhanh."},
+  {"id": "ngu_kiem_phi_hanh", "name_vi": "Ngự Kiếm Phi Hành", "realm": "truc_co", "stage": 0, "status": "chua_co", "desc_vi": "Bay tự do trên kiếm. Mở Vân Hải Thiên Đảo và mọi nơi trước đây không tới được."},
+  {"id": "ban_menh_phap_bao", "name_vi": "Bản Mệnh Pháp Bảo", "realm": "ket_dan", "stage": 0, "status": "chua_co", "desc_vi": "Luyện một vũ khí thành bản mệnh: nó lớn lên cùng chủ."},
+  {"id": "phan_than", "name_vi": "Nguyên Anh Xuất Khiếu", "realm": "nguyen_anh", "stage": 0, "status": "chua_co", "desc_vi": "Thả một phân thân đánh cùng mình."},
+  {"id": "thuan_di", "name_vi": "Thuấn Di", "realm": "hoa_than", "stage": 0, "status": "chua_co", "desc_vi": "Dịch chuyển tức thời giữa các vùng đất đã tới."},
+  {"id": "xe_hu_khong", "name_vi": "Xé Hư Không", "realm": "luyen_hu", "stage": 0, "status": "chua_co", "desc_vi": "Mở khe nứt vào bí cảnh ở bất cứ đâu."},
+  {"id": "hop_the_linh_thu", "name_vi": "Nhân Thú Hợp Thể", "realm": "hop_the", "stage": 0, "status": "chua_co", "desc_vi": "Hợp thể với linh thú thành hình thái chiến đấu."},
+  {"id": "khai_tong_lap_phai", "name_vi": "Khai Tông Lập Phái", "realm": "dai_thua", "stage": 0, "status": "chua_co", "desc_vi": "Lập tông môn của riêng mình và truyền lại cho người sau."}
+ ]
+}

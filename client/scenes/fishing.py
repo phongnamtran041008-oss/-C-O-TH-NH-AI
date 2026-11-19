@@ -12,7 +12,7 @@ import random
 import pygame
 
 from .. import strings_vi as T
-from ..engine import fishing_sim as fs
+from ..engine import art2, fishing_sim as fs
 from .base import Scene
 from .quiz import QuizScene
 
@@ -77,9 +77,42 @@ def fish_icon(shape: str, color: str, color2: str | None = None, dark: bool = Fa
     return s
 
 
-def draw_rod(surf: pygame.Surface, scene: "FishingScene", cx: int, cy: int, t: float) -> None:
+def _draw_rod_view(surf: pygame.Surface, scene: "FishingScene", view, t: float) -> None:
+    p = scene.host.player
+    z = view.zoom
+    side = 1 if p.facing != "left" else -1
+    hx, hy = view.to_screen(p.x + side * 6, p.y)
+    hy -= 28
+    tip = (hx + side * 8 * z, hy - 10 * z)
+    pygame.draw.line(surf, (110, 84, 46), (hx, hy), tip, z)
+    bob_x, bob_y = view.to_screen(*scene.bob)
+    if scene.phase == "casting":
+        k = min(1.0, scene.t / CAST_SECONDS)
+        bx = tip[0] + (bob_x - tip[0]) * k
+        by = tip[1] + (bob_y - tip[1]) * k - math.sin(k * math.pi) * 18 * z
+    else:
+        bx, by = bob_x, bob_y
+        if scene.phase == "bite":
+            by += (2 + int(t * 20) % 2) * z
+        elif scene.phase == "reel":
+            bx += math.sin(t * 9) * 2 * z
+            by += z
+        else:
+            by += math.sin(t * 3) * z
+    pygame.draw.line(surf, (235, 235, 235), tip, (int(bx), int(by)), 1)
+    if scene.phase in ("waiting", "bite", "reel"):
+        r = 3 + (int(t * 4) % 3 if scene.phase == "bite" else 0)
+        pygame.draw.circle(surf, (210, 230, 240), (int(bx), int(by) + 2 * z), (r + 2) * z, 1)
+    pygame.draw.circle(surf, (188, 71, 73), (int(bx), int(by)), 2 * z)
+    pygame.draw.rect(surf, (244, 235, 217), (int(bx) - 1, int(by) - 2 * z - 1, z, z))
+
+
+def draw_rod(surf: pygame.Surface, scene: "FishingScene", cx: int, cy: int, t: float, view=None) -> None:
     """The line from the hand to the float, the float bobbing (dipping when a fish bites)."""
     p = scene.host.player
+    if view is not None and view.zoom != 1:   # the 2x v2 world: the v2 hand is ~28 px above the feet
+        _draw_rod_view(surf, scene, view, t)
+        return
     hx, hy = p.x + (6 if p.facing != "left" else -6) - cx, p.y - 18 - cy
     tip = (hx + (8 if p.facing != "left" else -8), hy - 10)
     pygame.draw.line(surf, (110, 84, 46), (hx, hy), tip, 1)
@@ -389,7 +422,7 @@ class CatchScene(Scene):
         k = min(1.0, self.t / 0.4)
         ui.image(fish_icon(f["shape"], f["color"], f.get("color2")), x + 52, y + 46, zoom=2 + 1.5 * k, anchor="center")
         ui.text(f["name_vi"], x + 104, y + 18, 11, col)
-        ui.text(f"{f['hanzi']}  {f['pinyin']}", x + 104, y + 33, 10, "#BC4749", kind="han")
+        ui.text(f"{f['hanzi']}  {f['pinyin']}" if not art2.on() else f["pinyin"], x + 104, y + 33, 10, "#BC4749", kind="han")
         note = T.FISH_FICTIONAL if f.get("fictional") else (T.FISH_MYTHICAL if f.get("mythical") else "")
         if note:
             ui.text(note, x + 104, y + 47, 6, "#8E877A")
@@ -632,15 +665,16 @@ class FishBookScene(Scene):
                 ui.border(cx, cy, cw - 2, chh, col)
                 if e["caught"]:
                     ui.image(fish_icon(e["shape"], e["color"], e.get("color2")), cx + 13, cy + 10, zoom=1, anchor="center")
-                    ui.text(e["hanzi"], cx + 26, cy + 3, 8, "#BC4749", kind="han")
+                    if not art2.on():       # the old game's Chinese name: not on the v2 (math game) screen
+                        ui.text(e["hanzi"], cx + 26, cy + 3, 8, "#BC4749", kind="han")
                     ui.text(e["name_vi"], cx + 3, cy + 20, 6, max_w=cw - 6)
-                    tip = (f"{e['name_vi']} · {e['hanzi']} ({e['pinyin']}) · {T.RARITY_NAMES[e['rarity']]}\n"
+                    tip = (f"{e['name_vi']} · {'' if art2.on() else e['hanzi'] + ' '}({e['pinyin']}) · {T.RARITY_NAMES[e['rarity']]}\n"
                            f"{T.FISH_BOOK_ENTRY.format(n=e['count'], cm=e['best_size_cm'])}\n{e['hint_vi']}\n{e['desc_vi']}")
                     if e.get("fictional"):
                         tip += "\n" + T.FISH_FICTIONAL
                 else:
                     ui.image(fish_icon(e["shape"], "#000000", dark=True), cx + 13, cy + 10, zoom=1, anchor="center")
-                    ui.text("？", cx + 30, cy + 3, 8, "#8E877A", kind="han")
+                    ui.text("?", cx + 30, cy + 3, 8, "#8E877A")
                     ui.text(T.RARITY_NAMES[e["rarity"]], cx + 3, cy + 20, 6, col)
                     tip = T.FISH_BOOK_HINT_UNKNOWN.format(hint=e["hint_vi"])
                 ui.widgets[f"fish_{e['id']}"] = ui.rect(cx, cy, cw - 2, chh)
@@ -659,7 +693,7 @@ class FishBookScene(Scene):
                     cx = x + 12 + (i % 2) * 214
                     cy = y + 26 + (i // 2) * 13
                     col = T.RARITY_COLORS.get(rec["rarity"], "#7D7468")
-                    ui.text(f"{rec['name_vi']} {rec['hanzi']}", cx, cy, 7, col, kind="han")
+                    ui.text(rec["name_vi"] if art2.on() else f"{rec['name_vi']} {rec['hanzi']}", cx, cy, 7, col, kind="han")
                     best = rec["top"][0]
                     ui.text(f"{best['size_cm']} cm · {best['name']}", cx + 200, cy, 7,
                             "#BC4749" if best.get("me") else "#2B2B2B", anchor="topright")

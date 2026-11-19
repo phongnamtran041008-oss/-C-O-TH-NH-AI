@@ -76,15 +76,91 @@ def test_every_recipe_is_complete():
     for rid, r in catalog.recipes().items():
         assert rid in pills, rid
         assert mats[r["item"]]["kind"] == "recipe" and mats[r["item"]]["recipe"] == rid
-        assert len(r["chars"]) == C["presses"] and "".join(c["c"] for c in r["chars"]) == pills[rid]["hanzi"]
+        if "chars" in r:       # the old pills spell their name in characters, one per press
+            assert len(r["chars"]) == C["presses"] and "".join(c["c"] for c in r["chars"]) == pills[rid]["hanzi"]
+        else:                  # the breakthrough pills from Kết Đan on have none, and no hanzi either
+            assert "hanzi" not in pills[rid], rid
         for ing in r["ingredients"]:
             if ing["kind"] == "item":
                 assert catalog.stack_item(ing["item"]) is not None, ing
         assert set(r["yield"]) == {"ha", "trung", "thuong"}
     # spec 12.3 names every one of these pills
     for pid in ("hoi_huyet_dan", "hoi_khi_dan", "tu_linh_dan", "khang_muc_dan", "ngo_tinh_dan", "truc_co_dan",
-                "kim_dan_dan", "phong_vuong_dan"):
+                "kim_dan_dan", "phong_vuong_dan", "nguyen_anh_dan", "hoa_than_dan", "luyen_hu_dan", "hop_the_dan",
+                "dai_thua_dan"):
         assert pid in catalog.recipes()
+
+
+def _obtainable_items() -> set[str]:
+    """Every item some part of today's game hands out: monster drops (old and math), bí cảnh
+    rooms and chests, the math dungeon and cơ duyên, quest rewards and the Tàng Thư Các shelf.
+    Recipes and the Lò Toán only consume, so they are not read."""
+    found: set[str] = set()
+
+    def walk(v):
+        if isinstance(v, dict):
+            if isinstance(v.get("item"), str):
+                found.add(v["item"])
+            if isinstance(v.get("items"), dict):
+                found.update(v["items"])
+            for x in v.values():
+                walk(x)
+        elif isinstance(v, list):
+            for x in v:
+                walk(x)
+    import json
+    for rel in ("creatures/monsters.json", "math/monsters.json", "balance/realm.json", "math/dungeon.json",
+                "math/fortune.json", "quests.json"):
+        walk(json.loads((ROOT / "server" / "data" / rel).read_text("utf-8")))
+    found.update(balance.load("library")["shop"])
+    return found
+
+
+def test_every_breakthrough_pill_is_craftable_from_what_the_game_hands_out():
+    """Each realm's pill has a recipe, the đan phương for it is sold or dropped, and the pills of
+    the new realms (Nguyên Anh on) ask only for item ingredients that drop today: no quả chữ, no fish."""
+    from app.systems import cultivation
+    order = cultivation.order()
+    got = _obtainable_items()
+    pills, mats = catalog.pills(), catalog.materials()
+    trib = cultivation.cfg()["tribulation_to"]
+    assert set(trib) == set(order[2:]), "every realm after Luyện Khí needs its pill"
+    for realm, pid in trib.items():
+        assert pills[pid]["effect"] == "breakthrough" and pills[pid]["realm"] == realm, pid
+        r = catalog.recipes()[pid]
+        assert r["item"] in got, f"{r['item']} (the đan phương of {pid}) is nowhere to be had"
+        assert order.index(r["min_realm"]) == order.index(realm) - 1, pid       # brewed at the realm below
+        if order.index(realm) >= order.index("nguyen_anh"):
+            assert "chars" not in r and "hanzi" not in pills[pid], pid
+            for ing in r["ingredients"]:
+                assert ing["kind"] == "item", (pid, ing)
+                assert catalog.stack_item(ing["item"]) is not None and ing["item"] in got, (pid, ing)
+                assert ing["item"] not in mats or mats[ing["item"]]["kind"] != "recipe", (pid, ing)
+
+
+async def test_a_pill_without_name_characters_brews_on_the_fire_alone(client, frozen):
+    h, uid = await player(client, "dan_hoa_than", stones=5000)
+    from app import db as dbm
+    from app.models import Character
+    async with dbm.SessionLocal() as db:
+        ch = await db.get(Character, uid)
+        ch.realm, ch.realm_stage = "nguyen_anh", 3
+        await db.commit()
+    r = catalog.recipes()["hoa_than_dan"]
+    await give(uid, r["item"], 1)
+    for ing in r["ingredients"]:
+        await give(uid, ing["item"], ing["qty"])
+    ov = (await client.get("/alchemy", headers=h)).json()
+    e = next(x for x in ov["recipes"] if x["id"] == "hoa_than_dan")
+    assert e["known"] and e["ready"] and e["hanzi"] == "" and e["chars"] == []
+    fire = (await client.post("/alchemy/start", json={"recipe_id": "hoa_than_dan"}, headers=h)).json()["fire"]
+    assert len(fire["chars"]) == C["presses"] and not any(c["ask"] or c["c"] for c in fire["chars"])
+    assert await stones(uid) == 5000 - r["fee"]
+    res = (await finish(client, h, fire, perfect_timings(fire), frozen=frozen)).json()
+    assert res["quality"] == "thuong" and res["made"] >= 1 and res["chars"] == [] and res["xp"] is None
+    assert await qty(uid, "hoa_than_dan") == res["made"]
+    for ing in r["ingredients"]:
+        assert await qty(uid, ing["item"]) == 0
 
 
 def test_recipe_readings_match_cc_cedict():
@@ -98,7 +174,7 @@ def test_recipe_readings_match_cc_cedict():
             readings.setdefault(m.group(2), set()).add(m.group(3).lower())
     from app.learning import pinyin as py
     for r in catalog.recipes().values():
-        for c in r["chars"]:
+        for c in r.get("chars", []):
             assert c["numeric"] in readings.get(c["c"], set()), (c, readings.get(c["c"]))
             assert py.numeric_to_marked(c["numeric"]) == c["pinyin"], c
 

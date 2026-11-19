@@ -22,7 +22,10 @@ from ..models import Character, EquipmentInstance, InventoryItem, QuizSession, T
 from . import catalog, inventory
 
 STAGE_LABELS = ["sơ kỳ", "trung kỳ", "hậu kỳ"]
-REALM_TIER = {"pham_nhan": 1, "luyen_khi": 1, "truc_co": 2, "kim_dan": 3, "nguyen_anh": 4}
+# The old word game's vocabulary tier for each realm. The realms after Nguyen Anh reuse the
+# highest tier (4): no word content is planned for them.
+REALM_TIER = {"pham_nhan": 1, "luyen_khi": 1, "truc_co": 2, "kim_dan": 3, "nguyen_anh": 4,
+              "hoa_than": 4, "luyen_hu": 4, "hop_the": 4, "dai_thua": 4}
 
 
 class CultivationError(Exception):
@@ -266,6 +269,18 @@ async def _pill_count(db: AsyncSession, user_id: int, item_id: str) -> int:
     return sum(rows)
 
 
+def _tribulation_pool(tier: int) -> list[str]:
+    """Words of the realm's tier; when that tier has no words (only HSK 1-2 exist, while Kết Đan
+    and later realms ask for tier 3-4), the highest tier below it that has some. Without this a
+    Thiên Kiếp out of Kết Đan or later had no question at all and crashed."""
+    visible = [w for w in bank().words.values() if not w.hidden]
+    for t in range(tier, 0, -1):
+        pool = [w.id for w in visible if w.tier == t]
+        if pool:
+            return pool
+    return [w.id for w in visible]
+
+
 def _tribulation_question(run: TribulationRun, rng: random.Random) -> qb.Question:
     t = cfg()["tribulation"]
     w = bank().get(run.words[run.index])
@@ -319,7 +334,7 @@ async def tribulation_start(db: AsyncSession, user: User, rng: random.Random | N
         raise CultivationError(400, "no_pill", f"Cần {catalog.item_name(nxt[2])} để đột phá.")
     t = cfg()["tribulation"]
     tier = tier_of(ch.realm)
-    pool = [w.id for w in bank().words.values() if w.tier == tier and not w.hidden]
+    pool = _tribulation_pool(tier)
     words = rng.sample(pool, min(t["questions"], len(pool)))
     run = TribulationRun(user_id=user.id, from_realm=ch.realm, to_realm=nxt[0], words=words, index=0, correct=0,
                          started_at=now)

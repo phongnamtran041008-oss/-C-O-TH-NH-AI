@@ -1,0 +1,22 @@
+{
+ "id": "glow_dai_thua",
+ "name_vi": "Anh sang canh Dai Thua",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 82
+ },
+ "sheet": "glow_dai_thua.png",
+ "cols": 16,
+ "frames": 204,
+ "fps": 10,
+ "loop": false,
+ "blend": "alpha",
+ "ground": false,
+ "layer": "back",
+ "follows": "dao_si_dai_thua",
+ "draw": "frame i is drawn directly BEHIND frame i of dao_si_dai_thua (same index, same pivot) with a normal alpha blit"
+}

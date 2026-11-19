@@ -145,10 +145,40 @@
   "desc_vi": "Ghi cách luyện Trúc Cơ Đan 筑基丹 để tự đột phá Trúc Cơ. Giữ trong túi là luyện được mãi, không mất."
  },
  "dp_kim_dan": {
-  "name_vi": "Đan phương: Kim Đan Đan",
+  "name_vi": "Đan phương: Kết Đan Đan",
   "kind": "recipe",
   "recipe": "kim_dan_dan",
-  "desc_vi": "Ghi cách luyện Kim Đan Đan 金丹丹. Cần Trúc Cơ mới luyện được. Giữ trong túi là luyện được mãi, không mất."
+  "desc_vi": "Ghi cách luyện Kết Đan Đan để đột phá Kết Đan. Cần Trúc Cơ mới luyện được. Giữ trong túi là luyện được mãi, không mất."
+ },
+ "dp_nguyen_anh": {
+  "name_vi": "Đan phương: Nguyên Anh Đan",
+  "kind": "recipe",
+  "recipe": "nguyen_anh_dan",
+  "desc_vi": "Ghi cách luyện Nguyên Anh Đan để đột phá Nguyên Anh. Cần Kết Đan mới luyện được. Giữ trong túi là luyện được mãi, không mất."
+ },
+ "dp_hoa_than": {
+  "name_vi": "Đan phương: Hóa Thần Đan",
+  "kind": "recipe",
+  "recipe": "hoa_than_dan",
+  "desc_vi": "Ghi cách luyện Hóa Thần Đan để đột phá Hóa Thần. Cần Nguyên Anh mới luyện được. Giữ trong túi là luyện được mãi, không mất."
+ },
+ "dp_luyen_hu": {
+  "name_vi": "Đan phương: Luyện Hư Đan",
+  "kind": "recipe",
+  "recipe": "luyen_hu_dan",
+  "desc_vi": "Ghi cách luyện Luyện Hư Đan để đột phá Luyện Hư. Cần Hóa Thần mới luyện được. Giữ trong túi là luyện được mãi, không mất."
+ },
+ "dp_hop_the": {
+  "name_vi": "Đan phương: Hợp Thể Đan",
+  "kind": "recipe",
+  "recipe": "hop_the_dan",
+  "desc_vi": "Ghi cách luyện Hợp Thể Đan để đột phá Hợp Thể. Cần Luyện Hư mới luyện được. Giữ trong túi là luyện được mãi, không mất."
+ },
+ "dp_dai_thua": {
+  "name_vi": "Đan phương: Đại Thừa Đan",
+  "kind": "recipe",
+  "recipe": "dai_thua_dan",
+  "desc_vi": "Ghi cách luyện Đại Thừa Đan để đột phá Đại Thừa. Cần Hợp Thể mới luyện được. Giữ trong túi là luyện được mãi, không mất."
  },
  "dp_phong_vuong": {
   "name_vi": "Đan phương: Phong Vương Đan",

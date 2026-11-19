@@ -8,7 +8,7 @@ import random
 import pygame
 
 from .. import strings_vi as T
-from ..engine import sprites
+from ..engine import art2, sprites
 from .base import Scene
 from .quiz import CombatCard, QuizScene
 
@@ -92,9 +92,14 @@ class CharacterScene(Scene):
         if not c:
             ui.text("...", 240, 120, 10, anchor="center")
         else:
-            look = sprites.character(ch.get("appearance", {}))[("down", 0)]
             ui.fill(x + 12, y + 14, 52, 60, "#E3D5BA")
-            ui.image(look, x + 38, y + 44, zoom=2, anchor="center")
+            v2 = art2.char_for(ch.get("realm"))
+            if v2 is not None:      # the v2 Đạo Sĩ of my realm, idling
+                ui.image(art2.trim(v2.frame(v2.index("idle", ui.time, "down"))), x + 38, y + 71, zoom=1,
+                         anchor="midbottom")
+            else:
+                look = sprites.character(ch.get("appearance", {}))[("down", 0)]
+                ui.image(look, x + 38, y + 44, zoom=2, anchor="center")
             from .library import portrait_frame, title_after
             me = self.game.state.me
             portrait_frame(ui, me.get("frame"), x + 12, y + 14, 52, 60)
@@ -141,7 +146,9 @@ class CharacterScene(Scene):
             for i, sk in enumerate(self.mskills[:6]):
                 ry = y + 132 + i * 13
                 open_ = sk.get("unlocked", True)
-                img = icons.icon(sk.get("icon") or "", int(sk.get("icon_variant") or 0))
+                img = art2.skill_icon(sk.get("id")) if art2.on() else None
+                if img is None:
+                    img = icons.icon(sk.get("icon") or "", int(sk.get("icon_variant") or 0))
                 if img is not None:
                     ui.image(img, gx, ry - 1, zoom=0.375)                  # a 32 px icon, drawn at 12
                 else:
@@ -159,8 +166,14 @@ class CharacterScene(Scene):
             pet = c.get("pet")
             py_ = y + 172
             if pet:
-                ui.image(sprites.pet(pet["pet_type"], int(ui.time * 3) % 2), x + 24, py_ + 8, zoom=1.5, anchor="center")
-                ui.text(f"{pet['name_vi']} {pet['hanzi']} · {T.PETS_LEVEL.format(l=pet['level'], m=pet['max_level'])}",
+                v2 = art2.beast_picture(pet["pet_type"], ui.time)
+                if v2 is not None:
+                    ui.image(v2, x + 24, py_ + 16, zoom=0.5, anchor="midbottom")
+                else:
+                    ui.image(sprites.pet(pet["pet_type"], int(ui.time * 3) % 2), x + 24, py_ + 8, zoom=1.5,
+                             anchor="center")
+                ui.text(f"{pet['name_vi']}{'' if art2.on() else ' ' + pet['hanzi']} · "
+                        f"{T.PETS_LEVEL.format(l=pet['level'], m=pet['max_level'])}",
                         x + 38, py_ + 2, 7, "#2B2B2B", kind="han")
                 if ui.hover(x + 12, py_, 200, 16):
                     ui.set_tooltip(pet["skill_vi"])
@@ -377,7 +390,7 @@ class ForgeScene(Scene):
                 lvl = f" +{e['enhance']}" if e["enhance"] else ""
                 ui.text(e["name_vi"] + lvl, x + 18, ry + 1, 8, e["color"])
                 carved = "".join(c["hanzi"] for c in e.get("inscriptions", []))   # Khắc Văn (stage 8)
-                if carved:
+                if carved and not art2.on():      # carved characters: old-game Chinese, hidden in v2
                     ui.text(carved, x + 22 + ui.text_size(e["name_vi"] + lvl, 8)[0], ry + 5, 7, "#C99A3A", kind="han",
                             anchor="midleft")
                 stats = " ".join(f"{T.STATS_VI.get(k, k)} {v}" for k, v in e["stats"].items())
@@ -519,18 +532,27 @@ class MonsterBookScene(Scene):
                 ui.fill(x + 10, ry, w - 20, 54, "#FFFDF7")
                 ui.border(x + 10, ry, w - 20, 54)
                 if e.get("td"):   # Mặc Quái of the Thủ Vườn levels
-                    from .td import monster_frames
-                    frames = monster_frames(e["id"][3:])
+                    v2 = art2.td_monster(e["id"][3:])[0]
                 else:
-                    frames = sprites.monster(e["sprite"])
-                img = frames[int(ui.time * 2) % len(frames)]
+                    v2 = art2.monster_for(e["id"], e.get("rank", "normal"))
+                img = art2.monster_picture(v2, ui.time)
+                zoom = 1 if img is not None else 2      # a v2 creature is already about 40 px
+                if img is None:
+                    if e.get("td"):
+                        from .td import monster_frames
+                        frames = monster_frames(e["id"][3:])
+                    else:
+                        frames = sprites.monster(e["sprite"])
+                    img = frames[int(ui.time * 2) % len(frames)]
+                elif img.get_height() > 48:            # a boss: fit the 54 px row
+                    img = art2.scaled(img, img.get_width() * 48 // img.get_height(), 48)
                 if not e["found"]:
                     sil = img.copy()
                     sil.fill((40, 40, 40, 255), special_flags=pygame.BLEND_RGBA_MIN)
-                    ui.image(sil, x + 36, ry + 27, zoom=2, anchor="center")
+                    ui.image(sil, x + 36, ry + 27, zoom=zoom, anchor="center")
                     ui.text("? ? ?  · " + T.MB_UNKNOWN, x + 70, ry + 20, 9, "#B8AE9C")
                     continue
-                ui.image(img, x + 36, ry + 27, zoom=2, anchor="center")
+                ui.image(img, x + 36, ry + 27, zoom=zoom, anchor="center")
                 rank = f" · {e['rank_vi']}" if e.get("rank_vi") and e["rank"] != "normal" else ""
                 ui.text(e["name_vi"] + rank, x + 70, ry + 4, 9)
                 ui.text(T.MB_KILLS.format(n=e["kills"]), x + w - 18, ry + 4, 8, "#6A994E", anchor="topright")

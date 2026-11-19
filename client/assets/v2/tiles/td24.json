@@ -1,0 +1,74 @@
+{
+ "sheet": "td24.png",
+ "tile": 24,
+ "cols": 8,
+ "tiles": {
+  "grass": [
+   0,
+   1
+  ],
+  "path": [
+   2,
+   3
+  ],
+  "td_path_none": [
+   4
+  ],
+  "td_path_n": [
+   5
+  ],
+  "td_path_e": [
+   6
+  ],
+  "td_path_s": [
+   7
+  ],
+  "td_path_w": [
+   8
+  ],
+  "td_path_ne": [
+   9
+  ],
+  "td_path_ns": [
+   10
+  ],
+  "td_path_nw": [
+   11
+  ],
+  "td_path_es": [
+   12
+  ],
+  "td_path_ew": [
+   13
+  ],
+  "td_path_sw": [
+   14
+  ],
+  "td_path_nes": [
+   15
+  ],
+  "td_path_new": [
+   16
+  ],
+  "td_path_nsw": [
+   17
+  ],
+  "td_path_esw": [
+   18
+  ],
+  "td_path_nesw": [
+   19
+  ]
+ },
+ "cell": 24,
+ "render": {
+  "tile_m": 0.42105263157894735,
+  "px_per_tile": 24,
+  "wrap_check": {
+   "grass[0]": 0.66,
+   "grass[1]": 0.39,
+   "path[0]": 0.59,
+   "path[1]": 0.58
+  }
+ }
+}

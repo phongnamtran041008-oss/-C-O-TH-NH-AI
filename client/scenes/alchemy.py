@@ -7,7 +7,7 @@ from __future__ import annotations
 import pygame
 
 from .. import strings_vi as T
-from ..engine import alchemy_fire, sprites
+from ..engine import alchemy_fire, art2, sprites
 from .base import Scene
 
 MIN_PRESS_MS = 120
@@ -76,7 +76,9 @@ class AlchemyScene(Scene):
             ui.text(T.ALCHEMY_BUFFS.format(b=", ".join(f"{b['name_vi']} {b['seconds_left'] // 60 + 1}'"
                                                         for b in d["buffs"])),
                     x + w - 12, y + 12, 7, "#6A994E", anchor="topright")
-        ui.image(sprites.prop("furnace", 0, int(ui.time * 3) % 4), x + 30, y + 64, zoom=2, anchor="center")
+        fv2 = art2.prop("furnace", "buildings") if art2.on() else None     # v2: twice the old size
+        ui.image(fv2.at(ui.time) if fv2 else sprites.prop("furnace", 0, int(ui.time * 3) % 4), x + 30, y + 64,
+                 zoom=1 if fv2 else 2, anchor="center")
         if d.get("open"):
             fire = d["open"]
             if ui.button("alc_resume", x + 8, y + 96, 46, 15, T.ALCHEMY_RESUME, size=7, style="primary"):
@@ -233,9 +235,11 @@ class FireScene(Scene):
         x, y, w, h = 50, 30, 380, 210
         f = self.fire
         ui.panel(x, y, w, h, T.FIRE_TITLE.format(name=f["name_vi"]))
-        ui.text(f["hanzi"], x + 46, y + 40, 18, "#BC4749", kind="han", anchor="center")
-        img = sprites.prop("furnace", 0, int(self.t * 6) % 4)
-        ui.image(img, x + 46, y + 92, zoom=2.5 + self.flash * 0.3, anchor="center")
+        if not art2.on():            # the furnace's Chinese name: not on the v2 (math game) screen
+            ui.text(f["hanzi"], x + 46, y + 40, 18, "#BC4749", kind="han", anchor="center")
+        fv2 = art2.prop("furnace", "buildings") if art2.on() else None
+        img = fv2.at(self.t * 2) if fv2 else sprites.prop("furnace", 0, int(self.t * 6) % 4)
+        ui.image(img, x + 46, y + 92, zoom=(2.5 + self.flash * 0.3) / (2 if fv2 else 1), anchor="center")
         for i in range(self.n):
             col = {"perfect": "#E9C46A", "good": "#6A994E", "miss": "#BC4749"}.get(
                 self.hits[i] if i < len(self.hits) else "", "#CFC6B4")
@@ -261,6 +265,10 @@ class FireScene(Scene):
         hit = self.hits[-1]
         ui.text(T.FIRE_HITS[hit], rx + (w - 112) / 2, y + 90, 9,
                 {"perfect": "#C99A3A", "good": "#6A994E", "miss": "#BC4749"}[hit], anchor="center")
+        if not ch.get("c"):          # a pill without name characters: nothing to read, on to the next press
+            if ui.button("fire_next", rx + 178, y + 150, 60, 16, T.FIRE_NEXT, style="primary", key=pygame.K_RETURN):
+                self.next_char(None)
+            return
         ui.text(ch["c"], rx + 26, y + 136, 26, "#2B2B2B", kind="han", anchor="center")
         if ch["ask"]:
             ui.text(T.FIRE_TYPE, rx + 52, y + 112, 7, "#5A5A5A", max_w=w - 160)

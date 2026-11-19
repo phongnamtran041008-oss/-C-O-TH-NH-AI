@@ -1,0 +1,127 @@
+{
+ "sheet": "cong_phap.png",
+ "cell": 32,
+ "cols": 8,
+ "icons": {
+  "sach_1": {
+   "index": 0,
+   "name_vi": "Phàm Thư",
+   "grade": 1
+  },
+  "cuon_1": {
+   "index": 1,
+   "name_vi": "Phàm Quyển",
+   "grade": 1
+  },
+  "gian_1": {
+   "index": 2,
+   "name_vi": "Phàm Giản",
+   "grade": 1
+  },
+  "sach_2": {
+   "index": 3,
+   "name_vi": "Hoàng Thư",
+   "grade": 2
+  },
+  "cuon_2": {
+   "index": 4,
+   "name_vi": "Hoàng Quyển",
+   "grade": 2
+  },
+  "gian_2": {
+   "index": 5,
+   "name_vi": "Hoàng Giản",
+   "grade": 2
+  },
+  "sach_3": {
+   "index": 6,
+   "name_vi": "Huyền Thư",
+   "grade": 3
+  },
+  "cuon_3": {
+   "index": 7,
+   "name_vi": "Huyền Quyển",
+   "grade": 3
+  },
+  "gian_3": {
+   "index": 8,
+   "name_vi": "Huyền Giản",
+   "grade": 3
+  },
+  "sach_4": {
+   "index": 9,
+   "name_vi": "Địa Thư",
+   "grade": 4
+  },
+  "cuon_4": {
+   "index": 10,
+   "name_vi": "Địa Quyển",
+   "grade": 4
+  },
+  "gian_4": {
+   "index": 11,
+   "name_vi": "Địa Giản",
+   "grade": 4
+  },
+  "sach_5": {
+   "index": 12,
+   "name_vi": "Linh Thư",
+   "grade": 5
+  },
+  "cuon_5": {
+   "index": 13,
+   "name_vi": "Linh Quyển",
+   "grade": 5
+  },
+  "gian_5": {
+   "index": 14,
+   "name_vi": "Linh Giản",
+   "grade": 5
+  },
+  "sach_6": {
+   "index": 15,
+   "name_vi": "Bảo Thư",
+   "grade": 6
+  },
+  "cuon_6": {
+   "index": 16,
+   "name_vi": "Bảo Quyển",
+   "grade": 6
+  },
+  "gian_6": {
+   "index": 17,
+   "name_vi": "Bảo Giản",
+   "grade": 6
+  },
+  "sach_7": {
+   "index": 18,
+   "name_vi": "Tiên Thư",
+   "grade": 7
+  },
+  "cuon_7": {
+   "index": 19,
+   "name_vi": "Tiên Quyển",
+   "grade": 7
+  },
+  "gian_7": {
+   "index": 20,
+   "name_vi": "Tiên Giản",
+   "grade": 7
+  },
+  "sach_8": {
+   "index": 21,
+   "name_vi": "Thiên Thư",
+   "grade": 8
+  },
+  "cuon_8": {
+   "index": 22,
+   "name_vi": "Thiên Quyển",
+   "grade": 8
+  },
+  "gian_8": {
+   "index": 23,
+   "name_vi": "Thiên Giản",
+   "grade": 8
+  }
+ }
+}

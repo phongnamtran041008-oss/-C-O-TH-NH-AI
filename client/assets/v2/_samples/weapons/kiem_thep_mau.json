@@ -1,0 +1,96 @@
+{
+ "id": "kiem_thep_mau",
+ "name_vi": "Kiếm Thép",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 54
+ },
+ "sheet": "kiem_thep_mau.png",
+ "cols": 16,
+ "frames": 40,
+ "clips": {
+  "idle": {
+   "fps": 6,
+   "loop": true,
+   "frames": {
+    "down": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "left": [
+     4,
+     5,
+     6,
+     7
+    ],
+    "up": [
+     8,
+     9,
+     10,
+     11
+    ],
+    "right": [
+     12,
+     13,
+     14,
+     15
+    ]
+   }
+  },
+  "slash": {
+   "fps": 14,
+   "loop": false,
+   "frames": {
+    "down": [
+     16,
+     17,
+     18,
+     19,
+     20,
+     21
+    ],
+    "left": [
+     22,
+     23,
+     24,
+     25,
+     26,
+     27
+    ],
+    "up": [
+     28,
+     29,
+     30,
+     31,
+     32,
+     33
+    ],
+    "right": [
+     34,
+     35,
+     36,
+     37,
+     38,
+     39
+    ]
+   }
+  }
+ },
+ "events": {
+  "slash": {
+   "hit": 3
+  }
+ },
+ "render": {
+  "ppm": 38.0,
+  "scale": 6,
+  "kind": "sample",
+  "layer": true
+ }
+}

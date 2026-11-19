@@ -1,0 +1,67 @@
+{
+ "sheet": "linh_thao.png",
+ "cell": 32,
+ "cols": 8,
+ "icons": {
+  "co_linh": {
+   "index": 0,
+   "name_vi": "Cỏ Linh",
+   "grade": 1
+  },
+  "nam_do": {
+   "index": 1,
+   "name_vi": "Nấm Đỏ",
+   "grade": 2
+  },
+  "nhan_sam": {
+   "index": 2,
+   "name_vi": "Nhân Sâm",
+   "grade": 3
+  },
+  "qua_do": {
+   "index": 3,
+   "name_vi": "Quả Chu Hồng",
+   "grade": 3
+  },
+  "chuong_xanh": {
+   "index": 4,
+   "name_vi": "Hoa Chuông Lam",
+   "grade": 4
+  },
+  "sen_ngoc": {
+   "index": 5,
+   "name_vi": "Sen Ngọc",
+   "grade": 4
+  },
+  "day_loi": {
+   "index": 6,
+   "name_vi": "Dây Lôi Đằng",
+   "grade": 5
+  },
+  "hoa_diem": {
+   "index": 7,
+   "name_vi": "Hỏa Diệm Hoa",
+   "grade": 6
+  },
+  "lan_nguyet": {
+   "index": 8,
+   "name_vi": "Nguyệt Lan",
+   "grade": 7
+  },
+  "sen_bang": {
+   "index": 9,
+   "name_vi": "Băng Liên",
+   "grade": 7
+  },
+  "qua_tinh": {
+   "index": 10,
+   "name_vi": "Quả Tinh Tú",
+   "grade": 8
+  },
+  "la_long": {
+   "index": 11,
+   "name_vi": "Long Lân Diệp",
+   "grade": 8
+  }
+ }
+}

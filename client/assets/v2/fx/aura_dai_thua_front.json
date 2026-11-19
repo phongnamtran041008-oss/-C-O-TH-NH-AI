@@ -1,0 +1,22 @@
+{
+ "id": "aura_dai_thua_front",
+ "name_vi": "Hao quang Dai Thua (truoc)",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 104
+ },
+ "sheet": "aura_dai_thua_front.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 10,
+ "loop": true,
+ "blend": "alpha",
+ "ground": false,
+ "layer": "front",
+ "ppu": 48,
+ "draw": "normal alpha blit (straight alpha, NOT additive): palette colours keep their hue on any ground; draw after (in front of) the character"
+}

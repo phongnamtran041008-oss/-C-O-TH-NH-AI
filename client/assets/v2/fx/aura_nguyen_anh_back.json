@@ -1,0 +1,22 @@
+{
+ "id": "aura_nguyen_anh_back",
+ "name_vi": "Hao quang Nguyen Anh (sau)",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 104
+ },
+ "sheet": "aura_nguyen_anh_back.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 10,
+ "loop": true,
+ "blend": "alpha",
+ "ground": false,
+ "layer": "back",
+ "ppu": 48,
+ "draw": "normal alpha blit (straight alpha, NOT additive): palette colours keep their hue on any ground; draw before (behind) the character"
+}

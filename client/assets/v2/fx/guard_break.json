@@ -1,0 +1,19 @@
+{
+ "id": "guard_break",
+ "name_vi": "Pha khien",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 32
+ },
+ "sheet": "guard_break.png",
+ "cols": 5,
+ "frames": 5,
+ "fps": 14,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

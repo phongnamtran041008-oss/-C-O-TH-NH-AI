@@ -1,0 +1,19 @@
+{
+ "id": "bolt_hoa",
+ "name_vi": "Phap cau Hoa",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 32
+ },
+ "sheet": "bolt_hoa.png",
+ "cols": 4,
+ "frames": 4,
+ "fps": 14,
+ "loop": true,
+ "blend": "add",
+ "ground": false
+}

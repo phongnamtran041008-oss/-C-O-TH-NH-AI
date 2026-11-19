@@ -1,0 +1,19 @@
+{
+ "id": "warn_circle_release",
+ "name_vi": "Canh bao vong (tung don)",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 48
+ },
+ "sheet": "warn_circle_release.png",
+ "cols": 3,
+ "frames": 3,
+ "fps": 14,
+ "loop": false,
+ "blend": "alpha",
+ "ground": true
+}

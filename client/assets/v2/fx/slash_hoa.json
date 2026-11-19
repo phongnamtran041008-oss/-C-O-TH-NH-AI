@@ -1,0 +1,19 @@
+{
+ "id": "slash_hoa",
+ "name_vi": "Kiem quang Hoa",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 32
+ },
+ "sheet": "slash_hoa.png",
+ "cols": 5,
+ "frames": 5,
+ "fps": 18,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

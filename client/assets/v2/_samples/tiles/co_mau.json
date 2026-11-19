@@ -1,0 +1,22 @@
+{
+ "sheet": "co_mau.png",
+ "tile": 16,
+ "cols": 4,
+ "tiles": {
+  "grass": [
+   0,
+   1,
+   2,
+   3
+  ]
+ },
+ "render": {
+  "tile_m": 0.42105263157894735,
+  "wrap_check": {
+   "grass[0]": 0.6,
+   "grass[1]": 0.52,
+   "grass[2]": 1.42,
+   "grass[3]": 1.17
+  }
+ }
+}

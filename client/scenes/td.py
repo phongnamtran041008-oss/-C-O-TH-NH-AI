@@ -15,7 +15,7 @@ import pygame
 from .. import strings_vi as T
 from ..art import build as B
 from ..art.palette import RARITY_COLORS, rgb
-from ..engine import sprites, td_sim
+from ..engine import art2, sprites, td_sim
 from .base import Scene
 from .quiz import QuizScene
 
@@ -39,6 +39,16 @@ def monster_frames(kind: str) -> list[pygame.Surface]:
     """Mặc Quái of the garden trial: the world's ink monsters, tinted and resized by kind."""
     if kind in _MON:
         return _MON[kind]
+    v2, scale = art2.td_monster(kind)
+    if v2 is not None:      # a creature rendered out of Blender, walking, shrunk to the 24 px cells
+        clip = v2.clips.get("walk") or v2.clips.get("idle")
+        frames = []
+        for n in clip.frames.get("right") or clip.frames.get("down"):
+            f = v2.frame(n)                 # whole frames: the feet stay put
+            frames.append(pygame.transform.scale(f, (max(1, int(f.get_width() * scale)),
+                                                     max(1, int(f.get_height() * scale)))))
+        _MON[kind] = frames
+        return frames
     base, tint, k = SPRITE_OF.get(kind, ("ink_slime", None, 1.0))
     frames = []
     for f in sprites.monster(base):
@@ -684,11 +694,43 @@ class TdPlayScene(Scene):
         self.sim.fx = []
 
     # ------------------------------------------------------------ drawing: the board in pixels
+    def board_v2(self) -> pygame.Surface | None:
+        """The board's ground from the v2 kit at its native 24 px cell (td24): grass, the path with
+        `td_path_<sides>` edges, the rocks. Built once per path; None without the kit."""
+        tiles = art2.td_tiles()
+        sim = self.sim
+        if not tiles or "grass" not in tiles:
+            return None
+        key = (tuple(sim.path), tuple(sorted(sim.rocks)), sim.cols, sim.rows)
+        if getattr(self, "_board_key", None) != key:
+            path = set(sim.path)
+            surf = pygame.Surface((sim.cols * CELL, sim.rows * CELL))
+            for y in range(sim.rows):
+                for x in range(sim.cols):
+                    if (x, y) in path:
+                        def grass(dx, dy):
+                            nx, ny = x + dx, y + dy
+                            return 0 <= nx < sim.cols and 0 <= ny < sim.rows and (nx, ny) not in path
+                        name = art2.td_path_name(grass(0, -1), grass(1, 0), grass(0, 1), grass(-1, 0))
+                        t = (tiles.get(name) or tiles.get("path"))
+                    else:
+                        t = tiles["grass"]
+                    surf.blit(t[(x * 3 + y) % len(t)], (x * CELL, y * CELL))
+                    if (x, y) in sim.rocks:
+                        rk = art2.td_prop(f"td_rock_{x % 2}")
+                        if rk is not None:
+                            surf.blit(rk.img, (x * CELL + CELL // 2 - rk.pivot[0], y * CELL + CELL - 2 - rk.pivot[1]))
+            self._board_key, self._board = key, surf
+        return self._board
+
     def draw_world(self, surf):
         sim = self.sim
         surf.fill(rgb("#E9DFC8"))
         path = set(sim.path)
-        for y in range(sim.rows):
+        board = self.board_v2()
+        if board is not None:
+            surf.blit(board, (BX, BY))
+        for y in range(sim.rows if board is None else 0):
             for x in range(sim.cols):
                 r = pygame.Rect(BX + x * CELL, BY + y * CELL, CELL, CELL)
                 if (x, y) in path:
@@ -706,12 +748,18 @@ class TdPlayScene(Scene):
                 px, py = sim.path[i]
                 surf.blit(glow, (BX + px * CELL, BY + py * CELL))
         gx, gy = sim.path[0]
-        pygame.draw.circle(surf, rgb("#2B2B2B"), (BX + gx * CELL + 12, BY + gy * CELL + 12), 10)
-        pygame.draw.circle(surf, rgb("#5A3E6E"), (BX + gx * CELL + 12, BY + gy * CELL + 12), 6 + int(self.t * 3) % 3)
         cx, cy = sim.path[-1]
-        pulse = 2 * math.sin(self.t * 3)
-        pygame.draw.circle(surf, rgb("#B5E3F0"), (BX + cx * CELL + 12, BY + cy * CELL + 12), int(9 + pulse))
-        pygame.draw.circle(surf, rgb("#4A90C8"), (BX + cx * CELL + 12, BY + cy * CELL + 12), int(9 + pulse), 2)
+        spawn, core = art2.td_prop("td_spawn"), art2.td_prop("td_core")
+        if spawn is not None and core is not None:      # the v2 ink gate and spirit core
+            for pr, (px, py) in ((spawn, (gx, gy)), (core, (cx, cy))):
+                img = pr.at(self.t * 2)
+                surf.blit(img, (BX + px * CELL + 12 - pr.pivot[0], BY + py * CELL + 12 - pr.pivot[1] + img.get_height() // 2))
+        else:
+            pygame.draw.circle(surf, rgb("#2B2B2B"), (BX + gx * CELL + 12, BY + gy * CELL + 12), 10)
+            pygame.draw.circle(surf, rgb("#5A3E6E"), (BX + gx * CELL + 12, BY + gy * CELL + 12), 6 + int(self.t * 3) % 3)
+            pulse = 2 * math.sin(self.t * 3)
+            pygame.draw.circle(surf, rgb("#B5E3F0"), (BX + cx * CELL + 12, BY + cy * CELL + 12), int(9 + pulse))
+            pygame.draw.circle(surf, rgb("#4A90C8"), (BX + cx * CELL + 12, BY + cy * CELL + 12), int(9 + pulse), 2)
         frame = int(self.t * 2) % 2
         # range preview
         hover = self.hover_cell()
@@ -734,11 +782,16 @@ class TdPlayScene(Scene):
         for c in sim.order:
             pl = sim.plants[c]
             d = self.params["plants"][pl.word]
-            img = self.piece_image(pl, d, frame)
             rx, ry = BX + pl.x * CELL, BY + pl.y * CELL
-            if pl.role == "moc":
-                pygame.draw.rect(surf, rgb("#5C4A2E"), (rx + 3, ry + 3, CELL - 6, CELL - 6))
-            surf.blit(img, (rx, ry - 2))
+            tw = art2.td_prop(f"tower_{pl.role}_{max(1, min(3, pl.level))}")
+            if tw is not None:       # the v2 tower of the piece's role and level, standing on its cell
+                img = tw.at(self.t)
+                surf.blit(img, (rx + CELL // 2 - tw.pivot[0], ry + CELL - 3 - tw.pivot[1] + 3))
+            else:
+                img = self.piece_image(pl, d, frame)
+                if pl.role == "moc":
+                    pygame.draw.rect(surf, rgb("#5C4A2E"), (rx + 3, ry + 3, CELL - 6, CELL - 6))
+                surf.blit(img, (rx, ry - 2))
             pygame.draw.rect(surf, role_color(pl.role), (rx + 1, ry + CELL - 3, CELL - 2, 2))
             for i in range(pl.level):
                 pygame.draw.rect(surf, rgb("#E9C46A"), (rx + 2 + i * 4, ry + 2, 3, 3))
@@ -764,6 +817,10 @@ class TdPlayScene(Scene):
             elif m.slow_until > sim.step_n:
                 pygame.draw.circle(surf, rgb("#4A90C8"), (int(px + 6), int(py + 4)), 2)
         for kind, data, age, life in self.fx:
+            if kind == "shot" and self.shot_v2(surf, data, age, life):
+                continue
+            if kind == "puff" and self.puff_v2(surf, data, age, life):
+                continue
             if kind == "shot":
                 role, (sx, sy), (tx, ty) = data
                 pygame.draw.line(surf, role_color(role), (BX + sx * CELL + 12, BY + sy * CELL + 8),
@@ -783,6 +840,37 @@ class TdPlayScene(Scene):
             veil = pygame.Surface((480, 270), pygame.SRCALPHA)
             veil.fill((188, 71, 73, int(120 * self.flash)))
             surf.blit(veil, (0, 0))
+
+    def shot_v2(self, surf, data, age: float, life: float) -> bool:
+        """A projectile of the v2 kit flying from the tower to its target, then its hit puff."""
+        role, (sx, sy), (tx, ty) = data
+        k = min(1.0, age / max(0.01, life))
+        x0, y0 = BX + sx * CELL + 12, BY + sy * CELL + 8
+        x1, y1 = BX + tx * CELL + 12, BY + ty * CELL + 12
+        shot = art2.td_prop(f"shot_{role}")
+        if shot is None:
+            return False
+        if k < 0.8:
+            img = shot.at(age * 20)
+            ang = -math.degrees(math.atan2(y1 - y0, x1 - x0))
+            img = art2.rotated(img, ang)
+            x, y = x0 + (x1 - x0) * k / 0.8, y0 + (y1 - y0) * k / 0.8
+            surf.blit(img, (int(x - img.get_width() / 2), int(y - img.get_height() / 2)))
+        else:
+            hit = art2.td_prop(f"hit_{role}") or art2.td_prop("hit_puff")
+            if hit is not None:
+                img = hit.frames[min(len(hit.frames) - 1, int((k - 0.8) / 0.2 * len(hit.frames)))]
+                surf.blit(img, (int(x1 - img.get_width() / 2), int(y1 - img.get_height() / 2)))
+        return True
+
+    def puff_v2(self, surf, data, age: float, life: float) -> bool:
+        hit = art2.td_prop("hit_puff")
+        if hit is None:
+            return False
+        px, py = data
+        img = hit.frames[min(len(hit.frames) - 1, int(age / max(0.01, life) * len(hit.frames)))]
+        surf.blit(img, (int(BX + px * CELL + 12 - img.get_width() / 2), int(BY + py * CELL + 12 - img.get_height() / 2)))
+        return True
 
     def piece_image(self, pl, d: dict, frame: int) -> pygame.Surface:
         return plant_sprite(pl.word, d.get("rarity", "common"), pl.level, frame)

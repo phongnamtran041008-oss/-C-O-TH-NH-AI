@@ -1,9 +1,15 @@
 {
-  "_comment": "BALANCE_PROFILE=dev: tiny Tu Vi steps so a tester can go Phàm Nhân -> Trúc Cơ in minutes. Only keys listed here change.",
+  "_comment": "BALANCE_PROFILE=dev: tiny Tu Vi steps so a tester can go Phàm Nhân -> Trúc Cơ in minutes, and every later realm nearly as fast. Only keys listed here change.",
   "xp_to_next": {
     "pham_nhan": [10],
     "luyen_khi": [10, 10, 10, 10, 10, 10, 10, 10, 10],
-    "truc_co": [30, 30, 30]
+    "truc_co": [30, 30, 30],
+    "kim_dan": [40, 40, 40],
+    "nguyen_anh": [50, 50, 50],
+    "hoa_than": [60, 60, 60],
+    "luyen_hu": [70, 70, 70],
+    "hop_the": [80, 80, 80],
+    "dai_thua": [90, 90, 90]
   },
   "meditate_interval_seconds": 10
 }

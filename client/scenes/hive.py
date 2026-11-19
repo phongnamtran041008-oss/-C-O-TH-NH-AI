@@ -39,6 +39,37 @@ def bee_img(look: dict | None, t: float, seed: int = 0, left: bool = False) -> p
     return sprites.bee(look, int(t * 12 + seed) % 2, left)
 
 
+def bee_species(b: dict) -> str | None:
+    """The species id of a bee dict: owned bees carry `species`, catalogue entries their `id`."""
+    sp = b.get("species") or b.get("sp")
+    return sp if isinstance(sp, str) else (b["id"] if isinstance(b.get("id"), str) else None)
+
+
+def bee_pic(ui, b: dict, t: float, x: float, y: float, zoom: int, seed: int = 0) -> None:
+    """A bee in the hive screens: its v2 sheet (flying, cut to its pixels, half the old zoom
+    since the v2 bee is about twice the old one) or the old code-drawn bee."""
+    from ..engine import art2
+    img = art2.bee_frame(bee_species(b), t + seed * 0.07, False)
+    if img is not None:
+        ui.image(art2.trim(img), x, y, zoom=max(1, zoom // 2), anchor="center")
+    else:
+        ui.image(bee_img(b["look"], t, seed), x, y, zoom=zoom, anchor="center")
+
+
+def egg_pics(rarity: str, color: str) -> tuple[list, float]:
+    """(frames, zoom factor) of a bee egg: the v2 egg of its rarity (twice the old size, so the
+    callers' zoom is halved) or the old egg in its colour."""
+    from ..engine import art2
+    v2 = art2.egg_frames(rarity)
+    return (v2, 0.5) if v2 else (sprites.egg(color), 1.0)
+
+
+def show_hanzi() -> bool:
+    """The old game's Chinese names of bees are not shown with the v2 art (math game UI)."""
+    from ..engine import art2
+    return not art2.on()
+
+
 class HiveScene(Scene):
     def __init__(self, game, on_close=None):
         super().__init__(game)
@@ -198,7 +229,7 @@ class HiveScene(Scene):
         x, y, w, h = 8, 8, 464, 254
         ui.panel(x, y, w, h)
         ui.fill(x, y, w, 15, "#C99A3A")
-        title = T.HIVE_TITLE + " 蜂巢"
+        title = T.HIVE_TITLE
         ui.text(title, x + 8, y + 7.5, 9, "#2B2B2B", anchor="midleft")
         info_x = x + 16 + ui.text_size(title, 9)[0]
         if ui.button("hv_close", x + w - 52, y + 2, 48, 11, T.CLOSE, key=pygame.K_ESCAPE, size=7):
@@ -257,11 +288,11 @@ class HiveScene(Scene):
             if self.drag == b["id"] and down:
                 continue
             bob = math.sin(t * 3 + i) * 1.2
-            ui.image(bee_img(b["look"], t, i), cx, cy - 2 + bob, zoom=2, anchor="center")
+            bee_pic(ui, b, t, cx, cy - 2 + bob, 2, i)
             role_col = {"hive": "#C99A3A", "pollinate": "#E89AB0", "guard": "#BC4749"}[b["role"]]
             ui.fill(cx - 13, cy + 5, 9, 7, role_col)
-            ui.text({"hive": "巢", "pollinate": "花", "guard": "卫"}[b["role"]], cx - 8.5, cy + 8.5, 5, "#FFFFFF",
-                    kind="han", anchor="center")
+            ui.text({"hive": "T", "pollinate": "H", "guard": "V"}[b["role"]], cx - 8.5, cy + 8.5, 5, "#FFFFFF",
+                    anchor="center")      # Tổ, Hoa (thụ phấn), Vệ (hộ vệ)
             ui.text(str(b["level"]), cx + 10, cy + 8, 6, "#2B2B2B", anchor="center")
             ui.fill(cx + 4, cy - 12, 5, 3, b["rarity_color"])
         # unlock-next marker on the next cell to open
@@ -275,7 +306,7 @@ class HiveScene(Scene):
         if self.drag is not None:
             b = self.bee(self.drag)
             if b is not None and down:
-                ui.image(bee_img(b["look"], t), mx, my, zoom=2, anchor="center")
+                bee_pic(ui, b, t, mx, my, 2, 0)
         if ui.inp.clicked and ui.enabled and hover_cell is not None and ui.hover(14, 50, 228, 140):
             ui.consume_click()
             target = self.bee_at(hover_cell)
@@ -295,7 +326,7 @@ class HiveScene(Scene):
         if hover_cell is not None and ui.hover(14, 50, 228, 140) and not down:
             b = self.bee_at(hover_cell)
             if b is not None:
-                ui.set_tooltip(f"{b['name_vi']} {b['hanzi']} · {T.BEE_LEVEL.format(lv=b['level'])} · {b['role_vi']}")
+                ui.set_tooltip(f"{b['name_vi']}{' ' + b['hanzi'] if show_hanzi() else ''} · {T.BEE_LEVEL.format(lv=b['level'])} · {b['role_vi']}")
             elif hover_cell not in opened:
                 ui.set_tooltip(T.HIVE_LOCKED_CELL)
         if not hv["bees"]:
@@ -325,7 +356,8 @@ class HiveScene(Scene):
         for e in hv["eggs"][:5]:
             col = {"pham": "#7D7468", "linh": "#6A994E", "huyen": "#4A7CC8", "dia": "#8E5AC8",
                    "thien": "#C99A3A"}[e["rarity"]]
-            ui.image(sprites.egg(col)[0], ex + 6, y + 6, zoom=1, anchor="center")
+            frames, k = egg_pics(e["rarity"], col)
+            ui.image(frames[0], ex + 6, y + 6, zoom=k, anchor="center")
             if ui.button(f"hv_hatch_{e['item_id']}", ex + 13, y, 26, 11, f"{T.HIVE_HATCH}×{e['qty']}", size=6,
                          style="green", enabled=not self.busy, tooltip=e["name_vi"]):
                 self.hatch(e["item_id"])
@@ -351,7 +383,12 @@ class HiveScene(Scene):
             ui.text(T.HIVE_MAX, x + 80, by + 6.5, 7, "#8E877A", anchor="midleft")
         dx = x + 156
         for d in hv.get("decorations", []):
-            ui.image(sprites.decoration(d["id"], int(ui.time * 3) % 4), dx + 5, by + 6, zoom=0.6, anchor="center")
+            from ..engine import art2
+            dp = art2.decoration(d["id"])
+            if dp is not None:     # v2 decoration (twice the old size)
+                ui.image(dp.at(ui.time), dx + 5, by + 6, zoom=0.3, anchor="center")
+            else:
+                ui.image(sprites.decoration(d["id"], int(ui.time * 3) % 4), dx + 5, by + 6, zoom=0.6, anchor="center")
             if ui.button(f"hv_deco_{d['id']}", dx + 10, by, 18, 13, "✓" if d["on"] else "·", size=7,
                          selected=d["on"], tooltip=d["name_vi"]):
                 self.post("/hive/decoration", {"decoration": d["id"], "on": not d["on"]}, ok=lambda r: None)
@@ -367,9 +404,9 @@ class HiveScene(Scene):
         t = ui.time
         ui.fill(x + 6, y + 6, 40, 40, "#F2D58A")
         ui.border(x + 6, y + 6, 40, 40, b["rarity_color"], 2)
-        ui.image(bee_img(b["look"], t), x + 26, y + 26 + math.sin(t * 3) * 1.5, zoom=4, anchor="center")
+        bee_pic(ui, b, t, x + 26, y + 26 + math.sin(t * 3) * 1.5, 4, 0)
         ui.text(b["name_vi"], x + 52, y + 8, 9)
-        ui.text(f"{b['hanzi']}  {b['pinyin']}", x + 52, y + 20, 9, "#BC4749", kind="han")
+        ui.text(f"{b['hanzi']}  {b['pinyin']}" if show_hanzi() else b["pinyin"], x + 52, y + 20, 9, "#BC4749", kind="han")
         ui.text(f"{b['rarity_vi']} · hệ {b['element_vi']}" + ("" if b.get("real_word") else "  " + T.BEE_GAME_NAME),
                 x + 52, y + 33, 7, b["rarity_color"])
         yy = y + 50
@@ -478,13 +515,13 @@ class HatchScene(Scene):
         ui.dim(190)
         b = self.r["bee"]
         col = b["rarity_color"]
-        frames = sprites.egg(col)
+        frames, ek = egg_pics(b["rarity"], col)
         t = self.t
         cx, cy = 240, 110
         if t < 0.9:
-            ui.image(frames[0], cx + math.sin(t * 40) * (1 + t * 2), cy, zoom=5, anchor="center")
+            ui.image(frames[0], cx + math.sin(t * 40) * (1 + t * 2), cy, zoom=5 * ek, anchor="center")
         elif t < 1.3:
-            ui.image(frames[1], cx, cy, zoom=5, anchor="center")
+            ui.image(frames[1], cx, cy, zoom=5 * ek, anchor="center")
         else:
             k = min(1.0, (t - 1.3) / 0.5)
             glow = pygame.Surface((int(120 * ui.s), int(120 * ui.s)), pygame.SRCALPHA)
@@ -493,11 +530,10 @@ class HatchScene(Scene):
                 pygame.draw.circle(glow, (c.r, c.g, c.b, int(30 * k)), glow.get_rect().center, int(60 * ui.s * i / 6))
             wx, wy = ui.d.to_window(cx, cy)
             ui.win.blit(glow, (wx - glow.get_width() // 2, wy - glow.get_height() // 2))
-            ui.image(frames[2], cx, cy + 14, zoom=4, anchor="center")
-            ui.image(bee_img(b["look"], t), cx + math.sin(t * 2) * 10 * k, cy - 20 * k + math.sin(t * 5) * 2,
-                     zoom=5, anchor="center")
+            ui.image(frames[2], cx, cy + 14, zoom=4 * ek, anchor="center")
+            bee_pic(ui, b, t, cx + math.sin(t * 2) * 10 * k, cy - 20 * k + math.sin(t * 5) * 2, 5, 0)
             if k >= 1:
-                ui.text(T.HIVE_HATCHED.format(name=b["name_vi"], hanzi=b["hanzi"]), cx, cy + 50, 11, "#F4EBD9",
+                ui.text(T.HIVE_HATCHED.format(name=b["name_vi"], hanzi=b["hanzi"] if show_hanzi() else ""), cx, cy + 50, 11, "#F4EBD9",
                         anchor="center")
                 ui.text(f"{b['pinyin']} · {b['rarity_vi']} · hệ {b['element_vi']}", cx, cy + 64, 8, col,
                         anchor="center")
@@ -532,7 +568,7 @@ class BeeBookScene(Scene):
         x, y, w, h = 14, 10, 452, 250
         ui.panel(x, y, w, h)
         ui.fill(x, y, w, 15, "#6A994E")
-        ui.text(T.BEE_BOOK + "  蜂谱", x + 8, y + 7.5, 9, "#FFFFFF", anchor="midleft")
+        ui.text(T.BEE_BOOK, x + 8, y + 7.5, 9, "#FFFFFF", anchor="midleft")
         if ui.button("bb_close", x + w - 52, y + 2, 48, 11, T.CLOSE, key=pygame.K_ESCAPE, size=7):
             self.close()
             return
@@ -551,8 +587,9 @@ class BeeBookScene(Scene):
             ui.border(cx, cy, 36, 46, e["rarity_color"], 2 if sel else 1)
             ui.widgets[f"bb_{e['id']}"] = ui.rect(cx, cy, 36, 46)
             if e["found"]:
-                ui.image(bee_img(e["look"], t, i), cx + 18, cy + 16, zoom=3, anchor="center")
-                ui.text(e["hanzi"], cx + 18, cy + 37, 8, "#2B2B2B", kind="han", anchor="center")
+                bee_pic(ui, e, t, cx + 18, cy + 16, 3, i)
+                if show_hanzi():
+                    ui.text(e["hanzi"], cx + 18, cy + 37, 8, "#2B2B2B", kind="han", anchor="center")
             else:
                 ui.text("?", cx + 18, cy + 18, 16, "#C9B48A", anchor="center")
                 ui.text(e["rarity_vi"], cx + 18, cy + 38, 6, e["rarity_color"], anchor="center")
@@ -576,9 +613,9 @@ class BeeBookScene(Scene):
         if e is None or not e["found"]:
             ui.text(T.BEE_BOOK_UNKNOWN, dx + 8, dy + 8, 8, "#8E877A")
             return
-        ui.image(bee_img(e["look"], t), dx + 24, dy + 22, zoom=5, anchor="center")
+        bee_pic(ui, e, t, dx + 24, dy + 22, 5, 0)
         ui.text(e["name_vi"], dx + 48, dy + 6, 9)
-        ui.text(f"{e['hanzi']}  {e['pinyin']}", dx + 48, dy + 18, 9, "#BC4749", kind="han")
+        ui.text(f"{e['hanzi']}  {e['pinyin']}" if show_hanzi() else e["pinyin"], dx + 48, dy + 18, 9, "#BC4749", kind="han")
         ui.text(f"{e['rarity_vi']} · hệ {e['element_vi']}", dx + 48, dy + 31, 7, e["rarity_color"])
         yy = dy + 46
         word = e["word"]
