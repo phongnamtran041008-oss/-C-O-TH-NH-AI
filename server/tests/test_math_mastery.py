@@ -15,6 +15,7 @@ from app import db as dbm
 from app.learning import math_items as mi
 from app.learning import math_mastery as mm
 from app.learning import math_path as mp
+from app.learning import math_tree
 from app.models import MathAnswer, MathRetry, MathRun
 from tests.helpers import answer_key
 from tests.test_math_loop import (SUBJECT, ask, clear_below, fake_items, log_answers, make, play,
@@ -252,9 +253,12 @@ async def test_the_path_shows_which_floors_are_open_and_how_far_the_gate_has_com
     await meet_gate(uid, 1, skip={FLOOR1_SKILLS[0]})
     floors = (await client.get("/math/path", headers=h)).json()["subjects"][0]
     assert floors["cleared"] == [] and floors["next_floor"] == 1
-    first, second = floors["floors"][0], floors["floors"][1]
+    first, second, third = floors["floors"][0], floors["floors"][1], floors["floors"][2]
     assert (first["state"], first["playable"], first["trial_total"]) == ("open", True, len(FLOOR1_SKILLS))
-    assert (second["state"], second["playable"], second["gate"]) == ("locked", False, None)
+    # Đạo Thụ: floor 2 holds only an optional node, which requires nothing, so it is open from the
+    # start; floor 3 is the next main node (ds_vecto_ma_tran), which waits for floor 1's node
+    assert (second["state"], second["playable"], second["node_id"]) == ("open", True, "ds_so_phuc")
+    assert (third["state"], third["playable"], third["gate"]) == ("locked", False, None)
     gate = first["gate"]
     assert not gate["ok"] and gate["weak"] == [FLOOR1_SKILLS[0]]
     done = next(s for s in gate["skills"] if s["skill"] == FLOOR1_SKILLS[1])
@@ -264,13 +268,15 @@ async def test_the_path_shows_which_floors_are_open_and_how_far_the_gate_has_com
 
 
 async def test_a_locked_floor_cannot_be_played(client):
+    """Floor 3 holds ds_vecto_ma_tran, which requires floor 1's node ds_ngon_ngu (Đạo Thụ, R11)."""
     h, uid = await make(client)
+    need = math_tree.tree().nodes["ds_ngon_ngu"].name_vi
     for path in ("/math/run/start", "/math/trial/start"):
-        r = await client.post(path, json={"subject_id": SUBJECT, "floor": 2}, headers=h)
-        assert r.status_code == 403 and r.json()["error"]["code"] == "floor_locked", r.text
-        assert "tầng 1" in r.json()["error"]["message_vi"]
+        r = await client.post(path, json={"subject_id": SUBJECT, "floor": 3}, headers=h)
+        assert r.status_code == 403 and r.json()["error"]["code"] == "node_locked", r.text
+        assert need in r.json()["error"]["message_vi"]             # names what to finish first
     await clear_below(uid, 2)
-    assert (await client.post("/math/run/start", json={"subject_id": SUBJECT, "floor": 2},
+    assert (await client.post("/math/run/start", json={"subject_id": SUBJECT, "floor": 3},
                               headers=h)).status_code == 200
 
 
@@ -310,7 +316,9 @@ async def test_a_trial_asks_each_micro_skill_once_at_the_hardest_tier_and_never_
     assert not any(p["q"]["math"]["parallel"] or p["q"]["math"]["review"] for p in played)
     first, last = played[0]["res"]["math"]["trial"], played[-1]["res"]["math"]["trial"]
     assert (first["asked"], first["left"], first["passed"]) == (1, len(FLOOR1_SKILLS) - 1, None)
-    assert (last["passed"], last["left"], last["unlocked"]) == (True, 0, 2)
+    # passing floor 1's node opens floor 3 (ds_vecto_ma_tran) and the programming node built on it
+    assert (last["passed"], last["left"], last["unlocked"], last["node_done"]) == (True, 0, 3, True)
+    assert set(last["opened"]) == {"ds_vecto_ma_tran", "lt_cau_truc_du_lieu"}
 
 
 async def test_passing_the_trial_clears_the_floor_and_opens_the_next(client):
@@ -321,9 +329,10 @@ async def test_passing_the_trial_clears_the_floor_and_opens_the_next(client):
     run = await run_row(run_id)
     assert run.passed is True and run.ended_at is not None and run.asked == len(FLOOR1_SKILLS)
     subject = (await client.get("/math/path", headers=h)).json()["subjects"][0]
-    assert subject["cleared"] == [1] and subject["next_floor"] == 2
-    assert [f["state"] for f in subject["floors"][:3]] == ["cleared", "open", "locked"]
-    assert (await client.post("/math/run/start", json={"subject_id": SUBJECT, "floor": 2},
+    # the next main node is on floor 3 (floor 2 is an optional node, open all along)
+    assert subject["cleared"] == [1] and subject["next_floor"] == 3
+    assert [f["state"] for f in subject["floors"][:4]] == ["cleared", "open", "open", "locked"]
+    assert (await client.post("/math/run/start", json={"subject_id": SUBJECT, "floor": 3},
                               headers=h)).status_code == 200
     assert await math_cleared(uid) == {1}
 
@@ -407,14 +416,16 @@ async def test_a_sitting_on_the_first_floor_never_reviews_anything(client):
 
 
 async def test_a_sitting_mixes_in_questions_from_the_floor_below(client):
+    """Đạo Thụ: the review comes from the nodes this node reinforces - floor 3's
+    ds_vecto_ma_tran reinforces floor 1's ds_ngon_ngu (R7)."""
     h, uid = await make(client)
     await clear_below(uid, 2)
-    run_id = await start(client, h, 2)
+    run_id = await start(client, h, 3)
     marks = []
     for _ in range(8):
         q, res = await play(client, h, run_id, correct=True)
         marks.append(q["math"]["review"])
-        assert q["math"]["floor"] == (1 if q["math"]["review"] else 2)
+        assert q["math"]["floor"] == (1 if q["math"]["review"] else 3)
         assert res["math"]["review"] == q["math"]["review"]
     assert marks == [False, False, False, True, False, False, False, True]      # every fourth
     run = await run_row(run_id)
@@ -422,7 +433,7 @@ async def test_a_sitting_mixes_in_questions_from_the_floor_below(client):
     share = run.review_asked / run.asked
     assert mp.cfg()["spiral_review"]["share_min"] <= share <= mp.cfg()["spiral_review"]["share_max"]
     logged = [(a.review, a.floor) for a in await answers_of(uid)]
-    assert logged == [(False, 2)] * 3 + [(True, 1)] + [(False, 2)] * 3 + [(True, 1)]
+    assert logged == [(False, 3)] * 3 + [(True, 1)] + [(False, 3)] * 3 + [(True, 1)]
 
 
 async def test_the_review_question_is_the_micro_skill_that_was_answered_worst(client):
@@ -432,7 +443,7 @@ async def test_the_review_question_is_the_micro_skill_that_was_answered_worst(cl
     for skill in FLOOR1_SKILLS:
         await log_answers(uid, skill, 1, [True] * 5, floor=1)
     await log_answers(uid, weakest, 1, [False] * 3, floor=1)   # this one has just been missed
-    run_id = await start(client, h, 2)
+    run_id = await start(client, h, 3)
     seen = []
     for _ in range(8):
         q, _ = await play(client, h, run_id, correct=True)
@@ -448,7 +459,7 @@ async def test_a_review_question_that_is_missed_waits_for_a_sitting_on_its_own_f
     await clear_below(uid, 2)
     for skill in FLOOR1_SKILLS:
         await log_answers(uid, skill, 1, [True] * 5, floor=1)
-    run_id = await start(client, h, 2)
+    run_id = await start(client, h, 3)
     for _ in range(3):
         q, _ = await play(client, h, run_id, correct=True)     # no mistakes of its own in the way
         assert not q["math"]["review"]
@@ -459,8 +470,8 @@ async def test_a_review_question_that_is_missed_waits_for_a_sitting_on_its_own_f
                                  .where(MathRetry.user_id == uid, MathRetry.cleared_at.is_(None))
                                  .order_by(MathRetry.id))).all()
     assert rows == [(1, missed["math"]["skill"])]              # waits on floor 1, where it belongs
-    q, _ = await play(client, h, run_id, correct=True)         # the floor-2 sitting goes on as before
-    assert not q["math"]["parallel"] and q["math"]["floor"] == 2
+    q, _ = await play(client, h, run_id, correct=True)         # the floor-3 sitting goes on as before
+    assert not q["math"]["parallel"] and q["math"]["floor"] == 3
     back = await start(client, h, 1)
     q = await ask(client, h, back)
     assert q["math"]["parallel"] and q["math"]["floor"] == 1
@@ -477,7 +488,7 @@ async def test_a_question_that_is_not_due_yet_is_not_reviewed(client, frozen):
                               item_id=f"fresh_{n}", qtype="numeric", fingerprint=f"fresh_{n}", correct=True,
                               timed_out=False, review=False, answer_ms=900, answered_at=now))
         await db.commit()
-    run_id = await start(client, h, 2)
+    run_id = await start(client, h, 3)
     for _ in range(8):
         q, _ = await play(client, h, run_id, correct=True)
         assert not q["math"]["review"]                         # all of them wait a day
@@ -490,11 +501,11 @@ async def test_a_question_that_is_not_due_yet_is_not_reviewed(client, frozen):
 async def test_a_trial_never_mixes_in_review_questions(client):
     h, uid = await make(client)
     await clear_below(uid, 2)
-    await meet_gate(uid, 2)
-    run_id = (await start_trial(client, h, 2)).json()["run"]["run_id"]
+    await meet_gate(uid, 3)
+    run_id = (await start_trial(client, h, 3)).json()["run"]["run_id"]
     played = await play_trial(client, h, run_id)
     assert not any(p["q"]["math"]["review"] for p in played)
-    assert {p["q"]["math"]["floor"] for p in played} == {2}
+    assert {p["q"]["math"]["floor"] for p in played} == {3}
     assert (await run_row(run_id)).review_asked == 0
 
 
@@ -542,7 +553,7 @@ def test_migration_0012_keeps_the_sittings_and_the_answers(tmp_path):
 async def test_a_floor_from_the_first_question_to_the_trial(client, monkeypatch):
     """The milestone's own promise: a player answers their way up a floor, the gate opens,
     the Thiên kiếp nhỏ is passed, and the next floor is there."""
-    items = fake_items(1)
+    items = {**fake_items(1), **fake_items(3)}          # floor 3: the next main node of Đạo Thụ
     monkeypatch.setattr(mi, "bank", lambda: items)
     monkeypatch.setattr(mi, "generators", lambda: {})
     h, uid = await make(client)
@@ -559,4 +570,5 @@ async def test_a_floor_from_the_first_question_to_the_trial(client, monkeypatch)
     played = await play_trial(client, h, trial.json()["run"]["run_id"])
     assert played[-1]["res"]["math"]["trial"]["passed"] is True
     subject = (await client.get("/math/path", headers=h)).json()["subjects"][0]
-    assert subject["cleared"] == [1] and [f["state"] for f in subject["floors"][:2]] == ["cleared", "open"]
+    assert played[-1]["res"]["math"]["trial"]["unlocked"] == 3
+    assert subject["cleared"] == [1] and [f["state"] for f in subject["floors"][:3]] == ["cleared", "locked", "open"]

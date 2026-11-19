@@ -265,11 +265,14 @@ def run_math_skill_flow(workdir: Path, shots: Path | None = None) -> None:
             assert not (drv.top_is("MathCombatQuizScene") and drv.game.top.cast)
         drv.shot("locked_chieu_refused")
 
-        # ---- clear floor 1: the Trận pháp open
-        server.sql("insert into math_runs(user_id, subject_id, floor, mode, tier, correct_streak, wrong_streak, "
-                   "combo, best_combo, asked, correct, review_asked, xp_gained, passed, started_at, ended_at) "
-                   "values (?, ?, 1, 'trial', 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, datetime('now'), datetime('now'))",
-                   (uid, SUBJECT))
+        # ---- finish Luyện Khí tầng 1 of Đạo Thụ: the Trận pháp open (a chiêu's "floor 2" is the stage
+        # being worked on, and that moves up when every main node of the stage before is done: the
+        # first node of each of the four subjects; the Lập Trình node of that stage is vacant)
+        for subject in (SUBJECT, "giai_tich", "xac_suat_thong_ke", "toi_uu_roi_rac"):
+            server.sql("insert into math_runs(user_id, subject_id, floor, mode, tier, correct_streak, wrong_streak, "
+                       "combo, best_combo, asked, correct, review_asked, xp_gained, passed, started_at, ended_at) "
+                       "values (?, ?, 1, 'trial', 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, datetime('now'), datetime('now'))",
+                       (uid, subject))
         ws.load_mskills()
         drv.wait(lambda: all(s["unlocked"] for s in ws.mskills[3:5]), 10, "the Trận pháp unlock")
 

@@ -27,10 +27,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import clock
 from ..config import settings
-from ..learning import math_mastery, math_path, math_problems
+from ..learning import math_path, math_problems
 from ..learning.math_problems import Problem
 from ..models import MathSubmission, User
-from . import cultivation, math_practice
+from . import cultivation, math_tree_progress
 from .math_practice import MathError
 
 RUN, SUBMIT = "run", "submit"
@@ -46,13 +46,12 @@ def _visible(problem: Problem) -> bool:
 
 
 async def _playable_floor(db: AsyncSession, user: User, problem: Problem) -> None:
-    """An exercise lives on a floor, and a locked floor stays locked (M5)."""
-    subject = math_path.subject(problem.subject)
-    cleared = await math_practice.cleared_floors(db, user.id, problem.subject)
-    if not math_mastery.playable(subject, problem.floor, cleared):
-        below = math_mastery.floor_below(subject, problem.floor)
-        raise MathError(403, "floor_locked",
-                        f"Tầng này chưa mở. Hãy qua Thiên kiếp nhỏ của tầng {below} trước.")
+    """An exercise belongs to a micro-skill, and it is open when that micro-skill's node of
+    Đạo Thụ is open or done (R10); otherwise it stays shut."""
+    st = await math_tree_progress.state(db, user.id)
+    if not math_tree_progress.problem_open(st, problem):
+        owner = st.tree.node_of_skill().get(problem.skill)
+        raise MathError(403, "node_locked", math_tree_progress.locked_message(st, [owner] if owner else []))
 
 
 async def _best(db: AsyncSession, user_id: int, problem_id: str) -> MathSubmission | None:
@@ -72,21 +71,21 @@ def _best_view(best: MathSubmission | None) -> dict | None:
 
 async def list_view(db: AsyncSession, user: User, subject_id: str, floor: int | None = None) -> dict:
     """The exercises of a subject, floor by floor, with how the player has done on each.
-    A locked floor keeps its exercises to itself (M5), so only open floors are listed."""
+    An exercise whose node is still shut keeps to itself (R10), so only open ones are listed."""
     try:
         subject = math_path.subject(subject_id)
         if floor is not None:
             subject.floor(floor)
     except KeyError:
         raise MathError(404, "no_floor", "Không có tầng này.")
-    cleared = await math_practice.cleared_floors(db, user.id, subject_id)
+    st = await math_tree_progress.state(db, user.id)
     floors = []
     for f in subject.floors:
         if floor is not None and f.number != floor:
             continue
-        problems = math_problems.floor_problems(subject_id, f.number, settings.allow_unreviewed)
-        locked = not math_mastery.playable(subject, f.number, cleared)
-        if not problems or locked:
+        problems = [p for p in math_problems.floor_problems(subject_id, f.number, settings.allow_unreviewed)
+                    if math_tree_progress.problem_open(st, p)]
+        if not problems:
             continue
         out = []
         for p in problems:

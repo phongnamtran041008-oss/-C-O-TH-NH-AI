@@ -1,8 +1,8 @@
-"""M11 through the real client UI: the math hub shows one bí cảnh at a time (a tab per
-subject, mouse and keyboard), a subject offers its bài kiểm tra đầu vào, the explanation comes
-first, the questions come on the ordinary math card, the result says where the player starts
-and why, and the start floor is playable straight away while the floors below it read as
-skipped. Run with a folder argument to keep the screenshots:
+"""M11 through the real client UI: the math hub shows one branch of Đạo Thụ at a time (a tab
+per branch, mouse and keyboard), a branch that is a subject offers its bài kiểm tra đầu vào, the
+explanation comes first, the questions come on the ordinary math card, the result says where the
+player starts and why, and the node on the start floor is playable straight away while the
+floor below it reads as skipped (its node is done). Run with a folder argument to keep the screenshots:
 `python -m client.tests.test_math_placement_flow <dir>`."""
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pygame
 
+from client.scenes.math_tree import node_rows
 from client.tests.driver import Driver, ServerProcess, fill_math_answer
 from client.tests.test_linh_phong_flow import abode
 from client.tests.test_world_flow import make_account
@@ -48,43 +49,42 @@ def run_placement_flow(workdir: Path, shots: Path | None = None) -> None:
             drv.press(pygame.K_RETURN)
             drv.step(3)
 
-        # ---- the hub: a tab per subject, opened on the first one that can be played
+        # ---- the hub: a tab per branch, opened on "Nên học"
         drv.click("hud_math")
         drv.wait(lambda: drv.top_is("MathPracticeScene") and top(drv).path is not None, 10, "the math path")
         subjects = top(drv).path["subjects"]
-        assert len(subjects) >= 2
-        first = next(i for i, s in enumerate(subjects) if any(f["playable"] for f in s["floors"]))
-        assert top(drv).tab == first
-        assert all(drv.has(f"math_tab_{s['id']}") for s in subjects)
-        assert drv.has(f"math_floor_{subjects[first]['id']}_1")
+        tabs = [t["id"] for t in top(drv).tabs]
+        assert len(subjects) >= 2 and tabs[0] == "next" and len(tabs) > 3
+        assert top(drv).tab == "next"
+        assert all(drv.has(f"math_tab_{t}") for t in tabs)
+        assert all(drv.has(f"math_node_{n}_1") for n in top(drv).tree["next"][:1])
         assert all(drv.has(d) for d in ("math_library", "math_close", "math_hub_dungeon", "math_hub_td",
                                         "math_hub_fortune"))
         drv.shot("hub_first_subject")
 
-        # keyboard: Right shows the next subject, Left comes back
+        # keyboard: Right shows the next tab, Left comes back
         drv.press(pygame.K_RIGHT)
-        assert top(drv).tab == (first + 1) % len(subjects)
-        assert not drv.has(f"math_floor_{subjects[first]['id']}_1")
+        assert top(drv).tab == tabs[1]
+        assert not drv.has(f"math_node_{top(drv).tree['next'][-1]}_1")      # (the last "Nên học" node is not on Đại Số)
         drv.shot("hub_next_subject")
         drv.press(pygame.K_LEFT)
-        assert top(drv).tab == first
+        assert top(drv).tab == "next"
 
-        # a subject with no questions still lists its floors, as "chưa có câu hỏi"
-        empty = [s for s in subjects if not any(f["has_questions"] for f in s["floors"])]
-        if empty:
-            drv.click(f"math_tab_{empty[0]['id']}")
-            assert top(drv).subject()["id"] == empty[0]["id"]
-            assert not any(drv.has(f"math_floor_{empty[0]['id']}_{f['floor']}") for f in empty[0]["floors"])
-            drv.shot("hub_subject_without_questions")
+        # a branch with nothing written yet still lists its nodes, as "Đang biên soạn"
+        drv.click("math_tab_ud")
+        assert top(drv).tab_subject() is None
+        assert not any(w.startswith("math_node_") for w in drv.game.ui.widgets)
+        drv.shot("hub_subject_without_questions")
 
         # ---- switch to another subject that offers the bài kiểm tra đầu vào (the first one
         # if no other subject is written yet)
         offered = [s for s in subjects if (s.get("placement") or {}).get("offered")]
         assert offered, "no subject offers the placement test"
-        target = next((s for s in offered if s["id"] != subjects[first]["id"]), offered[0])
+        target = next((s for s in offered if s["id"] != subjects[0]["id"]), offered[0])
         sid = target["id"]
-        drv.click(f"math_tab_{sid}")
-        assert top(drv).subject()["id"] == sid
+        branch = next(t["id"] for t in top(drv).tabs if t.get("subject") == sid)
+        drv.click(f"math_tab_{branch}")
+        assert top(drv).tab_subject()["id"] == sid
         assert drv.has(f"math_place_{sid}")
         drv.shot("hub_target_subject")
 
@@ -126,19 +126,23 @@ def run_placement_flow(workdir: Path, shots: Path | None = None) -> None:
         assert all(not f["met"] for f in result["floors"][1:])             # (floors asked above 2: missed too)
         drv.shot("placement_result")
 
-        # ---- back in the hub: floor 1 skipped, floor 2 open and playable
+        # ---- back in the hub: floor 1 skipped (its node is done), the node on floor 2 open and playable
         drv.click("math_place_back")
         drv.wait(lambda: drv.top_is("MathPracticeScene") and top(drv).path is not None and
-                 top(drv).subject()["placement"]["status"] == "done", 10, "the hub again")
-        s = top(drv).subject()
+                 top(drv).tab_subject()["placement"]["status"] == "done", 10, "the hub again")
+        s = top(drv).tab_subject()
         assert s["id"] == sid and s["cleared"] == [1] and s["next_floor"] == 2
-        assert [f["cleared_by"] for f in s["floors"][:3]] == ["placement", None, None]
-        assert [f["state"] for f in s["floors"][:3]] == ["cleared", "open", "locked"]
+        assert [f["cleared_by"] for f in s["floors"][:2]] == ["placement", None]
+        assert [f["state"] for f in s["floors"][:2]] == ["cleared", "open"]
         assert not drv.has(f"math_place_{sid}")                             # one sitting per subject
-        assert drv.has(f"math_floor_{sid}_2")
+        row = next(r for r in node_rows(top(drv).tree, branch) if r.part and r.part["floor"] == 2)
+        assert row.node["state"] == "open" and row.node["stage"] == 2
+        assert drv.has(f"math_node_{row.node['id']}_2")
+        first_node = next(r for r in node_rows(top(drv).tree, branch) if r.part and r.part["floor"] == 1)
+        assert first_node.node["state"] == "done" and first_node.part["passed"]
         drv.shot("hub_after_placement")
 
-        drv.click(f"math_floor_{sid}_2")
+        drv.click(f"math_node_{row.node['id']}_2")
         drv.wait(lambda: drv.top_is("MathQuizScene") and not top(drv).result, 10, "a question of floor 2")
         assert top(drv).q["math"]["floor"] == 2 and top(drv).q["math"]["subject"] == sid
         drv.shot("start_floor_question")
@@ -150,7 +154,7 @@ def run_placement_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait(lambda: drv.top_is("MathPracticeScene") and top(drv).summary is not None, 10, "the summary")
         drv.click("math_back")
         drv.wait(lambda: top(drv).summary is None and top(drv).path is not None, 10, "the floors")
-        assert top(drv).subject()["id"] == sid                              # the hub stays on that subject
+        assert top(drv).tab == branch                                       # the hub stays on that branch
 
         # ---- the library opens on the subject the hub shows (when it has documents)
         drv.click("math_library")

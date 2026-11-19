@@ -21,10 +21,11 @@ from client.tests.test_world_flow import make_account
 SUBJECT = "dai_so_tuyen_tinh"
 CODE_LIST = "math_code_dai_so_tuyen_tinh"
 EXERCISE = "dstt_bt_dem_phan_tu"
-FLOOR_1 = "math_floor_dai_so_tuyen_tinh_1"
-FLOOR_2 = "math_floor_dai_so_tuyen_tinh_2"
-FLOOR_3 = "math_floor_dai_so_tuyen_tinh_3"
-TRIAL_1 = "math_trial_dai_so_tuyen_tinh_1"
+NODE_1 = "ds_ngon_ngu"              # the first node of Đại Số: floor 1
+NODE_2 = "ds_vecto_ma_tran"         # what it opens: floor 3 (floor 2 holds only an optional node)
+FLOOR_1 = f"math_node_{NODE_1}_1"
+FLOOR_3 = f"math_node_{NODE_2}_3"   # the sitting that reviews floor 1 and shows matrices
+TRIAL_1 = f"math_trial_{NODE_1}_1"
 
 
 def top(drv: Driver):
@@ -71,12 +72,13 @@ def lapse(server: ServerProcess, uid: int, skill: str, floor: int, tier: int = 1
                (uid, SUBJECT, skill, floor, tier))
 
 
-def clear_floor(server: ServerProcess, uid: int, floor: int) -> None:
-    """A passed Thiên kiếp nhỏ, so the floor above opens (M5)."""
+def clear_floor(server: ServerProcess, uid: int, floor: int, subject: str = SUBJECT) -> None:
+    """A passed Thiên kiếp nhỏ on a whole floor (an old save: no node on the run), which the
+    tree still honours (R2), so the nodes that wait for it open."""
     server.sql("insert into math_runs (user_id, subject_id, floor, mode, tier, correct_streak, wrong_streak, "
                "combo, best_combo, asked, correct, review_asked, xp_gained, passed, started_at, ended_at) "
                "values (?, ?, ?, 'trial', 2, 0, 0, 0, 0, 1, 1, 0, 0, 1, '2025-12-01', '2025-12-01')",
-               (uid, SUBJECT, floor))
+               (uid, subject, floor))
 
 
 def reopen_floors(drv: Driver) -> dict:
@@ -109,10 +111,14 @@ def run_math_flow(workdir: Path, shots: Path | None = None) -> None:
         subject = top(drv).path["subjects"][0]
         floors = subject["floors"]
         assert [f["has_questions"] for f in floors] == [True] * 9 + [False]      # floors 1-9 are written
-        assert [f["state"] for f in floors[:3]] == ["open", "locked", "locked"]      # M5
-        assert [f["playable"] for f in floors[:4]] == [True, False, False, False]
+        # Đạo Thụ: floor 1 holds the first node, floor 2 only an optional one (open, blocks nothing),
+        # floor 3 the node that waits for floor 1
+        assert [f["state"] for f in floors[:3]] == ["open", "open", "locked"]
+        assert [f["playable"] for f in floors[:4]] == [True, True, False, False]
         assert subject["cleared"] == [] and subject["next_floor"] == 1
-        assert drv.has(FLOOR_1) and not drv.has(FLOOR_2) and not drv.has(TRIAL_1)
+        assert floors[0]["node_id"] == NODE_1 and floors[2]["node_id"] is None
+        assert top(drv).tab == "next" and top(drv).tree["next"][0] == NODE_1
+        assert drv.has(FLOOR_1) and not drv.has(FLOOR_3) and not drv.has(TRIAL_1)
         drv.shot("math_floors")
 
         # ---- a right answer: Tu Vi by tier
@@ -196,25 +202,26 @@ def run_math_flow(workdir: Path, shots: Path | None = None) -> None:
                 assert trial["passed"] is None
                 drv.click("math_next")
         assert seen == skills                            # one question per micro-skill, in path order
-        assert (trial["passed"], trial["unlocked"]) == (True, 2)
+        assert (trial["passed"], trial["opened"][:1], trial["node_done"]) == (True, [NODE_2], True)
         drv.shot("math_trial_passed")
         drv.click("math_next")                           # "Xem kết quả"
         drv.wait(lambda: drv.top_is("MathPracticeScene") and top(drv).summary is not None, 10, "the verdict")
-        assert top(drv).trial["passed"] and top(drv).trial["unlocked"] == 2
+        assert top(drv).trial["passed"] and NODE_2 in top(drv).trial["opened"]
+        assert top(drv).summary["node_id"] == NODE_1
         drv.shot("math_trial_summary")
         drv.click("math_back")
         drv.wait(lambda: top(drv).summary is None and top(drv).path is not None, 10, "the floors again")
         subject = reopen_floors(drv)
-        assert [f["state"] for f in subject["floors"][:3]] == ["cleared", "open", "locked"]
-        assert subject["cleared"] == [1] and subject["next_floor"] == 2
-        assert drv.has(FLOOR_2)
+        assert [f["state"] for f in subject["floors"][:3]] == ["cleared", "open", "open"]
+        assert subject["cleared"] == [1] and subject["next_floor"] == 3
+        assert drv.has(FLOOR_3) and NODE_2 in top(drv).tree["next"] and NODE_1 not in top(drv).tree["next"]
         drv.shot("math_floor_cleared")
 
-        # ---- M5: a sitting on floor 2 brings floor 1 back (rule 6, ôn xoắn ốc)
+        # ---- M5: a sitting on the node it opened brings floor 1 back (rule 6, ôn xoắn ốc)
         # Every micro-skill of floor 1 was just answered right in the trial, so none is due
         # for a day; one wrong answer on the first of them is what the review slot is for.
         lapse(server, uid, skills[0], floor=1)
-        drv.click(FLOOR_2)
+        drv.click(FLOOR_3)
         last, reviewed = None, None
         for n in range(1, 5):
             q = wait_question(drv, last)
@@ -223,7 +230,7 @@ def run_math_flow(workdir: Path, shots: Path | None = None) -> None:
                 reviewed = q
                 drv.shot("math_review")
             else:
-                assert q["math"]["floor"] == 2
+                assert q["math"]["floor"] == 3
             answer_math(drv, server, correct=True)
             if n < 4:
                 drv.click("math_next")
@@ -235,8 +242,7 @@ def run_math_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.click("math_back")
         drv.wait(lambda: top(drv).summary is None and top(drv).path is not None, 10, "the floors")
 
-        # ---- floor 3: a question that shows matrices
-        clear_floor(server, uid, 2)                      # floor 3 needs floor 2 behind it
+        # ---- floor 3 again: a question that shows matrices (no floor 2 stands in the way any more)
         reopen_floors(drv)
         drv.click(FLOOR_3)
         last = None
@@ -257,6 +263,7 @@ def run_math_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.click("math_back")
         drv.wait(lambda: top(drv).summary is None and top(drv).path is not None, 10, "the floors once more")
         # ---- M6: a programming exercise, written and handed in through the game
+        drv.click("math_tab_ds")                          # the bài tập belong to the branch of a subject
         drv.click(CODE_LIST)
         drv.wait(lambda: drv.top_is("ProblemListScene") and top(drv).data is not None, 10, "the exercises")
         floors = top(drv).data["floors"]

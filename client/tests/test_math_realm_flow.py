@@ -27,7 +27,8 @@ sys.path.insert(0, str(ROOT / "server"))        # the test reads the map the ser
 from app.realtime import maps  # noqa: E402
 
 REALM = "toan_tran"
-FLOOR = 2                         # the player's own floor: floor 1 is passed
+FLOOR = 3                         # the player's own floor: the frontier of Đại Số once its first node (floor 1)
+                                  # is done is the node it opens, on floor 3 (floor 2 holds only an optional node)
 
 
 def card_open(drv: Driver) -> bool:

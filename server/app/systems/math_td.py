@@ -19,7 +19,8 @@ The learning rules (contract M10):
   * the answer is written to `math_answers` with no run (math_ask.record) and pays Tu Vi by
     tier (math_ask.xp_rule);
   * a tower is available only when its area has questions and lies on a floor the player
-    has reached (math_ask.open_floor). Towers of subjects without questions are in the data,
+    has reached on Đạo Thụ (math_tree_progress.reached_floors), and it asks only the
+    micro-skills of its area the player has open. Towers of subjects without questions are in the data,
     shown locked with the reason, and open by themselves the day the subject gets questions;
   * a wrong answer or a timeout places / upgrades nothing. The Linh Khí of the attempt is
     spent, as an upgrade of the old edition is ("Linh Khí bỏ ra không hoàn lại") and as a
@@ -46,7 +47,7 @@ from .. import clock
 from ..config import DATA_DIR
 from ..learning import math_items, math_path, quiz
 from ..models import QuizSession, TdProgress, TdRun, User
-from . import catalog, math_ask, math_practice, td, td_sim
+from . import catalog, math_ask, math_practice, math_tree_progress, td, td_sim
 from .td import TdError
 
 CONTEXT = "math_td"
@@ -116,17 +117,35 @@ def content_lock(t: dict) -> str | None:
     return None
 
 
-async def tower_lock(db: AsyncSession, user_id: int, t: dict) -> str | None:
-    """Why this player cannot build this tower yet, or None (rule: the learning path)."""
+async def tower_skills(db: AsyncSession, user_id: int, t: dict,
+                       st: math_tree_progress.TreeState | None = None) -> list[str]:
+    """The micro-skills of the tower's area this player may be asked: those of main-path
+    nodes of Đạo Thụ they have open or done, and those of optional nodes they have finished
+    (R6: an optional node is asked in its own sittings, and again once it is done)."""
+    st = st or await math_tree_progress.state(db, user_id)
+    allowed = math_tree_progress.allowed_skills_of(st) | math_tree_progress.finished_optional_skills_of(st)
+    return [k for k in area_skills(t) if k in allowed]
+
+
+async def tower_lock(db: AsyncSession, user_id: int, t: dict,
+                     st: math_tree_progress.TreeState | None = None) -> str | None:
+    """Why this player cannot build this tower yet, or None (rule: the learning path - the
+    tower's floor must hold an open or passed main-path part of Đạo Thụ, and some micro-skill
+    of its area must be open)."""
     why = content_lock(t)
     if why:
         return why
     a = t["area"]
     floor = int(a["floor"])
-    here = await math_ask.open_floor(db, user_id, a["subject"])
-    if here < floor:
+    st = st or await math_tree_progress.state(db, user_id)
+    # a floor that holds only optional nodes is never "reached" on the main path: its tower
+    # opens when the player has finished the optional node its area belongs to
+    nodes = math_tree_progress.tree().nodes
+    main_floor = any(nodes[p.node_id].main for p in math_tree_progress.floor_parts(a["subject"], floor))
+    reached = floor in math_tree_progress.reached_floors_of(st, a["subject"]) if main_floor else True
+    if not reached or not await tower_skills(db, user_id, t, st):
         name = subject_names().get(a["subject"], a["subject"])
-        return f"Qua Thiên kiếp nhỏ tầng {floor - 1} của {name} để mở tầng {floor} và tháp này."
+        return f"Học tới tầng {floor} của {name} trên Đạo Thụ để mở tháp này."
     return None
 
 
@@ -140,7 +159,8 @@ def tower_view(t: dict, locked_vi: str | None) -> dict:
 
 
 async def tower_views(db: AsyncSession, user_id: int) -> list[dict]:
-    return [tower_view(t, await tower_lock(db, user_id, t)) for t in data()["towers"]]
+    st = await math_tree_progress.state(db, user_id)
+    return [tower_view(t, await tower_lock(db, user_id, t, st)) for t in data()["towers"]]
 
 
 def sim_towers(views: list[dict]) -> dict[str, dict]:
@@ -266,7 +286,7 @@ async def ask(db: AsyncSession, user: User, run_id: str, kind: str, tower_id: st
         if not isinstance(tower_id, str) or tower_id not in run.params["plants"] or tower_id not in towers():
             raise TdError(400, "no_tower", "Tháp này không dựng được trong lượt này.")
         t = towers()[tower_id]
-        skills = area_skills(t)
+        skills = await tower_skills(db, user.id, t)
         rng.shuffle(skills)
         question = await math_ask.pick(db, user, t["area"]["subject"], int(t["area"]["floor"]), skills=skills,
                                        qtypes=qtypes(), rng=rng)

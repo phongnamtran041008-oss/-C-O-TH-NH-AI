@@ -2,7 +2,7 @@
 
 Whatever asks it - a bí cảnh, a hầm ngục, a cơ duyên, a tower - the question is legal only if
 it is at the player's own tier or below, of an allowed type, and from a floor the player has
-reached."""
+reached (since Đạo Thụ: the player's own part of the curriculum tree, its frontier)."""
 import random
 
 import pytest
@@ -11,7 +11,7 @@ from app import clock
 from app import db as dbm
 from app.learning import math_items, math_path
 from app.models import MathAnswer, User
-from app.systems import math_ask, math_combat, math_practice
+from app.systems import math_ask, math_combat, math_practice, math_tree_progress
 from tests.helpers import register
 from tests.test_math_skills import clear_floor
 
@@ -30,6 +30,8 @@ async def open_tier_2(uid: int, skill_id: str, floor: int) -> None:
 
 @pytest.mark.asyncio
 async def test_own_floor_follows_the_learning_path(client, monkeypatch):
+    """Đạo Thụ: "the player's own floor" is the floor of their frontier (R9) - the first open
+    main-path part of the subject in tree order."""
     _, me = await register(client, "ask_floor")
     uid = me["user_id"]
     assert math_ask.first_subject() == SUBJECT
@@ -37,27 +39,25 @@ async def test_own_floor_follows_the_learning_path(client, monkeypatch):
     async with dbm.SessionLocal() as db:
         assert await math_ask.own_floor(db, uid) == (SUBJECT, 1)
     await clear_floor(uid, 1)
-    async with dbm.SessionLocal() as db:
-        assert await math_ask.open_floor(db, uid, SUBJECT) == 2
-        assert await math_ask.own_floor(db, uid) == (SUBJECT, 2)
+    async with dbm.SessionLocal() as db:                 # floor 2 holds only an optional node: never "own"
+        assert await math_tree_progress.reached_floors(db, uid, SUBJECT) == {1, 3}
+        assert await math_ask.own_floor(db, uid) == (SUBJECT, 3)
     for n in (2, 3):
         await clear_floor(uid, n)
     async with dbm.SessionLocal() as db:
-        assert await math_ask.open_floor(db, uid, SUBJECT) == 4
+        assert await math_tree_progress.reached_floors(db, uid, SUBJECT) == {1, 3, 4}
         assert await math_ask.own_floor(db, uid) == (SUBJECT, 4)
-    # an open floor with no question (none today, so floor 4 is made to look unwritten):
-    # "the player's own floor" is the highest one below it that has
+    # a node whose floor has no question (none today, so floor 4 is made to look unwritten) is
+    # vacant: it counts as done, so the frontier is the next node, which it no longer holds back
     real = math_practice._templates
     monkeypatch.setattr(math_practice, "_templates", lambda s, f: [] if f == 4 else real(s, f))
     assert math_ask.playable_floors(SUBJECT) == [1, 2, 3] + list(range(5, 10))
     async with dbm.SessionLocal() as db:
-        assert await math_ask.open_floor(db, uid, SUBJECT) == 4
-        assert await math_ask.own_floor(db, uid) == (SUBJECT, 3)
+        assert await math_ask.own_floor(db, uid) == (SUBJECT, 5)
     monkeypatch.undo()
     for n in range(4, 10):
         await clear_floor(uid, n)
-    async with dbm.SessionLocal() as db:                                    # every main floor cleared: the last
-        assert await math_ask.open_floor(db, uid, SUBJECT) == 9
+    async with dbm.SessionLocal() as db:                 # every main floor cleared: the last passed part
         assert await math_ask.own_floor(db, uid) == (SUBJECT, 9)
 
 
@@ -126,7 +126,7 @@ async def test_pick_own_asks_from_the_players_own_floor(client):
         user = await db.get(User, uid)
         assert (await math_ask.pick_own(db, user, rng=rng)).public()["math"]["floor"] == 1
     await clear_floor(uid, 1)
-    async with dbm.SessionLocal() as db:
+    async with dbm.SessionLocal() as db:                 # Đạo Thụ: the next main node is on floor 3
         user = await db.get(User, uid)
         for _ in range(6):
-            assert (await math_ask.pick_own(db, user, rng=rng)).public()["math"]["floor"] == 2
+            assert (await math_ask.pick_own(db, user, rng=rng)).public()["math"]["floor"] == 3

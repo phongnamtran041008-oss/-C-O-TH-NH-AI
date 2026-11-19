@@ -1,5 +1,6 @@
-"""Math question loop REST (milestone M2; the Thiên kiếp nhỏ of a floor in M5). A question
-of a sitting is answered through /quiz/answer like every other question."""
+"""Math question loop REST (milestone M2; the Thiên kiếp nhỏ of a floor in M5; the nodes of
+Đạo Thụ, the curriculum tree, since it was wired). A question of a sitting is answered
+through /quiz/answer like every other question."""
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
@@ -10,7 +11,7 @@ from ..auth import api_error, current_user, write_user
 from ..db import get_db
 from ..learning import math_library
 from ..models import User
-from ..systems import math_code, math_craft, math_placement, math_practice
+from ..systems import math_code, math_craft, math_placement, math_practice, math_tree_progress
 from ..systems import math_combat  # noqa: F401  (registers the quái lỗi sai grader)
 from ..systems import math_skills  # (registers the grader of cast questions, M9)
 
@@ -50,6 +51,30 @@ async def math_run_start(body: StartIn, user: User = Depends(write_user), db: As
 async def math_trial_start(body: StartIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
     """Thiên kiếp nhỏ: the test that clears a floor (M5, learning-path rule 3b)."""
     return await _run(db, math_practice.start_trial(db, user, body.subject_id, body.floor))
+
+
+class NodeIn(BaseModel):
+    node_id: str = Field(max_length=40)
+    floor: int | None = Field(default=None, ge=1, le=99)    # the part of a node that spans two floors
+
+
+@router.get("/math/tree")
+async def math_tree_view(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
+    """Đạo Thụ: every node of the curriculum tree with this player's state, the stage reached,
+    what to do next and the sitting left open."""
+    return await _run(db, math_tree_progress.tree_view(db, user))
+
+
+@router.post("/math/node/start")
+async def math_node_start(body: NodeIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
+    """A buổi luyện on a node (its first part not passed yet, or the part on `floor`)."""
+    return await _run(db, math_practice.start_node(db, user, body.node_id, body.floor))
+
+
+@router.post("/math/node/trial")
+async def math_node_trial(body: NodeIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
+    """The Thiên kiếp nhỏ of a part of a node (R8)."""
+    return await _run(db, math_practice.start_node_trial(db, user, body.node_id, body.floor))
 
 
 @router.post("/math/run/next")

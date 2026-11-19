@@ -117,20 +117,25 @@ async def test_towers_open_with_the_learning_path(client):
     # a new player: the towers of floor 1 - of Đại Số Tuyến Tính and, since M11 wrote them, of
     # Xác Suất và Thống Kê and Giải Tích
     assert [k for k, v in t.items() if v["available"]] == ["tap_hop", "xac_suat", "gradient"]
-    assert "tầng 1" in t["so_phuc"]["locked_vi"] and "Thiên kiếp nhỏ" in t["so_phuc"]["locked_vi"]
-    assert "tầng 2" in t["vecto"]["locked_vi"]
+    assert "tầng 2" in t["so_phuc"]["locked_vi"] and "Đạo Thụ" in t["so_phuc"]["locked_vi"]
+    assert "tầng 3" in t["vecto"]["locked_vi"]
     for k in ("xac_suat", "gradient"):
         assert t[k]["available"] and t[k]["locked_vi"] is None
     run = await start(client, h)
     assert set(run["params"]["plants"]) == {"tap_hop", "xac_suat", "gradient"}  # the simulation knows only what is open
     assert {x["id"]: x["available"] for x in run["towers"]}["vecto"] is False    # the bar shows the rest, locked
+    # Đạo Thụ: floor 1's node opens floor 3's (vectors and matrices). Floor 2 holds only an optional
+    # node, whose micro-skills are not asked outside its own sittings (R6): its tower stays shut ...
     await clear_floor(uid, 1)
-    assert ({k for k, v in (await towers_of(client, h)).items() if v["available"]}
-            == {"tap_hop", "so_phuc", "xac_suat", "gradient"})
+    t = await towers_of(client, h)
+    assert {k for k, v in t.items() if v["available"]} == {"tap_hop", "vecto", "ma_tran", "xac_suat", "gradient"}
+    assert not t["so_phuc"]["available"] and "tầng 2" in t["so_phuc"]["locked_vi"]
+    # ... until the player has finished that optional node: then its micro-skills may come back
     await clear_floor(uid, 2)
     t = await towers_of(client, h)
-    assert {k for k, v in t.items() if v["available"]} == {"tap_hop", "so_phuc", "vecto", "ma_tran", "xac_suat",
-                                                           "gradient"}
+    assert ({k for k, v in t.items() if v["available"]}
+            == {"tap_hop", "so_phuc", "vecto", "ma_tran", "xac_suat", "gradient"})
+    assert t["so_phuc"]["locked_vi"] is None
     # a tower that is not open in this run cannot be asked about, whatever the client sends
     await ask(client, h, run["run_id"], "place", "vecto", status=400)
     await ask(client, h, run["run_id"], "place", "ma_tran", status=400)
@@ -251,7 +256,7 @@ async def test_questions_come_from_the_towers_area_never_above_the_players_tier(
     rid = run["run_id"]
     asked = 0
     async with dbm.SessionLocal() as db:
-        for tower in ("tap_hop", "so_phuc", "vecto", "ma_tran"):
+        for tower in ("tap_hop", "vecto", "ma_tran"):     # (so_phuc: an optional node's area, never open)
             t = math_td.towers()[tower]
             for kind in ("place", "upgrade"):
                 for _ in range(4):
@@ -308,10 +313,10 @@ async def test_the_server_refuses_a_tower_no_right_answer_earned(client, frozen)
                 {"s": 0, "k": "up", "x": x, "y": y, "q": q2["session_id"]}]
 
     async def answer_of_another_tower(run, sim):
-        x, y = open_cell(sim, "so_phuc")
+        x, y = open_cell(sim, "vecto")
         q = await ask(client, h, run["run_id"], "place", "tap_hop")
         await reply(client, h, q, right=True)
-        return [{"s": 0, "k": "place", "x": x, "y": y, "w": "so_phuc", "q": q["session_id"]}]
+        return [{"s": 0, "k": "place", "x": x, "y": y, "w": "vecto", "q": q["session_id"]}]
 
     async def one_answer_two_towers(run, sim):
         q = await ask(client, h, run["run_id"], "place", "tap_hop")
@@ -461,6 +466,10 @@ async def test_every_question_of_the_mode_is_asked_with_its_qtypes(monkeypatch):
         return None
     monkeypatch.setattr(math_td.math_ask, "pick", fake_pick)
     monkeypatch.setattr(math_td.math_ask, "pick_own", fake_pick)
+
+    async def open_area(db, user_id, t, st=None):           # (no database here: the tower's whole area)
+        return math_td.area_skills(t)
+    monkeypatch.setattr(math_td, "tower_skills", open_area)
     run = type("Run", (), {"questions": {}, "params": {"plants": ["tap_hop"]}, "id": "r"})()
 
     async def get_run(*a, **k):

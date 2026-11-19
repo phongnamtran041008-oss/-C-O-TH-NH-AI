@@ -23,21 +23,12 @@ from typing import Iterable
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..learning import math_items, math_mastery, math_path
+from ..learning import math_items, math_path
 from ..models import MathAnswer, User
-from . import math_combat, math_practice
+from . import math_combat, math_practice, math_tree_progress
 
 record = math_combat.record        # (db, user, quiz_session, correct, now) -> the "math" block
 xp_rule = math_combat.xp_rule      # (quiz_session) -> Tu Vi for a right answer, by tier
-
-
-async def open_floor(db: AsyncSession, user_id: int, subject_id: str) -> int:
-    """The main floor of this subject the player is working on: the lowest one not cleared
-    yet, or the last one when every main floor is cleared."""
-    subject = math_path.subject(subject_id)
-    cleared = await math_practice.cleared_floors(db, user_id, subject_id)
-    n = math_mastery.next_floor(subject, cleared)
-    return n if n is not None else subject.main_floors[-1].number
 
 
 def playable_floors(subject_id: str) -> list[int]:
@@ -51,16 +42,20 @@ def first_subject() -> str | None:
     return next((s.id for s in math_path.subjects() if playable_floors(s.id)), None)
 
 
-async def own_floor(db: AsyncSession, user_id: int, subject_id: str | None = None) -> tuple[str, int] | None:
-    """(subject, floor) a question "at the player's own floor" comes from: their open floor
-    of the subject, or the highest floor below it that has questions. None when the game
-    has no question for them at all."""
+async def own_part(db: AsyncSession, user_id: int, subject_id: str | None = None) -> math_tree_progress.Part | None:
+    """The part of Đạo Thụ a question "at the player's own floor" comes from: the frontier of
+    the subject (math_tree_progress.frontier, R9; default subject: the first one with
+    questions). None when the game has no question for them at all."""
     subject_id = subject_id or first_subject()
     if subject_id is None:
         return None
-    here = await open_floor(db, user_id, subject_id)
-    below = [n for n in playable_floors(subject_id) if n <= here]
-    return (subject_id, below[-1]) if below else None
+    return await math_tree_progress.frontier(db, user_id, subject_id)
+
+
+async def own_floor(db: AsyncSession, user_id: int, subject_id: str | None = None) -> tuple[str, int] | None:
+    """(subject, floor) of the player's own part (`own_part`), or None."""
+    part = await own_part(db, user_id, subject_id)
+    return (part.subject_id, part.floor) if part is not None else None
 
 
 async def _seen_at(db: AsyncSession, user_id: int, config: dict) -> dict[str, int]:
@@ -123,8 +118,13 @@ async def pick(db: AsyncSession, user: User, subject_id: str, floor: int, *,
 async def pick_own(db: AsyncSession, user: User, *, subject_id: str | None = None,
                    qtypes: Iterable[str] | None = None, min_tier: int = 1, highest: bool = False,
                    rng: random.Random | None = None) -> math_items.MathQuestion | None:
-    """A question at the player's own floor ("mỗi người nhận câu theo tầng của mình")."""
-    where = await own_floor(db, user.id, subject_id)
-    if where is None:
+    """A question at the player's own floor ("mỗi người nhận câu theo tầng của mình"): about
+    the micro-skills of their own part only (R9), in random order."""
+    part = await own_part(db, user.id, subject_id)
+    if part is None:
         return None
-    return await pick(db, user, where[0], where[1], qtypes=qtypes, min_tier=min_tier, highest=highest, rng=rng)
+    rng = rng or random.Random()
+    skills = list(part.skills)
+    rng.shuffle(skills)
+    return await pick(db, user, part.subject_id, part.floor, skills=skills, qtypes=qtypes, min_tier=min_tier,
+                      highest=highest, rng=rng)

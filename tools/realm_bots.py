@@ -7,8 +7,8 @@ it (snapshots, its own puzzle pieces) plus the map file and the word list every 
     # a server with the dev balance (the scheduled realm is always open):
     #   cd server && BALANCE_PROFILE=dev python -m uvicorn app.main:app --port 8000
     python tools/realm_bots.py --url http://127.0.0.1:8000 --db server/dev.db
-    # M10, the math bí cảnh: a party on floors 1, 2 and 3 (one floor = a bot alone)
-    python tools/realm_bots.py --math --floors 1,2,3
+    # M10, the math bí cảnh: a party on floors 1, 3 and 4 (one floor = a bot alone)
+    python tools/realm_bots.py --math --floors 1,3,4
 
 The bots read Vấn Đạo answer keys from the server's database file (a stand-in for players who
 know their words), so this only works next to a local server.
@@ -373,7 +373,9 @@ async def run_team(url: str, db: Path, prefix: str = "rb", n: int = 3, realm: st
 
 def set_floor(db: Path, uid: int, floor: int, subject: str = "dai_so_tuyen_tinh") -> None:
     """M10: the player's own math floor is `floor`: the Thiên kiếp nhỏ of every floor below it passed,
-    the way the learning path records it (a stand-in for a player who studied that far)."""
+    the way an old save records it (a stand-in for a player who studied that far). Since Đạo Thụ the
+    own floor is the floor of the first open main-path node, so it is never floor 2 of Đại Số (an
+    optional node only): `floor` 2 lands on floor 3."""
     for n in range(1, floor):
         sql(db, "insert into math_runs(user_id, subject_id, floor, mode, tier, correct_streak, wrong_streak, combo, "
                 "best_combo, asked, correct, review_asked, xp_gained, passed, started_at, ended_at) "
@@ -381,7 +383,7 @@ def set_floor(db: Path, uid: int, floor: int, subject: str = "dai_so_tuyen_tinh"
             (uid, subject, n))
 
 
-async def run_math(url: str, db: Path, prefix: str = "mb", floors=(1, 2, 3), realm: str = "toan_tran",
+async def run_math(url: str, db: Path, prefix: str = "mb", floors=(1, 3, 4), realm: str = "toan_tran",
                    timeout: float = 900, log=print) -> list[NetBot]:
     """M10: bots clear the math bí cảnh, each asked at its own floor; one floor is a bot alone (the
     math bí cảnh may be entered without a party)."""
@@ -441,7 +443,7 @@ def main() -> int:
     ap.add_argument("--prefix", default="rb")
     ap.add_argument("--minutes", type=float, default=15)
     ap.add_argument("--math", action="store_true", help="the math bí cảnh (M10)")
-    ap.add_argument("--floors", default="1,2,3", help="with --math: each bot's own floor")
+    ap.add_argument("--floors", default="1,3,4", help="with --math: each bot's own floor")
     return asyncio.run(main_async(ap.parse_args()))
 
 

@@ -6,8 +6,8 @@
 
 The data is `server/data/math/tree.json` and `server/data/math/world_plan.json`; the rules
 are in `server/app/learning/math_tree.py`. The document is generated from the data, so it can
-never say something different from what the game will read. Not yet part of
-tools/check_all.py: another session is editing that file; it is one line to add at merge.
+never say something different from what the game will read. tools/check_all.py runs the
+same checks (and that every main-path node can be reached) as one of its checks.
 """
 from __future__ import annotations
 

@@ -17,17 +17,28 @@ other questions have been answered, the same idea comes back: the same generator
 new numbers, or for a hand-written item another template of the same micro-skill and
 tier. A right answer to that parallel question clears the mistake; a wrong one keeps it.
 
-Leaving a floor (M5, rules 3 and 6; the rules themselves are in learning/math_mastery.py):
+Đạo Thụ (the curriculum tree, systems/math_tree_progress.py) decides what is open. A sitting
+is on one **part** of a tree node - the node's micro-skills that live on the sitting's floor
+(`MathRun.node_id`); every rule below runs on the part's micro-skills, not the whole floor.
+A sitting with no node is an old save and keeps the whole floor.
 
-  * floor 1 of a subject is open, and a floor opens when the floor below it is cleared;
-  * a floor is cleared by passing its own test, the Thiên kiếp nhỏ - a sitting with
-    `mode == "trial"`, one question per micro-skill at the hardest tier of the floor - or
-    skipped by the bài kiểm tra đầu vào (M11, systems/math_placement.py; `cleared_floors`
-    is the one place both are read);
-  * that test can only be started once every micro-skill of the floor is through the
+Leaving a part (M5, rules 3 and 6; the rules themselves are in learning/math_mastery.py):
+
+  * a node opens when every node it requires is done (math_tree_progress, R3/R4); the old
+    entry points "sit down on floor n" resolve to the open part on that floor (R11);
+  * a part is passed by its own test, the Thiên kiếp nhỏ - a sitting with `mode == "trial"`,
+    one question per micro-skill of the part at the hardest tier of the floor - or, for a
+    whole floor, by an old passed trial or the bài kiểm tra đầu vào (M11,
+    systems/math_placement.py);
+  * that test can only be started once every micro-skill of the part is through the
     mastery gate (half (a) of rule 3), which is read from the answer log;
   * an ordinary sitting mixes in **spiral review**: every fourth question or so comes from
-    a micro-skill of a floor below, chosen by the spaced-repetition schedule.
+    a micro-skill of the nodes this node `reinforces` (any subject; if none has questions,
+    its done ancestors), chosen by the spaced-repetition schedule. An old sitting with no
+    node reviews the floors below, as before.
+  * no mode ever asks a micro-skill of the tree's `cut` list (`_templates` drops them), and
+    a sitting asks nothing outside its part except review, ladder rungs and the parallel
+    question of a missed rung.
 
 Rule 8, the ladder (M11 đợt 2): "Bài khó luôn có bậc thang". Every hand-written tier-5 item
 lists 2-4 tier 3-4 questions that lead to it (`ladder`, learning/math_items.py).
@@ -49,7 +60,8 @@ lists 2-4 tier 3-4 questions that lead to it (`ladder`, learning/math_items.py).
     of the micro-skill (the same item only when it is the only one). Climbed with a rung
     missed, the tier-5 idea does not come back in this sitting: the missed rungs' own
     parallel questions come first, and the tier-5 one waits for the next sitting.
-  * At most one ladder is being climbed per floor, and a tier-5 item opens a ladder at most
+  * At most one ladder is being climbed per part (per floor for an old sitting with no node:
+    a ladder belongs to the part whose micro-skill opened it), and a tier-5 item opens a ladder at most
     once per sitting (a second miss of it in the same sitting is plain rule 6), so ladders
     and parallel questions can never chase each other for ever.
   * Rungs do not move the sitting's adaptive tier (they are below the floor's range when
@@ -85,9 +97,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .. import clock
 from ..config import settings
 from ..learning import (math_adaptive, math_items, math_library, math_mastery, math_path,
-                        math_problems, quiz)
+                        math_problems, math_tree, quiz)
 from ..learning.math_items import GeneratorSpec, MathItem, Template
 from ..models import MathAnswer, MathLadder, MathRetry, MathRun, QuizSession, User
+from . import math_tree_progress as tp
+from .math_tree_progress import Part
 
 CONTEXT = "math"
 PRACTICE, TRIAL = "practice", "trial"
@@ -104,22 +118,48 @@ class MathError(Exception):
 
 # ------------------------------------------------------------------ views
 def _templates(subject_id: str, floor: int) -> list[Template]:
-    return math_items.floor_templates(subject_id, floor, settings.allow_unreviewed)
+    """The question templates of a floor this server may ask - never one of a micro-skill
+    the tree has cut (R6: in no mode, since every mode reads its templates here)."""
+    cut = math_tree.tree().cut_skills()
+    return [t for t in math_items.floor_templates(subject_id, floor, settings.allow_unreviewed)
+            if t.skill not in cut]
+
+
+def _part_templates(part: Part) -> list[Template]:
+    """The templates of a part's own micro-skills (a whole floor for an old sitting)."""
+    skills = set(part.skills)
+    return [t for t in _templates(part.subject_id, part.floor) if t.skill in skills]
+
+
+def run_skills(run: MathRun) -> list[str]:
+    """The micro-skills a sitting is about: its part's (the whole floor for an old sitting)."""
+    part = tp.run_part(run)
+    return list(part.skills) if part is not None else []
+
+
+def trial_skills(run: MathRun, config: dict | None = None) -> list[str]:
+    """The micro-skills a Thiên kiếp nhỏ asks about, in path order, each one
+    `questions_per_skill` times (R8: a part's trial asks the part's micro-skills)."""
+    per = math_mastery.trial_cfg(config)["questions_per_skill"]
+    return [s for s in run_skills(run) for _ in range(per)]
 
 
 def run_view(run: MathRun) -> dict:
     lo, hi = math_path.floor_tiers(run.floor)
+    node_id = getattr(run, "node_id", None)
+    node = math_tree.tree().nodes.get(node_id) if node_id else None
     out = {"run_id": run.id, "subject_id": run.subject_id, "floor": run.floor, "mode": run.mode,
+           "node_id": node_id, "node_name_vi": node.name_vi if node else None,
            "tier": run.tier, "tier_name_vi": math_path.cfg()["tiers"][str(run.tier)]["name_vi"],
            "tier_min": lo, "tier_max": hi, "combo": run.combo, "best_combo": run.best_combo,
            "asked": run.asked, "correct": run.correct, "review_asked": run.review_asked,
            "xp_gained": run.xp_gained, "passed": run.passed, "ended": run.ended_at is not None,
            "ladders": run.ladders or 0}
     if run.mode == TRIAL:
-        total = math_mastery.trial_total(math_path.subject(run.subject_id), run.floor)
+        total = len(trial_skills(run))
         out["trial"] = {"total": total, "left": max(0, total - run.asked),
                         "wrong": run.asked - run.correct,
-                        "max_wrong": math_mastery.trial_cfg()["max_wrong"]}
+                        "max_wrong": math_mastery.trial_allowed(total)}
     return out
 
 
@@ -156,64 +196,83 @@ async def placement_floors(db: AsyncSession, user_id: int, subject_id: str) -> s
 
 
 async def cleared_floors(db: AsyncSession, user_id: int, subject_id: str) -> set[int]:
-    """The floors of this subject that are behind the player: the ones whose Thiên kiếp nhỏ
-    they passed, and the ones the bài kiểm tra đầu vào let them skip (M11). The single
-    source of "which floor is this player on" - path_view, math_ask.open_floor and so every
-    M10 mode and the chiêu thức read it."""
-    return await trial_floors(db, user_id, subject_id) | await placement_floors(db, user_id, subject_id)
+    """Compatibility answer (math_tree_progress.cleared_floors): the floors of this subject
+    all of whose main-path parts are passed. Nothing that decides what a player may do reads
+    it any more: those callers read the tree's frontier, reached floors or working stage."""
+    return await tp.cleared_floors(db, user_id, subject_id)
 
 
 async def floor_gate(db: AsyncSession, user_id: int, subject: math_path.Subject, floor: int,
                      config: dict | None = None) -> math_mastery.FloorGate:
-    """Half (a) of the mastery gate for one floor, read from the answer log."""
+    """Half (a) of the mastery gate for one whole floor, read from the answer log."""
+    return await part_gate(db, user_id, tp.part_of(subject.id, floor), config)
+
+
+async def part_gate(db: AsyncSession, user_id: int, part: Part,
+                    config: dict | None = None) -> math_mastery.FloorGate:
+    """Half (a) of the mastery gate of a part (R8): math_mastery.floor_gate over the part's
+    micro-skills, read from the answer log."""
     config = config or math_path.cfg()
-    skills = [s.id for s in subject.floor(floor).skills]
-    results = await _results_by_skill(db, user_id, skills, floor,
+    skills = list(part.skills)
+    results = await _results_by_skill(db, user_id, skills, part.floor,
                                       max(config["mastery_gate"]["window"], config["tier_unlock"]["window"]),
                                       include_top=True)
-    return math_mastery.floor_gate(floor, skills, results, config)
+    return math_mastery.floor_gate(part.floor, skills, results, config)
 
 
 async def path_view(db: AsyncSession, user: User) -> dict:
     """The subjects and floors, how many question templates each floor has for this server
     (hand-written items + generators), which floors are open or cleared and how far the
-    mastery gate of each open floor has come, and the sitting the player left open (if any)."""
+    mastery gate of each open floor has come, and the sitting the player left open (if any).
+
+    Since Đạo Thụ the floors' states come from the tree: a floor is playable when a part on
+    it is open or done, "cleared" when all of its main-path parts are passed; its gate, trial
+    and `node_id` are those of the part a sitting on it resolves to (R11). The tree itself is
+    GET /math/tree; this view keeps its shape for the screens that read floors."""
     from . import math_placement        # (it imports this module)
     cfg = math_path.cfg()
+    st = await tp.state(db, user.id)
     subjects = []
     for s in math_path.subjects():
-        by_trial = await trial_floors(db, user.id, s.id)
-        cleared = by_trial | await placement_floors(db, user.id, s.id)
+        by_trial = st.trial_floors.get(s.id, set())
+        cleared = tp.cleared_floors_of(st, s.id)
         floors = []
         for f in s.floors:
             lo, hi = math_path.floor_tiers(f.number)
             templates = _templates(s.id, f.number)
             docs = math_library.for_floor(s.id, f.number)
-            state = math_mastery.floor_state(s, f.number, cleared)
+            part = tp.floor_part(st, s.id, f.number) if templates else None
+            state = (math_mastery.CLEARED if f.number in cleared else
+                     math_mastery.OPEN if part is not None else math_mastery.LOCKED)
             gate = None
-            if templates and state != math_mastery.LOCKED:
-                gate = (await floor_gate(db, user.id, s, f.number, cfg)).view()
+            if part is not None:
+                gate = (await part_gate(db, user.id, part, cfg)).view()
             floors.append({"floor": f.number, "title_vi": f.title_vi, "hidden": f.hidden,
                            "tier_min": lo, "tier_max": hi, "questions": len(templates),
                            "generators": sum(1 for t in templates if t.generated),
-                           "playable": bool(templates) and state != math_mastery.LOCKED,
+                           "playable": part is not None,
                            "has_questions": bool(templates), "state": state, "gate": gate,
                            # M11: a cleared floor was cleared by its Thiên kiếp nhỏ or skipped by placement
                            "cleared_by": (None if f.number not in cleared else
                                           "trial" if f.number in by_trial else "placement"),
-                           "trial_total": math_mastery.trial_total(s, f.number, cfg),
+                           "trial_total": (math_mastery.trial_cfg(cfg)["questions_per_skill"] * len(part.skills)
+                                           if part is not None else math_mastery.trial_total(s, f.number, cfg)),
+                           "node_id": part.node_id if part is not None else None,
                            "doc_id": docs[0].id if docs else None,
                            "skills": [{"id": k.id, "name_vi": k.name_vi} for k in f.skills]})
-        playable_floors = {f["floor"] for f in floors if f["playable"]}
+        front = tp.frontier_of(st, s.id)
         subjects.append({"id": s.id, "name_vi": s.name_vi, "order": s.order, "floors": floors,
-                         "cleared": sorted(cleared), "next_floor": math_mastery.next_floor(s, cleared),
-                         # how many programming exercises the player may open right now (M6)
-                         "problems": sum(len(math_problems.floor_problems(s.id, n, settings.allow_unreviewed))
-                                         for n in playable_floors),
+                         "cleared": sorted(cleared),
+                         # the floor of the first open main-path part of the subject (R9), None when none is open
+                         "next_floor": front.floor if front is not None and st.part_open(front) else None,
+                         # how many programming exercises the player may open right now (M6, R10)
+                         "problems": sum(1 for p in math_problems.bank().values()
+                                         if p.subject == s.id and (p.reviewed or settings.allow_unreviewed)
+                                         and tp.problem_open(st, p)),
                          # M11: the bài kiểm tra đầu vào of this subject (offered / in progress / done)
                          "placement": _placement_brief(await math_placement.state(db, user, s.id))})
     run = await open_run(db, user.id)
-    return {"subjects": subjects, "run": run_view(run) if run else None,
+    return {"subjects": subjects, "run": run_view(run) if run else None, "tree": {"stage": tp.stage_view(st)},
             "tiers": {t: v["name_vi"] for t, v in cfg["tiers"].items() if not t.startswith("_")}}
 
 
@@ -247,8 +306,10 @@ def library_view() -> dict:
 
 
 # ------------------------------------------------------------------ a sitting
-async def _open_floor(db: AsyncSession, user: User, subject_id: str, floor: int) -> math_path.Subject:
-    """The subject, once this floor is known, has questions and is not locked (M5)."""
+async def _floor_part(db: AsyncSession, user: User, subject_id: str, floor: int) -> Part:
+    """R11: the old "sit down on floor n" - the open part on that floor (the first by stage
+    when several nodes share it), or one that may still be practised; refused when no part
+    there is open or done."""
     try:
         subject = math_path.subject(subject_id)
         subject.floor(floor)
@@ -256,43 +317,83 @@ async def _open_floor(db: AsyncSession, user: User, subject_id: str, floor: int)
         raise MathError(404, "no_floor", "Không có tầng này.")
     if not _templates(subject_id, floor):
         raise MathError(400, "no_questions", "Tầng này chưa có câu hỏi.")
-    cleared = await cleared_floors(db, user.id, subject_id)
-    if not math_mastery.playable(subject, floor, cleared):
-        below = math_mastery.floor_below(subject, floor)
-        raise MathError(403, "floor_locked",
-                        f"Tầng này chưa mở. Hãy qua Thiên kiếp nhỏ của tầng {below} trước.")
-    return subject
+    st = await tp.state(db, user.id)
+    part = tp.floor_part(st, subject_id, floor)
+    if part is None:
+        here = [p.node_id for p in tp.floor_parts(subject_id, floor) if st.has_questions(p)]
+        raise MathError(403, "node_locked", tp.locked_message(st, here[:1]))
+    return part
 
 
-async def _new_run(db: AsyncSession, user: User, subject_id: str, floor: int, mode: str, tier: int) -> MathRun:
+async def _node_part(db: AsyncSession, user: User, node_id: str, floor: int | None) -> Part:
+    """The part of a node a sitting is started on: the one on `floor`, by default the first
+    part not passed yet (the first part when all are passed)."""
+    node = math_tree.tree().nodes.get(node_id)
+    if node is None:
+        raise MathError(404, "no_node", "Không có nút này trên Đạo Thụ.")
+    st = await tp.state(db, user.id)
+    asked = [p for p in tp.parts(node) if st.has_questions(p)]
+    if not asked:
+        raise MathError(400, "no_questions", "Nút này chưa có câu hỏi (đang biên soạn).")
+    if floor is not None:
+        part = next((p for p in asked if p.floor == floor), None)
+        if part is None:
+            raise MathError(404, "no_floor", "Nút này không có câu hỏi ở tầng này.")
+    else:
+        part = next((p for p in asked if not st.part_passed(p)), asked[0])
+    if not st.playable(part):
+        raise MathError(403, "node_locked", tp.locked_message(st, [node.id]))
+    return part
+
+
+async def _new_run(db: AsyncSession, user: User, part: Part, mode: str, tier: int) -> MathRun:
     now = clock.now()
     for old in (await db.execute(select(MathRun).where(MathRun.user_id == user.id, MathRun.mode != PLACEMENT,
                                                        MathRun.ended_at.is_(None)))).scalars():
         old.ended_at = now          # one sitting at a time (a placement sitting lives beside it, M11)
-    run = MathRun(user_id=user.id, subject_id=subject_id, floor=floor, mode=mode, tier=tier,
-                  correct_streak=0, wrong_streak=0, combo=0, best_combo=0, asked=0, correct=0,
-                  review_asked=0, xp_gained=0, passed=None, started_at=now)
+    run = MathRun(user_id=user.id, subject_id=part.subject_id, node_id=part.node_id, floor=part.floor,
+                  mode=mode, tier=tier, correct_streak=0, wrong_streak=0, combo=0, best_combo=0, asked=0,
+                  correct=0, review_asked=0, xp_gained=0, passed=None, started_at=now)
     db.add(run)
     await db.flush()
     return run
 
 
-async def start(db: AsyncSession, user: User, subject_id: str, floor: int) -> dict:
-    await _open_floor(db, user, subject_id, floor)
-    run = await _new_run(db, user, subject_id, floor, PRACTICE, math_adaptive.start(floor).tier)
+async def _practice(db: AsyncSession, user: User, part: Part) -> dict:
+    run = await _new_run(db, user, part, PRACTICE, math_adaptive.start(part.floor).tier)
     return {"run": run_view(run)}
 
 
-async def start_trial(db: AsyncSession, user: User, subject_id: str, floor: int) -> dict:
-    """The Thiên kiếp nhỏ of a floor (rule 3b). It opens only when every micro-skill of the
-    floor is through the mastery gate; a failed trial can be taken again straight away."""
-    subject = await _open_floor(db, user, subject_id, floor)
-    gate = await floor_gate(db, user.id, subject, floor)
+async def _trial(db: AsyncSession, user: User, part: Part) -> dict:
+    """The Thiên kiếp nhỏ of a part (rule 3b, R8). It opens only when every micro-skill of
+    the part is through the mastery gate; a failed trial can be taken again straight away."""
+    gate = await part_gate(db, user.id, part)
     if not gate.ok:
-        names = ", ".join(subject.skills[s.skill_id].name_vi for s in gate.weak)
+        skills = math_path.subject(part.subject_id).skills
+        names = ", ".join(skills[s.skill_id].name_vi for s in gate.weak)
         raise MathError(409, "gate_not_met", f"Chưa đủ thuần thục để vượt Thiên kiếp nhỏ. Hãy ôn: {names}.")
-    run = await _new_run(db, user, subject_id, floor, TRIAL, math_mastery.trial_tier(floor))
+    run = await _new_run(db, user, part, TRIAL, math_mastery.trial_tier(part.floor))
     return {"run": run_view(run), "gate": gate.view()}
+
+
+async def start(db: AsyncSession, user: User, subject_id: str, floor: int) -> dict:
+    """A buổi luyện on a floor: on the part of it the tree has open (R11)."""
+    return await _practice(db, user, await _floor_part(db, user, subject_id, floor))
+
+
+async def start_trial(db: AsyncSession, user: User, subject_id: str, floor: int) -> dict:
+    """The Thiên kiếp nhỏ of a floor: of the part of it the tree has open (R11)."""
+    return await _trial(db, user, await _floor_part(db, user, subject_id, floor))
+
+
+async def start_node(db: AsyncSession, user: User, node_id: str, floor: int | None = None) -> dict:
+    """POST /math/node/start: a buổi luyện on a part of a node of Đạo Thụ."""
+    return await _practice(db, user, await _node_part(db, user, node_id, floor))
+
+
+async def start_node_trial(db: AsyncSession, user: User, node_id: str, floor: int | None = None) -> dict:
+    """POST /math/node/trial: the Thiên kiếp nhỏ of a part of a node."""
+    return await _trial(db, user, await _node_part(db, user, node_id, floor))
 
 
 async def _own_run(db: AsyncSession, user: User, run_id: int, lock: bool = False) -> MathRun:
@@ -328,18 +429,51 @@ async def _results_by_skill(db: AsyncSession, user_id: int, skill_ids: list[str]
     return out
 
 
-async def _review_stats(db: AsyncSession, user_id: int, subject_id: str, floor: int,
+def _with_questions(skills: list[str]) -> dict[str, int]:
+    """skill -> its floor, for the micro-skills that have a template on their own floor."""
+    home = tp.skill_home()
+    out: dict[str, int] = {}
+    asked: dict[tuple[str, int], set[str]] = {}
+    for s in skills:
+        if s not in home or s in out:
+            continue
+        key = home[s]
+        if key not in asked:
+            asked[key] = {t.skill for t in _templates(*key)}
+        if s in asked[key]:
+            out[s] = key[1]
+    return out
+
+
+async def _review_candidates(db: AsyncSession, user_id: int, run: MathRun) -> dict[str, int]:
+    """The micro-skills review questions of this sitting come from (rule 6b, R7), with their
+    floors: those of the nodes the sitting's node reinforces (any subject); when none of them
+    has questions, those of the node's done ancestors; an old sitting with no node: every
+    micro-skill of a floor below, as before Đạo Thụ."""
+    node_id = getattr(run, "node_id", None)
+    if node_id is None:
+        subject = math_path.subject(run.subject_id)
+        return {s.id: f.number for f in subject.floors
+                if not f.hidden and f.number < run.floor and _templates(run.subject_id, f.number)
+                for s in f.skills}
+    t = math_tree.tree()
+    if node_id not in t.nodes:
+        return {}
+    where = _with_questions(t.review_skills(node_id))
+    if where:
+        return where
+    st = await tp.state(db, user_id)
+    done = st.done
+    ancestors = sorted(a for a in t.ancestors(node_id) if a in done)
+    return _with_questions([s for a in ancestors for s in t.nodes[a].skills])
+
+
+async def _review_stats(db: AsyncSession, user_id: int, run: MathRun,
                         config: dict) -> list[math_mastery.ReviewStat]:
-    """Every micro-skill of a floor *below* this one that has questions, as the spaced
+    """Every micro-skill this sitting may review (`_review_candidates`), as the spaced
     repetition schedule sees it. One pass over the end of the answer log: a micro-skill that
     is not in it at all was answered so long ago that it is due anyway."""
-    subject = math_path.subject(subject_id)
-    where: dict[str, int] = {}
-    for f in subject.floors:
-        if f.hidden or f.number >= floor or not _templates(subject_id, f.number):
-            continue
-        for s in f.skills:
-            where[s.id] = f.number
+    where = await _review_candidates(db, user_id, run)
     if not where:
         return []
     window = config["mastery_gate"]["window"]
@@ -467,11 +601,12 @@ def _at_tier(templates: list[Template], skill_id: str, tier: int) -> list[Templa
 async def _review_item(db: AsyncSession, user_id: int, run: MathRun,
                        stats: list[math_mastery.ReviewStat], recent: list[str],
                        rng: random.Random, config: dict) -> MathItem | None:
-    """A question from a floor below this one (rule 6b): the micro-skill that is due and has
-    been answered worst lately, at the highest tier open for it on its own floor."""
+    """A review question (rule 6b, R7): the micro-skill that is due and has been answered
+    worst lately, at the highest tier open for it on its own floor (of its own subject)."""
     seen_at = {fp: i for i, fp in reversed(list(enumerate(recent)))}
+    home = tp.skill_home()
     for stat in math_mastery.review_queue(stats, clock.now(), config):
-        templates = _templates(run.subject_id, stat.floor)
+        templates = _templates(home.get(stat.skill_id, (run.subject_id,))[0], stat.floor)
         results = await _results_by_skill(db, user_id, [stat.skill_id], stat.floor,
                                           config["tier_unlock"]["window"])
         top = math_adaptive.open_tier(stat.floor, results.get(stat.skill_id, {}), config)
@@ -483,10 +618,9 @@ async def _review_item(db: AsyncSession, user_id: int, run: MathRun,
 
 async def _trial_item(db: AsyncSession, run: MathRun, recent: list[str], rng: random.Random,
                       config: dict) -> MathItem:
-    """The next question of a Thiên kiếp nhỏ: the next micro-skill of the floor this trial
+    """The next question of a Thiên kiếp nhỏ: the next micro-skill of the part this trial
     has not asked about yet, at the hardest tier of the floor."""
-    subject = math_path.subject(run.subject_id)
-    left = math_mastery.trial_skills(subject, run.floor, config)
+    left = trial_skills(run, config)
     for skill_id in (await db.execute(select(MathAnswer.skill_id).where(MathAnswer.run_id == run.id)
                                       .order_by(MathAnswer.id))).scalars().all():
         if skill_id in left:
@@ -502,14 +636,19 @@ async def _trial_item(db: AsyncSession, run: MathRun, recent: list[str], rng: ra
 
 
 async def _due_retry(db: AsyncSession, user_id: int, run: MathRun) -> MathRetry | None:
-    """The oldest open mistake of this floor that has waited long enough. A tier-5 mistake
+    """The oldest open mistake of this part that has waited long enough. A tier-5 mistake
     whose ladder is being climbed (or was climbed in this sitting with a rung missed) is held;
-    one whose ladder was just climbed cleanly goes first (rule 8, see the module docstring)."""
+    one whose ladder was just climbed cleanly goes first (rule 8, see the module docstring).
+    A mistake about a micro-skill of another part of this floor waits for a sitting on that
+    part; a missed rung from a floor below (kept on this floor by rule 8) comes back here."""
     wait = math_path.cfg()["parallel_question"]["after_answers"]
     held, first = await _ladder_holds(db, user_id, run)
     retries = (await db.execute(select(MathRetry).where(
         MathRetry.user_id == user_id, MathRetry.subject_id == run.subject_id, MathRetry.floor == run.floor,
         MathRetry.cleared_at.is_(None)).order_by(MathRetry.id))).scalars().all()
+    mine, home = set(run_skills(run)), tp.skill_home()
+    retries = [r for r in retries if r.skill_id in mine
+               or home.get(r.skill_id) != (run.subject_id, run.floor)]
     retries = sorted((r for r in retries if r.id not in held), key=lambda r: (r.id not in first, r.id))
     for retry in retries:
         since = (await db.execute(select(func.count()).select_from(MathAnswer).where(
@@ -535,7 +674,8 @@ async def next_question(db: AsyncSession, user: User, run_id: int, rng: random.R
         return {"run": run_view(run), "question": quiz.public_session(pending)}
 
     cfg = math_path.cfg()
-    templates = _templates(run.subject_id, run.floor)
+    part = tp.run_part(run)
+    templates = _part_templates(part) if part is not None else []
     rows = (await db.execute(select(MathAnswer.fingerprint, MathAnswer.item_id).where(MathAnswer.user_id == user.id)
                              .order_by(MathAnswer.id.desc()).limit(cfg["anti_repeat_window"]))).all()
     recent = [r[0] for r in rows]
@@ -544,7 +684,7 @@ async def next_question(db: AsyncSession, user: User, run_id: int, rng: random.R
     if run.mode == TRIAL:
         item = await _trial_item(db, run, recent, rng, cfg)
     else:
-        ladder = await _open_ladder(db, user.id, run.subject_id, run.floor)
+        ladder = await _open_ladder(db, user.id, run)
         if ladder is not None:
             item = _next_rung(ladder, run, recent, rng, now)
             if item is None:                # no rung of it is in the bank any more: climbed
@@ -556,9 +696,9 @@ async def next_question(db: AsyncSession, user: User, run_id: int, rng: random.R
             if item is None:                # its micro-skill has no question any more
                 retry.cleared_at, retry = now, None
         if item is None and math_mastery.wants_review(run.asked, run.review_asked, cfg):
-            stats = await _review_stats(db, user.id, run.subject_id, run.floor, cfg)
+            stats = await _review_stats(db, user.id, run, cfg)
             item = await _review_item(db, user.id, run, stats, recent, rng, cfg)
-            review = item is not None       # no floor below, or nothing due: an ordinary question
+            review = item is not None       # nothing to review, or nothing due: an ordinary question
         if item is None:
             skills = sorted({t.skill for t in templates})
             results = await _results_by_skill(db, user.id, skills, run.floor, cfg["tier_unlock"]["window"])
@@ -588,19 +728,24 @@ def _template(subject_id: str, template_id: str) -> Template | None:
 
 
 def _retry_templates(run: MathRun, retry: MathRetry, templates: list[Template]) -> list[Template]:
-    """The templates a parallel question is found among: this floor's, or - for a missed rung
-    that lives on a floor below (rule 8 keys it to the sitting's floor) - that floor's."""
+    """The templates a parallel question is found among: this part's, or - for a missed rung
+    that lives elsewhere (rule 8 keys it to the sitting's floor) - those of the rung's floor."""
     skill = math_path.subject(run.subject_id).skills.get(retry.skill_id)
-    if skill is None or skill.floor == run.floor:
+    if skill is None or retry.skill_id in {t.skill for t in templates}:
         return templates
     return _templates(run.subject_id, skill.floor)
 
 
-async def _open_ladder(db: AsyncSession, user_id: int, subject_id: str, floor: int) -> MathLadder | None:
-    """The ladder being climbed on this floor (there is at most one)."""
-    return (await db.execute(select(MathLadder).where(
-        MathLadder.user_id == user_id, MathLadder.subject_id == subject_id, MathLadder.floor == floor,
-        MathLadder.finished_at.is_(None)).order_by(MathLadder.id))).scalars().first()
+async def _open_ladder(db: AsyncSession, user_id: int, run: MathRun) -> MathLadder | None:
+    """The ladder being climbed on this sitting's part (there is at most one): a ladder
+    belongs to the part whose micro-skill opened it (one opened by a review question, whose
+    micro-skill lives elsewhere, to the sittings of the floor it was opened on, as before)."""
+    mine, home = set(run_skills(run)), tp.skill_home()
+    rows = (await db.execute(select(MathLadder).where(
+        MathLadder.user_id == user_id, MathLadder.subject_id == run.subject_id, MathLadder.floor == run.floor,
+        MathLadder.finished_at.is_(None)).order_by(MathLadder.id))).scalars().all()
+    return next((ladder for ladder in rows if ladder.skill_id in mine
+                 or home.get(ladder.skill_id) != (run.subject_id, run.floor)), None)
 
 
 def _finish_ladder(ladder: MathLadder, run: MathRun, now: dt.datetime) -> None:
@@ -669,7 +814,7 @@ async def _ladder_after_answer(db: AsyncSession, user: User, s: QuizSession, met
     item = math_items.bank().get(s.item_id)
     if item is None or not item.ladder or item.subject != meta["subject"]:
         return None                     # a generator (no ladder), or a stale id
-    if await _open_ladder(db, user.id, run.subject_id, run.floor) is not None:
+    if await _open_ladder(db, user.id, run) is not None:
         return None
     again = (await db.execute(select(MathLadder.id).where(
         MathLadder.user_id == user.id, MathLadder.item_id == item.id,
@@ -765,25 +910,34 @@ async def math_handler(db: AsyncSession, user: User, s: QuizSession, correct: bo
         run.combo = run.combo + 1 if correct else 0      # a wrong answer or a timeout ends the combo
         run.best_combo = max(run.best_combo, run.combo)
         if trial:
-            out["trial"] = _trial_after_answer(run, now)
+            out["trial"] = await _trial_after_answer(db, user, run, now)
         out.update(run=run_view(run), tier_change=run.tier - before)
     return {"math": out}
 
 
-def _trial_after_answer(run: MathRun, now: dt.datetime) -> dict:
-    """Where a Thiên kiếp nhỏ stands after one answer, and the floor it opens when passed.
+async def _trial_after_answer(db: AsyncSession, user: User, run: MathRun, now: dt.datetime) -> dict:
+    """Where a Thiên kiếp nhỏ stands after one answer, and what passing it opened.
     **Ends the run** as soon as the trial is won or lost, so nobody has to finish a trial
-    they cannot pass any more."""
-    subject = math_path.subject(run.subject_id)
-    total = math_mastery.trial_total(subject, run.floor)
+    they cannot pass any more. `opened` = the tree nodes that opened because of it,
+    `node_done` = its node is now done, `unlocked` = the lowest floor of this subject that
+    holds a part of a node it opened (None when it opened nothing on this subject)."""
+    total = len(trial_skills(run))
     verdict = math_mastery.trial_verdict(run.asked, run.correct, total)
     out = {"total": total, "asked": run.asked, "correct": run.correct,
-           "left": max(0, total - run.asked), "passed": verdict, "unlocked": None}
+           "left": max(0, total - run.asked), "passed": verdict, "unlocked": None,
+           "opened": [], "node_done": False}
     if verdict is None:
         return out
+    before = set((await tp.state(db, user.id)).open) if verdict else set()
     run.passed, run.ended_at = verdict, now
     if verdict:
-        out["unlocked"] = math_mastery.floor_above(subject, run.floor)
+        await db.flush()
+        st = await tp.state(db, user.id)
+        out["opened"] = [n for n in st.open if n not in before]
+        out["node_done"] = run.node_id is not None and run.node_id in st.done
+        floors = [p.floor for n in out["opened"] for p in tp.parts(n)
+                  if p.subject_id == run.subject_id and st.has_questions(p)]
+        out["unlocked"] = min(floors) if floors else None
     return out
 
 

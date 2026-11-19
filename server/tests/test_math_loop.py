@@ -266,9 +266,12 @@ async def test_path_lists_the_floors_and_which_have_questions(client):
     assert r.status_code == 200
     data = r.json()
     assert [s["id"] for s in data["subjects"]] == [SUBJECT, "giai_tich", "xac_suat_thong_ke", "toi_uu_roi_rac"]
-    for s in data["subjects"]:      # floors 1-9 of every subject are written, and only floor 1 is open
+    # floors 1-9 of every subject are written; Đạo Thụ opens the first node of every branch (floor 1),
+    # and floor 2 of Đại Số holds only an optional node that requires nothing, so it is open too
+    opened = {SUBJECT: [1, 2]}
+    for s in data["subjects"]:
         assert [f["has_questions"] for f in s["floors"]] == [True] * 9 + [False], s["id"]
-        assert [f["playable"] for f in s["floors"]] == [True] + [False] * 9, s["id"]
+        assert [f["floor"] for f in s["floors"] if f["playable"]] == opened.get(s["id"], [1]), s["id"]
         assert s["cleared"] == [] and s["next_floor"] == 1 and s["placement"]["offered"]
     floors = data["subjects"][0]["floors"]
     assert [f["floor"] for f in floors] == list(range(1, 11))
@@ -276,9 +279,10 @@ async def test_path_lists_the_floors_and_which_have_questions(client):
     assert floors[0]["generators"] == 13 and floors[0]["questions"] >= 30
     assert (floors[0]["tier_min"], floors[0]["tier_max"]) == (1, 2)
     assert [f["has_questions"] for f in floors] == [True] * 9 + [False]  # floors 1-9 are written; the hidden floor 10 is not
-    # M5: only floor 1 is open until its Thiên kiếp nhỏ is passed
-    assert [f["playable"] for f in floors] == [True] + [False] * 9
-    assert [f["state"] for f in floors] == ["open"] + ["locked"] * 9
+    # M5 + Đạo Thụ: of the main path only floor 1 is open until its node's Thiên kiếp nhỏ is passed
+    assert [f["playable"] for f in floors] == [True, True] + [False] * 8
+    assert [f["state"] for f in floors] == ["open", "open"] + ["locked"] * 8
+    assert [f["node_id"] for f in floors[:2]] == ["ds_ngon_ngu", "ds_so_phuc"]
     assert floors[9]["hidden"]
     assert data["run"] is None and data["tiers"]["1"] == "Nhập môn"
 
@@ -288,7 +292,7 @@ async def test_start_refuses_a_floor_without_questions_or_that_does_not_exist(cl
     for body, status, code in (({"subject_id": SUBJECT, "floor": 10}, 400, "no_questions"),   # the hidden floor
                                ({"subject_id": SUBJECT, "floor": 11}, 404, "no_floor"),
                                ({"subject_id": "giai_tich", "floor": 10}, 400, "no_questions"),
-                               ({"subject_id": SUBJECT, "floor": 4}, 403, "floor_locked"),    # written, not open
+                               ({"subject_id": SUBJECT, "floor": 4}, 403, "node_locked"),     # written, not open
                                ({"subject_id": "hinh_hoc", "floor": 1}, 404, "no_floor")):
         r = await client.post("/math/run/start", json=body, headers=h)
         assert r.status_code == status and r.json()["error"]["code"] == code, r.text

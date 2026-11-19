@@ -142,10 +142,18 @@ def trial_tier(floor: int, config: dict | None = None) -> int:
     return math_path.floor_tiers(floor, config)[1]
 
 
+def trial_allowed(total: int, config: dict | None = None) -> int:
+    """How many questions of a trial of `total` questions may be missed: `max_wrong`, but never
+    more than a quarter of the trial. Since Đạo Thụ a trial is on one part of a node, which can
+    be as small as one micro-skill: without this a two-question trial would be passed with one
+    answer wrong, and a one-question trial with none right."""
+    return min(trial_cfg(config)["max_wrong"], total // 4)
+
+
 def trial_verdict(asked: int, correct: int, total: int, config: dict | None = None) -> bool | None:
     """True = passed, False = failed, None = still going. A trial is lost as soon as too many
     questions are missed, so nobody has to finish a trial they cannot pass any more."""
-    allowed = trial_cfg(config)["max_wrong"]
+    allowed = trial_allowed(total, config)
     if asked - correct > allowed:
         return False
     if asked >= total:
