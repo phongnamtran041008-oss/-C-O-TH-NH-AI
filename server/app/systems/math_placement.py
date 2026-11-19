@@ -55,11 +55,13 @@ nobody answered is settled as a timeout when the sitting next asks for one).
 **The outcome.** The start floor is the lowest floor whose block failed; when the climb
 passed the last written floor, that floor - never a floor without questions. The main floors
 below the start floor count as **cleared by placement**, including floors the climb jumped
-over (a passed floor above them vouches for them) and unwritten floors in between
-(math_practice.cleared_floors, the single source everything reads: path_view,
-math_ask.open_floor and so bí cảnh, hầm ngục, cơ duyên, thủ thành, chiêu thức). They are told
+over (a passed floor above them vouches for them) and unwritten floors in between: every
+part of a Đạo Thụ node on such a floor counts as passed (systems/math_tree_progress.py, the
+legacy half of rule R2, which everything reads: the tree, path_view, and through the
+frontier bí cảnh, hầm ngục, cơ duyên, thủ thành, chiêu thức). They are told
 apart from floors cleared by a Thiên kiếp nhỏ in the path view (`cleared_by`). On the start
 floor nothing is waived: its mastery gate and its Thiên kiếp nhỏ work exactly as for anyone.
+The test itself still climbs whole floors, every micro-skill of a floor included.
 (Should the bank change in the middle of a sitting so that a whole block no longer fits in
 `max_questions`, the sitting ends on the lowest floor not yet passed - the cautious answer.)
 

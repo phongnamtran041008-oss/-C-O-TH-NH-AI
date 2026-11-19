@@ -33,6 +33,11 @@ SEEDS = int(os.environ.get("MATH_REALM_SEEDS", "30"))
 
 
 # ------------------------------------------------------------------ helpers
+# three different own floors of Đạo Thụ's main path in Đại Số (floor 2 holds only an optional node,
+# so it is never a player's own floor: the frontier, R9)
+OWN = (1, 3, 4)
+
+
 async def math_hero(client, gw, username, display, floor=1, realm_id="luyen_khi"):
     """A player whose own floor is `floor` (the floors below it passed), standing at the gate."""
     h, uid, s = await hero(client, gw, username, display, realm_id=realm_id)
@@ -101,11 +106,11 @@ def test_validate_catches_what_breaks_the_rules():
 
 
 async def test_the_gate_lists_the_math_realm_open_and_alone(client, gw):
-    h, uid, s = await math_hero(client, gw, "cong_toan", "Cổng Toán", floor=2)
+    h, uid, s = await math_hero(client, gw, "cong_toan", "Cổng Toán", floor=3)
     v = (await client.get("/realms", headers=h)).json()
     assert REALM not in {x["id"] for x in v["realms"]}                 # its own list, its own tab
     r = next(x for x in v["math_realms"] if x["id"] == REALM)
-    assert r["math"] and r["open"] and r["party_min"] == 1 and r["floor"] == 2 and r["realm_ok"]
+    assert r["math"] and r["open"] and r["party_min"] == 1 and r["floor"] == 3 and r["realm_ok"]
     assert r["min_realm"] is None and r["entries_left"] == secret_realm.daily_limit(REALM)
     assert v["puzzles"]["seal"]["how_vi"] and v["puzzles"]["math_boss"]["how_vi"]
 
@@ -188,7 +193,7 @@ async def test_a_wrong_or_late_answer_is_a_mac_kich_and_counts_as_wrong(client, 
 
 # ------------------------------------------------------------------ Trận Nhãn
 async def test_a_seal_asks_whoever_stands_on_it_and_breaks_on_a_right_answer(client, gw):
-    h, uid, s = await math_hero(client, gw, "an_mot", "Ấn Một", floor=2)
+    h, uid, s = await math_hero(client, gw, "an_mot", "Ấn Một", floor=3)
     inst = await enter(gw, s)
     inst.monsters[:] = []                       # about the seals alone
     pz, p = inst.puzzle, gw.players[uid]
@@ -197,7 +202,7 @@ async def test_a_seal_asks_whoever_stands_on_it_and_breaks_on_a_right_answer(cli
     stand(p, seals[0])
     await tick(gw, 0.1)
     q = last(s, "q")
-    assert q["seal"] == seals[0].name and q["q"]["math"]["floor"] == 2 and q["q"]["math"]["realm_asker"] == "seal"
+    assert q["seal"] == seals[0].name and q["q"]["math"]["floor"] == 3 and q["q"]["math"]["realm_asker"] == "seal"
     assert p.protected(gw.mono())                               # Hộ Thể while answering, like Vấn Đạo
     assert pz.public(gw.mono())["seals"][0]["busy"]
     # wrong: the one who answered pays, the seal holds and asks again a little later
@@ -218,11 +223,11 @@ async def test_a_seal_asks_whoever_stands_on_it_and_breaks_on_a_right_answer(cli
     assert inst.phase == "advancing" and any(m.get("event") == "cleared" for m in msgs(s, "realm"))
     async with dbm.SessionLocal() as db:
         rows = (await db.execute(select(MathAnswer).where(MathAnswer.user_id == uid))).scalars().all()
-        assert len(rows) == 3 and all(r.run_id is None and r.floor == 2 for r in rows)
+        assert len(rows) == 3 and all(r.run_id is None and r.floor == 3 for r in rows)
 
 
 async def test_a_seal_room_needs_more_seals_and_everyone_for_a_party(client, gw):
-    hs = [await math_hero(client, gw, f"doi_an_{i}", f"Đội Ấn {i}", floor=i + 1) for i in range(3)]
+    hs = [await math_hero(client, gw, f"doi_an_{i}", f"Đội Ấn {i}", floor=OWN[i]) for i in range(3)]
     inst = await enter(gw, hs[0][2], hs[1][2], hs[2][2])
     inst.monsters[:] = []
     pz = inst.puzzle
@@ -239,7 +244,7 @@ async def test_a_seal_room_needs_more_seals_and_everyone_for_a_party(client, gw)
         await tick(gw, 0.1)
         q = last(s, "q")
         assert q["seal"] == seal.name, q
-        assert q["q"]["math"]["floor"] == i_player + 1                    # each on their own floor
+        assert q["q"]["math"]["floor"] == OWN[i_player]                   # each on their own floor
         await answer(client, h, q["q"], right)
         ps[i_player].y += 60
         await tick(gw, 0.1)
@@ -366,7 +371,7 @@ async def test_the_boss_asks_each_player_their_bai_tong_hop(client, gw):
     assert "find_mistake" in math_items.PLAYABLE_TYPES
     assert math_realm.boss_type(secret_realm.realms()[REALM]) == "find_mistake"
     ha, a, sa = await math_hero(client, gw, "boss_mot", "Boss Một")
-    hb, b, sb = await math_hero(client, gw, "boss_hai", "Boss Hai", floor=2)
+    hb, b, sb = await math_hero(client, gw, "boss_hai", "Boss Hai", floor=3)
     skill = math_path.subject(SUBJECT).floor(1).skills[0].id
     await open_tier_2(a, skill, 1)
     inst = await enter(gw, sa, sb, rooms=["boss"])
@@ -376,8 +381,10 @@ async def test_the_boss_asks_each_player_their_bai_tong_hop(client, gw):
     qa, qb = last(sa, "q")["q"], last(sb, "q")["q"]
     assert qa["math"]["realm_asker"] == qb["math"]["realm_asker"] == "boss"
     assert qa["math"]["floor"] == 1 and qa["math"]["skill"] == skill and qa["math"]["tier"] == 2
-    assert qa["qtype"] != "find_mistake" and qb["qtype"] != "find_mistake"      # neither has one at their tier
-    assert qb["math"]["floor"] == 2
+    assert qa["qtype"] != "find_mistake"                                     # a has none at their tier
+    # b's own floor is 3 (Đạo Thụ: floor 2 is never an own floor), whose lowest tier is 2, where
+    # Tìm chỗ sai lives: b gets the boss's own type
+    assert qb["math"]["floor"] == 3 and qb["qtype"] == "find_mistake"
     r = await answer(client, ha, qa, True)
     assert r["combat"]["shield_progress"] == [1, 2] and boss.shield
     r = await answer(client, hb, qb, True)
@@ -492,7 +499,7 @@ async def bot_run(client, gw, prefix: str, floors: list[int], seed: int):
     return heroes, inst, bots, seen, done
 
 
-@pytest.mark.parametrize("floors", [[1], [1, 2, 3]], ids=["solo", "party_of_3"])
+@pytest.mark.parametrize("floors", [[1], list(OWN)], ids=["solo", "party_of_3"])
 async def test_bots_clear_the_math_realm(client, gw, floors):
     """A bot team plays one whole run - two Trận Nhãn rooms and the boss - and every question each
     bot was asked came from its own floor; each gets its own loot once, of rule 7's kinds only."""
@@ -522,8 +529,8 @@ async def test_bots_clear_the_math_realm(client, gw, floors):
 @pytest.mark.parametrize("seed", range(SEEDS))
 async def test_bot_runs_finish_for_every_seed(client, gw, seed):
     """The old bots found real hangs by sweeping seeds: a solo bot and a party of three on
-    floors 1-3 must finish a run whatever the rooms' random monsters and the questions are."""
-    for prefix, floors in ((f"s{seed}", [1 + seed % 3]), (f"p{seed}", [1, 2, 3])):
+    floors 1, 3 and 4 must finish a run whatever the rooms' random monsters and the questions are."""
+    for prefix, floors in ((f"s{seed}", [OWN[seed % 3]]), (f"p{seed}", list(OWN))):
         heroes, inst, bots, seen, done = await bot_run(client, gw, prefix, floors, seed)
         assert done and inst.result == "won", (seed, floors, inst.kind,
                                                 inst.puzzle and inst.puzzle.public(gw.mono()))
@@ -533,7 +540,7 @@ async def test_bot_runs_finish_for_every_seed(client, gw, seed):
 
 async def test_bots_clear_the_math_realm_over_websockets(dev_server):  # noqa: F811
     """tools/realm_bots.py over real WebSockets, at once: one bot alone, and a party of three on
-    floors 1, 2 and 3. Every bot wins and gets its own loot, once."""
+    floors 1, 3 and 4. Every bot wins and gets its own loot, once."""
     import asyncio
     import sqlite3
 
@@ -541,14 +548,14 @@ async def test_bots_clear_the_math_realm_over_websockets(dev_server):  # noqa: F
     lines: list[str] = []
     try:
         teams = await asyncio.gather(
-            realm_bots.run_math(dev_server["url"], dev_server["db"], prefix="ms", floors=[2], timeout=420,
+            realm_bots.run_math(dev_server["url"], dev_server["db"], prefix="ms", floors=[3], timeout=420,
                                 log=lines.append),
-            realm_bots.run_math(dev_server["url"], dev_server["db"], prefix="mp", floors=[1, 2, 3], timeout=420,
+            realm_bots.run_math(dev_server["url"], dev_server["db"], prefix="mp", floors=list(OWN), timeout=420,
                                 log=lines.append))
     except RuntimeError as e:
         raise AssertionError(f"{e} / {dev_server['log'].read_text()[-4000:]}") from None
     bots = [b for team in teams for b in team]
-    floor_of = {b.uid: f for team, fl in zip(teams, ([2], [1, 2, 3])) for b, f in zip(team, fl)}
+    floor_of = {b.uid: f for team, fl in zip(teams, ([3], list(OWN))) for b, f in zip(team, fl)}
     try:
         assert not [b.kicked for b in bots if b.kicked]
         assert all(b.ended and b.ended["result"] == "won" for b in bots), (lines, dev_server["log"].read_text()[-3000:])

@@ -377,8 +377,12 @@ async def test_the_thien_kiep_nho_starts_no_ladder(client, ladder_bank):
     assert q["math"]["tier"] == 5
     res = await reply(client, h, q, correct=False)
     assert "ladder" not in res and await ladders(uid) == []
-    q = await ask(client, h, run_id)
-    assert not q["math"].get("ladder")
+    # floor 9 resolves to a two-skill part of Đạo Thụ, where no miss is allowed: the trial is over
+    assert res["trial"]["passed"] is False
+    r = await start_trial(client, h, floor=9)             # taken again straight away: still no rung waiting
+    assert r.status_code == 200, r.text
+    q = await ask(client, h, r.json()["run"]["run_id"])
+    assert not q["math"].get("ladder") and await ladders(uid) == []
 
 
 @pytest.mark.asyncio

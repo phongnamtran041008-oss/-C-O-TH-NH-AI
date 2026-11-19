@@ -8,8 +8,11 @@ review questions come from. `data/math/world_plan.json` hangs the game on the sa
 lands, the weapons lying in them, spirit beasts and the abilities a realm stage unlocks.
 
 This module only reads and checks those two files and answers questions about them with pure
-functions. **Nothing in the game calls it yet** (`"wired": false` in both files): the tree is
-a design waiting for the author's approval, and the engine in math_path.py still walks floors.
+functions. The **tree is wired** (`"wired": true` in tree.json, approved by the author on
+2026-11-19): systems/math_tree_progress.py reads it to decide which nodes a player has open
+and done, and the question loop (systems/math_practice.py) sits down on the parts of a node
+(a floor of math_path.py is still the address of the questions). The world plan is not wired
+yet (`"wired": false` in world_plan.json): its combat rule, weapons and beasts are a design.
 
 What `validate()` guarantees, because a wrong tree would teach things in the wrong order:
 

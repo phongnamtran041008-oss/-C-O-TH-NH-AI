@@ -21,7 +21,7 @@ from app.realtime import combat
 from app.realtime import world as wmod
 from app.realtime.party import Party
 from app.realtime.world import World
-from app.systems import catalog, math_combat, math_skills
+from app.systems import catalog, math_combat, math_skills, math_tree_progress
 from tests.helpers import answer_key
 from tests.test_combat import FakeMono, fighter, last, run, settle  # noqa: F401
 from tests.test_math_combat import at_math_monster
@@ -72,6 +72,17 @@ async def clear_floor(uid: int, floor: int) -> None:
     async with dbm.SessionLocal() as db:
         db.add(MathRun(user_id=uid, subject_id=SUBJECT, floor=floor, mode="trial", tier=1, passed=True,
                        started_at=clock.now(), ended_at=clock.now()))
+        await db.commit()
+
+
+async def clear_first_floors(uid: int) -> None:
+    """Đạo Thụ: a chiêu of "floor n" opens at Luyện Khí tầng n (the working stage, one above the
+    stage reached). Luyện Khí tầng 1 is reached when every stage-1 main node is done: the first
+    node of each of the four branches, one per subject on floor 1 (the programming one is vacant)."""
+    async with dbm.SessionLocal() as db:
+        for subject in math_path.subjects():
+            db.add(MathRun(user_id=uid, subject_id=subject.id, floor=1, mode="trial", tier=1, passed=True,
+                           started_at=clock.now(), ended_at=clock.now()))
         await db.commit()
 
 
@@ -196,7 +207,10 @@ async def test_the_view_follows_the_learning_path(client, gw):
     for key in ("name_vi", "kind_vi", "element", "qtypes", "min_tier", "qi", "cooldown", "range", "effect",
                 "power", "anim", "fx", "desc_vi", "unlock"):
         assert key in by["hoa_cau_thuat"], key
-    await clear_floor(uid, 1)
+    await clear_floor(uid, 1)                       # one subject's first node: Luyện Khí tầng 1 is not reached yet
+    v = (await client.get("/math/skills", headers=h)).json()
+    assert v["open_floor"] == 1 and not {x["id"]: x for x in v["skills"]}["ngu_hanh_tran"]["unlocked"]
+    await clear_first_floors(uid)
     by = {x["id"]: x for x in (await client.get("/math/skills", headers=h)).json()["skills"]}
     assert by["ngu_hanh_tran"]["unlocked"] and by["ho_than_tran"]["unlocked"]
     tl = by["thien_loi_tuyet_ky"]
@@ -332,7 +346,7 @@ async def test_the_answer_is_written_to_the_learning_log_and_pays_by_tier(client
 async def test_area_hits_and_slows_everything_around_the_target(client, gw):
     """Ngũ Hành Trận is cast by an *ordering* question (contract section 1)."""
     h, uid, s = await fighter(client, gw, "chieu_t", "Chiêu Trận")
-    await clear_floor(uid, 1)
+    await clear_first_floors(uid)
     p, m = at_math_monster(gw, s)
     prepare(p)
     ch = p.channel
@@ -365,7 +379,7 @@ async def test_ward_protects_the_caster_and_the_party_near_and_heals_a_little(cl
     ha, a, sa = await fighter(client, gw, "chieu_h1", "Chiêu Hộ")
     hb, b, sb = await fighter(client, gw, "chieu_h2", "Chiêu Bạn")
     hc, c_, sc = await fighter(client, gw, "chieu_h3", "Chiêu Lạ")
-    await clear_floor(a, 1)
+    await clear_first_floors(a)
     pa, m = at_math_monster(gw, sa)
     for s_ in (sb, sc):
         gw.join(s_, "truc_lam_thon", "abode")
@@ -488,7 +502,7 @@ async def test_leaving_the_world_resets_the_combo(client, gw):
 # ------------------------------------------------------------------ which question
 async def test_question_type_is_the_chieus_and_tier_never_above_the_players(client, gw):
     h, uid, s = await fighter(client, gw, "chieu_q", "Chiêu Hỏi")
-    await clear_floor(uid, 1)
+    await clear_first_floors(uid)
     info = catalog.monsters()[SLIME_MA]
     window = math_path.cfg()["tier_unlock"]["window"]
     async with dbm.SessionLocal() as db:   # open tier 2 of the monster's own micro-skill only
@@ -501,13 +515,13 @@ async def test_question_type_is_the_chieus_and_tier_never_above_the_players(clie
     rng = random.Random(7)
     async with dbm.SessionLocal() as db:
         user = await db.get(User, uid)
-        open_floor = await math_skills.open_floor(db, uid)
+        open_floor = await math_tree_progress.working_stage(db, uid)      # Luyện Khí tầng 2 (Đạo Thụ)
         assert open_floor == 2
         for k, sk in math_skills.skills().items():
             if not math_skills.castable_floors(sk):
                 continue
             if sk["unlock"]["floor"] > open_floor:          # Thiên Lôi (floor 7): locked for this player,
-                for target in (info, None):                  # and nothing on floors 1-2 may cast it
+                for target in (info, None):                  # and nothing of floors 1-3 may cast it
                     q, code = await math_skills.question_for(db, user, sk, target, rng)
                     assert q is None and code == "no_question", (k, code)
                 continue
@@ -522,8 +536,8 @@ async def test_question_type_is_the_chieus_and_tier_never_above_the_players(clie
                     assert meta["tier"] <= mine, (k, meta)
                     if math_combat.is_mistake_monster(target):
                         assert meta["floor"] == target["floor"]
-                    else:
-                        assert meta["floor"] <= 2                        # the open floor, or below
+                    else:                                        # the player's own part of Đạo Thụ (R9):
+                        assert (meta["subject"], meta["floor"]) == (SUBJECT, 3)      # floor 3's node
 
 
 async def test_a_mistake_monster_asks_about_its_own_skill_when_it_can(client, gw):

@@ -304,11 +304,14 @@ async def test_a_player_past_floor_six_plays_floor_seven(client):
 async def test_on_floor_nine_a_missed_question_is_followed_by_its_ladder(client):
     h, uid = await make(client, "gt_nhieu_bien")
     await clear_below(uid, 9, subject=SUBJECT)
+    # Đạo Thụ: floor 9's first node (gt_nhieu_bien) also requires Đại Số's ds_vecto_ma_tran (its floor 3)
+    await clear_below(uid, 4, subject="dai_so_tuyen_tinh")
     run_id = await start(client, h, floor=9, subject=SUBJECT)
     bank = mi.bank()
     for _ in range(14):                                 # answer right until a hand-written tier-5 item
         q = await ask(client, h, run_id)
-        assert q["math"]["subject"] == SUBJECT
+        # (a review question may come from the Đại Số node it reinforces)
+        assert q["math"]["subject"] == SUBJECT or (q["math"]["review"] and q["math"]["subject"] == "dai_so_tuyen_tinh")
         if q["math"]["floor"] == 9 and not q["math"]["review"]:
             assert q["math"]["tier"] == 5
             iid = await item_of(q)

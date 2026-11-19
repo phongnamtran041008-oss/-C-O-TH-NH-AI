@@ -2,10 +2,10 @@
 question after another. Each question has a countdown; when it runs out the server counts
 a wrong answer. After a wrong answer the card shows the solution step by step.
 
-M5: the floor list says which floors are open, which are cleared and how far the mastery
-gate of the floor being played has come; a floor whose gate is open offers its Thiên kiếp
-nhỏ, a sitting of one question per micro-skill that ends in a verdict. Questions that come
-from a floor below say so ("Ôn xoắn ốc").
+M5: the hub says which parts are open, which are passed and how far the mastery gate of the
+part being played has come; a part whose gate is open offers its Thiên kiếp nhỏ, a sitting of
+one question per micro-skill that ends in a verdict. Questions that come from a node below
+say so ("Ôn xoắn ốc"). Since Đạo Thụ the hub lists the nodes of the curriculum tree, not floors.
 
 The client never knows the answer: it sends what the player chose or typed and shows what
 the server reveals afterwards (the same rule as QuizScene)."""
@@ -23,10 +23,14 @@ from ..ui import mathinputs as MI
 from ..ui.mathdraw import draw_matrices, fit
 from .base import Scene
 from .math_code import ProblemListScene
-from .math_library import DocScene, LibraryListScene, subject_tabs
+from .math_library import DocScene, LibraryListScene, scroll_rows, subject_tabs
+from .math_tree import (NEXT_TAB, NodeCardScene, Row, first_tab, header_text, locked_reason, names_of,
+                        node_by_id, node_rows, part_playable, row_label, row_state, stage_text, tab_list)
 from .quiz import KEYS, CombatCard, QuizScene
 
 GREY = "#5A5A5A"
+INK = "#2B2B2B"
+PALE = "#9A9387"
 OPTION_KEYS = KEYS + [pygame.K_5, pygame.K_6]
 
 
@@ -410,21 +414,33 @@ HUB_DOORS = (("math_hub_dungeon", T.MATH_HUB_DUNGEON, ".math_dungeon", "MathDung
 
 
 class MathPracticeScene(Scene):
-    """The floors of the math bí cảnh, and the sitting that runs on the chosen floor.
+    """The hub of the math bí cảnh: Đạo Thụ, the curriculum tree, and the sitting that runs on a node.
 
-    M11: one subject at a time - a tab per bí cảnh along the top (mouse, or Left / Right).
-    The hub opens on the subject of the sitting left open, else the first subject that has a
-    playable floor. Under the tabs: where the player is in that subject, the bài kiểm tra đầu
-    vào when it is offered (or going on), and the subject's bài tập."""
+    Đạo Thụ replaced "four subjects, floors 1-9 in order". The header says where the player
+    stands (Luyện Khí tầng 2/9); a tab per branch lists its nodes, and "Nên học" lists the open
+    main-path nodes of every branch. One row per part of a node (a node that spans two floors has
+    two): its gate, its Thiên kiếp nhỏ, its Tàng Thư page and "Luyện". Clicking a node's name
+    opens its card. The hub opens on the tab of the sitting left open, else on "Nên học".
+    A branch that is a subject keeps the bài kiểm tra đầu vào and the bài tập of that subject.
+
+    Both the tree (GET /math/tree) and the path (GET /math/path, for the placement test and the
+    exercise count) are read; the hub shows nothing until both have come."""
+
+    LIST_TOP = 52           # the first row, below the tabs and the header line
+    ROW = 16
+    SHOWN = 9               # rows that fit above the bottom buttons
 
     def __init__(self, game):
         super().__init__(game)
         self.path: dict | None = None
+        self.tree: dict | None = None
+        self.tabs: list[dict] = []
         self.run: dict | None = None
         self.summary: dict | None = None
         self.trial: dict | None = None      # the verdict of the Thiên kiếp nhỏ just finished
         self.busy = False
-        self.tab: int | None = None         # M11: the index of the subject shown
+        self.tab: str | None = None         # the id of the tab shown ("next" or a branch id)
+        self.first = 0                      # the first row shown (the list scrolls)
 
     def on_enter(self):
         self.load()
@@ -432,27 +448,36 @@ class MathPracticeScene(Scene):
     # ------------------------------------------------------------ server calls
     def load(self):
         self.busy = True
+        got: dict = {}
+        failed = []
 
-        def ok(data):
-            self.busy = False
-            self.path = data
-            if self.tab is None or self.tab >= len(data.get("subjects", [])):
-                self.tab = self.first_tab(data)
-        self.api.get("/math/path", ok, self.fail)
+        def arrived(key):
+            def ok(data):
+                got[key] = data
+                if len(got) < 2:
+                    return
+                self.busy = False
+                self.path, self.tree = got["path"], got["tree"]
+                self.tabs = tab_list(self.tree)
+                if self.tab not in [t["id"] for t in self.tabs]:
+                    self.tab, self.first = first_tab(self.tree), 0
+            return ok
 
-    @staticmethod
-    def first_tab(path: dict) -> int:
-        """The subject of the sitting left open, else the first one with a playable floor."""
-        subjects = path.get("subjects", [])
-        run = path.get("run")
-        for i, s in enumerate(subjects):
-            if run and s["id"] == run["subject_id"]:
-                return i
-        return next((i for i, s in enumerate(subjects) if any(f["playable"] for f in s["floors"])), 0)
+        def broke(err):
+            if not failed:                  # one message for the pair of requests
+                failed.append(err)
+                self.fail(err)
+        self.api.get("/math/path", arrived("path"), broke)
+        self.api.get("/math/tree", arrived("tree"), broke)
 
-    def subject(self) -> dict | None:
-        subjects = (self.path or {}).get("subjects") or []
-        return subjects[self.tab or 0] if subjects else None
+    def tab_subject(self) -> dict | None:
+        """The math subject (a block of /math/path) of the branch shown, if it is one."""
+        tab = next((t for t in self.tabs if t["id"] == self.tab), None)
+        sid = tab.get("subject") if tab else None
+        return next((s for s in (self.path or {}).get("subjects", []) if s["id"] == sid), None)
+
+    def open_run(self) -> dict | None:
+        return (self.tree or {}).get("run")
 
     def placement(self, subject: dict):
         """M11: the bài kiểm tra đầu vào of this subject, in a scene of its own."""
@@ -463,8 +488,8 @@ class MathPracticeScene(Scene):
         self.busy = False
         self.game.api_error(err)
 
-    def start(self, subject_id: str, floor: int, trial: bool = False):
-        """Open a sitting on this floor: ordinary practice, or its Thiên kiếp nhỏ (M5)."""
+    def start(self, node_id: str, floor: int, trial: bool = False):
+        """Open a sitting on this part of a node: ordinary practice, or its Thiên kiếp nhỏ (M5)."""
         if self.busy:
             return
         self.busy = True
@@ -473,8 +498,8 @@ class MathPracticeScene(Scene):
         def ok(res):
             self.run = res["run"]
             self.next_question()
-        self.api.post("/math/trial/start" if trial else "/math/run/start",
-                      {"subject_id": subject_id, "floor": floor}, ok, self.fail)
+        self.api.post("/math/node/trial" if trial else "/math/node/start",
+                      {"node_id": node_id, "floor": floor}, ok, self.fail)
 
     def resume(self, run: dict):
         if self.busy:
@@ -520,70 +545,56 @@ class MathPracticeScene(Scene):
         ui.dim()
         x, y, w, h = 40, 16, 400, 238
         ui.panel(x, y, w, h, T.MATH_TITLE)
+        ready = self.path is not None and self.tree is not None
         if self.summary:
             self.draw_summary(ui, x, y, w, h)
-        elif self.path is None:
+        elif not ready:
             ui.text(T.MATH_LOADING, x + w / 2, y + h / 2, 9, GREY, anchor="center")
         else:
-            self.draw_floors(ui, x, y, w, h)
+            self.draw_tree(ui, x, y, w, h)
         if ui.button("math_library", x + 12, y + h - 20, 76, 14, T.LIB_TITLE, size=7, style="gold",
-                     enabled=self.path is not None):
-            shown = self.subject()
-            self.game.push(LibraryListScene(self.game, shown["id"] if shown else None))
+                     enabled=ready):
+            sub = self.tab_subject()
+            rows = node_rows(self.tree, self.tab) if ready else []
+            first = next((r.part["subject_id"] for r in rows if r.part), None)
+            self.game.push(LibraryListScene(self.game, sub["id"] if sub else first))
         if not self.summary:      # M10: the other ways to play - each one a scene of its own
             for i, (wid, label, module, cls) in enumerate(HUB_DOORS):
-                if ui.button(wid, x + 94 + i * 64, y + h - 20, 60, 14, label, size=7, enabled=self.path is not None):
+                if ui.button(wid, x + 94 + i * 64, y + h - 20, 60, 14, label, size=7, enabled=ready):
                     self.game.push(getattr(importlib.import_module(module, __package__), cls)(self.game))
         if ui.button("math_close", x + w - 62, y + h - 20, 50, 14, T.CLOSE, key=pygame.K_ESCAPE):
             self.close()
 
-    def draw_floors(self, ui, x, y, w, h):
-        open_run = self.path.get("run")
-        subjects = self.path["subjects"]
-        if not subjects:
+    def draw_tree(self, ui, x, y, w, h):
+        tab = subject_tabs(ui, "math_tab", self.tabs, [t["id"] for t in self.tabs].index(self.tab),
+                           x + 12, y + 19, w - 24)
+        if self.tabs[tab]["id"] != self.tab:
+            self.tab, self.first = self.tabs[tab]["id"], 0
+        self.draw_header(ui, x, y + 36, w)
+        rows = node_rows(self.tree, self.tab)
+        top, height = y + self.LIST_TOP, self.ROW * self.SHOWN
+        if not rows:
+            ui.text(T.TREE_NEXT_EMPTY if self.tab == NEXT_TAB else T.TREE_EMPTY, x + w / 2, top + 40, 8, GREY,
+                    anchor="center")
             return
-        self.tab = subject_tabs(ui, "math_tab", subjects, self.tab or 0, x + 12, y + 19, w - 24)
-        s = subjects[self.tab]
-        cy = y + 36
-        self.draw_subject_line(ui, x, cy, w, s)
-        cy += 17
-        for f in s["floors"]:
-            mine = bool(open_run) and open_run["subject_id"] == s["id"] and open_run["floor"] == f["floor"]
-            label = T.MATH_HIDDEN_FLOOR if f["hidden"] else T.MATH_FLOOR.format(n=f["floor"])
-            ink = "#2B2B2B" if f["playable"] else "#9A9387"
-            ui.text(label, x + 12, cy + 7, 8, ink, anchor="midleft")
-            ui.text(fit(ui, f["title_vi"], 8, 104), x + 52, cy + 7, 8, ink, anchor="midleft")
-            ui.text(tiers_text(f["tier_min"], f["tier_max"]), x + 160, cy + 7, 7, GREY, anchor="midleft")
-            self.draw_floor_gate(ui, x, cy, w, s, f)
-            if f["playable"]:
-                if ui.button(f"math_floor_{s['id']}_{f['floor']}", x + w - 76, cy, 64, 13,
-                             T.MATH_RESUME if mine else T.MATH_PLAY, size=7, style="primary",
-                             enabled=not self.busy):
-                    if mine:
-                        self.resume(open_run)
-                    else:
-                        self.start(s["id"], f["floor"])
-            else:
-                ui.text(T.MATH_LOCKED if f["has_questions"] else T.MATH_NO_QUESTIONS,
-                        x + w - 12, cy + 7, 7, "#9A9387", anchor="midright")
-            if f.get("doc_id") and ui.button(f"math_doc_{s['id']}_{f['floor']}", x + w - 118, cy, 34, 13,
-                                             T.LIB_READ, size=7, style="gold"):
-                self.game.push(DocScene(self.game, f["doc_id"]))
-            cy += 16
+        self.first = scroll_rows(ui, self.first, len(rows), self.SHOWN, x, top, w, height)
+        run = self.open_run()
+        cy = top
+        for row in rows[self.first:self.first + self.SHOWN]:
+            self.draw_row(ui, x, cy, w, row, run)
+            cy += self.ROW
+        if len(rows) > self.SHOWN:
+            ui.text(T.MATH_LIST_MORE.format(a=self.first + 1, b=min(len(rows), self.first + self.SHOWN), t=len(rows)),
+                    x + 12, top + height + 4, 7, GREY)
 
-    def draw_subject_line(self, ui, x, cy, w, s: dict):
-        """M11: under the tabs - where the player is in this subject (and where the bài kiểm
-        tra đầu vào put them), the test itself when it is offered, and the bài tập (M6)."""
+    def draw_header(self, ui, x, cy, w):
+        """Under the tabs: where the player stands, and - on the branch of a subject - the bài
+        kiểm tra đầu vào when it is offered (or going on) and the subject's bài tập (M6)."""
+        ui.text(header_text(self.tree["stage"]), x + 12, cy + 7, 8, UICOL["accent"], anchor="midleft", max_w=w - 200)
+        s = self.tab_subject()
+        if not s:
+            return
         p = s.get("placement") or {}
-        if not any(f["has_questions"] for f in s["floors"]):
-            where = T.MATH_HUB_NOTHING_YET
-        elif s.get("next_floor") is None:
-            where = T.MATH_HUB_ALL_CLEARED
-        else:
-            where = T.MATH_HUB_AT.format(n=s["next_floor"])
-        if p.get("start_floor") and not p.get("abandoned"):
-            where += "   " + T.MATH_PLACE_DONE.format(n=p["start_floor"])
-        ui.text(where, x + 12, cy + 7, 8, UICOL["accent"], anchor="midleft", max_w=w - 200)
         if s.get("problems") and ui.button(f"math_code_{s['id']}", x + w - 78, cy, 66, 13,
                                            T.CODE_SHORT, size=7, enabled=not self.busy):
             self.game.push(ProblemListScene(self.game, s["id"]))      # bài tập lập trình (M6)
@@ -594,35 +605,68 @@ class MathPracticeScene(Scene):
                 enabled=not self.busy):
             self.placement(s)
 
-    def draw_floor_gate(self, ui, x, cy, w, subject: dict, f: dict):
-        """The slot between the tiers and the Tàng Thư button (M5): how far the mastery gate
-        has come, or the button for the Thiên kiếp nhỏ once the gate is open."""
-        gate = f.get("gate")
-        if f["state"] == "cleared":                 # M11: skipped by the bài kiểm tra đầu vào, or passed
-            ui.text(T.MATH_CLEARED_PLACED if f.get("cleared_by") == "placement" else T.MATH_CLEARED,
-                    x + w - 122, cy + 7, 7, "#C99A3A", anchor="midright")
-        elif not f["playable"] or not gate:
-            return                                  # a locked floor says so on the right
+    def draw_row(self, ui, x, cy, w, row: Row, run: dict | None):
+        node, part, kind = row.node, row.part, row_state(row)
+        ink = INK if kind in ("part", "code") else PALE
+        ui.text(stage_text(node), x + 12, cy + 7, 7, GREY if node.get("stage") is not None else "#C99A3A",
+                anchor="midleft")
+        info = f"math_info_{node['id']}" if row.first else f"math_info_{node['id']}_{row.index}"
+        if ui.button(info, x + 50, cy, 128 if part is not None else 172, 13, "", style="ghost"):
+            self.game.push(NodeCardScene(self.game, node, self.tree))
+        # (a row with no part has no tiers, so its name may use the room of the tiers column)
+        ui.text(row_label(ui, row, 122 if part is not None else 170), x + 52, cy + 7, 8, ink, anchor="midleft")
+        if part is not None:
+            ui.text(tiers_text(part["tier_min"], part["tier_max"]), x + 182, cy + 7, 7, GREY, anchor="midleft")
+        if kind == "vacant":
+            ui.text(T.TREE_VACANT, x + w - 12, cy + 7, 7, PALE, anchor="midright")
+            return
+        if kind == "locked":
+            ui.text(fit(ui, locked_reason(node), 7, 166), x + w - 12, cy + 7, 7, PALE, anchor="midright")
+            return
+        if kind == "code":
+            ui.text(T.TREE_NODE_DONE if node["state"] == "done" else T.TREE_CODE_ONLY, x + w - 12, cy + 7, 7,
+                    "#C99A3A" if node["state"] == "done" else GREY, anchor="midright")
+            return
+        floor = part["floor"]
+        mine = bool(run) and run.get("node_id") == node["id"] and run.get("floor") == floor
+        self.draw_part_gate(ui, x, cy, w, node, part)
+        if part.get("doc_id") and ui.button(f"math_doc_{node['id']}_{floor}", x + w - 118, cy, 34, 13,
+                                            T.LIB_READ, size=7, style="gold"):
+            self.game.push(DocScene(self.game, part["doc_id"]))
+        if part_playable(row) and ui.button(f"math_node_{node['id']}_{floor}", x + w - 76, cy, 64, 13,
+                                            T.MATH_RESUME if mine else T.MATH_PLAY, size=7, style="primary",
+                                            enabled=not self.busy):
+            if mine:
+                self.resume(run)
+            else:
+                self.start(node["id"], floor)
+
+    def draw_part_gate(self, ui, x, cy, w, node: dict, part: dict):
+        """The slot between the tiers and the Tàng Thư button (M5): how far the mastery gate has
+        come, or the button for the Thiên kiếp nhỏ once the gate is open, or "Đã qua"."""
+        gate = part.get("gate")
+        if part["passed"]:                          # passed, or skipped by the bài kiểm tra đầu vào
+            ui.text(T.MATH_CLEARED, x + w - 122, cy + 7, 7, "#C99A3A", anchor="midright")
+        elif not gate:
+            return
         elif gate["ok"]:
-            if ui.button(f"math_trial_{subject['id']}_{f['floor']}", x + w - 180, cy, 58, 13,
+            if ui.button(f"math_trial_{node['id']}_{part['floor']}", x + w - 180, cy, 58, 13,
                          T.MATH_TRIAL, size=7, style="gold", enabled=not self.busy):
-                self.start(subject["id"], f["floor"], trial=True)
+                self.start(node["id"], part["floor"], trial=True)
         else:
             done = sum(1 for k in gate["skills"] if k["ok"])
             ui.text(T.MATH_GATE.format(n=done, t=len(gate["skills"])), x + w - 122, cy + 7, 7, GREY,
                     anchor="midright")
 
     def gate_hint(self, run: dict) -> str:
-        """What the floor just practised still wants before its Thiên kiếp nhỏ opens (M5),
-        read from the floor list that was reloaded when the sitting ended."""
-        for s in (self.path or {}).get("subjects", []):
-            if s["id"] != run["subject_id"]:
-                continue
-            for f in s["floors"]:
-                gate = f.get("gate")
-                if f["floor"] == run["floor"] and gate and not gate["ok"] and gate["skills"]:
-                    k = gate["skills"][0]
-                    return T.MATH_GATE_HINT.format(need=k["needed"], window=k["window"], tier=k["top_tier"])
+        """What the part just practised still wants before its Thiên kiếp nhỏ opens (M5), read
+        from the tree that was reloaded when the sitting ended."""
+        node = node_by_id(self.tree, run.get("node_id"))
+        for part in (node or {}).get("parts", []):
+            gate = part.get("gate")
+            if part["floor"] == run["floor"] and gate and not gate["ok"] and gate["skills"]:
+                k = gate["skills"][0]
+                return T.MATH_GATE_HINT.format(need=k["needed"], window=k["window"], tier=k["top_tier"])
         return ""
 
     def draw_summary(self, ui, x, y, w, h):
@@ -632,8 +676,15 @@ class MathPracticeScene(Scene):
             title = T.MATH_TRIAL_PASSED if t["passed"] else T.MATH_TRIAL_FAILED
             colour = UICOL["green"] if t["passed"] else UICOL["accent"]
             lines = [T.MATH_SUMMARY_SCORE.format(c=t["correct"], a=t["asked"]),
-                     T.MATH_SUMMARY_XP.format(n=r["xp_gained"]),
-                     T.MATH_TRIAL_UNLOCKED.format(n=t["unlocked"]) if t.get("unlocked") else T.MATH_TRIAL_AGAIN]
+                     T.MATH_SUMMARY_XP.format(n=r["xp_gained"])]
+            if t["passed"]:
+                if t.get("node_done") and r.get("node_name_vi"):
+                    lines.append(T.TREE_NODE_DONE_LINE.format(name=r["node_name_vi"]))
+                opened = names_of(self.tree, t.get("opened") or [])
+                if opened:                          # the nodes this trial opened, named from the reloaded tree
+                    lines.append(T.TREE_OPENED.format(names=", ".join(opened)))
+            else:
+                lines.append(T.MATH_TRIAL_AGAIN)
         else:
             title, colour = T.MATH_SUMMARY, UICOL["accent"]
             lines = [T.MATH_SUMMARY_SCORE.format(c=r["correct"], a=r["asked"]),
@@ -647,10 +698,12 @@ class MathPracticeScene(Scene):
             hint = self.gate_hint(r)
             if hint:
                 lines.append(hint)
-        ui.text(title, x + w / 2, y + 44, 12, colour, anchor="center")
+        ui.text(title, x + w / 2, y + 40, 12, colour, anchor="center")
+        if r.get("node_name_vi"):                   # the node the sitting was on
+            ui.text(r["node_name_vi"], x + w / 2, y + 52, 8, GREY, anchor="midtop", max_w=w - 40)
         pitch = 18 if len(lines) <= 6 else 15       # (seven lines still clear the button)
         for i, line in enumerate(lines):
-            ui.text(line, x + w / 2, y + 70 + i * pitch, 9, "#2B2B2B", anchor="center", max_w=w - 40)
+            ui.text(line, x + w / 2, y + 74 + i * pitch, 9, "#2B2B2B", anchor="center", max_w=w - 40)
         if ui.button("math_back", x + w / 2 - 45, y + 176, 90, 16, T.MATH_BACK, style="primary",
                      key=pygame.K_RETURN):
             self.summary = self.trial = None

@@ -16,13 +16,14 @@ accepted - before the answer - because the question *is* the chiêu being channe
     still shielded, asks its own question a few seconds later.
 
 Which question: a type of the chiêu's `qtypes`, about the target's own micro-skill when the
-target is a quái lỗi sai (else another micro-skill of its floor), otherwise about the
-player's open floor. The tier is the player's own for that micro-skill (math_combat.tier_for)
-and never above it. The answer goes to `math_answers` with no run, like M7, so the learning
-path counts it.
+target is a quái lỗi sai (else another micro-skill of its floor that the player has open),
+otherwise about the player's own part of Đạo Thụ (the frontier, math_tree_progress). The tier
+is the player's own for that micro-skill (math_combat.tier_for) and never above it. The answer
+goes to `math_answers` with no run, like M7, so the learning path counts it.
 
-Unlocking reads only the learning path (the player's open floor), never the cultivation
-realm: the realm list is not decided yet.
+Unlocking reads only the learning path, never the cultivation realm: a chiêu's
+`unlock.floor` n opens at Luyện Khí tầng n of Đạo Thụ, read against the stage the player is
+working on (math_tree_progress.working_stage; one above the stage reached).
 """
 from __future__ import annotations
 
@@ -39,9 +40,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .. import balance
 from .. import db as dbm
 from ..config import DATA_DIR
-from ..learning import math_items, math_mastery, math_path, quiz
+from ..learning import math_items, math_path, math_tree, quiz
 from ..models import MathAnswer, QuizSession, User
-from . import math_combat, math_practice
+from . import math_combat, math_practice, math_tree_progress
 
 if TYPE_CHECKING:
     from ..realtime.zone import ChannelZone, Player
@@ -194,33 +195,31 @@ def castable_floors(sk: dict, allow_unreviewed: bool = True) -> list[tuple[str, 
 
 
 # ------------------------------------------------------------------ unlocking
-async def open_floor(db: AsyncSession, user_id: int) -> int:
-    """The floor the player is working on: the lowest main floor not cleared yet (the last
-    one when every floor is cleared), the best of all subjects."""
-    best = 1
-    for subject in math_path.subjects():
-        if not subject.main_floors:
-            continue
-        cleared = await math_practice.cleared_floors(db, user_id, subject.id)
-        n = math_mastery.next_floor(subject, cleared)
-        best = max(best, n if n is not None else subject.main_floors[-1].number)
-    return best
+UNLOCK_REALM = "luyen_khi"      # a chiêu's unlock "floor" n is Luyện Khí tầng n of Đạo Thụ (R12)
 
 
-def locked_reason(sk: dict, floor: int) -> str | None:
+async def working_position(db: AsyncSession, user_id: int) -> tuple[str, int]:
+    """(realm, stage) the player is working on in Đạo Thụ (math_tree_progress.working_stage)."""
+    return await math_tree_progress.working_position(db, user_id)
+
+
+def locked_reason(sk: dict, where: tuple[str, int]) -> str | None:
+    """None when the chiêu is open at this working position (realm, stage), else why not. A
+    player in a realm after Luyện Khí has every Luyện Khí stage behind them."""
     need = sk["unlock"]["floor"]
-    if floor >= need:
+    if math_tree.tree().reaches(UNLOCK_REALM, need, where):
         return None
-    return f"Mở khi lộ trình học tới tầng {need} (con đang ở tầng {floor})."
+    return f"Mở khi tu tới Luyện Khí tầng {need} trên Đạo Thụ (con đang ở tầng {where[1]})."
 
 
 async def view(db: AsyncSession, user: User) -> dict:
-    """GET /math/skills: every chiêu in data order, and whether this player has it."""
-    floor = await open_floor(db, user.id)
+    """GET /math/skills: every chiêu in data order, and whether this player has it.
+    `open_floor` is the working stage of Đạo Thụ (the number a chiêu's unlock is read against)."""
+    where = await working_position(db, user.id)
     types = math_path.question_types()
     out = []
     for sid, s in skills().items():
-        reason = locked_reason(s, floor)
+        reason = locked_reason(s, where)
         row = {"id": sid, **{k: s[k] for k in ("name_vi", "kind_vi", "element", "min_tier", "qi", "cooldown",
                                                  "range", "effect", "power", "anim", "fx", "icon",
                                                  "desc_vi")},
@@ -230,7 +229,8 @@ async def view(db: AsyncSession, user: User) -> dict:
                "unlock": {"floor": s["unlock"]["floor"]}, "unlocked": reason is None, "locked_vi": reason}
         row.update({k: s[k] for k in EFFECT_KEYS[s["effect"]]})
         out.append(row)
-    return {"combo": dict(combo_cfg()), "open_floor": floor, "skills": out}
+    return {"combo": dict(combo_cfg()), "open_floor": where[1], "stage": {"realm": where[0], "stage": where[1]},
+            "skills": out}
 
 
 # ------------------------------------------------------------------ the formula
@@ -262,25 +262,23 @@ async def _recent_fingerprints(db: AsyncSession, user_id: int, config: dict) -> 
 
 async def _groups(db: AsyncSession, user_id: int, info: dict | None,
                   rng: random.Random) -> list[tuple[str, int, list[str]]]:
-    """(subject, floor, micro-skills) to try in order of preference."""
+    """(subject, floor, micro-skills) to try in order of preference: a quái lỗi sai's own
+    micro-skill, then the others of its floor that the player has open (R6); otherwise the
+    player's own part of Đạo Thụ (the frontier of the first subject with questions, R9)."""
     if math_combat.is_mistake_monster(info):
         subject, floor = info["subject"], int(info["floor"])
-        others = [k.id for k in math_path.subject(subject).floor(floor).skills if k.id != info["skill"]]
+        allowed = await math_tree_progress.allowed_skills(db, user_id)
+        others = [k.id for k in math_path.subject(subject).floor(floor).skills
+                  if k.id != info["skill"] and k.id in allowed]
         rng.shuffle(others)
         return [(subject, floor, [info["skill"]]), (subject, floor, others)]
-    for subject in math_path.subjects():   # the first subject that has questions at all
-        numbers = [f.number for f in subject.main_floors if math_practice._templates(subject.id, f.number)]
-        if not numbers:
-            continue
-        cleared = await math_practice.cleared_floors(db, user_id, subject.id)
-        here = math_mastery.next_floor(subject, cleared) or subject.main_floors[-1].number
-        out = []
-        for n in sorted((n for n in numbers if n <= here), reverse=True):   # the open floor, then below
-            ids = [k.id for k in subject.floor(n).skills]
-            rng.shuffle(ids)
-            out.append((subject.id, n, ids))
-        return out
-    return []
+    from . import math_ask
+    part = await math_ask.own_part(db, user_id)
+    if part is None:
+        return []
+    ids = list(part.skills)
+    rng.shuffle(ids)
+    return [(part.subject_id, part.floor, ids)]
 
 
 async def question_for(db: AsyncSession, user: User, sk: dict, info: dict | None,
@@ -378,7 +376,7 @@ async def _create(p: "Player", ch: "ChannelZone", k: str, eid: str | None) -> No
     try:
         async with dbm.SessionLocal() as db:
             user = await db.get(User, p.user_id)
-            reason = locked_reason(sk, await open_floor(db, p.user_id))
+            reason = locked_reason(sk, await working_position(db, p.user_id))
             if reason is not None:
                 p.q_pending = False
                 refuse(p, k, "locked", reason)

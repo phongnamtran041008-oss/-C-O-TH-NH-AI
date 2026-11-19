@@ -204,12 +204,15 @@ async def test_the_list_only_shows_floors_that_are_open(client):
     r = await client.get(f"/math/problems?subject_id={SUBJECT}", headers=h)
     assert r.status_code == 200, r.text
     floors = r.json()["floors"]
-    assert [f["floor"] for f in floors] == [1]              # floor 3 is locked for a new player
+    # Đạo Thụ (R10): an exercise is open when its micro-skill's node is - floor 1's node and floor 2's
+    # optional node require nothing; floor 3's node waits for floor 1's, so it is locked for a new player
+    assert [f["floor"] for f in floors] == [1, 2]
     assert any(p["id"] == FLOOR1_PROBLEM for p in floors[0]["problems"])
     assert all(p["best"] is None for p in floors[0]["problems"])
+    assert PROBLEM not in {p["id"] for f in floors for p in f["problems"]}
     await clear_below(uid, 3)
     floors = (await client.get(f"/math/problems?subject_id={SUBJECT}", headers=h)).json()["floors"]
-    assert [f["floor"] for f in floors] == [1, 2, 3] or [f["floor"] for f in floors] == [1, 3]
+    assert [f["floor"] for f in floors] == [1, 2, 3]
 
 
 async def test_the_statement_comes_without_the_hidden_tests(client):
@@ -232,9 +235,9 @@ async def test_a_locked_floor_keeps_its_exercises_shut(client):
     h, uid = await make(client)
     for path in (f"/math/problem/{PROBLEM}", ):
         r = await client.get(path, headers=h)
-        assert r.status_code == 403 and r.json()["error"]["code"] == "floor_locked", r.text
+        assert r.status_code == 403 and r.json()["error"]["code"] == "node_locked", r.text
     r = await client.post(f"/math/problem/{PROBLEM}/tests", json={}, headers=h)
-    assert r.status_code == 403 and r.json()["error"]["code"] == "floor_locked"
+    assert r.status_code == 403 and r.json()["error"]["code"] == "node_locked"
 
 
 async def test_an_unknown_exercise_is_a_404(client):
@@ -416,7 +419,8 @@ async def test_an_exercise_that_is_not_reviewed_is_hidden_when_the_server_forbid
 async def test_the_floor_list_says_how_many_exercises_can_be_opened(client):
     h, uid = await make(client)
     subject = (await client.get("/math/path", headers=h)).json()["subjects"][0]
-    assert subject["problems"] == len(pr.floor_problems(SUBJECT, 1, True))
+    # floor 1's node and floor 2's optional node are open from the start (Đạo Thụ, R10)
+    assert subject["problems"] == sum(len(pr.floor_problems(SUBJECT, n, True)) for n in (1, 2))
     await clear_below(uid, 3)
     subject = (await client.get("/math/path", headers=h)).json()["subjects"][0]
     assert subject["problems"] == sum(len(pr.floor_problems(SUBJECT, n, True)) for n in (1, 2, 3))

@@ -47,6 +47,9 @@ Exit code 0 when every check passes, 1 otherwise. The list grows with each miles
     question type exists, every effect is drawn by client/art/skill_fx.py and every
     animation is a clip of every Đạo Sĩ sheet; each chiêu unlocked on floors 1-3 has a
     question that casts it there, and only the documented one may have none anywhere
+  * Đạo Thụ: tree.json and world_plan.json pass math_tree.validate_all(), every part of a
+    node names real micro-skills of its floor, and every main-path node with content can be
+    reached from an empty save by finishing open nodes (vacant nodes count as done)
 """
 from __future__ import annotations
 
@@ -536,6 +539,58 @@ def check_chieu() -> list[str]:
     return out
 
 
+def check_tree() -> list[str]:
+    """Đạo Thụ: the tree and the world plan pass math_tree.validate_all(); every part of a node
+    (its micro-skills on one floor) names micro-skills that exist on that floor and together
+    they are all of the node's; and every main-path node that has content (questions on this
+    server's bank, unreviewed included, or programming exercises) can be reached from an empty
+    save by the rules R3/R4: repeatedly finish every open node, starting with the vacant ones
+    done - every such node must end up done."""
+    if math_path.validate_all() or math_items.validate_all():
+        return ["skipped: the learning path and question bank checks above must pass first"]
+    try:
+        from app.learning import math_tree
+        from app.systems import math_tree_progress as tp
+    except Exception as e:   # noqa: BLE001 - any import problem is a finding, not a crash
+        return [f"cannot load the tree modules: {e}"]
+    out = math_tree.validate_all()
+    if out:
+        return out
+    t = math_tree.tree()
+    cut = t.cut_skills()
+    floors = {(s.id, f.number): {k.id for k in f.skills} for s in math_path.subjects() for f in s.floors}
+    have: dict[tuple[str, int], set[str]] = {}
+
+    def asked(part) -> bool:
+        key = (part.subject_id, part.floor)
+        if key not in have:
+            have[key] = {x.skill for x in math_items.floor_templates(*key, True) if x.skill not in cut}
+        return bool(have[key] & set(part.skills))
+
+    vacant = set()
+    for node in t.nodes.values():
+        parts = tp.parts(node)
+        for p in parts:
+            for s in p.skills:
+                if s not in floors.get((p.subject_id, p.floor), set()):
+                    out.append(f"{node.id}: part on {p.subject_id} floor {p.floor} names {s}, which is not there")
+        if sorted(s for p in parts for s in p.skills) != sorted(node.skills):
+            out.append(f"{node.id}: its parts do not hold exactly its micro-skills")
+        if not any(asked(p) for p in parts) and not any(pid in math_problems.bank() for pid in node.problems):
+            vacant.add(node.id)
+    done = set(vacant)
+    while True:
+        opened = {n.id for n in t.nodes.values() if n.id not in done and set(n.requires) <= done}
+        if not opened:
+            break
+        done |= opened
+    for node in t.main_nodes():
+        if node.id not in done:
+            missing = [r for r in node.requires if r not in done]
+            out.append(f"{node.id}: can never be opened from an empty save (waits for {', '.join(missing)})")
+    return out
+
+
 def check_generated_answers() -> list[str]:
     if math_path.validate_all() or math_items.validate_all():
         return ["skipped: the checks above must pass first"]
@@ -582,6 +637,8 @@ CHECKS = [
      _mode_check("math_fortune")),
     ("thủ thành toán: towers, their areas of mathematics and the level are sound",
      _mode_check("math_td")),
+    ("Đạo Thụ: the tree is sound, every part names real micro-skills, every main node can be reached",
+     check_tree),
     ("fonts: every string the game shows can be drawn", check_fonts),
 ]
 

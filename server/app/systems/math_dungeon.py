@@ -3,8 +3,10 @@
 A dungeon is a short chain of rooms on one floor of the learning path. Its **layout** - how
 many rooms, the kind of each room and their order, the micro-skill a room asks about, the
 name of whoever guards it, and the chest at the end - is a pure function of
-(seed, subject, floor) and the data (`generate`). The same seed gives the same dungeon, so a
-player can replay one or share it. The *questions* are not part of the seed: they are picked
+(seed, subject, floor) and the data (`generate`), given the micro-skills of the floor the
+player has open on Đạo Thụ (a floor can hold nodes of several stages, and an optional node's
+micro-skills are never asked outside its own sittings). The same seed gives the same dungeon
+to players at the same place, so a player can replay one or share it. The *questions* are not part of the seed: they are picked
 when the room is entered, through math_ask, at the player's own tier and with the player's own
 anti-repeat window, like every other question of the game.
 
@@ -46,7 +48,7 @@ from .. import clock
 from ..config import DATA_DIR
 from ..learning import math_items, math_path, quiz
 from ..models import MathDungeonRun, QuizSession, User
-from . import catalog, inventory, math_ask, math_practice
+from . import catalog, inventory, math_ask, math_practice, math_tree_progress
 
 CONTEXT = "math_dungeon"
 DATA_FILE = DATA_DIR / "math" / "dungeon.json"
@@ -199,14 +201,21 @@ def _deal(rng: random.Random, pool: list, n: int, avoid_first=None) -> list:
     return out
 
 
-def generate(seed: int, subject_id: str, floor: int, raw: dict | None = None) -> dict | None:
+def generate(seed: int, subject_id: str, floor: int, raw: dict | None = None,
+             skills: list[str] | set[str] | None = None) -> dict | None:
     """The dungeon of this seed on this floor, or None when the floor has nothing to ask.
+    `skills` = the micro-skills of the floor its rooms may ask about (`room_skills`: what the
+    player has open on Đạo Thụ); None = all of them.
 
-    A pure function of (seed, subject, floor) and the data: no clock, no player. Everything
-    a client needs to draw the map is in it, names included, so a run keeps the dungeon it
-    was started with even if the data changes under it."""
+    A pure function of (seed, subject, floor, skills) and the data: no clock, no player.
+    Everything a client needs to draw the map is in it, names included, so a run keeps the
+    dungeon it was started with even if the data changes under it."""
     d = data() if raw is None else raw
     kinds = askable(subject_id, floor)
+    if skills is not None:
+        keep = set(skills)
+        kinds = {q: [s for s in v if s in keep] for q, v in kinds.items()}
+        kinds = {q: v for q, v in kinds.items() if v}
     if not kinds:
         return None
     rng = random.Random(f"ham_nguc|{int(seed)}|{subject_id}|{int(floor)}")
@@ -298,10 +307,28 @@ async def rewarded_today(db: AsyncSession, user_id: int) -> int:
 
 
 async def floors_open(db: AsyncSession, user_id: int, subject_id: str) -> list[int]:
-    """The floors this player may delve on: the ones with questions, up to their open floor
-    (rule 2: never a floor the player has not reached)."""
-    here = await math_ask.open_floor(db, user_id, subject_id)
-    return [n for n in math_ask.playable_floors(subject_id) if n <= here]
+    """The floors this player may delve on: the ones with questions that hold an open or
+    passed main-path part of Đạo Thụ (math_tree_progress.reached_floors; rule 2: never a
+    floor the player has not reached)."""
+    reached = await math_tree_progress.reached_floors(db, user_id, subject_id)
+    return [n for n in math_ask.playable_floors(subject_id) if n in reached]
+
+
+async def _home_floor(db: AsyncSession, user_id: int, subject_id: str, reachable: list[int]) -> int | None:
+    """The floor a dungeon opens on by default: the player's own (the floor of their
+    frontier part, R9), else the highest they have reached."""
+    part = await math_tree_progress.frontier(db, user_id, subject_id)
+    if part is not None and part.floor in reachable:
+        return part.floor
+    return reachable[-1] if reachable else None
+
+
+async def room_skills(db: AsyncSession, user_id: int, subject_id: str, floor: int) -> list[str]:
+    """The micro-skills of this floor a dungeon room may ask this player about: those of the
+    main-path nodes they have open or done (R6: never a cut one, never an optional node's,
+    never one of a node still shut that shares the floor)."""
+    allowed = await math_tree_progress.allowed_skills(db, user_id)
+    return [k.id for k in math_path.subject(subject_id).floor(floor).skills if k.id in allowed]
 
 
 async def open_run(db: AsyncSession, user_id: int) -> MathDungeonRun | None:
@@ -332,7 +359,7 @@ async def view(db: AsyncSession, user: User) -> dict:
                   "Tầng này chưa có câu hỏi." if f.number not in playable else
                   "Chưa tới tầng này trên lộ trình học.")
         out["floors"].append({"floor": f.number, "title_vi": f.title_vi, "open": locked is None, "locked_vi": locked})
-    out.update(subject_name_vi=subject.name_vi, own_floor=reachable[-1] if reachable else None)
+    out.update(subject_name_vi=subject.name_vi, own_floor=await _home_floor(db, user.id, subject_id, reachable))
     return out
 
 
@@ -344,7 +371,7 @@ async def _where(db: AsyncSession, user: User, floor: int | None) -> tuple[str, 
     if not reachable:
         raise DungeonError(400, "no_questions", "Chưa có câu hỏi nào để mở hầm ngục.")
     if floor is None:
-        return subject_id, reachable[-1]
+        return subject_id, await _home_floor(db, user.id, subject_id, reachable)
     if floor not in reachable:
         if floor in math_ask.playable_floors(subject_id):
             raise DungeonError(403, "floor_locked", "Chưa tới tầng này trên lộ trình học.")
@@ -364,7 +391,8 @@ def _seed(seed: int | None, rng: random.Random | None) -> int:
 async def preview(db: AsyncSession, user: User, seed: int, floor: int | None = None) -> dict:
     """The map of a seed on a floor the player has reached, without entering it."""
     subject_id, floor = await _where(db, user, floor)
-    layout = generate(_seed(seed, None), subject_id, floor)
+    layout = generate(_seed(seed, None), subject_id, floor,
+                      skills=await room_skills(db, user.id, subject_id, floor))
     if layout is None:
         raise DungeonError(400, "no_questions", "Tầng này chưa có câu hỏi.")
     return {"layout": layout_view(layout)}
@@ -377,7 +405,7 @@ async def start(db: AsyncSession, user: User, seed: int | None = None, floor: in
     left open is abandoned (one run at a time) and keeps what it paid."""
     subject_id, floor = await _where(db, user, floor)
     seed = _seed(seed, rng)
-    layout = generate(seed, subject_id, floor)
+    layout = generate(seed, subject_id, floor, skills=await room_skills(db, user.id, subject_id, floor))
     if layout is None:
         raise DungeonError(400, "no_questions", "Tầng này chưa có câu hỏi.")
     now = clock.now()
@@ -445,8 +473,9 @@ async def next_question(db: AsyncSession, user: User, run_id: int, rng: random.R
     if pending is not None:
         return {"run": run_view(run), "question": quiz.public_session(pending)}
     room = run.layout["rooms"][run.room]
-    question = await math_ask.pick(db, user, run.subject_id, run.floor,
-                                   skills=[room["skill"]] if room["skill"] else None,
+    # the trấn thủ asks from every micro-skill of the floor the player has open (R6)
+    skills = [room["skill"]] if room["skill"] else await room_skills(db, user.id, run.subject_id, run.floor)
+    question = await math_ask.pick(db, user, run.subject_id, run.floor, skills=skills,
                                    qtypes=[room["kind"]], highest=room["warden"], rng=rng)
     if question is None:          # generate() makes only rooms that can be asked: data changed under the run
         raise DungeonError(409, "no_question", "Phòng này không còn câu hỏi nào. Hãy rời hầm và vào lại.")

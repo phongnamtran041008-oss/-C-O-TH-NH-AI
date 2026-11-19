@@ -22,7 +22,7 @@ from app import db as dbm
 from app.learning import math_items as mi
 from app.learning import math_path as mp
 from app.models import MathAnswer, MathRun, QuizSession, User
-from app.systems import math_ask, math_placement as mpl, math_practice
+from app.systems import math_ask, math_placement as mpl, math_practice, math_tree_progress
 from tests.helpers import answer_key
 from tests.test_math_loop import SUBJECT, fake_items, make, right_answer, wrong_answer
 from tests.test_math_mastery import meet_gate, play_trial, start_trial
@@ -365,7 +365,9 @@ async def test_every_outcome_floor_and_the_early_stop(client, written, n, target
     assert result["skipped"] == list(range(1, target))
     async with dbm.SessionLocal() as db:
         assert await math_practice.cleared_floors(db, uid, LA) == set(range(1, target))
-        assert await math_ask.open_floor(db, uid, LA) == target
+        # Đạo Thụ: the player's own floor is their frontier - the start floor, except floor 2, which
+        # holds only an optional node: then the next main node, on floor 3
+        assert await math_ask.own_floor(db, uid, LA) == (LA, 3 if target == 2 else target)
 
 
 @pytest.mark.asyncio
@@ -509,7 +511,7 @@ async def test_open_floor_and_the_dungeon_agree_with_the_placement(client, writt
     h, uid = await make(client, "pl_agree")
     await sit(client, h, right=below(3))
     async with dbm.SessionLocal() as db:
-        assert await math_ask.open_floor(db, uid, LA) == 3
+        assert await math_tree_progress.reached_floors(db, uid, LA) == {1, 3}     # 2: an optional node only
         assert await math_ask.own_floor(db, uid, LA) == (LA, 3)
         user = await db.get(User, uid)
         q = await math_ask.pick_own(db, user, subject_id=LA)
@@ -517,7 +519,7 @@ async def test_open_floor_and_the_dungeon_agree_with_the_placement(client, writt
     view = (await client.get("/math/dungeon", headers=h)).json()   # M10: hầm ngục
     if view["subject_id"] == LA:
         assert view["own_floor"] == 3
-        assert [f["floor"] for f in view["floors"] if f["open"]] == [1, 2, 3]
+        assert [f["floor"] for f in view["floors"] if f["open"]] == [1, 3]
 
 
 @pytest.mark.asyncio
@@ -530,7 +532,7 @@ async def test_a_second_subject_is_independent_of_the_first(client, written):
     assert st["offered"] and st["result"] is None
     async with dbm.SessionLocal() as db:
         assert await math_practice.cleared_floors(db, uid, other) == set()
-        assert await math_ask.open_floor(db, uid, other) == 1
+        assert await math_ask.own_floor(db, uid, other) == (other, 1)
     _, qs, res = await sit(client, h, other, right=below(2))
     assert {q["math"]["subject"] for q in qs} == {other}
     assert res["math"]["placement_result"]["start_floor"] == 2

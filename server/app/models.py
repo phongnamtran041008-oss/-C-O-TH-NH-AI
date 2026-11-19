@@ -397,14 +397,19 @@ class AdminAction(Base):
 class MathRun(Base):
     """One sitting on a floor of a math subject (milestone M2). Holds what the adaptive rule
     needs between two questions: the tier now and the two streaks. A sitting is either
-    ordinary practice or the floor's own test, the Thiên kiếp nhỏ (`mode`, M5); a floor
-    counts as cleared once the player has a trial run on it with `passed` true."""
+    ordinary practice or the floor's own test, the Thiên kiếp nhỏ (`mode`, M5). Since the
+    curriculum tree (Đạo Thụ) is wired, a sitting is on one *part* of a tree node - the
+    node's micro-skills that live on this floor - named by `node_id`; a passed trial passes
+    that part. A run with no `node_id` is an old save (or the placement test): a passed trial
+    of that kind still covers the whole floor (systems/math_tree_progress.py)."""
     __tablename__ = "math_runs"
     __table_args__ = (Index("ix_math_runs_user_open", "user_id", "ended_at"),
-                      Index("ix_math_runs_cleared", "user_id", "subject_id", "mode", "passed"))
+                      Index("ix_math_runs_cleared", "user_id", "subject_id", "mode", "passed"),
+                      Index("ix_math_runs_node", "user_id", "node_id"))
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(UserFK())
     subject_id: Mapped[str] = mapped_column(String(40))
+    node_id: Mapped[str | None] = mapped_column(String(40), nullable=True)   # Đạo Thụ node (None = whole floor)
     floor: Mapped[int] = mapped_column(Integer)
     mode: Mapped[str] = mapped_column(String(10), default="practice")   # practice|trial
     tier: Mapped[int] = mapped_column(Integer)                    # tier of the next question

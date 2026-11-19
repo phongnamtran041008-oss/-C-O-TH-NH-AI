@@ -961,7 +961,6 @@ MATH_FLOOR = "Tầng {n}"
 MATH_HIDDEN_FLOOR = "Tầng ẩn"
 MATH_TIERS = "Bậc {lo}-{hi}"
 MATH_TIER_ONE = "Bậc {lo}"
-MATH_NO_QUESTIONS = "Chưa có câu hỏi"
 MATH_PLAY = "Luyện"
 MATH_RESUME = "Luyện tiếp"
 MATH_TIER_LABEL = "Bậc {n} · {name}"
@@ -984,7 +983,7 @@ MATH_SUMMARY_SCORE = "Trả lời đúng {c}/{a} câu"
 MATH_SUMMARY_COMBO = "Chuỗi đúng dài nhất: {n}"
 MATH_SUMMARY_XP = "Tu Vi nhận được: {n}"
 MATH_SUMMARY_TIER = "Bậc đang luyện: {name}"
-MATH_BACK = "Chọn tầng"
+MATH_BACK = "Chọn nút"
 MATH_PARALLEL = "Tâm ma: ý vừa sai quay lại với số mới"
 MATH_WILL_RETURN = "Ý này sẽ quay lại"
 MATH_PARALLEL_CLEARED = "Đã phá tâm ma"
@@ -1000,7 +999,6 @@ MATH_TRIAL_PROGRESS = "Thiên kiếp nhỏ: câu {n}/{t}"
 MATH_TRIAL_ALLOWED = "Được sai {n} câu"
 MATH_TRIAL_PASSED = "Vượt Thiên kiếp nhỏ!"
 MATH_TRIAL_FAILED = "Chưa qua Thiên kiếp nhỏ"
-MATH_TRIAL_UNLOCKED = "Tầng {n} đã mở"
 MATH_TRIAL_AGAIN = "Ôn lại vi kỹ năng yếu rồi thử lại ngay được."
 MATH_REVIEW = "Ôn xoắn ốc: tầng {n}"
 MATH_REVIEW_COUNT = "Câu ôn tầng dưới: {n}"
@@ -1217,13 +1215,8 @@ FM_STEP = "Bước {n}"
 
 # ---- M11: sảnh toán và kiểm tra đầu vào (agent HUB)
 MATH_LIST_MORE = "{a}-{b} trong {t} · lăn chuột hoặc phím lên/xuống để xem thêm"
-MATH_HUB_AT = "Đang tu ở tầng {n}"
-MATH_HUB_ALL_CLEARED = "Đã qua mọi tầng chính"
-MATH_HUB_NOTHING_YET = "Bí cảnh này chưa có câu hỏi"
-MATH_CLEARED_PLACED = "Được miễn"
 MATH_PLACE_BUTTON = "Kiểm tra đầu vào"
 MATH_PLACE_CONTINUE = "Làm tiếp kiểm tra"
-MATH_PLACE_DONE = "Đầu vào: tầng {n}"
 MATH_PLACE_TITLE = "Kiểm tra đầu vào"
 MATH_PLACE_INTRO = (
     "Bài kiểm tra đầu vào đặt điểm xuất phát của con trong bí cảnh {name}.",
@@ -1277,3 +1270,46 @@ MATH_PLACE_INTRO_CLIMB = (
     "Ở tầng xuất phát, cổng thuần thục và Thiên kiếp nhỏ vẫn chờ con như mọi người.",
     "Mỗi bí cảnh làm một lần. Bỏ dở thì coi như bắt đầu từ tầng 1.",
 )
+
+
+# ---- Đạo Thụ: sảnh toán đọc cây giáo trình (nút, tầng tu vi, nhánh)
+TREE_STAGE = "{realm} tầng {n}/{t}"
+TREE_STAGE_NONE = "{realm}: chưa qua tầng nào"
+TREE_TAB_NEXT = "Nên học"
+TREE_TAB_SHORT = {"ds": "Đại Số", "gt": "Giải Tích", "xs": "Xác Suất", "tr": "Thuật Toán", "lt": "Lập Trình",
+                  "ud": "Thực Chiến"}
+TREE_ROW_STAGE = "Tầng {n}"
+TREE_OPTIONAL = "Bàng môn"
+TREE_PART = "({i}/{n})"
+TREE_NEEDS = "Cần xong: {name}"
+TREE_VACANT = "Đang biên soạn"
+TREE_CODE_ONLY = "Chỉ có bài tập"
+TREE_NODE_DONE = "Đã xong"
+TREE_EMPTY = "Chưa có nút nào ở đây."
+TREE_NEXT_EMPTY = "Không còn nút chính đạo nào đang mở."
+TREE_SCROLL_MORE = "Dòng {a}-{b} trong {t} · lăn chuột hoặc phím lên/xuống"
+TREE_OPENED = "Nút mới mở: {names}"
+TREE_NODE_DONE_LINE = "Nút {name} đã xong"
+NODE_CARD_TITLE = "Nút của Đạo Thụ"
+NODE_STATE = {"open": "đang mở", "done": "đã xong", "locked": "chưa mở", "vacant": "đang biên soạn"}
+NODE_OPTIONAL_TAG = "bàng môn, không chặn đường"
+NODE_REQUIRES = "Cần xong trước"
+NODE_NO_REQUIRES = "Không cần gì: học được ngay."
+NODE_REQ_DONE = "đã xong"
+NODE_REQ_TODO = "chưa xong"
+NODE_REINFORCES = "Ôn lại"
+NODE_TOPICS = "Học gì"
+NODE_PROBLEMS = "Bài tập lập trình"
+NODE_PROBLEM_SOLVED = "đã giải"
+NODE_PROBLEM_TODO = "chưa giải"
+NODE_SOURCE = "Nên học từ"
+NODE_SRC_NONE = "Chưa có nguồn gợi ý cho nút này."
+NODE_SRC_AUTHOR = "Tác giả: {a}"
+NODE_SRC_WHERE = "Xem phần: {w}"
+NODE_SRC_LANG = "Ngôn ngữ: {lang} · {kind}"
+NODE_SRC_URL = "Đường dẫn: {u}"
+NODE_SRC_OPEN = "Mở trang"
+NODE_SRC_FAILED = "Không mở được trình duyệt. Hãy chép đường dẫn trong thẻ."
+NODE_LANG = {"vi": "tiếng Việt", "en": "tiếng Anh"}
+NODE_KIND = {"bai_viet": "bài viết", "video": "video", "sach": "sách", "khoa_hoc": "khoá học",
+             "tuong_tac": "bài tương tác", "code": "mã nguồn", "bai_tap": "bài tập", "bai_bao": "bài báo"}

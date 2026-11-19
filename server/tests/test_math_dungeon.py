@@ -27,6 +27,9 @@ import math_dungeon_bot as bot  # noqa: E402
 
 SUBJECT = "dai_so_tuyen_tinh"
 FLOORS = (1, 2, 3)
+# the floors a player delves on in the API tests: Đạo Thụ's main path of Đại Số (floor 2 holds only an
+# optional node, and a dungeon is only ever on a floor with an open or passed main-path node)
+PLAYED = (1, 3, 4)
 
 
 async def make(client, name: str, floor: int = 1):
@@ -197,7 +200,7 @@ async def test_only_floors_the_player_has_reached(client, monkeypatch):
 
 # ------------------------------------------------------------------ the questions
 @pytest.mark.asyncio
-@pytest.mark.parametrize("floor", FLOORS)
+@pytest.mark.parametrize("floor", PLAYED)
 async def test_each_room_asks_its_own_type_at_the_players_tier_and_every_answer_is_logged(client, floor):
     h, uid = await make(client, f"dg_rooms{floor}", floor)
     run = await start(client, h, seed=100 + floor)
@@ -337,12 +340,12 @@ async def test_a_run_can_be_abandoned_and_a_question_answered_after_that_only_co
 # ------------------------------------------------------------------ rewards
 @pytest.mark.asyncio
 async def test_a_cleared_dungeon_pays_every_room_and_the_chest_and_tu_vi_by_tier(client):
-    h, uid = await make(client, "dg_chest", floor=2)
+    h, uid = await make(client, "dg_chest", floor=3)
     before_stones, before_items = await stones(uid), await held(uid)
     out = await bot.play_dungeon(client, h, answer_key, seed=777)
     run = out["run"]
     assert run["state"] == "cleared" and run["chest_opened"] and run["rewarded"]
-    lay = math_dungeon.generate(777, SUBJECT, 2)
+    lay = math_dungeon.generate(777, SUBJECT, 3)
     want_stones = lay["room_reward"]["stones"] * (len(lay["rooms"]) - 1) + lay["chest"]["stones"]
     assert run["stones_gained"] == want_stones == await stones(uid) - before_stones
     after = await held(uid)
@@ -373,12 +376,12 @@ async def test_after_the_days_rewarded_runs_a_dungeon_still_teaches_but_pays_no_
 # ------------------------------------------------------------------ the bot
 @pytest.mark.asyncio
 async def test_the_bot_plays_many_seeds_on_every_floor_and_every_run_ends_cleanly(client):
-    """60 dungeons, floors 1-3, from always right to mostly wrong: every run ends as cleared
+    """60 dungeons, on floors 1, 3 and 4, from always right to mostly wrong: every run ends as cleared
     or failed, nothing raises, and what it paid is exactly what the data says."""
     rng = random.Random(2026)
     rates = (0.0, 0.2, 0.45, 0.8)
     states = set()
-    for floor in FLOORS:
+    for floor in PLAYED:
         h, uid = await make(client, f"dg_bot{floor}", floor)
         start_stones, start_items = await stones(uid), await held(uid)
         paid_stones, paid_items, rewarded_runs = 0, {}, 0

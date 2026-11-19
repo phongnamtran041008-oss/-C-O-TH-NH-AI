@@ -5,6 +5,7 @@ valid ladder on every tier-5 item), the generators (valid, varied, recomputed wi
 Thư Các for the three floors, and a learner who has cleared floors 1-6 playing floor 7 through
 the API."""
 import dataclasses
+import datetime as dt
 import json
 import random
 import sys
@@ -13,10 +14,12 @@ from pathlib import Path
 
 import pytest
 
+from app import db as dbm
 from app.learning import math_gen
 from app.learning import math_items as mi
 from app.learning import math_library as ml
 from app.learning import math_path as mp
+from app.models import MathRun
 from tests.helpers import answer_key
 from tests.test_math_loop import ask, clear_below, make, right_answer, start, wrong_answer
 
@@ -237,12 +240,19 @@ def test_the_library_covers_every_micro_skill_of_the_floor(floor):
 async def test_a_player_who_cleared_floors_one_to_six_practises_floor_seven(client):
     h, uid = await make(client, "xs_t7_hoc_tro")
     await clear_below(uid, 7, subject=SUBJECT)
+    # Đạo Thụ: floor 7's node (xs_mau_uoc_luong) also requires Giải Tích's gt_cuc_tri, on its floor 6
+    async with dbm.SessionLocal() as db:
+        db.add(MathRun(user_id=uid, subject_id="giai_tich", floor=6, mode="trial", tier=5, asked=1, correct=1,
+                       passed=True, started_at=dt.datetime(2026, 1, 1), ended_at=dt.datetime(2026, 1, 1)))
+        await db.commit()
     run_id = await start(client, h, floor=7, subject=SUBJECT)
     rights, on_floor_seven, kinds = 0, 0, set()
     for n in range(12):
         q = await ask(client, h, run_id)
-        # (spiral review and the ladder of a missed tier-5 question may go below)
-        assert q["math"]["subject"] == SUBJECT and 1 <= q["math"]["floor"] <= 7
+        # (spiral review and the ladder of a missed tier-5 question may go below; review also comes
+        # from the Giải Tích node it reinforces)
+        assert 1 <= q["math"]["floor"] <= 7
+        assert q["math"]["subject"] == SUBJECT or (q["math"]["review"] and q["math"]["subject"] == "giai_tich")
         on_floor_seven += q["math"]["floor"] == 7
         if q["math"]["floor"] == 7:
             assert q["math"]["skill"].startswith("xs_t7_") and q["math"]["tier"] in (4, 5)
