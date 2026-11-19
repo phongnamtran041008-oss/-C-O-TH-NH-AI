@@ -28,7 +28,7 @@
   "name_vi": "Linh Quả",
   "kind": "food",
   "sell_price": 40,
-  "desc_vi": "Quả quý chỉ cây đã thụ phấn mới có. Nguyên liệu luyện đan hiếm, ong rất thích."
+  "desc_vi": "Quả hiếm đầy linh khí. Ngư Ông bóp vụn làm mồi câu cá quý; ong rất thích."
  },
  "ca_nho": {
   "name_vi": "Cá Nhỏ",
@@ -88,37 +88,37 @@
   "name_vi": "Đan phương: Hồi Huyết Đan",
   "kind": "recipe",
   "recipe": "hoi_huyet_dan",
-  "desc_vi": "Ghi cách luyện Hồi Huyết Đan 回血丹. Giữ trong túi là luyện được mãi, không mất."
+  "desc_vi": "Ghi cách luyện Hồi Huyết Đan. Giữ trong túi là luyện được mãi, không mất."
  },
  "dp_hoi_khi": {
   "name_vi": "Đan phương: Hồi Khí Đan",
   "kind": "recipe",
   "recipe": "hoi_khi_dan",
-  "desc_vi": "Ghi cách luyện Hồi Khí Đan 回气丹. Giữ trong túi là luyện được mãi, không mất."
+  "desc_vi": "Ghi cách luyện Hồi Khí Đan. Giữ trong túi là luyện được mãi, không mất."
  },
  "dp_tu_linh": {
   "name_vi": "Đan phương: Tụ Linh Đan",
   "kind": "recipe",
   "recipe": "tu_linh_dan",
-  "desc_vi": "Ghi cách luyện Tụ Linh Đan 聚灵丹. Giữ trong túi là luyện được mãi, không mất."
+  "desc_vi": "Ghi cách luyện Tụ Linh Đan. Giữ trong túi là luyện được mãi, không mất."
  },
  "dp_khang_muc": {
   "name_vi": "Đan phương: Kháng Mực Đan",
   "kind": "recipe",
   "recipe": "khang_muc_dan",
-  "desc_vi": "Ghi cách luyện Kháng Mực Đan 抗墨丹. Giữ trong túi là luyện được mãi, không mất."
+  "desc_vi": "Ghi cách luyện Kháng Mực Đan. Giữ trong túi là luyện được mãi, không mất."
  },
  "dp_ngo_tinh": {
   "name_vi": "Đan phương: Ngộ Tính Đan",
   "kind": "recipe",
   "recipe": "ngo_tinh_dan",
-  "desc_vi": "Ghi cách luyện Ngộ Tính Đan 悟性丹. Giữ trong túi là luyện được mãi, không mất."
+  "desc_vi": "Ghi cách luyện Ngộ Tính Đan. Giữ trong túi là luyện được mãi, không mất."
  },
  "dp_truc_co": {
   "name_vi": "Đan phương: Trúc Cơ Đan",
   "kind": "recipe",
   "recipe": "truc_co_dan",
-  "desc_vi": "Ghi cách luyện Trúc Cơ Đan 筑基丹 để tự đột phá Trúc Cơ. Giữ trong túi là luyện được mãi, không mất."
+  "desc_vi": "Ghi cách luyện Trúc Cơ Đan để tự đột phá Trúc Cơ. Giữ trong túi là luyện được mãi, không mất."
  },
  "dp_kim_dan": {
   "name_vi": "Đan phương: Kết Đan Đan",
@@ -160,7 +160,7 @@
   "name_vi": "Đan phương: Phong Vương Đan",
   "kind": "recipe",
   "recipe": "phong_vuong_dan",
-  "desc_vi": "Ghi cách luyện Phong Vương Đan 蜂王丹 cho ong. Giữ trong túi là luyện được mãi, không mất."
+  "desc_vi": "Ghi cách luyện Phong Vương Đan cho ong. Giữ trong túi là luyện được mãi, không mất."
  },
  "thien_tam_ti": {
   "name_vi": "Thiên Tằm Ti",

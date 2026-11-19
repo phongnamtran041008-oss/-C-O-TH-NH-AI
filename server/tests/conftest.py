@@ -27,7 +27,7 @@ from sqlalchemy import delete  # noqa: E402
 from app import clock, models  # noqa: E402
 from app import db as dbm  # noqa: E402
 from app.auth import limiter  # noqa: E402
-from app.main import create_app, run_migrations, sync_words  # noqa: E402
+from app.main import create_app, run_migrations  # noqa: E402
 
 
 @pytest.fixture(scope="session")
@@ -46,12 +46,10 @@ def frozen():
 
 @pytest_asyncio.fixture
 async def app(migrated, frozen):
-    await sync_words()
     yield create_app(use_lifespan=False)
     async with dbm.SessionLocal() as db:  # clean tables between tests
         for t in reversed(models.Base.metadata.sorted_tables):
-            if t.name != "words":
-                await db.execute(delete(t))
+            await db.execute(delete(t))
         await db.commit()
     limiter.reset()
 

@@ -1,3 +1,6 @@
+import json
+import re
+
 from sqlalchemy import select
 
 from app import db as dbm
@@ -17,22 +20,12 @@ async def answer_key(session_id: str) -> dict:
         return q.answer_key
 
 
-def correct_answer(qtype: str, key: dict) -> dict:
-    if qtype == "Q5":
-        return {"text": key["pinyin_numeric"].replace(" ", "")}
-    if qtype == "Q9":
-        by_text = {}
-        for tid, txt in key["token_text"].items():
-            by_text.setdefault(txt, []).append(tid)
-        return {"order": [by_text[t].pop() for t in key["order_text"]]}
-    return {"option": key["option"]}
+# CJK ideographs, and the tone-marked vowels only Chinese romanisation uses (a macron or a
+# caron: Vietnamese has neither), so a payload that matches still carries the old word game.
+_OLD_SCRIPT = re.compile("[\\u3400-\\u9fff\\uf900-\\ufaff\\u0101\\u01ce\\u0113\\u011b\\u012b\\u01d0"
+                         "\\u014d\\u01d2\\u016b\\u01d4\\u01d6\\u01d8\\u01da\\u01dc]")
 
 
-def wrong_answer(qtype: str, key: dict) -> dict:
-    if qtype == "Q5":
-        return {"text": "xx9"}
-    if qtype == "Q9":
-        ids = list(key["token_text"])
-        return {"order": list(reversed(correct_answer(qtype, key)["order"]))} if len(ids) > 1 else {"order": []}
-    opts = "abcd" if qtype != "Q11" else "1234"
-    return {"option": next(o for o in opts if o != key["option"])}
+def old_script(obj) -> bool:
+    """True when anything in `obj` (any JSON-able value) is written in the old game's script."""
+    return bool(_OLD_SCRIPT.search(json.dumps(obj, ensure_ascii=False)))

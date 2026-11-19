@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
-from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import balance, clock
 from ..auth import api_error, current_user, write_user
 from ..db import get_db
 from ..learning import quiz
-from ..models import QuizSession, User
+from ..models import User
 from ..models import Character
 from ..schemas import AnswerIn, CharacterCreateIn, GachaRollIn, PositionIn, TutorialIn
 from ..systems import character as charsys
@@ -29,7 +28,7 @@ async def me(user: User = Depends(current_user), db: AsyncSession = Depends(get_
     return {"id": user.id, "username": user.username, "spirit_stones": user.spirit_stones,
             "immortal_jade": user.immortal_jade, "is_admin": user.is_admin,
             "has_character": has_char, "tutorial_step": (user.flags or {}).get("tutorial", 0),
-            "daily_rolls_left": cfg["daily_roll_limit"] - user.daily_new_seeds_count,
+            "daily_rolls_left": cfg["daily_roll_limit"] - user.daily_rolls_count,
             "free_rolls_left": cfg["daily_free_rolls"] - user.daily_free_rolls_used,
             **books.worn(user)}
 
@@ -112,18 +111,5 @@ async def quiz_answer(body: AnswerIn, user: User = Depends(write_user), db: Asyn
         raise api_error(e.status, e.code, e.message_vi)
     await db.commit()
     return out
-
-
-@router.get("/quiz/{session_id}/audio")
-async def quiz_audio(session_id: str, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
-    """Listening questions stream audio through the session so the client never learns
-    which word (= the answer) is being played."""
-    s = await db.get(QuizSession, session_id)
-    if s is None or s.user_id != user.id or s.qtype != "Q4":
-        raise api_error(404, "no_audio", "Không có âm thanh.")
-    path = quiz.AUDIO_DIR / f"{s.item_id}.mp3"
-    if not path.exists():
-        raise api_error(404, "no_audio", "Không có âm thanh.")
-    return FileResponse(path, media_type="audio/mpeg", filename="q.mp3")
 
 

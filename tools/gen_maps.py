@@ -46,7 +46,7 @@ def abode() -> dict:
             for y in range(min(y0, y1), max(y0, y1) + 1):
                 setg(x, y, GID["path0"] if (x + y) % 3 else GID["path1"])
 
-    # the courtyard at tiles (14..23, 7..16), framed by a path (the old word garden stood there)
+    # the courtyard at tiles (14..23, 7..16), framed by a path
     gx, gy = 14, 7
     path(gx - 1, gy - 1, gx + 10, gy - 1)
     path(gx - 1, gy + 10, gx + 10, gy + 10)
@@ -301,7 +301,7 @@ def village() -> dict:
     m.fill(0, 16, 9, 19, ["path0", "path1", "path0"])                 # stage 6: west road to Hồ Nghiên Mực
     m.fill(20, 12, 35, 23, ["plaza0", "plaza1"])                      # the square
     m.fill(30, 24, 31, 27, ["path0", "path1"])
-    m.fill(32, 27, 45, 28, ["path0", "path1"])                        # to Cổng Thủ Vườn
+    m.fill(32, 27, 45, 28, ["path0", "path1"])                        # to the Thủ Thành gate
     m.fill(8, 9, 11, 15, ["path0", "path1"])                          # to Trúc Lão's house
     m.fill(36, 10, 39, 15, ["path0", "path1"])                        # to the library
     # pond in the south-west corner

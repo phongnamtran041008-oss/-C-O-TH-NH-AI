@@ -1,4 +1,4 @@
-"""Khu Vườn Tu Tiên — game client entry point (pygame-ce).
+"""Toán Tu Tiên — game client entry point (pygame-ce).
 
     python -m client.main            # from the project folder
 """
@@ -64,7 +64,7 @@ class Game:
         self.session = session or Session()
         self.display = Display(self.cfg.window_scale, self.cfg.fullscreen, size)
         self.fonts = Fonts()
-        self.audio = Audio(self.cfg.sfx_volume, self.cfg.voice_volume)
+        self.audio = Audio(self.cfg.sfx_volume)
         self.ui = UI(self.display, self.fonts)
         self.ui.sfx = self.audio.play
         server = self.session.data.get("server_url") or self.cfg.server_url
@@ -691,9 +691,9 @@ class Game:
 def _report_crash() -> None:
     """The packaged exe has no console: write the traceback next to the game and say where."""
     import traceback
-    path = data_dir() / "vuonchu_loi.txt"
+    path = data_dir() / "toantutien_loi.txt"
     try:
-        path.write_text(f"Khu Vườn Tu Tiên v{GAME_VERSION}\n\n" + traceback.format_exc(), "utf-8")
+        path.write_text(f"Toán Tu Tiên v{GAME_VERSION}\n\n" + traceback.format_exc(), "utf-8")
     except OSError:
         return
     if sys.platform == "win32":
@@ -702,7 +702,7 @@ def _report_crash() -> None:
 
 
 def smoke_test(modules: list[str]) -> int:
-    """`VuonChu.exe --smoke-test <module>...`: import every listed module and load fonts and
+    """`ToanTuTien.exe --smoke-test <module>...`: import every listed module and load fonts and
     maps, then quit with 0. tools/build_exe.py runs it to prove nothing was left out."""
     import importlib
     from .engine.tilemap import load_map
@@ -727,7 +727,7 @@ def main() -> None:
             code = smoke_test(sys.argv[2:])
         except Exception:
             import traceback
-            (data_dir() / "vuonchu_smoke.txt").write_text(traceback.format_exc(), "utf-8")
+            (data_dir() / "toantutien_smoke.txt").write_text(traceback.format_exc(), "utf-8")
             code = 1
         sys.exit(code)
     try:

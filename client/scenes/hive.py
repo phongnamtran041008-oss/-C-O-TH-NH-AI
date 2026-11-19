@@ -478,7 +478,7 @@ class FoodPicker(Scene):
 
 
 class HatchScene(Scene):
-    """The egg shakes, cracks and a bee flies out (like the seed gacha)."""
+    """The egg shakes, cracks and a bee flies out."""
 
     def __init__(self, game, result: dict):
         super().__init__(game)

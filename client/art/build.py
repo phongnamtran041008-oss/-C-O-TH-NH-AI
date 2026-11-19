@@ -1,5 +1,5 @@
 """Turns sprite definitions into pygame Surfaces. Character grids come from
-art/sprites/*.py; tiles, props and plants are drawn procedurally with the palette.
+art/sprites/*.py; tiles and props are drawn procedurally with the palette.
 Everything is deterministic, so the same PNGs come out every time
 (tools/gen_sprites.py writes them to client/assets/sprites/)."""
 from __future__ import annotations
@@ -9,7 +9,7 @@ import random
 
 import pygame
 
-from .palette import PALETTE, RARITY_COLORS, rgb, shade
+from .palette import PALETTE, rgb, shade
 from .sprites import creatures, items, people
 
 TILE = 16
@@ -85,23 +85,8 @@ def truc_lao_frames() -> list[pygame.Surface]:
     return [grid(people.TRUC_LAO), grid(people.TRUC_LAO_BLINK)]
 
 
-def horse_frames() -> list[pygame.Surface]:
-    return [grid(f) for f in people.HORSE]
-
-
-def seed_frames(rarity: str) -> list[pygame.Surface]:
-    c = RARITY_COLORS[rarity]
-    cols = {"o": c, "O": shade(c, 0.75)}
-    return [grid(f, cols) for f in items.SEED]
-
-
-def icon(name: str, rarity: str | None = None) -> pygame.Surface:
-    rows = {"stone": items.STONE, "fruit": items.FRUIT, "seed": items.SEED_ICON}[name]
-    cols = None
-    if rarity:
-        c = RARITY_COLORS[rarity]
-        cols = {"o": c, "O": shade(c, 0.75)}
-    return grid(rows, cols)
+def icon(name: str) -> pygame.Surface:
+    return grid({"stone": items.STONE}[name])
 
 
 # ------------------------------------------------------------------ tiles
@@ -265,26 +250,13 @@ def shrine(frame: int = 0) -> pygame.Surface:
 
 
 def tablet() -> pygame.Surface:
-    """16x24 stone tablet (opens Sổ Phát Hiện)."""
+    """16x24 stone tablet (the Ngư Phổ board by the lake)."""
     s = pygame.Surface((16, 24), pygame.SRCALPHA)
     pygame.draw.rect(s, rgb("T"), (2, 18, 12, 6))
     pygame.draw.rect(s, rgb("t"), (3, 2, 10, 17))
     pygame.draw.rect(s, rgb("k"), (3, 2, 10, 17), 1)
     for y in (6, 9, 12, 15):
         pygame.draw.line(s, rgb("G"), (6, y), (10, y))
-    return s
-
-
-def table() -> pygame.Surface:
-    """24x16 low table with a fruit basket (opens Ghép Câu)."""
-    s = pygame.Surface((24, 16), pygame.SRCALPHA)
-    pygame.draw.rect(s, rgb("b"), (1, 6, 22, 5))
-    pygame.draw.rect(s, rgb("k"), (1, 6, 22, 5), 1)
-    pygame.draw.rect(s, rgb("b"), (3, 11, 3, 5))
-    pygame.draw.rect(s, rgb("b"), (18, 11, 3, 5))
-    pygame.draw.ellipse(s, rgb("B"), (6, 1, 12, 7))
-    for x, c in ((8, "o"), (11, "r"), (14, "o")):
-        pygame.draw.circle(s, rgb(c), (x, 3), 2)
     return s
 
 
@@ -314,110 +286,6 @@ def rock(variant: int = 0) -> pygame.Surface:
     pygame.draw.ellipse(s, rgb("T"), (1, 2, 14, 10))
     pygame.draw.ellipse(s, rgb("t"), (3, 3, 7, 4))
     pygame.draw.ellipse(s, rgb("k"), (1, 2, 14, 10), 1)
-    return s
-
-
-# ------------------------------------------------------------------ garden
-PLOT = 32
-
-
-def plot_bed(locked: bool, wither: float = 0.0) -> pygame.Surface:
-    s = pygame.Surface((PLOT, PLOT), pygame.SRCALPHA)
-    if locked:
-        _noise_fill(s, "V", [("n", 0.12), ("v", 0.1)], ("weeds",))
-        for x, y in ((6, 8), (20, 18), (12, 24)):
-            s.blit(rock(), (x - 4, y - 4))
-        pygame.draw.rect(s, rgb("n"), (0, 0, PLOT, PLOT), 1)
-        return s
-    pygame.draw.rect(s, rgb("b"), (1, 1, PLOT - 2, PLOT - 2))   # wooden border
-    inner = pygame.Surface((PLOT - 6, PLOT - 6))
-    _noise_fill(inner, "d", [("D", 0.15), ("e", 0.06)], ("soil",))
-    for y in range(4, PLOT - 6, 6):
-        pygame.draw.line(inner, rgb("D"), (1, y), (PLOT - 8, y))
-    s.blit(inner, (3, 3))
-    pygame.draw.rect(s, rgb("k"), (1, 1, PLOT - 2, PLOT - 2), 1)
-    return s
-
-
-def plant(stage: int, rarity: str, key: str, frame: int = 0) -> pygame.Surface:
-    """24x24 plant for garden stage 0-5; the hanzi is drawn separately by the game."""
-    s = pygame.Surface((24, 24), pygame.SRCALPHA)
-    r = _rng("plant", key)
-    sway = (frame % 2)
-    base_x, ground = 12, 21
-    if stage == 0:
-        pygame.draw.ellipse(s, rgb("D"), (6, 17, 12, 6))
-        pygame.draw.ellipse(s, rgb("e"), (8, 17, 8, 3))
-        s.set_at((12, 18), rgb("o"))
-        s.set_at((13, 18), rgb("W") if frame % 2 else rgb("o"))
-        return s
-    height = {1: 6, 2: 11, 3: 15, 4: 16, 5: 17}[stage]
-    top = ground - height
-    leaf = rgb("v") if stage < 3 else rgb("V")
-    pygame.draw.line(s, rgb("n"), (base_x, ground), (base_x + sway, top), 2 if stage >= 3 else 1)
-    n_leaves = {1: 2, 2: 4, 3: 6, 4: 7, 5: 8}[stage]
-    for i in range(n_leaves):
-        y = ground - 3 - i * (height - 3) // max(1, n_leaves)
-        side = -1 if i % 2 == 0 else 1
-        length = 3 + (stage >= 3) + r.randrange(0, 2)
-        x0 = base_x + sway * (ground - y) // max(1, height)
-        pygame.draw.ellipse(s, leaf, (x0 + (1 if side > 0 else -length - 1), y - 2, length + 1, 3))
-        s.set_at((x0 + side * (length // 2 + 1), y - 1), rgb("l"))
-    if stage >= 4:  # leafy crown
-        pygame.draw.ellipse(s, rgb("V"), (base_x - 8 + sway, top - 3, 16, 10))
-        pygame.draw.ellipse(s, rgb("v"), (base_x - 6 + sway, top - 2, 9, 5))
-    color = rgb(RARITY_COLORS[rarity]) if rarity != "common" else rgb("i")
-    spots = [(-5, 2), (4, 0), (0, -3)] if stage >= 4 else [(-4, 1), (4, 3), (0, -2)]
-    if stage == 3:
-        for dx, dy in spots:
-            cx, cy = base_x + dx + sway, top + 4 + dy
-            for ox, oy in ((0, -1), (1, 0), (0, 1), (-1, 0)):
-                s.set_at((cx + ox, cy + oy), color)
-            s.set_at((cx, cy), rgb("o"))
-    elif stage == 4:
-        for dx, dy in spots:
-            pygame.draw.circle(s, rgb("l"), (base_x + dx + sway, top + 3 + dy), 2)
-    elif stage == 5:
-        fruit = rgb(RARITY_COLORS[rarity]) if rarity != "common" else rgb("r")
-        for dx, dy in spots:
-            cx, cy = base_x + dx + sway, top + 3 + dy
-            pygame.draw.circle(s, fruit, (cx, cy), 3)
-            pygame.draw.circle(s, rgb("k"), (cx, cy), 3, 1)
-            s.set_at((cx - 1, cy - 1), rgb("W"))
-    pygame.draw.ellipse(s, rgb("D"), (7, 20, 10, 4))
-    return s
-
-
-def withered(surf: pygame.Surface, wither: float) -> pygame.Surface:
-    """Blend toward grey ink as wither rises (spec 6.3)."""
-    if wither < 30:
-        return surf
-    k = min(1.0, (wither - 30) / 70) * 0.85
-    out = surf.copy()
-    w, h = out.get_size()
-    ink = rgb("G")
-    for y in range(h):
-        for x in range(w):
-            c = out.get_at((x, y))
-            if c.a:
-                g = (c.r + c.g + c.b) // 3
-                mix = tuple(int(cv * (1 - k) + (g * 0.6 + ic * 0.4) * k) for cv, ic in zip((c.r, c.g, c.b), ink))
-                out.set_at((x, y), (*mix, c.a))
-    if wither >= 30:  # ink streaks
-        rr = random.Random(int(wither) // 10)
-        for _ in range(int(wither / 15)):
-            x, y = rr.randrange(4, 20), rr.randrange(6, 22)
-            if out.get_at((x, y)).a:
-                out.set_at((x, y), (*rgb("K"), 255))
-    return out
-
-
-def tag(size=(13, 13)) -> pygame.Surface:
-    """Little paper tag the plant's character is written on."""
-    s = pygame.Surface(size, pygame.SRCALPHA)
-    pygame.draw.rect(s, rgb("w"), (0, 0, size[0], size[1] - 2))
-    pygame.draw.rect(s, rgb("k"), (0, 0, size[0], size[1] - 2), 1)
-    pygame.draw.line(s, rgb("b"), (size[0] // 2, size[1] - 2), (size[0] // 2, size[1] - 1))
     return s
 
 
@@ -601,7 +469,7 @@ def portal(frame: int = 0) -> pygame.Surface:
 
 
 def td_gate(frame: int = 0) -> pygame.Surface:
-    """40x40 Cổng Thủ Vườn: a bamboo arch overgrown with word-plants (stage 7 opens it)."""
+    """40x40 Cổng Thủ Thành: a bamboo arch overgrown with vines (stage 7 opens it)."""
     s = pygame.Surface((40, 40), pygame.SRCALPHA)
     for x in (2, 33):
         pygame.draw.rect(s, rgb("V"), (x, 6, 5, 34))

@@ -1,4 +1,4 @@
-# Khu Vườn Tu Tiên — server + PostgreSQL (+ Caddy HTTPS) + daily backups. See docs/DEPLOY.md.
+# Toán Tu Tiên — server + PostgreSQL (+ Caddy HTTPS) + daily backups. See docs/DEPLOY.md.
 #
 #   cd deploy && cp .env.example .env    # then edit .env (password, JWT secret, domain)
 #   Phương án A (Oracle Cloud ARM, HTTPS):        docker compose --profile https up -d --build

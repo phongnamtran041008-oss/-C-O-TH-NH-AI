@@ -84,7 +84,7 @@ def _answer_xp(user: User, s: QuizSession) -> int:
 async def on_math_answer(db: AsyncSession, user: User, s: QuizSession, correct: bool) -> dict:
     """Rồng (streak_double) and Gà (xp_meditate): Tu Vi on top of what the answer itself pays.
     Called by math_combat.record, the learning log of every math question asked outside the
-    Đạo Thụ (meditation, Thiên Kiếp, monsters, fishing, Bí Cảnh, Thủ Vườn...). Returns {} when
+    Đạo Thụ (meditation, Thiên Kiếp, monsters, fishing, Bí Cảnh, Thủ Thành...). Returns {} when
     the worn pet does nothing here, else {"pet_xp", "pet_skill"}."""
     sk = await skill(db, user.id)
     if not sk:

@@ -20,7 +20,7 @@ import pygame
 from .. import strings_vi as T
 from ..art.palette import UI as UICOL
 from ..ui import mathinputs as MI
-from ..ui.mathdraw import draw_matrices, fit
+from ..ui.mathdraw import draw_matrices, fit, matrices_size
 from .base import Scene
 from .math_code import ProblemListScene
 from .math_library import DocScene, LibraryListScene, scroll_rows, subject_tabs
@@ -52,11 +52,52 @@ class MathQuizScene(QuizScene):
         """How far above the bottom edge of the card the matching / ordering board ends."""
         return 16
 
+    CARD_TOP = 12            # the highest a card may reach (the top edge of the full card)
+
+    def card_rect(self):
+        """Where this kind of card would like to sit (a combat card sits low, under the HUD)."""
+        return (24, self.CARD_TOP, 432, 246)
+
     def panel_rect(self):
-        return (24, 12, 432, 246)
+        """The card's rectangle: `card_rect`, grown upwards when the board of a matching /
+        ordering / find-the-mistake question needs more room than a low card has. Without
+        this, five rows under a two-line statement and a matrix were crushed onto the
+        Hoàn tác / Làm lại / Trả lời buttons and could not be read or clicked."""
+        x, y, w, h = self.card_rect()
+        grow = min(max(0.0, self.board_shortfall(x, y, w, h)), y - self.CARD_TOP)
+        if grow > 0:
+            grow = float(int(grow + 0.999))
+            y, h = y - grow, h + grow
+        return (x, y, w, h)
+
+    def board_shortfall(self, x, y, w, h) -> float:
+        """How many base pixels the rows of this question's board lack inside the card
+        x, y, w, h (<= 0: they fit). Mirrors the layout of `draw_ui`; measured once."""
+        if self._shortfall is None:
+            self._shortfall = self._measure_shortfall(x, y, w, h)
+        return self._shortfall
+
+    def _measure_shortfall(self, x, y, w, h) -> float:
+        prompt = self.q.get("prompt") or {}
+        rows = {"matching": prompt.get("left"), "ordering": prompt.get("steps"),
+                "find_mistake": prompt.get("lines")}.get(self.q.get("input"))
+        ui = getattr(self.game, "ui", None)
+        if not rows or ui is None:
+            return 0.0
+        m = self.q.get("math", {})
+        top = y + (42 if m.get("parallel") or m.get("review") else 36)
+        text = prompt.get("text", "")
+        size = 10 if len(text) <= 110 else 9
+        cy = top + 16 + len(MI._wrap(ui, text, size, w - 36)) * ui.text_size("Ag", size)[1] * 1.15
+        if prompt.get("matrices"):
+            cy += 6 + matrices_size(ui, prompt["matrices"])[1]
+        need = len(rows) * 14.0 + MI.GAP * (len(rows) - 1)        # every row at its smallest readable height
+        avail = (y + h - self.input_margin()) - (cy + 6) - MI.BUTTONS_H - 4
+        return need - avail
 
     def __init__(self, game, question: dict, run: dict | None = None, on_result=None):
-        super().__init__(game, question, on_result=None, show_timer=True)
+        self._shortfall: float | None = None
+        super().__init__(game, question)
         self.run = run or {}
         self.on_math_result = on_result
         self.given: dict = {}
@@ -329,8 +370,7 @@ class MathQuizScene(QuizScene):
 
 class MathCombatQuizScene(CombatCard, MathQuizScene):
     """The card a quái lỗi sai opens (M7): the math card of Động Phủ, but low on the screen
-    with the fight still visible, and it closes itself after the explanation the way the word
-    card does (spec 8.1). The monster's own mistake is named above the question, so the player
+    with the fight still visible, and it closes itself a moment after the explanation. The monster's own mistake is named above the question, so the player
     can see what they are arguing with."""
     modal = False
     draws_world = False
@@ -343,7 +383,7 @@ class MathCombatQuizScene(CombatCard, MathQuizScene):
         matching / ordering question (buttons and key hint included) stays above that line."""
         return 32 if self.q.get("math", {}).get("mistake_vi") else 16
 
-    def panel_rect(self):
+    def card_rect(self):
         return (24, 56, 432, 202)
 
     def __init__(self, game, question: dict, monster_id: str, on_result=None, cast: dict | None = None):

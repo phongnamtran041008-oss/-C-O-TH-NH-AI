@@ -33,10 +33,6 @@ def gacha() -> dict:
     return load("gacha")
 
 
-def garden() -> dict:
-    return load("garden")
-
-
 def quiz() -> dict:
     return load("quiz")
 

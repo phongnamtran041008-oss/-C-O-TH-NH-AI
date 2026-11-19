@@ -1,14 +1,14 @@
 {
-  "_comment": "Cultivation realms in order (spec 7.3). hsk = vocabulary level of the old word game for the realm (only picks a word tier; the realms after Nguyên Anh reuse the highest one, 4). The id kim_dan is kept for old saves; the realm is called Kết Đan.",
+  "_comment": "Cultivation realms in order (spec 7.3). The id kim_dan is kept for old saves; the realm is called Kết Đan.",
   "realms": [
-    {"id": "pham_nhan", "name_vi": "Phàm Nhân", "hsk": 0, "stages": 0},
-    {"id": "luyen_khi", "name_vi": "Luyện Khí", "hsk": 1, "stages": 9},
-    {"id": "truc_co", "name_vi": "Trúc Cơ", "hsk": 2, "stages": 3},
-    {"id": "kim_dan", "name_vi": "Kết Đan", "hsk": 3, "stages": 3},
-    {"id": "nguyen_anh", "name_vi": "Nguyên Anh", "hsk": 4, "stages": 3},
-    {"id": "hoa_than", "name_vi": "Hóa Thần", "hsk": 4, "stages": 3},
-    {"id": "luyen_hu", "name_vi": "Luyện Hư", "hsk": 4, "stages": 3},
-    {"id": "hop_the", "name_vi": "Hợp Thể", "hsk": 4, "stages": 3},
-    {"id": "dai_thua", "name_vi": "Đại Thừa", "hsk": 4, "stages": 3}
+    {"id": "pham_nhan", "name_vi": "Phàm Nhân", "stages": 0},
+    {"id": "luyen_khi", "name_vi": "Luyện Khí", "stages": 9},
+    {"id": "truc_co", "name_vi": "Trúc Cơ", "stages": 3},
+    {"id": "kim_dan", "name_vi": "Kết Đan", "stages": 3},
+    {"id": "nguyen_anh", "name_vi": "Nguyên Anh", "stages": 3},
+    {"id": "hoa_than", "name_vi": "Hóa Thần", "stages": 3},
+    {"id": "luyen_hu", "name_vi": "Luyện Hư", "stages": 3},
+    {"id": "hop_the", "name_vi": "Hợp Thể", "stages": 3},
+    {"id": "dai_thua", "name_vi": "Đại Thừa", "stages": 3}
   ]
 }

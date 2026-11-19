@@ -120,10 +120,10 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         h = {"Authorization": f"Bearer {token}"}
         import httpx
         inst = server.sql("select count(*) from equipment_instances")[0][0]
-        server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level, inscriptions, "
-                   "equipped_slot) values (?, 'but_long_go', 'pham', 0, '[]', 'weapon')", (uid,))
-        server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level, inscriptions, "
-                   "equipped_slot) values (?, 'non_la', 'linh', 2, '[]', NULL)", (uid,))
+        server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level, "
+                   "equipped_slot) values (?, 'but_long_go', 'pham', 0, 'weapon')", (uid,))
+        server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level, "
+                   "equipped_slot) values (?, 'non_la', 'linh', 2, NULL)", (uid,))
         assert inst == 0
         server.sql("insert into inventory_items(user_id, item_id, quantity, bound) values (?, 'hoi_huyet_dan', 3, 0)",
                    (uid,))
@@ -142,7 +142,7 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         m = engage(drv, server)
         drv.shot("combat_question")
         q = drv.game.top.q
-        assert q["context"] == "math_combat" and q["math"]["floor"] == 1 and "hanzi" not in q["prompt"], q
+        assert q["context"] == "math_combat" and q["math"]["floor"] == 1, q
         assert q["math"]["monster_vi"] == "Mực Con"
         res = answer_math(drv, server, correct=True)
         assert res["combat"]["shield_broken"]
@@ -199,7 +199,7 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait(lambda: drv.top_is("MonsterBookScene") and drv.game.top.data, 5, "monster book")
         drv.step(3)
         drv.shot("monster_book")
-        assert not any("qtypes_vi" in e or "hanzi" in e for e in drv.game.top.data["entries"])
+        assert not any("qtypes_vi" in e for e in drv.game.top.data["entries"])
         drv.press(pygame.K_ESCAPE)
         drv.wait_scene("BooksScene")
         drv.press(pygame.K_ESCAPE)                   # and the shelf of phổ under it

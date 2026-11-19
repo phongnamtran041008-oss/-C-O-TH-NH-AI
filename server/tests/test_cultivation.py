@@ -8,7 +8,7 @@ from app import db as dbm
 from app.learning import math_path
 from app.models import Character, EquipmentInstance, InventoryItem, MathAnswer, Quest, TribulationRun
 from app.systems import cultivation, inventory, items, math_ask, math_combat, math_practice
-from tests.helpers import answer_key, register
+from tests.helpers import answer_key, old_script, register
 from tests.test_combat import LOOK
 from tests.test_math_loop import right_answer, wrong_answer
 
@@ -71,7 +71,7 @@ async def run_tribulation(client, h, right: int):
     res = None
     for i in range(20):
         assert q["context"] == cultivation.TRIBULATION_CONTEXT and q["number"] == i + 1, q
-        assert q["qtype"] in math_combat.QUICK_TYPES and "hanzi" not in q["prompt"]
+        assert q["qtype"] in math_combat.QUICK_TYPES and not old_script(q)
         assert q["time_limit"] == math_path.time_limit(q["qtype"], q["math"]["tier"])
         key = await answer_key(q["session_id"])
         ans = right_answer(q, key) if i < right else wrong_answer(q, key)
@@ -156,7 +156,7 @@ async def test_tribulation_timeout_counts_wrong_and_resumes(client, frozen):
     assert r["resumed"] and r["question"]["number"] == 2 and r["question"]["session_id"] != q["session_id"]
     async with dbm.SessionLocal() as db:
         run = (await db.execute(select(TribulationRun).where(TribulationRun.user_id == uid))).scalar_one()
-        assert (run.index, run.correct) == (1, 0) and len(run.words) == 20
+        assert (run.index, run.correct) == (1, 0) and run.total == 20
         a = (await db.execute(select(MathAnswer).where(MathAnswer.user_id == uid))).scalar_one()
         assert a.timed_out and not a.correct                      # the timeout is in the learning log
 
@@ -253,7 +253,7 @@ def test_every_realm_has_every_per_realm_entry():
     slots = bees.cfg()["guard"]["slots_by_realm"]
     for i, r in enumerate(realms):
         rid = r["id"]
-        assert r["name_vi"] and isinstance(r.get("hsk"), int), rid
+        assert r["name_vi"] and isinstance(r.get("stages"), int), rid
         n = 1 if rid == "pham_nhan" else r["stages"]
         for prof, cc in (("default", c), ("dev", dev)):
             xs = cc["xp_to_next"].get(rid)
@@ -333,7 +333,7 @@ async def test_a_character_climbs_from_luyện_khí_to_the_last_stage_of_đại_
 
 # ------------------------------------------------------------------ đả tọa
 async def test_meditation(client, frozen):
-    """One quick math question at the player's own floor (no word learned at all); a right
+    """One quick math question at the player's own floor (nothing else needed); a right
     answer pays Tu Vi by tier, counts for the quest and is written to the learning log."""
     h, uid = await make(client, "tu_7", "Tu Bảy")
     r = (await client.post("/cultivation/meditate", headers=h)).json()
@@ -444,9 +444,9 @@ async def test_quest_talk_needs_to_be_near(client):
 async def test_monster_book_hides_unmet(client):
     h, uid = await make(client, "tu_10", "Tu Mười")
     b = (await client.get("/codex/monster", headers=h)).json()
-    from app.systems import td   # the book also lists the Mặc Quái of the Thủ Vườn levels (stage 7)
+    from app.systems import td   # the book also lists the Mặc Quái of the Thủ Thành Toán levels (stage 7)
     # every monster the game has: 3 of the forest, 3 of a bí cảnh (stage 9), the 9 quái lỗi
-    # sai of Loạn Số Cốc (M7), plus the Mặc Quái of the Thủ Vườn levels (stage 7)
+    # sai of Loạn Số Cốc (M7), plus the Mặc Quái of the Thủ Thành Toán levels (stage 7)
     from app.systems import catalog as cat
     assert b["total"] == len(cat.monsters()) + len(td.cfg()["monsters"])
     assert b["found"] == 0 and "name_vi" not in b["entries"][0]
@@ -457,4 +457,4 @@ async def test_monster_book_hides_unmet(client):
     b = (await client.get("/codex/monster", headers=h)).json()
     e = next(x for x in b["entries"] if x["id"] == "tone_wisp")
     assert e["found"] and e["name_vi"] == "Lân Hỏa Yêu" and "qtypes_vi" not in e and e["weakness_vi"]
-    assert not any(k in x for x in b["entries"] for k in ("hanzi", "pinyin", "qtypes_vi"))
+    assert not any("qtypes_vi" in x for x in b["entries"]) and not old_script(b["entries"])

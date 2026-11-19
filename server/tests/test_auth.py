@@ -85,7 +85,7 @@ async def test_write_rate_limit(client, monkeypatch):
 
 async def test_server_info(client):
     info = (await client.get("/server/info")).json()
-    assert info["protocol_version"] == 5 and info["name"] == "Khu Vườn Tu Tiên"
+    assert info["protocol_version"] == 5 and info["name"] == "Toán Tu Tiên"
 
 
 # ---- moved from test_garden_depth.py (the garden is gone; character creation stays)

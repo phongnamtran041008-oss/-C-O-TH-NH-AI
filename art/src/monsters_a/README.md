@@ -10,7 +10,7 @@ on the master palette, 1 px outline. Normal monsters are 48×48 (pivot 24,42), e
 **Style:** chibi xianxia monsters, matching the author's reference sheets
 (`art/reference/nhan_vat`, `vu_khi`, `phap_tran`): oversized heads and eyes, big simple
 shapes, dark outlines, saturated glow only where it means something (eyes, runes, cores). There is
-no text, no digits and no Hanzi on any creature. The math reads through dots, grids and abstract
+no text, no digits and no Chinese characters on any creature. The math reads through dots, grids and abstract
 strokes.
 **Poly budget:** under 3k triangles per creature (low-poly solids at sprite scale); no textures.
 Colour comes from Principled base colours that the kit snaps to palette ramps.
@@ -264,7 +264,7 @@ pet_lon` in `client/assets/v2/beasts/`. Blends are in `art/blender/beasts/` and 
 |---|---|
 | `chuot` Chuột | big round ears, glowing spirit-blue tail tip |
 | `trau` Trâu | broad muzzle, horns, gold nose ring, glowing gold brow mark |
-| `ho` Hổ | stripes, glowing gold brow mark (an abstract diamond, no Hanzi) |
+| `ho` Hổ | stripes, glowing gold brow mark (an abstract diamond, no Chinese character) |
 | `meo` Mèo | orange patches, red collar with a gold bell |
 | `rong` Rồng | antlers, red mane, glowing green spine fins, a floating spirit pearl |
 | `ran` Rắn | small coil and raised neck, glowing green dots along the back |

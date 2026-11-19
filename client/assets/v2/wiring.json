@@ -77,13 +77,13 @@
     "hut": ["hut"], "house": ["house_0", "house_1", "house_2"], "pavilion": ["pavilion"], "library": ["library"],
     "stall": ["stall_0", "stall_1"], "shrine": ["shrine"], "furnace": ["furnace"], "anvil": ["anvil"],
     "board": ["board"], "well": ["well"], "lantern": ["lantern"], "portal": ["portal"], "td_gate": ["td_gate"],
-    "realm_gate": ["realm_gate"], "sign": ["sign"], "tablet": ["tablet"], "table": ["table"], "gate": ["gate"],
+    "realm_gate": ["realm_gate"], "sign": ["sign"], "tablet": ["tablet"], "gate": ["gate"],
     "mat": ["mat"], "hive": ["hive"]
   },
   "npcs": {
     "_comment": "map NPC (its npc property) -> npcs/<id> on the v2 body (idle, walk, talk)",
     "shopkeeper": "shopkeeper", "alchemist": "alchemist", "smith": "smith", "librarian": "librarian",
-    "guide": "guide", "fisher": "fisher", "truc_lao": "truc_lao", "villager": "villager"
+    "guide": "guide", "fisher": "fisher", "truc_lao": "truc_lao"
   },
   "autotile": {
     "_comment": "2x ground: a cell of this tile gets the pair's transition tiles toward neighbours whose tile is in outer (client/engine/autotile.py). painted = the outer ground the sheet drew; another outer ground shows through the transition (grass pixels only)",

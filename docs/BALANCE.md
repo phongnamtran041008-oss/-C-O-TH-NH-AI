@@ -68,8 +68,7 @@ Kết quả sau 30 ngày (`python tools/economy_sim.py`, có bảng từng ngày
 
 Nguồn vào lớn nhất của người chơi thong thả là mật và hạ quái; người chơi nhiều giờ dựa vào quái, cá và mật — tức
 là đều phải trả lời câu hỏi hoặc chờ thời gian thật. Vòi xả lớn nhất: mở ô tổ ong, gacha Trứng Ong, nâng tổ, cần câu,
-lò đan, cường hóa. (Khi vườn chữ còn, mở ô đất là vòi xả lớn nhất của người chơi thong thả; vườn đã xóa, mô hình cho
-người chơi ấy mua một trứng ong mỗi 3 ngày.)
+lò đan, cường hóa. Mô hình cho người chơi thong thả mua một trứng ong mỗi 3 ngày.
 
 Điều test khẳng định (`test_thirty_days_of_three_kinds_of_player`, `test_money_does_not_breed_money`):
 
@@ -97,15 +96,16 @@ Tinh mà cường hóa thay cho việc đánh quái.
 
 ## Linh Thú và kinh tế
 
-Kỹ năng pet chỉ chỉnh phần thưởng quanh một câu hỏi, không bao giờ thay câu hỏi: Trâu +20% tiền ôn đúng, Rồng gấp đôi
-câu thứ 5 liên tiếp, Lợn +10% khi bán quả, Ngựa +15% Linh Thạch hạ quái, Chó +15% đồ rơi, Dê +15% mật khi thu, Mèo
-+0,1 may mắn câu cá, Chuột +5% hạt Hiếm, Gà +10% Tu Vi khi ôn, Hổ sương mực chậm một nửa, Rắn Mặc Kích nhẹ 20%,
-Khỉ +20 Linh Khí khởi đầu ở ải. Phép kiểm tra vòng lặp đã tính sẵn Lợn (giá quả cao nhất có thể). Chỉ đeo một con.
+Kỹ năng pet chỉ chỉnh phần thưởng quanh một câu hỏi, không bao giờ thay câu hỏi: Trâu +20% Linh Thạch ở Hầm Ngục,
+Rồng gấp đôi Tu Vi câu thứ 5 liên tiếp, Lợn +10% khi bán cho làng, Ngựa +15% Linh Thạch hạ quái, Chó +15% đồ rơi,
+Dê +15% mật khi thu, Mèo +0,1 may mắn câu cá, Chuột +5% Linh Thú Hiếm, Gà +10% Tu Vi khi đả tọa, Hổ thất bại
+Thiên Kiếp chỉ mất nửa Tu Vi, Rắn Mặc Kích nhẹ 20%, Khỉ +20 Linh Khí khởi đầu ở ải Thủ Thành. Phép kiểm tra vòng
+lặp đã tính sẵn Lợn (giá bán cao nhất có thể). Chỉ đeo một con.
 
 ## Bí cảnh (giai đoạn 9)
 
-Bí cảnh là một **nguồn vào có giới hạn** chứ không phải vòng lặp: mỗi bí cảnh 2 lượt/ngày (UTC+7), phải giải đố bằng chữ
-đã học và hạ boss bằng câu trả lời đúng của từng người. Linh Thạch trung bình mỗi lượt thắng (`balance/realm.json`):
+Bí cảnh là một **nguồn vào có giới hạn** chứ không phải vòng lặp: mỗi bí cảnh 2 lượt/ngày (UTC+7), phải phá Trận Nhãn bằng câu
+toán và hạ boss bằng câu trả lời đúng của từng người. Linh Thạch trung bình mỗi lượt thắng (`balance/realm.json`):
 
 | Bí cảnh | Mỗi gian (×số gian) | Rương | Một lượt | Xong nhanh (rương ×1,5) | Tối đa/ngày (2 lượt) |
 |---|---|---|---|---|---|

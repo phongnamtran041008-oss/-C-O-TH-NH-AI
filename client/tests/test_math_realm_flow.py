@@ -126,8 +126,8 @@ def run_math_realm_flow(workdir: Path, shots: Path | None = None) -> None:
                    (gx, gy + 14, uid))
         server.sql("update users set flags=? where id=?", (json.dumps({"tutorial": 5}), uid))
         for item, slot in (("gay_truc", "weapon"), ("mac_anh_bao", "body")):   # about the rules, not the fight
-            server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level, inscriptions, "
-                       "equipped_slot) values (?, ?, 'thien', 5, '[]', ?)", (uid, item, slot))
+            server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level, "
+                       "equipped_slot) values (?, ?, 'thien', 5, ?)", (uid, item, slot))
         for n in range(1, FLOOR):     # the player has passed the floors below their own
             server.sql("insert into math_runs(user_id, subject_id, floor, mode, tier, correct_streak, wrong_streak, "
                        "combo, best_combo, asked, correct, review_asked, xp_gained, passed, started_at, ended_at) "

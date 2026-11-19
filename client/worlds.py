@@ -74,7 +74,7 @@ def list_worlds() -> list[World]:
 
 
 def create(name: str) -> World:
-    name = " ".join(name.split())[:32] or "Khu Vườn"
+    name = " ".join(name.split())[:32] or "Thế Giới Mới"
     base = slugify(name)
     slug, n = base, 1
     while (worlds_dir() / slug).exists():

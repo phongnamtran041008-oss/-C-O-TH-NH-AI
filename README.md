@@ -8,9 +8,9 @@ cảnh giới, phá khiên quái, thi triển chiêu thức, câu cá, giữ th�
 Client pygame-ce, máy chủ FastAPI + WebSocket + SQLAlchemy. Chơi một mình trên máy, mở thế giới cho bạn bè cùng
 mạng LAN, hoặc chạy một máy chủ riêng.
 
-> Game này lớn lên từ một game học chữ Hán cũ. Phần học chữ (vườn chữ, ải trồng cây chữ, Pháp Chữ, khắc văn,
-> Tàng Thư Các của chữ...) đã bị xoá ngày 2026-11-20; một ít bảng dữ liệu và module chữ còn chờ đợt dọn cuối
-> (`docs/DECISIONS.md`, mục cuối).
+> Game này lớn lên từ một game học tiếng Trung cũ ("Khu Vườn Tu Tiên"). Mọi thứ của trò học chữ ấy (vườn, câu hỏi
+> từ vựng, Pháp Chữ, khắc văn, dữ liệu từ vựng và bảng của nó) đã bị xoá hẳn ngày 2026-11-20 (`docs/DECISIONS.md`,
+> mục cuối).
 
 ## Có gì trong game
 
@@ -90,7 +90,7 @@ máy chủ tự nâng cấp cơ sở dữ liệu khi khởi động.
 Docker + PostgreSQL + Caddy, Render + Neon, Oracle Always Free: [`docs/DEPLOY.md`](docs/DEPLOY.md).
 **Quản trị:** `ADMIN_USERNAMES=ten_cua_ban` trong `server/.env`, rồi gõ `/admin help` trong khung chat.
 
-**Đóng gói exe** (Windows): `dong_goi_exe.bat` → `dist/VuonChu/VuonChu.exe` và file zip để phát hành; đẩy tag
+**Đóng gói exe** (Windows): `dong_goi_exe.bat` → `dist/ToanTuTien/ToanTuTien.exe` và file zip để phát hành; đẩy tag
 `vX.Y.Z` thì GitHub Actions tự build và đính vào Release. Game tự báo khi có bản mới (`update_repo` trong
 `config.json`). Ra bản mới: sửa `GAME_VERSION` trong `client/config.py` **và** `server/app/config.py` (đổi giao thức
 thì tăng cả `PROTOCOL_VERSION`).
@@ -186,5 +186,4 @@ deploy/            docker-compose (máy chủ + PostgreSQL + Caddy + sao lưu), 
 
 ## Giấy phép
 
-Font theo SIL OFL 1.1. Dữ liệu từ vựng còn sót của game cũ (`server/data/words`, chờ đợt dọn cuối) dẫn xuất
-từ CC-CEDICT nên theo CC BY-SA 4.0. Nguồn tài nguyên và giấy phép: `CREDITS.md`.
+Font theo SIL OFL 1.1. Nguồn tài nguyên và giấy phép: `CREDITS.md`.

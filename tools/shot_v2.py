@@ -9,7 +9,7 @@ saves 3x screenshots (the 1440x810 window) to art/preview/game_*.png:
     game_npc_dialog.png       talking to Tiểu Lan (the guide): her dialog open, she plays `talk`
     game_nguyen_anh.png       a Nguyên Anh player (look, flame aura) holding a fan
     game_nguyen_anh_attack.png  the same player mid-attack (a fan attacks with the cast clip)
-    game_abode.png            the abode with the garden
+    game_abode_hive.png       the abode by Linh Phong Sào, bees around the hive and a guard, the pet
     game_wild_monsters.png    Loạn Số Cốc, Trúc Cơ player with a sword, monsters idling
     game_windup.png           a monster winding up, its hit zone on the ground
     game_slash.png            mid-slash with the sword
@@ -113,8 +113,8 @@ def player(server: ServerProcess, url: str, workdir: Path, name: str, realm: str
     if hp is not None:
         server.sql("update characters set hp=? where user_id=?", (hp, uid))
     if weapon:
-        server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level, inscriptions, "
-                   "equipped_slot) values (?, ?, 'linh', 3, '[]', 'weapon')", (uid, weapon))
+        server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level, "
+                   "equipped_slot) values (?, ?, 'linh', 3, 'weapon')", (uid, weapon))
     if pet:
         server.sql("insert into pets(user_id, pet_type, level, equipped) values (?, ?, 1, 1)", (uid, pet))
     server.sql("update users set spirit_stones=500, flags=? where id=?", (json.dumps({"tutorial": 5}), uid))
@@ -210,30 +210,20 @@ def realms(server, url, workdir, out) -> None:
 
 
 def abode(server, url, workdir, out) -> None:
-    """The abode garden with crops at every stage, a pollinating bee, the pet; the hive and the
-    pets screens."""
-    import httpx
+    """The abode by Linh Phong Sào: bees idling around the hive, a guard by the player, the pet;
+    then the hive and the pets screens."""
     from client.engine.tilemap import load_map
     am = load_map("abode")
-    g = am.find("area", "garden")[0]
+    h = next(o for o in am.find("interact") if o.props.get("action") == "hive")
 
-    def garden(token, uid):
-        httpx.get(url + "/garden", headers={"Authorization": f"Bearer {token}"}).raise_for_status()
-        words = [r[0] for r in server.sql("select id from words order by id limit 12")]
-        server.sql("update plots set unlocked=1 where user_id=?", (uid,))
-        plots = server.sql("select id, x, y from plots where user_id=? order by y, x", (uid,))
-        for i, (pid, _x, _y) in enumerate(plots[:len(words)]):
-            server.sql("update plots set word_id=?, stage=?, planted_at=datetime('now'), "
-                       "next_review_at=datetime('now','+3 days'), wither=?, wither_checked_at=datetime('now'), "
-                       "pollen=? where id=?", (words[i], i % 6, 45.0 if i == 7 else 0.0, 40.0 if i % 6 >= 3 else 0, pid))
-            server.sql("insert or ignore into collection(user_id, word_id, introduced) values (?, ?, 1)", (uid, words[i]))
-        for sp, role in (("thao", "pollinate"), ("hoa", "pollinate"), ("muc", "hive")):
+    def bees(token, uid):
+        for sp, role in (("thao", "hive"), ("hoa", "hive"), ("muc", "guard")):
             server.sql("insert into bees(user_id, bee_type, level, xp, role, bond) values (?, ?, 1, 0, ?, 0)",
                        (uid, sp, role))
-    drv = player(server, url, workdir / "abode", "v2_dong_phu", "truc_co", "abode", g.x - 10,
-                 g.y + 40, None, pet="meo", facing="right", pre=garden)
-    drv.wait(lambda: drv.game.scenes[0].flock.bees, 10, "bees in the garden")
-    save(drv, out, "abode_garden", 60)
+    drv = player(server, url, workdir / "abode", "v2_dong_phu", "truc_co", "abode", h.x - 30,
+                 h.y + h.h + 20, None, pet="meo", facing="right", pre=bees)
+    drv.wait(lambda: drv.game.scenes[0].flock.bees, 10, "bees by the hive")
+    save(drv, out, "abode_hive", 60)
     drv.keys.held = {pygame.K_w}
     end = time.perf_counter() + 0.5
     while time.perf_counter() < end:

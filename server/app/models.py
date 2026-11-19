@@ -22,10 +22,9 @@ class User(Base):
     spirit_stones: Mapped[int] = mapped_column(Integer, default=300)   # Linh Thạch
     immortal_jade: Mapped[int] = mapped_column(Integer, default=0)     # Tiên Ngọc
     pity: Mapped[dict] = mapped_column(JSON, default=dict)             # {banner: {min_rarity: count}}
-    daily_new_seeds_count: Mapped[int] = mapped_column(Integer, default=0)
+    daily_rolls_count: Mapped[int] = mapped_column(Integer, default=0)   # gacha rolls today
     daily_free_rolls_used: Mapped[int] = mapped_column(Integer, default=0)
     daily_reset_date: Mapped[str | None] = mapped_column(String(10), nullable=True)
-    current_letter_id: Mapped[str | None] = mapped_column(String(20), nullable=True)
     token_version: Mapped[int] = mapped_column(Integer, default=0)
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     register_ip: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
@@ -40,84 +39,17 @@ class User(Base):
     email: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
 
-class Word(Base):
-    """Mirror of server/data/words/*.json (synced at startup) so other tables can FK it."""
-    __tablename__ = "words"
-    id: Mapped[str] = mapped_column(String(40), primary_key=True)
-    hanzi: Mapped[str] = mapped_column(String(16))
-    tier: Mapped[int] = mapped_column(Integer)
-    rarity: Mapped[str] = mapped_column(String(12))
-
-
-class Plot(Base):
-    __tablename__ = "plots"
-    __table_args__ = (UniqueConstraint("user_id", "x", "y"),)
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(UserFK(), index=True)
-    x: Mapped[int] = mapped_column(Integer)
-    y: Mapped[int] = mapped_column(Integer)
-    unlocked: Mapped[bool] = mapped_column(Boolean, default=True)
-    word_id: Mapped[str | None] = mapped_column(ForeignKey("words.id"), nullable=True)
-    stage: Mapped[int] = mapped_column(Integer, default=0)
-    planted_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
-    next_review_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
-    wither: Mapped[float] = mapped_column(Float, default=0.0)
-    wither_checked_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
-    pollen: Mapped[float] = mapped_column(Float, default=0.0)
-    pollinated: Mapped[bool] = mapped_column(Boolean, default=False)
-    pollen_boost: Mapped[bool] = mapped_column(Boolean, default=False)   # shorter next wait not used yet
-    fire_checked_date: Mapped[str | None] = mapped_column(String(10), nullable=True)
-
-
-class Seed(Base):
-    __tablename__ = "seeds"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(UserFK(), index=True)
-    word_id: Mapped[str] = mapped_column(ForeignKey("words.id"))
-    duplicate: Mapped[bool] = mapped_column(Boolean, default=False)
-    source: Mapped[str] = mapped_column(String(20), default="gacha")
-    obtained_at: Mapped[dt.datetime] = mapped_column(DateTime)
-
-
-class Collection(Base):
-    __tablename__ = "collection"
-    user_id: Mapped[int] = mapped_column(UserFK(), primary_key=True)
-    word_id: Mapped[str] = mapped_column(ForeignKey("words.id"), primary_key=True)
-    introduced: Mapped[bool] = mapped_column(Boolean, default=False)
-    mastery: Mapped[int] = mapped_column(Integer, default=0)
-    times_correct: Mapped[int] = mapped_column(Integer, default=0)
-    times_wrong: Mapped[int] = mapped_column(Integer, default=0)
-    needs_review: Mapped[bool] = mapped_column(Boolean, default=False)
-    first_seen_at: Mapped[dt.datetime] = mapped_column(DateTime)
-    last_answered_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
-
-
-class Fruit(Base):
-    __tablename__ = "fruits"
-    user_id: Mapped[int] = mapped_column(UserFK(), primary_key=True)
-    word_id: Mapped[str] = mapped_column(ForeignKey("words.id"), primary_key=True)
-    count: Mapped[int] = mapped_column(Integer, default=0)
-
-
-class CraftedSentence(Base):
-    __tablename__ = "crafted_sentences"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(UserFK(), index=True)
-    sentence_id: Mapped[str] = mapped_column(String(20))
-    crafted_at: Mapped[dt.datetime] = mapped_column(DateTime)
-
-
 class QuizSession(Base):
     __tablename__ = "quiz_sessions"
     __table_args__ = (Index("ix_quiz_user_created", "user_id", "created_at"),)
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     user_id: Mapped[int] = mapped_column(UserFK())
-    context: Mapped[str] = mapped_column(String(16))  # garden|combat|td|fishing|realm|tribulation|forge|practice|math
+    # the mode that asked: math, math_combat, math_td, math_fishing, math_realm, math_skill,
+    # math_dungeon, math_fortune, math_placement, math_meditate, math_tribulation
+    context: Mapped[str] = mapped_column(String(16))
     ref: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    qtype: Mapped[str] = mapped_column(String(20))    # Q1..Q11, or a math question type (balance/math.json)
-    # What the question is about: a word id for the vocabulary contexts, a math item id for
-    # "math". Not a foreign key, so the question log does not depend on the words table.
-    item_id: Mapped[str] = mapped_column(String(40))
+    qtype: Mapped[str] = mapped_column(String(20))    # a math question type (balance/math.json)
+    item_id: Mapped[str] = mapped_column(String(40))  # the math item or generator the question came from
     payload: Mapped[dict] = mapped_column(JSON)
     answer_key: Mapped[dict] = mapped_column(JSON)  # never sent to the client before answering
     created_at: Mapped[dt.datetime] = mapped_column(DateTime)
@@ -134,8 +66,6 @@ class Friendship(Base):
     friend_id: Mapped[int] = mapped_column(UserFK(), primary_key=True)
     status: Mapped[str] = mapped_column(String(12), default="pending")  # pending|accepted
     created_at: Mapped[dt.datetime] = mapped_column(DateTime)
-    help_count_date: Mapped[str | None] = mapped_column(String(10), nullable=True)
-    help_count: Mapped[int] = mapped_column(Integer, default=0)
 
 
 class Character(Base):
@@ -175,16 +105,7 @@ class EquipmentInstance(Base):
     item_id: Mapped[str] = mapped_column(String(40))
     rarity: Mapped[str] = mapped_column(String(12))
     enhance_level: Mapped[int] = mapped_column(Integer, default=0)
-    inscriptions: Mapped[list] = mapped_column(JSON, default=list)
     equipped_slot: Mapped[str | None] = mapped_column(String(16), nullable=True)
-
-
-class Skill(Base):
-    __tablename__ = "skills"
-    user_id: Mapped[int] = mapped_column(UserFK(), primary_key=True)
-    skill_id: Mapped[str] = mapped_column(String(32), primary_key=True)
-    level: Mapped[int] = mapped_column(Integer, default=1)
-    unlocked_at: Mapped[dt.datetime] = mapped_column(DateTime)
 
 
 class Bee(Base):
@@ -195,7 +116,7 @@ class Bee(Base):
     level: Mapped[int] = mapped_column(Integer, default=1)
     xp: Mapped[int] = mapped_column(Integer, default=0)
     hive_slot: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    role: Mapped[str] = mapped_column(String(12), default="hive")  # hive|pollinate|guard
+    role: Mapped[str] = mapped_column(String(12), default="hive")  # hive|guard
     bond: Mapped[int] = mapped_column(Integer, default=0)
     obtained_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
 
@@ -210,7 +131,6 @@ class Hive(Base):
     honey: Mapped[float] = mapped_column(Float, default=0.0)        # Linh Mật waiting to be collected
     wax: Mapped[float] = mapped_column(Float, default=0.0)
     cells: Mapped[int] = mapped_column(Integer, default=5)          # open hexagon cells
-    pollen_checked_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
 
 
 class Pet(Base):
@@ -234,7 +154,7 @@ class FishCatch(Base):
 class CodexEntry(Base):
     __tablename__ = "codex_entries"
     user_id: Mapped[int] = mapped_column(UserFK(), primary_key=True)
-    codex: Mapped[str] = mapped_column(String(12), primary_key=True)  # plant|fish|bee|monster|pet|item
+    codex: Mapped[str] = mapped_column(String(12), primary_key=True)  # bee|monster|pet
     entry_id: Mapped[str] = mapped_column(String(40), primary_key=True)
     discovered_at: Mapped[dt.datetime] = mapped_column(DateTime)
     progress: Mapped[dict] = mapped_column(JSON, default=dict)
@@ -247,12 +167,6 @@ class TdProgress(Base):
     stars: Mapped[int] = mapped_column(Integer, default=0)
     best_wave: Mapped[int] = mapped_column(Integer, default=0)
     cleared_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
-
-
-class TdLoadout(Base):
-    __tablename__ = "td_loadout"
-    user_id: Mapped[int] = mapped_column(UserFK(), primary_key=True)
-    slots: Mapped[list] = mapped_column(JSON, default=list)
 
 
 class Quest(Base):
@@ -343,7 +257,7 @@ class TribulationRun(Base):
     user_id: Mapped[int] = mapped_column(UserFK(), index=True)
     from_realm: Mapped[str] = mapped_column(String(16))
     to_realm: Mapped[str] = mapped_column(String(16))
-    words: Mapped[list] = mapped_column(JSON, default=list)
+    total: Mapped[int] = mapped_column(Integer, default=0)       # questions in the exam
     index: Mapped[int] = mapped_column(Integer, default=0)       # questions answered so far
     correct: Mapped[int] = mapped_column(Integer, default=0)
     started_at: Mapped[dt.datetime] = mapped_column(DateTime)
@@ -352,7 +266,7 @@ class TribulationRun(Base):
 
 
 class TdRun(Base):
-    """Ải Thủ Vườn (stage 7): a run being played. The log is saved as it grows (/td/event), so
+    """Thủ Thành Toán (stage 7, M10): a run being played. The log is saved as it grows (/td/event), so
     a game closed in the middle of a level can continue it, and what is saved can never be
     taken back (/td/finish must start with it)."""
     __tablename__ = "td_runs"
@@ -360,7 +274,7 @@ class TdRun(Base):
     user_id: Mapped[int] = mapped_column(UserFK(), index=True)
     level_id: Mapped[str] = mapped_column(String(32))
     params: Mapped[dict] = mapped_column(JSON)
-    questions: Mapped[dict] = mapped_column(JSON, default=dict)   # session id -> {kind, word, ok}
+    questions: Mapped[dict] = mapped_column(JSON, default=dict)   # session id -> {kind, word (the tower), ok, power, tier}
     events: Mapped[list] = mapped_column(JSON, default=list)
     started_at: Mapped[dt.datetime] = mapped_column(DateTime)
     updated_at: Mapped[dt.datetime] = mapped_column(DateTime)
@@ -368,12 +282,12 @@ class TdRun(Base):
 
 class AlchemySession(Base):
     """Luyện đan (stage 8): one fire being tended. Ingredients and the fee are taken when it
-    is lit; the zones and the readings to type stay here until /alchemy/finish."""
+    is lit; the zones of the fire stay here until /alchemy/finish."""
     __tablename__ = "alchemy_sessions"
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     user_id: Mapped[int] = mapped_column(UserFK(), index=True)
     recipe_id: Mapped[str] = mapped_column(String(32))
-    params: Mapped[dict] = mapped_column(JSON)          # zones, periods, characters (with answer keys)
+    params: Mapped[dict] = mapped_column(JSON)          # zones, periods, bar, furnace level, ingredients used
     created_at: Mapped[dt.datetime] = mapped_column(DateTime)
     expires_at: Mapped[dt.datetime] = mapped_column(DateTime)
     finished_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)

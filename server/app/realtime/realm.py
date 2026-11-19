@@ -32,7 +32,7 @@ from .zone import ChannelZone, Player
 if TYPE_CHECKING:
     from .world import Session, World
 
-log = logging.getLogger("khu_vuon.realm")
+log = logging.getLogger("toan_tu_tien.realm")
 MAP = "bi_canh"
 VILLAGE = "truc_lam_thon"
 GATE_KINDS = ("math", "scheduled")      # entered at the Cổng Bí Cảnh (a "rift" realm only through a rift)

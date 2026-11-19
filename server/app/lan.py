@@ -15,7 +15,7 @@ PORT = 47654          # UDP port the games listen on
 MAGIC = "khuvuon-lan"
 INTERVAL = 1.5
 
-log = logging.getLogger("khu_vuon.lan")
+log = logging.getLogger("toan_tu_tien.lan")
 
 
 def beacon(online: int) -> bytes:

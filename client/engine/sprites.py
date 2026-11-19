@@ -18,8 +18,6 @@ def prop(name: str, variant: int = 0, frame: int = 0) -> pygame.Surface:
         return B.shrine(frame)
     if name == "tablet":
         return B.tablet()
-    if name == "table":
-        return B.table()
     if name == "gate":
         return B.gate()
     if name == "mat":
@@ -133,41 +131,9 @@ def truc_lao() -> list[pygame.Surface]:
     return B.truc_lao_frames()
 
 
-@lru_cache(maxsize=1)
-def horse() -> list[pygame.Surface]:
-    return B.horse_frames()
-
-
-@lru_cache(maxsize=8)
-def villager() -> dict:
-    return B.character_frames({"hair_color": "#8E8E8E", "hair_style": "buoi", "body": "nu"},
-                              {"c": "#A8C6E0", "C": "#7FA3C4"})
-
-
 @lru_cache(maxsize=16)
-def seeds(rarity: str) -> list[pygame.Surface]:
-    return B.seed_frames(rarity)
-
-
-@lru_cache(maxsize=16)
-def icon(name: str, rarity: str | None = None) -> pygame.Surface:
-    return B.icon(name, rarity)
-
-
-@lru_cache(maxsize=512)
-def plant(stage: int, rarity: str, key: str, frame: int, wither_bucket: int) -> pygame.Surface:
-    p = B.plant(stage, rarity, key, frame)
-    return B.withered(p, wither_bucket * 10) if wither_bucket >= 3 else p
-
-
-@lru_cache(maxsize=4)
-def bed(locked: bool) -> pygame.Surface:
-    return B.plot_bed(locked)
-
-
-@lru_cache(maxsize=2)
-def tag() -> pygame.Surface:
-    return B.tag()
+def icon(name: str) -> pygame.Surface:
+    return B.icon(name)
 
 
 _PET_LOOKS: dict[str, dict] = {}
@@ -189,7 +155,3 @@ def _pet(kind: str) -> tuple:
 def pet(kind: str, frame: int, facing_left: bool = False) -> pygame.Surface:
     right, left = _pet(kind)
     return (left if facing_left else right)[frame % 2]
-
-
-def pet_known(kind: str) -> bool:
-    return kind in _PET_LOOKS

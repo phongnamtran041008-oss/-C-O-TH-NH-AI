@@ -5,10 +5,8 @@ __pycache__/
 server/.env
 server/*.db
 server/*.db-*
-tools/raw/*
 tools/formulas/node_modules/
 client/bai_lam/
-!tools/raw/SOURCES.md
 dist/
 build/
 *.spec

@@ -1,8 +1,8 @@
 """Text rendering with per-character font fallback.
 
-Vietnamese interface text uses the pixel font VT323; any character it lacks (Chinese
-characters, pinyin tone marks such as ǎ or ǚ) is drawn with Noto Sans SC at the same
-size, so a line like "Phát hiện 明 (míng)!" renders correctly in one call.
+Vietnamese interface text uses the pixel font VT323; any character it lacks (arrows, check
+marks, a few math symbols, whatever a player types in chat) is drawn with the Noto Sans
+fallback font at the same size, so a mixed line renders correctly in one call.
 Sizes are given in base pixels (480x270) and multiplied by the display scale.
 """
 from __future__ import annotations
@@ -15,27 +15,27 @@ import pygame
 from ..config import assets_dir
 
 UI_FONT = "VT323-Regular.ttf"
-HAN_FONT = "NotoSansSC-Game.otf"
+FALLBACK_FONT = "NotoSansSC-Game.otf"   # a Noto Sans subset: symbols VT323 lacks
 
 
 class Fonts:
     def __init__(self, font_dir: Path | None = None):
         d = font_dir or assets_dir() / "fonts"
         self.ui_path = d / UI_FONT if (d / UI_FONT).exists() else None
-        han = d / HAN_FONT
-        if not han.exists():
+        fb = d / FALLBACK_FONT
+        if not fb.exists():
             alt = d / "NotoSansSC-Regular.otf"
-            han = alt if alt.exists() else None
-        self.han_path = han
+            fb = alt if alt.exists() else None
+        self.fallback_path = fb
         self._fonts: dict = {}
         self._has: dict = {}
         self._cache: OrderedDict = OrderedDict()
-        self.missing = self.ui_path is None or self.han_path is None
+        self.missing = self.ui_path is None or self.fallback_path is None
 
     def font(self, kind: str, px: int) -> pygame.font.Font:
         key = (kind, px)
         if key not in self._fonts:
-            path = self.ui_path if kind == "ui" else self.han_path
+            path = self.ui_path if kind == "ui" else self.fallback_path
             try:
                 self._fonts[key] = pygame.font.Font(str(path) if path else None, px)
             except (OSError, pygame.error):
@@ -62,11 +62,11 @@ class Fonts:
         return self._has[ch]
 
     def _runs(self, text: str, kind: str) -> list[tuple[str, str]]:
-        if kind == "han":
-            return [("han", text)]
+        if kind == "fallback":
+            return [("fallback", text)]
         runs: list[tuple[str, str]] = []
         for ch in text:
-            k = "ui" if (ch == " " or self._ui_has(ch)) else "han"
+            k = "ui" if (ch == " " or self._ui_has(ch)) else "fallback"
             if runs and runs[-1][0] == k:
                 runs[-1] = (k, runs[-1][1] + ch)
             else:
@@ -74,7 +74,7 @@ class Fonts:
         return runs
 
     def _px(self, kind: str, size: float, scale: int) -> int:
-        # VT323 has a tall em box; this factor makes its x-height match Noto visually
+        # VT323 has a tall em box; this factor makes its x-height match the fallback font visually
         return max(6, int(round(size * scale * (1.45 if kind == "ui" else 1.0))))
 
     def render(self, text: str, size: float, color, scale: int, kind: str = "ui",
@@ -87,7 +87,7 @@ class Fonts:
         col = pygame.Color(color)
         parts = []
         for k, chunk in self._runs(text, kind):
-            aa = antialias if antialias is not None else (k == "han")
+            aa = antialias if antialias is not None else (k == "fallback")
             f = self.font(k, self._px(k, size, scale))
             parts.append((k, f.render(chunk, aa, col)))
         if not parts:
@@ -109,7 +109,7 @@ class Fonts:
         return self.render(text, size, (0, 0, 0), scale, kind).get_size()
 
     def wrap(self, text: str, size: float, max_w_px: int, scale: int, kind: str = "ui") -> list[str]:
-        """Word wrap; Chinese runs can break between any two characters."""
+        """Word wrap; a run of wide (CJK-range) characters can break between any two of them."""
         lines: list[str] = []
         for para in text.split("\n"):
             cur = ""

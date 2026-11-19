@@ -13,7 +13,6 @@ from app.config import settings
 from app.learning import math_adaptive as ma
 from app.learning import math_items as mi
 from app.learning import math_path as mp
-from app.learning import selection
 from app.models import Character, MathAnswer, MathRetry, MathRun, QuizSession
 from app.systems import math_practice
 from tests.helpers import answer_key, register
@@ -704,15 +703,6 @@ async def test_unreviewed_questions_are_not_served_when_the_server_forbids_them(
     assert r.status_code == 400 and r.json()["error"]["code"] == "no_questions"
 
 
-async def test_math_questions_stay_out_of_the_vocabulary_no_repeat_window(client):
-    h, uid = await make(client)
-    run_id = await start(client, h)
-    for _ in range(3):
-        await play(client, h, run_id)
-    async with dbm.SessionLocal() as db:
-        assert await selection.recent_word_ids(db, uid, 5) == set()
-
-
 # ------------------------------------------------------------------ migration 0010
 def _alembic(url: str):
     from alembic.config import Config
@@ -730,7 +720,7 @@ def test_migration_0010_keeps_the_question_log_and_drops_the_word_key(tmp_path):
     cfg = _alembic(f"sqlite+aiosqlite:///{path}")
     command.upgrade(cfg, "0009")
     con = sqlite3.connect(path)
-    con.execute("insert into words (id, hanzi, tier, rarity) values ('w_ma', '妈', 1, 'common')")
+    con.execute("insert into words values ('w_ma', 'ma', 1, 'common')")
     user_cols = {r[1]: r for r in con.execute("pragma table_info(users)")}
     values = {name: ("old" if "CHAR" in col[2].upper() or "TEXT" in col[2].upper() else 0)
               for name, col in user_cols.items() if col[3] and col[4] is None and not col[5]}
@@ -763,5 +753,80 @@ def test_migration_0010_keeps_the_question_log_and_drops_the_word_key(tmp_path):
     assert sorted(fk[2] for fk in con.execute("pragma foreign_key_list(quiz_sessions)")) == ["users", "words"]
     tables = {r[0] for r in con.execute("select name from sqlite_master where type='table'")}
     assert not {"math_runs", "math_answers", "math_retries"} & tables
+    con.close()
+    command.upgrade(cfg, "head")                           # and forward again
+
+
+# ------------------------------------------------------------------ migration 0017
+WORD_TABLES = {"words", "plots", "seeds", "collection", "fruits", "crafted_sentences", "skills", "td_loadout"}
+
+
+def _columns(con, table: str) -> set[str]:
+    return {r[1] for r in con.execute(f"pragma table_info({table})")}
+
+
+def test_migration_0017_drops_the_word_game_and_comes_back(tmp_path):
+    """0017 drops the tables and columns of the old word game from a database that still has
+    rows in them, renames the two misleading columns keeping their values, and the downgrade
+    puts the old schema back (the word rows themselves cannot come back)."""
+    from alembic import command
+    path = tmp_path / "old.db"
+    cfg = _alembic(f"sqlite+aiosqlite:///{path}")
+    command.upgrade(cfg, "0016_math_tree")
+    con = sqlite3.connect(path)
+    user_cols = {r[1]: r for r in con.execute("pragma table_info(users)")}
+    values = {name: ("old" if "CHAR" in col[2].upper() or "TEXT" in col[2].upper() else 0)
+              for name, col in user_cols.items() if col[3] and col[4] is None and not col[5]}
+    values.update(id=1, username="old", created_at="2026-01-01 00:00:00", daily_new_seeds_count=3,
+                  current_letter_id="letter_1")
+    values = {k: v for k, v in values.items() if k in user_cols}
+    con.execute(f"insert into users ({', '.join(values)}) values ({', '.join('?' * len(values))})",
+                list(values.values()))
+    con.executescript("""
+        insert into words values ('w_ma', 'ma', 1, 'common');
+        insert into plots (user_id, x, y, unlocked, word_id, stage, wither, pollen, pollinated, pollen_boost)
+            values (1, 0, 0, 1, 'w_ma', 2, 0, 0, 0, 0);
+        insert into seeds (user_id, word_id, duplicate, source, obtained_at) values (1, 'w_ma', 0, 'gacha', '2026-01-01');
+        insert into collection (user_id, word_id, introduced, mastery, times_correct, times_wrong, needs_review,
+            first_seen_at) values (1, 'w_ma', 1, 5, 3, 1, 0, '2026-01-01');
+        insert into fruits (user_id, word_id, count) values (1, 'w_ma', 4);
+        insert into crafted_sentences (user_id, sentence_id, crafted_at) values (1, 's_1', '2026-01-01');
+        insert into skills (user_id, skill_id, level, unlocked_at) values (1, 'phap_chu', 2, '2026-01-01');
+        insert into td_loadout (user_id, slots) values (1, '[]');
+        insert into equipment_instances (user_id, item_id, rarity, enhance_level, inscriptions)
+            values (1, 'kiem_go', 'pham', 0, '["w_ma"]');
+        insert into hive (user_id, layout, level, decorations, honey, wax, cells, pollen_checked_at)
+            values (1, '{}', 1, '[]', 0, 0, 5, '2026-01-01');
+        insert into tribulation_runs (user_id, from_realm, to_realm, words, "index", correct, started_at)
+            values (1, 'luyen_khi', 'truc_co', '["math", "math", "math"]', 1, 1, '2026-01-01');
+    """)
+    con.commit()
+    con.close()
+
+    command.upgrade(cfg, "head")
+    con = sqlite3.connect(path)
+    tables = {r[0] for r in con.execute("select name from sqlite_master where type='table'")}
+    assert not WORD_TABLES & tables
+    assert "inscriptions" not in _columns(con, "equipment_instances")
+    assert "pollen_checked_at" not in _columns(con, "hive")
+    assert not {"help_count", "help_count_date"} & _columns(con, "friendships")
+    assert not {"current_letter_id", "daily_new_seeds_count"} & _columns(con, "users")
+    assert con.execute("select username, daily_rolls_count from users").fetchall() == [("old", 3)]
+    assert "words" not in _columns(con, "tribulation_runs")
+    assert con.execute('select "index", correct, total from tribulation_runs').fetchall() == [(1, 1, 3)]
+    assert con.execute("select item_id from equipment_instances").fetchall() == [("kiem_go",)]
+    assert "ix_users_firebase_uid" in [r[1] for r in con.execute("pragma index_list(users)")]
+    con.close()
+
+    command.downgrade(cfg, "0016_math_tree")
+    con = sqlite3.connect(path)
+    tables = {r[0] for r in con.execute("select name from sqlite_master where type='table'")}
+    assert WORD_TABLES <= tables
+    assert all(con.execute(f"select count(*) from {t}").fetchone() == (0,) for t in WORD_TABLES)
+    assert {"fire_checked_date", "pollen_boost"} <= _columns(con, "plots")
+    assert con.execute("select inscriptions from equipment_instances").fetchall() == [("[]",)]
+    assert {"help_count", "help_count_date"} <= _columns(con, "friendships")
+    assert con.execute("select daily_new_seeds_count, current_letter_id from users").fetchall() == [(3, None)]
+    assert con.execute("select words from tribulation_runs").fetchall() == [('["math", "math", "math"]',)]
     con.close()
     command.upgrade(cfg, "head")                           # and forward again

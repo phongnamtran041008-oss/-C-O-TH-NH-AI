@@ -269,8 +269,8 @@ def make_hero(url: str, db: Path, username: str, display: str, realm: str = "tru
             "where user_id=?", (realm, gate[0], gate[1] + 14, uid))
     # a good staff and robe, so a test run is about the rules rather than the fight
     for item, slot in (("gay_truc", "weapon"), ("mac_anh_bao", "body")):
-        sql(db, "insert into equipment_instances(user_id, item_id, rarity, enhance_level, inscriptions, equipped_slot) "
-                "values (?, ?, 'thien', 5, '[]', ?)", (uid, item, slot))
+        sql(db, "insert into equipment_instances(user_id, item_id, rarity, enhance_level, equipped_slot) "
+                "values (?, ?, 'thien', 5, ?)", (uid, item, slot))
     return token, uid
 
 

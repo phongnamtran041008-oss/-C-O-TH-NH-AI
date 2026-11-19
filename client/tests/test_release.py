@@ -78,11 +78,11 @@ def test_version_check_notices_and_update_link(game, monkeypatch):
     assert game.server_info["maintenance_message"] == "Bảo trì 23:00"
     answer_get(game, monkeypatch, {"/server/info": {"protocol_version": C.PROTOCOL_VERSION + 1,
                                                     "latest_client_version": GAME_VERSION,
-                                                    "client_download_url": "https://dl.example/VuonChu.zip"}})
+                                                    "client_download_url": "https://dl.example/ToanTuTien.zip"}})
     game.check_version()
     assert not game.version_ok and game.newer_client() is None
     box = game.scenes[-1]
-    assert "https://dl.example/VuonChu.zip" in box.text
+    assert "https://dl.example/ToanTuTien.zip" in box.text
 
 
 def test_admin_replies_and_announcements_reach_the_chat(game):
@@ -95,23 +95,23 @@ def test_admin_replies_and_announcements_reach_the_chat(game):
 
 
 def test_config_paths_when_packaged(tmp_path, monkeypatch):
-    exe_dir = tmp_path / "VuonChu"
+    exe_dir = tmp_path / "ToanTuTien"
     exe_dir.mkdir()
     (exe_dir / "config.json").write_text(json.dumps({"server_url": "https://vuon.duckdns.org",
                                                      "server_list_url": "https://raw.example/l.json"}), "utf-8")
     monkeypatch.setattr(sys, "frozen", True, raising=False)
-    monkeypatch.setattr(sys, "executable", str(exe_dir / "VuonChu.exe"))
+    monkeypatch.setattr(sys, "executable", str(exe_dir / "ToanTuTien.exe"))
     assert C.data_dir() == exe_dir                       # writable: everything stays next to the exe
     cfg = Config.load()
     assert cfg.server_url == "https://vuon.duckdns.org" and cfg.path == exe_dir / "config.json"
     appdata = tmp_path / "appdata"
     monkeypatch.setenv("LOCALAPPDATA", str(appdata))
     monkeypatch.setattr(C, "_writable", lambda d: d != exe_dir)   # e.g. unpacked into Program Files
-    assert C.data_dir() == appdata / "KhuVuonTuTien"
+    assert C.data_dir() == appdata / "ToanTuTien"
     cfg = Config.load()                                  # still reads the shipped config ...
     assert cfg.server_list_url == "https://raw.example/l.json"
     cfg.window_scale = 3
     cfg.save()                                           # ... but saves where it can write
-    assert json.loads((appdata / "KhuVuonTuTien" / "config.json").read_text("utf-8"))["window_scale"] == 3
+    assert json.loads((appdata / "ToanTuTien" / "config.json").read_text("utf-8"))["window_scale"] == 3
     assert Config.load().window_scale == 3
-    assert Session().path == appdata / "KhuVuonTuTien" / "session.json"
+    assert Session().path == appdata / "ToanTuTien" / "session.json"

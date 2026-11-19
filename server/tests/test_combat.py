@@ -12,7 +12,7 @@ from app.realtime import combat
 from app.realtime import world as wmod
 from app.realtime.world import Session, World
 from app.systems import catalog
-from tests.helpers import answer_key, register
+from tests.helpers import answer_key, old_script, register
 
 FOREST = "rung_muc_loang"
 LOOK = {"hair_color": "#2B2B2B", "hair_style": "ngan", "body": "nam"}
@@ -47,9 +47,8 @@ def run(w: World, seconds: float, dt_: float = 0.05) -> None:
         w.tick(dt_)
 
 
-async def fighter(client, w: World, username: str, display: str, learned=None):
-    """A character in the world. `learned` is still accepted for old callers and ignored:
-    nothing about words is needed to fight since the purge."""
+async def fighter(client, w: World, username: str, display: str):
+    """A character in the world."""
     h, data = await register(client, username)
     r = await client.post("/character/create", json={"display_name": display, "appearance": LOOK}, headers=h)
     assert r.status_code == 200, r.text
@@ -104,7 +103,7 @@ async def test_shielded_monster_cannot_be_killed(client, gw):
     await hit(gw, p, m)
     q = last(s, "q")
     assert q and q["mid"] == m.eid and q["q"]["context"] == "math_combat"
-    assert "answer_key" not in q["q"] and "hanzi" not in q["q"].get("prompt", {})
+    assert "answer_key" not in q["q"] and not old_script(q["q"])
     assert p.protected(gw.mono())            # Hộ Thể while answering
     # even a thousand hits cannot kill it while the Mặc Thuẫn is up
     p.question, p.protect_until = None, 0     # (pretend the player ignores the question)
@@ -334,7 +333,8 @@ def test_monster_data_is_complete():
     a quái lỗi sai (M7) asks a math question about one micro-skill and drops the ghi chú that
     explains the mistake. Neither carries anything of the old word game."""
     for kind, m in catalog.monsters().items():
-        for key in ("qtypes", "hanzi", "pinyin") + (() if m.get("skill") else ("tier",)):   # (the word tier)
+        assert not old_script(m), kind
+        for key in ("qtypes",) + (() if m.get("skill") else ("tier",)):   # (the word tier)
             assert key not in m, (kind, key)
         for key in ("hp", "atk", "def", "xp", "rank", "drops", "name_vi"):
             assert key in m, (kind, key)

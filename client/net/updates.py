@@ -1,5 +1,5 @@
-"""Telling players a newer game is out. Every build of the game knows the GitHub repository it
-came from (`update_repo` in config.json); at start it asks GitHub Releases for the newest
+"""Telling players a newer game is out. A build of the game may name the GitHub repository it
+came from (`update_repo` in config.json; empty = no check at all); at start it asks GitHub Releases for the newest
 release once, on its own thread, and quietly gives up without Internet — LAN worlds must
 still play offline, so a failed check never shows the "mất kết nối" bar.
 
@@ -42,7 +42,7 @@ class UpdateChecker:
     def _run(self) -> None:
         try:
             r = httpx.get(self.api.format(repo=self.repo), timeout=8, follow_redirects=True,
-                          headers={"Accept": "application/vnd.github+json", "User-Agent": f"VuonChu/{self.current}"})
+                          headers={"Accept": "application/vnd.github+json", "User-Agent": f"ToanTuTien/{self.current}"})
             if r.status_code == 200:
                 self.result = parse_release(r.json(), self.repo, self.current)
         except (httpx.HTTPError, OSError, ValueError):

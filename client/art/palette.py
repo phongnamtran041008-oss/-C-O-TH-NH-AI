@@ -50,8 +50,6 @@ PALETTE = {
     "m": "#8E5AC8",  # epic purple
 }
 
-RARITY_COLORS = {"common": "#9A9A9A", "rare": "#4A7CC8", "epic": "#8E5AC8", "legendary": "#E9C46A"}
-
 UI = {
     "paper": "#F4EBD9", "paper_dark": "#E3D5BA", "ink": "#2B2B2B", "ink_soft": "#5A5A5A",
     "accent": "#BC4749", "gold": "#E9C46A", "green": "#6A994E", "blue": "#4A7CC8",

@@ -51,7 +51,7 @@ def serve() -> int:
         server.should_exit = True      # "stop", or the game went away (stdin closed)
     if sys.stdin is not None:
         threading.Thread(target=watch_parent, daemon=True, name="parent-watch").start()
-    logging.getLogger("khu_vuon").info("world %s on port %d", world_dir.name, port)
+    logging.getLogger("toan_tu_tien").info("world %s on port %d", world_dir.name, port)
     server.run()
     return 0
 

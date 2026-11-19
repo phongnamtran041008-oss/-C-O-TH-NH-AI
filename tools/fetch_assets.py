@@ -2,10 +2,11 @@
 """Download the fonts the client needs into client/assets/fonts/ (spec 2, 18).
 
 * VT323 (SIL OFL 1.1) — pixel font for interface text; covers Vietnamese.
-* Noto Sans SC (SIL OFL 1.1) — Chinese characters and pinyin tone marks.
-  The 8 MB file is subset with fontTools to GB2312 + every character in the game data
-  + Latin/Vietnamese/pinyin, which keeps the client small but still lets players type
-  any common simplified character (chat in later stages). Pass --full to skip subsetting.
+* Noto Sans SC (SIL OFL 1.1) — the fallback font: client/engine/text.py draws with it every
+  character VT323 lacks (arrows, check marks, some math symbols, whatever a player types in
+  chat). The 8 MB file is subset with fontTools to every character in the game data + Latin /
+  Vietnamese + the common CJK block a player might type, which keeps the client small.
+  Pass --full to skip subsetting.
 
 Both are downloaded from GitHub (Google Fonts repo / notofonts), the same files the
 official sites distribute. Licences are copied next to the fonts.
@@ -30,7 +31,7 @@ SOURCES = {
 
 
 def fetch(url: str) -> bytes:
-    req = urllib.request.Request(url, headers={"User-Agent": "khu-vuon-tu-tien-assets/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "toan-tu-tien-assets/1.0"})
     with urllib.request.urlopen(req, timeout=120) as r:
         return r.read()
 

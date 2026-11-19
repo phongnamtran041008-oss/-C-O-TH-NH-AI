@@ -15,8 +15,8 @@ from client.ui.kit import UI
 
 def test_every_grid_is_rectangular():
     grids = [people.HEAD_DOWN, people.HEAD_UP, people.HEAD_RIGHT, people.TORSO_DOWN, people.TORSO_UP,
-             people.TORSO_RIGHT, people.TRUC_LAO, people.TRUC_LAO_BLINK, items.STONE, items.FRUIT,
-             items.SEED_ICON] + people.LEGS_FRONT + people.LEGS_SIDE + people.HORSE + items.SEED
+             people.TORSO_RIGHT, people.TRUC_LAO, people.TRUC_LAO_BLINK, items.STONE] + people.LEGS_FRONT + \
+        people.LEGS_SIDE
     for style in people.HAIR.values():
         grids += list(style.values())
     for g in grids:
@@ -35,14 +35,12 @@ def test_fonts_fallback_and_wrap():
     f = Fonts()
     assert not f.missing, "run tools/fetch_assets.py"
     assert f._ui_has("ệ") and f._ui_has("ư")
-    assert not f._ui_has("明") and not f._ui_has("→")
-    mixed = f.render("Phát hiện 明 (míng)", 10, (0, 0, 0), 2)
-    plain = f.render("Phát hiện  (míng)", 10, (0, 0, 0), 2)
+    assert not f._ui_has("→") and not f._ui_has("✓")
+    mixed = f.render("Luyện Khí → Trúc Cơ", 10, (0, 0, 0), 2)     # the arrow comes from the fallback font
+    plain = f.render("Luyện Khí  Trúc Cơ", 10, (0, 0, 0), 2)
     assert mixed.get_width() > plain.get_width()
-    lines = f.wrap("Thiên địa vận hành nhờ Chữ Đạo: vạn vật có tên thì có linh khí.", 9, 200, 2)
+    lines = f.wrap("Thiên địa vận hành nhờ Đạo: vạn vật có số thì có linh khí.", 9, 200, 2)
     assert len(lines) >= 2 and all(f.size(l, 9, 2)[0] <= 200 for l in lines)
-    han = f.wrap("我喜欢吃苹果我喜欢吃苹果我喜欢吃苹果", 12, 100, 2, kind="han")
-    assert len(han) >= 3
 
 
 def test_abode_map():

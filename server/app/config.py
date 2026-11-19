@@ -61,9 +61,9 @@ class Settings:
     database_url: str = field(default_factory=lambda: os.environ.get(
         "DATABASE_URL", f"sqlite+aiosqlite:///{SERVER_DIR / 'dev.db'}"))
     jwt_secret: str = field(default_factory=lambda: os.environ.get("JWT_SECRET", "dev-secret-change-me-0123456789abcdef"))
-    # Divides every SRS wait (spec 6.2): 1440 makes one day pass in one minute.
+    # Divides the game timers (hive honey, tribulation cooldown): 1440 makes one day pass in one minute.
     time_scale: float = field(default_factory=lambda: float(os.environ.get("TIME_SCALE", "1")))
-    # Unreviewed AI-written sentences/examples may be used only when this is on (spec 8.2).
+    # Unreviewed math questions, problems and essays may be used only when this is on.
     allow_unreviewed: bool = field(default_factory=lambda: _bool("ALLOW_UNREVIEWED", os.environ.get("ENV", "dev") == "dev"))
     auto_migrate: bool = field(default_factory=lambda: _bool("AUTO_MIGRATE", True))
     db_pool_size: int = field(default_factory=lambda: int(os.environ.get("DB_POOL_SIZE", "3")))

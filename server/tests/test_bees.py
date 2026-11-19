@@ -2,7 +2,6 @@
 Since the purge of the old word game bees have two roles (hive, guard), eat honey, fish, herbs
 and bee pills, and owe nothing to words. Guard bees in combat are tested in test_bee_guard.py."""
 import random
-import re
 
 import pytest
 from sqlalchemy import select
@@ -11,10 +10,9 @@ from app import balance, clock
 from app.models import Bee, Character, CodexEntry, Hive, InventoryItem, Quest, User
 from app.systems import bees as beesys
 from app.systems import catalog
-from tests.helpers import register
+from tests.helpers import old_script, register
 
 LOOK = {"hair_color": "#2B2B2B", "hair_style": "ngan", "body": "nam"}
-HAN = re.compile("[" + chr(0x3400) + "-" + chr(0x9FFF) + "]")    # CJK ideographs
 
 
 async def player(client, db, name="ongchu", character=True):
@@ -59,9 +57,9 @@ def test_species_data_has_no_words_and_edible_favourites():
     assert {s["rarity"] for s in sp.values()} == {"pham", "linh", "huyen", "dia", "thien"}
     for kind, s in sp.items():
         assert s["element"] in beesys.cfg()["element_names_vi"]
-        assert not {"hanzi", "pinyin", "word_id", "word_hanzi", "word_pinyin", "word_vi", "real_word",
+        assert not {"word_id", "word_vi", "real_word",
                     "pollen"} & set(s), kind
-        assert not HAN.search(str(s)), kind
+        assert not old_script(s), kind
         assert "thụ phấn" not in str(s).lower(), kind
         assert beesys.food_xp(s["favorite"]), (kind, s["favorite"])      # every favourite can be fed
         assert catalog.stack_item(s["favorite"]) is not None, kind
@@ -102,13 +100,13 @@ async def test_starter_egg_hatch_and_book(client, db):
     bee = r["bee"]
     assert r["new_species"] and bee["rarity"] == "pham" and bee["slot"] in hv["open_cells"]
     assert bee["role"] == "hive" and bee["level"] == 1 and bee["favorite"] is None
-    assert not {"hanzi", "pinyin", "word", "word_mastery", "pollen_per_hour", "real_word"} & set(bee)
+    assert not {"word", "word_mastery", "pollen_per_hour", "real_word"} & set(bee) and not old_script(bee)
     assert await item_qty(db, uid, "trung_ong_pham") == 0
     book = (await client.get("/codex/bee", headers=h)).json()
     assert book["found"] == 1 and book["total"] >= 15
     found = next(e for e in book["entries"] if e["found"])
     assert found["id"] == bee["species"] and found["name_vi"].startswith("Ong ") and found["favorite"] is None
-    assert not {"hanzi", "pinyin", "word", "pollen"} & set(found)
+    assert not {"word", "pollen"} & set(found) and not old_script(found)
     hidden = next(e for e in book["entries"] if not e["found"])
     assert "name_vi" not in hidden and hidden["look"] is None
     q = await db.get(Quest, (uid, "lp1_trung_ong"))
@@ -119,7 +117,7 @@ async def test_starter_egg_hatch_and_book(client, db):
 
 async def test_species_catalog_is_vietnamese_only(client):
     sp = (await client.get("/bees/species")).json()["species"]
-    assert sp and all("hanzi" not in s and not HAN.search(str(s)) for s in sp.values())
+    assert sp and all(not old_script(s) for s in sp.values())
 
 
 async def test_hive_full_and_cells(client, db):

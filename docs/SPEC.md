@@ -1,3 +1,12 @@
+> **Ghi chú 2026-11-20 — tài liệu lịch sử.** Đây là đặc tả gốc của trò học tiếng Trung "Khu Vườn Tu Tiên". Game
+> bây giờ là **Toán tu tiên** (học toán cho AI) và mọi phần học chữ của đặc tả này **không còn tồn tại**: vườn chữ,
+> hạt chữ, SRS, bộ sưu tập từ, quả chữ, ghép câu, combo và sự cố thanh điệu, câu hỏi Q1–Q11 và ngân hàng từ vựng
+> (mục 5, 6, 8 phần từ vựng), âm thanh phát âm, Pháp Chữ, khắc văn, Bách Thảo Phổ / Sổ Phát Hiện, ải Thủ Vườn
+> trồng cây chữ, các phòng câu đố chữ của bí cảnh, cùng các bảng `words`, `plots`, `seeds`, `collection`,
+> `fruits`, `crafted_sentences`, `skills`, `td_loadout` (xoá ở migration 0017). Phần còn dùng (thế giới, chiến
+> đấu, ong, câu cá, luyện đan, Linh Thú, bí cảnh, kinh tế, phát hành) hỏi câu toán thay cho câu chữ; cách làm
+> hiện tại ở `README.md`, `docs/API.md`, `docs/PROTOCOL.md`, các quyết định ở `docs/DECISIONS.md`.
+
 # PROMPT: Xây dựng game "Vườn Chữ: Tu Tiên Lộ" (字园仙途 Zì Yuán Xiān Tú) — game tu tiên 2D pixel online nhiều người chơi, học tiếng Trung
 
 > Bản 2. Kế thừa toàn bộ hệ thống vườn chữ, SRS, gacha, nguồn dữ liệu của bản 1, rồi mở rộng thành một thế giới tu tiên 2D pixel online: nhân vật đi lại, đánh quái bằng câu đố, ải thủ vườn (tower defense), ong linh, câu cá, luyện đan, bí cảnh hợp tác. Các mục 5 và 6 giữ gần như nguyên văn bản 1.

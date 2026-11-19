@@ -16,7 +16,7 @@ from .gacha import Banner, GachaError, expected_rate_with_pity
 def reset_daily(user: User, today: str) -> None:
     if user.daily_reset_date != today:
         user.daily_reset_date = today
-        user.daily_new_seeds_count = 0
+        user.daily_rolls_count = 0
         user.daily_free_rolls_used = 0
 
 
@@ -56,7 +56,7 @@ async def roll(db: AsyncSession, user: User, banner_id: str, count: int, free: b
     now = clock.now()
     reset_daily(user, clock.local_date(now))
     if bcfg.get("counts_toward_daily_limit"):
-        left = cfg["daily_roll_limit"] - user.daily_new_seeds_count
+        left = cfg["daily_roll_limit"] - user.daily_rolls_count
         if left <= 0:
             raise GachaError("daily_limit", "Hôm nay đã quay đủ lượt, mai quay lại nhé.")
         if count > left:
@@ -95,12 +95,12 @@ async def roll(db: AsyncSession, user: User, banner_id: str, count: int, free: b
     else:  # disabled above; kept explicit for safety
         raise GachaError("banner_closed", "Quầy này chưa mở.")
     if bcfg.get("counts_toward_daily_limit"):
-        user.daily_new_seeds_count += count
+        user.daily_rolls_count += count
     await db.flush()
     stones, jade = (await db.execute(select(User.spirit_stones, User.immortal_jade).where(User.id == user.id))).one()
     return {"banner": banner_id, "results": rewards, "pity": new_state, "spirit_stones": stones,
             "immortal_jade": jade,
-            "daily_rolls_left": cfg["daily_roll_limit"] - user.daily_new_seeds_count}
+            "daily_rolls_left": cfg["daily_roll_limit"] - user.daily_rolls_count}
 
 
 async def _resolve_eggs(db: AsyncSession, user: User, rarities: list[str]) -> list[dict]:

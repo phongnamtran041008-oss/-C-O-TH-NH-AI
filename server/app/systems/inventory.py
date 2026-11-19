@@ -6,7 +6,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import clock
-from ..models import AuditLog, Fruit, InventoryItem, User
+from ..models import AuditLog, InventoryItem, User
 
 CURRENCIES = {"spirit_stones": User.spirit_stones, "immortal_jade": User.immortal_jade}
 CURRENCY_NAMES_VI = {"spirit_stones": "Linh Thạch", "immortal_jade": "Tiên Ngọc"}
@@ -75,26 +75,6 @@ async def change_item(db: AsyncSession, user_id: int, item_id: str, delta: int, 
     if got is None:
         raise InsufficientFunds(item_id, -delta, row.quantity)
     await _audit(db, user_id, f"item:{item_id}", delta, got[0], reason, ref)
-    return got[0]
-
-
-async def change_fruit(db: AsyncSession, user_id: int, word_id: str, delta: int, reason: str,
-                       ref: str | None = None) -> int:
-    row = (await db.execute(select(Fruit).where(Fruit.user_id == user_id, Fruit.word_id == word_id))
-           ).scalar_one_or_none()
-    if row is None:
-        if delta < 0:
-            raise InsufficientFunds(f"fruit:{word_id}", -delta, 0)
-        row = Fruit(user_id=user_id, word_id=word_id, count=0)
-        db.add(row)
-        await db.flush()
-    res = await db.execute(
-        update(Fruit).where(Fruit.user_id == user_id, Fruit.word_id == word_id, Fruit.count + delta >= 0)
-        .values(count=Fruit.count + delta).returning(Fruit.count))
-    got = res.first()
-    if got is None:
-        raise InsufficientFunds(f"fruit:{word_id}", -delta, row.count)
-    await _audit(db, user_id, f"fruit:{word_id}", delta, got[0], reason, ref)
     return got[0]
 
 

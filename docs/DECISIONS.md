@@ -1210,8 +1210,9 @@ giờ chỉ là Toán tu tiên. Làm theo ba đợt:
   Bách Thảo Phổ, ô tìm kiếm chữ / pinyin, Sổ Lỗi chữ, bí kíp trên kệ Thủ Thư, `/library*`, `/codex/plant`,
   `systems/library.py`, `systems/word_plants.py`, `data/plants/plant_roles.json`, các khoá `roles`,
   `idiom_skills`, `power` của `balance/td.json`. Tin `ract` của bí cảnh và đồ vật Gương Nghĩa cũng đi.
-- **Đợt 3 (sau):** các module chữ (`learning/wordbank, question_bank, pinyin, srs, selection`), bảng cơ sở dữ
-  liệu của chữ (một migration), `server/data/words`, công cụ dựng từ vựng.
+- **Đợt 3 (xong, đợt cuối):** các module chữ (`learning/wordbank, question_bank, pinyin, srs, selection`), bảng
+  cơ sở dữ liệu của chữ (migration `0017_drop_word_game`), `server/data/words`, công cụ dựng từ vựng, nửa
+  từ vựng của thẻ câu hỏi ở client. Chi tiết ở mục "Đợt 3" bên dưới.
 
 Quyết định khi tách Tàng Thư Các:
 
@@ -1242,3 +1243,34 @@ Quyết định khi gỡ chữ khỏi luyện đan, Pháp Chữ và Khắc Văn:
 - **Khắc Văn bị xoá hẳn.** Cột `equipment_instances.inscriptions` để nguyên (không migration) nhưng không ai đọc
   nữa, chỉ số trang bị không còn cộng chữ khắc. Bước "Chữ trên binh khí" của chuỗi Đan Đạo đổi thành "Đan hồi
   khí": luyện một mẻ Hồi Khí Đan; giữ id `dd3_khac_van` để người đang làm dở bước ấy không bị kẹt chuỗi.
+
+Đợt 3 (phía máy chủ, dữ liệu, công cụ, tài liệu):
+
+- **`learning/quiz.py` chỉ còn là dịch vụ phiên câu hỏi trung lập.** Không còn câu từ vựng, âm thanh câu nghe,
+  sự cố sai thanh điệu, bộ đếm theo từ, handler `practice`, hệ số Gà khi ôn vườn. Loại câu nào chưa đăng ký
+  cách chấm (`register_grader`) thì `create_session` từ chối ngay (`LookupError`) thay vì sau này chấm sai;
+  mọi loại câu toán được `systems/math_practice.py` đăng ký. `create_session` nhận bất kỳ câu hỏi nào có
+  `qtype, item_id, time_limit, answer_key, public()` (Protocol `quiz.Question`).
+- **Migration `0017_drop_word_game`:** xoá bảng `words`, `plots`, `seeds`, `collection`, `fruits`,
+  `crafted_sentences`, `skills`, `td_loadout`; xoá cột `equipment_instances.inscriptions`, `hive.pollen_checked_at`,
+  `friendships.help_count_date`, `friendships.help_count`, `users.current_letter_id`. Hai cột mang tên cũ được
+  đổi cho đúng việc chúng làm: `users.daily_new_seeds_count` → `daily_rolls_count` (số lượt gacha trong ngày),
+  `tribulation_runs.words` (danh sách giữ chỗ, một phần tử mỗi câu) → `total` (số nguyên, giữ nguyên giá trị).
+  Downgrade dựng lại mọi bảng (rỗng, đúng lược đồ cũ) và mọi cột (giá trị mặc định cũ); có test nâng cấp một
+  cơ sở dữ liệu còn dòng trong các bảng cũ rồi hạ xuống lại.
+- **Dữ liệu xoá:** `server/data/words/`, `audio/`, `sentences.json`, `tone_mishaps.json`, `combos.json`,
+  `balance/garden.json`; các dạng câu Q1..Q11 và số liệu chọn từ trong `balance/quiz.json` (còn `network_grace`,
+  `bot_watch`); `rewards` thừa của `balance/td.json` (thưởng nằm ở `math/td.json`); khoá `hsk` của
+  `realms_cultivation.json`. Route `/quiz/{id}/audio`, `inventory.change_fruit`, `balance.garden()`,
+  `sync_words` lúc khởi động. Tên máy chủ (`/server/info`, tiêu đề FastAPI, logger) là "Toán Tu Tiên".
+- **Linh Quả giữ lại.** Nguồn duy nhất của nó là thu hoạch vườn, nên giờ không còn cách nào có thêm; nhưng
+  Linh Quả Vụn (mồi làm từ Linh Quả) là mồi duy nhất của Cá Chép Hóa Long, và túi của người chơi cũ vẫn có thể
+  còn Linh Quả. Mô tả đổi sang trung tính; cho nó một nguồn mới (rương, quái...) là việc thiết kế còn để ngỏ.
+- **Công cụ xoá:** `tools/build_wordlist.py`, `apply_review.py`, `generate_audio.py`, `tools/raw/`, phần từ vựng
+  của `tools/curation/` (còn `fish.json` cho `build_fish.py`) và `tools/reports/` (còn bảng duyệt câu toán).
+- **Test canh "không còn chữ cũ"** giờ dùng `tests/helpers.old_script()`: chữ Hán hoặc nguyên âm có dấu
+  thanh chỉ phiên âm tiếng Trung mới dùng (gạch ngang, mũ ngược; tiếng Việt không có) ở bất cứ đâu trong gói
+  dữ liệu, thay cho việc liệt kê tên khoá cũ.
+- **Để nguyên, có lý do:** tên trường `word` trong `td_sim.py` (bản sao y hệt ở client, là id loại tháp) và
+  `td_runs.questions`; id các gian của bản đồ bí cảnh (`compose`, `sentence`, `tone`...) dùng chung với
+  client và `realms.json`; mã tín hiệu LAN `khuvuon-lan` (đổi là máy cũ và mới không thấy nhau).

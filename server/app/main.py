@@ -9,13 +9,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from sqlalchemy import select
 
 from . import admin
 from . import db as dbm
 from .config import GAME_VERSION, SERVER_DIR, settings
-from .learning.wordbank import bank
-from .models import Word
 from .realtime import ws as ws_routes
 from .realtime.world import world
 from .routers import (auth_routes, bee_routes, economy_routes, fishing_routes, game_routes,
@@ -23,7 +20,7 @@ from .routers import (auth_routes, bee_routes, economy_routes, fishing_routes, g
                       realm_routes, rpg_routes, server_routes, social_routes, books_routes)
 from .systems import cultivation as _cultivation  # noqa: F401  (registers meditate/tribulation handlers)
 
-log = logging.getLogger("khu_vuon")
+log = logging.getLogger("toan_tu_tien")
 
 
 def run_migrations(url: str | None = None) -> None:
@@ -37,25 +34,10 @@ def run_migrations(url: str | None = None) -> None:
     command.upgrade(cfg, "head")
 
 
-async def sync_words() -> None:
-    """Mirror the word JSON into the words table so seeds/plots can reference it."""
-    b = bank()
-    async with dbm.SessionLocal() as db:
-        existing = {w.id: w for w in (await db.execute(select(Word))).scalars().all()}
-        for w in b.words.values():
-            row = existing.get(w.id)
-            if row is None:
-                db.add(Word(id=w.id, hanzi=w.hanzi, tier=w.tier, rarity=w.rarity))
-            elif (row.hanzi, row.tier, row.rarity) != (w.hanzi, w.tier, w.rarity):
-                row.hanzi, row.tier, row.rarity = w.hanzi, w.tier, w.rarity
-        await db.commit()
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if settings.auto_migrate:
         await asyncio.to_thread(run_migrations, None)
-    await sync_words()
     if await admin.sync_admin_usernames():
         log.info("ADMIN_USERNAMES: admin rights granted")
     world.preload()
@@ -69,7 +51,7 @@ async def lifespan(app: FastAPI):
     if settings.lan_beacon:
         from . import lan
         lan_task = asyncio.create_task(lan.run(), name="lan-beacon")
-    log.info("Khu Vườn Tu Tiên server ready (%d words)", len(bank().words))
+    log.info("Toán Tu Tiên server ready")
     yield
     idle_closer.cancel()
     if lan_task:
@@ -79,7 +61,7 @@ async def lifespan(app: FastAPI):
 
 
 def create_app(use_lifespan: bool = True) -> FastAPI:
-    app = FastAPI(title="Khu Vườn Tu Tiên", version=GAME_VERSION, lifespan=lifespan if use_lifespan else None)
+    app = FastAPI(title="Toán Tu Tiên", version=GAME_VERSION, lifespan=lifespan if use_lifespan else None)
     app.include_router(server_routes.router)
     app.include_router(auth_routes.router)
     app.include_router(game_routes.router)

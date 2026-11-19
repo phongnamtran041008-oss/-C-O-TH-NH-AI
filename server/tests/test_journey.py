@@ -322,7 +322,7 @@ async def test_pham_nhan_to_truc_co(dev_server):
     cult = (await bot.http.get("/cultivation")).json()
     assert cult["label"] == "Trúc Cơ sơ kỳ"
     book = (await bot.http.get("/codex/monster")).json()
-    met = [e for e in book["entries"] if e.get("kills")]          # (Thủ Vườn and bí cảnh monsters are not met here)
+    met = [e for e in book["entries"] if e.get("kills")]          # (Thủ Thành and bí cảnh monsters are not met here)
     assert book["found"] == 3 and len(met) == 3
     bot.reader.cancel()
     await bot.ws.close()

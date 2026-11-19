@@ -20,7 +20,7 @@ router = APIRouter()
 def info() -> dict:
     from ..realtime.world import world
     now = clock.now()
-    return {"name": "Khu Vườn Tu Tiên", "version": GAME_VERSION, "protocol_version": PROTOCOL_VERSION,
+    return {"name": "Toán Tu Tiên", "version": GAME_VERSION, "protocol_version": PROTOCOL_VERSION,
             "server_time": now.isoformat() + "Z", "local_date": clock.local_date(now),
             "time_scale": settings.time_scale, "env": settings.env,
             "maintenance_message": server_state.maintenance_message or None,
@@ -66,7 +66,7 @@ def _page(i: dict) -> str:
     return f"""<!doctype html>
 <html lang="vi"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Khu Vườn Tu Tiên · máy chủ</title>
+<title>Toán Tu Tiên · máy chủ</title>
 <style>
 :root {{ --paper:#F4EBD9; --ink:#2B2B2B; --bamboo:#6A994E; --cinnabar:#BC4749; --gold:#E9C46A; }}
 body {{ margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 system-ui, sans-serif; }}
@@ -82,7 +82,7 @@ th, td {{ text-align:left; padding:6px 4px; border-bottom:1px solid #d9ccb0; }} 
 small {{ color:#5A5A5A; }}
 </style></head>
 <body><main>
-<h1>Khu Vườn Tu Tiên · 字园仙途</h1>
+<h1>Toán Tu Tiên</h1>
 <p class="sub"><span class="ok">Máy chủ đang chạy</span></p>
 {notices}
 <table>{table}</table>

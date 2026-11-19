@@ -73,7 +73,7 @@ async def grant_equipment(db: AsyncSession, user_id: int, item_id: str, rarity: 
                           ref: str | None = None) -> dict:
     if item_id not in catalog.equipment()["items"]:
         raise ValueError(item_id)
-    e = EquipmentInstance(user_id=user_id, item_id=item_id, rarity=rarity, enhance_level=0, inscriptions=[])
+    e = EquipmentInstance(user_id=user_id, item_id=item_id, rarity=rarity, enhance_level=0)
     db.add(e)
     await db.flush()
     db.add(AuditLog(user_id=user_id, currency_or_item=f"equip:{item_id}:{rarity}", delta=1, balance_after=None,

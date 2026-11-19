@@ -150,14 +150,13 @@ def test_every_chieu_in_the_data_names_a_real_effect_and_a_real_icon():
 
 
 def has_cjk(text: str) -> bool:
-    return any("⺀" <= ch <= "鿿" or "豈" <= ch <= "﫿" for ch in text)
+    return any("\u2e80" <= ch <= "\u9fff" or "\uf900" <= ch <= "\ufaff" for ch in text)
 
 
 def test_the_hotbar_shows_no_chinese_with_or_without_the_icon_sheet(monkeypatch):
     """With the sheet a slot draws the icon; without it, the initials of the Vietnamese name."""
     from client.engine import icons
     from client.scenes import world
-    assert not hasattr(world, "ELEMENT_HANZI")
     assert world.MSKILL_KEY_NAMES == "123456" and len(world.MSKILL_KEYS) == 6
     skills = json.loads((ROOT / "server" / "data" / "math" / "skills.json").read_text("utf-8"))["skills"]
     for sid, s in skills.items():

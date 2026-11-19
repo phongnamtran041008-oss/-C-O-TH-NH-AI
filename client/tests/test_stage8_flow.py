@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pygame
 
-from client.tests.driver import Driver, ServerProcess, answer_current_quiz
+from client.tests.driver import Driver, ServerProcess
 from client.tests.test_combat_flow import world
 from client.tests.test_world_flow import make_account
 
@@ -50,8 +50,8 @@ def run_alchemy_flow(workdir: Path, shots: Path | None = None) -> None:
         give(server, uid, "go_linh_moc", 1)
         give(server, uid, "truc_diep_thao", 1)          # spent by the brew; one more is bought at the shop
         give(server, uid, "muc_tinh", 6)
-        server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level, inscriptions) "
-                   "values (?, 'kiem_go_dao', 'linh', 0, '[]')", (uid,))
+        server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level) "
+                   "values (?, 'kiem_go_dao', 'linh', 0)", (uid,))
         eid = server.sql("select id from equipment_instances where user_id=?", (uid,))[0][0]
         server.sql("insert into pets(user_id, pet_type, level, equipped) values (?, 'trau', 2, 0)", (uid,))
         pid = server.sql("select id from pets where user_id=?", (uid,))[0][0]
@@ -72,7 +72,7 @@ def run_alchemy_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.click("alc_brew_hoi_khi_dan")
         drv.wait(lambda: drv.top_is("FireScene"), 10, "the fire")
         fire = top(drv)
-        assert "chars" not in fire.fire and "hanzi" not in fire.fire and len(fire.fire["zones"]) == 3
+        assert "chars" not in fire.fire and len(fire.fire["zones"]) == 3
         from client.engine import alchemy_fire
         drv.fixed_dt = 1 / 60           # the needle is judged to the millisecond: pin the clock
         for rnd in range(3):

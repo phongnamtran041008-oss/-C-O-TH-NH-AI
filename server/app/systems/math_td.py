@@ -24,7 +24,7 @@ The learning rules (contract M10):
     spent ("Linh Khí bỏ ra không hoàn lại"), as a missed chiêu of M9 is; nothing else is lost (no Linh Mạch point, no tower). A wrong
     Tụ Khí costs nothing here (`tu_khi_wrong_loss` 0 in the data).
 
-A tower's strength never reads word mastery: it is the tower's `power` from the data times
+A tower's strength never reads mastery: it is the tower's `power` from the data times
 `tier_power` of the question that placed it (an upgrade keeps the highest tier reached).
 The multiplier is fixed when the question is asked and is part of the server's answer
 record, so the replay computes exactly what the client did.

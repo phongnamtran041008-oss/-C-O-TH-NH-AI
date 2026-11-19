@@ -47,7 +47,7 @@ from . import math_combat, math_practice, math_tree_progress
 if TYPE_CHECKING:
     from ..realtime.zone import ChannelZone, Player
 
-log = logging.getLogger("khu_vuon.math_skills")
+log = logging.getLogger("toan_tu_tien.math_skills")
 
 CONTEXT = "math_skill"
 SKILLS_FILE = DATA_DIR / "math" / "skills.json"

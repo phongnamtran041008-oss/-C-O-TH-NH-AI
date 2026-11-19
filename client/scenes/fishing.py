@@ -185,7 +185,7 @@ class FishQuizScene(MathQuizScene):
     CLOSE_RIGHT = 1.6
     CLOSE_WRONG = 3.5
 
-    def panel_rect(self):
+    def card_rect(self):
         return (24, 56, 432, 202)
 
     def __init__(self, game, question: dict, hint: str, on_result=None):

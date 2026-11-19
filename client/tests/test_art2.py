@@ -572,25 +572,16 @@ def test_stone_islands_are_round_and_dark_grass_gets_its_edge():
     assert g.get_at((x + 1, y + 1)) != g.get_at((x + 16, y + 16))      # the corner is ground: rounded
 
 
-CJK = __import__("re").compile(r"[⺀-鿿豈-﫿　-〿＀-￯]")
-# Where a CJK character may stay in client code, and why. None of these reach the math game's screen
-# as a hard-coded literal: comments, a regex that detects Chinese input, the full-width blank of the
-# old word game's own Chinese sentences, and the protected strings file (listed in the report).
-CJK_ALLOWED = {
-    "client/art/sprites/people.py": "a code comment (the tone gag) - never drawn",
-    "client/engine/td_sim.py": "code comments naming the old word combos - never drawn",
-    "client/engine/text.py": "a docstring - never drawn",
-    "client/scenes/quiz.py": "the CJK detector regex and the full-width blank inside the old word game's "
-                             "own Chinese sentences (the sentence itself is Chinese)",
-    "client/strings_vi.py": "protected file of another session - its Chinese is listed in the report",
-}
+CJK = __import__("re").compile("[\u2e80-\u9fff\uf900-\ufaff\u3000-\u303f\uff00-\uffef]")
 
 
-def test_no_chinese_in_the_client_scene_and_ui_sources():
+def test_no_chinese_in_the_client_sources():
+    """The game is the math game now: no Chinese character is left in the client's code, the
+    interface strings included."""
     bad = []
     for p in sorted((ROOT / "client").rglob("*.py")):
         rel = p.relative_to(ROOT).as_posix()
-        if "/tests/" in rel or rel in CJK_ALLOWED:
+        if "/tests/" in rel:
             continue
         for i, line in enumerate(p.read_text("utf-8").splitlines(), 1):
             if CJK.search(line):

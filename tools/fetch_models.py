@@ -33,7 +33,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "art" / "models"
 MANIFEST = OUT / "manifest.json"
-UA = {"User-Agent": "Mozilla/5.0 (compatible; khu-vuon-tu-tien asset fetcher)"}
+UA = {"User-Agent": "Mozilla/5.0 (compatible; toan-tu-tien asset fetcher)"}
 SITE = "https://poly.pizza"
 
 # what the game needs, read off the author's reference sheets

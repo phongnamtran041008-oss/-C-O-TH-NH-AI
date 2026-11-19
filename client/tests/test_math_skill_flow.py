@@ -175,8 +175,8 @@ def run_math_skill_flow(workdir: Path, shots: Path | None = None) -> None:
                    (VALLEY, area.x + area.w / 2, area.y + area.h / 2, uid))
         # Trúc Cơ has the Linh Lực for all four chiêu that cost some (8 + 18 + 15 + 20 > the 50 of a newcomer)
         server.sql("update characters set realm='truc_co', realm_stage=1, qi=120 where user_id=?", (uid,))
-        server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level, inscriptions, "
-                   "equipped_slot) values (?, 'kiem_go_dao', 'linh', 3, '[]', 'weapon')", (uid,))
+        server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level, "
+                   "equipped_slot) values (?, 'kiem_go_dao', 'linh', 3, 'weapon')", (uid,))
         server.sql("update users set spirit_stones=500, flags=? where id=?",
                    (json.dumps({"tutorial": 5}), uid))
         (workdir / "session.json").write_text(json.dumps({"token": token, "username": "detu_m9",

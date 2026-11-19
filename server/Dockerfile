@@ -1,4 +1,4 @@
-# Khu Vườn Tu Tiên — game server image (stage 10, spec 19).
+# Toán Tu Tiên — game server image (stage 10, spec 19).
 #
 # Multi-arch: python:3.12-slim and every dependency (asyncpg, uvloop, bcrypt...) ship
 # wheels for linux/amd64 and linux/arm64, so the same file builds for Oracle's Ampere A1:

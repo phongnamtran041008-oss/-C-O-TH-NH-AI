@@ -31,7 +31,7 @@ from .party import PartyService
 from .realm import RealmInstance, RealmService
 from .zone import ChannelZone, Player
 
-log = logging.getLogger("khu_vuon.world")
+log = logging.getLogger("toan_tu_tien.world")
 ABODE = "abode"
 CLOSE = object()  # outbox sentinel: close the socket after what is queued
 

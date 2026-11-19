@@ -26,16 +26,16 @@ def world_home(tmp_path, monkeypatch):
 
 
 def test_worlds_create_list_and_names(world_home):
-    a = W.create("Vườn Nhà Phong")
-    b = W.create("Vườn nhà phong")
-    assert (a.slug, b.slug) == ("vuon-nha-phong", "vuon-nha-phong-2")
+    a = W.create("Cõi Nhà Phong")
+    b = W.create("Cõi nhà phong")
+    assert (a.slug, b.slug) == ("coi-nha-phong", "coi-nha-phong-2")
     assert (world_home / "worlds" / a.slug / "world.json").exists() and len(a.secret) == 64
     time.sleep(0.01)
     a.touch()
     assert [w.slug for w in W.list_worlds()] == [a.slug, b.slug]   # last played first
     (world_home / "worlds" / "hong").mkdir()                         # a broken folder is skipped
     assert len(W.list_worlds()) == 2
-    assert W.create("   ").name == "Khu Vườn"
+    assert W.create("   ").name == "Thế Giới Mới"
 
 
 class FakeApi:
@@ -84,7 +84,7 @@ def test_lan_scanner_hears_announcements():
     sc = lan.LanScanner(port)
     try:
         tx = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        packet = json.dumps({"g": lan.MAGIC, "v": 5, "name": "Vườn A", "host": "phong", "port": 8001,
+        packet = json.dumps({"g": lan.MAGIC, "v": 5, "name": "Cõi A", "host": "phong", "port": 8001,
                              "online": 2}).encode()
         for _ in range(20):
             tx.sendto(packet, ("127.0.0.1", port))
@@ -95,7 +95,7 @@ def test_lan_scanner_hears_announcements():
         tx.close()
         (found,) = sc.servers()
         assert (found["name"], found["host"], found["port"], found["online"], found["ip"]) == \
-            ("Vườn A", "phong", 8001, 2, "127.0.0.1")
+            ("Cõi A", "phong", 8001, 2, "127.0.0.1")
     finally:
         sc.close()
 
@@ -134,7 +134,7 @@ def test_open_world_find_it_on_lan_and_join(world_home, tmp_path, monkeypatch):
     game = Game(Config(firebase_api_key="test-key", host_port=free_port(18600)), session)
     scanner = lan.LanScanner()
     try:
-        world = W.create("Vườn Thử LAN")
+        world = W.create("Cõi Thử LAN")
         scene = game.push(PlayScene(game))
         scene.selected = world.slug
         scene.open_world()
@@ -153,7 +153,7 @@ def test_open_world_find_it_on_lan_and_join(world_home, tmp_path, monkeypatch):
             if heard:
                 break
             time.sleep(0.1)
-        assert heard and heard[0]["name"] == "Vườn Thử LAN" and heard[0]["host"] == "chu.vuon"
+        assert heard and heard[0]["name"] == "Cõi Thử LAN" and heard[0]["host"] == "chu.vuon"
         proc = game.host.proc
         game.stop_host()
         assert proc.returncode == 0                                   # stopped cleanly (world saved)
@@ -168,7 +168,7 @@ def test_open_world_find_it_on_lan_and_join(world_home, tmp_path, monkeypatch):
 def test_menu_routes_lan_mode_and_screens_draw(world_home, tmp_path):
     from client.main import Game
     from client.scenes.menu import MenuScene
-    W.create("Vườn Một")
+    W.create("Cõi Một")
     game = Game(Config(firebase_api_key="test-key"), Session(tmp_path / "s.json"))
     try:
         menu = game.push(MenuScene(game))
@@ -186,7 +186,7 @@ def test_menu_routes_lan_mode_and_screens_draw(world_home, tmp_path):
         game.replace_all(MenuScene(game))
         game.top.start()
         play = game.top
-        assert type(play).__name__ == "PlayScene" and play.worlds[0].name == "Vườn Một"
+        assert type(play).__name__ == "PlayScene" and play.worlds[0].name == "Cõi Một"
         for tab in ("mine", "lan", "mine"):
             play.tab = tab
             game.step(0.05, events=[])
@@ -200,7 +200,7 @@ def test_lan_scanner_lists_a_two_card_pc_once():
     sc = lan.LanScanner.__new__(lan.LanScanner)
     sc._lock = threading.Lock()
     now = time.monotonic()
-    base = {"v": 5, "name": "Vườn A", "host": "phong", "port": 8000, "online": 1}
+    base = {"v": 5, "name": "Cõi A", "host": "phong", "port": 8000, "online": 1}
     sc._found = {(ip, 8000): {**base, "ip": ip, "seen": now - age}
                  for ip, age in (("192.168.1.6", 0.1), ("192.168.1.5", 0.5), ("127.0.0.1", 0))}
     sc._found[("192.168.1.9", 8000)] = {**base, "host": "lan", "ip": "192.168.1.9", "seen": now}

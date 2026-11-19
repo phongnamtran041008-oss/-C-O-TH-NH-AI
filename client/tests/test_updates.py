@@ -10,11 +10,11 @@ import pytest
 from client.config import GAME_VERSION, Config, Session
 from client.net import updates
 
-REPO = "chu-vuon/khu-vuon-tu-tien"
+REPO = "tac-gia/toan-tu-tien"
 RELEASE = {"tag_name": "v9.0.0", "html_url": f"https://github.com/{REPO}/releases/tag/v9.0.0",
            "draft": False, "prerelease": False, "body": "Sửa lỗi LAN.\n\nThêm cá mới.",
-           "assets": [{"name": "VuonChu-9.0.0-windows.zip",
-                       "browser_download_url": f"https://github.com/{REPO}/releases/download/v9.0.0/VuonChu.zip"}]}
+           "assets": [{"name": "ToanTuTien-9.0.0-windows.zip",
+                       "browser_download_url": f"https://github.com/{REPO}/releases/download/v9.0.0/ToanTuTien.zip"}]}
 
 
 def test_parse_release_newer_only():
@@ -71,7 +71,7 @@ def test_checker_asks_github(github):
     chk = updates.UpdateChecker(REPO, "1.1.1", updates.API)
     wait_done(chk)
     assert chk.result["version"] == "9.0.0"
-    assert FakeGitHub.seen[0][1].startswith("VuonChu/")      # GitHub refuses requests with no User-Agent
+    assert FakeGitHub.seen[0][1].startswith("ToanTuTien/")      # GitHub refuses requests with no User-Agent
 
 
 def test_checker_quiet_without_release_or_internet(github):
@@ -119,5 +119,22 @@ def test_no_repo_no_check(tmp_path, monkeypatch):
     from client.main import Game
     monkeypatch.setattr(updates, "UpdateChecker", lambda *a, **k: pytest.fail("must not ask GitHub"))
     game = Game(Config(firebase_api_key="k"), Session(tmp_path / "s.json"))
+    game.step(0.02, [])
+    assert game.update is None
+
+
+def test_shipped_config_checks_no_repository(tmp_path, monkeypatch):
+    """The math game has no release repository yet: the config that ships with it (and that
+    tools/build_exe.py copies next to the exe) must not point the update check anywhere."""
+    from pathlib import Path
+
+    from client.main import Game
+    example = Path(__file__).resolve().parents[1] / "config.example.json"
+    assert json.loads(example.read_text("utf-8"))["update_repo"] == ""
+    cfg = Config.load(example)
+    cfg.path = None                     # never write back into the shipped example
+    assert cfg.update_repo == ""
+    monkeypatch.setattr(updates, "UpdateChecker", lambda *a, **k: pytest.fail("must not ask GitHub"))
+    game = Game(cfg, Session(tmp_path / "s.json"))
     game.step(0.02, [])
     assert game.update is None

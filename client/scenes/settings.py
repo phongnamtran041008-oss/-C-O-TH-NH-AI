@@ -15,7 +15,6 @@ class SettingsScene(Scene):
         self.scale = cfg.window_scale
         self.fullscreen = cfg.fullscreen
         self.sfx = cfg.sfx_volume
-        self.voice = cfg.voice_volume
         game.ui.set_value("set_server", game.api.base_url)
 
     def _slider(self, ui, wid, x, y, w, value) -> float:
@@ -39,8 +38,6 @@ class SettingsScene(Scene):
             self.fullscreen = not self.fullscreen
         ui.text(T.SFX_VOLUME, x + 14, y + 70, 8)
         self.sfx = self._slider(ui, "sfx", x + 120, y + 72, 120, self.sfx)
-        ui.text(T.VOICE_VOLUME, x + 14, y + 86, 8)
-        self.voice = self._slider(ui, "voice", x + 120, y + 88, 120, self.voice)
         if self.game.lan_mode:   # LAN worlds: no fixed server; show how friends reach this world
             host = self.game.host
             if host is not None and host.alive():
@@ -67,8 +64,8 @@ class SettingsScene(Scene):
         g = self.game
         cfg = g.cfg
         cfg.window_scale, cfg.fullscreen = self.scale, self.fullscreen
-        cfg.sfx_volume, cfg.voice_volume = round(self.sfx, 2), round(self.voice, 2)
-        g.audio.sfx_volume, g.audio.voice_volume = cfg.sfx_volume, cfg.voice_volume
+        cfg.sfx_volume = round(self.sfx, 2)
+        g.audio.sfx_volume = cfg.sfx_volume
         url = "" if g.lan_mode else normalize_url(g.ui.value("set_server"))
         if g.lan_mode:
             pass

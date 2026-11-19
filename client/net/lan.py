@@ -8,7 +8,7 @@ import threading
 import time
 
 PORT = 47654
-MAGIC = "khuvuon-lan"
+MAGIC = "khuvuon-lan"   # must match server/app/lan.py
 FORGET_AFTER = 5.0
 
 

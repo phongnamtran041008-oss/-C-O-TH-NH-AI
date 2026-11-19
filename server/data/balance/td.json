@@ -1,5 +1,5 @@
 {
-  "_comment": "Thủ Thành Toán: số chung của mọi ải (quái, chống gian lận, giới hạn an toàn của td_sim.py); phần còn lại ở math/td.json. Còn sót: rewards (tools/economy_sim.py còn đọc).",
+  "_comment": "Thủ Thành Toán: số chung của mọi ải (quái, chống gian lận, giới hạn an toàn của td_sim.py); phần còn lại ở math/td.json.",
   "monsters": {
     "muc_con":   {"name_vi": "Mực Con", "hp": 90, "speed": 0.9, "leak": 1, "qi": 3, "atk": 8,
                   "resist": {}, "weakness_vi": "Không kháng gì, dễ đối phó."},
@@ -21,11 +21,6 @@
   },
   "boss_stun_mult": 0.5,
   "wave_max_seconds": 240,
-  "rewards": {
-    "first_star_stones": {"1": [40, 40, 60], "2": [80, 80, 120], "3": [150, 150, 220]},
-    "replay_stones": {"1": 15, "2": 30, "3": 50},
-    "daily_rewarded_plays": 5
-  },
   "anti_cheat": {"max_speed": 2, "time_slack": 0.85, "time_grace_s": 3, "max_events": 6000,
                  "run_hours": 3, "max_questions": 600}
 }

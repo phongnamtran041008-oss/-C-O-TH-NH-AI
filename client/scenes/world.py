@@ -238,7 +238,6 @@ class WorldScene(Scene):
         self.target = None
         self.minimap = self._build_minimap()
         self.teles: list[list] = []          # [x, y, r, time_left, total]
-        self.big_chars: list[list] = []      # [hanzi, x, y, life]
         self.hurt_flash = 0.0
         self.swing_t = 0.0
         self.dead = False
@@ -1016,9 +1015,6 @@ class WorldScene(Scene):
                     ent.atk_t0 = self.game.now
         keep_for = -V2_TELE_RELEASE if art2.on() else -0.15
         self.teles = [tl for tl in self.teles if tl[3] > keep_for]
-        for b in self.big_chars:
-            b[3] -= dt
-        self.big_chars = [b for b in self.big_chars if b[3] > 0]
         self.swing_t = max(0.0, self.swing_t - dt)
         for e in self.entities.values():
             e.hurt_t = max(0.0, e.hurt_t - dt)
@@ -1764,9 +1760,6 @@ class WorldScene(Scene):
             b = self.bubbles.get(eid) if eid else None
             if b and b[1] > now:
                 self._bubble(ui, b[0], bx, by - 9)
-        for hz, bx_, by_, life in self.big_chars:  # spec 18: the skill's character, big, above the caster
-            hx, hy = self.view.to_screen(bx_, by_) if v2 else (bx_ - cx, by_ - cy)
-            ui.text(hz, hx, hy - (1 - life) * 8, 18, "#E9C46A", kind="han", anchor="center")
         # player card: portrait, realm, Sinh Lực / Linh Lực / Tu Vi
         ch, me = g.state.character, g.state.me
         cult = g.state.cult or {}

@@ -32,12 +32,12 @@ def _writable(d: Path) -> bool:
 
 def data_dir() -> Path:
     """Where config.json / session.json are written: next to the exe, or, when that folder
-    is read-only (e.g. unpacked into Program Files), %LOCALAPPDATA%/KhuVuonTuTien."""
+    is read-only (e.g. unpacked into Program Files), %LOCALAPPDATA%/ToanTuTien."""
     d = base_dir()
     if not getattr(sys, "frozen", False) or _writable(d):
         return d
     root = os.environ.get("LOCALAPPDATA") or os.environ.get("XDG_DATA_HOME") or str(Path.home() / ".local" / "share")
-    d = Path(root) / "KhuVuonTuTien"
+    d = Path(root) / "ToanTuTien"
     try:
         d.mkdir(parents=True, exist_ok=True)
     except OSError:
@@ -87,7 +87,6 @@ class Config:
     fullscreen: bool = False
     music_volume: float = 0.6
     sfx_volume: float = 0.8
-    voice_volume: float = 1.0
     extra: dict = field(default_factory=dict)
 
     # Where save() writes. None = do not write anything (e.g. a Config built in code by

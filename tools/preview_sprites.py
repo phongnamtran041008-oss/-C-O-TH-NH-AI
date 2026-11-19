@@ -81,7 +81,7 @@ def contact(out: Path, zoom: int = 3) -> int:
 def window() -> int:
     pygame.init()
     screen = pygame.display.set_mode((560, 420))
-    pygame.display.set_caption("Khu Vườn Tu Tiên - xem trước sprite")
+    pygame.display.set_caption("Toán Tu Tiên - xem trước sprite")
     font = pygame.font.SysFont("consolas,dejavusansmono,monospace", 14)
     clock = pygame.time.Clock()
     ids = charsheet.available()

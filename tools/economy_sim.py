@@ -191,14 +191,13 @@ class Profile:
     egg_every: int              # buys a bee egg every N days (0 = never)
     pet_every: int              # rolls Linh Thú every N days (0 = never)
     enhance_to: int             # wants its gear at this +level
-    inscribe_every: int         # khắc văn every N days (0 = never)
     reserve: int                # never spends below this
 
 
 PROFILES = [
-    Profile("thong_tha", "Thong Thả (20 phút/ngày)", 20, 1, 0.75, 8, 0, 0, 0, 0.35, 3, 0, 2, 0, 100),
-    Profile("cham_chi", "Chăm Chỉ (1 giờ/ngày)", 60, 2, 0.85, 30, 10, 2, 1, 0.9, 4, 10, 5, 7, 200),
-    Profile("cay_cuoc", "Cày Cuốc (4 giờ/ngày)", 240, 4, 0.9, 140, 50, 6, 4, 1.0, 1, 3, 8, 3, 300),
+    Profile("thong_tha", "Thong Thả (20 phút/ngày)", 20, 1, 0.75, 8, 0, 0, 0, 0.35, 3, 0, 2, 100),
+    Profile("cham_chi", "Chăm Chỉ (1 giờ/ngày)", 60, 2, 0.85, 30, 10, 2, 1, 0.9, 4, 10, 5, 200),
+    Profile("cay_cuoc", "Cày Cuốc (4 giờ/ngày)", 240, 4, 0.9, 140, 50, 6, 4, 1.0, 1, 3, 8, 300),
 ]
 
 

@@ -1,34 +1,27 @@
-"""Sound: word pronunciation (MP3 from assets or streamed from the server for listening
-questions) and small synthesized effects, so the game needs no copyrighted sounds.
+"""Sound: small synthesized effects, so the game needs no copyrighted sounds.
 Everything degrades silently when no audio device exists."""
 from __future__ import annotations
 
-import io
 import math
 import random
 from array import array
-from pathlib import Path
 
 import pygame
-
-from ..config import assets_dir
 
 RATE = 22050
 
 
 class Audio:
-    def __init__(self, sfx_volume: float = 0.8, voice_volume: float = 1.0):
+    def __init__(self, sfx_volume: float = 0.8):
         self.ok = False
         self.sfx_volume = sfx_volume
-        self.voice_volume = voice_volume
         try:
             pygame.mixer.init(frequency=RATE, size=-16, channels=1)
             self.ok = True
         except pygame.error:
             return
         self.sounds = {name: self._make(name) for name in ("click", "correct", "wrong", "coin", "crack",
-                                                            "reveal", "discover", "plant", "step")}
-        self.audio_dir = assets_dir() / "audio"
+                                                            "reveal", "discover", "step")}
 
     # ------------------------------------------------------------ synthesis
     def _tone(self, notes: list[tuple[float, float]], wave: str = "sine", vol: float = 0.5,
@@ -65,8 +58,6 @@ class Audio:
             return self._tone([(523, 0.1), (659, 0.1), (784, 0.1), (1047, 0.3)], vol=0.4, decay=4)
         if name == "discover":
             return self._tone([(784, 0.12), (988, 0.12), (1175, 0.12), (1568, 0.35)], vol=0.4, decay=3)
-        if name == "plant":
-            return self._tone([(330, 0.06), (392, 0.1)], vol=0.35, decay=12)
         return self._tone([(0, 0.03)], "noise", 0.08, 50)
 
     # ------------------------------------------------------------ playback
@@ -75,32 +66,3 @@ class Audio:
             s = self.sounds[name]
             s.set_volume(self.sfx_volume)
             s.play()
-
-    def has_word(self, word_id: str) -> bool:
-        p = self.audio_dir / f"{word_id}.mp3"
-        return self.ok and p.exists() and p.stat().st_size > 0
-
-    def play_word(self, word_id: str) -> bool:
-        if not self.has_word(word_id):
-            return False
-        return self._play_file(self.audio_dir / f"{word_id}.mp3")
-
-    def play_bytes(self, data: bytes) -> bool:
-        if not self.ok or not data:
-            return False
-        try:
-            snd = pygame.mixer.Sound(file=io.BytesIO(data))
-            snd.set_volume(self.voice_volume)
-            snd.play()
-            return True
-        except pygame.error:
-            return False
-
-    def _play_file(self, path: Path) -> bool:
-        try:
-            snd = pygame.mixer.Sound(str(path))
-            snd.set_volume(self.voice_volume)
-            snd.play()
-            return True
-        except pygame.error:
-            return False

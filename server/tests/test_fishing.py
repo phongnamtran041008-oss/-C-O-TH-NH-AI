@@ -14,7 +14,7 @@ from app import clock
 from app.models import Character, FishCatch, InventoryItem, MathAnswer, User
 from app.systems import catalog, fishing, math_ask
 from app.systems import fishing_sim as fs
-from tests.helpers import answer_key, register
+from tests.helpers import answer_key, old_script, register
 from tests.test_math_skills import right_answer, wrong_answer
 
 LOOK = {"hair_color": "#2B2B2B", "hair_style": "ngan", "body": "nam"}
@@ -132,7 +132,7 @@ def test_thirty_species_five_rarities_and_names():
     assert {f["rarity"] for f in sp.values()} == set(fishing.RARITIES)
     for fid, f in sp.items():
         assert f["name_vi"], fid
-        assert not {"hanzi", "pinyin", "pinyin_numeric", "meaning_en"} & set(f), f"{fid}: no Chinese fields any more"
+        assert "meaning_en" not in f and not old_script(f), f"{fid}: nothing of the old word game"
     assert sp["chep_hoa_long"]["fictional"] and sp["chep_hoa_long"]["bait"] == ["linh_qua_vun"]
     assert sp["ca_chep"]["name_vi"] == "Cá Chép" or sp["ca_chep"]["name_vi"]
 
@@ -144,8 +144,8 @@ def test_fish_data_and_payloads_carry_no_chinese():
     raw = (DATA_DIR / "creatures" / "fish.json").read_text("utf-8")
     assert not re.search(r"[\u3400-\u9fff]", raw)
     for fid in catalog.fish():
-        assert not {"hanzi", "pinyin", "meaning_en"} & set(fishing.public_species(fid))
-        assert "hanzi" not in fishing.silhouette(fid)
+        assert not old_script(fishing.public_species(fid)) and "meaning_en" not in fishing.public_species(fid)
+        assert not old_script(fishing.silhouette(fid))
     assert "quiz_types" not in fishing.cfg() and fishing.cfg()["qtypes"]
     assert json.dumps(fishing.cfg()["qtypes"])
 
@@ -272,7 +272,7 @@ async def test_cast_hook_reel_lands_a_fish_in_the_abode_pond(client, frozen, for
     entry = next(e for e in book["species"] if e["id"] == "ca_chep")
     assert entry["caught"] and entry["count"] == 1 and entry["best_size_cm"] == out["size_cm"]
     hidden = next(e for e in book["species"] if e["id"] == "con")
-    assert not hidden["caught"] and "hanzi" not in hidden and hidden["hint_vi"]
+    assert not hidden["caught"] and not old_script(hidden) and hidden["hint_vi"]
     # sold to the village like any material
     if not out["small"]:
         r = await client.post("/inventory/sell", json={"item_id": "fish_ca_chep", "qty": 1}, headers=h)

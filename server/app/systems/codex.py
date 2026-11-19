@@ -48,7 +48,7 @@ async def monster_book(db: AsyncSession, user: User) -> dict:
                           "mistake_vi": m.get("mistake_vi", ""),   # M7: what this one gets wrong
                           "rank_vi": {"normal": "Thường", "elite": "Tinh anh", "boss": "Thủ lĩnh"}.get(m.get("rank"), "")})
         out.append(entry)
-    from . import td   # Mặc Quái of the Thủ Vườn levels (stage 7) are in the same book
+    from . import td   # Mặc Quái of the Thủ Thành Toán levels (stage 7) are in the same book
     for kind, m in td.cfg()["monsters"].items():
         e = rows.get("td_" + kind)
         entry = {"id": "td_" + kind, "found": e is not None, "sprite": "td_" + kind, "td": True,
@@ -56,7 +56,7 @@ async def monster_book(db: AsyncSession, user: User) -> dict:
         if e is not None:
             entry.update({"name_vi": m["name_vi"], "kills": int((e.progress or {}).get("kills", 0)),
                           "weakness_vi": m["weakness_vi"], "drops_vi": [], "hp": m["hp"],
-                          "rank_vi": "Thủ lĩnh · Thủ Vườn" if m.get("boss") else "Thủ Vườn"})
+                          "rank_vi": "Thủ lĩnh · Thủ Thành" if m.get("boss") else "Thủ Thành"})
         out.append(entry)
     found = sum(1 for x in out if x["found"])
     return {"entries": out, "found": found, "total": len(out)}

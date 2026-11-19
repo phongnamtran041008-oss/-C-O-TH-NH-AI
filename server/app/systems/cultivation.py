@@ -285,7 +285,7 @@ async def _ask(db: AsyncSession, user: User, run: TribulationRun, rng: random.Ra
     if q is None:
         return None
     out = await quiz.create_session(db, user, TRIBULATION_CONTEXT, q, ref=str(run.id))
-    out.update({"run_id": run.id, "number": run.index + 1, "total": len(run.words), "correct_so_far": run.correct})
+    out.update({"run_id": run.id, "number": run.index + 1, "total": run.total, "correct_so_far": run.correct})
     return out
 
 
@@ -307,7 +307,7 @@ async def tribulation_start(db: AsyncSession, user: User, rng: random.Random | N
             QuizSession.answered_at.is_(None)).order_by(QuizSession.created_at.desc()))).scalars().first()
         if s is not None and s.expires_at > now:
             out = quiz.public_session(s)
-            out.update({"run_id": run.id, "number": run.index + 1, "total": len(run.words),
+            out.update({"run_id": run.id, "number": run.index + 1, "total": run.total,
                         "correct_so_far": run.correct})
             return {"question": out, "resumed": True}
         if s is not None:
@@ -334,9 +334,8 @@ async def tribulation_start(db: AsyncSession, user: User, rng: random.Random | N
     first = await _tribulation_question(db, user, rng)
     if first is None:     # nothing to ask: refuse before a run (and its cooldown) exists
         raise CultivationError(400, "no_math_question", NO_QUESTION_VI)
-    # `words` (a column of the old word game) only holds one placeholder per question now:
-    # its length is the number of questions; each one is picked when it is asked.
-    run = TribulationRun(user_id=user.id, from_realm=ch.realm, to_realm=nxt[0], words=["math"] * t["questions"],
+    # each question is picked when it is asked
+    run = TribulationRun(user_id=user.id, from_realm=ch.realm, to_realm=nxt[0], total=t["questions"],
                          index=0, correct=0, started_at=now)
     db.add(run)
     await db.flush()
@@ -351,8 +350,8 @@ async def tribulation_handler(db: AsyncSession, user: User, s: QuizSession, corr
         return out
     run.index += 1
     run.correct += int(correct)
-    out["number"], out["total"], out["correct_so_far"] = run.index, len(run.words), run.correct
-    if run.index < len(run.words):
+    out["number"], out["total"], out["correct_so_far"] = run.index, run.total, run.correct
+    if run.index < run.total:
         nxt = await _ask(db, user, run, random.Random())
         if nxt is not None:
             out["next"] = nxt
@@ -360,14 +359,14 @@ async def tribulation_handler(db: AsyncSession, user: User, s: QuizSession, corr
         # the bank ran dry in the middle of a run (it cannot today: the first question came from
         # the same floor). Nobody is punished for that: the run ends with no verdict, pill kept.
         run.finished_at, run.result = now, "aborted"
-        out["tribulation"] = {"passed": False, "aborted": True, "correct": run.correct, "total": len(run.words),
+        out["tribulation"] = {"passed": False, "aborted": True, "correct": run.correct, "total": run.total,
                               "pass_pct": cfg()["tribulation"]["pass_pct"], "xp_lost": 0, "retry_in": 0}
         return out
     t = cfg()["tribulation"]
     ch = await db.get(Character, user.id)
-    passed = run.correct * 100 >= t["pass_pct"] * len(run.words)
+    passed = run.correct * 100 >= t["pass_pct"] * run.total
     run.finished_at, run.result = now, "passed" if passed else "failed"
-    result = {"passed": passed, "correct": run.correct, "total": len(run.words), "pass_pct": t["pass_pct"]}
+    result = {"passed": passed, "correct": run.correct, "total": run.total, "pass_pct": t["pass_pct"]}
     if passed:
         pill = cfg()["tribulation_to"][run.to_realm]
         await inventory.consume_item(db, user.id, pill, 1, "tribulation", str(run.id))

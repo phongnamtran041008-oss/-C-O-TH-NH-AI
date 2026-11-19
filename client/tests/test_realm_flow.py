@@ -94,7 +94,7 @@ def run_realm_flow(workdir: Path, shots: Path | None = None) -> None:
         gate = drv.game.top
         ids = [r["id"] for r in gate.data["realms"]]
         assert ids == ["khe_nut_muc", "mac_anh_dong"] and gate.data["realms"][1]["open"]
-        assert all(r["math"] and r["floor"] == 1 and "hanzi" not in r for r in gate.data["realms"])
+        assert all(r["math"] and r["floor"] == 1 for r in gate.data["realms"])
         assert set(gate.data["puzzles"]) == {"seal", "boss"}
         drv.shot("realm_gate")
         drv.click("rg_tab_math")

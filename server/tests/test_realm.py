@@ -19,7 +19,7 @@ from app.realtime import maps, realm
 from app.realtime import world as wmod
 from app.realtime.world import World
 from app.systems import cultivation, math_realm, secret_realm
-from tests.helpers import answer_key
+from tests.helpers import answer_key, old_script
 from tests.realm_bot import Bot, Team, path, right_answer_any
 from tests.test_combat import FakeMono, fighter, last, run, settle
 
@@ -41,7 +41,7 @@ def gate() -> tuple[float, float]:
 
 async def hero(client, w, username, display, realm_id="truc_co"):
     """A player standing at the Cổng Bí Cảnh (own math floor 1: a new player)."""
-    h, uid, s = await fighter(client, w, username, display, learned=False)
+    h, uid, s = await fighter(client, w, username, display)
     async with dbm.SessionLocal() as db:
         ch = await db.get(Character, uid)
         ch.realm, ch.realm_stage = realm_id, cultivation.first_stage(realm_id)
@@ -165,7 +165,7 @@ def test_every_realm_is_a_sound_math_realm_with_no_word_left():
     assert {r["kind"] for r in rs.values()} == {"math", "scheduled", "rift"}
     assert set(secret_realm.data()["puzzles"]) == {"seal", "boss"} == set(realm.PUZZLES) | {"boss"}
     for r in rs.values():
-        assert "hanzi" not in r and "tier" not in r and all(x["kind"] == "seal" for x in r["math"]["rooms"])
+        assert not old_script(r) and "tier" not in r and all(x["kind"] == "seal" for x in r["math"]["rooms"])
     assert len(rs[RIFT]["math"]["rooms"]) < len(rs["toan_tran"]["math"]["rooms"]) < len(rs[SCHEDULED]["math"]["rooms"])
     for key in ("compose", "sentence", "tone", "mirror", "maze", "room_loot"):
         assert key not in balance.load("realm")
@@ -238,7 +238,7 @@ async def test_three_bots_clear_the_scheduled_realm_together(client, gw):
     team = Team()
     bots = [Bot(gw, client, h, uid, s, team, answerer(client)) for h, uid, s in heroes]
     room = msgs(s0, "realm", "room")[-1]
-    assert room["kind"] == "seal" and room["math"] and "hanzi" not in room and "mine" not in room
+    assert room["kind"] == "seal" and room["math"] and not old_script(room) and "mine" not in room
     done = await play(gw, bots, 900, lambda: inst.phase == "ended")
     assert done, stuck_report(gw, inst, bots)
     assert inst.result == "won", inst.result
@@ -667,10 +667,10 @@ async def test_gate_view(client, gw):
     assert sch["entries_left"] == 2 and sch["open"] is True and sch["puzzles"] == 3 and sch["party_min"] == 2
     assert rift["kind"] == "rift" and rift["open"] is None and rift["puzzles"] == 1
     for r in v["realms"] + v["math_realms"]:
-        assert r["math"] and r["floor"] == 1 and r["realm_ok"] and "hanzi" not in r and "min_realm" not in r
+        assert r["math"] and r["floor"] == 1 and r["realm_ok"] and not old_script(r) and "min_realm" not in r
         assert r["rooms"] and all(name == "Trận Nhãn" for name in r["rooms"])
     assert v["party"] is None and v["forge"]["fragments"] > 0
-    assert set(v["puzzles"]) == {"seal", "boss"} and all("hanzi" not in p for p in v["puzzles"].values())
+    assert set(v["puzzles"]) == {"seal", "boss"} and not old_script(v["puzzles"])
 
 
 def test_schedule_window(monkeypatch):

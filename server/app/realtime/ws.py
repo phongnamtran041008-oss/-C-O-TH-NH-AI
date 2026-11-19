@@ -17,7 +17,7 @@ from . import protocol
 from .world import CLOSE, Session, world
 
 router = APIRouter()
-log = logging.getLogger("khu_vuon.ws")
+log = logging.getLogger("toan_tu_tien.ws")
 
 
 def cfg() -> dict:

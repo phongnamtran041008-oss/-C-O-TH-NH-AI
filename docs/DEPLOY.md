@@ -1,4 +1,4 @@
-# Triển khai Khu Vườn Tu Tiên (0 đồng)
+# Triển khai Toán Tu Tiên (0 đồng)
 
 > Thông tin các gói miễn phí lấy theo đặc tả (kiểm tra tháng 10/2026) và **có thể đã thay đổi**. Trước khi triển khai,
 > đọc lại trang giá chính thức của Oracle Cloud, Render, Neon, Cloudflare và sửa tài liệu này nếu khác.
@@ -27,7 +27,7 @@ deploy/.env.example         mọi biến môi trường của phương án A và
 deploy/server_list.json     danh sách máy chủ mà game tự đọc (server_list_url)
 render.yaml                 Blueprint cho phương án B
 tools/backup_db.sh|.py      sao lưu, giữ 7 bản
-tools/build_exe.py          đóng gói VuonChu.exe (dong_goi_exe.bat trên Windows)
+tools/build_exe.py          đóng gói ToanTuTien.exe (dong_goi_exe.bat trên Windows)
 .github/workflows/          build exe khi đẩy tag, build image arm64+amd64, chạy test
 ```
 
@@ -233,13 +233,12 @@ dong_goi_exe.bat --server-url https://vuonchu.duckdns.org --server-list-url http
 
 (hoặc `python tools/build_exe.py ...`). Kết quả:
 
-- `dist/VuonChu/VuonChu.exe` + `_internal/` (Python, pygame, font, bản đồ, âm thanh nếu đã sinh), `config.json`,
+- `dist/ToanTuTien/ToanTuTien.exe` + `_internal/` (Python, pygame, font, bản đồ, âm thanh), `config.json`,
   `DOC_TRUOC.txt` (hướng dẫn cho người chơi), `CREDITS.md`, `LICENSES.md`.
-- `dist/VuonChu-<phiên bản>-windows.zip` — file đưa lên Releases (~30 MB).
+- `dist/ToanTuTien-<phiên bản>-windows.zip` — file đưa lên Releases (~30 MB).
 
-Script tự **chạy thử exe** (`VuonChu.exe --smoke-test`): mọi module của game phải nạp được và font, bản đồ phải đọc được
-từ trong gói; nếu thiếu gì, build báo lỗi thay vì tạo ra một gói hỏng. Muốn có giọng đọc phát âm trong gói, chạy
-`python tools/generate_audio.py` trước khi build.
+Script tự **chạy thử exe** (`ToanTuTien.exe --smoke-test`): mọi module của game phải nạp được và font, bản đồ phải đọc được
+từ trong gói; nếu thiếu gì, build báo lỗi thay vì tạo ra một gói hỏng.
 
 ### D2. Build tự động bằng GitHub Actions
 
@@ -254,9 +253,9 @@ từ trong gói; nếu thiếu gì, build báo lỗi thay vì tạo ra một gó
 
 ### D3. Người chơi
 
-Tải zip, giải nén, chạy `VuonChu.exe`. Exe chưa ký số nên lần đầu Windows SmartScreen có thể chặn: **More info → Run
+Tải zip, giải nén, chạy `ToanTuTien.exe`. Exe chưa ký số nên lần đầu Windows SmartScreen có thể chặn: **More info → Run
 anyway**. `config.json`/`session.json` nằm cạnh exe; nếu thư mục không ghi được (vd giải nén vào Program Files), game ghi
-vào `%LOCALAPPDATA%\KhuVuonTuTien`. Lỗi làm game tắt được ghi vào `vuonchu_loi.txt` và báo bằng hộp thoại.
+vào `%LOCALAPPDATA%\ToanTuTien`. Lỗi làm game tắt được ghi vào `toantutien_loi.txt` và báo bằng hộp thoại.
 
 Khi máy chủ có giao thức mới hơn game, menu báo "Phiên bản game đã cũ" kèm link tải (từ `CLIENT_DOWNLOAD_URL`); khi
 chỉ có exe mới hơn (`LATEST_CLIENT_VERSION`), menu nhắc nhẹ "Đã có bản v...".
@@ -333,7 +332,7 @@ từ dòng lệnh máy chủ (`app.admin_cli`) thì được. Không có gì t�
 ## G. Kiểm tra sau khi triển khai (tiêu chí giai đoạn 10)
 
 1. `https://<địa chỉ>/server/info` mở được trên điện thoại (mạng di động) — trang "Máy chủ đang chạy".
-2. Tạo Release; **hai người ở hai mạng khác nhau** tải zip từ GitHub Releases, giải nén, chạy `VuonChu.exe`.
+2. Tạo Release; **hai người ở hai mạng khác nhau** tải zip từ GitHub Releases, giải nén, chạy `ToanTuTien.exe`.
 3. Mỗi người đăng ký một tài khoản, tạo nhân vật, ra Trúc Lâm Thôn: thấy nhau đi lại, chat được, lập tổ đội.
 4. Tài khoản quản trị gõ `/admin announce Chào mừng!` → cả hai thấy thông báo.
 5. Sau một ngày: có file sao lưu mới trong `deploy/backups/` (A, C) hoặc đã chạy `tools/backup_db.py` (B).

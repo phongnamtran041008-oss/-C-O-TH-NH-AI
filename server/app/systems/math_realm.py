@@ -146,9 +146,6 @@ def validate(realms_data: dict | None = None, realm_cfg: dict | None = None) -> 
             out.append(f"{here}: kind must be math, scheduled or rift")
         if r.get("kind") == "rift" and c.get("rift", {}).get("realm") != rid:
             out.append(f"{here}: a rift realm must be balance/realm.json rift.realm, or nothing opens it")
-        for key in ("hanzi", "pinyin"):
-            if key in r:
-                out.append(f"{here}: {key} belongs to the old word game")
         if "min_realm" in r:
             out.append(f"{here}: a math bí cảnh must not depend on the cultivation realms (min_realm)")
         for key in ("name_vi", "desc_vi"):

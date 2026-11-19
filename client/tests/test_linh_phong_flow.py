@@ -79,7 +79,7 @@ def run_bee_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait_api()
         drv.wait(lambda: len(hive.hive["bees"]) == 2, 5, "two bees")
         for b in hive.hive["bees"]:                       # Vietnamese names only, no word attached
-            assert not {"hanzi", "pinyin", "word", "word_mastery", "pollen_per_hour"} & set(b), b
+            assert not {"word", "word_mastery", "pollen_per_hour"} & set(b), b
             assert not HAN.search(b["name_vi"] + b["desc_vi"] + b["skill_vi"]), b
         first = hive.hive["bees"][0]
         hive.sel = first["id"]
@@ -127,7 +127,7 @@ def run_bee_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait_scene("BeeBookScene")
         drv.wait(lambda: drv.game.top.book is not None, 5, "book")
         assert drv.game.top.book["found"] >= 1
-        assert all("hanzi" not in e and "word" not in e for e in drv.game.top.book["entries"])
+        assert all("word" not in e for e in drv.game.top.book["entries"])
         drv.step(3)
         drv.shot("bee_book")
         drv.press(pygame.K_ESCAPE)

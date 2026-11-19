@@ -1,8 +1,7 @@
 """Every string the player sees (spec 0: Vietnamese UI, kept separate from code)."""
 
-TITLE = "Khu Vườn Tu Tiên"
-SUBTITLE = "字园仙途"
-TAGLINE = "Học một chữ, thu một tia linh khí"
+TITLE = "Toán Tu Tiên"
+TAGLINE = "Giải một bài, thu một tia linh khí"
 
 MENU_START = "Bắt đầu"
 MENU_SETTINGS = "Cài đặt"
@@ -27,7 +26,7 @@ VERSION_MISMATCH = "Phiên bản game đã cũ, hãy tải bản mới để ch�
 DOWNLOAD_AT = "Tải bản mới ở: {url}"
 NEW_VERSION = "Đã có bản v{version} — tải ở trang máy chủ hoặc GitHub Releases."
 UPDATE_TITLE = "Có bản cập nhật!"
-UPDATE_TEXT = "Đã có Khu Vườn Tu Tiên v{v} (bạn đang dùng v{cur})."
+UPDATE_TEXT = "Đã có Toán Tu Tiên v{v} (bạn đang dùng v{cur})."
 UPDATE_HOW = ("Cách cập nhật: bấm Tải về → tắt game → giải nén file vừa tải ĐÈ lên thư mục game cũ "
               "(Windows hỏi thì chọn Replace / Thay thế). Thế giới và tài khoản vẫn giữ nguyên.")
 UPDATE_DOWNLOAD = "Tải về"
@@ -43,7 +42,6 @@ BACK = "Quay lại"
 OK = "Đồng ý"
 CANCEL = "Hủy"
 CLOSE = "Đóng"
-CONTINUE = "Tiếp tục"
 
 RECOVERY_TITLE = "Mã khôi phục của bạn"
 RECOVERY_SAVED = "Tôi đã chép lại"
@@ -52,19 +50,13 @@ RECOVERY_HINT = ("Đây là lần duy nhất mã được hiển thị. Hãy ch�
 
 CREATE_TITLE = "Tạo nhân vật"
 CHAR_NAME = "Đạo hiệu (tên nhân vật)"
-HAIR_COLOR = "Màu tóc"
-HAIR_STYLE = "Kiểu tóc"
 BODY = "Dáng người"
-HAIR_STYLES = {"ngan": "Tóc ngắn", "buoi": "Búi tóc", "dai": "Tóc dài"}
-BODIES = {"nam": "Nam", "nu": "Nữ"}
 CREATE_NOTE = "Mọi người đều bắt đầu với bộ Áo Vải Phàm Nhân. Còn lại, tự tu luyện mà có!"
 CREATE_GO = "Nhập môn"
 
 REALMS = {"pham_nhan": "Phàm Nhân", "luyen_khi": "Luyện Khí", "truc_co": "Trúc Cơ",
           "kim_dan": "Kết Đan", "nguyen_anh": "Nguyên Anh", "hoa_than": "Hóa Thần", "luyen_hu": "Luyện Hư",
           "hop_the": "Hợp Thể", "dai_thua": "Đại Thừa"}
-STONES = "Linh Thạch"
-ABODE = "Động Phủ"
 
 HUD_BAG = "Túi đồ"
 HUD_BOOK = "Các phổ"
@@ -76,18 +68,11 @@ ACTIONS = {"gacha": "Thiên Cơ Đài", "meditate": "Bàn đả tọa", "exit": 
            "talk": "Nói chuyện", "hive": "Linh Phong Sào", "alchemy": "Đan Lô (luyện đan)"}
 
 
-QUIZ_TIME = "Thời gian"
 QUIZ_SUBMIT = "Trả lời"
-QUIZ_CLEAR = "Xóa"
 QUIZ_CORRECT = "Chính xác!"
 QUIZ_WRONG = "Chưa đúng"
 QUIZ_TIMEOUT = "Hết giờ!"
 QUIZ_ANSWER_WAS = "Đáp án: {a}"
-QUIZ_LISTEN = "Nghe lại"
-QUIZ_TONES = {"1": "Thanh 1 ¯", "2": "Thanh 2 ´", "3": "Thanh 3 ˇ", "4": "Thanh 4 `"}
-QUIZ_TYPE_HINT = "Gõ v thay cho ü, bấm Enter để trả lời"
-REWARD = "+{n} Linh Thạch"
-STAGE_UP = "Cây lên giai đoạn: {s}"
 
 GACHA_ROLL1 = "Quay 1 ({p})"
 GACHA_ROLL10 = "Quay 10 ({p})"
@@ -96,8 +81,6 @@ GACHA_FREE = "Quay miễn phí"
 BAG_TITLE = "Túi đồ"
 EMPTY_LIST = "Chưa có gì ở đây."
 
-CRAFT_TITLE = "Bàn Ghép Câu"
-CRAFT_DONE = "Ghép thành công!"
 
 
 SETTINGS_TITLE = "Cài đặt"
@@ -105,16 +88,13 @@ SCALE = "Phóng to"
 SCALE_AUTO = "Tự động"
 FULLSCREEN = "Toàn màn hình"
 SFX_VOLUME = "Âm lượng hiệu ứng"
-VOICE_VOLUME = "Âm lượng phát âm"
 LOGOUT = "Đăng xuất"
 SAVE = "Lưu"
 
 CREDITS_TITLE = "Ghi công"
 CREDITS_TEXT = (
-    "Từ điển: CC-CEDICT (MDBG, CC BY-SA 4.0) · Danh sách HSK 3.0: complete-hsk-vocabulary (MIT) · "
-    "Cấu tạo chữ: Make Me a Hanzi (LGPL-3.0+) · Phông chữ: Noto Sans SC và VT323 (SIL OFL 1.1) · "
-    "Phát âm: edge-tts. Dữ liệu từ vựng của game phát hành theo CC BY-SA 4.0. "
-    "Nghĩa tiếng Việt do AI dịch và đang chờ người duyệt. Toàn bộ hình vẽ pixel và âm thanh hiệu ứng được tạo bằng code."
+    "Phông chữ: VT323 và Noto Sans SC (SIL OFL 1.1) · Hình công thức toán: MathJax (Apache 2.0). "
+    "Hình vẽ và âm thanh hiệu ứng của game được làm bằng code."
 )
 
 # ---------------------------------------------------------------- Trúc Lão
@@ -124,12 +104,6 @@ MASTER_IDLE = ["Trà nguội rồi... con có thấy cái chén của ta đâu k
                "Ngồi bàn đả tọa mà giải bài, linh khí tự khắc tụ về.",
                "Hồi trẻ ta cũng muốn giữ hết bí kíp cho riêng mình... à mà thôi, chuyện cũ rồi.",
                "Sai một bài thì nhớ lâu một đời. Đừng sợ sai, chỉ sợ không thử."]
-QUIP_CORRECT = ["Hay lắm! Linh khí dâng lên rồi kìa.", "Đúng rồi, chữ này ngấm vào xương rồi đấy.",
-                "Giỏi! Ta già rồi mà còn chưa nhanh bằng con.", "Chuẩn! Mặc Quái vừa lùi lại ba bước.",
-                "Đúng! Thưởng con một tách trà... à không, Linh Thạch thì hơn."]
-QUIP_WRONG = ["Không sao, sai một lần thì nhớ lâu một đời.", "Hụt rồi! Năm phút nữa thử lại nhé.",
-              "Chữ này hơi khó tính, phải dỗ dành nó thêm.", "Mặc Quái cười khẩy kìa. Lần sau cho nó biết tay!",
-              "Ta năm xưa cũng sai câu này... chắc là vậy."]
 
 
 # ---------------------------------------------------------------- stage 3: the shared world
@@ -166,7 +140,7 @@ GUIDE_LINES = ["Chào đạo hữu! Ta là Tiểu Lan, chuyên chỉ đường c
                "Bấm Enter để chat. Thế giới là nói với mọi người, Khu vực thì chỉ người trong kênh này nghe.",
                "Mỗi vùng có nhiều kênh, mỗi kênh tối đa 40 người. Bấm vào tên kênh trên đầu màn hình để đổi.",
                "Cổng phía đông dẫn tới Rừng Mực Loang, cổng phía tây ra Hồ Nghiên Mực. Đường phía nam đưa con về động phủ.",
-               "Kết bạn rồi thì có thể ghé động phủ của nhau và tưới giúp cây: cả hai đều được Linh Thạch."]
+               "Kết bạn rồi thì nhắn riêng được, lại rủ nhau lập tổ đội (phím Y) cùng vào bí cảnh."]
 LIBRARIAN_NAME = "Thủ Thư"
 LIBRARIAN_LINES = ["Chào mừng con tới Tàng Thư Các. Ở đây cất kinh thư toán của mọi tầng Đạo Thụ: công thức, "
                    "lời giải mẫu và những chỗ người tu hay vấp.",
@@ -224,7 +198,6 @@ HUD_CHAR = "Tu luyện"
 HUD_QUESTS = "Nhiệm vụ"
 ATTACK_HINT = "[Chuột trái / Space] đánh · [1-6] chiêu thức · [Q] đan"
 MONSTER_RANK = {"normal": "", "elite": "Tinh anh", "boss": "Thủ lĩnh"}
-SHIELD = "Mặc Thuẫn"
 HOI_THE = "Hộ Thể"
 COMBAT_INTRO = "Mặc Thuẫn chặn đòn! Trả lời đúng để phá khiên."
 SHIELD_BROKEN = "Phá Mặc Thuẫn!"
@@ -241,7 +214,6 @@ BOTTLENECK = "Tu Vi đã đầy. Cần {pill} và vượt Thiên Kiếp để v�
 DEAD_TITLE = "Trọng thương!"
 DEAD_TEXT = "Mực tràn vào kinh mạch... Trúc Lão kéo con về làng. Mất một chút Tu Vi, không mất đồ."
 XP_LOST = "Mất {n} Tu Vi"
-NO_PILL = "Không còn Hồi Huyết Đan"
 SKILL_FAIL = {"cooldown": "Chiêu đang hồi", "no_qi": "Không đủ Linh Lực", "no_target": "Chưa chọn quái",
               "too_far": "Quá xa", "answering": "Đang trả lời câu hỏi", "not_learned": "Chưa học chiêu này"}
 
@@ -262,7 +234,6 @@ BAG_GEAR = "Trang bị"
 USE = "Dùng"
 EQUIP = "Mặc"
 UNEQUIP = "Tháo"
-EQUIPPED = "đang mặc"
 
 FORGE_TITLE = "Lò Rèn · Cường hóa"
 FORGE_HINT = "Cường hóa +1 đến +10. Thất bại không mất đồ, chỉ mất nguyên liệu."
@@ -291,7 +262,6 @@ MEDITATE_TEXT = ("Tĩnh tâm, giải một câu toán ở tầng con đang tu. C
                  "Không trả lời thì không có Tu Vi.")
 MEDITATE_GO = "Ôn một câu"
 MEDITATE_WAIT = "Câu tiếp theo sau {t}"
-MEDITATE_READY = "Sẵn sàng"
 
 TRIB_TITLE = "Thiên Kiếp"
 TRIB_INTRO = ("Thiên Kiếp gồm {n} câu toán khó nhất mà con đã đủ sức giải ở tầng mình đang tu, "
@@ -304,7 +274,6 @@ TRIB_FAIL = "Thiên Kiếp chưa qua ({c}/{total}). Mất {xp} Tu Vi, nghỉ ng�
 TRIB_REWARD = "+{n} Tiên Ngọc"
 MASTER_QUEST_LINES = ["Đến rồi à? Cây bút này ta dùng hồi trẻ. Mực của nó phá được Mặc Thuẫn... à không, là lời giải của con phá chứ!",
                       "Nhớ: đánh thường chỉ làm xước khiên. Muốn phá Mặc Thuẫn thì phải trả lời đúng."]
-QUIZ_NUMBER = "Câu {n}/{t}"
 
 # ---------------------------------------------------------------- stage 5: Linh Phong
 HUD_HIVE = "Tổ ong"
@@ -323,7 +292,6 @@ HIVE_UNLOCK = "Mở ô ({s})"
 HIVE_UNLOCK_TIP = "Mở thêm ô thứ {n} cho tổ ong: {s} Linh Thạch"
 HIVE_UNLOCK_NEED = "Ô thứ {n} cần phát hiện {k} loài trong Ong Phổ (đang có {f})"
 HIVE_CELLS = "Ô tổ: {n}/{mx}"
-HIVE_EMPTY_CELL = "Ô trống"
 HIVE_LOCKED_CELL = "Ô chưa mở"
 HIVE_PICK = "Bấm vào một con ong để xem. Kéo thả (hoặc bấm ong rồi bấm ô) để đổi chỗ."
 HIVE_NO_BEES = "Tổ còn trống. Ấp một quả trứng ong để bắt đầu!"
@@ -331,7 +299,6 @@ HIVE_EGGS = "Trứng ong"
 HIVE_HATCH = "Ấp"
 HIVE_NEW_SPECIES = "Loài mới! Đã ghi vào Ong Phổ."
 HIVE_HATCHED = "{name} vừa nở!"
-HIVE_DECOR = "Trang trí"
 HIVE_GUARDS = "Hộ vệ {n}/{mx}"
 HIVE_INTRO = ["Linh Phong Sào đây! Ong linh nở từ trứng, mỗi con một ô trong tổ.",
               "Để ong ở tổ thì chúng làm Linh Mật và Sáp Ong. Tổ đầy mật thì bấm Thu mật mà lấy về túi.",
@@ -365,13 +332,11 @@ BEE_HUD_DOWN = "{name} đang nghỉ trong tổ ({t} giây)"
 
 BEE_BOOK = "Ong Phổ"
 BEE_BOOK_FOUND = "Đã phát hiện {f}/{t} loài"
-BEE_BOOK_MILESTONE = "Mốc {n} loài: {r}"
 BEE_BOOK_HATCHED = "Đã nở: {n} · Cấp cao nhất: {lv} · Đang nuôi: {o}"
 BEE_BOOK_UNKNOWN = "Chưa phát hiện"
 BEE_BOOK_STATS = "Gốc: mật {h}/giờ · Sinh Lực {hp} · Công {atk}"
 BEE_MILESTONE_GOT = "Mốc Ong Phổ {n} loài: nhận {r}"
 
-SPIRIT_FRUIT = "Được 1 Linh Quả!"
 STARTER_EGG_HINT = "Trúc Lão để lại một quả Trứng Ong trong túi con. Bấm H để mở Linh Phong Sào."
 
 GACHA_TAB_BEES = "Trứng Ong"
@@ -415,10 +380,8 @@ FISH_GOT = "Nhận: {items}"
 FISH_MILESTONE = "Mốc Ngư Phổ {n} loài: {r}"
 FISH_FICTIONAL = "(cá do Ngư Ông tưởng tượng ra)"
 FISH_MYTHICAL = "(cá trong truyền thuyết)"
-FISH_NO_WATER = "Phải đứng sát mép nước mới câu được."
 FISH_CONDITIONS = "{zone} · {time} · {weather}"
 FISH_DAY, FISH_NIGHT, FISH_RAIN, FISH_CLEAR = "ban ngày", "ban đêm", "trời mưa", "trời quang"
-FISH_ROD_NOW = "Cần: {rod} · Mồi: {bait}"
 FISH_NO_BAIT = "không mồi"
 SHOP_FISH_TITLE = "Ngư Ông · Cần câu & Mồi"
 SHOP_FISH_HINT = "Câu không mồi chỉ ra cá Phàm và Linh. Mồi tốt dụ được cá hiếm."
@@ -426,7 +389,6 @@ SHOP_RODS = "Cần câu"
 SHOP_BAITS = "Mồi câu"
 SHOP_USE = "Dùng"
 SHOP_IN_USE = "Đang dùng"
-SHOP_BUY = "Mua"
 SHOP_BUY10 = "Mua 10 ({p})"
 SHOP_CRAFT = "Làm ({n} {src} → {m})"
 SHOP_NOT_SOLD = "Không bán"
@@ -536,8 +498,7 @@ HUD_PETS = "Linh Thú"
 ALCHEMIST_NAME = "Đan Sư"
 ALCHEMIST_LINES = ["Lại đây, lại đây! Lò của lão vừa đỏ lửa.",
                    "Luyện đan cốt ở canh lửa: kim chạy qua lại, con bấm đúng lúc kim vào vùng văn hỏa, ba lần.",
-                   "Mỗi lần bấm, một chữ trong tên đan hiện lên. Chữ con đã học thì gõ pinyin của nó; chữ chưa học thì "
-                   "nhìn mà nhớ lấy cách đọc.",
+                   "Bấm càng sát giữa vùng văn hỏa thì đan ra càng tốt. Lệch ra ngoài thì lửa hỏng, đan kém đi.",
                    "Đây, cầm lấy đan phương Hồi Huyết Đan. Đan phương giữ trong túi là luyện được mãi."]
 ALCHEMIST_IDLE = ["Lửa vũ thì cháy đan, lửa văn mới thành đan. Từ từ thôi con.",
                   "Lò trong động phủ con nâng cấp được, vùng văn hỏa sẽ rộng ra.",
@@ -557,7 +518,6 @@ ALCHEMY_HAVE = "Đang có {n} viên"
 ALCHEMY_UPGRADE = "Nâng lò ({p} LT)"
 ALCHEMY_UPGRADE_NEED = "Lên {name}: {m}"
 ALCHEMY_UPGRADED = "Lò đã thành {name}!"
-ALCHEMY_MAX = "Lò đã là loại tốt nhất."
 ALCHEMY_BUFFS = "Đang có: {b}"
 FIRE_TITLE = "Canh lửa · {name}"
 FIRE_HINT = "Bấm Space (hoặc chuột) khi kim vào vùng văn hỏa. Giữa vùng sáng là đẹp nhất."
@@ -569,11 +529,9 @@ FIRE_RESULT = "{q}: {n} viên {name}"
 FIRE_RESULT_NONE = "Phế đan... nguyên liệu cháy thành tro."
 FIRE_EXTRA = "Lò tốt cho thêm 1 viên!"
 FIRE_DONE = "Xong"
-FIRE_AGAIN = "Luyện mẻ nữa"
-BUFF_TAKEN = "{name}: còn {m} phút"
 SHOP_TITLE = "Sạp Tạp Hóa · Bà Chủ Sạp"
 SHOP_NAME = "Bà Chủ Sạp"
-SHOP_LINES = ["Mua gì cứ chọn, sạp có đan dược, dược thảo, Mực Tinh, mồi câu, cả hạt giống thường.",
+SHOP_LINES = ["Mua gì cứ chọn, sạp có đan dược, dược thảo, Mực Tinh, cả mồi câu.",
               "Mỗi thứ một ngày ta chỉ bán cho mỗi người một ít thôi, để ai cũng có phần.",
               "Đồ dư thì mang lại đây, ta mua lại. Rẻ thôi, nhưng không để con thiệt."]
 SHOP_TAB_BUY = "Hàng ngày"
@@ -643,7 +601,6 @@ PARTY_LEFT = {"leave": "Con đã rời tổ đội.", "kicked": "Đội trưởn
               "disbanded": "Tổ đội đã giải tán.", "offline": "Con rời đội vì ngoại tuyến quá lâu."}
 PARTY_PENDING = "Lời mời đang chờ"
 PARTY_HINT = "Tối đa 5 người. Cùng đội thì thấy máu nhau, đánh quái gần nhau được chia Tu Vi, chat kênh Tổ Đội (/d)."
-PARTY_XP = "Tu Vi chia từ tổ đội: +{n}"
 HUD_PARTY = "Đội"
 NOTICE = "[Thông báo] {text}"
 REALM_GATE_TITLE = "Cổng Bí Cảnh"
@@ -685,7 +642,6 @@ REALM_BOSS_PHASE = "Nghiên Ma · pha {p}/4"
 REALM_BOSS_SHIELD = "Mặc Thuẫn lớn: {n}/{need} người đã trả lời đúng"
 REALM_BOSS_OPEN = "Khiên vỡ! Đánh đi!"
 REALM_FAILS = "Sai: {n}"
-REALM_RIFT_ACTION = "Khe Nứt Mực"
 REALM_RIFT_ENTER = "Vào khe nứt cùng tổ đội"
 REALM_RIFT_QUEUE = "Chờ người cùng vào"
 REALM_RIFT_LEFT = "Khép lại sau {t}"
@@ -694,12 +650,10 @@ REALM_FORGE_HINT = "Ghép đủ Mảnh Bảo Vật thành một món {set} phẩ
 REALM_FORGE_BONUS = "Thưởng bộ: 2 món {b2} · 4 món {b4}"
 REALM_FORGE_BTN = "Ghép"
 REALM_FORGE_DONE = "Ghép xong {name} phẩm {rarity}!"
-REALM_MARK_HINT = "Chuột phải: đánh dấu cho đội"
 REALM_NEED_PARTY = "Cần tổ đội 2-5 người (phím Y), hoặc vào hàng chờ."
-REALM_ACTION = "Cổng Bí Cảnh"
 
 # ---------------------------------------------------------------- LAN worlds (Minecraft style) + Firebase accounts
-FB_TITLE = "Tài khoản Khu Vườn"
+FB_TITLE = "Tài khoản Toán Tu Tiên"
 FB_EMAIL = "Email"
 FB_NEED_EMAIL = "Hãy nhập email."
 FB_NEED_PASSWORD = "Hãy nhập mật khẩu."
@@ -746,7 +700,6 @@ HUD_MATH = "Toán"
 MATH_TITLE = "Bí Cảnh Toán"
 MATH_LOADING = "Đang mở bí cảnh..."
 MATH_FLOOR = "Tầng {n}"
-MATH_HIDDEN_FLOOR = "Tầng ẩn"
 MATH_TIERS = "Bậc {lo}-{hi}"
 MATH_TIER_ONE = "Bậc {lo}"
 MATH_PLAY = "Luyện"
@@ -782,7 +735,6 @@ MATH_CLEARED = "Đã qua"
 MATH_GATE = "Cổng {n}/{t}"
 MATH_GATE_HINT = "Cổng thuần thục: mỗi vi kỹ năng đúng {need}/{window} câu gần nhất ở bậc {tier}"
 MATH_TRIAL = "Thiên kiếp"
-MATH_TRIAL_TITLE = "Thiên kiếp nhỏ"
 MATH_TRIAL_PROGRESS = "Thiên kiếp nhỏ: câu {n}/{t}"
 MATH_TRIAL_ALLOWED = "Được sai {n} câu"
 MATH_TRIAL_PASSED = "Vượt Thiên kiếp nhỏ!"
@@ -816,8 +768,6 @@ CODE_TEST_LINE = "Test {n}: {v}"
 CODE_SAMPLE_LINE = "Ví dụ {n}: {v}"
 CODE_PASSED = "Qua {p}/{t} test"
 CODE_BEST = "Tốt nhất: {v}, {p}/{t} test"
-CODE_SOLVED = "Đã giải"
-CODE_UNSOLVED = "Chưa giải"
 CODE_RUN_HINT = "Chạy thử dùng ví dụ trong đề. Nộp bài chạy trên test ẩn và nhận Tu Vi."
 CODE_VERDICTS = {
     "AC": "Đúng hết",
@@ -846,7 +796,6 @@ CRAFT_LOADING = "Đang nhóm lò..."
 CRAFT_MAKES = "Rèn ra"
 CRAFT_NEEDS = "Nguyên liệu"
 CRAFT_NOTES = "Phải hiểu trước"
-CRAFT_NOTE_HINT = "Ghi chú vẫn ở trong túi sau khi rèn."
 CRAFT_FEE = "Phí lò: {n} Linh Thạch"
 CRAFT_DO = "Rèn"
 CRAFT_DONE = "Rèn xong: {name}!"
@@ -854,13 +803,10 @@ CRAFT_HAVE = "{have}/{need}"
 CRAFT_SLOT = {"weapon": "Vũ khí", "body": "Áo", "hat": "Mũ", "shoes": "Giày", "jade": "Ngọc Bội",
               "ring": "Nhẫn"}
 NOTE_READ = "Đọc ghi chú"
-NOTE_KEPT = "Ghi chú vẫn còn trong túi."
-MISTAKE_LABEL = "Lỗi nó mắc"
 
 # M9: chiêu thức gắn câu hỏi (thanh chiêu, thẻ câu hỏi) và hai kiểu câu mới
 MSKILL_TIP = "{name} ({key}) · {kind}\nLoại câu: {qtype}\nLinh Lực {qi} · hồi {cd} giây\n{desc}"
 MSKILL_TIP_LOCKED = "{name} (chưa mở)\n{why}"
-MSKILL_LOADING = "Đang mở sách chiêu thức..."
 MSKILL_MISS = "Chiêu hụt!"
 MSKILL_COMBO = "Liên chiêu x{n}"
 MSKILL_BADGE = "Chiêu: {name}"
@@ -868,9 +814,7 @@ MSKILL_LANDED = "Chiêu trúng! -{n}"
 MSKILL_LANDED_CRIT = "Chiêu trúng, chí mạng! -{n}"
 MSKILL_MISSED = "Chiêu hụt: không gây sát thương"
 MSKILL_NEEDS_TARGET = "Chưa có quái trong tầm"
-MATCH_HINT = "Chọn một vế bên trái rồi chọn vế phải đi cùng. Chọn lại để đổi cặp."
 MATCH_KEYS = "Phím 1-5: vế trái · A-E: vế phải · Xóa lùi: bỏ cặp cuối · Enter: trả lời"
-ORDER_HINT = "Bấm các bước theo đúng thứ tự giải, bước đầu tiên trước."
 ORDER_KEYS = "Phím A-F: chọn bước · Xóa lùi: bỏ bước cuối · Enter: trả lời"
 MQ_UNDO = "Hoàn tác"
 MQ_CLEAR = "Làm lại"
@@ -977,7 +921,6 @@ MTD_INTRO = ("Mỗi tháp là một mảng toán. Trả lời đúng một câu 
 MTD_LEVELS = "Ải giữ thành"
 MTD_TOWERS = "Các loại tháp"
 MTD_AREA = "{subject} · tầng {floor}"
-MTD_OPEN = "Dựng được"
 MTD_COST = "{c} Linh Khí"
 MTD_LOCKED = "Khóa"
 MTD_WAVES = "{n} đợt quái"
@@ -991,7 +934,6 @@ MTD_PLACE_HINT = "Bấm vào ô cạnh đường để dựng {name}. Chuột ph
 MTD_PICK_HINT = "Chọn tháp ở dưới rồi bấm vào ô cạnh đường. Mỗi tháp cần một câu đúng của mảng toán ấy."
 MTD_SELL = "Dỡ (+{c})"
 MTD_CONTINUE = "Tiếp"
-MTD_TIER_POWER = "Sức mạnh theo bậc câu đã trả lời: ×{p}"
 MTD_ROLE_NAMES = {"hoa": "Nổ vùng", "thuy": "Làm chậm", "kim": "Bắn mạnh", "son": "Choáng vùng",
                   "quang": "Soi sáng", "ho_tro": "Hỗ trợ", "sinh_khi": "Sinh Linh Khí", "moc": "Chặn đường"}
 
@@ -1006,21 +948,12 @@ MATH_LIST_MORE = "{a}-{b} trong {t} · lăn chuột hoặc phím lên/xuống đ
 MATH_PLACE_BUTTON = "Kiểm tra đầu vào"
 MATH_PLACE_CONTINUE = "Làm tiếp kiểm tra"
 MATH_PLACE_TITLE = "Kiểm tra đầu vào"
-MATH_PLACE_INTRO = (
-    "Bài kiểm tra đầu vào đặt điểm xuất phát của con trong bí cảnh {name}.",
-    "Tối đa {n} câu, đi từ tầng 1 lên, mỗi tầng từ bậc dễ tới bậc khó; mỗi câu giữ thời gian như thường, hết giờ tính là sai.",
-    "Tầng nào con đúng từ {pct}% số câu trở lên thì được miễn; con bắt đầu ở tầng thấp nhất chưa đạt.",
-    "Không bắt buộc: không làm thì con bắt đầu từ tầng 1.",
-    "Ở tầng xuất phát, cổng thuần thục và Thiên kiếp nhỏ vẫn chờ con như mọi người.",
-    "Mỗi bí cảnh làm một lần. Bỏ dở thì coi như bắt đầu từ tầng 1.",
-)
 MATH_PLACE_RESUME_INTRO = "Bài kiểm tra đầu vào đang dở: đã trả lời {a}/{t} câu."
 MATH_PLACE_START = "Bắt đầu"
 MATH_PLACE_GO_ON = "Làm tiếp"
 MATH_PLACE_LATER = "Để sau"
 MATH_PLACE_ABANDON = "Bỏ dở"
 MATH_PLACE_PROGRESS = "Kiểm tra đầu vào: câu {n}/{t}"
-MATH_PLACE_LOADING = "Đang chuẩn bị câu hỏi..."
 MATH_PLACE_RESULT = "Kết quả kiểm tra đầu vào"
 MATH_PLACE_START_AT = "Con bắt đầu ở tầng {n}."
 MATH_PLACE_SKIPPED = "Được miễn: {floors}."
@@ -1044,7 +977,6 @@ TRIB_PART_RIGHT = "{k}) Đúng: {a}"
 TRIB_PART_WRONG = "{k}) Sai. Đáp án: {a}"
 TRIB_PART_GIVEN = "con trả lời: {a}"
 TRIB_PART_BLANK = "{k}) Chưa trả lời. Đáp án: {a}"
-TRIB_PART_ANSWER = "{k}) Đáp án: {a}"
 
 # ---- M11 đợt 2: bậc thang và kiểm tra đầu vào (agent LADDER)
 MATH_LADDER_STEP = "Bậc thang {n}/{t} dẫn tới câu vừa sai"

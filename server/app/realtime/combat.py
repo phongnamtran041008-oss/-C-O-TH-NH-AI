@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from .world import World
     from .zone import ChannelZone, Player
 
-log = logging.getLogger("khu_vuon.combat")
+log = logging.getLogger("toan_tu_tien.combat")
 FACING_NAMES = ("down", "up", "left", "right")
 
 

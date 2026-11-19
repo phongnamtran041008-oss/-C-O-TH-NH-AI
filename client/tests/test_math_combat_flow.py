@@ -115,8 +115,8 @@ def run_math_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         area = next(a for a in vmap.monster_areas if a.props.get("monster") == MA)
         server.sql("update characters set zone_id=?, x=?, y=? where user_id=?",
                    (VALLEY, area.x + area.w / 2, area.y + area.h / 2, uid))
-        server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level, inscriptions, "
-                   "equipped_slot) values (?, 'kiem_go_dao', 'linh', 3, '[]', 'weapon')", (uid,))
+        server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level, "
+                   "equipped_slot) values (?, 'kiem_go_dao', 'linh', 3, 'weapon')", (uid,))
         server.sql("update users set spirit_stones=500, flags=? where id=?",
                    (json.dumps({"tutorial": 5}), uid))      # past Trúc Lão's opening lines
         (workdir / "session.json").write_text(json.dumps({"token": token, "username": "detu_m7",

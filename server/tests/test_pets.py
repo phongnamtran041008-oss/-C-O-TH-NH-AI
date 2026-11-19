@@ -6,7 +6,6 @@ Chuột (Linh Thú banner), Trâu (Hầm Ngục stones), Hổ (failed Thiên Ki�
 math answers), Gà (meditation), Lợn (selling to the village)."""
 import math
 import random
-import re
 from collections import Counter
 from types import SimpleNamespace
 
@@ -19,11 +18,10 @@ from app.models import Character, CodexEntry, Pet, QuizSession, User
 from app.systems import catalog, cultivation, inventory, math_dungeon, pets
 from app.systems.gacha import Banner
 from tests.econ_helpers import player, stones
-from tests.helpers import answer_key
+from tests.helpers import answer_key, old_script
 from tests.test_math_loop import right_answer, wrong_answer
 
 SP = catalog.pets()["species"]
-HAN = re.compile("[" + chr(0x3400) + "-" + chr(0x9FFF) + "]")    # CJK ideographs
 
 
 async def make(client, name, display=None):
@@ -95,11 +93,10 @@ def test_twelve_zodiac_pets_with_the_banner_rarities():
 
 def test_no_words_in_the_pet_data():
     for pid, s in SP.items():
-        assert "hanzi" not in s and "pinyin" not in s, pid
-        assert not HAN.search(str(s)), pid
+        assert not old_script(s), pid
         low = s["skill_vi"].lower()
         assert not any(w in low for w in ("vườn", "hạt", "quả", "chữ")), (pid, s["skill_vi"])
-    assert not HAN.search(str(catalog.pets()))
+    assert not old_script(catalog.pets())
 
 
 def test_banner_rates_hold_over_many_rolls():
@@ -120,7 +117,7 @@ async def test_rolling_gives_pets_levels_duplicates_and_codex(client, db):
         for res in r.json()["results"]:
             seen[res["pet_type"]] += 1
             assert res["rarity"] == SP[res["pet_type"]]["rarity"]
-            assert "hanzi" not in res and "pinyin" not in res
+            assert not old_script(res)
     rows = (await db.execute(select(Pet).where(Pet.user_id == uid))).scalars().all()
     assert len(rows) == len(seen)                         # one row per species
     for p in rows:
@@ -132,7 +129,7 @@ async def test_rolling_gives_pets_levels_duplicates_and_codex(client, db):
     assert ov["found"] == len(seen) and ov["total"] == 12
     hidden = [b for b in ov["book"] if not b["found"]]
     assert all("name_vi" not in b and "skill_vi" not in b for b in hidden)
-    assert all("hanzi" not in b and "pinyin" not in b for b in ov["book"] + ov["pets"])
+    assert not old_script(ov["book"] + ov["pets"])
 
 
 async def test_a_copy_past_the_top_level_becomes_stones(client, db):

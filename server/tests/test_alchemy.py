@@ -12,7 +12,7 @@ from app.learning import math_path
 from app.models import Bee
 from app.systems import alchemy_fire, catalog
 from tests.econ_helpers import give, player, qty, set_stones, stones
-from tests.helpers import answer_key
+from tests.helpers import answer_key, old_script
 from tests.test_math_loop import right_answer
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -55,9 +55,9 @@ async def finish(client, h, fire, timings, frozen=None):
 def no_word_game(obj) -> None:
     """Nothing of the old Chinese-word game in an alchemy payload."""
     text = json.dumps(obj, ensure_ascii=False)
-    for key in ("hanzi", "pinyin", "chars", "fruit"):
+    for key in ("chars", "fruit"):
         assert f'"{key}' not in text, key
-    assert not any("一" <= ch <= "鿿" for ch in text)
+    assert not old_script(obj)
 
 
 # ------------------------------------------------------------------ data
@@ -98,14 +98,14 @@ def test_every_recipe_is_complete_and_free_of_the_word_game():
     pills, mats = catalog.pills(), catalog.materials()
     for rid, r in catalog.recipes().items():
         assert rid in pills, rid
-        assert "chars" not in r and "hanzi" not in pills[rid], rid
+        assert "chars" not in r and not old_script(pills[rid]), rid
         assert mats[r["item"]]["kind"] == "recipe" and mats[r["item"]]["recipe"] == rid
         for ing in r["ingredients"]:
             assert ing["kind"] in ("item", "fish"), (rid, ing)
             if ing["kind"] == "item":
                 assert catalog.stack_item(ing["item"]) is not None, ing
         assert set(r["yield"]) == {"ha", "trung", "thuong"}
-    assert set(C["brew_xp"]) == {"ha", "trung", "thuong"} and "pinyin_right" not in C["points"]
+    assert set(C["brew_xp"]) == {"ha", "trung", "thuong"} and set(C["points"]) <= {"perfect", "good", "miss"}
     # spec 12.3 names every one of these pills
     for pid in ("hoi_huyet_dan", "hoi_khi_dan", "tu_linh_dan", "khang_muc_dan", "ngo_tinh_dan", "truc_co_dan",
                 "kim_dan_dan", "phong_vuong_dan", "nguyen_anh_dan", "hoa_than_dan", "luyen_hu_dan", "hop_the_dan",

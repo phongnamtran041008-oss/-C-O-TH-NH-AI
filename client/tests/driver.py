@@ -255,30 +255,6 @@ def fill_math_answer(drv: Driver, q: dict, key: dict, correct: bool) -> None:
         drv.press(pygame.K_RETURN)
 
 
-def answer_current_quiz(drv: Driver, server: ServerProcess, correct: bool = True) -> dict:
-    """Reads the answer key from the server database (test only) and answers through the UI."""
-    q = drv.game.top.q
-    key = server.sql("select answer_key from quiz_sessions where id=?", (q["session_id"],))[0][0]
-    import json
-    key = json.loads(key)
-    inp = q["input"]
-    if inp in ("choice", "tone"):
-        target = key["option"] if correct else next(o["id"] for o in q["options"] if o["id"] != key["option"])
-        drv.click(f"opt_{target}")
-    elif inp == "text":
-        drv.type(key["pinyin_numeric"].replace(" ", "") if correct else "xx9")
-        drv.press(pygame.K_RETURN)
-    elif inp == "order":
-        pool = {}
-        for tid, t in key["token_text"].items():
-            pool.setdefault(t, []).append(tid)
-        for t in key["order_text"]:
-            drv.click(f"tok_{pool[t].pop()}")
-        drv.click("ord_submit")
-    drv.wait(lambda: drv.game.top is not None and getattr(drv.game.top, "result", None), 10, "quiz result")
-    return drv.game.top.result
-
-
 def main() -> int:
     """Run the full new-player flow and leave screenshots in ./screenshots."""
     from client.tests.test_flow import run_flow

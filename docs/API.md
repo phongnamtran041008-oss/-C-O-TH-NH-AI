@@ -26,35 +26,30 @@ Mọi endpoint trừ `/auth/register`, `/auth/login`, `/auth/reset_password`, `/
 | Method | Đường dẫn | Body | Ghi chú |
 |---|---|---|---|
 | GET | `/gacha/banners` | — | tỉ lệ gốc, tỉ lệ thực tế có pity, bộ đếm pity của bạn |
-| POST | `/gacha/roll` | `{banner: "bees"\|"pets", count: 1\|10, free: false, currency}` | quầy Hạt Chữ đã xóa cùng vườn chữ; lượt miễn phí mỗi ngày dùng ở `free_roll_banner` (Trứng Ong) |
+| POST | `/gacha/roll` | `{banner: "bees"\|"pets", count: 1\|10, free: false, currency}` | lượt miễn phí mỗi ngày dùng ở `free_roll_banner` (Trứng Ong) |
 
 ## Câu hỏi (dùng chung cho mọi hệ thống)
 
-Câu hỏi trả về có dạng:
+Mọi chế độ hỏi câu toán qua cùng một dịch vụ phiên câu hỏi (`server/app/learning/quiz.py`). Câu hỏi trả về có dạng:
 
 ```json
-{"session_id": "…", "context": "garden", "qtype": "Q3", "instruction_vi": "Chọn pinyin đúng",
- "prompt": {"hanzi": "妈"}, "input": "choice",
- "options": [{"id": "a", "text": "mā"}, {"id": "b", "text": "mǎ"}, …],
- "time_limit": 10.0, "expires_at": "…Z", "server_time": "…Z"}
+{"session_id": "…", "context": "math", "qtype": "multiple_choice", "instruction_vi": "Chọn đáp án đúng",
+ "prompt": {"text": "…"}, "input": "choice",
+ "options": [{"id": "a", "text": "…"}, {"id": "b", "text": "…"}, …],
+ "time_limit": 30.0, "math": {"subject": "…", "skill": "…", "floor": 1, "tier": 1, …},
+ "expires_at": "…Z", "server_time": "…Z"}
 ```
 
-`input` cho biết cách trả lời:
-
-| input | dạng | gửi lên |
-|---|---|---|
-| `choice` | Q1–Q4, Q6–Q8, Q10 | `{"option": "b"}` |
-| `tone` | Q11 (nút thanh 1–4) | `{"option": "3"}` |
-| `text` | Q5 (gõ pinyin số, `v` = ü, thanh nhẹ có thể bỏ số 5) | `{"text": "ma1ma5"}` |
-| `order` | Q9 | `{"order": ["t3", "t1", "t2"]}` |
+`context` là chế độ đã hỏi (`math`, `math_combat`, `math_td`, `math_fishing`, `math_realm`, `math_skill`,
+`math_dungeon`, `math_fortune`, `math_placement`, `math_meditate`, `math_tribulation`). Các loại câu (`qtype`),
+cách trả lời của từng `input` và khối `math`: mục **M2: vòng câu hỏi toán** bên dưới.
 
 | Method | Đường dẫn | Body | Ghi chú |
 |---|---|---|---|
-| POST | `/quiz/answer` | `{session_id, answer}` | `{correct, timed_out, correct_option, reveal, …}` + kết quả theo ngữ cảnh (vd `plot`, `reward`) |
-| GET | `/quiz/{session_id}/audio` | — | âm thanh cho câu Q4 |
+| POST | `/quiz/answer` | `{session_id, answer}` | `{correct, timed_out, correct_option, reveal, …}` + kết quả theo ngữ cảnh (vd `math`, `combat`, `fishing`, `xp`) |
 
 Đáp án không bao giờ nằm trong câu hỏi; chỉ được tiết lộ trong kết quả `/quiz/answer`. Mỗi câu chỉ trả lời
-được một lần; quá hạn tính là sai.
+được một lần; quá hạn tính là sai. Máy chủ chỉ hỏi loại câu đã đăng ký cách chấm (`quiz.register_grader`).
 
 ## Giai đoạn 2
 
@@ -139,34 +134,33 @@ giữa chừng rồi gọi lại `start` thì tiếp tục từ câu đang dở.
 
 ## Giai đoạn 5 — Linh Phong (ong linh)
 
-Ong hộ vệ đánh quái trong thế giới chung (xem `docs/PROTOCOL.md`); mọi thứ khác qua REST. Mật và phấn hoa được
-**tính lười**: mỗi lần mở tổ / tải vườn / đổi vai trò, server tính phần làm ra từ lần trước tới nay (nhân
-`TIME_SCALE` như lịch ôn).
+Ong hộ vệ đánh quái trong thế giới chung (xem `docs/PROTOCOL.md`); mọi thứ khác qua REST. Mật được **tính lười**:
+mỗi lần mở tổ / đổi vai trò, server tính phần làm ra từ lần trước tới nay (nhân `TIME_SCALE`).
 
 ### Tổ ong
 
 | Method | Đường dẫn | Body | Ghi chú |
 |---|---|---|---|
-| GET | `/bees/species` | — | công khai: `{species: {id: {name_vi, hanzi, rarity, element, skill, look}}}` (client vẽ ong của người khác) |
-| GET | `/hive` | — | lần đầu tạo tổ và tặng 1 Trứng Ong Phàm. `level`, `level_max`, `cells`, `cells_max`, `columns`, `rows`, `open_cells[]` (ô theo thứ tự mở từ giữa ra), `next_cell` {`cell`, `spirit_stones`, `species_required`, `ok`}, `honey`, `wax`, `capacity`, `honey_per_hour`, `next_level` {chi phí, `capacity`, `honey_mult`, `decoration_vi`}, `decorations[]` {`id`, `name_vi`, `on`}, `bees[]`, `eggs[]` {`item_id`, `rarity`, `qty`}, `foods[]` {`food`, `name_vi`, `qty`}, `guard_slots`, `guard_used`, `pollinate_max`, `pollinate_used`, `species_found`, `species_total` |
+| GET | `/bees/species` | — | công khai: `{species: {id: {name_vi, rarity, rarity_vi, element, element_vi, skill, skill_vi, look, desc_vi}}}` (client vẽ ong của người khác) |
+| GET | `/hive` | — | lần đầu tạo tổ và tặng 1 Trứng Ong Phàm. `level`, `level_max`, `cells`, `cells_max`, `columns`, `rows`, `open_cells[]` (ô theo thứ tự mở từ giữa ra), `next_cell` {`cell`, `spirit_stones`, `species_required`, `ok`}, `honey`, `wax`, `capacity`, `honey_per_hour`, `next_level` {chi phí, `capacity`, `honey_mult`, `decoration_vi`}, `decorations[]` {`id`, `name_vi`, `on`}, `bees[]`, `eggs[]` {`item_id`, `rarity`, `qty`}, `foods[]` {`food`, `name_vi`, `qty`}, `guard_slots`, `guard_used`, `species_found`, `species_total` |
 | POST | `/hive/collect` | — | chuyển mật/sáp trong tổ (phần nguyên) vào túi: `{honey, wax, totals}`. Lỗi `no_honey` |
 | POST | `/hive/hatch` | `{item_id}` | ấp một quả trứng: `{bee, new_species, milestones[]}`. Loài được chọn lúc nở (cùng độ hiếm, loài chưa có nặng gấp đôi). Lỗi `not_egg`, `no_egg`, `hive_full` |
 | POST | `/hive/unlock_cell` | — | mở ô kế tiếp (Linh Thạch + mốc Ong Phổ). Lỗi `need_species`, `hive_max`, `insufficient_funds` |
 | POST | `/hive/upgrade` | — | nâng cấp tổ (Linh Thạch, Sáp Ong, Gỗ Linh Mộc). Lỗi `no_material`, `hive_max_level` |
 | POST | `/hive/decoration` | `{decoration, on}` | bật/tắt trang trí đã mở. Lỗi `decoration_locked` |
 
-Mỗi ong trong `bees[]`: `id`, `species`, `name_vi`, `hanzi`, `pinyin`, `rarity`, `rarity_vi`, `rarity_color`,
-`element`, `element_vi`, `level`, `xp`, `xp_next`, `bond`, `role` (`hive` \| `pollinate` \| `guard`), `slot`,
-`resonance_pct`, `word` {`hanzi`, `pinyin`, `vi`}, `word_mastery`, `honey_per_hour`, `pollen_per_hour`,
-`guard` {`hp`, `atk`, `cd`}, `skill`, `skill_vi`, `favorite_known`, `favorite`, `favorite_hint_vi`, `look`.
+Mỗi ong trong `bees[]`: `id`, `species`, `name_vi`, `rarity`, `rarity_vi`, `rarity_color`, `element`, `element_vi`,
+`level`, `xp`, `xp_next`, `bond`, `bond_max`, `role` (`hive` \| `guard`), `role_vi`, `slot`, `resonance_pct`,
+`honey_per_hour`, `guard` {`hp`, `atk`, `cd`}, `skill`, `skill_vi`, `favorite_known`, `favorite`,
+`favorite_hint_vi`, `look`, `desc_vi`.
 
 ### Ong
 
 | Method | Đường dẫn | Body | Ghi chú |
 |---|---|---|---|
 | POST | `/bees/move` | `{bee_id, slot}` | đặt vào ô đã mở; ô có ong thì đổi chỗ. Trả lại `/hive`. Lỗi `cell_locked` |
-| POST | `/bees/role` | `{bee_id, role}` | `hive` / `pollinate` (tối đa 6) / `guard` (số ô theo cảnh giới: Phàm Nhân 0, Luyện Khí 2, Trúc Cơ 3, Kim Đan 4, Nguyên Anh 5). Lỗi `no_guard_slot`, `guard_full`, `pollinate_full` |
-| POST | `/bees/feed` | `{bee_id, food}` | `food` = `linh_mat` \| `linh_qua` \| `ca_nho` \| `fruit:<word_id>` → `{xp_gained, favorite, favorite_discovered, favorite_vi, levels_gained, level, xp, xp_next, bond, bond_gained}`. Món thích: kinh nghiệm ×2, thân thiết +8 (thường +2). Lỗi `no_food`, `bad_food` |
+| POST | `/bees/role` | `{bee_id, role}` | `hive` / `guard` (số ô theo cảnh giới: Phàm Nhân 0, Luyện Khí 2, Trúc Cơ 3, Kết Đan 4, Nguyên Anh 5, ... Đại Thừa 9). Lỗi `no_guard_slot`, `guard_full` |
+| POST | `/bees/feed` | `{bee_id, food}` | `food` = món trong `balance/bees.json → feed` (`linh_mat`, `linh_qua`, `ca_nho`, linh thảo...), cá `fish_<loài>` hoặc đan cho ong → `{xp_gained, favorite, favorite_discovered, favorite_vi, levels_gained, level, xp, xp_next, bond, bond_gained}`. Món thích: kinh nghiệm ×2, thân thiết +8 (thường +2). Lỗi `no_food`, `bad_food` |
 | POST | `/bees/release` | `{bee_id}` | thả ong, nhận Sáp Ong theo độ hiếm |
 | GET | `/codex/bee` | — | Ong Phổ: `{found, total, entries[], milestones[]}`; loài chưa gặp chỉ có `id`, `rarity`, `found: false` |
 
@@ -180,7 +174,7 @@ Mỗi ong trong `bees[]`: `id`, `species`, `name_vi`, `hanzi`, `pinyin`, `rarity
 ## Giai đoạn 6 — Câu cá (mục 11)
 
 Mọi kết quả do máy chủ quyết định. Một lượt câu: `cast` → (chờ `bite_in` giây) → `hook` → câu hỏi nếu cá từ Linh trở
-lên (trả lời qua `/quiz/answer` như mọi câu khác, `context: "fishing"`) → chơi trò kéo cá → `reel`.
+lên (trả lời qua `/quiz/answer` như mọi câu khác, `context: "math_fishing"`) → chơi trò kéo cá → `reel`.
 
 | Method | Đường dẫn | Body | Ghi chú |
 |---|---|---|---|
@@ -194,7 +188,7 @@ lên (trả lời qua `/quiz/answer` như mọi câu khác, `context: "fishing"`
 | POST | `/fishing/reel` | `{cast_id, toggles[]}` | `toggles`: các số bước (20 ms) mà nút đổi trạng thái, tăng dần, bắt đầu từ "nhả". Máy chủ chạy lại `fishing_sim.replay` → `{result: caught\|escaped\|snapped, steps}`; câu được thì thêm `fish{...}, size_cm, small, items[], new_species, personal_record, server_record, milestones[]`. Lỗi `too_fast` (nhanh hơn thời gian thật), `bad_input`, `no_cast`, `wrong_step` |
 | POST | `/fishing/cancel` | — | thu cần |
 | GET | `/codex/fish` | — | Ngư Phổ `{found, total, species[], milestones[]}`; loài chưa câu chỉ có `id, rarity, shape, hint_vi` |
-| GET | `/fishing/records` | — | `{records: [{id, name_vi, hanzi, rarity, top: [{name, size_cm, me}]}]}` — 3 con to nhất mỗi loài toàn máy chủ |
+| GET | `/fishing/records` | — | `{records: [{id, name_vi, rarity, top: [{name, size_cm, me}]}]}` — 3 con to nhất mỗi loài toàn máy chủ |
 | GET | `/world/weather?zone=` | — | `{zone, night, rain, hour}` |
 
 Khi trả lời câu hỏi câu cá, `/quiz/answer` có thêm `fishing`: `{stage: "quiz", next_question, right, need}` (cá Thiên
@@ -206,7 +200,7 @@ Cá câu được vào túi là `fish_<loài>` (bán được); cá Phàm quá n
 
 ## Giai đoạn 7 — Tàng Thư Các (mục 9)
 
-Ải Thủ Vườn (tháp là cây chữ, `/td/*`) đã bỏ cùng trò học chữ cũ; thủ thành bây giờ chỉ còn Thủ Thành Toán
+Thủ thành chỉ có Thủ Thành Toán
 (`/math/td/*`, mục M10 bên dưới), vào từ cửa Thủ Thành của Động Phủ toán hoặc Cổng Thủ Thành ở Trúc Lâm Thôn.
 
 | Method | Đường dẫn | Body | Ghi chú |
@@ -217,9 +211,7 @@ Cá câu được vào túi là `fish_<loài>` (bán được); cá Phàm quá n
 | GET | `/codex/treasure` | — | Bảo Vật Phổ `{found, total, entries[{id, kind, kind_vi, found, name_vi?, desc_vi?, first_at?}]}` |
 | POST | `/books/claim` | `{book, pct}` | nhận mốc 25/50/75/100%. Lỗi `not_yet`, `claimed`, `bad_milestone` |
 
-Đã bỏ cùng trò học chữ cũ (2026-11-20): `/library` (đổi thành `/books`, không còn sổ `plant` và `discovery`),
-`/library/search`, `/library/mistakes` (Sổ Lỗi chữ), `/codex/plant` (Bách Thảo Phổ), bí kíp trên kệ Thủ Thư.
-Danh hiệu và khung chỉ những sổ ấy cho thì không còn hiện. Kinh thư toán của Tàng Thư Các là `/math/library` (M4).
+Kinh thư toán của Tàng Thư Các là `/math/library` (M4).
 
 `GET /me` có thêm `title`, `frame`. `GET /codex/monster` có cả Mặc Quái của Thủ Thành Toán (`id` bắt
 đầu bằng `td_`, `td: true`).
@@ -236,7 +228,7 @@ trước mỗi lần bấm, máy chủ tính lại vị trí kim và quyết đ�
 | POST | `/alchemy/start` | `{recipe_id}` | lấy nguyên liệu + phí ngay, nhóm lửa → `{fire{session_id, recipe_id, name_vi, bar, periods[3], zones[3]{center, width, perfect}, furnace_level, expires_at}, resumed, used[]}`. Đang có mẻ dở cùng đan thì trả lại mẻ đó. Lỗi `no_recipe`, `no_ingredient`, `insufficient_funds`, `realm_low`, `too_far`, `fire_busy` |
 | POST | `/alchemy/finish` | `{session_id, timings[3] (ms kim chạy)}` | → `{quality: phe\|ha\|trung\|thuong, quality_vi, points, best, hits[], positions[], made, extra, pill, total, xp (Tu Vi theo phẩm chất, null khi phế đan)}`. Hết hạn (15 phút) → `{quality: "phe", expired: true, made: 0}`. Lỗi `bad_timings`, `too_fast` (kim không thể chạy nhanh hơn thời gian thật), `finished` (409), `no_session` |
 | POST | `/alchemy/furnace/upgrade` | — | nâng Đan Lô trong động phủ (chỉ ở nhà). Lỗi `not_home`, `max_level`, `no_material`, `insufficient_funds` |
-| GET | `/pets` | — | `{pets[{id, pet_type, name_vi, zodiac_vi, hanzi, pinyin, rarity, rarity_vi, level, max_level, equipped, skill_vi, stats, look}], equipped, book[12]{id, found, zodiac_vi, rarity, (đã gặp:) name_vi, hanzi, pinyin, skill_vi, look}, found, total, looks{loài: look}}` |
+| GET | `/pets` | — | `{pets[{id, pet_type, name_vi, zodiac_vi, rarity, rarity_vi, level, max_level, equipped, skill_vi, stats, look}], equipped, book[12]{id, found, zodiac_vi, rarity, (đã gặp:) name_vi, skill_vi, look}, found, total, looks{loài: look}}` |
 | POST | `/pets/equip` | `{pet_id \| null}` | đeo một con (hoặc tháo); trả lại như `GET /pets`. Lỗi `no_pet` |
 | GET | `/shop` | — | `{stock[{item_id, name_vi, desc_vi, price, daily, left, have}], equipment[{item_id, rarity, rarity_vi, color, name_vi, slot_vi, price, stats}], at_shop, sell_items[], sell_equipment[], spirit_stones}` |
 | POST | `/shop/buy` | `{item_id, qty, rarity?}` | phải đứng cạnh Bà Chủ Sạp. `rarity` (`pham`/`linh`) để mua trang bị. Lỗi `too_far`, `not_sold`, `sold_out`, `daily_limit`, `insufficient_funds`, `bad_count` |
@@ -245,7 +237,7 @@ trước mỗi lần bấm, máy chủ tính lại vị trí kim và quyết đ�
 
 Thay đổi ở API cũ:
 
-- `POST /gacha/roll {banner: "pets"}` đã mở: kết quả `[{rarity, pet_type, name_vi, hanzi, pinyin, zodiac_vi, look, pet_id, new, level, level_up?, stones?}]`.
+- `POST /gacha/roll {banner: "pets"}` đã mở: kết quả `[{rarity, pet_type, name_vi, zodiac_vi, look, pet_id, new, level, level_up?, stones?}]`.
 - `POST /inventory/use` dùng được Tụ Linh / Kháng Mực / Ngộ Tính Đan → `{used, left, buff, seconds, buffs[]}`; Phong
   Vương Đan cho ong ăn qua `POST /bees/feed {food: "phong_vuong_dan"}`.
 - `GET /cultivation` có thêm `buffs[{id, name_vi, seconds_left}]` và `pet` (con đang đeo). `GET /inventory`: mỗi
@@ -253,7 +245,7 @@ Thay đổi ở API cũ:
 - `GET /quests` có thêm `daily[]` (việc hằng ngày, `chain: "daily"`, id `d<ngày>:<việc>`) và `daily_bonus{rewards_vi,
   claimed}`; nhận việc cuối cùng của ngày trả thêm `rewards.bonus`. Kiểu mục tiêu mới: `brew`,
   `answer`, `td_win`; `target: "*"` là bất kỳ.
-- `GET /library` (nay là `GET /books`): thêm sổ `pet` (Linh Thú Phổ); mua đan phương đã có → `already_have`.
+- `GET /books`: thêm sổ `pet` (Linh Thú Phổ); mua đan phương đã có → `already_have`.
 
 ## Giai đoạn 9 — Bí cảnh (mục 14)
 
@@ -261,7 +253,7 @@ Vào bí cảnh, tổ đội và mọi thứ trong lượt chơi đi qua WebSock
 
 | Method | Đường dẫn | Body | Ghi chú |
 |---|---|---|---|
-| GET | `/realms` | — | `{realms[{id, name_vi, hanzi, kind: scheduled\|rift, min_realm, min_realm_vi, realm_ok, tier, puzzles, time_limit_minutes, desc_vi, entries_left, daily, open, opens_in, closes_in}], party, queue{key, realm, waiting}?, puzzles{kind: {name_vi, hanzi, how_vi}}, forge{fragments, stones, have, rarity, rarity_vi, set_vi, bonus_vi, pieces[{id, name_vi, slot_vi}]}}` |
+| GET | `/realms` | — | `{realms[{id, name_vi, kind: scheduled\|rift, math, floor, realm_ok, puzzles, rooms[], time_limit_minutes, desc_vi, entries_left, daily, party_min, open, opens_in, closes_in}], math_realms[...như trên, kind: math], party, queue{key, realm, waiting}?, puzzles{kind: {name_vi, how_vi}}, forge{fragments, stones, have, rarity, rarity_vi, set_vi, bonus_vi, pieces[{id, name_vi, slot_vi}]}}` |
 | POST | `/realm/forge` | `{piece}` | 12 Mảnh Bảo Vật + 600 Linh Thạch → một món Mặc Ảnh phẩm Thiên → `{equipment, spirit_stones}`. Lỗi `not_enough`, `bad_piece` |
 
 Thay đổi ở API cũ: `GET /fishing` — Cần Thiên Tơ có giá (Thiên Tằm Ti + Vảy Linh Ngư + Linh Thạch, cần Trúc Cơ). Chỉ số
