@@ -1,0 +1,655 @@
+{
+ "branch": "nc",
+ "researched": "2026-11-19",
+ "backbone": [
+  {
+   "title": "You and Your Research",
+   "author": "Richard Hamming",
+   "kind": "bai_viet",
+   "lang": "en",
+   "url": "https://www.cs.virginia.edu/~robins/YouAndYourResearch.html",
+   "where": "toàn bài (bản chép lời bài nói 1986)",
+   "free": true,
+   "minutes": 60,
+   "why_vi": "Bài nói kinh điển về chọn vấn đề lớn và làm việc cửa mở.",
+   "checked": true
+  },
+  {
+   "title": "How to Read a Paper",
+   "author": "S. Keshav",
+   "kind": "bai_bao",
+   "lang": "en",
+   "url": "https://www.cs.princeton.edu/courses/archive/fall18/cos561/papers/HowToRead05.pdf",
+   "where": "toàn bài 3 trang: phương pháp ba lượt",
+   "free": true,
+   "minutes": 15,
+   "why_vi": "Ba lượt đọc để quyết định có đọc tiếp hay không.",
+   "checked": true
+  },
+  {
+   "title": "A Recipe for Training Neural Networks",
+   "author": "Andrej Karpathy",
+   "kind": "bai_viet",
+   "lang": "en",
+   "url": "https://karpathy.github.io/2019/04/25/recipe/",
+   "where": "toàn bài: sáu bước từ làm quen dữ liệu đến vắt kiệt hiệu năng",
+   "free": true,
+   "minutes": 25,
+   "why_vi": "Quy trình huấn luyện thực tế: kiểm tra dữ liệu, overfit một batch, rồi mới regularize.",
+   "checked": true
+  }
+ ],
+ "nodes": {
+  "hp_doc_bai_bao": {
+   "primary": {
+    "title": "How to Read a Paper",
+    "author": "S. Keshav",
+    "kind": "bai_bao",
+    "lang": "en",
+    "url": "https://www.cs.princeton.edu/courses/archive/fall18/cos561/papers/HowToRead05.pdf",
+    "where": "toàn bài 3 trang: phương pháp ba lượt",
+    "free": true,
+    "minutes": 15,
+    "why_vi": "Ba lượt đọc để quyết định có đọc tiếp hay không.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "CS230 bài 8: Career Advice / Reading Research Papers",
+     "author": "Andrew Ng (Stanford, Autumn 2018)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://www.kdnuggets.com/2019/09/advice-building-machine-learning-career-research-papers-andrew-ng.html",
+     "where": "tóm tắt bài giảng (video gốc nằm trên YouTube Stanford)",
+     "free": true,
+     "minutes": 15,
+     "why_vi": "Cách lập danh sách và đọc 2-3 bài mỗi tuần.",
+     "checked": true
+    },
+    {
+     "title": "Research Debt",
+     "author": "Chris Olah, Shan Carter (Distill 2017)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://distill.pub/2017/research-debt/",
+     "where": "mục 'Interpretive Labor' và 'Research Distillation'",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Nói vì sao viết giải thích rõ cũng là đóng góp nghiên cứu thật.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "note_vi": "Dùng phương pháp ba lượt của Keshav cho một bài ngắn mỗi tuần; đọc Ng để có nhịp đều đặn, bỏ qua lời khuyên nghề nghiệp."
+  },
+  "hp_tai_lap": {
+   "primary": {
+    "title": "The Annotated Transformer",
+    "author": "Harvard NLP",
+    "kind": "code",
+    "lang": "en",
+    "url": "https://nlp.seas.harvard.edu/annotated-transformer/",
+    "where": "toàn bài: bài báo 'Attention Is All You Need' kèm mã PyTorch",
+    "free": true,
+    "minutes": 120,
+    "why_vi": "Đối chiếu từng câu của bài báo với từng dòng mã, vừa là bài tái lập.",
+    "checked": false
+   },
+   "also": [
+    {
+     "title": "A Recipe for Training Neural Networks",
+     "author": "Andrej Karpathy",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://karpathy.github.io/2019/04/25/recipe/",
+     "where": "toàn bài: sáu bước từ làm quen dữ liệu đến vắt kiệt hiệu năng",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Quy trình huấn luyện thực tế: kiểm tra dữ liệu, overfit một batch, rồi mới regularize.",
+     "checked": true
+    },
+    {
+     "title": "CS336 assignment 1: Basics",
+     "author": "Stanford CS336",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://github.com/stanford-cs336/assignment1-basics",
+     "where": "toàn bộ",
+     "free": true,
+     "minutes": 1200,
+     "why_vi": "Dạng tái lập có test tự chấm.",
+     "checked": false
+    }
+   ],
+   "practice": [],
+   "note_vi": "Bắt đầu bằng Annotated Transformer: đối chiếu bài báo với mã; chọn một kết quả nhỏ mà bài báo công bố rồi tự cài lại.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Tiny Shakespeare (shakespeare_char)",
+      "url": "https://github.com/karpathy/nanoGPT",
+      "size_mb": 1.0,
+      "license": "MIT cho mã",
+      "why_vi": "Đủ nhỏ để tái lập số liệu trong README."
+     },
+     {
+      "name": "Fashion-MNIST",
+      "url": "https://github.com/zalandoresearch/fashion-mnist",
+      "size_mb": 35,
+      "license": "MIT",
+      "why_vi": "Có bảng kết quả công bố để so sánh."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "nanoGPT (kho mã, đã ngừng cập nhật)",
+      "author": "Andrej Karpathy",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://github.com/karpathy/nanoGPT",
+      "where": "mục quickstart: data/shakespeare_char",
+      "free": true,
+      "minutes": 30,
+      "why_vi": "Bản tham chiếu train.py/model.py gọn; README nói đã cũ nhưng vẫn chạy được, MIT.",
+      "checked": true
+     },
+     {
+      "title": "cifar10-airbench",
+      "author": "Keller Jordan",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://github.com/KellerJordan/cifar10-airbench",
+      "where": "README",
+      "free": true,
+      "minutes": 60,
+      "why_vi": "Mốc tái lập có con số rõ.",
+      "checked": true
+     }
+    ],
+    "target_vi": "Khớp số công bố: nanoGPT shakespeare_char val loss 1.4697 (A100, ~3 phút); airbench 94.01% CIFAR-10 trên A100. Khớp tới chữ số thập phân thứ hai là đạt, chênh vì hạt giống thì ghi lại.",
+    "compute_vi": "Cần GPU: Colab miễn phí (không bảo đảm GPU, phiên tối đa 12 giờ) hoặc Kaggle (~30 giờ GPU/tuần theo nguồn thứ cấp, chưa kiểm chứng); CPU chỉ chạy được bản thu nhỏ."
+   }
+  },
+  "hp_hoc_tang_cuong": {
+   "primary": {
+    "title": "Spinning Up in Deep RL: Introduction to RL",
+    "author": "OpenAI",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://spinningup.openai.com/en/latest/",
+    "where": "ba phần của mục Introduction to RL, rồi Exercises",
+    "free": true,
+    "minutes": 180,
+    "why_vi": "Giới thiệu gọn nhất về RL sâu, có bài tập.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Reinforcement Learning: An Introduction (2nd ed.)",
+     "author": "Sutton và Barto",
+     "kind": "sach",
+     "lang": "en",
+     "url": "http://incompleteideas.net/book/the-book-2nd.html",
+     "where": "chương 1-3, rồi 6 và 13",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Giáo trình gốc, bản PDF miễn phí trên trang tác giả.",
+     "checked": false
+    },
+    {
+     "title": "ARENA chương 2: Reinforcement Learning",
+     "author": "ARENA",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://arena.education/chapter2",
+     "where": "RL cơ bản và RLHF trên transformer",
+     "free": true,
+     "minutes": 600,
+     "why_vi": "Bài tập lập trình RL tới RLHF.",
+     "checked": false
+    },
+    {
+     "title": "Hugging Face Deep RL Course",
+     "author": "Hugging Face",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://huggingface.co/learn/deep-rl-course/unit0/introduction",
+     "where": "các đơn vị đầu",
+     "free": true,
+     "minutes": 400,
+     "why_vi": "Thực hành nhẹ, nhưng khoá ở trạng thái bảo trì thấp.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "note_vi": "Spinning Up phần Introduction rồi tự cài một thuật toán policy gradient; RLVR hiện đại xem ở bài 16 của CS336."
+  },
+  "hp_an_toan": {
+   "primary": {
+    "title": "Technical AI Safety (BlueDot Impact)",
+    "author": "BlueDot Impact",
+    "kind": "khoa_hoc",
+    "lang": "en",
+    "url": "https://bluedot.org/courses/technical-ai-safety",
+    "where": "khoá 30 giờ: alignment, RLHF, interpretability, đánh giá, AI control",
+    "free": true,
+    "minutes": 1800,
+    "why_vi": "Khoá có nhóm hướng dẫn, miễn phí theo trang.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "How To Become A Mechanistic Interpretability Researcher",
+     "author": "Neel Nanda",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://www.alignmentforum.org/posts/jP9KDyMkchuv6tHwm/how-to-become-a-mechanistic-interpretability-researcher",
+     "where": "ba giai đoạn: Learning the Ropes, mini-projects, full projects",
+     "free": true,
+     "minutes": 66,
+     "why_vi": "Kế hoạch học đến làm nghiên cứu, hữu ích cả ngoài diễn giải mô hình.",
+     "checked": true
+    },
+    {
+     "title": "ARENA chương 1 và 4: Transformer Interpretability, Alignment Science",
+     "author": "ARENA",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://arena.education/chapter1",
+     "where": "chương 1 và chương 4",
+     "free": true,
+     "minutes": 900,
+     "why_vi": "Bài tập lập trình cho diễn giải và khoa học căn chỉnh.",
+     "checked": false
+    },
+    {
+     "title": "AI Risk Management Framework (AI RMF 1.0)",
+     "author": "NIST",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://www.nist.gov/itl/ai-risk-management-framework",
+     "where": "trang tổng quan và Playbook",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Khung quản trị rủi ro phổ biến cho trách nhiệm.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "note_vi": "Chọn một: BlueDot nếu muốn học theo nhóm, ARENA nếu muốn lập trình; NIST chỉ để biết ngôn ngữ quản trị rủi ro."
+  },
+  "hp_viet": {
+   "primary": {
+    "title": "How to write a great research paper",
+    "author": "Simon Peyton Jones",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://www.microsoft.com/en-us/research/academic-program/write-great-research-paper/",
+    "where": "video ~34 phút và slide: bảy gợi ý",
+    "free": true,
+    "minutes": 34,
+    "why_vi": "Bảy lời khuyên cụ thể để bài viết có một ý chính rõ.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Heuristics for Scientific Writing (a Machine Learning Perspective)",
+     "author": "Zachary C. Lipton",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://www.approximatelycorrect.com/2018/01/29/heuristics-technical-scientific-writing-machine-learning-perspective/",
+     "where": "bài gốc trên blog Approximately Correct (2018)",
+     "free": true,
+     "minutes": 10,
+     "why_vi": "Danh sách ngắn để soát bài viết; bản gốc của Lipton không tìm thấy.",
+     "checked": true
+    },
+    {
+     "title": "Research Debt",
+     "author": "Chris Olah, Shan Carter (Distill 2017)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://distill.pub/2017/research-debt/",
+     "where": "mục 'Interpretive Labor' và 'Research Distillation'",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Nói vì sao viết giải thích rõ cũng là đóng góp nghiên cứu thật.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "note_vi": "Xem video Peyton Jones, viết một trang tóm tắt ý chính, rồi soát bằng danh sách kiểm; bài Research Debt để thấy giá trị của giải thích rõ."
+  },
+  "du_an_hop_the": {
+   "primary": {
+    "title": "Research Debt",
+    "author": "Chris Olah, Shan Carter (Distill 2017)",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://distill.pub/2017/research-debt/",
+    "where": "mục 'Interpretive Labor' và 'Research Distillation'",
+    "free": true,
+    "minutes": 25,
+    "why_vi": "Nói vì sao viết giải thích rõ cũng là đóng góp nghiên cứu thật.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "How To Become A Mechanistic Interpretability Researcher",
+     "author": "Neel Nanda",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://www.alignmentforum.org/posts/jP9KDyMkchuv6tHwm/how-to-become-a-mechanistic-interpretability-researcher",
+     "where": "ba giai đoạn: Learning the Ropes, mini-projects, full projects",
+     "free": true,
+     "minutes": 66,
+     "why_vi": "Kế hoạch học đến làm nghiên cứu, hữu ích cả ngoài diễn giải mô hình.",
+     "checked": true
+    },
+    {
+     "title": "How to write a great research paper",
+     "author": "Simon Peyton Jones",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://www.microsoft.com/en-us/research/academic-program/write-great-research-paper/",
+     "where": "video ~34 phút và slide: bảy gợi ý",
+     "free": true,
+     "minutes": 34,
+     "why_vi": "Bảy lời khuyên cụ thể để bài viết có một ý chính rõ.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "note_vi": "Chọn một đóng góp nhỏ: bài giải thích kỹ thuật có mã chạy lại được, hoặc một PR chấp nhận được vào kho mở; xuất bản và xin người ngoài thử.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Tiny Shakespeare / names.txt (tái dùng làm thí nghiệm nhỏ)",
+      "url": "https://github.com/karpathy/makemore",
+      "size_mb": 0.3,
+      "license": "MIT cho mã; names.txt không ghi giấy phép riêng",
+      "why_vi": "Thí nghiệm nhỏ để viết bài có đối chứng."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "makemore (kho mã)",
+      "author": "Andrej Karpathy",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://github.com/karpathy/makemore",
+      "where": "names.txt và makemore.py",
+      "free": true,
+      "minutes": 20,
+      "why_vi": "Bộ tên 32 nghìn dòng dùng chung cho cả chuỗi video; MIT.",
+      "checked": true
+     },
+     {
+      "title": "nanoGPT (kho mã, đã ngừng cập nhật)",
+      "author": "Andrej Karpathy",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://github.com/karpathy/nanoGPT",
+      "where": "mục quickstart: data/shakespeare_char",
+      "free": true,
+      "minutes": 30,
+      "why_vi": "Bản tham chiếu train.py/model.py gọn; README nói đã cũ nhưng vẫn chạy được, MIT.",
+      "checked": true
+     }
+    ],
+    "target_vi": "Bài đăng công khai có mã chạy lại được; ít nhất một người ngoài chạy lại hoặc phản hồi. Không có con số chuẩn.",
+    "compute_vi": "CPU laptop cho thí nghiệm nhỏ; GPU miễn phí nếu cần."
+   }
+  },
+  "dt_gu_nghien_cuu": {
+   "primary": {
+    "title": "You and Your Research",
+    "author": "Richard Hamming",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://www.cs.virginia.edu/~robins/YouAndYourResearch.html",
+    "where": "toàn bài (bản chép lời bài nói 1986)",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Bài nói kinh điển về chọn vấn đề lớn và làm việc cửa mở.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Research Taste Exercises",
+     "author": "Chris Olah",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://colah.github.io/notes/taste/",
+     "where": "toàn bài (1/2021): các bài tập luyện khẩu vị nghiên cứu",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Biến 'khẩu vị' thành các bài tập cụ thể.",
+     "checked": true
+    },
+    {
+     "title": "Principles of Effective Research",
+     "author": "Michael Nielsen",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://www.bumc.bu.edu/preventive-med/files/2020/06/Principls-of-effective-reserache-nielsen-0404.pdf",
+     "where": "bản PDF của tiểu luận (2004); blog gốc của tác giả hiện không mở được",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Nguyên tắc cá nhân cho người làm nghiên cứu dài hạn.",
+     "checked": true
+    },
+    {
+     "title": "An Opinionated Guide to ML Research",
+     "author": "John Schulman",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "http://joschu.net/blog/opinionated-guide-ml-research.html",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Hướng dẫn chọn hướng và nhịp làm việc của một nhà nghiên cứu; chưa tải được trang khi kiểm.",
+     "checked": false
+    }
+   ],
+   "practice": [],
+   "note_vi": "Đọc Hamming trước, rồi tự làm một bài tập trong Research Taste Exercises: chấm điểm ý tưởng của mình và so sánh với người hướng dẫn."
+  },
+  "dt_dan_dat_doi": {
+   "primary": {
+    "title": "StaffEng: To lead, you have to follow",
+    "author": "Will Larson",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://staffeng.com/guides/to-lead-follow/",
+    "where": "toàn bài",
+    "free": true,
+    "minutes": 20,
+    "why_vi": "Nói về dẫn dắt bằng cách lắng nghe và hợp tác.",
+    "checked": false
+   },
+   "also": [
+    {
+     "title": "StaffEng: Create space for others",
+     "author": "Will Larson",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://staffeng.com/guides/create-space-for-others/",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Tạo chỗ cho người khác làm và học.",
+     "checked": false
+    },
+    {
+     "title": "Full Stack Deep Learning 2022, Bài 8: ML Teams and Project Management",
+     "author": "Full Stack Deep Learning",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://fullstackdeeplearning.com/course/2022/lecture-8-teams-and-pm/",
+     "where": "toàn bài giảng",
+     "free": true,
+     "minutes": 75,
+     "why_vi": "Cách tổ chức đội học máy và quản lý dự án.",
+     "checked": false
+    }
+   ],
+   "practice": [],
+   "note_vi": "Đọc hai bài StaffEng ngắn rồi xem bài 8 FSDL; chưa tìm được sách quản lý đã kiểm chứng nên bỏ."
+  },
+  "dt_chien_luoc": {
+   "primary": {
+    "title": "Responsible AI risk framing: AI RMF 1.0 và Playbook",
+    "author": "NIST",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://www.nist.gov/itl/ai-risk-management-framework",
+    "where": "trang tổng quan và Playbook",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Khung nhìn hệ quả và trách nhiệm khi đưa AI ra thế giới.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StaffEng: Writing engineering strategy",
+     "author": "Will Larson",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://staffeng.com/guides/engineering-strategy/",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Cách viết chiến lược kỹ thuật ngắn và dùng được.",
+     "checked": false
+    },
+    {
+     "title": "AGI Strategy (BlueDot)",
+     "author": "BlueDot Impact",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://bluedot.org/courses/agi-strategy",
+     "where": "khoá 25-40 giờ",
+     "free": true,
+     "minutes": 1500,
+     "why_vi": "Góc nhìn chiến lược, giá chưa ghi rõ trên trang.",
+     "checked": true
+    },
+    {
+     "title": "A Field Guide to Rapidly Improving AI Products",
+     "author": "Hamel Husain",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://hamel.dev/blog/posts/field-guide/",
+     "where": "mục 6: lộ trình đếm thí nghiệm",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Lộ trình sản phẩm tính bằng thí nghiệm thay vì tính năng.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "note_vi": "Lấy NIST để có ngôn ngữ trách nhiệm, StaffEng cho viết chiến lược; chưa tìm được nguồn tốt riêng về chi phí-giá trị của sản phẩm AI."
+  },
+  "du_an_dai_thua": {
+   "primary": {
+    "title": "Principles of Effective Research",
+    "author": "Michael Nielsen",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://www.bumc.bu.edu/preventive-med/files/2020/06/Principls-of-effective-reserache-nielsen-0404.pdf",
+    "where": "bản PDF của tiểu luận (2004); blog gốc của tác giả hiện không mở được",
+    "free": true,
+    "minutes": 40,
+    "why_vi": "Nguyên tắc cá nhân cho người làm nghiên cứu dài hạn.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StaffEng: Work on what matters",
+     "author": "Will Larson",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://staffeng.com/guides/work-on-what-matters/",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Cách chọn việc đáng làm trong tổ chức.",
+     "checked": false
+    },
+    {
+     "title": "You and Your Research",
+     "author": "Richard Hamming",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://www.cs.virginia.edu/~robins/YouAndYourResearch.html",
+     "where": "toàn bài (bản chép lời bài nói 1986)",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Bài nói kinh điển về chọn vấn đề lớn và làm việc cửa mở.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "note_vi": "Viết một đề xuất một trang: vấn đề, vì sao đáng làm, ai dùng, cách đo; rồi bắt đầu và công bố tiến độ mỗi tháng.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Tuỳ dự án",
+      "url": "https://github.com/karpathy/nanochat",
+      "size_mb": null,
+      "license": "tuỳ dự án (nanochat: MIT)",
+      "why_vi": "Dự án tự khởi xướng nên dữ liệu do người chơi chọn; nanochat là mẫu đường ống trọn vẹn."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "nanochat (kho mã)",
+      "author": "Andrej Karpathy",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://github.com/karpathy/nanochat",
+      "where": "README: speedrun.sh và tham số --depth",
+      "free": true,
+      "minutes": 60,
+      "why_vi": "Đường ống trọn vẹn từ tokenizer đến chat; bản mới thay nanoGPT, MIT.",
+      "checked": true
+     }
+    ],
+    "target_vi": "Một sản phẩm hoặc bài báo có người dùng/người theo thật; không có con số chuẩn.",
+    "compute_vi": "Tuỳ dự án; nanochat speedrun cần 8 GPU H100 khoảng 2 giờ (~48 USD theo README), phiên bản nhỏ chạy được trên GPU đơn chậm hơn 8 lần."
+   }
+  }
+ },
+ "exam_proofs": [],
+ "rejected": [
+  {
+   "title": "Papers with Code",
+   "why_vi": "Chưa kiểm chứng được tình trạng năm 2026."
+  },
+  {
+   "title": "Google re:Work (hướng dẫn quản lý)",
+   "why_vi": "Trang quản lý bạn thử trả lỗi 404; chưa có URL đã kiểm."
+  },
+  {
+   "title": "The Manager's Path, An Elegant Puzzle (sách)",
+   "why_vi": "Sách trả phí và không có URL chính thức đã kiểm chứng trong lần này."
+  },
+  {
+   "title": "ML Reproducibility Challenge",
+   "why_vi": "Chưa kiểm chứng được nguồn trong lần này."
+  },
+  {
+   "title": "Lipton: Heuristics for Scientific Writing bản gốc",
+   "why_vi": "Không tìm được trang gốc, chỉ có bản tóm tắt của dair.ai."
+  },
+  {
+   "title": "Vũ Hữu Tiệp: Machine Learning cơ bản",
+   "why_vi": "Còn trực tuyến nhưng bài mới nhất 2018, chỉ là ML cổ điển; không dùng cho nhánh này."
+  },
+  {
+   "title": "Sutton & Barto qua incompleteideas.net",
+   "why_vi": "Lần kiểm tra trình duyệt báo lỗi chứng chỉ; giữ link, checked false."
+  }
+ ]
+}

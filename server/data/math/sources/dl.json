@@ -1,0 +1,1009 @@
+{
+ "branch": "dl",
+ "researched": "2026-11-19",
+ "backbone": [
+  {
+   "title": "Neural Networks: Zero to Hero (8 bài)",
+   "author": "Andrej Karpathy",
+   "kind": "video",
+   "lang": "en",
+   "url": "https://karpathy.ai/zero-to-hero.html",
+   "where": "xem theo thứ tự micrograd, makemore 1-5, GPT, tokenizer",
+   "free": true,
+   "minutes": 800,
+   "why_vi": "Tuyến chính của nhánh: tự gõ lại từng dòng.",
+   "checked": true
+  },
+  {
+   "title": "Đắm mình vào Học Sâu (bản dịch tay v0.15)",
+   "author": "Aston Zhang và cộng sự; nhóm dịch Việt",
+   "kind": "sach",
+   "lang": "vi",
+   "url": "https://github.com/d2l-ai/d2l-vi/tree/v0.15",
+   "where": "mã nguồn bản dịch, mỗi chương một thư mục, file *_vn.md",
+   "free": true,
+   "minutes": null,
+   "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+   "checked": true
+  },
+  {
+   "title": "3Blue1Brown: Neural Networks",
+   "author": "3Blue1Brown",
+   "kind": "video",
+   "lang": "en",
+   "url": "https://www.3blue1brown.com/neural-networks",
+   "where": "chương 1-6, đủ để có trực giác trước khi viết mã",
+   "free": true,
+   "minutes": 120,
+   "why_vi": "Dùng làm bước hình dung trước khi gõ mã.",
+   "checked": true
+  }
+ ],
+ "nodes": {
+  "na_autograd": {
+   "primary": {
+    "title": "The spelled-out intro to neural networks and backpropagation: building micrograd",
+    "author": "Andrej Karpathy",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://youtu.be/VMj-3S1tku0",
+    "where": "toàn bộ video (2h25), gõ code theo",
+    "free": true,
+    "minutes": 145,
+    "why_vi": "Tự viết bộ vi phân tự động từ số 0, thấy tận mắt lan truyền ngược chạy ra sao.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "micrograd (kho mã)",
+     "author": "Andrej Karpathy",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/karpathy/micrograd",
+     "where": "engine.py (~100 dòng) và nn.py (~50 dòng), notebook demo.ipynb",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bản tham chiếu nhỏ gọn để đối chiếu với bản tự viết; giấy phép MIT.",
+     "checked": true
+    },
+    {
+     "title": "Deep Learning Systems, HW1: Building an automatic differentiation framework",
+     "author": "CMU (Kolter, Chen)",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://dlsyscourse.org/",
+     "where": "HW1 trong 5 bài tập (offering Fall 2026)",
+     "free": true,
+     "minutes": 600,
+     "why_vi": "Nếu muốn bản nghiêm túc hơn micrograd (tensor thay vì số vô hướng).",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "PyTorch Learn the Basics: Automatic Differentiation with torch.autograd",
+     "author": "PyTorch",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://docs.pytorch.org/tutorials/beginner/basics/autogradqs_tutorial.html",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Đối chiếu với autograd tự viết: cùng ý tưởng, thư viện thật.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Đắm mình vào Học Sâu: 2.5 Tính vi phân tự động",
+     "author": "Aston Zhang và cộng sự; nhóm dịch tình nguyện tiếng Việt",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://github.com/d2l-ai/d2l-vi/blob/v0.15/chapter_preliminaries/autograd_vn.md",
+     "where": "bản dịch tay v0.15 trên GitHub",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Xem video micrograd và gõ lại hết, đối chiếu gradient với PyTorch; bỏ qua phần vẽ biểu đồ Graphviz nếu thiếu thời gian.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Dữ liệu hai vầng trăng (tạo bằng sklearn make_moons)",
+      "url": "https://github.com/karpathy/micrograd",
+      "size_mb": 0.01,
+      "license": "MIT (mã trong kho micrograd)",
+      "why_vi": "Không cần tải, tự sinh 100 điểm; đủ nhỏ để chạy từng bước."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "micrograd (kho mã)",
+      "author": "Andrej Karpathy",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://github.com/karpathy/micrograd",
+      "where": "engine.py (~100 dòng) và nn.py (~50 dòng), notebook demo.ipynb",
+      "free": true,
+      "minutes": 30,
+      "why_vi": "Bản tham chiếu nhỏ gọn để đối chiếu với bản tự viết; giấy phép MIT.",
+      "checked": true
+     }
+    ],
+    "target_vi": "Gradient tự viết khớp PyTorch (sai số dưới 1e-6) trên một biểu thức nhỏ, rồi mạng 2 lớp ẩn phân loại được tập hai vầng trăng; con số cụ thể chưa kiểm chứng, README không nêu.",
+    "compute_vi": "CPU laptop, dưới 1 phút, chỉ cần Python thuần (và PyTorch để so sánh)."
+   }
+  },
+  "na_pytorch": {
+   "primary": {
+    "title": "PyTorch Learn the Basics: Quickstart",
+    "author": "PyTorch",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://docs.pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html",
+    "where": "trang đầu trong chuỗi 8 bài",
+    "free": true,
+    "minutes": 30,
+    "why_vi": "Một vòng huấn luyện hoàn chỉnh trên ảnh trong nửa giờ.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "PyTorch Learn the Basics: Tensors",
+     "author": "PyTorch",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://docs.pytorch.org/tutorials/beginner/basics/tensorqs_tutorial.html",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Làm quen tensor, chuyển sang GPU, phép toán cơ bản.",
+     "checked": true
+    },
+    {
+     "title": "Build a Large Language Model (From Scratch), Phụ lục A: Giới thiệu PyTorch",
+     "author": "Sebastian Raschka",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/rasbt/LLMs-from-scratch",
+     "where": "thư mục appendix-A",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Phần dẫn nhập PyTorch hướng tới mô hình ngôn ngữ, có đáp án.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "PyTorch Learn the Basics: Optimization Loop",
+     "author": "PyTorch",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://docs.pytorch.org/tutorials/beginner/basics/optimization_tutorial.html",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Vòng lặp huấn luyện-kiểm tra chuẩn mà mọi dự án đều dùng.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Làm trọn chuỗi 'Learn the Basics' theo thứ tự, mỗi bài gõ lại; chỉ khi quen mới đọc phụ lục A của Raschka."
+  },
+  "na_huan_luyen": {
+   "primary": {
+    "title": "Building makemore Part 3: Activations & Gradients, BatchNorm",
+    "author": "Andrej Karpathy",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://youtu.be/P6sfmUTpUmc",
+    "where": "toàn bộ (1h55): khởi tạo, thống kê kích hoạt, BatchNorm",
+    "free": true,
+    "minutes": 115,
+    "why_vi": "Dạy cách chẩn đoán mạng bằng biểu đồ kích hoạt và gradient, đúng tinh thần nút này.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "A Recipe for Training Neural Networks",
+     "author": "Andrej Karpathy",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://karpathy.github.io/2019/04/25/recipe/",
+     "where": "toàn bài: sáu bước từ làm quen dữ liệu đến vắt kiệt hiệu năng",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Quy trình huấn luyện thực tế: kiểm tra dữ liệu, overfit một batch, rồi mới regularize.",
+     "checked": true
+    },
+    {
+     "title": "CS231n: Neural Networks Part 3: Learning and Evaluation",
+     "author": "Stanford CS231n",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cs231n.github.io/neural-networks-3/",
+     "where": "kiểm tra gradient, theo dõi mất mát, tối ưu, siêu tham số",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Ghi chú ngắn, chuẩn, về những gì cần nhìn khi huấn luyện.",
+     "checked": true
+    },
+    {
+     "title": "CS231n: Neural Networks Part 2: Setting up the Data and the Loss",
+     "author": "Stanford CS231n",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cs231n.github.io/neural-networks-2/",
+     "where": "tiền xử lý, khởi tạo trọng số, BatchNorm, regularization",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Giải thích khởi tạo và chuẩn hoá bằng lời đơn giản.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Building makemore Part 4: Becoming a Backprop Ninja",
+     "author": "Andrej Karpathy",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/q8SA3rM6ckI",
+     "where": "toàn bộ (1h55): tự tính ngược từng tensor bằng tay",
+     "free": true,
+     "minutes": 115,
+     "why_vi": "Bài tập tự viết lan truyền ngược cho cả mạng, nên làm sau micrograd.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Xem makemore phần 3 trước, rồi đọc Recipe để có quy trình; phần 4 (backprop ninja) làm sau, không bắt buộc."
+  },
+  "na_cnn": {
+   "primary": {
+    "title": "CS231n: Convolutional Neural Networks: Architectures, Convolution / Pooling Layers",
+    "author": "Stanford CS231n (bản Spring 2026)",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://cs231n.github.io/convolutional-networks/",
+    "where": "toàn bài: lớp tích chập, pooling, kích thước đầu ra",
+    "free": true,
+    "minutes": 45,
+    "why_vi": "Ghi chú kinh điển về tích chập, có minh hoạ kích thước từng lớp.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Practical Deep Learning for Coders 2022, bài 8: Convolutions (CNNs)",
+     "author": "Jeremy Howard (fast.ai)",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://course.fast.ai/",
+     "where": "Part 1 (bản 2022), bài 8",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Dạy CNN bằng cách tự cài, hợp với người thích làm trước hiểu sau.",
+     "checked": true
+    },
+    {
+     "title": "Building makemore Part 5: Building a WaveNet",
+     "author": "Andrej Karpathy",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/t3YJ5hKiMQ0",
+     "where": "toàn bộ (56 phút)",
+     "free": true,
+     "minutes": 56,
+     "why_vi": "Cho thấy tích chập nhân quả và cách xếp tầng, cầu nối giữa MLP và mạng chuỗi.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [
+    {
+     "title": "Đắm mình vào Học Sâu: chương 6 Mạng nơ-ron tích chập",
+     "author": "Aston Zhang và cộng sự; nhóm dịch Việt",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://github.com/d2l-ai/d2l-vi/tree/v0.15/chapter_convolutional-neural-networks",
+     "where": "bản dịch tay v0.15 trên GitHub",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Đọc ghi chú CS231n về tích chập, rồi làm chương CNN của d2l; WaveNet chỉ xem khi muốn thấy chia sẻ trọng số theo chuỗi."
+  },
+  "na_chuoi": {
+   "primary": {
+    "title": "The Illustrated Word2vec",
+    "author": "Jay Alammar",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://jalammar.github.io/illustrated-word2vec/",
+    "where": "mục 'Word Embeddings' đến 'Skipgram with Negative Sampling'",
+    "free": true,
+    "minutes": 30,
+    "why_vi": "Giải thích vì sao từ thành vectơ và vectơ mang nghĩa, bằng hình.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Building makemore Part 2: MLP",
+     "author": "Andrej Karpathy",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/TCH_1BHY58I",
+     "where": "toàn bộ (1h15): embedding ký tự, tách train/val/test",
+     "free": true,
+     "minutes": 75,
+     "why_vi": "Embedding là bảng tra và học được; đây là bước đệm tự nhiên tới attention.",
+     "checked": true
+    },
+    {
+     "title": "Dive into Deep Learning, chương 9-10: mạng hồi quy",
+     "author": "Aston Zhang và cộng sự",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://d2l.ai/",
+     "where": "chương 9 (RNN) và 10 (RNN hiện đại)",
+     "free": true,
+     "minutes": 180,
+     "why_vi": "Hiểu giới hạn của RNN để thấy vì sao cần attention.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [
+    {
+     "title": "Đắm mình vào Học Sâu: chương 8 Mạng nơ-ron hồi tiếp",
+     "author": "Aston Zhang và cộng sự; nhóm dịch tình nguyện tiếng Việt",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://github.com/d2l-ai/d2l-vi/tree/v0.15/chapter_recurrent-neural-networks",
+     "where": "bản dịch tay v0.15 trên GitHub",
+     "free": true,
+     "minutes": 180,
+     "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Đọc Word2vec bằng hình, rồi xem makemore phần 2 để tự dựng embedding; RNN/LSTM đọc lướt, vì attention sẽ thay thế."
+  },
+  "du_an_nguyen_anh": {
+   "primary": {
+    "title": "A Recipe for Training Neural Networks",
+    "author": "Andrej Karpathy",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://karpathy.github.io/2019/04/25/recipe/",
+    "where": "toàn bài: sáu bước từ làm quen dữ liệu đến vắt kiệt hiệu năng",
+    "free": true,
+    "minutes": 25,
+    "why_vi": "Quy trình huấn luyện thực tế: kiểm tra dữ liệu, overfit một batch, rồi mới regularize.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "CS231n: Transfer Learning and Fine-tuning Convolutional Neural Networks",
+     "author": "Stanford CS231n",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cs231n.github.io/transfer-learning/",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 15,
+     "why_vi": "Ngắn gọn về khi nào đóng băng, khi nào tinh chỉnh.",
+     "checked": true
+    },
+    {
+     "title": "CS231n: Neural Networks Part 3: Learning and Evaluation",
+     "author": "Stanford CS231n",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cs231n.github.io/neural-networks-3/",
+     "where": "kiểm tra gradient, theo dõi mất mát, tối ưu, siêu tham số",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Ghi chú ngắn, chuẩn, về những gì cần nhìn khi huấn luyện.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "cifar10-airbench: huấn luyện CIFAR-10 đạt 94% trong vài giây",
+     "author": "Keller Jordan",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/KellerJordan/cifar10-airbench",
+     "where": "airbench94_muon.py và README",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Mốc tham chiếu về một đường ống tối ưu; MIT.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Làm đúng 6 bước của Recipe trên một tập ảnh nhỏ, có đối chứng (một thay đổi mỗi lần) và viết báo cáo ngắn kèm đường mất mát.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Fashion-MNIST",
+      "url": "https://github.com/zalandoresearch/fashion-mnist",
+      "size_mb": 35,
+      "license": "MIT",
+      "why_vi": "60 nghìn ảnh 28x28, huấn luyện được trên CPU."
+     },
+     {
+      "name": "CIFAR-10 (bản Python)",
+      "url": "https://cave.cs.toronto.edu/kriz/cifar.html",
+      "size_mb": 163,
+      "license": "Không ghi rõ giấy phép, chỉ yêu cầu trích dẫn Krizhevsky 2009",
+      "why_vi": "60 nghìn ảnh màu 32x32; khó hơn, cần GPU miễn phí."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "cifar10-airbench",
+      "author": "Keller Jordan",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://github.com/KellerJordan/cifar10-airbench",
+      "where": "airbench94_muon.py",
+      "free": true,
+      "minutes": 60,
+      "why_vi": "Bản tối ưu cao; README báo 94.01% trong 2.59 giây trên A100.",
+      "checked": true
+     }
+    ],
+    "target_vi": "Fashion-MNIST: CNN 2 lớp tích chập đạt khoảng 92% (bảng của kho Zalando, người dùng tự báo, chưa kiểm). CIFAR-10: CNN nhỏ không tăng cường dữ liệu khoảng 82-85% là hợp lý; bản airbench đạt 94% là mốc trần.",
+    "compute_vi": "Fashion-MNIST chạy trên CPU laptop vài phút mỗi lượt. CIFAR-10 nên dùng GPU miễn phí: Colab không đảm bảo GPU và phiên tối đa 12 giờ (trang FAQ chính thức); Kaggle theo các nguồn thứ cấp có khoảng 30 giờ GPU/tuần (chưa kiểm chứng trên trang chính thức)."
+   }
+  },
+  "ht_attention": {
+   "primary": {
+    "title": "Neural Networks, chương 6: Attention in transformers, step-by-step",
+    "author": "3Blue1Brown",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://www.3blue1brown.com/lessons/attention",
+    "where": "video ~26 phút (ra 4/2024)",
+    "free": true,
+    "minutes": 26,
+    "why_vi": "Hình dung truy vấn-khoá-giá trị chạy từng bước, trước khi đọc công thức.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Neural Networks, chương 5: Transformers, the tech behind LLMs",
+     "author": "3Blue1Brown",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://www.3blue1brown.com/lessons/gpt",
+     "where": "video ~27 phút",
+     "free": true,
+     "minutes": 27,
+     "why_vi": "Cái nhìn tổng thể về GPT và embedding bằng hình động.",
+     "checked": true
+    },
+    {
+     "title": "The Illustrated Transformer",
+     "author": "Jay Alammar",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://jalammar.github.io/illustrated-transformer/",
+     "where": "từ 'Self-Attention in Detail' đến 'The Decoder Side'",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Hình minh hoạ tốt nhất cho Q/K/V và nhiều đầu attention.",
+     "checked": true
+    },
+    {
+     "title": "The Annotated Transformer",
+     "author": "Harvard NLP",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://nlp.seas.harvard.edu/annotated-transformer/",
+     "where": "toàn bài: bài báo 'Attention Is All You Need' kèm mã PyTorch",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Đối chiếu từng câu của bài báo với từng dòng mã, vừa là bài tái lập.",
+     "checked": false
+    }
+   ],
+   "practice": [
+    {
+     "title": "Let's build GPT (phần self-attention)",
+     "author": "Andrej Karpathy",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://www.youtube.com/watch?v=kCc8FmEb1nY",
+     "where": "đoạn tính trung bình có trọng số đến self-attention",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Tự cài attention một đầu trong vài chục dòng.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Thứ tự: 3Blue1Brown (hình), Illustrated Transformer (chi tiết), rồi Let's build GPT (mã); Annotated Transformer chỉ để đối chiếu bài báo gốc."
+  },
+  "ht_gpt_nho": {
+   "primary": {
+    "title": "Let's build GPT: from scratch, in code, spelled out.",
+    "author": "Andrej Karpathy",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://www.youtube.com/watch?v=kCc8FmEb1nY",
+    "where": "toàn bộ (1h56): từ bigram đến khối Transformer",
+    "free": true,
+    "minutes": 116,
+    "why_vi": "Cách rõ nhất để thấy attention và Transformer chỉ là vài chục dòng PyTorch.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Let's build the GPT Tokenizer",
+     "author": "Andrej Karpathy",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/zduSFxRajkE",
+     "where": "toàn bộ (2h13): BPE, regex tách từ, token đặc biệt",
+     "free": true,
+     "minutes": 133,
+     "why_vi": "Giải thích vì sao tách từ gây ra nhiều lỗi lạ của mô hình ngôn ngữ.",
+     "checked": true
+    },
+    {
+     "title": "minbpe (kho mã)",
+     "author": "Andrej Karpathy",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/karpathy/minbpe",
+     "where": "exercise.md: làm từng bước BasicTokenizer rồi RegexTokenizer",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Có sẵn bài tập từng bước và test; giấy phép MIT.",
+     "checked": true
+    },
+    {
+     "title": "Build a Large Language Model (From Scratch), chương 2-5",
+     "author": "Sebastian Raschka",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://github.com/rasbt/LLMs-from-scratch",
+     "where": "ch02 dữ liệu, ch03 attention, ch04 mô hình GPT, ch05 tiền huấn luyện",
+     "free": false,
+     "minutes": 600,
+     "why_vi": "Bản sách có giải thích từng bước; mã miễn phí, sách trả phí.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "CS336 assignment 1: Basics (BPE, Transformer, AdamW)",
+     "author": "Stanford CS336",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://github.com/stanford-cs336/assignment1-basics",
+     "where": "toàn bộ bài tập 1 (có test tự chấm)",
+     "free": true,
+     "minutes": 1200,
+     "why_vi": "Bản khó và nghiêm túc nhất để tự dựng tokenizer và mô hình; không bắt buộc.",
+     "checked": false
+    }
+   ],
+   "note_vi": "Xem Let's build GPT và gõ lại trên shakespeare_char trước; tokenizer và CS336 assignment 1 là phần nâng cao.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Tiny Shakespeare (data/shakespeare_char của nanoGPT)",
+      "url": "https://github.com/karpathy/nanoGPT",
+      "size_mb": 1.0,
+      "license": "MIT cho mã; văn bản Shakespeare thuộc phạm vi công cộng (chưa xác nhận trong README)",
+      "why_vi": "Nhỏ nhất để thấy văn bản sinh ra hợp lý."
+     },
+     {
+      "name": "TinyStories (nên dùng tập validation)",
+      "url": "https://huggingface.co/datasets/roneneldan/TinyStories",
+      "size_mb": null,
+      "license": "CDLA-Sharing-1.0",
+      "why_vi": "Truyện ngắn từ vựng nhỏ; cả bộ 7.62 GB nên chỉ lấy tập validation 22 nghìn truyện (dung lượng chưa kiểm)."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "nanoGPT (kho mã, đã ngừng cập nhật)",
+      "author": "Andrej Karpathy",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://github.com/karpathy/nanoGPT",
+      "where": "mục quickstart: data/shakespeare_char",
+      "free": true,
+      "minutes": 30,
+      "why_vi": "Bản tham chiếu train.py/model.py gọn; README nói đã cũ nhưng vẫn chạy được, MIT.",
+      "checked": true
+     },
+     {
+      "title": "nanochat (kho mã)",
+      "author": "Andrej Karpathy",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://github.com/karpathy/nanochat",
+      "where": "README: speedrun.sh và tham số --depth",
+      "free": true,
+      "minutes": 60,
+      "why_vi": "Đường ống trọn vẹn từ tokenizer đến chat; bản mới thay nanoGPT, MIT.",
+      "checked": true
+     }
+    ],
+    "target_vi": "shakespeare_char: mô hình 6 lớp đạt validation loss 1.4697 sau khoảng 3 phút trên một A100; cấu hình nhỏ chạy CPU/MacBook (4 lớp, 128 chiều, 2000 bước) đạt loss khoảng 1.88 trong khoảng 3 phút, chữ sinh ra còn kém (theo README nanoGPT).",
+    "compute_vi": "Cấu hình nhỏ chạy được trên CPU laptop; bản 6 lớp cần GPU: dùng Colab (GPU không bảo đảm, phiên tối đa 12 giờ) hoặc Kaggle (khoảng 30 giờ GPU/tuần theo nguồn thứ cấp, chưa kiểm chứng)."
+   }
+  },
+  "ht_tinh_chinh": {
+   "primary": {
+    "title": "Hugging Face LLM Course, chương 3: Fine-tuning a pretrained model",
+    "author": "Hugging Face",
+    "kind": "khoa_hoc",
+    "lang": "en",
+    "url": "https://huggingface.co/learn/llm-course/chapter3/1",
+    "where": "3 mục: xử lý dữ liệu, Trainer, vòng lặp tự viết với Accelerate",
+    "free": true,
+    "minutes": 120,
+    "why_vi": "Đúng thứ tự cần: dùng Trainer rồi mới tự viết vòng lặp.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "PEFT: Parameter-Efficient Fine-Tuning (tài liệu)",
+     "author": "Hugging Face",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://huggingface.co/docs/peft/index",
+     "where": "Quicktour và Method overview (LoRA)",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Cách tinh chỉnh bằng LoRA trên GPU nhỏ.",
+     "checked": true
+    },
+    {
+     "title": "Build a Large Language Model (From Scratch), chương 6-7 và phụ lục E (LoRA)",
+     "author": "Sebastian Raschka",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/rasbt/LLMs-from-scratch",
+     "where": "ch06 phân loại, ch07 làm theo chỉ dẫn, appendix-E LoRA",
+     "free": true,
+     "minutes": 360,
+     "why_vi": "Tự cài LoRA bằng PyTorch thuần trước khi dùng thư viện.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Hugging Face LLM Course, chương 1-4: Transformers và tinh chỉnh",
+     "author": "Hugging Face",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://huggingface.co/learn/llm-course/chapter1/1",
+     "where": "chương 1 (mô hình hoạt động ra sao) đến chương 4",
+     "free": true,
+     "minutes": 300,
+     "why_vi": "Khoá miễn phí có sổ tay chạy trên Colab.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Học chương 3 của khoá Hugging Face với Trainer, rồi dùng PEFT/LoRA; tự cài LoRA của Raschka là phần mở rộng.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Bộ spam SMS dùng trong chương 6 của Raschka",
+      "url": "https://github.com/rasbt/LLMs-from-scratch",
+      "size_mb": 0.5,
+      "license": "chưa kiểm chứng (nguồn UCI, kiểm tra trước khi đóng gói)",
+      "why_vi": "Bài phân loại nhị phân nhỏ, quen tay trước khi tinh chỉnh to hơn."
+     },
+     {
+      "name": "Wikipedia tiếng Việt (wikimedia/wikipedia, cấu hình 20231101.vi)",
+      "url": "https://huggingface.co/datasets/wikimedia/wikipedia",
+      "size_mb": null,
+      "license": "CC BY-SA 3.0 và GFDL",
+      "why_vi": "Văn bản tiếng Việt có giấy phép rõ, 1.29 triệu bài; chỉ lấy vài nghìn bài."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "Hugging Face LLM Course, chương 3: Fine-tuning a pretrained model",
+      "author": "Hugging Face",
+      "kind": "khoa_hoc",
+      "lang": "en",
+      "url": "https://huggingface.co/learn/llm-course/chapter3/1",
+      "where": "3 mục: xử lý dữ liệu, Trainer, vòng lặp tự viết với Accelerate",
+      "free": true,
+      "minutes": 120,
+      "why_vi": "Đúng thứ tự cần: dùng Trainer rồi mới tự viết vòng lặp.",
+      "checked": true
+     }
+    ],
+    "target_vi": "Chưa kiểm chứng: chưa tìm được con số do tác giả công bố; hãy đo độ chính xác trước và sau tinh chỉnh và chỉ cần thấy cải thiện có đối chứng.",
+    "compute_vi": "Mô hình nhỏ với LoRA chạy được trên GPU miễn phí của Colab/Kaggle trong vài chục phút; CPU thì quá chậm."
+   }
+  },
+  "ht_ung_dung_llm": {
+   "primary": {
+    "title": "Building effective agents",
+    "author": "Anthropic",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://www.anthropic.com/engineering/building-effective-agents",
+    "where": "toàn bài (12/2024): workflow và agent, năm mẫu workflow",
+    "free": true,
+    "minutes": 25,
+    "why_vi": "Nguyên tắc gọn: bắt đầu đơn giản, chỉ thêm độ phức tạp khi đo được lợi.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "LLM Powered Autonomous Agents",
+     "author": "Lilian Weng",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://lilianweng.github.io/posts/2023-06-23-agent/",
+     "where": "ba thành phần: planning, memory, tool use",
+     "free": true,
+     "minutes": 45,
+     "why_vi": "Khung khái niệm tốt dù bài viết từ 2023.",
+     "checked": true
+    },
+    {
+     "title": "LLM Bootcamp: Augmented Language Models",
+     "author": "Full Stack Deep Learning",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://fullstackdeeplearning.com/llm-bootcamp/spring-2023/augmented-language-models/",
+     "where": "bài về truy xuất và công cụ",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Giải thích RAG từ gốc; nội dung 2023 nên đọc kèm tài liệu hiện nay.",
+     "checked": false
+    },
+    {
+     "title": "Hugging Face Agents Course",
+     "author": "Hugging Face",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://huggingface.co/learn/agents-course/unit0/introduction",
+     "where": "chương 0-4",
+     "free": true,
+     "minutes": 600,
+     "why_vi": "Khoá miễn phí có thực hành; cập nhật chưa rõ.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "LLM Bootcamp: Project Walkthrough askFSDL",
+     "author": "Full Stack Deep Learning",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://fullstackdeeplearning.com/llm-bootcamp/spring-2023/askfsdl-walkthrough/",
+     "where": "toàn bộ",
+     "free": true,
+     "minutes": 45,
+     "why_vi": "Ví dụ dựng hỏi-đáp trên tài liệu từ đầu đến cuối.",
+     "checked": false
+    }
+   ],
+   "note_vi": "Đọc Building effective agents trước, tự dựng một vòng lặp gọi công cụ nhỏ không dùng framework; khoá agents của Hugging Face chỉ khi cần.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Wikipedia tiếng Việt (vài nghìn bài)",
+      "url": "https://huggingface.co/datasets/wikimedia/wikipedia",
+      "size_mb": null,
+      "license": "CC BY-SA 3.0 và GFDL",
+      "why_vi": "Kho văn bản tiếng Việt để làm hỏi-đáp truy xuất."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "askFSDL walkthrough",
+      "author": "Full Stack Deep Learning",
+      "kind": "video",
+      "lang": "en",
+      "url": "https://fullstackdeeplearning.com/llm-bootcamp/spring-2023/askfsdl-walkthrough/",
+      "where": "toàn bộ",
+      "free": true,
+      "minutes": 45,
+      "why_vi": "Mẫu tham chiếu.",
+      "checked": false
+     }
+    ],
+    "target_vi": "Chưa kiểm chứng con số chuẩn; tự đặt 20-30 câu hỏi có đáp án và đo tỉ lệ trả lời đúng, nêu rõ nguồn.",
+    "compute_vi": "Gọi API mô hình lớn từ CPU laptop (có phí theo lượt gọi), hoặc mô hình nhỏ tải về chạy trên Colab/Kaggle."
+   }
+  },
+  "ht_danh_gia_llm": {
+   "primary": {
+    "title": "Your AI Product Needs Evals",
+    "author": "Hamel Husain",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://hamel.dev/blog/posts/evals/",
+    "where": "toàn bài (3/2024): ba cấp unit test, người/mô hình chấm, A/B",
+    "free": true,
+    "minutes": 30,
+    "why_vi": "Giải thích đánh giá là gì và vì sao quan trọng nhất, có ví dụ thực.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "A Field Guide to Rapidly Improving AI Products",
+     "author": "Hamel Husain",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://hamel.dev/blog/posts/field-guide/",
+     "where": "mục 1 (phân tích lỗi) và mục 5 (giữ tin cậy vào eval)",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Dạy phân tích lỗi trước khi viết bộ chấm.",
+     "checked": true
+    },
+    {
+     "title": "ARENA chương 3: LLM Evaluations",
+     "author": "ARENA",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://arena.education/chapter3",
+     "where": "xây benchmark trắc nghiệm, đánh giá agent",
+     "free": true,
+     "minutes": 600,
+     "why_vi": "Bài tập lập trình cho đánh giá.",
+     "checked": false
+    },
+    {
+     "title": "CS336 bài 12: Evaluation",
+     "author": "Stanford CS336 (2026)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://cs336.stanford.edu/",
+     "where": "bài 12 trong lịch học",
+     "free": true,
+     "minutes": 80,
+     "why_vi": "Góc nhìn nghiên cứu về benchmark và những cái bẫy.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "note_vi": "Đọc Your AI Product Needs Evals, rồi tự xem 100 kết quả của chính sản phẩm mình; benchmark học thuật để sau.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Bộ câu hỏi tự tạo 50-100 mục có đáp án",
+      "url": "https://hamel.dev/blog/posts/evals/",
+      "size_mb": 0.1,
+      "license": "tự sở hữu",
+      "why_vi": "Đánh giá tốt nhất xuất phát từ dữ liệu thật của chính bạn."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "Your AI Product Needs Evals",
+      "author": "Hamel Husain",
+      "kind": "bai_viet",
+      "lang": "en",
+      "url": "https://hamel.dev/blog/posts/evals/",
+      "where": "mục Level 1: Unit Tests",
+      "free": true,
+      "minutes": 30,
+      "why_vi": "Mẫu cấu trúc bộ test.",
+      "checked": true
+     }
+    ],
+    "target_vi": "Một bộ đánh giá chạy tự động được, có số liệu trước/sau mỗi thay đổi; không có con số chuẩn để so sánh.",
+    "compute_vi": "CPU laptop; chi phí chỉ là số lần gọi mô hình để chấm."
+   }
+  },
+  "du_an_hoa_than": {
+   "primary": {
+    "title": "A Field Guide to Rapidly Improving AI Products",
+    "author": "Hamel Husain",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://hamel.dev/blog/posts/field-guide/",
+    "where": "toàn bài, nhất là mục 6: lộ trình đếm số thí nghiệm",
+    "free": true,
+    "minutes": 30,
+    "why_vi": "Quy trình biến phản hồi người dùng thành cải tiến có đo lường.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "LLM Bootcamp: LLMOps",
+     "author": "Full Stack Deep Learning",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://fullstackdeeplearning.com/llm-bootcamp/spring-2023/llmops/",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đưa sản phẩm lên chạy thật: chi phí, giám sát, an toàn.",
+     "checked": false
+    },
+    {
+     "title": "Your AI Product Needs Evals",
+     "author": "Hamel Husain",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://hamel.dev/blog/posts/evals/",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bộ đánh giá của riêng mình.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "note_vi": "Chọn một vấn đề có người dùng thật quanh bạn, ra bản đầu trong hai tuần và đo bằng bộ đánh giá của mình.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Tài liệu tiếng Việt có giấy phép rõ (Wikipedia vi)",
+      "url": "https://huggingface.co/datasets/wikimedia/wikipedia",
+      "size_mb": null,
+      "license": "CC BY-SA 3.0 và GFDL",
+      "why_vi": "Nguồn kiến thức an toàn về bản quyền cho sản phẩm thử."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "askFSDL walkthrough",
+      "author": "Full Stack Deep Learning",
+      "kind": "video",
+      "lang": "en",
+      "url": "https://fullstackdeeplearning.com/llm-bootcamp/spring-2023/askfsdl-walkthrough/",
+      "where": "toàn bộ",
+      "free": true,
+      "minutes": 45,
+      "why_vi": "Mẫu dự án trọn vẹn.",
+      "checked": false
+     }
+    ],
+    "target_vi": "Có ít nhất 3 người dùng thật ngoài bạn dùng, và bộ đánh giá riêng cho thấy xu hướng tốt lên qua vài vòng; không có con số chuẩn.",
+    "compute_vi": "Chủ yếu gọi API; phần chạy cục bộ dùng CPU laptop hoặc GPU miễn phí."
+   }
+  }
+ },
+ "exam_proofs": [],
+ "rejected": [
+  {
+   "title": "d2l.aivivn.com (bản dịch cũ của Đắm mình vào học sâu)",
+   "why_vi": "Khi kiểm tra ngày 2026-11-19 trang trả về nội dung quảng cáo cờ bạc, không phải sách; dùng vi.d2l.ai."
+  },
+  {
+   "title": "Karpathy nanoGPT làm bản tham chiếu chính",
+   "why_vi": "README tự nói đã cũ, nên ưu tiên nanochat cho phần mới và chỉ dùng nanoGPT cho bài shakespeare nhỏ."
+  },
+  {
+   "title": "Hugging Face Deep RL course làm nguồn RL chính",
+   "why_vi": "README nói ở trạng thái bảo trì thấp, đơn vị AI vs AI và bảng xếp hạng đã hỏng."
+  },
+  {
+   "title": "Toàn bộ CS336 làm nguồn chính cho người mới",
+   "why_vi": "Quá nặng (19 buổi, 5 bài tập) cho năm nhất; chỉ lấy assignment 1 và vài buổi."
+  },
+  {
+   "title": "Papers with Code",
+   "why_vi": "Chưa kiểm chứng được tình trạng 2026 trong lần này nên không dựa vào."
+  },
+  {
+   "title": "d2l.aivivn.com (trang cũ của Đắm mình vào Học Sâu)",
+   "why_vi": "Tên miền đã bị chiếm: trang chủ hiện là quảng cáo cờ bạc. Dùng bản dịch tay trên GitHub (thẻ v0.15)."
+  },
+  {
+   "title": "vi.d2l.ai (Đắm mình vào Học Sâu 0.17.5)",
+   "why_vi": "Bản dịch máy, sai thuật ngữ (mạng tích chập thành 'mạng thần kinh phức tạp'). Không dùng làm nguồn tiếng Việt."
+  }
+ ]
+}

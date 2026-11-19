@@ -1,0 +1,1231 @@
+{
+ "branch": "xs",
+ "researched": "2026-11-19",
+ "backbone": [
+  {
+   "title": "Seeing Theory: sáu chương trực quan (Basic Probability đến Regression Analysis)",
+   "author": "Brown University",
+   "kind": "tuong_tac",
+   "lang": "en",
+   "url": "https://seeing-theory.brown.edu/",
+   "where": "đọc nhanh từng chương trước khi học nút tương ứng",
+   "free": true,
+   "minutes": 180,
+   "why_vi": "Kéo thả và xem xác suất, phân phối, suy luận, hồi quy chạy ngay trên màn hình; dựng trực giác rất nhanh.",
+   "checked": true
+  },
+  {
+   "title": "Introduction to Probability (RES.6-012), 13 bài đầu của Phần I",
+   "author": "MIT OpenCourseWare (Tsitsiklis)",
+   "kind": "khoa_hoc",
+   "lang": "en",
+   "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/pages/part-i-the-fundamentals/",
+   "where": "Lecture 1 đến 13: mỗi bài chia thành video ngắn 5-10 phút",
+   "free": true,
+   "minutes": 600,
+   "why_vi": "Video ngắn, giải thích chậm và đúng; mỗi khái niệm một video nên dễ quay lại đúng chỗ cần.",
+   "checked": true
+  },
+  {
+   "title": "StatQuest: chỉ mục video theo chủ đề",
+   "author": "Josh Starmer (StatQuest)",
+   "kind": "video",
+   "lang": "en",
+   "url": "https://statquest.org/video_index.html",
+   "where": "các video về MLE, khoảng tin cậy, p-value, tương quan",
+   "free": true,
+   "minutes": null,
+   "why_vi": "Giải thích thống kê bằng hình và ví dụ rất đơn giản, hợp người đọc tiếng Anh chậm.",
+   "checked": true
+  },
+  {
+   "title": "Think Stats (bản 3), chương 1-14",
+   "author": "Allen Downey",
+   "kind": "sach",
+   "lang": "en",
+   "url": "https://allendowney.github.io/ThinkStats/",
+   "where": "đọc song song với phần thống kê (ước lượng, kiểm định, hồi quy)",
+   "free": true,
+   "minutes": null,
+   "why_vi": "Dạy thống kê bằng code Python trên dữ liệu thật, đúng kiểu vừa học vừa dựng.",
+   "checked": true
+  }
+ ],
+ "nodes": {
+  "xs_dem_su_kien": {
+   "primary": {
+    "title": "RES.6-012 Lecture 4: Counting",
+    "author": "MIT OpenCourseWare (Tsitsiklis)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/lecture-overview-3/",
+    "where": "bài 4: nguyên lý đếm, tổ hợp, chia nhóm (xem 8 video ngắn)",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Đi từ nguyên lý nhân đến tổ hợp bằng ví dụ xúc xắc, đồng xu, bài tây; rất sát phần học của nút.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "RES.6-012 Lecture 1: Sample Space (không gian mẫu)",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/sample-space/",
+     "where": "video Sample Space và Sample Space Examples",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Phép thử, không gian mẫu và sự kiện được nói rõ trước khi đếm.",
+     "checked": true
+    },
+    {
+     "title": "Seeing Theory: Basic Probability",
+     "author": "Brown University",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://seeing-theory.brown.edu/basic-probability/index.html",
+     "where": "phần Random Variables/Set Theory ở đầu chương",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Xem quan hệ giữa các sự kiện bằng hình tập hợp.",
+     "checked": true
+    },
+    {
+     "title": "Stat 110 Lecture 1: Probability and Counting",
+     "author": "Joe Blitzstein (Harvard)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://stat110.hsites.harvard.edu/youtube",
+     "where": "bài 1 trong danh sách phát (khoảng 46 phút)",
+     "free": true,
+     "minutes": 46,
+     "why_vi": "Cách nghĩ bằng câu chuyện về phép đếm; hay nhưng nhanh hơn RES.6-012.",
+     "checked": false
+    }
+   ],
+   "practice": [
+    {
+     "title": "18.05 Class 1: Counting and Sets (bài đọc kèm câu hỏi)",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class01-prep-a_pdf/",
+     "where": "bài chuẩn bị 1a; đáp án nằm ở trang problem sets của khóa",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Bài tập đếm cỡ đại học năm nhất, có lời giải để đối chiếu.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "OpenIntro Statistics (bản dịch tiếng Việt), chương 3: Xác suất",
+     "author": "OpenIntro",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://www.openintro.org/go?id=os4_vn_ch3",
+     "where": "chương 3, các mục xác suất và sự kiện",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Trang sách nói có bản dịch tiếng Việt chương 1-6; chưa mở được bản PDF để kiểm tra chất lượng dịch.",
+     "checked": false
+    }
+   ],
+   "note_vi": "Xem RES.6-012 bài 1 (không gian mẫu) rồi bài 4 (đếm); bỏ phần 'Mathematical Background' về chuỗi vô hạn và tập đếm được."
+  },
+  "xs_xac_suat": {
+   "primary": {
+    "title": "Seeing Theory: Basic Probability",
+    "author": "Brown University",
+    "kind": "tuong_tac",
+    "lang": "en",
+    "url": "https://seeing-theory.brown.edu/basic-probability/index.html",
+    "where": "Chapter 1: xác suất cổ điển và luật số lớn bằng mô phỏng",
+    "free": true,
+    "minutes": 30,
+    "why_vi": "Tung xúc xắc hàng nghìn lần và thấy tần suất tiến tới xác suất; đúng ý tưởng 'định nghĩa thống kê'.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "RES.6-012 Lecture 1: Probability Axioms và tính chất đơn giản",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/probability-axioms/",
+     "where": "các video Probability Axioms, Simple Properties of Probabilities",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Tính chất của xác suất và sự kiện đối được suy ra gọn từ ba tiên đề.",
+     "checked": true
+    },
+    {
+     "title": "Think Stats, chương 2: Distributions",
+     "author": "Allen Downey",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://allendowney.github.io/ThinkStats/chap02.html",
+     "where": "tần suất và histogram trên dữ liệu",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Nối tần suất với xác suất bằng code trên dữ liệu thật.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "18.05 Class 2: Probability, Terminology and Examples",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class02-prep_pdf/",
+     "where": "bài đọc chuẩn bị lớp 2",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Có bài tập xác suất cổ điển và lấy có/không hoàn lại.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Bài tập Xác suất thống kê MI2020 (Bách khoa Hà Nội), chương 1",
+     "author": "Viện Toán ứng dụng và Tin học, ĐHBK Hà Nội",
+     "kind": "bai_tap",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/2023_MI2020_Baitap_Xacsuatthongke_DHCQ.pdf",
+     "where": "chương 1 về biến cố và xác suất",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Bài tập tiếng Việt đúng khung học phần của trường; chưa xác minh có đáp số hay không.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Chơi Seeing Theory chương 1 trước; sau đó mới làm bài tập đếm kiểu bốc bi, bốc bài."
+  },
+  "xs_dieu_kien": {
+   "primary": {
+    "title": "RES.6-012 Lecture 2: Conditioning and Bayes' Rule (phần xác suất có điều kiện)",
+    "author": "MIT OpenCourseWare (Tsitsiklis)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/lecture-overview-1/",
+    "where": "bài 2: các video đến Multiplication Rule",
+    "free": true,
+    "minutes": 45,
+    "why_vi": "Xác suất có điều kiện được dựng chậm từ ví dụ xúc xắc và radar, rồi đến quy tắc nhân.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "RES.6-012 Lecture 3: Independence",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/lecture-overview-2/",
+     "where": "bài 3: độc lập hai sự kiện, độc lập có điều kiện",
+     "free": true,
+     "minutes": 50,
+     "why_vi": "Phân biệt độc lập và độc lập từng đôi; có ví dụ độ tin cậy hệ thống.",
+     "checked": true
+    },
+    {
+     "title": "Seeing Theory: Compound Probability",
+     "author": "Brown University",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://seeing-theory.brown.edu/compound-probability/index.html",
+     "where": "mục Conditional Probability và Independence",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Xem điều kiện thu hẹp không gian mẫu thế nào.",
+     "checked": true
+    },
+    {
+     "title": "StatQuest: Conditional probability",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/_IgyaD7vOOA",
+     "where": "video ngắn về xác suất có điều kiện",
+     "free": true,
+     "minutes": 10,
+     "why_vi": "Bản giải thích rất nhẹ nếu cần nhắc lại.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "18.05 Class 3: Conditional Probability, Independence, Bayes' Theorem",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class03-prep_pdf/",
+     "where": "bài đọc chuẩn bị lớp 3",
+     "free": true,
+     "minutes": 45,
+     "why_vi": "Bài tập có điều kiện và độc lập; gần với nút kế tiếp là Bayes.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Xem bài 2 đến Multiplication Rule rồi bài 3; công thức Bernoulli học trong bài 4 (nhị thức) của RES.6-012."
+  },
+  "xs_bayes": {
+   "primary": {
+    "title": "Bayes theorem, the geometry of changing beliefs",
+    "author": "3Blue1Brown (Grant Sanderson)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://www.3blue1brown.com/lessons/bayes-theorem",
+    "where": "cả video (khoảng 15 phút)",
+    "free": true,
+    "minutes": 15,
+    "why_vi": "Dùng hình vuông 1x1 để thấy công thức Bayes và sai lầm bỏ quên tỉ lệ nền.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "RES.6-012 Lecture 2: Total Probability Theorem và Bayes' Rule",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/total-probability-theorem/",
+     "where": "video Total Probability Theorem, rồi Bayes' Rule",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Công thức xác suất đầy đủ và Bayes có sơ đồ cây, đúng thứ tự của nút.",
+     "checked": true
+    },
+    {
+     "title": "Think Bayes (bản 2), chương 1-2: Probability, Bayes's Theorem",
+     "author": "Allen Downey",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://allendowney.github.io/ThinkBayes2/chap02.html",
+     "where": "chương 1 và 2",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Cài đặt Bayes bằng bảng trong Python, rất gần việc tự dựng bộ phân loại sau này.",
+     "checked": true
+    },
+    {
+     "title": "StatQuest: Bayes' Theorem",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/9wCnvr7Xw4E",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 15,
+     "why_vi": "Ví dụ đếm số người thay vì công thức; dễ đọc phụ đề.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "18.05 Class 3 (phần Bayes) và Class 11: Bayesian Updating with Discrete Priors",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class11-prep_pdf/",
+     "where": "bài đọc lớp 11, bảng cập nhật Bayes",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Có bảng Bayes từng bước để tự làm lại với số khác.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Machine Learning cơ bản, bài 30: Ôn tập Xác suất cho Machine Learning",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/07/09/prob/",
+     "where": "mục 2.4 xác suất có điều kiện và 2.5 quy tắc Bayes",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Tóm tắt tiếng Việt đúng ngữ cảnh học máy; ngắn nhưng ít ví dụ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Xem video 3Blue1Brown trước để có hình, rồi làm một bảng Bayes tay với số xét nghiệm; bỏ phần Bayes liên tục."
+  },
+  "xs_bnn_roi_rac": {
+   "primary": {
+    "title": "RES.6-012 Lecture 5: Discrete Random Variables, Part I",
+    "author": "MIT OpenCourseWare (Tsitsiklis)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/lecture-overview-4/",
+    "where": "bài 5: biến ngẫu nhiên, bảng phân phối (PMF), Bernoulli, nhị thức",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Định nghĩa biến ngẫu nhiên và PMF rõ ràng; hàm phân phối F(x) xem tiếp ở bài 8.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Think Stats, chương 3-4: Probability Mass Functions và Cumulative Distribution Functions",
+     "author": "Allen Downey",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://allendowney.github.io/ThinkStats/chap04.html",
+     "where": "chương 3 và 4 (CDF)",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Vẽ PMF và CDF của dữ liệu thật bằng code; dễ nhớ F(x).",
+     "checked": true
+    },
+    {
+     "title": "RES.6-012: Cumulative Distribution Functions",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/cumulative-distribution-functions/",
+     "where": "video CDF trong bài 8",
+     "free": true,
+     "minutes": 10,
+     "why_vi": "Hàm phân phối tích lũy cho cả rời rạc và liên tục.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "18.05 Class 4: Discrete Random Variables, Expected Value",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class04-prep-a_pdf/",
+     "where": "bài đọc 4a",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Câu hỏi về bảng phân phối và hàm phân phối.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Xem bài 5 rồi video CDF ở bài 8; có thể bỏ hai video Supplement: Functions."
+  },
+  "xs_bnn_lien_tuc": {
+   "primary": {
+    "title": "RES.6-012 Lecture 8: Continuous Random Variables, Part I",
+    "author": "MIT OpenCourseWare (Tsitsiklis)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/lecture-overview-7/",
+    "where": "bài 8: hàm mật độ, phân phối đều, mũ, chuẩn",
+    "free": true,
+    "minutes": 65,
+    "why_vi": "Giải thích 'xác suất là diện tích dưới đường cong' và vì sao một điểm có xác suất 0.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Seeing Theory: Probability Distributions",
+     "author": "Brown University",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://seeing-theory.brown.edu/probability-distributions/index.html",
+     "where": "phần Continuous Distributions",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Kéo tham số và xem diện tích thay đổi.",
+     "checked": true
+    },
+    {
+     "title": "Think Stats, chương 6: Probability Density Functions",
+     "author": "Allen Downey",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://allendowney.github.io/ThinkStats/chap06.html",
+     "where": "cả chương",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Ước lượng hàm mật độ từ dữ liệu bằng code.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "18.05 Class 5: Continuous RVs, bài đọc 5b-5c",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class05-prep-b_pdf/",
+     "where": "bài đọc 5b",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Bài tập tích phân hàm mật độ tính xác suất trong khoảng.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Chỉ cần video Probability Density Functions, Uniform & Piecewise Constant, rồi CDF; hai mục Conditioning và Joint để dành."
+  },
+  "xs_ky_vong_phan_phoi": {
+   "primary": {
+    "title": "RES.6-012 Lecture 5-6: Expectation, Variance (và Binomial, Geometric)",
+    "author": "MIT OpenCourseWare (Tsitsiklis)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/lecture-overview-5/",
+    "where": "bài 6 (Variance) sau phần Expectation của bài 5; rồi Exponential và Normal trong bài 8",
+    "free": true,
+    "minutes": 90,
+    "why_vi": "Kỳ vọng, phương sai và từng phân phối được dựng bằng ví dụ; có cả tính kỳ vọng nhị thức bằng tuyến tính.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StatQuest: Expected value, phần 1 (rời rạc) và phần 2 (liên tục)",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/KLs_7b7SKi4",
+     "where": "phần 1 rồi phần 2 (youtu.be/OSPr6G6Ka-U)",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Kỳ vọng như 'trung bình có trọng số', ví dụ rất gần đời sống.",
+     "checked": true
+    },
+    {
+     "title": "StatQuest: The Normal Distribution",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/rzFX5NWojp0",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 12,
+     "why_vi": "Phân phối chuẩn và độ lệch chuẩn bằng hình.",
+     "checked": true
+    },
+    {
+     "title": "Seeing Theory: Probability Distributions",
+     "author": "Brown University",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://seeing-theory.brown.edu/probability-distributions/index.html",
+     "where": "kỳ vọng, phương sai, và các phân phối quen thuộc",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Chơi với nhị thức, Poisson, chuẩn và xem kỳ vọng, phương sai đổi theo tham số.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "18.05 Class 5: Variance and Gallery of Continuous RVs",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class05-prep-a_pdf/",
+     "where": "bài đọc 5a, 5c",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Bảng các phân phối thường gặp kèm bài tập.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Machine Learning cơ bản, bài 30: Ôn tập Xác suất cho Machine Learning",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/07/09/prob/",
+     "where": "mục 2.7 kỳ vọng và mục 3 các phân phối thường gặp",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Chuẩn, Bernoulli, categorical, tiếng Việt, ngắn; không có Poisson hay phân phối mũ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Làm tuần tự kỳ vọng, phương sai, nhị thức, đều, mũ, chuẩn; Poisson xem thêm video ngắn ở Seeing Theory hoặc 18.05."
+  },
+  "xs_mau_uoc_luong": {
+   "primary": {
+    "title": "Maximum Likelihood (StatQuest)",
+    "author": "Josh Starmer",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://youtu.be/XepXtl9YKwc",
+    "where": "toàn video; sau đó xem ví dụ chuẩn youtu.be/Dn6b9fCIUpM",
+    "free": true,
+    "minutes": 25,
+    "why_vi": "Cho thấy 'chọn tham số làm dữ liệu dễ xảy ra nhất' bằng cách trượt đường cong chuẩn.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "18.05 Class 10: Introduction to Statistics; Maximum Likelihood Estimates",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class10-prep-a_pdf/",
+     "where": "bài đọc 10a và 10b",
+     "free": true,
+     "minutes": 45,
+     "why_vi": "Các bước viết hàm hợp lý, lấy log, đạo hàm, rất đúng thứ tự cần nhớ.",
+     "checked": true
+    },
+    {
+     "title": "StatQuest: Vì sao chia cho N trừ 1 (ước lượng phương sai)",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/sHRBg6BhKjI",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 10,
+     "why_vi": "Cho thấy vì sao chia cho N làm ước lượng lệch; đúng ý 'không chệch'.",
+     "checked": true
+    },
+    {
+     "title": "Think Stats, chương 8: Estimation",
+     "author": "Allen Downey",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://allendowney.github.io/ThinkStats/chap08.html",
+     "where": "cả chương",
+     "free": true,
+     "minutes": 45,
+     "why_vi": "Mô phỏng phân phối của trung bình mẫu và so ước lượng chệch với không chệch.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "StatQuest: MLE cho phân phối nhị thức và mũ",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/4KKV9yZCoM4",
+     "where": "ví dụ nhị thức; mũ ở youtu.be/p3T-_LMrvBc",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Hai ví dụ tự làm lại được trên giấy.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Đề cương Xác suất thống kê MI2020 (Bách khoa Hà Nội), chương 4: ước lượng",
+     "author": "Viện Toán ứng dụng và Tin học, ĐHBK Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/2024_MI2020_Xacsuatthongke_DHCQ_Final.pdf",
+     "where": "chương 4 trong đề cương",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Để biết trường dạy nội dung nào; đề cương không phải giáo trình nên chỉ dùng để đối chiếu.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Hiểu MLE bằng ví dụ đồng xu trước; ước lượng điểm không chệch học bằng video N trừ 1 và mô phỏng của Think Stats."
+  },
+  "xs_tuong_quan_hoi_quy": {
+   "primary": {
+    "title": "RES.6-012 Lecture 12: Covariance and Correlation",
+    "author": "MIT OpenCourseWare (Tsitsiklis)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/lecture-overview-11/",
+    "where": "bài 12: các video Covariance đến Interpreting the Correlation Coefficient",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Dựng hiệp phương sai và hệ số tương quan từ định nghĩa, có ví dụ vì sao tương quan quan trọng.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StatQuest: Covariance và Pearson's correlation",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/qtaqvPAeEJY",
+     "where": "covariance; sau đó correlation youtu.be/xZ_z8KWkhXE",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Hình ảnh trực quan trước khi xem công thức.",
+     "checked": true
+    },
+    {
+     "title": "StatQuest: Linear Regression (least squares)",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/PaFPbb66DxQ",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Thấy vì sao đường hồi quy là đường làm tổng bình phương sai số nhỏ nhất.",
+     "checked": true
+    },
+    {
+     "title": "Seeing Theory: Regression Analysis",
+     "author": "Brown University",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://seeing-theory.brown.edu/regression-analysis/index.html",
+     "where": "cả chương",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Kéo điểm dữ liệu và xem đường hồi quy dịch chuyển.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "18.05 Class 26: Linear Regression",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class26-prep_pdf/",
+     "where": "bài đọc lớp 26",
+     "free": true,
+     "minutes": 45,
+     "why_vi": "Hồi quy bình phương tối thiểu có công thức đầy đủ và bài tập.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Machine Learning cơ bản, bài 3: Linear Regression",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2016/12/28/linearregression/",
+     "where": "toàn bài: hàm mất mát, nghiệm, ví dụ Python",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Hồi quy như mô hình học máy đầu tiên, có code NumPy; dùng ma trận nên cần đại số tuyến tính.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Xem tương quan trước, hồi quy đơn sau; bài ML cơ bản chỉ đọc khi đã có tuyến tính."
+  },
+  "xs_tin_cay": {
+   "primary": {
+    "title": "But what is the Central Limit Theorem?",
+    "author": "3Blue1Brown (Grant Sanderson)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://www.3blue1brown.com/lessons/clt",
+    "where": "cả video (khoảng 31 phút)",
+    "free": true,
+    "minutes": 31,
+    "why_vi": "Thấy tổng nhiều biến bất kỳ tiến dần tới hình chuông; nền cho khoảng tin cậy.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StatQuest: Confidence Intervals",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/TqOeMYtOc1w",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Khoảng tin cậy và ý nghĩa 'tin cậy 95%' bằng ví dụ lấy mẫu lặp.",
+     "checked": true
+    },
+    {
+     "title": "18.05 Class 22-23: Confidence Intervals",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class22-prep_pdf/",
+     "where": "bài đọc lớp 22 rồi lớp 23",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Công thức khoảng tin cậy cho trung bình, có cả khi không chuẩn.",
+     "checked": true
+    },
+    {
+     "title": "StatQuest: Central Limit Theorem (có app thử)",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/YAlJCEDH2uY",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 15,
+     "why_vi": "Bản ngắn hơn 3Blue1Brown, kèm app mô phỏng.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Seeing Theory: Frequentist Inference",
+     "author": "Brown University",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://seeing-theory.brown.edu/frequentist-inference/index.html",
+     "where": "mục Confidence Intervals",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Tự lấy mẫu và đếm bao nhiêu khoảng chứa trung bình thật.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Bài tập Xác suất thống kê MI2021 (Bách khoa Hà Nội)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐHBK Hà Nội",
+     "kind": "bai_tap",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/2023_MI2021_BaitapXSTK_1.0.pdf",
+     "where": "chương ước lượng khoảng",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Bài tập khoảng tin cậy trung bình và tỷ lệ theo khung trường; chưa xác minh đáp số.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Luật số lớn và CLT bằng video; sau đó mới làm công thức khoảng tin cậy và cỡ mẫu."
+  },
+  "xs_kiem_dinh": {
+   "primary": {
+    "title": "StatQuest: p-values, what they are and how to interpret them",
+    "author": "Josh Starmer",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://youtu.be/vemZtEM63GY",
+    "where": "toàn video; sau đó Null hypothesis youtu.be/0oc49DyA3hU",
+    "free": true,
+    "minutes": 25,
+    "why_vi": "Giải thích kiểm định như 'có đáng ngạc nhiên không' mà không cần công thức dày.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "18.05 Class 17-19: NHST I, II, III",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class17-prep-a_pdf/",
+     "where": "bài đọc 17a, 17b, rồi 18 và 19",
+     "free": true,
+     "minutes": 75,
+     "why_vi": "Giả thuyết, mức ý nghĩa, hai loại sai lầm viết rất gọn và đúng.",
+     "checked": true
+    },
+    {
+     "title": "Think Stats, chương 9: Hypothesis Testing",
+     "author": "Allen Downey",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://allendowney.github.io/ThinkStats/chap09.html",
+     "where": "cả chương",
+     "free": true,
+     "minutes": 45,
+     "why_vi": "Kiểm định bằng hoán vị, tức là tự dựng từ mô phỏng, đúng kiểu vừa học vừa làm.",
+     "checked": true
+    },
+    {
+     "title": "OpenIntro Statistics, chương 6-7: Inference for Categorical / Numerical Data",
+     "author": "OpenIntro",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://www.openintro.org/book/os/",
+     "where": "chương 6 (tỷ lệ) và chương 7 (trung bình, so sánh hai nhóm)",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Sách miễn phí có bài tập cuối chương, bao đủ kiểm định một và hai mẫu.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Seeing Theory: Frequentist Inference (Hypothesis Testing)",
+     "author": "Brown University",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://seeing-theory.brown.edu/frequentist-inference/index.html",
+     "where": "phần giả thuyết",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Chạy thử vùng bác bỏ và sai lầm loại I.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Minh họa đề giữa kỳ MI2020 học kỳ 2023.1",
+     "author": "Viện Toán ứng dụng và Tin học, ĐHBK Hà Nội",
+     "kind": "de_thi",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/Minhhoa_GK1_2023.1_MI2020.pdf",
+     "where": "đề minh họa giữa kỳ (không phải đề cuối kỳ)",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Cho thấy dạng đề của trường; chỉ là giữa kỳ nên ít về kiểm định.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Hiểu p-value và hai loại sai lầm bằng video trước; làm kiểm định một mẫu, rồi hai mẫu; phiên bản hoán vị của Think Stats tùy chọn."
+  },
+  "xs_ham_bnn": {
+   "primary": {
+    "title": "RES.6-012 Lecture 11: Derived Distributions",
+    "author": "MIT OpenCourseWare (Tsitsiklis)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/lecture-overview-10/",
+    "where": "bài 11: PMF của hàm, hàm tuyến tính của biến chuẩn, phương pháp đơn điệu",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Đúng chủ đề 'hàm của biến ngẫu nhiên', đi từ rời rạc tới liên tục và có phần mô phỏng.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "RES.6-012: The Monotonic Case",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/the-monotonic-case/",
+     "where": "video trong bài 11",
+     "free": true,
+     "minutes": 10,
+     "why_vi": "Công thức đổi biến cho hàm đơn điệu, hữu ích về sau với mô hình sinh.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Chỉ cần ba video đầu của bài 11 trước; phần nhiều biến để dành khi học mô hình sinh."
+  }
+ },
+ "exam_proofs": [
+  {
+   "node": "xs_kiem_dinh",
+   "topic_vi": "Trình bày đầy đủ một bài kiểm định giả thuyết",
+   "type_vi": "Cho số liệu mẫu; nêu giả thuyết và đối thuyết, chọn thống kê kiểm định, tính giá trị quan sát, so với miền bác bỏ hoặc p-value và kết luận bằng lời.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Bài tập Xác suất thống kê MI2020, chương kiểm định",
+     "author": "Viện Toán ứng dụng và Tin học, ĐHBK Hà Nội",
+     "kind": "bai_tap",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/2023_MI2020_Baitap_Xacsuatthongke_DHCQ.pdf",
+     "where": "chương 5",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Bài tập chính thức của trường.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "xs_tin_cay",
+   "topic_vi": "Dựng và giải thích khoảng tin cậy",
+   "type_vi": "Tìm khoảng tin cậy cho trung bình hoặc tỷ lệ ở mức cho trước, tìm cỡ mẫu tối thiểu, và giải thích ý nghĩa của mức tin cậy.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Bài tập Xác suất thống kê MI2021",
+     "author": "Viện Toán ứng dụng và Tin học, ĐHBK Hà Nội",
+     "kind": "bai_tap",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/2023_MI2021_BaitapXSTK_1.0.pdf",
+     "where": "chương ước lượng khoảng",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Bài tập chính thức.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "xs_bayes",
+   "topic_vi": "Xác suất đầy đủ và Bayes, trình bày lời giải đầy đủ",
+   "type_vi": "Bài toán nhiều giai đoạn hoặc nhiều nguồn: đặt hệ biến cố đầy đủ, viết công thức xác suất đầy đủ, rồi tính xác suất hậu nghiệm bằng Bayes.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "18.05 Class 3: Conditional Probability, Independence, Bayes' Theorem",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class03-prep_pdf/",
+     "where": "bài đọc lớp 3",
+     "free": true,
+     "minutes": 45,
+     "why_vi": "Bài tập cùng dạng, bằng tiếng Anh.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "xs_ky_vong_phan_phoi",
+   "topic_vi": "Tính kỳ vọng và phương sai của một phân phối",
+   "type_vi": "Cho bảng phân phối hoặc hàm mật độ, tính kỳ vọng và phương sai; hoặc suy ra E và Var của nhị thức, Poisson, mũ, đều từ định nghĩa.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "RES.6-012 Lecture 6: Variance",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/lecture-overview-5/",
+     "where": "bài 6: phương sai Bernoulli, đều, nhị thức",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Có lời giải trình bày từng bước.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "xs_bnn_lien_tuc",
+   "topic_vi": "Tìm hằng số chuẩn hóa và hàm phân phối từ hàm mật độ",
+   "type_vi": "Cho hàm mật độ có tham số; tìm tham số cho tổng xác suất bằng 1, lập hàm phân phối F(x), tính xác suất một khoảng, kỳ vọng.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "18.05 Class 5: Continuous RVs, bài đọc 5b",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class05-prep-b_pdf/",
+     "where": "bài đọc 5b",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Bài tập cùng dạng.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "xs_dieu_kien",
+   "topic_vi": "Chứng minh hoặc kiểm tra hai biến cố độc lập",
+   "type_vi": "Dùng định nghĩa P(AB)=P(A)P(B) để kết luận độc lập hay không; chứng minh phần bù của biến cố độc lập cũng độc lập.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "RES.6-012 Lecture 3: Independence",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/independence-of-event-complements/",
+     "where": "video Independence of Event Complements",
+     "free": true,
+     "minutes": 8,
+     "why_vi": "Chứng minh phần bù ngắn gọn.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "xs_mau_uoc_luong",
+   "topic_vi": "Chứng minh ước lượng không chệch",
+   "type_vi": "Chứng minh trung bình mẫu là ước lượng không chệch của kỳ vọng; chứng minh phương sai mẫu chia cho n-1 là không chệch (hoặc chia cho n thì chệch).",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "StatQuest: vì sao chia cho N trừ 1",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/sHRBg6BhKjI",
+     "where": "toàn video (trực giác, không đầy đủ bằng chứng minh)",
+     "free": true,
+     "minutes": 10,
+     "why_vi": "Trực giác để theo dõi bước chứng minh.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "xs_mau_uoc_luong",
+   "topic_vi": "Tìm ước lượng hợp lý cực đại",
+   "type_vi": "Viết hàm hợp lý của mẫu, lấy logarit, đạo hàm theo tham số, giải ra ước lượng cho tham số của nhị thức, Poisson, mũ hoặc chuẩn.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "18.05 Class 10: Maximum Likelihood Estimates",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class10-prep-b_pdf/",
+     "where": "bài đọc 10b",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Ví dụ giải đầy đủ từng bước.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "xs_xac_suat",
+   "topic_vi": "Suy ra tính chất xác suất từ tiên đề",
+   "type_vi": "Chứng minh P(A^c)=1-P(A), P(A∪B)=P(A)+P(B)-P(AB), hoặc bất đẳng thức Bonferroni từ ba tiên đề.",
+   "frequency_vi": "thỉnh thoảng",
+   "sources": [
+    {
+     "title": "RES.6-012 Lecture 1: Bonferroni's Inequality và More Properties",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/more-properties-of-probabilities/",
+     "where": "video More Properties of Probabilities",
+     "free": true,
+     "minutes": 10,
+     "why_vi": "Chứng minh gọn từ tiên đề.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "xs_tuong_quan_hoi_quy",
+   "topic_vi": "Tính chất hiệp phương sai và tương quan",
+   "type_vi": "Chứng minh Var(X+Y)=Var X + Var Y + 2Cov(X,Y); chỉ ra độc lập suy ra không tương quan nhưng ngược lại không đúng; chứng minh |ρ| ≤ 1.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "RES.6-012 Lecture 12: Proof of Key Properties of the Correlation Coefficient",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/proof-of-key-properties-of-the-correlation-coefficient/",
+     "where": "video chứng minh",
+     "free": true,
+     "minutes": 10,
+     "why_vi": "Chứng minh |ρ| ≤ 1 gọn.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "xs_tuong_quan_hoi_quy",
+   "topic_vi": "Suy ra hệ số hồi quy bình phương tối thiểu",
+   "type_vi": "Cực tiểu hóa tổng bình phương sai số theo hệ số góc và hệ số chặn, rút ra công thức qua hiệp phương sai và phương sai.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "18.05 Class 26: Linear Regression",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class26-prep_pdf/",
+     "where": "bài đọc lớp 26",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Có phần suy ra công thức.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "xs_tin_cay",
+   "topic_vi": "Dùng bất đẳng thức Chebyshev và luật số lớn",
+   "type_vi": "Dùng Chebyshev để chặn xác suất lệch khỏi kỳ vọng, và nêu luật số lớn cho dãy biến độc lập cùng phân phối.",
+   "frequency_vi": "thỉnh thoảng",
+   "sources": [
+    {
+     "title": "MIT 6.042 (Mathematics for Computer Science), Lecture 24: Large Deviations",
+     "author": "MIT OpenCourseWare",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/6-1200j-mathematics-for-computer-science-spring-2024/pages/readings/",
+     "where": "Chương 20 của sách (Lecture 23-24)",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Chebyshev và luật số lớn trình bày kèm chứng minh.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "xs_kiem_dinh",
+   "topic_vi": "Hai loại sai lầm và lực kiểm định",
+   "type_vi": "Tính xác suất sai lầm loại I, loại II và lực kiểm định cho một quy tắc quyết định đã cho; nêu ý nghĩa của mức ý nghĩa.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "18.05 Class 17: The Frequentist School of Statistics; NHST I",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2022/resources/mit18_05_s22_class17-prep-b_pdf/",
+     "where": "bài đọc 17b",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Sai lầm loại I, II và lực kiểm định.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "xs_dem_su_kien",
+   "topic_vi": "Giải thích phép đếm bằng lời",
+   "type_vi": "Đếm số cách bằng quy tắc cộng, nhân, hoán vị, tổ hợp và giải thích vì sao chọn công thức đó; chứng minh đẳng thức tổ hợp bằng cách đếm hai lần.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "RES.6-012 Lecture 4: Counting",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/lecture-overview-3/",
+     "where": "bài 4",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Cách đếm có giải thích.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "xs_ham_bnn",
+   "topic_vi": "Tìm phân phối của Y=g(X)",
+   "type_vi": "Dùng hàm phân phối để tìm hàm mật độ của Y=g(X) khi X liên tục, kể cả trường hợp g không đơn điệu.",
+   "frequency_vi": "thỉnh thoảng",
+   "sources": [
+    {
+     "title": "RES.6-012 Lecture 11: A Nonmonotonic Example",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/a-nonmonotonic-example/",
+     "where": "video trong bài 11",
+     "free": true,
+     "minutes": 10,
+     "why_vi": "Ví dụ không đơn điệu giải đầy đủ.",
+     "checked": true
+    }
+   ]
+  }
+ ],
+ "rejected": [
+  {
+   "title": "Harvard Stat 110 (Blitzstein) làm nguồn chính",
+   "why_vi": "Rất hay nhưng nhanh và nhiều chứng minh, có tới 35 bài giảng; để dành cho đường tiểu luận, không hợp làm nguồn chính cho người mới. Trang chính của khóa chặn truy cập tự động nên chưa kiểm tra được."
+  },
+  {
+   "title": "Khan Academy Statistics and Probability",
+   "why_vi": "Không có bản liên kết kiểm chứng được trong lần tìm này; nội dung giống Seeing Theory và StatQuest nên không cần thêm."
+  },
+  {
+   "title": "Các trang tải đề thi XSTK trên studocu, 123doc, tailieu",
+   "why_vi": "Tài liệu người dùng tải lên, không rõ bản quyền; chỉ dùng nguồn chính thức của trường."
+  },
+  {
+   "title": "Think Bayes đầy đủ 20 chương",
+   "why_vi": "Chỉ cần chương 1-2 cho nút Bayes; các chương sau thuộc suy luận Bayes nâng cao, ngoài phạm vi nhánh này."
+  },
+  {
+   "title": "OpenIntro Statistics làm nguồn chính cho từng nút",
+   "why_vi": "Sách dày, tiếng Anh dài; dùng làm tra cứu cho chương 6-7 chứ không đọc từ đầu."
+  },
+  {
+   "title": "Machine Learning cơ bản bài về MLE/MAP",
+   "why_vi": "Đường dẫn dự đoán trả về lỗi 404 khi thử, nên không đưa vào."
+  }
+ ]
+}

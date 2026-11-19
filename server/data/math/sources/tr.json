@@ -1,0 +1,1273 @@
+{
+ "branch": "tr",
+ "researched": "2026-11-19",
+ "backbone": [
+  {
+   "title": "Algorithms (sách miễn phí), các chương Backtracking, Greedy, Graph, MST, Shortest Paths, Max Flow",
+   "author": "Jeff Erickson (UIUC)",
+   "kind": "sach",
+   "lang": "en",
+   "url": "https://jeffe.cs.illinois.edu/teaching/algorithms/",
+   "where": "chương 2, 4, 5, 7, 8, 10 (mỗi chương một PDF)",
+   "free": true,
+   "minutes": null,
+   "why_vi": "Sách miễn phí, giải thích thuật toán đồ thị và quay lui rất rõ, có bài tập cuối chương.",
+   "checked": true
+  },
+  {
+   "title": "Introduction to Algorithms (6.006), bài giảng mùa xuân 2020",
+   "author": "MIT OpenCourseWare (Demaine, Devadas, Solomon)",
+   "kind": "khoa_hoc",
+   "lang": "en",
+   "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/video_galleries/lecture-videos/",
+   "where": "bài 9 đến 13: BFS, DFS, đường đi ngắn nhất",
+   "free": true,
+   "minutes": 300,
+   "why_vi": "Video giảng đường rõ ràng, tập trung vào đồ thị và đường đi ngắn nhất.",
+   "checked": true
+  },
+  {
+   "title": "Machine Learning cơ bản: bài 7 (Gradient Descent), bài 16 (tập lồi, hàm lồi), bài 18 (Duality)",
+   "author": "Vũ Hữu Tiệp",
+   "kind": "bai_viet",
+   "lang": "vi",
+   "url": "https://machinelearningcoban.com/2017/03/12/convexity/",
+   "where": "ba bài nối tiếp cho nửa tối ưu của nhánh",
+   "free": true,
+   "minutes": 120,
+   "why_vi": "Tối ưu lồi, hạ gradient và đối ngẫu bằng tiếng Việt, đúng ngữ cảnh học máy.",
+   "checked": true
+  },
+  {
+   "title": "Discrete Mathematics: An Open Introduction",
+   "author": "Oscar Levin",
+   "kind": "sach",
+   "lang": "en",
+   "url": "https://discrete.openmathbooks.org/dmoi3.html",
+   "where": "chương Counting, Logic, Graph Theory",
+   "free": true,
+   "minutes": null,
+   "why_vi": "Sách miễn phí, viết cho người mới, có bài tập; hợp cho phần logic, đếm và đồ thị.",
+   "checked": true
+  }
+ ],
+ "nodes": {
+  "tr_logic_dem": {
+   "primary": {
+    "title": "Discrete Mathematics: An Open Introduction, chương Logic và Counting",
+    "author": "Oscar Levin",
+    "kind": "sach",
+    "lang": "en",
+    "url": "https://discrete.openmathbooks.org/dmoi3.html",
+    "where": "mục Logic (mệnh đề, bảng chân trị) và đầu chương Counting (quy tắc cộng, nhân)",
+    "free": true,
+    "minutes": 180,
+    "why_vi": "Viết nhẹ nhàng cho người mới, có ví dụ và bài tập; chưa mở được từng mục để ghi mục số chính xác.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 6.1200J Mathematics for Computer Science: bài 1 Predicates, Sets, and Proofs",
+     "author": "MIT OpenCourseWare",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/6-1200j-mathematics-for-computer-science-spring-2024/pages/readings/",
+     "where": "Lecture 01: các mục 1.0 đến 1.7 của sách",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Mệnh đề và logic trong ngữ cảnh khoa học máy tính.",
+     "checked": true
+    },
+    {
+     "title": "RES.6-012 Lecture 4: Counting",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/lecture-overview-3/",
+     "where": "nguyên lý đếm",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Quy tắc nhân, hoán vị, tổ hợp qua video ngắn.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Học logic mệnh đề bằng bảng chân trị trước, rồi quy tắc cộng, nhân; bỏ phần quantifier phức tạp nếu thấy khó."
+  },
+  "tr_dem": {
+   "primary": {
+    "title": "Discrete Mathematics: An Open Introduction, chương Counting và Sequences",
+    "author": "Oscar Levin",
+    "kind": "sach",
+    "lang": "en",
+    "url": "https://discrete.openmathbooks.org/dmoi3.html",
+    "where": "mục hoán vị, tổ hợp và recurrence relations",
+    "free": true,
+    "minutes": 240,
+    "why_vi": "Dạy đếm bằng bài tập nhiều, rồi hệ thức truy hồi; chưa ghi mục số.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 6.1200J: bài 7 Recurrences (mục 22.1 đến 22.5) và bài 16 Counting Techniques",
+     "author": "MIT OpenCourseWare",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/6-1200j-mathematics-for-computer-science-spring-2024/pages/readings/",
+     "where": "Lecture 07 và Lecture 16",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Giải hệ thức truy hồi và các kỹ thuật đếm; hơi hàn lâm.",
+     "checked": true
+    },
+    {
+     "title": "CP-Algorithms: Binomial Coefficients",
+     "author": "CP-Algorithms",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cp-algorithms.com/combinatorics/binomial-coefficients.html",
+     "where": "cả trang",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Tổ hợp và tính nhanh bằng code.",
+     "checked": true
+    },
+    {
+     "title": "Algorithms, chương 1: Recursion",
+     "author": "Jeff Erickson",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://jeffe.cs.illinois.edu/teaching/algorithms/book/01-recursion.pdf",
+     "where": "phần giải hệ thức truy hồi của thuật toán chia để trị",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Nối hệ thức truy hồi với đệ quy trong code.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Làm đếm trước, hệ thức truy hồi sau; bỏ phương pháp hàm sinh."
+  },
+  "tr_liet_ke_quay_lui": {
+   "primary": {
+    "title": "Algorithms, chương 2: Backtracking",
+    "author": "Jeff Erickson",
+    "kind": "sach",
+    "lang": "en",
+    "url": "https://jeffe.cs.illinois.edu/teaching/algorithms/book/02-backtracking.pdf",
+    "where": "toàn chương: bài N quân hậu và duyệt cây tìm kiếm",
+    "free": true,
+    "minutes": 90,
+    "why_vi": "Giải thích quay lui như đệ quy trên cây lựa chọn, rõ và có bài tập.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "CP-Algorithms: Generating all K-combinations",
+     "author": "CP-Algorithms",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cp-algorithms.com/combinatorics/generating_combinations.html",
+     "where": "cả trang (sinh theo thứ tự từ điển)",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Phương pháp sinh tổ hợp theo thứ tự từ điển kèm code.",
+     "checked": true
+    },
+    {
+     "title": "CP-Algorithms: Gray code",
+     "author": "CP-Algorithms",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cp-algorithms.com/algebra/gray-code.html",
+     "where": "cả trang",
+     "free": true,
+     "minutes": 15,
+     "why_vi": "Một cách sinh khác, tùy chọn.",
+     "checked": true
+    },
+    {
+     "title": "VisuAlgo: Recursion Tree/DAG",
+     "author": "Steven Halim",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://visualgo.net/en/recursion",
+     "where": "các ví dụ đệ quy",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Nhìn cây đệ quy chạy từng bước; không có mô-đun riêng cho quay lui.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Đọc Erickson chương 2 và tự viết N quân hậu; phần sinh tổ hợp để học sau."
+  },
+  "tr_thuat_toan": {
+   "primary": {
+    "title": "Algorithms, chương 4: Greedy Algorithms",
+    "author": "Jeff Erickson",
+    "kind": "sach",
+    "lang": "en",
+    "url": "https://jeffe.cs.illinois.edu/teaching/algorithms/book/04-greedy.pdf",
+    "where": "toàn chương: lập lịch, mã Huffman, và cách chứng minh tham lam đúng",
+    "free": true,
+    "minutes": 90,
+    "why_vi": "Dạy tham lam từ ví dụ và nói rõ khi nào tham lam thất bại.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 6.006 Lecture 1: Algorithms and Computation",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/resources/lecture-1-algorithms-and-computation/",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 50,
+     "why_vi": "Mô hình tính toán và cách nghĩ về thời gian chạy.",
+     "checked": true
+    },
+    {
+     "title": "MIT 6.1200J bài 6 Asymptotics (mục 14.7)",
+     "author": "MIT OpenCourseWare",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/6-1200j-mathematics-for-computer-science-spring-2024/pages/readings/",
+     "where": "Lecture 06",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Ký hiệu O lớn và hệ quả; nên xem nếu cần định nghĩa chặt.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Làm tham lam trước, O lớn bằng bài 1 của 6.006; chứng minh tham lam đúng để cho đường tiểu luận."
+  },
+  "tr_do_thi": {
+   "primary": {
+    "title": "Discrete Mathematics: An Open Introduction, chương Graph Theory",
+    "author": "Oscar Levin",
+    "kind": "sach",
+    "lang": "en",
+    "url": "https://discrete.openmathbooks.org/dmoi3.html",
+    "where": "phần Graph Theory: đỉnh, cạnh, bậc, định lý bắt tay, đường đi",
+    "free": true,
+    "minutes": 120,
+    "why_vi": "Mở đầu nhẹ nhàng về đồ thị, định lý bắt tay và đường đi; chưa ghi mục số.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Algorithms, chương 5: Basic Graph Algorithms (biểu diễn đồ thị)",
+     "author": "Jeff Erickson",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://jeffe.cs.illinois.edu/teaching/algorithms/book/05-graphs.pdf",
+     "where": "phần định nghĩa và biểu diễn bằng ma trận kề, danh sách kề",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Cho thấy biểu diễn nào hợp thuật toán nào.",
+     "checked": true
+    },
+    {
+     "title": "MIT 6.1200J bài 11: Graphs and Coloring",
+     "author": "MIT OpenCourseWare",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/6-1200j-mathematics-for-computer-science-spring-2024/pages/readings/",
+     "where": "Lecture 11, mục 12.1 đến 12.3",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Cách nhìn chặt hơn về đồ thị; dùng khi cần.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [
+    {
+     "title": "VNOI Wiki: Lý thuyết đồ thị, trang tổng hợp",
+     "author": "VNOI",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://wiki.vnoi.info/algo/graph-theory/everything",
+     "where": "mục biểu diễn đồ thị",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Tiếng Việt, hướng tới thi lập trình; chưa mở được toàn trang nên chưa chắc mục biểu diễn đồ thị nằm ở đâu.",
+     "checked": false
+    }
+   ],
+   "note_vi": "Học khái niệm bằng Levin, rồi nhìn ma trận kề và danh sách kề trong Erickson chương 5."
+  },
+  "tr_tim_kiem": {
+   "primary": {
+    "title": "MIT 6.006 Lecture 9: Breadth-First Search và Lecture 10: Depth-First Search",
+    "author": "MIT OpenCourseWare",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/resources/lecture-9-breadth-first-search/",
+    "where": "bài 9 rồi bài 10 (url: .../lecture-10-depth-first-search/)",
+    "free": true,
+    "minutes": 100,
+    "why_vi": "BFS và DFS có chứng minh đúng đắn, thứ tự duyệt và sắp xếp topo (nối với lan truyền ngược).",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "CP-Algorithms: Breadth First Search và Depth First Search",
+     "author": "CP-Algorithms",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cp-algorithms.com/graph/breadth-first-search.html",
+     "where": "trang BFS; DFS ở cp-algorithms.com/graph/depth-first-search.html",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Code ngắn và ứng dụng thật.",
+     "checked": true
+    },
+    {
+     "title": "VisuAlgo: Graph Traversal (BFS/DFS)",
+     "author": "Steven Halim",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://visualgo.net/en/dfsbfs",
+     "where": "chạy BFS và DFS trên đồ thị tự vẽ",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Thấy hàng đợi và ngăn xếp thay đổi từng bước.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "VisuAlgo: Graph Traversal, chế độ thử thách",
+     "author": "Steven Halim",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://visualgo.net/en/dfsbfs",
+     "where": "nút luyện tập/kiểm tra",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Tự kiểm tra thứ tự duyệt; có chế độ hỏi đáp, chưa thử.",
+     "checked": false
+    }
+   ],
+   "vi": [
+    {
+     "title": "VNOI Wiki: Breadth First Search",
+     "author": "VNOI",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://wiki.vnoi.info/algo/graph-theory/breadth-first-search",
+     "where": "cả trang",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Tiếng Việt, có nguồn từ CP-Algorithms và sách Lê Minh Hoàng.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Xem bài 9 trước (BFS), rồi bài 10; chơi VisuAlgo giữa hai bài."
+  },
+  "tr_cay_duong_di": {
+   "primary": {
+    "title": "MIT 6.006 Lecture 13: Dijkstra (kèm Lecture 11-12)",
+    "author": "MIT OpenCourseWare",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/resources/lecture-13-dijkstra/",
+    "where": "bài 13; xem bài 11 Weighted Shortest Paths trước, bài 12 Bellman-Ford sau nếu cần",
+    "free": true,
+    "minutes": 150,
+    "why_vi": "Đường đi ngắn nhất có trọng số xây từ BFS, đúng thứ tự dễ học.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "CP-Algorithms: Dijkstra",
+     "author": "CP-Algorithms",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cp-algorithms.com/graph/dijkstra.html",
+     "where": "cả trang",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Cách cài đặt thực tế.",
+     "checked": true
+    },
+    {
+     "title": "MIT 6.1200J bài 13: Connectivity and Trees",
+     "author": "MIT OpenCourseWare",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/6-1200j-mathematics-for-computer-science-spring-2024/pages/readings/",
+     "where": "Lecture 13, mục 12.7 đến 12.9",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Tính chất của cây, đúng phần 'cây' của nút.",
+     "checked": true
+    },
+    {
+     "title": "VisuAlgo: Single-Source Shortest Paths",
+     "author": "Steven Halim",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://visualgo.net/en/sssp",
+     "where": "chạy Dijkstra và Bellman-Ford",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Thấy khoảng cách cập nhật từng bước.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [
+    {
+     "title": "VNOI Wiki: Đường đi ngắn nhất",
+     "author": "VNOI",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://wiki.vnoi.info/algo/graph-theory/shortest-path",
+     "where": "cả trang: Dijkstra",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Tiếng Việt, có Dijkstra và so sánh các thuật toán.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Tính chất cây học trước bằng bài 13 của 6.1200J, rồi Dijkstra; bỏ Johnson và APSP."
+  },
+  "tr_toi_uu_loi": {
+   "primary": {
+    "title": "Machine Learning cơ bản, bài 16: Convex sets và convex functions",
+    "author": "Vũ Hữu Tiệp",
+    "kind": "bai_viet",
+    "lang": "vi",
+    "url": "https://machinelearningcoban.com/2017/03/12/convexity/",
+    "where": "toàn bài: tập lồi, hàm lồi, điều kiện bậc nhất và bậc hai",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Tiếng Việt, có hình và ví dụ, bao đủ tập lồi và hàm lồi.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Mathematics for Machine Learning, chương 7: Continuous Optimization",
+     "author": "Deisenroth, Faisal, Ong",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://mml-book.github.io/",
+     "where": "mục 7.3 Convex Optimization",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Sách miễn phí, ngắn, đúng khung học máy.",
+     "checked": true
+    },
+    {
+     "title": "Convex Optimization, chương 2-4",
+     "author": "Boyd, Vandenberghe",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://web.stanford.edu/~boyd/cvxbook/",
+     "where": "chương 2 tập lồi, chương 3 hàm lồi, chương 4 bài toán lồi",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Tham khảo chuẩn; khó và dài nên chỉ tra khi cần.",
+     "checked": false
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Đọc bài 16 trước; điều kiện bậc hai chỉ cần hiểu ví dụ hàm một biến."
+  },
+  "tr_gradient_descent": {
+   "primary": {
+    "title": "Machine Learning cơ bản, bài 7: Gradient Descent (phần 1)",
+    "author": "Vũ Hữu Tiệp",
+    "kind": "bai_viet",
+    "lang": "vi",
+    "url": "https://machinelearningcoban.com/2017/01/12/gradientdescent/",
+    "where": "toàn bài; hàm một biến rồi nhiều biến, kèm code",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Hạ gradient từ hàm một biến tới hồi quy tuyến tính, có code Python.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "An overview of gradient descent optimization algorithms",
+     "author": "Sebastian Ruder",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://www.ruder.io/optimizing-gradient-descent/",
+     "where": "các mục batch/SGD/mini-batch, Momentum, Adam",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Tổng quan các biến thể hạ gradient đang dùng khi huấn luyện mạng.",
+     "checked": true
+    },
+    {
+     "title": "Why Momentum Really Works",
+     "author": "Gabriel Goh (Distill)",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://distill.pub/2017/momentum/",
+     "where": "cả bài; xem các hình tương tác",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Cho thấy vì sao momentum làm hạ gradient nhanh hơn; khá toán nên chỉ xem hình.",
+     "checked": true
+    },
+    {
+     "title": "Machine Learning cơ bản, bài 18: Duality (nhân tử Lagrange, KKT)",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/04/02/duality/",
+     "where": "mục 2 nhân tử Lagrange và mục 5.2 điều kiện KKT",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Phần Lagrange và KKT bằng tiếng Việt; phần đối ngẫu có thể bỏ qua.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [
+    {
+     "title": "Machine Learning cơ bản, bài 18: Duality",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/04/02/duality/",
+     "where": "mục nhân tử Lagrange và KKT",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Bản tiếng Việt duy nhất kiểm chứng được cho Lagrange.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Hạ gradient (bài 7) rồi Lagrange (đầu bài 18); momentum và Adam đọc sau."
+  },
+  "tr_quy_nap": {
+   "primary": {
+    "title": "MIT 6.1200J bài 2-3: Contradiction and Induction, Casework and Strong Induction",
+    "author": "MIT OpenCourseWare",
+    "kind": "khoa_hoc",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/6-1200j-mathematics-for-computer-science-spring-2024/pages/readings/",
+    "where": "Lecture 02 (mục 5.1) và Lecture 03 (mục 5.2-5.3), kèm video bài giảng",
+    "free": true,
+    "minutes": 120,
+    "why_vi": "Quy nạp thường và quy nạp mạnh, có nhiều ví dụ lập luận.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Discrete Mathematics: An Open Introduction, mục Induction",
+     "author": "Oscar Levin",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://discrete.openmathbooks.org/dmoi3.html",
+     "where": "mục về quy nạp trong chương Sequences",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Nhẹ hơn cho người mới, có bài tập.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Làm vài bài tổng và chia hết bằng quy nạp thường; quy nạp mạnh để cho lần sau."
+  },
+  "tr_dem_nang_cao": {
+   "primary": {
+    "title": "CP-Algorithms: Inclusion-Exclusion",
+    "author": "CP-Algorithms",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://cp-algorithms.com/combinatorics/inclusion-exclusion.html",
+    "where": "cả trang: công thức và các bài toán đếm",
+    "free": true,
+    "minutes": 40,
+    "why_vi": "Nguyên lý bù trừ có công thức và ví dụ; phần tổ hợp lặp có thể xem trong Levin.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 6.1200J bài 17: More Counting Techniques",
+     "author": "MIT OpenCourseWare",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/6-1200j-mathematics-for-computer-science-spring-2024/pages/readings/",
+     "where": "Lecture 17 (mục 15.5-15.10)",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Các kỹ thuật đếm nâng cao có chứng minh.",
+     "checked": true
+    },
+    {
+     "title": "RES.6-012 Lecture 7: The Inclusion-Exclusion Formula",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/res-6-012-introduction-to-probability-spring-2018/resources/the-inclusion-exclusion-formula/",
+     "where": "video ngắn trong bài 7",
+     "free": true,
+     "minutes": 10,
+     "why_vi": "Dạng xác suất của nguyên lý bù trừ; ví dụ bài toán cái mũ.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Chỉ cần nguyên lý bù trừ cho 2-3 tập; tổ hợp lặp xem khi đã quen tổ hợp."
+  },
+  "tr_ton_tai": {
+   "primary": {
+    "title": "MIT 6.1200J bài 4: State Machines (bất biến)",
+    "author": "MIT OpenCourseWare",
+    "kind": "khoa_hoc",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/6-1200j-mathematics-for-computer-science-spring-2024/pages/readings/",
+    "where": "Lecture 04 và chương State Machines cập nhật",
+    "free": true,
+    "minutes": 90,
+    "why_vi": "Bất biến được dạy như công cụ chứng minh, phù hợp mục chẵn lẻ và bất biến.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Discrete Mathematics: An Open Introduction, mục Pigeonhole Principle",
+     "author": "Oscar Levin",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://discrete.openmathbooks.org/dmoi3.html",
+     "where": "mục Pigeonhole trong chương Counting (chưa xác nhận số mục)",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Nguyên lý Dirichlet có ví dụ và bài tập.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Chưa tìm được nguồn tốt riêng cho thứ hạng của cấu hình; có thể bỏ phần đó."
+  },
+  "tr_nhanh_can": {
+   "primary": {
+    "title": "Lecture 27: Branch and Bound (CS4321)",
+    "author": "Michigan Technological University",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://www.csl.mtu.edu/cs4321/www/Lectures/Lecture%2027%20-%20Branch%20and%20Bound.htm",
+    "where": "toàn bài: cây trạng thái, cận, knapsack, TSP",
+    "free": true,
+    "minutes": 40,
+    "why_vi": "Giải thích nhánh cận như quay lui có cận để cắt nhánh; ví dụ knapsack và TSP.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Branch and Bound, chương 22",
+     "author": "Sartaj Sahni (University of Florida)",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://cise.ufl.edu/~sahni/dsaaj/public/chapters/c22.pdf",
+     "where": "ví dụ knapsack 0/1 bằng tìm kiếm FIFO và theo lợi nhuận lớn nhất",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Ví dụ giải đầy đủ hơn.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Đã quen quay lui thì nhánh cận chỉ thêm bước tính cận; chưa tìm được nguồn tiếng Việt tốt."
+  },
+  "tr_euler_hamilton": {
+   "primary": {
+    "title": "CS 280 handout: Euler and Hamilton paths",
+    "author": "Cornell University",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://cs.cornell.edu/courses/cs280/2001sp/handouts/h31.pdf",
+    "where": "toàn bài: điều kiện bậc chẵn cho Euler, định nghĩa Hamilton",
+    "free": true,
+    "minutes": 40,
+    "why_vi": "Định lý Euler và khác biệt Hamilton gọn; bản cũ (2001) nhưng nội dung không đổi.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "CP-Algorithms: Finding the Eulerian path",
+     "author": "CP-Algorithms",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cp-algorithms.com/graph/euler_path.html",
+     "where": "cả trang",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Thuật toán tìm đường Euler, kèm code.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Chỉ cần điều kiện Euler và hiểu vì sao Hamilton khó; không cần chứng minh các điều kiện đủ."
+  },
+  "tr_cay_khung_luong": {
+   "primary": {
+    "title": "Algorithms, chương 7: Minimum Spanning Trees và chương 10: Maximum Flows & Minimum Cuts",
+    "author": "Jeff Erickson",
+    "kind": "sach",
+    "lang": "en",
+    "url": "https://jeffe.cs.illinois.edu/teaching/algorithms/book/07-mst.pdf",
+    "where": "chương 7 rồi chương 10 (book/10-maxflow.pdf)",
+    "free": true,
+    "minutes": 180,
+    "why_vi": "Kruskal, Prim và Ford-Fulkerson với chứng minh và bài tập.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "CP-Algorithms: Kruskal và Edmonds-Karp",
+     "author": "CP-Algorithms",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cp-algorithms.com/graph/mst_kruskal.html",
+     "where": "trang Kruskal; luồng ở cp-algorithms.com/graph/edmonds_karp.html",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Code gọn cho cây khung và luồng cực đại.",
+     "checked": true
+    },
+    {
+     "title": "VisuAlgo: Min Spanning Tree và Network Flow",
+     "author": "Steven Halim",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://visualgo.net/en/mst",
+     "where": "mô-đun MST; luồng ở visualgo.net/en/maxflow",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Chạy thuật toán từng bước.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [
+    {
+     "title": "VNOI Wiki: Luồng",
+     "author": "VNOI",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://wiki.vnoi.info/algo/graph-theory/flow",
+     "where": "cả trang",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Tiếng Việt, hướng thi lập trình; chưa mở trang đầy đủ.",
+     "checked": false
+    }
+   ],
+   "note_vi": "Học cây khung nhỏ nhất trước bằng Kruskal; luồng cực đại để cuối."
+  },
+  "tr_quy_hoach_tuyen_tinh": {
+   "primary": {
+    "title": "MIT 6.251J Introduction to Mathematical Programming: ghi chú bài giảng (Simplex, Duality)",
+    "author": "MIT OpenCourseWare (Bertsimas)",
+    "kind": "khoa_hoc",
+    "lang": "en",
+    "url": "https://www.ocw.mit.edu/courses/6-251j-introduction-to-mathematical-programming-fall-2009/pages/lecture-notes",
+    "where": "bài 5-8 simplex, bài 8-9 duality",
+    "free": true,
+    "minutes": 300,
+    "why_vi": "Khóa chuẩn về quy hoạch tuyến tính; bậc cao học nên hơi nặng.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Machine Learning cơ bản, bài 18: Duality",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/04/02/duality/",
+     "where": "mục hàm và bài toán đối ngẫu",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Đối ngẫu tiếng Việt, tổng quát hơn quy hoạch tuyến tính.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Chưa tìm được nguồn tiếng Việt tốt về đơn hình; có thể chỉ cần mô hình hóa và phương pháp hình học hai biến."
+  },
+  "tr_phuong_phap_tinh": {
+   "primary": {
+    "title": "Math 128A, chương 2: Bisection, Fixed-Point, Newton (bài giảng)",
+    "author": "Per-Olof Persson (UC Berkeley)",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://persson.berkeley.edu/math128a/slides/ch2math128a.html",
+    "where": "slide chương 2",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Chia đôi, lặp đơn và Newton trong một chuỗi slide, nối Newton với lặp đơn.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "CP-Algorithms: Newton's method for finding roots",
+     "author": "CP-Algorithms",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cp-algorithms.com/num_methods/roots_newton.html",
+     "where": "cả trang",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Newton có code ngắn.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Chia đôi và Newton trước; sai số và chữ số đáng tin học sau khi cần."
+  }
+ },
+ "exam_proofs": [
+  {
+   "node": "tr_quy_nap",
+   "topic_vi": "Chứng minh bằng quy nạp",
+   "type_vi": "Chứng minh công thức tổng, bất đẳng thức hoặc tính chia hết đúng với mọi n bằng quy nạp thường hoặc quy nạp mạnh.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "MIT 6.1200J bài 2-3: Induction",
+     "author": "MIT OpenCourseWare",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/6-1200j-mathematics-for-computer-science-spring-2024/pages/readings/",
+     "where": "Lecture 02, 03",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Có bài tập và đề kiểm tra.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_dem",
+   "topic_vi": "Giải hệ thức truy hồi và chứng minh nghiệm",
+   "type_vi": "Giải hệ thức truy hồi tuyến tính bằng phương trình đặc trưng, rồi kiểm tra nghiệm bằng quy nạp.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "MIT 6.1200J bài 7: Recurrences",
+     "author": "MIT OpenCourseWare",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/6-1200j-mathematics-for-computer-science-spring-2024/pages/readings/",
+     "where": "Lecture 07, mục 22.1-22.5",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Các cách giải hệ thức truy hồi.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_dem",
+   "topic_vi": "Chứng minh đẳng thức tổ hợp bằng đếm hai lần",
+   "type_vi": "Chứng minh một đẳng thức tổ hợp bằng cách đếm cùng một tập theo hai cách, hoặc bằng công thức Pascal.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Discrete Mathematics: An Open Introduction, mục Combinatorial Proofs",
+     "author": "Oscar Levin",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://discrete.openmathbooks.org/dmoi3.html",
+     "where": "mục chứng minh tổ hợp (chưa xác nhận số mục)",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Ví dụ đếm hai lần.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_do_thi",
+   "topic_vi": "Chứng minh định lý bắt tay",
+   "type_vi": "Chứng minh tổng bậc bằng hai lần số cạnh, rồi suy ra số đỉnh bậc lẻ là chẵn.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Discrete Mathematics: An Open Introduction, chương Graph Theory",
+     "author": "Oscar Levin",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://discrete.openmathbooks.org/dmoi3.html",
+     "where": "mục bậc đỉnh và định lý bắt tay",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Chứng minh ngắn.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_do_thi",
+   "topic_vi": "Đặc trưng đồ thị hai phía",
+   "type_vi": "Chứng minh một đồ thị là hai phía khi và chỉ khi không có chu trình độ dài lẻ.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "MIT 6.1200J bài 11: Graphs and Coloring",
+     "author": "MIT OpenCourseWare",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/6-1200j-mathematics-for-computer-science-spring-2024/pages/readings/",
+     "where": "Lecture 11",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Tô màu và hai phía.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_cay_duong_di",
+   "topic_vi": "Các tính chất tương đương của cây",
+   "type_vi": "Chứng minh cây n đỉnh có n-1 cạnh, và các định nghĩa tương đương: liên thông không chu trình, thêm cạnh sinh một chu trình.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "MIT 6.1200J bài 13: Connectivity and Trees",
+     "author": "MIT OpenCourseWare",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/6-1200j-mathematics-for-computer-science-spring-2024/pages/readings/",
+     "where": "Lecture 13, mục 12.7-12.9",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Chứng minh tính chất cây.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_euler_hamilton",
+   "topic_vi": "Điều kiện tồn tại chu trình và đường Euler",
+   "type_vi": "Chứng minh đồ thị liên thông có chu trình Euler khi và chỉ khi mọi đỉnh bậc chẵn; điều kiện cho đường Euler có hai đỉnh bậc lẻ.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "CS 280 handout: Euler and Hamilton paths",
+     "author": "Cornell University",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cs.cornell.edu/courses/cs280/2001sp/handouts/h31.pdf",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Phát biểu và lý do.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_euler_hamilton",
+   "topic_vi": "Điều kiện đủ cho chu trình Hamilton",
+   "type_vi": "Vận dụng điều kiện Dirac hoặc Ore để kết luận một đồ thị có chu trình Hamilton, hoặc chỉ ra phản ví dụ.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Hamilton paths and circuits, bài giảng",
+     "author": "Florida State University",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://www.cs.fsu.edu/~lacher/courses/MAD3105/lectures/s2_3EulerHam.pdf",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Phát biểu và ví dụ về Hamilton.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_ton_tai",
+   "topic_vi": "Nguyên lý Dirichlet",
+   "type_vi": "Dùng nguyên lý chuồng bồ câu để chứng minh có hai phần tử cùng tính chất; chọn thỏ và chuồng cho hợp lý.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Discrete Mathematics: An Open Introduction, mục Pigeonhole",
+     "author": "Oscar Levin",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://discrete.openmathbooks.org/dmoi3.html",
+     "where": "mục Pigeonhole trong chương Counting",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Ví dụ nguyên lý chuồng.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_ton_tai",
+   "topic_vi": "Bất biến và chẵn lẻ",
+   "type_vi": "Tìm đại lượng bất biến để chứng minh một trạng thái không đạt được từ trạng thái ban đầu.",
+   "frequency_vi": "thỉnh thoảng",
+   "sources": [
+    {
+     "title": "MIT 6.1200J bài 4: State Machines",
+     "author": "MIT OpenCourseWare",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/6-1200j-mathematics-for-computer-science-spring-2024/pages/readings/",
+     "where": "Lecture 04",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Bất biến như công cụ chứng minh.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_dem_nang_cao",
+   "topic_vi": "Nguyên lý bù trừ",
+   "type_vi": "Đếm số phần tử không thuộc một họ tập bằng nguyên lý bù trừ, ví dụ số toàn ánh hay hoán vị không có điểm cố định.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "CP-Algorithms: Inclusion-Exclusion",
+     "author": "CP-Algorithms",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cp-algorithms.com/combinatorics/inclusion-exclusion.html",
+     "where": "cả trang",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Công thức và ví dụ đếm.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_logic_dem",
+   "topic_vi": "Chứng minh tương đương logic",
+   "type_vi": "Chứng minh hai mệnh đề tương đương bằng bảng chân trị hoặc biến đổi bằng các luật logic; phủ định mệnh đề có lượng từ.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Discrete Mathematics: An Open Introduction, chương Logic",
+     "author": "Oscar Levin",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://discrete.openmathbooks.org/dmoi3.html",
+     "where": "mục Logic",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Tương đương logic có bài tập.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_cay_duong_di",
+   "topic_vi": "Chứng minh đúng đắn của thuật toán đồ thị",
+   "type_vi": "Giải thích vì sao BFS cho đường đi ngắn nhất không trọng số, hoặc Dijkstra đúng khi cạnh không âm, bằng bất biến vòng lặp.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "MIT 6.006 Lecture 13: Dijkstra",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/resources/lecture-13-dijkstra/",
+     "where": "phần chứng minh đúng đắn",
+     "free": true,
+     "minutes": 50,
+     "why_vi": "Có chứng minh.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_cay_khung_luong",
+   "topic_vi": "Chứng minh Kruskal hoặc Prim đúng",
+   "type_vi": "Chứng minh thuật toán Kruskal hoặc Prim cho cây khung nhỏ nhất bằng tính chất cắt hoặc lập luận hoán đổi.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Algorithms, chương 7: Minimum Spanning Trees",
+     "author": "Jeff Erickson",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://jeffe.cs.illinois.edu/teaching/algorithms/book/07-mst.pdf",
+     "where": "toàn chương",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Chứng minh có lập luận hoán đổi.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_thuat_toan",
+   "topic_vi": "Chứng minh tham lam đúng và ước lượng độ phức tạp",
+   "type_vi": "Chứng minh thuật toán tham lam cho đáp án tối ưu bằng lập luận hoán đổi, hoặc chứng minh f(n)=O(g(n)) bằng định nghĩa.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Algorithms, chương 4: Greedy Algorithms",
+     "author": "Jeff Erickson",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://jeffe.cs.illinois.edu/teaching/algorithms/book/04-greedy.pdf",
+     "where": "toàn chương",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Chứng minh tham lam bằng hoán đổi.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_toi_uu_loi",
+   "topic_vi": "Chứng minh tập hoặc hàm là lồi",
+   "type_vi": "Chứng minh một tập là lồi bằng định nghĩa, hoặc một hàm là lồi bằng định nghĩa hay ma trận Hessian nửa xác định dương; mọi cực tiểu địa phương của hàm lồi là toàn cục.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Machine Learning cơ bản, bài 16: Convex sets và convex functions",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/03/12/convexity/",
+     "where": "mục 3.5 kiểm tra tính lồi bằng đạo hàm",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Các cách kiểm tra tính lồi.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_gradient_descent",
+   "topic_vi": "Bài toán Lagrange và KKT trình bày đầy đủ",
+   "type_vi": "Viết Lagrangian, điều kiện KKT, giải hệ để tìm cực trị, rồi kết luận cực tiểu bằng tính lồi.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Machine Learning cơ bản, bài 18: Duality",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/04/02/duality/",
+     "where": "mục 5.2 KKT",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "KKT có ví dụ giải.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_gradient_descent",
+   "topic_vi": "Hạ gradient trên hàm bậc hai",
+   "type_vi": "Viết vài bước hạ gradient với hàm bậc hai cụ thể; điều kiện bước học để hạ gradient hội tụ.",
+   "frequency_vi": "thỉnh thoảng",
+   "sources": [
+    {
+     "title": "Machine Learning cơ bản, bài 7: Gradient Descent",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/01/12/gradientdescent/",
+     "where": "mục ví dụ hàm một biến",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Ví dụ hạ gradient từng bước.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_quy_hoach_tuyen_tinh",
+   "topic_vi": "Lập bài toán đối ngẫu và giải bằng đơn hình",
+   "type_vi": "Chuyển mô hình thành dạng chuẩn, giải bằng phương pháp hình học hoặc đơn hình, viết bài toán đối ngẫu và so nghiệm.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "MIT 6.251J: Duality theory",
+     "author": "MIT OpenCourseWare",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://www.ocw.mit.edu/courses/6-251j-introduction-to-mathematical-programming-fall-2009/pages/lecture-notes",
+     "where": "bài 8-9",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Đối ngẫu và đơn hình.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "tr_phuong_phap_tinh",
+   "topic_vi": "Đánh giá sai số của chia đôi và Newton",
+   "type_vi": "Ước lượng số bước chia đôi cần cho sai số cho trước; đánh giá sai số lặp đơn khi ánh xạ co.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Math 128A, chương 2",
+     "author": "Per-Olof Persson (UC Berkeley)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://persson.berkeley.edu/math128a/slides/ch2math128a.html",
+     "where": "slide chương 2",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Sai số và hội tụ.",
+     "checked": true
+    }
+   ]
+  }
+ ],
+ "rejected": [
+  {
+   "title": "Grokking Algorithms (Bhargava)",
+   "why_vi": "Sách thương mại, dễ đọc nhưng chưa tìm được trang chính thức kiểm chứng; không bao nhánh tối ưu. Giữ như nguồn cấp nhánh có sẵn trong tree."
+  },
+  {
+   "title": "Boyd và Vandenberghe, Convex Optimization làm nguồn chính",
+   "why_vi": "Sách chuẩn nhưng dày và khó cho năm nhất; chỉ tra chương 2-4. Máy chủ báo lỗi chứng chỉ nên chưa kiểm tra được."
+  },
+  {
+   "title": "Harvard CS50 và các khóa chung chung về thuật toán",
+   "why_vi": "Không đi sâu vào đồ thị và tối ưu như nút cần."
+  },
+  {
+   "title": "Mathematics for Computer Science (Lehman, Leighton, Meyer) làm nguồn chính",
+   "why_vi": "Chính xác nhưng hàn lâm và dài; dùng làm nguồn tra cứu cho quy nạp, đồ thị, truy hồi."
+  },
+  {
+   "title": "MIT 6.251J cho người mới học quy hoạch tuyến tính",
+   "why_vi": "Bậc cao học, nặng; chỉ hợp khi thật sự cần đơn hình."
+  },
+  {
+   "title": "Đề thi Toán rời rạc IT3020 và MI2010 (Bách khoa Hà Nội)",
+   "why_vi": "Không tìm được đề thi chính thức công khai; các tài liệu thấy được là của trường khác hoặc đăng lại không rõ bản quyền."
+  },
+  {
+   "title": "Tạ Văn Đĩnh, Phương pháp tính (bản Word trên trang cá nhân)",
+   "why_vi": "Tình trạng bản quyền không rõ; chỉ dùng đề cương chính thức MI2044."
+  }
+ ]
+}

@@ -1,0 +1,174 @@
+{
+  "_comment": "Đề tự luận của Luận Đạo Đài (docs/LUAN_DAO_DAI.md). Tuỳ chọn, không nằm trên chính đạo, chưa nối vào game. Đề, lời giải và thang điểm tự viết; mỗi thang điểm tổng 10.",
+  "subject": "toi_uu_roi_rac",
+  "wired": false,
+  "essays": [
+    {
+      "id": "tr_tl_quy_nap_tong",
+      "node": "tr_quy_nap",
+      "kind": "chung_minh",
+      "level": 1,
+      "minutes": 10,
+      "title_vi": "Quy nạp cho một công thức tổng",
+      "statement_vi": "Chứng minh bằng quy nạp: với mọi số nguyên n >= 1, 1 . 2 + 2 . 3 + ... + n(n + 1) = n(n + 1)(n + 2) / 3.",
+      "why_vi": "Chứng minh một vòng lặp hay một hàm đệ quy chạy đúng với mọi cỡ đầu vào cũng là một chứng minh quy nạp, chỉ khác cách viết.",
+      "hints_vi": [
+        "Ba phần: bước cơ sở, giả thiết quy nạp, bước quy nạp.",
+        "Ở bước quy nạp, cộng thêm số hạng (k + 1)(k + 2) vào hai vế rồi đặt nhân tử chung."
+      ],
+      "solution_vi": [
+        "Bước cơ sở, n = 1: vế trái là 1 . 2 = 2, vế phải là 1 . 2 . 3 / 3 = 2. Đẳng thức đúng.",
+        "Giả thiết quy nạp: giả sử đẳng thức đúng với n = k (k >= 1), tức 1 . 2 + ... + k(k + 1) = k(k + 1)(k + 2) / 3.",
+        "Bước quy nạp: cần chứng minh đẳng thức đúng với n = k + 1, tức tổng tới (k + 1)(k + 2) bằng (k + 1)(k + 2)(k + 3) / 3.",
+        "Theo giả thiết quy nạp, tổng ấy bằng k(k + 1)(k + 2) / 3 + (k + 1)(k + 2).",
+        "Đặt nhân tử chung (k + 1)(k + 2): được (k + 1)(k + 2)(k / 3 + 1) = (k + 1)(k + 2)(k + 3) / 3. Đúng điều cần chứng minh.",
+        "Theo nguyên lý quy nạp, đẳng thức đúng với mọi số nguyên n >= 1."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 2, "need_vi": "Kiểm tra bước cơ sở n = 1, tính cả hai vế."},
+        {"id": "r2", "points": 2, "need_vi": "Phát biểu rõ giả thiết quy nạp cho n = k."},
+        {"id": "r3", "points": 1, "need_vi": "Viết rõ điều cần chứng minh cho n = k + 1."},
+        {"id": "r4", "points": 4, "need_vi": "Dùng giả thiết quy nạp và biến đổi đúng tới dạng (k + 1)(k + 2)(k + 3) / 3."},
+        {"id": "r5", "points": 1, "need_vi": "Kết luận theo nguyên lý quy nạp."}
+      ],
+      "fatal_vi": [
+        "Chỉ thử n = 1, 2, 3 rồi kết luận đúng với mọi n.",
+        "Bắt đầu bước quy nạp bằng chính đẳng thức của n = k + 1 rồi biến đổi tới một điều hiển nhiên, mà không nói các phép biến đổi là tương đương."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "tr_tl_bat_tay",
+      "node": "tr_do_thi",
+      "kind": "chung_minh",
+      "level": 1,
+      "minutes": 10,
+      "title_vi": "Định lý bắt tay",
+      "statement_vi": "Cho G là một đồ thị vô hướng có m cạnh. (a) Chứng minh tổng bậc của tất cả các đỉnh bằng 2m. (b) Suy ra số đỉnh bậc lẻ của G là một số chẵn.",
+      "why_vi": "Đếm một thứ theo hai cách là kỹ thuật dùng khắp nơi trong phân tích thuật toán, ví dụ khi tính tổng chi phí của BFS trên danh sách kề.",
+      "hints_vi": [
+        "Mỗi cạnh có đúng hai đầu mút.",
+        "Tách tổng bậc thành hai phần: đỉnh bậc chẵn và đỉnh bậc lẻ."
+      ],
+      "solution_vi": [
+        "(a) Bậc của một đỉnh là số đầu mút cạnh nằm tại đỉnh ấy. Cộng bậc của mọi đỉnh tức là đếm tất cả các đầu mút cạnh.",
+        "Mỗi cạnh có đúng hai đầu mút (một khuyên tính hai lần tại cùng một đỉnh), nên m cạnh có 2m đầu mút. Vậy tổng bậc bằng 2m.",
+        "(b) Tách tổng bậc thành S_chan (tổng bậc của các đỉnh bậc chẵn) và S_le (tổng bậc của các đỉnh bậc lẻ): S_chan + S_le = 2m.",
+        "S_chan là tổng các số chẵn nên chẵn; 2m chẵn. Do đó S_le chẵn.",
+        "S_le là tổng của các số lẻ. Tổng của một số lẻ các số lẻ thì lẻ, nên số số hạng của S_le phải chẵn: số đỉnh bậc lẻ là số chẵn."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 3, "need_vi": "Lập luận mỗi cạnh góp đúng 2 vào tổng bậc (đếm đầu mút cạnh theo hai cách)."},
+        {"id": "r2", "points": 2, "need_vi": "Kết luận tổng bậc bằng 2m."},
+        {"id": "r3", "points": 2, "need_vi": "Tách tổng bậc thành phần của đỉnh bậc chẵn và phần của đỉnh bậc lẻ."},
+        {"id": "r4", "points": 2, "need_vi": "Suy ra tổng các bậc lẻ là số chẵn."},
+        {"id": "r5", "points": 1, "need_vi": "Dùng: tổng của một số lẻ các số lẻ là lẻ, để kết luận."}
+      ],
+      "fatal_vi": [
+        "Vẽ một đồ thị cụ thể, đếm, rồi coi đó là chứng minh."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "tr_tl_cay_n_tru_1_canh",
+      "node": "tr_cay_duong_di",
+      "kind": "chung_minh",
+      "level": 2,
+      "minutes": 15,
+      "title_vi": "Cây n đỉnh có n - 1 cạnh",
+      "statement_vi": "Cây là đồ thị vô hướng liên thông và không có chu trình. Chứng minh mọi cây có n đỉnh (n >= 1) có đúng n - 1 cạnh.",
+      "why_vi": "Cây quyết định, cây khung, cây tìm kiếm: mọi chi phí trên cây đều tính từ con số n - 1 này. Bài này còn luyện một lỗi quy nạp rất hay mắc.",
+      "hints_vi": [
+        "Quy nạp theo số đỉnh, nhưng đi từ cây lớn xuống cây nhỏ: bỏ bớt một đỉnh.",
+        "Trước hết chứng minh cây có từ 2 đỉnh luôn có một đỉnh bậc 1 (lá). Xét một đường đi dài nhất."
+      ],
+      "solution_vi": [
+        "Quy nạp theo n. Với n = 1: cây có 1 đỉnh không có cạnh nào, 0 = 1 - 1. Đúng.",
+        "Giả sử mọi cây có k đỉnh (k >= 1) có đúng k - 1 cạnh. Xét một cây T bất kỳ có k + 1 đỉnh.",
+        "T có lá: lấy một đường đi dài nhất trong T, gọi v là một đầu mút của nó. Nếu v kề với hai đỉnh thì đỉnh kề thứ hai hoặc nằm ngoài đường đi (đường đi kéo dài được, vô lý) hoặc nằm trên đường đi (tạo chu trình, vô lý). Vậy v có bậc 1.",
+        "Bỏ v và cạnh duy nhất của nó, được đồ thị T'. T' không có chu trình vì T không có. T' liên thông vì đường đi giữa hai đỉnh khác v trong T không đi qua v (v có bậc 1).",
+        "Vậy T' là cây có k đỉnh, theo giả thiết quy nạp có k - 1 cạnh. T có thêm đúng một cạnh nên có k = (k + 1) - 1 cạnh.",
+        "Theo nguyên lý quy nạp, mọi cây n đỉnh có n - 1 cạnh."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 1, "need_vi": "Bước cơ sở n = 1."},
+        {"id": "r2", "points": 2, "need_vi": "Phát biểu giả thiết quy nạp và bắt đầu từ một cây BẤT KỲ có k + 1 đỉnh."},
+        {"id": "r3", "points": 3, "need_vi": "Chứng minh cây ấy có một đỉnh bậc 1, có lập luận (đường đi dài nhất hoặc tương đương)."},
+        {"id": "r4", "points": 2, "need_vi": "Chỉ ra sau khi bỏ lá, đồ thị còn lại vẫn liên thông và không có chu trình."},
+        {"id": "r5", "points": 2, "need_vi": "Áp dụng giả thiết quy nạp và đếm lại số cạnh."}
+      ],
+      "fatal_vi": [
+        "Quy nạp 'xây lên': lấy một cây k đỉnh rồi gắn thêm một đỉnh, mà không chứng minh mọi cây k + 1 đỉnh đều thu được theo cách ấy.",
+        "Dùng công thức 'số cạnh = số đỉnh - 1' như một tính chất đã biết của cây."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "tr_tl_ham_loi_dinh_nghia",
+      "node": "tr_toi_uu_loi",
+      "kind": "chung_minh",
+      "level": 2,
+      "minutes": 12,
+      "title_vi": "Hàm lồi theo định nghĩa",
+      "statement_vi": "(a) Dùng định nghĩa, chứng minh f(x) = x^2 là hàm lồi trên R. (b) Chứng minh tổng của hai hàm lồi trên R là một hàm lồi.",
+      "why_vi": "Sai số bình phương là hàm lồi, và tổng các hàm lồi vẫn lồi: vì thế hồi quy tuyến tính chỉ có một đáy, hạ gradient không bị kẹt.",
+      "hints_vi": [
+        "f lồi khi f(tx + (1 - t)y) <= t f(x) + (1 - t) f(y) với mọi x, y và mọi t trong [0, 1].",
+        "Ở câu (a), xét hiệu vế phải trừ vế trái và phân tích thành nhân tử."
+      ],
+      "solution_vi": [
+        "f lồi trên R khi với mọi x, y thuộc R và mọi t thuộc [0, 1]: f(tx + (1 - t)y) <= t f(x) + (1 - t) f(y).",
+        "(a) Xét D = t x^2 + (1 - t) y^2 - (tx + (1 - t)y)^2.",
+        "Khai triển: D = t x^2 + (1 - t) y^2 - t^2 x^2 - 2t(1 - t)xy - (1 - t)^2 y^2 = t(1 - t) x^2 + t(1 - t) y^2 - 2t(1 - t) xy.",
+        "Vậy D = t(1 - t)(x - y)^2. Vì t thuộc [0, 1] nên t(1 - t) >= 0, và (x - y)^2 >= 0, do đó D >= 0. Vậy f lồi.",
+        "(b) Cho g, h lồi. Với mọi x, y và t thuộc [0, 1]: g(tx + (1 - t)y) <= t g(x) + (1 - t) g(y) và h(tx + (1 - t)y) <= t h(x) + (1 - t) h(y).",
+        "Cộng hai bất đẳng thức vế theo vế: (g + h)(tx + (1 - t)y) <= t (g + h)(x) + (1 - t)(g + h)(y). Vậy g + h lồi."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 2, "need_vi": "Viết đúng định nghĩa hàm lồi, có điều kiện t thuộc [0, 1]."},
+        {"id": "r2", "points": 3, "need_vi": "Khai triển đúng hiệu hai vế cho f(x) = x^2."},
+        {"id": "r3", "points": 2, "need_vi": "Rút gọn về t(1 - t)(x - y)^2 và giải thích vì sao không âm."},
+        {"id": "r4", "points": 2, "need_vi": "Câu (b): viết bất đẳng thức lồi cho từng hàm rồi cộng lại."},
+        {"id": "r5", "points": 1, "need_vi": "Kết luận cho cả hai câu."}
+      ],
+      "fatal_vi": [
+        "Ở câu (a) chỉ dùng f''(x) = 2 > 0 trong khi đề yêu cầu dùng định nghĩa.",
+        "Chỉ kiểm tra với t = 1/2 rồi kết luận cho mọi t."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "tr_tl_hoi_tu_ha_gradient",
+      "node": "tr_gradient_descent",
+      "kind": "tinh_co_lap_luan",
+      "level": 3,
+      "minutes": 15,
+      "title_vi": "Khi nào hạ gradient hội tụ",
+      "statement_vi": "Xét f(x) = (a / 2) x^2 với a > 0. Hạ gradient với bước cố định s > 0 xuất phát từ x_0 khác 0: x_(k+1) = x_k - s f'(x_k). (a) Tìm công thức của x_k theo x_0. (b) Chứng minh x_k tiến tới 0 khi và chỉ khi 0 < s < 2 / a. (c) Bước s nào tới đích nhanh nhất?",
+      "why_vi": "Đây là lời giải thích chính xác cho việc 'tốc độ học quá lớn thì mất mát nổ tung': ngưỡng 2 / a phụ thuộc vào độ cong của hàm mất mát.",
+      "hints_vi": [
+        "Tính f'(x) rồi viết x_(k+1) thành một hằng số nhân với x_k.",
+        "Một dãy q^k tiến tới 0 khi và chỉ khi |q| < 1."
+      ],
+      "solution_vi": [
+        "(a) f'(x) = a x, nên x_(k+1) = x_k - s a x_k = (1 - s a) x_k. Do đó x_k = (1 - s a)^k x_0.",
+        "(b) Vì x_0 khác 0, x_k tiến tới 0 khi và chỉ khi (1 - s a)^k tiến tới 0, tức khi và chỉ khi |1 - s a| < 1.",
+        "|1 - s a| < 1 tương đương -1 < 1 - s a < 1, tương đương 0 < s a < 2, tương đương 0 < s < 2 / a (vì a > 0).",
+        "Nếu s = 2 / a thì x_k = (-1)^k x_0: dao động mãi không tới 0. Nếu s > 2 / a thì |1 - s a| > 1: |x_k| tăng vô hạn.",
+        "(c) Với s = 1 / a thì 1 - s a = 0, nên x_1 = 0: tới đích sau đúng một bước. Đây là bước tốt nhất."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 2, "need_vi": "Tính f'(x) = a x và viết x_(k+1) = (1 - s a) x_k."},
+        {"id": "r2", "points": 2, "need_vi": "Suy ra x_k = (1 - s a)^k x_0."},
+        {"id": "r3", "points": 3, "need_vi": "Đưa về |1 - s a| < 1 và giải ra 0 < s < 2 / a, lập luận cả hai chiều."},
+        {"id": "r4", "points": 2, "need_vi": "Chỉ ra s = 1 / a tới đích sau một bước."},
+        {"id": "r5", "points": 1, "need_vi": "Mô tả điều xảy ra khi s >= 2 / a (dao động hoặc phân kỳ)."}
+      ],
+      "fatal_vi": [
+        "Kết luận 'bước càng nhỏ càng tốt' hoặc 'chỉ cần s < 1' mà không qua điều kiện |1 - s a| < 1.",
+        "Chỉ chứng minh một chiều (0 < s < 2 / a thì hội tụ) rồi kết luận 'khi và chỉ khi'."
+      ],
+      "reviewed": false
+    }
+  ]
+}

@@ -1,0 +1,1679 @@
+{
+ "branch": "gt",
+ "researched": "2026-11-19",
+ "backbone": [
+  {
+   "title": "Essence of Calculus (chương 1-14)",
+   "author": "3Blue1Brown (Grant Sanderson)",
+   "kind": "video",
+   "lang": "en",
+   "url": "https://www.3blue1brown.com/topics/calculus",
+   "where": "xem trước, 10-20 phút mỗi chương",
+   "free": true,
+   "minutes": 180,
+   "why_vi": "Cho trực giác cho đạo hàm, tích phân, Taylor trước khi tính tay.",
+   "checked": true
+  },
+  {
+   "title": "MIT 18.01SC Single Variable Calculus (Fall 2010)",
+   "author": "David Jerison và đồng nghiệp (MIT OpenCourseWare)",
+   "kind": "khoa_hoc",
+   "lang": "en",
+   "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/",
+   "where": "5 đơn vị, mỗi đơn vị có bài tập và đề thi kèm lời giải",
+   "free": true,
+   "minutes": 2000,
+   "why_vi": "Giáo trình một biến chuẩn, mỗi buổi ngắn; có bài tập và đề thi có lời giải.",
+   "checked": true
+  },
+  {
+   "title": "Paul's Online Math Notes: Calculus I, II, III",
+   "author": "Paul Dawkins (Lamar University)",
+   "kind": "bai_viet",
+   "lang": "en",
+   "url": "https://tutorial.math.lamar.edu/Classes/CalcI/CalcI.aspx",
+   "where": "mọi trang có bài luyện kèm lời giải",
+   "free": true,
+   "minutes": null,
+   "why_vi": "Tra cứu và luyện tập rất tốt, từng mục nhỏ có bài tập với lời giải chi tiết.",
+   "checked": true
+  },
+  {
+   "title": "Matrix Calculus You Need For Deep Learning",
+   "author": "Terence Parr, Jeremy Howard",
+   "kind": "bai_viet",
+   "lang": "en",
+   "url": "https://explained.ai/matrix-calculus/",
+   "where": "toàn bài, cho nút gradient",
+   "free": true,
+   "minutes": 90,
+   "why_vi": "Nối giải tích nhiều biến với lan truyền ngược trong mạng nơ-ron.",
+   "checked": true
+  }
+ ],
+ "nodes": {
+  "gt_ham_so": {
+   "primary": {
+    "title": "Paul's Online Math Notes: Calculus I Review: Functions",
+    "author": "Paul Dawkins (Lamar University)",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://tutorial.math.lamar.edu/Classes/CalcI/Functions.aspx",
+    "where": "mục Functions trong chương Review",
+    "free": true,
+    "minutes": 25,
+    "why_vi": "Ôn tập tập xác định và hàm hợp gọn kèm bài luyện.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Paul's Online Math Notes: Exponential Functions",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/ExpFunctions.aspx",
+     "where": "chương Review",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Hàm mũ và tính chất, nền cho softmax và sigmoid.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Logarithm Functions",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/LogFcns.aspx",
+     "where": "chương Review",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Logarit và tính chất, nền cho log-likelihood.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Inverse Functions",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/InverseFunctions.aspx",
+     "where": "chương Review",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Hàm ngược và điều kiện tồn tại.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Paul's Online Math Notes: Exponential and Logarithm Equations",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/ExpLogEqns.aspx",
+     "where": "chương Review",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Giải phương trình mũ và logarit, có lời giải.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Chỉ cần ôn lại; ưu tiên hàm mũ và logarit vì sigmoid, softmax, log-likelihood dùng ngay."
+  },
+  "gt_gioi_han": {
+   "primary": {
+    "title": "Essence of Calculus, chương 8: Limits and the definition of derivatives",
+    "author": "3Blue1Brown (Grant Sanderson)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://www.3blue1brown.com/lessons/limits",
+    "where": "chương 8",
+    "free": true,
+    "minutes": 15,
+    "why_vi": "Giới hạn là gì bằng hình, không sa vào epsilon-delta.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 18.01SC, Session 4: Limits and Continuity (và Session 5 Discontinuity)",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/1.-differentiation/part-a-definition-and-basic-rules/session-4-limits-and-continuity/",
+     "where": "session 4 và 5",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bài giảng ngắn về giới hạn một phía và liên tục, rồi tới các loại gián đoạn.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Limits (chương Giới hạn)",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/limitsIntro.aspx",
+     "where": "mục The Limit, One-Sided Limits, Continuity",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Có cả loạt mục nhỏ kèm lời giải, tiện tra cứu.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Paul's Online Math Notes: Continuity",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/Continuity.aspx",
+     "where": "bài luyện cuối trang",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Bài luyện liên tục có lời giải.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Đắm mình vào học sâu, phụ lục toán: 18.3 Giải tích một biến",
+     "author": "Aston Zhang và cộng sự; nhóm dịch tình nguyện tiếng Việt",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://github.com/d2l-ai/d2l-vi/blob/v0.15/chapter_appendix-mathematics-for-deep-learning/single-variable-calculus_vn.md",
+     "where": "mục 18.3.1 Giải tích vi phân",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Xem chương 8 để hiểu giới hạn; chỉ cần tính được giới hạn đơn giản và phát hiện chỗ gãy như ReLU."
+  },
+  "gt_dao_ham": {
+   "primary": {
+    "title": "Essence of Calculus, chương 2: The paradox of the derivative",
+    "author": "3Blue1Brown (Grant Sanderson)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://www.3blue1brown.com/lessons/derivatives",
+    "where": "chương 2",
+    "free": true,
+    "minutes": 17,
+    "why_vi": "Đạo hàm là độ dốc, hiểu qua nhân từng cái nhích nhỏ.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Essence of Calculus: Visualizing the chain rule and product rule",
+     "author": "3Blue1Brown (Grant Sanderson)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://www.3blue1brown.com/lessons/chain-rule-and-product-rule",
+     "where": "bài về tổng, tích, dây chuyền",
+     "free": true,
+     "minutes": 15,
+     "why_vi": "Quy tắc dây chuyền bằng ba trục số; chính là lan truyền ngược.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.01SC, Session 11: Chain Rule",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/1.-differentiation/part-a-definition-and-basic-rules/session-11-chain-rule/",
+     "where": "session 11 (cùng Part A: định nghĩa, quy tắc)",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Quy tắc dây chuyền có thêm ví dụ tính tay.",
+     "checked": true
+    },
+    {
+     "title": "Matrix Calculus You Need For Deep Learning: Scalar derivative rules",
+     "author": "Parr, Howard",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://explained.ai/matrix-calculus/#sec:1.2",
+     "where": "mục 'Review: Scalar derivative rules'",
+     "free": true,
+     "minutes": 15,
+     "why_vi": "Bảng quy tắc đạo hàm ngắn, đúng chuẩn bị cho học sâu.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Paul's Online Math Notes: Chain Rule",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/ChainRule.aspx",
+     "where": "bài luyện cuối trang",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Nhiều bài dây chuyền có lời giải chi tiết.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.01SC Exam 1 (có lời giải)",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/1.-differentiation/exam-1/",
+     "where": "Unit 1 Exam 1",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật về định nghĩa và quy tắc đạo hàm, kèm lời giải.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Đắm mình vào học sâu, phụ lục toán: 18.3 Giải tích một biến",
+     "author": "Aston Zhang và cộng sự; nhóm dịch tình nguyện tiếng Việt",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://github.com/d2l-ai/d2l-vi/blob/v0.15/chapter_appendix-mathematics-for-deep-learning/single-variable-calculus_vn.md",
+     "where": "mục 18.3.2 Quy tắc giải tích",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Đây là nút quan trọng nhất: xem chương 2 rồi bài dây chuyền, tự tay làm 10 bài của Paul; đạo hàm theo định nghĩa chuyển sang đường tự luận."
+  },
+  "gt_cuc_tri": {
+   "primary": {
+    "title": "Paul's Online Math Notes: The Shape of a Graph, Part I",
+    "author": "Paul Dawkins (Lamar University)",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://tutorial.math.lamar.edu/Classes/CalcI/ShapeofGraphPtI.aspx",
+    "where": "đơn điệu, cực trị; phần II nói lồi lõm và điểm uốn",
+    "free": true,
+    "minutes": 40,
+    "why_vi": "Nối dấu đạo hàm với dạng đồ thị, có bài luyện kèm lời giải.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Paul's Online Math Notes: The Shape of a Graph, Part II",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/ShapeofGraphPtII.aspx",
+     "where": "lồi, lõm, điểm uốn, kiểm tra đạo hàm cấp hai",
+     "free": true,
+     "minutes": 35,
+     "why_vi": "Đạo hàm cấp hai và độ lồi: nền cho Hessian.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Finding Absolute Extrema",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/AbsExtrema.aspx",
+     "where": "giá trị lớn nhất, nhỏ nhất trên đoạn",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Quy trình tìm min, max trên đoạn rõ ràng.",
+     "checked": true
+    },
+    {
+     "title": "Machine Learning cơ bản, bài 16: Convex sets và convex functions",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/03/12/convexity/",
+     "where": "hàm lồi và tính chất",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Giải thích hàm lồi bằng tiếng Việt vì sao bài toán tối ưu dễ hay khó.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "MIT 18.01SC Exam 2 (có lời giải)",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/unit-2-applications-of-differentiation/exam-2/",
+     "where": "Unit 2 Exam 2",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật về cực trị, tối ưu, kèm lời giải.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Học Paul phần I rồi II; nhớ 'đạo hàm bằng 0 chưa đủ': dùng đạo hàm cấp hai để biết cực tiểu hay cực đại."
+  },
+  "gt_taylor": {
+   "primary": {
+    "title": "Essence of Calculus, chương 14: Taylor series",
+    "author": "3Blue1Brown (Grant Sanderson)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://www.3blue1brown.com/lessons/taylor-series",
+    "where": "chương 14",
+    "free": true,
+    "minutes": 22,
+    "why_vi": "Xấp xỉ hàm bằng đa thức quanh một điểm, trực giác rõ ràng.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 18.01SC, Session 98 và 99: Taylor's Series",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/unit-5-exploring-the-infinite/part-b-taylor-series/",
+     "where": "sessions 98-99 trong Unit 5 Part B",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bài giảng chuẩn về công thức Taylor và Maclaurin cho các hàm cơ bản.",
+     "checked": true
+    },
+    {
+     "title": "Đắm mình vào học sâu, phụ lục toán: 18.3 Giải tích một biến",
+     "author": "Aston Zhang và cộng sự; nhóm dịch tình nguyện tiếng Việt",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://github.com/d2l-ai/d2l-vi/blob/v0.15/chapter_appendix-mathematics-for-deep-learning/single-variable-calculus_vn.md",
+     "where": "mục 18.3.2.3 Xấp xỉ tuyến tính và 18.3.2.5 Chuỗi Taylor",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Paul's Online Math Notes: Series and Sequences (chương), mục Taylor Series",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcII/SeriesIntro.aspx",
+     "where": "mục 16 Taylor Series trong chương",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bài luyện Taylor có lời giải; bỏ qua phần hội tụ chuỗi.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Đắm mình vào học sâu, phụ lục toán: 18.3 Giải tích một biến",
+     "author": "Aston Zhang và cộng sự; nhóm dịch tình nguyện tiếng Việt",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://github.com/d2l-ai/d2l-vi/blob/v0.15/chapter_appendix-mathematics-for-deep-learning/single-variable-calculus_vn.md",
+     "where": "mục 18.3.2.5 Chuỗi Taylor",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Xem chương 14, rồi chỉ cần thuộc Maclaurin của e^x, sin, cos, ln(1+x); bỏ phần bán kính hội tụ."
+  },
+  "gt_tich_phan": {
+   "primary": {
+    "title": "Essence of Calculus, chương 11: Integration and the fundamental theorem of calculus",
+    "author": "3Blue1Brown (Grant Sanderson)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://www.3blue1brown.com/lessons/integration",
+    "where": "chương 11",
+    "free": true,
+    "minutes": 20,
+    "why_vi": "Tích phân là diện tích dưới đường cong và là ngược của đạo hàm.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 18.01SC Unit 3 Part A: Definite integral and first fundamental theorem",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/unit-3-the-definite-integral-and-its-applications/part-a-definition-of-the-definite-integral-and-first-fundamental-theorem/",
+     "where": "sessions 43 tới 50",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Tổng Riemann và định lý cơ bản, có bài tập kèm.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Integration by Parts",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcII/IntegrationByParts.aspx",
+     "where": "tích phân từng phần",
+     "free": true,
+     "minutes": 35,
+     "why_vi": "Công thức và mẹo chọn u, dv, có nhiều ví dụ.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Substitution Rule for Indefinite Integrals",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/SubstitutionRuleIndefinite.aspx",
+     "where": "đổi biến",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Quy tắc đổi biến, bài luyện có lời giải.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Paul's Online Math Notes: Computing Definite Integrals",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/ComputingDefiniteIntegrals.aspx",
+     "where": "Newton-Leibniz, cận biến thiên",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bài tích phân xác định có lời giải.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.01SC Exam 3 (có lời giải)",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/unit-3-the-definite-integral-and-its-applications/exam-3/",
+     "where": "Unit 3 Exam 3",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật về tích phân xác định.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Đắm mình vào học sâu, phụ lục toán: 18.5 Giải tích tích phân",
+     "author": "Aston Zhang và cộng sự; nhóm dịch tình nguyện tiếng Việt",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://github.com/d2l-ai/d2l-vi/blob/v0.15/chapter_appendix-mathematics-for-deep-learning/integral-calculus_vn.md",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Xem chương 11, rồi luyện đổi biến và từng phần với Paul; Newton-Leibniz và cận biến thiên là phần thi hay hỏi."
+  },
+  "gt_tich_phan_ung_dung": {
+   "primary": {
+    "title": "Paul's Online Math Notes: Improper Integrals",
+    "author": "Paul Dawkins (Lamar University)",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://tutorial.math.lamar.edu/Classes/CalcII/ImproperIntegrals.aspx",
+    "where": "cận vô hạn và hàm không bị chặn",
+    "free": true,
+    "minutes": 40,
+    "why_vi": "Giải thích rõ cách tính tích phân suy rộng bằng giới hạn, kèm bài luyện.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Paul's Online Math Notes: Probability (ứng dụng của tích phân)",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcII/Probability.aspx",
+     "where": "hàm mật độ và kỳ vọng",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Dùng đúng tích phân suy rộng để kiểm hàm mật độ có tổng bằng 1.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Area Between Curves",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/AreaBetweenCurves.aspx",
+     "where": "diện tích hình phẳng",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Diện tích giữa hai đường cong có ví dụ rõ.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.01SC Unit 5 Part A: L'Hospital's rule and improper integrals",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/unit-5-exploring-the-infinite/",
+     "where": "Unit 5 Part A",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Bài giảng về tích phân suy rộng, kèm bài tập.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Học Paul phần Improper Integrals rồi phần Probability; mục tiêu là kiểm hàm mật độ mũ và chuẩn có tích phân 1."
+  },
+  "gt_nhieu_bien": {
+   "primary": {
+    "title": "MIT 18.02SC Unit 2 Part A: Functions of two variables, tangent approximation and optimization",
+    "author": "MIT OpenCourseWare",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/pages/2.-partial-derivatives/part-a-functions-of-two-variables-tangent-approximation-and-optimization/",
+    "where": "sessions 24 tới 31 (đồ thị, đường mức, đạo hàm riêng, xấp xỉ)",
+    "free": true,
+    "minutes": 120,
+    "why_vi": "Bài giảng đạo hàm riêng và xấp xỉ tuyến tính từng bước, kèm bài tập và đề thi.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Paul's Online Math Notes: Partial Derivatives",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcIII/PartialDerivatives.aspx",
+     "where": "đạo hàm riêng, cấp cao",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Cách tính đạo hàm riêng với nhiều ví dụ giải.",
+     "checked": true
+    },
+    {
+     "title": "OpenStax Calculus Volume 3, chương 4: Differentiation of Functions of Several Variables",
+     "author": "OpenStax (Rice University)",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://openstax.org/books/calculus-volume-3/pages/4-introduction",
+     "where": "mục 4.1 tới 4.4",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Sách miễn phí, có bài tập kèm đáp án.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Paul's Online Math Notes: Functions of Several Variables",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcIII/MultiVrbleFcns.aspx",
+     "where": "bài luyện cuối trang",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Bài luyện miền xác định và đồ thị, có lời giải.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Đắm mình vào học sâu, phụ lục toán: 18.4 Giải tích nhiều biến",
+     "author": "Aston Zhang và cộng sự; nhóm dịch tình nguyện tiếng Việt",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://github.com/d2l-ai/d2l-vi/blob/v0.15/chapter_appendix-mathematics-for-deep-learning/multivariable-calculus_vn.md",
+     "where": "mục 18.4.1 Đạo hàm trong không gian nhiều chiều",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Hiểu đạo hàm riêng là 'giữ các biến khác cố định'; giới hạn hai biến và hàm ẩn chỉ cần đọc lướt."
+  },
+  "gt_gradient": {
+   "primary": {
+    "title": "Matrix Calculus You Need For Deep Learning",
+    "author": "Terence Parr, Jeremy Howard",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://explained.ai/matrix-calculus/",
+    "where": "Jacobian, quy tắc dây chuyền, đạo hàm của mạng nơ-ron",
+    "free": true,
+    "minutes": 90,
+    "why_vi": "Nối gradient, Jacobian và quy tắc dây chuyền thành lan truyền ngược, ví dụ từng bước.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 18.02SC Unit 2 Part B: Chain rule, gradient and directional derivatives",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/pages/2.-partial-derivatives/part-b-chain-rule-gradient-and-directional-derivatives/",
+     "where": "sessions 32 tới 38",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Gradient vuông góc với đường mức, đạo hàm theo hướng.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.02SC Unit 2 Part C: Lagrange multipliers",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/pages/2.-partial-derivatives/",
+     "where": "Part C Lagrange Multipliers and Constrained Differentials",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Cực trị có điều kiện bằng nhân tử Lagrange.",
+     "checked": true
+    },
+    {
+     "title": "Mathematics for Machine Learning (sách miễn phí)",
+     "author": "Deisenroth, Faisal, Ong",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://mml-book.github.io/book/mml-book.pdf",
+     "where": "chương 5 Vector Calculus, mục 5.3 tới 5.6",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Gradient của hàm vectơ, Jacobian và lan truyền ngược viết cho học máy.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Paul's Online Math Notes: Lagrange Multipliers",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcIII/LagrangeMultipliers.aspx",
+     "where": "bài luyện cuối trang",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Bài nhân tử Lagrange có lời giải chi tiết.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Đắm mình vào học sâu, phụ lục toán: 18.4 Giải tích nhiều biến",
+     "author": "Aston Zhang và cộng sự; nhóm dịch tình nguyện tiếng Việt",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://github.com/d2l-ai/d2l-vi/blob/v0.15/chapter_appendix-mathematics-for-deep-learning/multivariable-calculus_vn.md",
+     "where": "mục 18.4.2 Gradient, 18.4.4 Quy tắc dây chuyền, 18.4.5 Lan truyền ngược",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Đọc Parr và Howard cạnh bài d2l tiếng Việt, tự tính tay một mạng hai lớp; Lagrange chỉ cần một hai bài mẫu."
+  },
+  "gt_tinh_chat_ham": {
+   "primary": {
+    "title": "Paul's Online Math Notes: Symmetry (đối xứng, hàm chẵn lẻ)",
+    "author": "Paul Dawkins (Lamar University)",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://tutorial.math.lamar.edu/Classes/Alg/Symmetry.aspx",
+    "where": "đối xứng qua trục và gốc",
+    "free": true,
+    "minutes": 15,
+    "why_vi": "Giải thích hàm chẵn và lẻ qua đối xứng đồ thị, gọn.",
+    "checked": true
+   },
+   "also": [],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Chưa tìm được nguồn riêng cho hàm tuần hoàn; chỉ cần biết sin, cos tuần hoàn, hàm chẵn lẻ đối xứng thế nào."
+  },
+  "gt_gioi_han_nang_cao": {
+   "primary": {
+    "title": "Paul's Online Math Notes: Computing Limits",
+    "author": "Paul Dawkins (Lamar University)",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://tutorial.math.lamar.edu/Classes/CalcI/ComputingLimits.aspx",
+    "where": "kỹ thuật tính giới hạn, rút gọn, liên hợp",
+    "free": true,
+    "minutes": 40,
+    "why_vi": "Các kỹ thuật tính giới hạn có nhiều ví dụ giải.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 18.01SC, Session 5 Discontinuity và Session 8 Limits of sine and cosine",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/1.-differentiation/part-a-definition-and-basic-rules/session-5-discontinuity/",
+     "where": "sessions 5 và 8",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Phân loại điểm gián đoạn và giới hạn lượng giác đáng nhớ.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Continuity",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/Continuity.aspx",
+     "where": "liên tục và định lý giá trị trung gian",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Có cả định lý giá trị trung gian với ví dụ.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Paul's Online Math Notes: Limits at Infinity, Part I",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/LimitsAtInfinityI.aspx",
+     "where": "bài luyện cuối trang",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Giới hạn ở vô cùng có lời giải.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Bàng môn: làm đủ bài luyện của Paul là xong; vô cùng bé tương đương chưa tìm được nguồn tiếng Anh riêng, xem giáo trình trên lớp."
+  },
+  "gt_ham_nguoc_tham_so": {
+   "primary": {
+    "title": "MIT 18.01SC Unit 1 Part B: Implicit differentiation and inverse functions",
+    "author": "MIT OpenCourseWare",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/1.-differentiation/part-b-implicit-differentiation-and-inverse-functions/",
+    "where": "Part B",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Đạo hàm hàm ngược và hàm ẩn kèm bài tập.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Essence of Calculus, chương 7: Implicit differentiation, what's going on here?",
+     "author": "3Blue1Brown (Grant Sanderson)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://www.3blue1brown.com/lessons/implicit-differentiation",
+     "where": "chương 7",
+     "free": true,
+     "minutes": 15,
+     "why_vi": "Giải thích đạo hàm ẩn và suy ra đạo hàm của ln.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Derivatives of Inverse Trig Functions",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/DiffInvTrigFcns.aspx",
+     "where": "đạo hàm hàm ngược lượng giác",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Công thức đạo hàm hàm ngược cụ thể.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Bàng môn: xem chương 7 để hiểu; hàm cho bởi tham số xem Unit 4 Part C của MIT 18.01SC khi cần."
+  },
+  "gt_lhospital": {
+   "primary": {
+    "title": "Paul's Online Math Notes: L'Hospital's Rule and Indeterminate Forms",
+    "author": "Paul Dawkins (Lamar University)",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://tutorial.math.lamar.edu/Classes/CalcI/LHospitalsRule.aspx",
+    "where": "toàn bài",
+    "free": true,
+    "minutes": 40,
+    "why_vi": "Quy tắc và các dạng vô định, có bài luyện kèm lời giải.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Paul's Online Math Notes: The Mean Value Theorem",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/MeanValueTheorem.aspx",
+     "where": "Rolle và Lagrange",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Phát biểu và ví dụ cho định lý Rolle và giá trị trung bình.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.01SC, Sessions 34-35: Mean value theorem",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/unit-2-applications-of-differentiation/part-c-mean-value-theorem-antiderivatives-and-differential-equations/",
+     "where": "sessions 34 và 35",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bài giảng ngắn về định lý giá trị trung bình và ứng dụng.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Bàng môn: học L'Hospital để khử dạng vô định; Rolle, Lagrange chuyển sang đường tự luận vì hay thi chứng minh."
+  },
+  "gt_khao_sat": {
+   "primary": {
+    "title": "MIT 18.01SC Unit 2 Part A: Approximation and curve sketching",
+    "author": "MIT OpenCourseWare",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/unit-2-applications-of-differentiation/part-a-approximation-and-curve-sketching/",
+    "where": "Part A",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Vẽ đồ thị theo lược đồ khảo sát, kèm bài tập.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Paul's Online Math Notes: Limits at Infinity, Part I",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/LimitsAtInfinityI.aspx",
+     "where": "tiệm cận ngang",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Giới hạn ở vô cùng chính là tiệm cận ngang.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Infinite Limits",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/InfiniteLimits.aspx",
+     "where": "tiệm cận đứng",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Giới hạn vô cùng chính là tiệm cận đứng.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Bàng môn: có thể dùng máy vẽ đồ thị; chỉ cần biết tìm tiệm cận qua giới hạn."
+  },
+  "gt_tich_phan_ky_thuat": {
+   "primary": {
+    "title": "Paul's Online Math Notes: Partial Fractions",
+    "author": "Paul Dawkins (Lamar University)",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://tutorial.math.lamar.edu/Classes/CalcII/PartialFractions.aspx",
+    "where": "tích phân hàm hữu tỉ",
+    "free": true,
+    "minutes": 40,
+    "why_vi": "Phân tích thành phân thức đơn giản rồi tích phân, nhiều ví dụ.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Paul's Online Math Notes: Integrals Involving Trig Functions",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcII/IntegralsWithTrig.aspx",
+     "where": "tích phân lượng giác",
+     "free": true,
+     "minutes": 35,
+     "why_vi": "Kỹ thuật cho sin, cos mũ.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Trig Substitutions",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcII/TrigSubstitutions.aspx",
+     "where": "đổi biến lượng giác",
+     "free": true,
+     "minutes": 35,
+     "why_vi": "Đổi biến lượng giác cho căn.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.01SC Unit 4 Part A và B: Techniques of integration",
+     "author": "MIT OpenCourseWare",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/unit-4-techniques-of-integration/",
+     "where": "Part A, Part B",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Bài giảng đầy đủ về các kỹ thuật, có bài tập.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Paul's Online Math Notes: Integration Strategy",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcII/IntegrationStrategy.aspx",
+     "where": "bài luyện cuối trang",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Chọn kỹ thuật phù hợp cho một tích phân.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Bàng môn: nặng mẹo, tra khi cần; có Wolfram hoặc SymPy làm hộ."
+  },
+  "gt_hinh_hoc_tich_phan": {
+   "primary": {
+    "title": "Paul's Online Math Notes: Volumes of Solids of Revolution / Method of Rings",
+    "author": "Paul Dawkins (Lamar University)",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://tutorial.math.lamar.edu/Classes/CalcI/VolumeWithRings.aspx",
+    "where": "thể tích vật thể tròn xoay",
+    "free": true,
+    "minutes": 35,
+    "why_vi": "Thể tích bằng phương pháp vòng, có hình và ví dụ.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Paul's Online Math Notes: Arc Length",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcII/ArcLength.aspx",
+     "where": "độ dài cung",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Công thức độ dài cung và ví dụ.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Comparison Test for Improper Integrals",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcII/ImproperIntegralsCompTest.aspx",
+     "where": "tiêu chuẩn hội tụ",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Tiêu chuẩn so sánh cho tích phân suy rộng.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Bàng môn: học khi cần; tiêu chuẩn hội tụ liên quan tới đường tự luận."
+  }
+ },
+ "exam_proofs": [
+  {
+   "node": "gt_dao_ham",
+   "topic_vi": "Tính đạo hàm bằng định nghĩa",
+   "type_vi": "Hàm ghép hoặc cho bởi nhiều công thức; dùng định nghĩa xét khả vi tại một điểm và tính đạo hàm ở đó (đạo hàm trái, phải).",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Proof of Various Derivative Properties",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/DerivativeProofs.aspx",
+     "where": "các chứng minh đạo hàm",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Mẫu chứng minh đạo hàm theo định nghĩa.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.01SC Exam 1 (đạo hàm) (có lời giải)",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/1.-differentiation/exam-1/",
+     "where": "Exam 1 (đạo hàm)",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật của MIT kèm lời giải để so.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_gioi_han_nang_cao",
+   "topic_vi": "Xét liên tục và tìm tham số, phân loại gián đoạn",
+   "type_vi": "Cho hàm nhiều công thức chứa tham số; tìm tham số để liên tục hoặc khả vi, phân loại điểm gián đoạn.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Continuity",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/Continuity.aspx",
+     "where": "liên tục",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Có phần chứng minh và ví dụ kèm lời giải cho dạng bài này.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_lhospital",
+   "topic_vi": "Ứng dụng định lý Rolle và Lagrange",
+   "type_vi": "Chứng minh tồn tại điểm c thỏa một đẳng thức, chứng minh phương trình có nghiệm duy nhất hoặc đếm nghiệm bằng Rolle.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Proofs of Derivative Applications Facts",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/DerivativeAppsProofs.aspx",
+     "where": "Rolle, Lagrange, cực trị",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Mẫu chứng minh định lý giá trị trung bình.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.01SC Exam 2 (ứng dụng đạo hàm) (có lời giải)",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/unit-2-applications-of-differentiation/exam-2/",
+     "where": "Exam 2 (ứng dụng đạo hàm)",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật của MIT kèm lời giải để so.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_cuc_tri",
+   "topic_vi": "Chứng minh bất đẳng thức bằng đạo hàm",
+   "type_vi": "Xét hàm phụ, dùng tính đơn điệu hoặc lồi lõm để chứng minh bất đẳng thức giữa hàm sơ cấp.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Proofs of Derivative Applications Facts",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/DerivativeAppsProofs.aspx",
+     "where": "Rolle, Lagrange, cực trị",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Mẫu chứng minh định lý giá trị trung bình.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.01SC Exam 2 (ứng dụng đạo hàm) (có lời giải)",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/unit-2-applications-of-differentiation/exam-2/",
+     "where": "Exam 2 (ứng dụng đạo hàm)",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật của MIT kèm lời giải để so.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_tich_phan_ung_dung",
+   "topic_vi": "Xét hội tụ tích phân suy rộng",
+   "type_vi": "Dùng tiêu chuẩn so sánh hoặc tính trực tiếp để xét hội tụ của tích phân suy rộng, có tham số.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Comparison Test for Improper Integrals",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcII/ImproperIntegralsCompTest.aspx",
+     "where": "tiêu chuẩn so sánh",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Có phần chứng minh và ví dụ kèm lời giải cho dạng bài này.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.01SC Final exam",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/final-exam/",
+     "where": "đề cuối kỳ",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Đề tổng hợp cả môn kèm lời giải.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_gioi_han",
+   "topic_vi": "Giới hạn bằng định nghĩa (epsilon-delta) và giới hạn dãy",
+   "type_vi": "Chứng minh giới hạn bằng định nghĩa, hoặc dùng nguyên lý kẹp và dãy đơn điệu bị chặn để chứng minh dãy hội tụ.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Proof of Various Limit Properties",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/LimitProofs.aspx",
+     "where": "các chứng minh giới hạn bằng epsilon-delta",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Mẫu chứng minh giới hạn.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: The Definition of the Limit",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/DefnOfLimit.aspx",
+     "where": "epsilon-delta",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Định nghĩa epsilon-delta có ví dụ.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_gioi_han_nang_cao",
+   "topic_vi": "Định lý giá trị trung gian",
+   "type_vi": "Chứng minh phương trình có nghiệm trong một khoảng bằng hàm liên tục trên đoạn.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Continuity",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/Continuity.aspx",
+     "where": "giá trị trung gian",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Có phần chứng minh và ví dụ kèm lời giải cho dạng bài này.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_lhospital",
+   "topic_vi": "Chứng minh bất đẳng thức bằng Lagrange",
+   "type_vi": "Áp dụng định lý giá trị trung bình trên một đoạn để chặn hiệu f(b)-f(a).",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Proofs of Derivative Applications Facts",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/DerivativeAppsProofs.aspx",
+     "where": "Rolle, Lagrange, cực trị",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Mẫu chứng minh định lý giá trị trung bình.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_taylor",
+   "topic_vi": "Khai triển Taylor, Maclaurin để tính giới hạn và xấp xỉ",
+   "type_vi": "Khai triển tới bậc cần thiết để tính giới hạn dạng vô định, hoặc đánh giá sai số xấp xỉ.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Series and Sequences (mục Taylor Series)",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcII/SeriesIntro.aspx",
+     "where": "Taylor Series",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Có phần chứng minh và ví dụ kèm lời giải cho dạng bài này.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.01SC Final exam",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/final-exam/",
+     "where": "đề cuối kỳ",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Đề tổng hợp cả môn kèm lời giải.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_tich_phan",
+   "topic_vi": "Đạo hàm của tích phân cận biến thiên",
+   "type_vi": "Tính đạo hàm của hàm xác định bởi tích phân, hoặc giới hạn có tích phân bằng định lý cơ bản.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.01SC Exam 3 (tích phân) (có lời giải)",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/unit-3-the-definite-integral-and-its-applications/exam-3/",
+     "where": "Exam 3 (tích phân)",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật của MIT kèm lời giải để so.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_tich_phan",
+   "topic_vi": "Chứng minh đẳng thức tích phân",
+   "type_vi": "Dùng đổi biến hoặc đối xứng để chứng minh đẳng thức của tích phân xác định, so sánh hai tích phân.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Proof of Various Integral Properties",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcI/ProofIntProp.aspx",
+     "where": "tính chất tích phân",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Có phần chứng minh và ví dụ kèm lời giải cho dạng bài này.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.01SC Exam 3 (tích phân) (có lời giải)",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-01sc-single-variable-calculus-fall-2010/pages/unit-3-the-definite-integral-and-its-applications/exam-3/",
+     "where": "Exam 3 (tích phân)",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật của MIT kèm lời giải để so.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_hinh_hoc_tich_phan",
+   "topic_vi": "Tích phân suy rộng của hàm không bị chặn",
+   "type_vi": "Xét hội tụ tích phân có kỳ dị ở một đầu mút, so sánh với 1/x^a.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Improper Integrals",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcII/ImproperIntegrals.aspx",
+     "where": "hàm không bị chặn",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Có phần chứng minh và ví dụ kèm lời giải cho dạng bài này.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_nhieu_bien",
+   "topic_vi": "Giới hạn, liên tục, khả vi của hàm hai biến",
+   "type_vi": "Xét giới hạn và liên tục của hàm hai biến tại gốc, kiểm tra tồn tại đạo hàm riêng và khả vi theo định nghĩa.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.02SC Exam 2 (đạo hàm riêng)",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/pages/2.-partial-derivatives/exam-2/",
+     "where": "Exam 2",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật về đạo hàm riêng, cực trị, Lagrange.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_nhieu_bien",
+   "topic_vi": "Đạo hàm hàm hợp và hàm ẩn nhiều biến",
+   "type_vi": "Tính đạo hàm riêng của hàm hợp, hàm ẩn; chứng minh một phương trình đạo hàm riêng.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Chain Rule (Calculus III)",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcIII/ChainRule.aspx",
+     "where": "quy tắc dây chuyền nhiều biến",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Có phần chứng minh và ví dụ kèm lời giải cho dạng bài này.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.02SC Exam 2 (đạo hàm riêng)",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/pages/2.-partial-derivatives/exam-2/",
+     "where": "Exam 2",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật về đạo hàm riêng, cực trị, Lagrange.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_gradient",
+   "topic_vi": "Cực trị tự do và cực trị có điều kiện",
+   "type_vi": "Tìm điểm dừng, dùng Hessian để phân loại; cực trị có điều kiện bằng nhân tử Lagrange hoặc thế.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Lagrange Multipliers",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/CalcIII/LagrangeMultipliers.aspx",
+     "where": "nhân tử Lagrange",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Có phần chứng minh và ví dụ kèm lời giải cho dạng bài này.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.02SC Exam 2 (đạo hàm riêng)",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-02sc-multivariable-calculus-fall-2010/pages/2.-partial-derivatives/exam-2/",
+     "where": "Exam 2",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật về đạo hàm riêng, cực trị, Lagrange.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "gt_dao_ham",
+   "topic_vi": "Đạo hàm cấp n và công thức Leibniz",
+   "type_vi": "Tính đạo hàm cấp cao bằng quy nạp hoặc công thức Leibniz, tính đạo hàm cấp n của hàm hữu tỉ hoặc lượng giác.",
+   "frequency_vi": "thỉnh thoảng",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1111 Giải tích 1 (CTĐT tài năng)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1111-Decuong-Giaitich1-Tainang.pdf",
+     "where": "nội dung học phần, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Giải tích 1; thi cuối kỳ là tự luận.",
+     "checked": true
+    }
+   ]
+  }
+ ],
+ "rejected": [
+  {
+   "title": "Khan Academy Calculus / Multivariable Calculus",
+   "why_vi": "Không mở được trang để kiểm và không có bản tiếng Việt cho môn này; MIT 18.01SC, 18.02SC có đề thi lời giải nên chọn."
+  },
+  {
+   "title": "OpenStax Calculus Volume 1 và 2 làm nguồn chính",
+   "why_vi": "Sách dày, tốt nhưng dài; chỉ dùng Volume 3 chương 4 cho nhiều biến."
+  },
+  {
+   "title": "Calculus của Stewart",
+   "why_vi": "Sách thương mại, nặng, không cần cho người học để làm AI."
+  },
+  {
+   "title": "Đề thi giải tích chép trên studocu, 123doc",
+   "why_vi": "Không chính thức, có thể vi phạm bản quyền; dùng đề minh họa của fami.hust.edu.vn."
+  },
+  {
+   "title": "Giáo trình Toán cao cấp (Nguyễn Đình Trí)",
+   "why_vi": "Sách thương mại, không có bản miễn phí hợp pháp; chỉ nêu tên như sách tham khảo trên lớp."
+  },
+  {
+   "title": "Active Calculus",
+   "why_vi": "Không kịp kiểm trang; thiên về học qua câu hỏi khám phá, chậm cho người muốn đi nhanh."
+  },
+  {
+   "title": "d2l.aivivn.com (trang cũ của Đắm mình vào Học Sâu)",
+   "why_vi": "Tên miền đã bị chiếm: trang chủ hiện là quảng cáo cờ bạc. Dùng bản dịch tay trên GitHub (thẻ v0.15)."
+  },
+  {
+   "title": "vi.d2l.ai (Đắm mình vào Học Sâu 0.17.5)",
+   "why_vi": "Bản dịch máy, sai thuật ngữ (mạng tích chập thành 'mạng thần kinh phức tạp'). Không dùng làm nguồn tiếng Việt."
+  }
+ ]
+}
