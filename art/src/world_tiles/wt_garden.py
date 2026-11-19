@@ -50,8 +50,8 @@ def sparkles(col, rar, f, z0, n=3, r=9):
         return
     for k in range(n):
         a = f * 1.3 + k * 2.1
-        bl(col, r * math.cos(a), 3 + 2 * math.sin(a), z0 + 5 * math.sin(a * 1.7) + k * 3, 0.9, 0.9,
-           mat(GLOW[rar], 3, emit=2.4, prio=4.0), sub=1)
+        bl(col, r * math.cos(a), 3 + 2 * math.sin(a), min(z0 + 5 * math.sin(a * 1.7) + k * 3, 33), 0.9, 0.9,
+           mat(GLOW[rar], 3, emit=2.0, prio=4.0), sub=1)
 
 
 def seed_stage(col, f):
@@ -358,25 +358,25 @@ def banner_pole(col, f):
 def specs():
     out = []
     mk = lambda **k: out.append(k)
-    mk(name="plot_locked", W=64, H=64, mode="top", build=bed_locked, vi="Luống đất hoang", pivot=(32, 64),
+    mk(name="plot_locked", W=64, H=64, mode="top", ppm=44, build=bed_locked, vi="Luống đất hoang", pivot=(32, 64),
        extra={"old": "plot_bed(True)"})
-    mk(name="plot_open", W=64, H=64, mode="top", build=lambda c, f: bed_open(c, f, False), vi="Luống đất", pivot=(32, 64),
+    mk(name="plot_open", W=64, H=64, mode="top", ppm=44, build=lambda c, f: bed_open(c, f, False), vi="Luống đất", pivot=(32, 64),
        extra={"old": "plot_bed(False)"})
-    mk(name="plot_dry", W=64, H=64, mode="top", build=lambda c, f: bed_open(c, f, True), vi="Luống đất khô cằn", pivot=(32, 64),
+    mk(name="plot_dry", W=64, H=64, mode="top", ppm=44, build=lambda c, f: bed_open(c, f, True), vi="Luống đất khô cằn", pivot=(32, 64),
        extra={"old": "plot_bed(False) when the plant is withered"})
     for fam in FAMILIES:
         for s in range(6):
             rs = ("common",) if s < 3 else RARITIES
             for rar in rs:
                 nm = f"{fam}_{s}" if s < 3 else f"{fam}_{s}_{rar}"
-                mk(name=nm, W=48, H=48, frames=2, base=4, ppm=40, build=plant_builder(fam, s, rar), vi=f"{FAMILY_VI[fam]}, giai đoạn {s}",
+                mk(name=nm, W=48, H=48, frames=2, base=4, ppm=34, build=plant_builder(fam, s, rar), vi=f"{FAMILY_VI[fam]}, giai đoạn {s}",
                    extra={"family": fam, "stage": s, "rarity": rar if s >= 3 else None})
     for rar in RARITIES:
         mk(name=f"seed_{rar}", W=32, H=32, frames=3, base=5, ppm=40, build=seed_packet(rar), vi="Túi hạt giống", extra={"rarity": rar, "old": "seed_frames"})
-    mk(name="tag", W=26, H=26, base=3, ppm=38, build=tag_build, vi="Thẻ tên cây")
+    mk(name="tag", W=26, H=26, base=3, ppm=32, build=tag_build, vi="Thẻ tên cây")
     for rar in RARITIES:
         mk(name=f"egg_{rar}", W=24, H=32, frames=3, base=4, ppm=36, build=egg_build(rar), vi="Trứng ong", extra={"rarity": rar})
     mk(name="hoa_sen", W=28, H=24, frames=4, base=3, ppm=40, build=lotus_bowl, vi="Chậu sen", extra={"old": "decoration('hoa_sen')"})
     mk(name="chuong_gio", W=20, H=36, frames=4, base=2, ppm=34, build=wind_chime, vi="Chuông gió", extra={"old": "decoration('chuong_gio')"})
-    mk(name="co_phuong", W=20, H=52, frames=4, base=2, ppm=36, build=banner_pole, vi="Cờ phướn", extra={"old": "decoration('co_phuong')"})
+    mk(name="co_phuong", W=20, H=52, frames=4, base=2, ppm=27, build=banner_pole, vi="Cờ phướn", extra={"old": "decoration('co_phuong')"})
     return out

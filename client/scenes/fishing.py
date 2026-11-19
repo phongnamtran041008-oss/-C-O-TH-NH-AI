@@ -12,7 +12,7 @@ import random
 import pygame
 
 from .. import strings_vi as T
-from ..engine import fishing_sim as fs
+from ..engine import art2, fishing_sim as fs
 from .base import Scene
 from .quiz import QuizScene
 
@@ -422,7 +422,7 @@ class CatchScene(Scene):
         k = min(1.0, self.t / 0.4)
         ui.image(fish_icon(f["shape"], f["color"], f.get("color2")), x + 52, y + 46, zoom=2 + 1.5 * k, anchor="center")
         ui.text(f["name_vi"], x + 104, y + 18, 11, col)
-        ui.text(f"{f['hanzi']}  {f['pinyin']}", x + 104, y + 33, 10, "#BC4749", kind="han")
+        ui.text(f"{f['hanzi']}  {f['pinyin']}" if not art2.on() else f["pinyin"], x + 104, y + 33, 10, "#BC4749", kind="han")
         note = T.FISH_FICTIONAL if f.get("fictional") else (T.FISH_MYTHICAL if f.get("mythical") else "")
         if note:
             ui.text(note, x + 104, y + 47, 6, "#8E877A")
@@ -665,15 +665,16 @@ class FishBookScene(Scene):
                 ui.border(cx, cy, cw - 2, chh, col)
                 if e["caught"]:
                     ui.image(fish_icon(e["shape"], e["color"], e.get("color2")), cx + 13, cy + 10, zoom=1, anchor="center")
-                    ui.text(e["hanzi"], cx + 26, cy + 3, 8, "#BC4749", kind="han")
+                    if not art2.on():       # the old game's Chinese name: not on the v2 (math game) screen
+                        ui.text(e["hanzi"], cx + 26, cy + 3, 8, "#BC4749", kind="han")
                     ui.text(e["name_vi"], cx + 3, cy + 20, 6, max_w=cw - 6)
-                    tip = (f"{e['name_vi']} · {e['hanzi']} ({e['pinyin']}) · {T.RARITY_NAMES[e['rarity']]}\n"
+                    tip = (f"{e['name_vi']} · {'' if art2.on() else e['hanzi'] + ' '}({e['pinyin']}) · {T.RARITY_NAMES[e['rarity']]}\n"
                            f"{T.FISH_BOOK_ENTRY.format(n=e['count'], cm=e['best_size_cm'])}\n{e['hint_vi']}\n{e['desc_vi']}")
                     if e.get("fictional"):
                         tip += "\n" + T.FISH_FICTIONAL
                 else:
                     ui.image(fish_icon(e["shape"], "#000000", dark=True), cx + 13, cy + 10, zoom=1, anchor="center")
-                    ui.text("？", cx + 30, cy + 3, 8, "#8E877A", kind="han")
+                    ui.text("?", cx + 30, cy + 3, 8, "#8E877A")
                     ui.text(T.RARITY_NAMES[e["rarity"]], cx + 3, cy + 20, 6, col)
                     tip = T.FISH_BOOK_HINT_UNKNOWN.format(hint=e["hint_vi"])
                 ui.widgets[f"fish_{e['id']}"] = ui.rect(cx, cy, cw - 2, chh)
@@ -692,7 +693,7 @@ class FishBookScene(Scene):
                     cx = x + 12 + (i % 2) * 214
                     cy = y + 26 + (i // 2) * 13
                     col = T.RARITY_COLORS.get(rec["rarity"], "#7D7468")
-                    ui.text(f"{rec['name_vi']} {rec['hanzi']}", cx, cy, 7, col, kind="han")
+                    ui.text(rec["name_vi"] if art2.on() else f"{rec['name_vi']} {rec['hanzi']}", cx, cy, 7, col, kind="han")
                     best = rec["top"][0]
                     ui.text(f"{best['size_cm']} cm · {best['name']}", cx + 200, cy, 7,
                             "#BC4749" if best.get("me") else "#2B2B2B", anchor="topright")

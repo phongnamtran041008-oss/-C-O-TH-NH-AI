@@ -23,7 +23,7 @@ class Display:
             size = (BASE_W * s, BASE_H * s)
         flags = pygame.RESIZABLE | (pygame.FULLSCREEN if fullscreen else 0)
         self.window = pygame.display.set_mode((0, 0) if fullscreen else size, flags)
-        pygame.display.set_caption("Khu Vườn Tu Tiên · 字园仙途")
+        pygame.display.set_caption("Khu Vườn Tu Tiên")
         self._recompute()
 
     def _recompute(self) -> None:

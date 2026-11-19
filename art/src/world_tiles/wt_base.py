@@ -310,7 +310,7 @@ def b_dark_grass(col, variant=0):
 
 def b_ink(col, variant=0):
     rnd = rng("ink", variant)
-    ground(col, "ink", 1)
+    ground(col, "ink", C.kit_or(0, 1))
     # cold wisps: slow waves across the whole tile (period = tile width, so they run on into the next tile)
     ys = [4.0, 10.5] if variant == 0 else [6.5, 13.0]
     for i, y0 in enumerate(ys):

@@ -129,7 +129,7 @@ out, 3× nearest-neighbour, dark background like the reference) — that is what
 | `tools/blender/kit/` | the shared library: scene/camera/light setup, toon conversion, render, pixelise, outline, palette, pack, QC, contact sheets | KIT |
 | `art/palette.json` | master palette | KIT |
 | `art/src/<batch>/…py` | build scripts: one function per asset, **numbers and code, no hand-saved state** | the batch |
-| `art/blender/<batch>/*.blend` | built scenes (committed) | the batch |
+| `art/blender/<batch>/*.blend` | built scenes (git-ignored: rebuilt by the batch's `build.py`) | the batch |
 | `art/render/…` | intermediate frames (git-ignored) | – |
 | `client/assets/v2/<kind>/` | packed output | the batch |
 | `art/preview/` | contact sheets | the batch |

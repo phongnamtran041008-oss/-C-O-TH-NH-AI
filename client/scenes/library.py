@@ -8,11 +8,12 @@ import pygame
 
 from .. import strings_vi as T
 from ..art import build as B
+from ..engine import art2
 from ..art.palette import RARITY_COLORS
 from .base import Scene
 
-BOOK_ICON = {"plant": "草", "monster": "妖", "bee": "蜂", "fish": "鱼", "discovery": "字", "treasure": "宝",
-             "pet": "兽"}
+BOOK_ICON = {"plant": "Thảo", "monster": "Yêu", "bee": "Ong", "fish": "Cá", "discovery": "Chữ", "treasure": "Bảo",
+             "pet": "Thú"}
 
 
 def portrait_frame(ui, frame: str | None, x: float, y: float, w: float, h: float) -> None:
@@ -117,7 +118,7 @@ class LibraryScene(Scene):
                 bw = w - 24
                 ui.fill(x + 12, ry, bw, rh - 2, "#FFFDF7")
                 ui.border(x + 12, ry, bw, rh - 2)
-                ui.text(BOOK_ICON.get(b["id"], "?"), x + 26, ry + 10, 12, "#BC4749", kind="han", anchor="center")
+                ui.text(BOOK_ICON.get(b["id"], "?"), x + 26, ry + 10, 6, "#BC4749", anchor="center")
                 ui.text(b["name_vi"], x + 42, ry, 9)
                 ui.text(T.LIBRARY_BOOK_ROW.format(f=b["found"], t=b["total"], p=b["pct"]), x + 42, ry + 11, 7, "#5A5A5A")
                 ui.progress(x + 110, ry + 13, 60, 4, b["pct"] / 100, "#6A994E")
@@ -186,7 +187,7 @@ class LibraryScene(Scene):
             return
         for i, it in enumerate(r["results"][:14]):
             ry = y + 4 + i * 12.5
-            ui.text(BOOK_ICON.get(it["book"], "?"), x + 8, ry + 5, 7, "#BC4749", kind="han", anchor="center")
+            ui.text(BOOK_ICON.get(it["book"], "?"), x + 8, ry + 5, 5, "#BC4749", anchor="center")
             ui.text(f"{it['title']}  {it['sub']}", x + 16, ry, 7, kind="han", max_w=w - 20)
             ui.widgets[f"lib_res_{i}"] = ui.rect(x, ry, w, 12)
             if ui.click_in(x, ry, w, 12):
@@ -274,7 +275,11 @@ class HerbBookScene(Scene):
         ui.border(x, y, w, 196, "#8B5A2B")
         r = p["rarity"] if p["rarity"] in RARITY_COLORS else "common"
         for s in range(1, 6):
-            ui.image(B.plant(s, r, p["word_id"]), x + 8 + (s - 1) * 24, y + 4, 1.0)
+            pv2 = art2.plant(s, r, p["word_id"]) if art2.on() else None
+            if pv2 is not None:      # the v2 garden plant (48 px), half size in the 24 px row
+                ui.image(pv2[0], x + 8 + (s - 1) * 24, y + 4, 0.5)
+            else:
+                ui.image(B.plant(s, r, p["word_id"]), x + 8 + (s - 1) * 24, y + 4, 1.0)
         ui.text(p["hanzi"], x + 30, y + 48, 26 if len(p["hanzi"]) <= 2 else 12, kind="han", anchor="center")
         ui.text(p["pinyin"], x + 62, y + 34, 11, "#BC4749", kind="han")
         ui.text(p["meaning_vi"], x + 62, y + 50, 8, max_w=w - 70)
@@ -312,7 +317,8 @@ _SHADOWS: dict = {}
 
 def _shadow(key: str) -> pygame.Surface:
     if key not in _SHADOWS:
-        s = B.plant(4, "common", key).copy()
+        pv2 = art2.plant(4, "common", key) if art2.on() else None
+        s = (pygame.transform.scale(pv2[0], (24, 24)) if pv2 else B.plant(4, "common", key)).copy()
         s.fill((60, 54, 44, 255), special_flags=pygame.BLEND_RGBA_MIN)
         _SHADOWS[key] = s
     return _SHADOWS[key]
@@ -364,6 +370,7 @@ class LibraryShopScene(Scene):
         super().__init__(game)
         self.host = host
         self.tab = "manual"          # bí kíp, or đan phương (stage 8)
+        self.page = 0                # the shelf shows PER_PAGE rows at a time
 
     def buy(self, item_id: str) -> None:
         def ok(r):
@@ -381,14 +388,23 @@ class LibraryShopScene(Scene):
         ui.panel(x, y, w, h, T.LIBRARY_SHOP_TITLE)
         for i, (k, label) in enumerate((("manual", T.LIBRARY_SHOP_TAB_MANUALS), ("recipe", T.LIBRARY_SHOP_TAB_RECIPES))):
             if ui.button(f"lib_shop_tab_{k}", x + 10 + i * 76, y + 8, 72, 13, label, size=7, selected=self.tab == k):
-                self.tab = k
+                self.tab, self.page = k, 0
         hint = T.LIBRARY_SHOP_HINT if self.tab == "manual" else T.LIBRARY_SHOP_HINT_RECIPES
         ui.text(hint, x + 12, y + 24, 7, "#5A5A5A", max_w=w - 24)
         at = d.get("at_desk")
         if not at:
             ui.text(T.LIBRARY_SHOP_FAR, x + 12, y + 44, 7, "#BC4749", max_w=w - 24)
         rows = [it for it in d.get("shop", []) if it.get("kind", "manual") == self.tab]
-        for i, it in enumerate(rows[:8]):
+        per = 8
+        pages = max(1, (len(rows) + per - 1) // per)
+        self.page = min(self.page, pages - 1)
+        if pages > 1:                # more đan phương than one shelf: page through them
+            if ui.button("lib_shop_prev", x + w - 92, y + 8, 22, 13, "<", size=7, enabled=self.page > 0):
+                self.page -= 1
+            ui.text(f"{self.page + 1}/{pages}", x + w - 56, y + 14, 7, "#5A5A5A", anchor="center")
+            if ui.button("lib_shop_next", x + w - 42, y + 8, 22, 13, ">", size=7, enabled=self.page < pages - 1):
+                self.page += 1
+        for i, it in enumerate(rows[self.page * per:(self.page + 1) * per]):
             ry = y + 56 + i * 20
             ui.fill(x + 12, ry, w - 24, 18, "#FFFDF7")
             ui.border(x + 12, ry, w - 24, 18)

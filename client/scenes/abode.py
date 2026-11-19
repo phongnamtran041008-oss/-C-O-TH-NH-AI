@@ -141,7 +141,7 @@ class AbodeScene(Scene):
                 if p:
                     cx, cy = self.plot_center(p)
                     self.fx.burst(cx, cy, "r", 18, 30)
-                    self.game.toast("Lửa bén sang cây 木! Sương mực tăng lên.", "#BC4749")
+                    self.game.toast("Lửa bén sang cây Mộc! Sương mực tăng lên.", "#BC4749")
             if then:
                 then()
         self.api.get("/garden", ok, self.game.api_error)
@@ -235,7 +235,7 @@ class AbodeScene(Scene):
     def play_mishap(self, m: dict, cx: float, cy: float) -> None:
         eff = m.get("effect")
         if eff in ("horse_run", "horse_blush"):
-            self.fx.run_across("horse", cy + 20, self.cam[0], "妈?" if eff == "horse_run" else "♥")
+            self.fx.run_across("horse", cy + 20, self.cam[0], "Mẹ?" if eff == "horse_run" else "♥")
         elif eff in ("villager_blush", "merchant_confused"):
             self.fx.run_across("villager", cy + 24, self.cam[0], "!!" if eff == "villager_blush" else "?")
         elif eff == "plants_sleep":
@@ -250,7 +250,7 @@ class AbodeScene(Scene):
             for p in self.plots()[:6]:
                 if p.get("word"):
                     x, y = self.plot_center(p)
-                    self.fx.bubble(random.choice(["blablabla", "nói gì cơ?", "话话话"]), x, y - 12)
+                    self.fx.bubble(random.choice(["blablabla", "nói gì cơ?", "lảm nhảm..."]), x, y - 12)
         elif eff == "lose_stones":
             self.fx.float_text(f"-{m.get('stones_lost', 0)} Linh Thạch", cx, cy - 4, "#BC4749")
             if m.get("stones_lost"):
@@ -261,7 +261,7 @@ class AbodeScene(Scene):
                     x, y = self.plot_center(p)
                     self.fx.burst(x, y, "a", 6, 15)
         elif eff == "flower_in_teapot":
-            self.fx.bubble("🌸?" if self.game.fonts._ui_has("🌸") else "茶+花?", cx, cy - 12)
+            self.fx.bubble("🌸?" if self.game.fonts._ui_has("🌸") else "Trà + Hoa?", cx, cy - 12)
         self.fx.bubble(f"{m.get('wrong_hanzi', '')} {m.get('wrong_pinyin', '')} = {m.get('wrong_vi', '')}", cx, cy - 26, 3.5)
 
     # ------------------------------------------------------------ update
@@ -357,10 +357,12 @@ class AbodeScene(Scene):
             self.pet_follow.kind = kind
         self.pet_follow.update(dt, self.player.x, self.player.y, self.player.facing)
 
-    def bee_drawables(self, cx: int, cy: int) -> list:
+    def bee_drawables(self, cx: int, cy: int, only: set | None = None) -> list:
         out = []
         species = self.game.state.bee_species
         for fb in self.flock.bees.values():
+            if only is not None and id(fb) not in only:
+                continue
             look = (species.get(fb.sp) or {}).get("look")
             img = sprites.bee(look, fb.frame(), fb.left)
             out.append((fb.y + 6, img, (int(fb.x - 4) - cx, int(fb.y - fb.z - 4) - cy), (fb.x, fb.y)))
@@ -488,6 +490,8 @@ class AbodeScene(Scene):
         if v.zoom == 1:
             self.draw_garden(surf, v.ox, v.oy)
             return
+        if self.draw_garden_v2(surf, v):    # the v2 garden atlas, drawn natively: no 1x layer needed
+            return
         sw, sh = surf.get_size()
         wx0, wy0 = int(math.floor(v.x)), int(math.floor(v.y))
         size = (sw // v.zoom + 2, sh // v.zoom + 2)
@@ -555,9 +559,25 @@ class AbodeScene(Scene):
                 dimg = sprites.decoration(d, int(self.t * 3) % 4)
                 ox = self.hive_obj.x + (-14 - i * 10 if i % 2 == 0 else 28 + (i // 2) * 10)
                 oy = self.hive_obj.y + self.hive_obj.h - dimg.get_height()
+                dp = art2.decoration(d) if v.zoom != 1 else None
+                if dp is not None:     # v2 decoration: its pivot on the old sprite's bottom-centre
+                    sx, sy = v.to_screen(ox + dimg.get_width() / 2, oy + dimg.get_height())
+                    drawables.append((oy + dimg.get_height(), dp.at(self.t), (sx - dp.pivot[0], sy - dp.pivot[1])))
+                    continue
                 drawables.append((oy + dimg.get_height(), v.img(dimg), v.to_screen(ox, oy)))
         bcx, bcy = (0, 0) if v.zoom != 1 else (cx, cy)     # at 2x: world positions, converted below
-        for fy, bimg, pos, ground in self.bee_drawables(bcx, bcy):
+        old_bees = []
+        for fb in self.flock.bees.values():
+            img = art2.bee_frame(fb.sp, fb.t, fb.left) if v.zoom != 1 else None
+            if img is None:
+                old_bees.append(fb)
+                continue
+            ex, ey = v.to_screen(fb.x - 2, fb.y)
+            pygame.draw.ellipse(surf, (40, 50, 30), (ex, ey, int(v.len(4)), int(v.len(2))))
+            bx, by = v.to_screen(fb.x, fb.y - fb.z)
+            drawables.append((fb.y + 6, img, (bx - 16, by - 16)))       # the bee's pivot is its body centre
+        keep = {id(fb) for fb in old_bees}
+        for fy, bimg, pos, ground in self.bee_drawables(bcx, bcy, keep):
             ex, ey = v.to_screen(ground[0] - 2, ground[1])
             pygame.draw.ellipse(surf, (40, 50, 30), (ex, ey, int(v.len(4)), int(v.len(2))))
             drawables.append((fy, v.img(bimg), v.to_screen(*pos) if v.zoom != 1 else pos))
@@ -633,6 +653,75 @@ class AbodeScene(Scene):
             if p.get("ripe") and random.random() < 0.15:
                 self.fx.sparkle(r.centerx + cx, r.y + 10 + cy, "o" if w.get("rarity") != "common" else "W")
 
+    def draw_garden_v2(self, surf, v) -> bool:
+        """The garden from the v2 garden atlas, natively at the 2x world: beds, the plant of each
+        word (its family by a stable hash, its stage and rarity, swaying), the paper tag with the
+        word, and the marks (auras, pollen, review, due, fog) at the same places as the old 1x
+        garden, scaled by the zoom. False when there is no garden atlas (the caller draws the old)."""
+        if art2.bed(False) is None:
+            return False
+        z = v.zoom
+        sw, sh = surf.get_size()
+        for p in self.plots():
+            R = v.rect(self.plot_rect(p))
+            if R.right < 0 or R.bottom < 0 or R.left > sw or R.top > sh:
+                continue
+            wither = p.get("wither", 0) or 0
+            w = p.get("word")
+            surf.blit(art2.bed(not p["unlocked"], dry=bool(w) and wither >= 30), R.topleft)
+
+            def at(lx, ly):
+                return R.x + lx * z, R.y + ly * z
+            if not p["unlocked"]:
+                if p.get("can_unlock") and int(self.t * 2) % 2:
+                    pygame.draw.rect(surf, rgb("o"), R, z)
+                continue
+            for aura in p.get("auras", []):
+                col = rgb("a") if aura == "water" else rgb("r")
+                pygame.draw.rect(surf, col, R.inflate(-2 * z, -2 * z), z)
+            if not w:
+                continue
+            pl = art2.plant(p.get("stage", 0), w.get("rarity", "common"), w["id"], self.t)
+            if pl is not None:
+                img, (px, py) = pl
+                if wither >= 30:
+                    img = art2.withered(img, wither)
+                surf.blit(img, (R.centerx - px, R.centery + 6 * z - py))
+            if wither >= 30:
+                fog = pygame.Surface((PLOT, PLOT), pygame.SRCALPHA)
+                self.draw_fog(fog, p, fog.get_rect(), wither)
+                surf.blit(pygame.transform.scale(fog, R.size), R.topleft)
+            tag = art2.garden_prop("tag")
+            if tag is not None:      # the paper tag on its stake, the word written on it
+                tx, ty = at(1, 17)
+                surf.blit(tag.img, (tx, ty))
+                txt = self.game.fonts.render(w["hanzi"][:2], 10 if len(w["hanzi"]) == 1 else 6, (43, 43, 43), 1,
+                                             kind="han", antialias=False)
+                surf.blit(txt, (tx + (tag.img.get_width() - txt.get_width()) // 2,
+                                ty + (tag.img.get_height() - 6 - txt.get_height()) // 2))
+            if p.get("pollinated"):           # spec 10.2: Đã thụ phấn
+                pygame.draw.circle(surf, rgb("O"), at(PLOT - 5, PLOT - 5), 3 * z)
+                pygame.draw.circle(surf, rgb("o"), at(PLOT - 5, PLOT - 5), 2 * z)
+                if random.random() < 0.04:
+                    r = self.plot_rect(p)
+                    self.fx.sparkle(r.right - 5, r.bottom - 8, "o")
+            elif p.get("stage", 0) >= 3 and (p.get("pollen") or 0) > 0:
+                pygame.draw.rect(surf, rgb("k"), (*at(15, PLOT - 4), 15 * z, 3 * z))
+                pygame.draw.rect(surf, rgb("o"), (*at(16, PLOT - 3), max(1, int(13 * p["pollen"] / 100)) * z, z))
+            if p.get("needs_review"):
+                pygame.draw.circle(surf, rgb("r"), at(12, 20), 2 * z)
+            if self.is_due(p):
+                bob = int(abs(math.sin(self.t * 4)) * 3)
+                bx, by = at(PLOT - 9, 1 - bob)
+                pygame.draw.rect(surf, rgb("o"), (bx, by, 7 * z, 9 * z))
+                pygame.draw.rect(surf, rgb("k"), (bx, by, 7 * z, 9 * z), z)
+                pygame.draw.rect(surf, rgb("k"), (bx + 3 * z, by + 2 * z, z, 4 * z))
+                pygame.draw.rect(surf, rgb("k"), (bx + 3 * z, by + 7 * z, z, z))
+            if p.get("ripe") and random.random() < 0.15:
+                r = self.plot_rect(p)
+                self.fx.sparkle(r.centerx, r.y + 10, "o" if w.get("rarity") != "common" else "W")
+        return True
+
     def draw_fog(self, surf, p, r, wither):
         blobs = self.fog.setdefault(p["id"], [(random.uniform(0, 6.28), random.uniform(4, 10)) for _ in range(4)])
         fog = pygame.Surface((PLOT, PLOT), pygame.SRCALPHA)
@@ -665,9 +754,11 @@ class AbodeScene(Scene):
         if me.get("title"):
             ui.text(f"«{me['title']}»", 39, 28, 6, "#B8862E")
         ui.text(T.REALMS.get(ch.get("realm", "pham_nhan"), ""), 39, 19, 8, "#6A994E")
-        ui.image(sprites.icon("stone"), 7, 41, zoom=1)
-        ui.text(f"{me.get('spirit_stones', 0):,}".replace(",", "."), 18, 44, 9, "#FFFFFF", anchor="midleft")
-        ui.text(f"{me.get('spirit_stones', 0):,}".replace(",", "."), 17.5, 43.5, 9, "#2B2B2B", anchor="midleft")
+        ui.image((art2.stone_small() or sprites.icon("stone")), 7, 41, zoom=1)
+        ui.text(f"{me.get('spirit_stones', 0):,}".replace(",", "."), 22 if art2.stone_small() else 18, 44, 9, "#FFFFFF",
+                anchor="midleft")
+        ui.text(f"{me.get('spirit_stones', 0):,}".replace(",", "."), 21.5 if art2.stone_small() else 17.5, 43.5, 9,
+                "#2B2B2B", anchor="midleft")
         # chat first: while typing, letters must not trigger the hotkeys below
         self.game.chatbox.draw(ui, in_zone=False, enabled=top)
         typing = self.game.chatbox.typing
@@ -719,7 +810,7 @@ class AbodeScene(Scene):
                 return
         # tutorial hint
         if self.tutorial_step in (1, 2, 3):
-            hint = {1: "Gieo hạt 水 vào một ô đất trong vườn",
+            hint = {1: "Gieo hạt chữ Thủy (nước) vào một ô đất trong vườn",
                     2: "Bấm vào cây vừa gieo để xem thẻ chữ",
                     3: "Đợi cây đến giờ ôn (dấu ! vàng) rồi bấm vào để ôn"}[self.tutorial_step]
             w = ui.text_size(hint, 8)[0] + 12

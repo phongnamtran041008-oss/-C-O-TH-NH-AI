@@ -291,14 +291,20 @@ rig (`bee.py`) rendered 18 times with each species' colours on the shared materi
 is `art/blender/beasts/bee.blend` and the preview is `art/preview/bees.png` (every species at
 4×, on dark and on the grass tiles of `base32.png`).
 
-- **Frame:** 24×24 with the pivot (12,12) on the bee's centre; it flies, so there is no
-  ground point. The bee is about 0.4 m long, so 15–16 px drawn. Kind "bee": QC asks for no
-  clips.
+- **Frame:** 32×32 with the pivot (16,16) on the body centre; it flies, so there is no ground
+  point. The camera is lowered to 12° (`elevation=12`) so the bee is seen side-on. The bee is
+  about 0.5 m long, so about 19 px drawn. Kind "bee": QC asks for no clips.
+- **Shape:** an abdomen with three stripe bands (short cylinders about 2 px wide, with 2 px of
+  body colour between them), a dark round thorax, a head with one big eye and a light pixel,
+  pale wings (the `wing` colour lightened 35%) standing above the back and beating between up
+  and down, a stinger, and two antennae with element-glow tips. `TWEAK` in `bee.py` gives
+  near-identical pairs a visible band or wing difference. `bees.png` starts with a 1× strip of
+  all 18 on grass.
 - **Facings:** `right` and `left` only.
 - **Clips:** `fly` (4 frames at 12 fps, looping: the wings beat up, level, down, level
   with a little bob) and `sting` (2 frames at 12 fps: a lunge with the abdomen curled
   forward, then recoil; `events.sting.hit` = 0).
-- **Look → model:** `body` colours the head and abdomen, `stripe` the two abdomen bands,
+- **Look → model:** `body` colours the head and abdomen, `stripe` the three abdomen bands and the thorax,
   `wing` both wings, and `eye` both eyes. Every eye also gets a white catch-light. The
   antenna tips glow in the colour of the species' `element`:
 

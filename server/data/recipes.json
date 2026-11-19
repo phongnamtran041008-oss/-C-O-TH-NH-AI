@@ -1,5 +1,5 @@
 {
-  "_comment": "Đan phương (spec 12.3). item: the recipe item that must be in the bag. ingredients: kind item (exact item id), fruit (a quả chữ of at least that rarity, the least precious one held is used), fish (a caught fish of at least that rarity). fee: Linh Thạch for the furnace (a sink). yield: pills made per quality (phế đan gives nothing). difficulty 1-3 picks the needle speed and the size of the văn hỏa zone (balance/alchemy.json). chars: the pill's name, one character per press of the fire minigame; pinyin checked against CC-CEDICT by tests/test_alchemy.py, hv = Hán-Việt reading shown with it.",
+  "_comment": "Đan phương (spec 12.3). item: the recipe item that must be in the bag. ingredients: kind item (exact item id), fruit (a quả chữ of at least that rarity, the least precious one held is used), fish (a caught fish of at least that rarity). fee: Linh Thạch for the furnace (a sink). yield: pills made per quality (phế đan gives nothing). difficulty 1-3 picks the needle speed and the size of the văn hỏa zone (balance/alchemy.json). chars: the pill's name, one character per press of the fire minigame; pinyin checked against CC-CEDICT by tests/test_alchemy.py, hv = Hán-Việt reading shown with it. chars is optional: a recipe without it (the breakthrough pills from Kết Đan on) has nothing to read, every press of the fire is only judged on the needle.",
   "recipes": {
     "hoi_huyet_dan": {
       "item": "dp_hoi_huyet", "difficulty": 1, "min_realm": "pham_nhan", "fee": 10,
@@ -67,10 +67,37 @@
       "item": "dp_kim_dan", "difficulty": 3, "min_realm": "truc_co", "fee": 500,
       "ingredients": [{"kind": "fruit", "rarity": "epic", "qty": 3}, {"kind": "item", "item": "linh_qua", "qty": 4},
                       {"kind": "item", "item": "mac_linh_chi", "qty": 4}, {"kind": "fish", "rarity": "huyen", "qty": 1}],
-      "yield": {"ha": 1, "trung": 1, "thuong": 1},
-      "chars": [{"c": "金", "pinyin": "jīn", "numeric": "jin1", "hv": "kim"},
-                {"c": "丹", "pinyin": "dān", "numeric": "dan1", "hv": "đan"},
-                {"c": "丹", "pinyin": "dān", "numeric": "dan1", "hv": "đan"}]
+      "yield": {"ha": 1, "trung": 1, "thuong": 1}
+    },
+    "nguyen_anh_dan": {
+      "item": "dp_nguyen_anh", "difficulty": 3, "min_realm": "kim_dan", "fee": 1200,
+      "ingredients": [{"kind": "item", "item": "muc_tinh", "qty": 10}, {"kind": "item", "item": "go_linh_moc", "qty": 4},
+                      {"kind": "item", "item": "manh_tap_hop", "qty": 6}, {"kind": "item", "item": "tinh_so_phuc", "qty": 4}],
+      "yield": {"ha": 1, "trung": 1, "thuong": 1}
+    },
+    "hoa_than_dan": {
+      "item": "dp_hoa_than", "difficulty": 3, "min_realm": "nguyen_anh", "fee": 2500,
+      "ingredients": [{"kind": "item", "item": "muc_tinh", "qty": 15}, {"kind": "item", "item": "go_linh_moc", "qty": 6},
+                      {"kind": "item", "item": "tinh_so_phuc", "qty": 8}, {"kind": "item", "item": "loi_ma_tran", "qty": 4}],
+      "yield": {"ha": 1, "trung": 1, "thuong": 1}
+    },
+    "luyen_hu_dan": {
+      "item": "dp_luyen_hu", "difficulty": 3, "min_realm": "hoa_than", "fee": 4500,
+      "ingredients": [{"kind": "item", "item": "muc_tinh", "qty": 20}, {"kind": "item", "item": "go_linh_moc", "qty": 8},
+                      {"kind": "item", "item": "loi_ma_tran", "qty": 8}, {"kind": "item", "item": "an_ruong_de", "qty": 1}],
+      "yield": {"ha": 1, "trung": 1, "thuong": 1}
+    },
+    "hop_the_dan": {
+      "item": "dp_hop_the", "difficulty": 3, "min_realm": "luyen_hu", "fee": 7500,
+      "ingredients": [{"kind": "item", "item": "muc_tinh", "qty": 25}, {"kind": "item", "item": "tinh_so_phuc", "qty": 12},
+                      {"kind": "item", "item": "loi_ma_tran", "qty": 12}, {"kind": "item", "item": "an_ruong_de", "qty": 2}],
+      "yield": {"ha": 1, "trung": 1, "thuong": 1}
+    },
+    "dai_thua_dan": {
+      "item": "dp_dai_thua", "difficulty": 3, "min_realm": "hop_the", "fee": 12000,
+      "ingredients": [{"kind": "item", "item": "muc_tinh", "qty": 30}, {"kind": "item", "item": "loi_ma_tran", "qty": 16},
+                      {"kind": "item", "item": "ngoc_gian_lao_nhan", "qty": 2}, {"kind": "item", "item": "an_ruong_de", "qty": 2}],
+      "yield": {"ha": 1, "trung": 1, "thuong": 1}
     }
   }
 }

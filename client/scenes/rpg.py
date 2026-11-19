@@ -172,7 +172,8 @@ class CharacterScene(Scene):
                 else:
                     ui.image(sprites.pet(pet["pet_type"], int(ui.time * 3) % 2), x + 24, py_ + 8, zoom=1.5,
                              anchor="center")
-                ui.text(f"{pet['name_vi']} {pet['hanzi']} · {T.PETS_LEVEL.format(l=pet['level'], m=pet['max_level'])}",
+                ui.text(f"{pet['name_vi']}{'' if art2.on() else ' ' + pet['hanzi']} · "
+                        f"{T.PETS_LEVEL.format(l=pet['level'], m=pet['max_level'])}",
                         x + 38, py_ + 2, 7, "#2B2B2B", kind="han")
                 if ui.hover(x + 12, py_, 200, 16):
                     ui.set_tooltip(pet["skill_vi"])
@@ -389,7 +390,7 @@ class ForgeScene(Scene):
                 lvl = f" +{e['enhance']}" if e["enhance"] else ""
                 ui.text(e["name_vi"] + lvl, x + 18, ry + 1, 8, e["color"])
                 carved = "".join(c["hanzi"] for c in e.get("inscriptions", []))   # Khắc Văn (stage 8)
-                if carved:
+                if carved and not art2.on():      # carved characters: old-game Chinese, hidden in v2
                     ui.text(carved, x + 22 + ui.text_size(e["name_vi"] + lvl, 8)[0], ry + 5, 7, "#C99A3A", kind="han",
                             anchor="midleft")
                 stats = " ".join(f"{T.STATS_VI.get(k, k)} {v}" for k, v in e["stats"].items())

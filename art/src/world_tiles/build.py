@@ -147,6 +147,20 @@ def post_32() -> None:
     jp.write_text(json.dumps(doc, indent=1, ensure_ascii=False), "utf-8")
 
 
+def pad_td24() -> None:
+    """The kit QC reads tile sheets on a 16 px grid: pad the 24 px sheet to an even number of rows (a multiple of 16 px tall)."""
+    pygame = _pg()
+    png = TILES / "td24.png"
+    if not png.exists():
+        return
+    img = pygame.image.load(str(png)).convert_alpha()
+    h = img.get_height()
+    if h % 16:
+        out = pygame.Surface((img.get_width(), h + 24), pygame.SRCALPHA)
+        out.blit(img, (0, 0))
+        pygame.image.save(out, str(png))
+
+
 def main() -> int:
     args = sys.argv[1:]
     parts = {"16", "32", "village", "garden", "realm", "td"}
@@ -168,6 +182,8 @@ def main() -> int:
             post_props()
         if "32" in parts:
             post_32()
+        if "td" in parts:
+            pad_td24()
     import wt_preview
     import wt_preview32
     import wt_preview_extra

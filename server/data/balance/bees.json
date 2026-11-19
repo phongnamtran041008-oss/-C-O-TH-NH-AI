@@ -308,7 +308,11 @@
    "luyen_khi": 2,
    "truc_co": 3,
    "kim_dan": 4,
-   "nguyen_anh": 5
+   "nguyen_anh": 5,
+   "hoa_than": 6,
+   "luyen_hu": 7,
+   "hop_the": 8,
+   "dai_thua": 9
   },
   "range": 110,
   "first_attack_delay": 0.4,

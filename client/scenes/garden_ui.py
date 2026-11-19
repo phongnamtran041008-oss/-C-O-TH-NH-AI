@@ -235,7 +235,7 @@ class IntroCard(Scene):
                     max_w=rw)
             yy += 22
         if c.get("measure_words"):
-            ui.text(f"{T.MEASURE}: {'、'.join(c['measure_words'])}", rx, yy, 8, "#5A5A5A")
+            ui.text(f"{T.MEASURE}: {', '.join(c['measure_words'])}", rx, yy, 8, "#5A5A5A")
             yy += 12
         if c.get("story_vi"):
             ui.text(T.STORY + ": " + c["story_vi"], x + 14, y + 152, 7, "#5A5A5A", max_w=w - 28)

@@ -3,7 +3,7 @@
   "version": 1,
 
   "realms": {
-    "_comment": "server realm id -> player look (chars/dao_si_<look>) and realm aura (fx/aura_<aura>_back/_front). The server has pham_nhan..nguyen_anh today; the rest are the 8-realm ladder of the future.",
+    "_comment": "server realm id -> player look (chars/dao_si_<look>) and realm aura (fx/aura_<aura>_back/_front). The server has all of them (server/data/realms_cultivation.json); its id kim_dan is the realm Kết Đan, so it shares the ket_dan look.",
     "pham_nhan":  {"look": "luyen_khi",  "aura": null},
     "luyen_khi":  {"look": "luyen_khi",  "aura": "luyen_khi"},
     "truc_co":    {"look": "truc_co",    "aura": "truc_co"},
@@ -86,11 +86,17 @@
     "guide": "guide", "fisher": "fisher", "truc_lao": "truc_lao", "villager": "villager"
   },
   "autotile": {
-    "_comment": "2x ground: a cell of this tile gets the pair's transition tiles toward neighbours whose tile is in outer (client/engine/autotile.py)",
-    "path": {"pair": "grass_path", "outer": ["grass", "flowers", "dark_grass"]},
-    "dirt": {"pair": "grass_dirt", "outer": ["grass", "flowers", "dark_grass"]},
-    "water": {"pair": "shore", "outer": ["grass", "flowers", "dark_grass", "path", "dirt"]}
+    "_comment": "2x ground: a cell of this tile gets the pair's transition tiles toward neighbours whose tile is in outer (client/engine/autotile.py). painted = the outer ground the sheet drew; another outer ground shows through the transition (grass pixels only)",
+    "path": {"pair": "grass_path", "outer": ["grass", "flowers", "dark_grass"], "painted": "grass"},
+    "dirt": {"pair": "grass_dirt", "outer": ["grass", "flowers", "dark_grass"], "painted": "grass"},
+    "stone": {"pair": "grass_stone", "outer": ["grass", "flowers", "dark_grass"], "painted": "grass"},
+    "plaza": {"pair": "grass_plaza", "outer": ["grass", "flowers", "dark_grass"], "painted": "grass"},
+    "dark_grass": {"pair": "grass_dark", "outer": ["grass", "flowers"], "painted": "grass"},
+    "ink": {"pair": "dark_ink", "outer": ["dark_grass"], "painted": "dark_grass"},
+    "water": {"pair": "shore", "outer": ["grass", "flowers", "dark_grass", "path", "dirt"], "painted": "grass"},
+    "realm_wall": {"pair": "realm_edge", "outer": ["realm_floor"], "painted": "realm_floor"}
   },
+
 
   "weapons": {
     "_comment": "equipped weapon kind (what the server sends) -> layer sheet weapons/<layer> and the clip its attack plays",
@@ -107,12 +113,37 @@
   },
 
   "pets": {
-    "_comment": "Linh Thú kind -> beasts/<id>; only where the animal really is the same kind of creature, the rest keep the old art",
-    "rong": "tieu_long",
-    "ngua": "ky_lan_con",
-    "ga": "hoa_tuoc",
-    "cho": "linh_ho"
+    "_comment": "Linh Thú species (server/data/creatures/pets.json) -> beasts/pet_<id>, its own sheet (idle, walk, happy, sleep)",
+    "chuot": "pet_chuot", "trau": "pet_trau", "ho": "pet_ho", "meo": "pet_meo", "rong": "pet_rong", "ran": "pet_ran",
+    "ngua": "pet_ngua", "de": "pet_de", "khi": "pet_khi", "ga": "pet_ga", "cho": "pet_cho", "lon": "pet_lon"
   },
+  "bees": {
+    "_comment": "Linh Phong species (server/data/creatures/bees.json) -> beasts/bee_<id> (fly, sting; facings right/left)",
+    "muc": "bee_muc", "thao": "bee_thao", "hoa": "bee_hoa", "vu": "bee_vu", "tra": "bee_tra", "thuy_linh": "bee_thuy_linh",
+    "hoa_diem": "bee_hoa_diem", "phong_hanh": "bee_phong_hanh", "son_thach": "bee_son_thach", "hoang_kim": "bee_hoang_kim",
+    "bang_tam": "bee_bang_tam", "loi_van": "bee_loi_van", "duoc_su": "bee_duoc_su", "nguyet_quang": "bee_nguyet_quang",
+    "hai_trieu": "bee_hai_trieu", "ngoc_bich": "bee_ngoc_bich", "thu_phap": "bee_thu_phap", "kim_o": "bee_kim_o"
+  },
+  "garden": {
+    "_comment": "props/garden: plants <family>_<stage>[_<rarity>], family = families[crc32(plant key) % 6] (mirrored when bit 3 of the hash is set); egg sheet by the rarity colour of an egg; hive decorations",
+    "families": ["herb", "flower", "root", "vine", "shroom", "shrub"],
+    "rarities": ["common", "rare", "epic", "legendary"],
+    "egg_by_bee_rarity": {"pham": "common", "linh": "rare", "huyen": "rare", "dia": "epic", "thien": "legendary"},
+    "decorations": {"den_long": ["buildings", "lantern"], "hoa_sen": ["garden", "hoa_sen"],
+                    "chuong_gio": ["garden", "chuong_gio"], "co_phuong": ["garden", "co_phuong"]}
+  },
+  "realm_props": {
+    "_comment": "bí cảnh pieces (props/realm): old realm_art call -> v2 name pattern",
+    "rift": "rift", "pedestal": ["pedestal_off", "pedestal_on", "pedestal_lit"], "rune_tile": "rune_{state}",
+    "pillar": "pillar_{tone}_{lit}", "statue": "statue", "mirror": "mirror", "exit": ["exit_closed", "exit_open"],
+    "chest": ["chest_closed", "chest_open"]
+  },
+  "td": {
+    "_comment": "Ải Thủ Vườn board at its native 24 px cell: tiles/td24 and props/td. Every role has towers 1..3, projectiles shot_<role> (else the plain line), hits hit_<role> (else hit_puff)",
+    "roles": ["hoa", "thuy", "kim", "son", "quang", "ho_tro", "moc"],
+    "shots": ["hoa", "thuy", "kim", "son", "quang"]
+  },
+
 
   "skill_fx": {
     "_comment": "chiêu fx id -> v2 effect. kind: strike (at the target), bolt (flies caster -> target, then impact), circle (ground circle at the target, stretched to the radius), ward (ground circle + bubble on the caster)",

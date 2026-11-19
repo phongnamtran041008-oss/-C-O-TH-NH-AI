@@ -22,6 +22,41 @@ from .base import Scene
 ROOM_ORDER = ("compose", "sentence", "tone", "mirror", "maze")
 
 
+def no_cjk(text: str) -> str:
+    """The old game's Chinese (room and realm names, tone syllables): not shown with the v2 art,
+    where the screen is the math game's and its Vietnamese names say the same."""
+    from ..engine import art2
+    return "" if art2.on() else text
+
+
+def realm_v2_name(name: str, *args) -> tuple[str, int]:
+    """(v2 prop name in props/realm, frame) for an old realm_art call (see wiring.realm_props)."""
+    if name == "pedestal":
+        active, lit = args[0], args[1]
+        return ("pedestal_lit" if lit else "pedestal_on") if active else "pedestal_off", 0
+    if name == "rune_tile":
+        return f"rune_{args[0]}", 0
+    if name == "pillar":
+        return f"pillar_{max(1, min(4, int(args[0])))}_{'on' if len(args) > 1 and args[1] else 'off'}", 0
+    if name == "realm_exit":
+        return ("exit_open" if args[0] else "exit_closed"), int(args[1]) if len(args) > 1 else 0
+    if name == "chest":
+        return ("chest_open" if args[0] else "chest_closed"), 0
+    return name, int(args[0]) if args else 0          # statue, mirror, rift: (frame)
+
+
+def realm_img(v, name: str, *args) -> pygame.Surface:
+    """A bí cảnh piece through the View: the v2 piece (exactly 2x the old sprite, so it sits on the
+    same top-left) when the world is zoomed and the atlas has it, else the old sprite at the zoom."""
+    if v.zoom != 1:
+        from ..engine import art2
+        pname, frame = realm_v2_name(name, *args)
+        pr = art2.realm_prop(pname)
+        if pr is not None:
+            return pr.frames[frame % len(pr.frames)]
+    return v.img(sprites.realm(name, *args))
+
+
 def fmt_time(secs: float) -> str:
     secs = max(0, int(secs))
     return T.REALM_TIME.format(m=secs // 60, s=secs % 60)
@@ -182,7 +217,7 @@ class RealmGateScene(Scene):
             realms = [r for r in realms if r["id"] == self.rift["realm"]]
         for r in realms:
             ui.fill(x + 10, y, w - 20, 74, "#EFE6D2")
-            ui.text(r["hanzi"], x + 16, y + 4, 16, "#2B2B2B", kind="han")
+            ui.text(no_cjk(r["hanzi"]), x + 16, y + 4, 16, "#2B2B2B", kind="han")
             ui.text(r["name_vi"], x + 70, y + 4, 10, "#2B2B2B")
             ui.text(r["desc_vi"], x + 70, y + 17, 7, "#5A5A5A", max_w=w - 92)
             ui.text(T.REALM_INFO.format(realm=r["min_realm_vi"], p=r["puzzles"], m=r["time_limit_minutes"],
@@ -241,7 +276,7 @@ class RealmGateScene(Scene):
         me = g.state.me.get("id")
         for r in self.data.get("math_realms", []):
             ui.fill(x + 10, y, w - 20, 74, "#EFE6D2")
-            ui.text(r["hanzi"], x + 16, y + 4, 16, "#2B2B2B", kind="han")
+            ui.text(no_cjk(r["hanzi"]), x + 16, y + 4, 16, "#2B2B2B", kind="han")
             ui.text(r["name_vi"], x + 70, y + 4, 10, "#2B2B2B")
             ui.text(r["desc_vi"], x + 70, y + 17, 7, "#5A5A5A", max_w=w - 92)
             floor = r.get("floor") or 0
@@ -263,7 +298,7 @@ class RealmGateScene(Scene):
             p = puzzles.get(kind)
             if not p:
                 continue
-            ui.text(p.get("hanzi", ""), x + 14, y + 1, 10, "#BC4749", kind="han")
+            ui.text(no_cjk(p.get("hanzi", "")), x + 14, y + 1, 10, "#BC4749", kind="han")
             ui.text(p["name_vi"], x + 70, y, 8, "#2B2B2B")
             rr = ui.text(p["how_vi"], x + 70, y + 10, 6.5, "#5A5A5A", max_w=w - 84)
             y = max(y + 22, rr.bottom + 4)
@@ -274,7 +309,7 @@ class RealmGateScene(Scene):
             p = puzzles.get(kind)
             if not p:
                 continue
-            ui.text(p.get("hanzi", ""), x + 14, y + 1, 10, "#BC4749", kind="han")
+            ui.text(no_cjk(p.get("hanzi", "")), x + 14, y + 1, 10, "#BC4749", kind="han")
             ui.text(p["name_vi"], x + 70, y, 8, "#2B2B2B")
             r = ui.text(p["how_vi"], x + 70, y + 10, 6.5, "#5A5A5A", max_w=w - 84)
             y = max(y + 22, r.bottom + 4)
@@ -377,12 +412,12 @@ class RealmView:
             g.refresh_inv()
         elif ev == "tone":
             if m.get("ok"):
-                self.note(T.REALM_TONE_OK.format(hz=m["hanzi"], py=m["pinyin"], t=m["tone"]), "#B5D67A")
+                self.note(T.REALM_TONE_OK.format(hz=no_cjk(m["hanzi"]), py=m["pinyin"], t=m["tone"]), "#B5D67A")
             else:
-                self.note(T.REALM_TONE_BAD.format(hz=m["hanzi"], py=m["pinyin"], t=m["tone"]), "#F08A8C")
+                self.note(T.REALM_TONE_BAD.format(hz=no_cjk(m["hanzi"]), py=m["pinyin"], t=m["tone"]), "#F08A8C")
         elif ev == "mirror":
             text = (T.REALM_MIRROR_OK if m.get("ok") else T.REALM_MIRROR_BAD).format(
-                by=m.get("by", ""), hz=m["hanzi"], py=m.get("pinyin", ""), m=m.get("meaning", ""))
+                by=m.get("by", ""), hz=no_cjk(m["hanzi"]), py=m.get("pinyin", ""), m=m.get("meaning", ""))
             self.note(text, "#B5D67A" if m.get("ok") else "#F08A8C")
         elif ev == "seal":      # M10: someone answered a Trận Nhãn seal
             self.note((T.REALM_SEAL_OK if m.get("ok") else T.REALM_SEAL_BAD).format(by=m.get("by", "")),
@@ -519,25 +554,25 @@ class RealmView:
             st = self.seal(o)
             if st is not None:   # M10: a seal - glowing while unbroken, gold once broken
                 if k == "pedestal":
-                    surf.blit(v.img(sprites.realm("pedestal", not st["broken"], st["busy"] or st["broken"])), (x, y))
+                    surf.blit(realm_img(v, "pedestal", not st["broken"], st["busy"] or st["broken"]), (x, y))
                 else:
                     state = "done" if st["broken"] else ("next" if st["busy"] else "idle")
-                    surf.blit(v.img(sprites.realm("rune_tile", state)), (x, y))
+                    surf.blit(realm_img(v, "rune_tile", state), (x, y))
             elif k == "pedestal":
                 active = o.props.get("slot") in (pz.get("slots") or [])
-                surf.blit(v.img(sprites.realm("pedestal", active, active and self._someone_on(o))), (x, y))
+                surf.blit(realm_img(v, "pedestal", active, active and self._someone_on(o)), (x, y))
             elif k == "tile":
                 n = int(o.props.get("n", 0))
                 total, done = pz.get("n", 0), pz.get("k", 0)
                 state = "off" if n > total else ("done" if n <= done else ("next" if n == done + 1 else "idle"))
-                surf.blit(v.img(sprites.realm("rune_tile", state)), (x, y))
+                surf.blit(realm_img(v, "rune_tile", state), (x, y))
             elif k == "mirror":
-                surf.blit(v.img(sprites.realm("mirror", frame % 4)), (x, y - int(v.len(24))))
+                surf.blit(realm_img(v, "mirror", frame % 4), (x, y - int(v.len(24))))
             elif k == "chest" and kind == "boss" and self.ended and self.ended.get("result") == "won":
-                surf.blit(v.img(sprites.realm("chest", True)), (x, y))
+                surf.blit(realm_img(v, "chest", True), (x, y))
             elif k == "exit":
                 opened = self.cleared_at is not None or (kind == "maze" and pz.get("solved"))
-                surf.blit(v.img(sprites.realm("realm_exit", opened, frame % 2)), (x, y - int(v.len(8))))
+                surf.blit(realm_img(v, "realm_exit", opened, frame % 2), (x, y - int(v.len(8))))
             elif k == "maze_exit":
                 pygame.draw.rect(surf, (233, 196, 106), (x, y, int(v.len(o.w)), int(v.len(o.h))), 1)
 
@@ -555,9 +590,9 @@ class RealmView:
             k = o.props.get("kind")
             if k == "pillar":
                 tone = int(o.props.get("tone", 1))
-                out.append((o.y + o.h, v.img(sprites.realm("pillar", tone, False)), v.to_screen(o.x, o.y)))
+                out.append((o.y + o.h, realm_img(v, "pillar", tone, False), v.to_screen(o.x, o.y)))
             elif k == "statue":
-                out.append((o.y + o.h, v.img(sprites.realm("statue", frame % 2)), v.to_screen(o.x, o.y)))
+                out.append((o.y + o.h, realm_img(v, "statue", frame % 2), v.to_screen(o.x, o.y)))
         return out
 
     def dark(self, surf, cx: int, cy: int) -> None:
@@ -680,7 +715,7 @@ class RealmView:
             r = pz.get("round")
             if r:
                 lines.append((T.REALM_TONE_READ, 7, "#E3D5BA", "ui"))
-                lines.append((f"{r['hanzi']}  {r['syllable']}", 18, "#F4EBD9", "han"))
+                lines.append((f"{no_cjk(r['hanzi'])}  {r['syllable']}".strip(), 18, "#F4EBD9", "han"))
                 left = max(0.0, r.get("left", 0) - (self.game.now - self.puzzle_at))
                 lines.append((f"{left:.1f}s", 8, "#F08A8C" if left < 2 else "#F4EBD9", "ui"))
             elif not pz.get("solved"):
@@ -689,7 +724,7 @@ class RealmView:
             if pz.get("meaning"):
                 lines.append((T.REALM_MIRROR_SHOWS.format(m=pz["meaning"]), 7, "#F4EBD9", "ui"))
             lines.append((T.REALM_MIRROR_COUNT.format(c=pz.get("correct", 0), n=pz.get("need", 3)), 7, "#8CB8DA", "ui"))
-            if mine.get("hanzi"):
+            if no_cjk(mine.get("hanzi") or ""):
                 lines.append((T.REALM_MIRROR_MINE, 7, "#E3D5BA", "ui"))
                 lines.append((mine["hanzi"], 18, "#E9C46A", "han"))
                 lines.append((mine.get("pinyin", ""), 7, "#B5D67A", "ui"))
@@ -728,7 +763,7 @@ class RealmView:
         ui.fill(x, y, w, h, (20, 18, 15, 200))
         ui.border(x, y, w, h, "#8B5A2B")
         ui.text(self.room.get("name_vi", ""), x + 6, y + 4, 8, "#E9C46A")
-        ui.text(self.room.get("hanzi", ""), x + w - 6, y + 4, 8, "#BC4749", kind="han", anchor="topright")
+        ui.text(no_cjk(self.room.get("hanzi", "")), x + w - 6, y + 4, 8, "#BC4749", kind="han", anchor="topright")
         cy = y + 16
         for text, size, col, kind_ in lines:
             r = ui.text(text, x + 6, cy, size, col, kind=kind_, max_w=w - 12)

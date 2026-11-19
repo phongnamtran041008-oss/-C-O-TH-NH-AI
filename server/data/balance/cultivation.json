@@ -5,9 +5,15 @@
     "luyen_khi": [120, 150, 180, 220, 260, 300, 350, 400, 500],
     "truc_co": [900, 1200, 1600],
     "kim_dan": [2500, 3200, 4000],
-    "nguyen_anh": [6000, 7500, 9000]
+    "nguyen_anh": [6000, 7500, 9000],
+    "hoa_than": [14000, 17500, 21000],
+    "luyen_hu": [30000, 37500, 45000],
+    "hop_the": [60000, 75000, 90000],
+    "dai_thua": [120000, 150000, 180000]
   },
-  "tribulation_to": {"truc_co": "truc_co_dan", "kim_dan": "kim_dan_dan", "nguyen_anh": "nguyen_anh_dan"},
+  "tribulation_to": {"truc_co": "truc_co_dan", "kim_dan": "kim_dan_dan", "nguyen_anh": "nguyen_anh_dan",
+                     "hoa_than": "hoa_than_dan", "luyen_hu": "luyen_hu_dan", "hop_the": "hop_the_dan",
+                     "dai_thua": "dai_thua_dan"},
   "xp_per_correct": {"garden": 10, "combat": 6, "practice": 2, "help": 4, "meditate": 15, "tribulation": 0, "fishing": 6, "td": 4, "forge": 4},
   "xp_harvest": 15,
   "death_xp_loss_pct": 5,
@@ -22,7 +28,11 @@
       "luyen_khi": {"max_hp": 20, "max_qi": 10, "atk": 2, "def": 1},
       "truc_co": {"max_hp": 160, "max_qi": 50, "atk": 18, "def": 9, "crit": 3, "ink_res": 5},
       "kim_dan": {"max_hp": 420, "max_qi": 110, "atk": 40, "def": 20, "crit": 6, "ink_res": 10},
-      "nguyen_anh": {"max_hp": 800, "max_qi": 200, "atk": 80, "def": 40, "crit": 9, "ink_res": 15}
+      "nguyen_anh": {"max_hp": 800, "max_qi": 200, "atk": 80, "def": 40, "crit": 9, "ink_res": 15},
+      "hoa_than": {"max_hp": 1450, "max_qi": 340, "atk": 145, "def": 72, "crit": 12, "ink_res": 20},
+      "luyen_hu": {"max_hp": 2500, "max_qi": 550, "atk": 250, "def": 125, "crit": 15, "ink_res": 25},
+      "hop_the": {"max_hp": 4000, "max_qi": 850, "atk": 400, "def": 200, "crit": 18, "ink_res": 30},
+      "dai_thua": {"max_hp": 6000, "max_qi": 1250, "atk": 600, "def": 300, "crit": 21, "ink_res": 35}
     }
   }
 }

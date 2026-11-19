@@ -84,7 +84,7 @@ PAIRS = {
     "stone": dict(inner=("stone", 1), bank=("grass", 1), edge_in=("stone", 0), zb=1.0, zi=0.0, kind="stone"),
     "plaza": dict(inner=("stone", 1), bank=("grass", 1), edge_in=("stone", 0), zb=0.6, zi=0.0, kind="plaza"),
     "dark":  dict(inner=("grass_d", 1), bank=("grass", 1), edge_in=("grass_d", 1), zb=0.5, zi=0.0, kind="tuft", in_tuft="grass_d"),
-    "ink":   dict(outer=("grass_d", 1), inner=("ink", 1), bank=("grass_d", 1), edge_in=("ink", 1), zb=0.5, zi=0.0, kind="ink",
+    "ink":   dict(outer=("grass_d", 1), inner=("ink", C.kit_or(0, 1)), bank=("grass_d", 1), edge_in=("ink", C.kit_or(0, 1)), zb=0.5, zi=0.0, kind="ink",
                   out_tuft="grass_d"),
 }
 

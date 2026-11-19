@@ -13,7 +13,10 @@ from ..models import Character, Collection, Seed, User
 from . import inventory
 from .gacha import Banner, GachaError, expected_rate_with_pity
 
-REALM_TIER = {"pham_nhan": 1, "luyen_khi": 1, "truc_co": 2, "kim_dan": 3, "nguyen_anh": 4}
+# The old word game's vocabulary tier for each realm. The realms after Nguyen Anh reuse the
+# highest tier (4): no word content is planned for them.
+REALM_TIER = {"pham_nhan": 1, "luyen_khi": 1, "truc_co": 2, "kim_dan": 3, "nguyen_anh": 4,
+              "hoa_than": 4, "luyen_hu": 4, "hop_the": 4, "dai_thua": 4}
 
 
 def reset_daily(user: User, today: str) -> None:

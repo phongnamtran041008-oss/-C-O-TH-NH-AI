@@ -26,3 +26,6 @@ client/worlds/
 art/render/
 art/render_items/
 *.blend1
+# art v2: the .blend scenes are rebuilt by art/src/<batch>/build.py (docs/ART_PIPELINE.md);
+# the packed sprites in client/assets/v2/ are what the game needs
+art/blender/*/

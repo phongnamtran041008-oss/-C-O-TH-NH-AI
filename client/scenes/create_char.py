@@ -14,18 +14,15 @@ class CreateCharScene(Scene):
     def __init__(self, game):
         super().__init__(game)
         self.bg = TitleBackground()
-        self.opts = {"hair_colors": ["#2B2B2B", "#5C3A21", "#A0522D", "#D9C27A", "#8E8E8E", "#6B3FA0"],
-                     "hair_styles": ["ngan", "buoi", "dai"], "bodies": ["nam", "nu"]}
+        # One model for everybody: the Blender-built Đạo Sĩ. The old hair colour / hair style /
+        # body pickers are gone because they no longer change what is drawn; the server still
+        # stores an `appearance`, so the one fixed look is sent.
         self.app = {"hair_color": "#2B2B2B", "hair_style": "ngan", "body": "nam"}
         self.t = 0.0
         self.dt = 0.0
         self.busy = False
         self.error = ""
         game.ui.set_focus("cc_name")
-        self.api.get("/character/options", self._got_opts, lambda e: None)
-
-    def _got_opts(self, o):
-        self.opts.update({k: o[k] for k in ("hair_colors", "hair_styles", "bodies") if k in o})
 
     def update(self, dt, top):
         self.t += dt
@@ -54,25 +51,7 @@ class CreateCharScene(Scene):
         rx = x + 125
         ui.text(T.CHAR_NAME, rx, y + 20, 8)
         ui.input_box("cc_name", rx, y + 31, 210, 16, max_len=16)
-        ui.text(T.HAIR_COLOR, rx, y + 54, 8)
-        for i, c in enumerate(self.opts["hair_colors"]):
-            bx = rx + i * 22
-            ui.fill(bx, y + 65, 18, 14, c)
-            ui.border(bx, y + 65, 18, 14, "#BC4749" if self.app["hair_color"] == c else "#2B2B2B",
-                      2 if self.app["hair_color"] == c else 1)
-            ui.widgets[f"hc_{i}"] = ui.rect(bx, y + 65, 18, 14)
-            if ui.click_in(bx, y + 65, 18, 14):
-                self.app["hair_color"] = c
-        ui.text(T.HAIR_STYLE, rx, y + 86, 8)
-        for i, st in enumerate(self.opts["hair_styles"]):
-            if ui.button(f"hs_{st}", rx + i * 70, y + 97, 66, 14, T.HAIR_STYLES.get(st, st),
-                         selected=self.app["hair_style"] == st):
-                self.app["hair_style"] = st
-        ui.text(T.BODY, rx, y + 118, 8)
-        for i, b in enumerate(self.opts["bodies"]):
-            if ui.button(f"bd_{b}", rx + i * 70, y + 129, 66, 14, T.BODIES.get(b, b), selected=self.app["body"] == b):
-                self.app["body"] = b
-        ui.text(T.CREATE_NOTE, x + 20, y + 158, 8, "#5A5A5A", max_w=w - 40)
+        ui.text(T.CREATE_NOTE, rx, y + 58, 8, "#5A5A5A", max_w=w - 145)
         if self.error:
             ui.text(self.error, 240, y + 184, 8, "#BC4749", anchor="center")
         name = ui.value("cc_name").strip()

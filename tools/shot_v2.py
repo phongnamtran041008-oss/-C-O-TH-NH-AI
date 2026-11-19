@@ -16,13 +16,16 @@ saves 3x screenshots (the 1440x810 window) to art/preview/game_*.png:
     game_cast.png             a chiêu (Hỏa Cầu Thuật) being cast
     game_monster_die.png      a monster playing its die clip
     game_player_die.png       the player fallen (die clip held) after a Mặc Kích
+    game_realm_<id>.png       a player of each high realm standing in the village (kim_dan = Kết Đan,
+                              hoa_than, luyen_hu, hop_the, dai_thua): look, wings, glow, aura and the
+                              HUD's realm name
 
 The fleeting frames (wind-up, slash, deaths) are caught by a per-frame watch on the game loop.
 To keep a wind-up in view, an answered combat card is closed at once instead of after its
 2-second display; nothing else is staged.
 
     "/e/TU TIÊN AI/.venv/Scripts/python.exe" tools/shot_v2.py [out_dir]
-    SHOT_ONLY=hub|abode|wild|die  ... one scenario
+    SHOT_ONLY=hub|abode|dark|wild|die|realms  ... one scenario
 """
 from __future__ import annotations
 
@@ -99,9 +102,12 @@ class Watch:
 
 
 def player(server: ServerProcess, url: str, workdir: Path, name: str, realm: str, zone: str, x: float, y: float,
-           weapon: str | None, pet: str | None = None, hp: int | None = None, facing: str = "down") -> Driver:
+           weapon: str | None, pet: str | None = None, hp: int | None = None, facing: str = "down",
+           pre=None) -> Driver:
     workdir.mkdir(parents=True, exist_ok=True)
     token, uid = make_account(url, name, name.replace("_", " ").title())
+    if pre is not None:
+        pre(token, uid)
     server.sql("update characters set zone_id=?, x=?, y=?, realm=?, realm_stage=1, qi=120, facing=? where user_id=?",
                (zone, x, y, realm, facing, uid))
     if hp is not None:
@@ -176,13 +182,103 @@ def hub(server, url, workdir, out) -> None:
     drv.close()
 
 
+REALM_SHOTS = {"kim_dan": "Kết Đan", "hoa_than": "Hóa Thần", "luyen_hu": "Luyện Hư", "hop_the": "Hợp Thể",
+               "dai_thua": "Đại Thừa"}
+
+
+def realms(server, url, workdir, out) -> None:
+    """One player per high realm, put at that realm through the database like every other
+    scenario, standing in the village; the HUD must name the realm in Vietnamese."""
+    m = hub_objects()
+    stall = next(o for o in m.objects if o.props.get("sprite") == "stall")
+    from app.systems import cultivation
+    for realm, name_vi in REALM_SHOTS.items():
+        user = "v2_ket_dan" if realm == "kim_dan" else f"v2_{realm}"      # named after the realm, not the id
+        drv = player(server, url, workdir / f"realm_{realm}", user, realm, HUB, stall.x + stall.w / 2 + 40,
+                     stall.y + stall.h + 34, None, hp=cultivation.stats_for(realm, 1, [])["max_hp"])
+        me = user.replace("_", " ").title()
+        ws = world(drv)
+        # the player of the realm before lingers 30 s after leaving (world.json): wait it out
+        drv.wait(lambda: not any(e.kind == "p" and e.name != me for e in ws.entities.values()), 45,
+                 "the last realm's player gone")
+        label = (drv.game.state.cult or {}).get("label", "")
+        save(drv, out, f"realm_{realm}", 40)
+        print(f"{realm}: HUD reads {label!a}")
+        if not label.startswith(name_vi):
+            print(f"{realm}: the HUD should read {name_vi!a}")
+        drv.close()
+
+
 def abode(server, url, workdir, out) -> None:
+    """The abode garden with crops at every stage, a pollinating bee, the pet; the hive and the
+    pets screens."""
+    import httpx
     from client.engine.tilemap import load_map
     am = load_map("abode")
     g = am.find("area", "garden")[0]
-    drv = player(server, url, workdir / "abode", "v2_dong_phu", "truc_co", "abode", g.x + g.w / 2,
-                 g.y + g.h + 10, None, pet="ngua", facing="up")
-    save(drv, out, "abode", 40)
+
+    def garden(token, uid):
+        httpx.get(url + "/garden", headers={"Authorization": f"Bearer {token}"}).raise_for_status()
+        words = [r[0] for r in server.sql("select id from words order by id limit 12")]
+        server.sql("update plots set unlocked=1 where user_id=?", (uid,))
+        plots = server.sql("select id, x, y from plots where user_id=? order by y, x", (uid,))
+        for i, (pid, _x, _y) in enumerate(plots[:len(words)]):
+            server.sql("update plots set word_id=?, stage=?, planted_at=datetime('now'), "
+                       "next_review_at=datetime('now','+3 days'), wither=?, wither_checked_at=datetime('now'), "
+                       "pollen=? where id=?", (words[i], i % 6, 45.0 if i == 7 else 0.0, 40.0 if i % 6 >= 3 else 0, pid))
+            server.sql("insert or ignore into collection(user_id, word_id, introduced) values (?, ?, 1)", (uid, words[i]))
+        for sp, role in (("thao", "pollinate"), ("hoa", "pollinate"), ("muc", "hive")):
+            server.sql("insert into bees(user_id, bee_type, level, xp, role, bond) values (?, ?, 1, 0, ?, 0)",
+                       (uid, sp, role))
+    drv = player(server, url, workdir / "abode", "v2_dong_phu", "truc_co", "abode", g.x - 10,
+                 g.y + 40, None, pet="meo", facing="right", pre=garden)
+    drv.wait(lambda: drv.game.scenes[0].flock.bees, 10, "bees in the garden")
+    save(drv, out, "abode_garden", 60)
+    drv.keys.held = {pygame.K_w}
+    end = time.perf_counter() + 0.5
+    while time.perf_counter() < end:
+        drv.step(1)
+    drv.keys.held = set()
+    save(drv, out, "abode_pet", 30)
+    drv.press(pygame.K_h)
+    drv.wait(lambda: "HiveScene" in drv.scene_names(), 8, "the hive screen")
+    while drv.top_is("DialogScene"):                     # the first visit has a few words of Trúc Lão
+        drv.press(pygame.K_RETURN)
+        drv.step(3)
+    drv.wait_api()
+    save(drv, out, "hive", 30)
+    drv.press(pygame.K_ESCAPE)
+    drv.step(10)
+    while not drv.top_is("AbodeScene") and drv.game.top is not None and len(drv.game.scenes) > 1:
+        drv.game.pop()
+    drv.game.open_pets()
+    drv.wait(lambda: drv.top_is("PetScene"), 5, "the pets screen")
+    drv.wait_api()
+    save(drv, out, "pets", 30)
+    drv.close()
+
+
+def dark_edge(server, url, workdir, out) -> None:
+    """Rừng Mực Loang where grass meets dark grass and ink ground (the new transitions)."""
+    from client.art import build as B
+    from client.engine.tilemap import load_map
+    m = load_map("rung_muc_loang")
+    names = [n for n, _ in B.TILESET]
+    col = maps.load("rung_muc_loang").collider
+    best = None
+    for i, gid in enumerate(m.ground):
+        x, y = i % m.w, i // m.w
+        if not (3 < x < m.w - 4 and 3 < y < m.h - 4) or names[gid - 1] != "dark_grass":
+            continue
+        around = {names[m.ground[(y + dy) * m.w + x + dx] - 1] for dx in range(-3, 4) for dy in range(-3, 4)}
+        score = 2 * ("grass" in around) + ("ink" in around)
+        if score >= 3 and not col.blocked_box(x * 16 + 2, y * 16 + 6, 12, 8):
+            best = (x * 16 + 8, y * 16 + 12)
+            break
+    if best is None:
+        best = (m.px_w / 2, m.px_h / 2)
+    drv = player(server, url, workdir / "dark", "v2_rung_muc", "truc_co", "rung_muc_loang", best[0], best[1], "kiem_go_dao")
+    save(drv, out, "dark_edge", 30)
     drv.close()
 
 
@@ -342,7 +438,8 @@ def main() -> int:
         tmp = Path(tmp)
         server = ServerProcess(tmp, env={"ACCOUNTS_PER_IP": "50"})     # one account per scenario
         try:
-            for name, fn in (("hub", hub), ("abode", abode), ("wild", wild), ("die", die)):
+            for name, fn in (("hub", hub), ("abode", abode), ("dark", dark_edge), ("wild", wild), ("die", die),
+                             ("realms", realms)):
                 if only in (None, name):
                     try:
                         fn(server, server.url, tmp, out)

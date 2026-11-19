@@ -61,7 +61,8 @@ CREATE_NOTE = "Mọi người đều bắt đầu với bộ Áo Vải Phàm Nh�
 CREATE_GO = "Nhập môn"
 
 REALMS = {"pham_nhan": "Phàm Nhân", "luyen_khi": "Luyện Khí", "truc_co": "Trúc Cơ",
-          "kim_dan": "Kim Đan", "nguyen_anh": "Nguyên Anh"}
+          "kim_dan": "Kết Đan", "nguyen_anh": "Nguyên Anh", "hoa_than": "Hóa Thần", "luyen_hu": "Luyện Hư",
+          "hop_the": "Hợp Thể", "dai_thua": "Đại Thừa"}
 STONES = "Linh Thạch"
 ABODE = "Động Phủ"
 

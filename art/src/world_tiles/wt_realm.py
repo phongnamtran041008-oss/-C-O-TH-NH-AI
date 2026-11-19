@@ -72,7 +72,7 @@ def rune_tile(state):
 
 
 # --------------------------------------------------------------------------- pillar: four tone contours, glow off / on
-TONES = {1: [(-5, 0), (5, 0)], 2: [(-5, -3), (5, 3)], 3: [(-5, 1), (-1, -3.5), (5, 3.5)], 4: [(-5, 3.5), (5, -3.5)]}
+TONES = {1: [(-6, 0), (6, 0)], 2: [(-6, -4), (6, 4)], 3: [(-6, 2), (-1, -4.5), (6, 4.5)], 4: [(-6, 4.5), (6, -4.5)]}
 
 
 def pillar(tone, on):
@@ -172,7 +172,7 @@ def chest(opened):
             lid = bx(col, 0, 12.5, 15, 38, 3, 14, mat("wood", 2), bevel=1.0)
             bx(col, 0, 13.6, 24, 38, 3, 2.5, mat("steel", 1), bevel=0.6)
             for k in range(3):
-                bl(col, -8 + k * 8, 3, 20 + k * 3 + (k % 2) * 2, 0.9, 0.9, mat("glow_y", 3, emit=2.6, prio=4.0), sub=1)
+                bl(col, -8 + k * 8, 3, 17 + k * 2, 0.9, 0.9, mat("glow_y", 3, emit=2.6, prio=4.0), sub=1)
         else:
             bx(col, 0, 1, 14, 38, 14, 9, mat("wood", 2), bevel=1.2)
             for sx in (-1, 1):
@@ -191,12 +191,12 @@ def specs():
         mk(name=f"rune_{st}", W=40, H=40, mode="top", build=rune_tile(st), vi="Phiến đá chữ", pivot=(20, 40), extra={"old": f"rune_tile('{st}')"})
     for tone in (1, 2, 3, 4):
         for on in (False, True):
-            mk(name=f"pillar_{tone}_{'on' if on else 'off'}", W=32, H=64, base=4, build=pillar(tone, on), vi="Trụ Thanh Điệu",
+            mk(name=f"pillar_{tone}_{'on' if on else 'off'}", W=32, H=64, base=4, ppm=38, build=pillar(tone, on), vi="Trụ Thanh Điệu",
                extra={"old": f"pillar({tone}, {on})"})
-    mk(name="statue", W=48, H=64, frames=2, base=4, build=statue, vi="Tượng đọc sách", extra={"old": "statue(frame) (frame % 2)"})
+    mk(name="statue", W=48, H=64, frames=2, base=4, ppm=42, build=statue, vi="Tượng đọc sách", extra={"old": "statue(frame) (frame % 2)"})
     mk(name="mirror", W=96, H=80, frames=4, base=4, build=mirror, vi="Gương Ý Nghĩa", extra={"old": "mirror(frame)"})
-    mk(name="exit_closed", W=64, H=48, frames=2, base=4, build=realm_exit(False), vi="Cửa phong mực", extra={"old": "realm_exit(False, frame) (frame % 2)"})
-    mk(name="exit_open", W=64, H=48, frames=2, base=4, build=realm_exit(True), vi="Cửa mở", extra={"old": "realm_exit(True, frame)"})
-    mk(name="chest_closed", W=48, H=36, base=4, build=chest(False), vi="Rương báu", extra={"old": "chest(False)"})
-    mk(name="chest_open", W=48, H=36, base=4, build=chest(True), vi="Rương báu mở", extra={"old": "chest(True)"})
+    mk(name="exit_closed", W=64, H=48, frames=2, base=4, ppm=33, build=realm_exit(False), vi="Cửa phong mực", extra={"old": "realm_exit(False, frame) (frame % 2)"})
+    mk(name="exit_open", W=64, H=48, frames=2, base=4, ppm=33, build=realm_exit(True), vi="Cửa mở", extra={"old": "realm_exit(True, frame)"})
+    mk(name="chest_closed", W=48, H=36, base=4, ppm=33, build=chest(False), vi="Rương báu", extra={"old": "chest(False)"})
+    mk(name="chest_open", W=48, H=36, base=4, ppm=29, build=chest(True), vi="Rương báu mở", extra={"old": "chest(True)"})
     return out

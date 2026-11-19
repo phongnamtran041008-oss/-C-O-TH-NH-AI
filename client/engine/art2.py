@@ -128,8 +128,12 @@ class Sheet(charsheet.CharSheet):
         return name in self.clips
 
     def seconds(self, name: str) -> float:
+        """A clip's length (any facing: bees have only left and right)."""
         c = self.clips.get(name)
-        return c.seconds if c else 0.0
+        if not c or c.fps <= 0:
+            return 0.0
+        n = max((len(f) for f in c.frames.values()), default=0)
+        return n / c.fps
 
     def index(self, clip: str, t: float, facing: str = "down") -> int:
         c = self.clips.get(clip) or self.clips.get("idle") or next(iter(self.clips.values()), None)
@@ -776,3 +780,132 @@ def beast_picture(kind: str | None, t: float = 0.0, clip: str = "idle", facing: 
 def monster_picture(sheet: Sheet | None, t: float = 0.0, clip: str = "idle", facing: str = "down"):
     """A monster for a menu (bestiary, level cards): the frame cut to its pixels, or None."""
     return trim(sheet.frame(sheet.index(clip, t, facing))) if sheet is not None else None
+
+
+# ------------------------------------------------------------------ round 3: bees, garden, bí cảnh, tower defence
+def bee(species: str | None) -> Sheet | None:
+    """A Linh Phong species' sheet (beasts/bee_<id>: fly, sting; right/left), or None."""
+    sid = _w("bees").get(species or "") if (species and on()) else None
+    return _load_sheet("beasts", sid) if sid else None
+
+
+def bee_frame(species: str | None, t: float, left: bool, sting_t: float | None = None) -> pygame.Surface | None:
+    """The bee at `t` seconds: `fly`, or `sting` for `sting_t` seconds after it struck."""
+    s = bee(species)
+    if s is None:
+        return None
+    facing = "left" if left else "right"
+    if sting_t is not None and 0 <= sting_t < s.seconds("sting"):
+        return s.frame(s.index("sting", sting_t, facing))
+    return s.frame(s.index("fly", t, facing))
+
+
+def garden_prop(name: str | None) -> Prop | None:
+    return prop(name, "garden") if on() else None
+
+
+def plant_family(key: str) -> tuple[str, bool]:
+    """The plant family of a garden key and whether it is mirrored: a STABLE hash (crc32), so a
+    word keeps its plant across runs and machines (Python's hash() of a str is randomised)."""
+    import zlib
+    fams = (_w("garden").get("families") or ["herb", "flower", "root", "vine", "shroom", "shrub"])
+    h = zlib.crc32(str(key).encode("utf-8"))
+    return fams[h % len(fams)], bool((h >> 3) & 1)
+
+
+def plant_name(stage: int, rarity: str, key: str) -> str:
+    fam, _ = plant_family(key)
+    stage = max(0, min(5, int(stage)))
+    if stage <= 2:
+        return f"{fam}_{stage}"
+    rars = _w("garden").get("rarities") or ["common", "rare", "epic", "legendary"]
+    return f"{fam}_{stage}_{rarity if rarity in rars else rars[0]}"
+
+
+def plant(stage: int, rarity: str, key: str, t: float = 0.0) -> tuple[pygame.Surface, tuple[int, int]] | None:
+    """(frame, pivot) of a garden plant: the family's sprite at that stage (and rarity), its
+    2-frame sway, mirrored for half the keys. None without the garden atlas."""
+    pr = garden_prop(plant_name(stage, rarity, key))
+    if pr is None:
+        return None
+    _, mirror = plant_family(key)
+    n = int(t * 2.5) % len(pr.frames)
+    img = pr.frames[n]
+    if mirror:
+        k = ("mirror", img)
+        if k not in _misc:
+            _misc[k] = pygame.transform.flip(img, True, False)
+        img = _misc[k]
+        return img, (img.get_width() - pr.pivot[0], pr.pivot[1])
+    return img, pr.pivot
+
+
+def bed(locked: bool, dry: bool = False) -> pygame.Surface | None:
+    pr = garden_prop("plot_locked" if locked else ("plot_dry" if dry else "plot_open"))
+    return pr.img if pr is not None else None
+
+
+def seed_frames(rarity: str) -> list | None:
+    pr = garden_prop(f"seed_{rarity}")
+    return pr.frames if pr is not None else None
+
+
+def egg_frames(rarity: str) -> list | None:
+    """The egg sheet of a rarity: garden rarities, or a bee rarity (pham, linh, ...) mapped by wiring."""
+    r = (_w("garden").get("egg_by_bee_rarity") or {}).get(rarity, rarity)
+    pr = garden_prop(f"egg_{r}")
+    return pr.frames if pr is not None else None
+
+
+def decoration(name: str) -> Prop | None:
+    ref = (_w("garden").get("decorations") or {}).get(name) if on() else None
+    return prop(ref[1], ref[0]) if isinstance(ref, list) and len(ref) == 2 else None
+
+
+def realm_prop(name: str) -> Prop | None:
+    return prop(name, "realm") if on() else None
+
+
+def td_prop(name: str) -> Prop | None:
+    return prop(name, "td") if on() else None
+
+
+def td_tiles() -> dict | None:
+    """The tower-defence board's native 24 px tiles by name ({name: [surfaces]}), or None."""
+    if "td24" not in _misc:
+        out = None
+        t = _tile_doc("td24") if on() else None
+        if t is not None:
+            doc, img, size, cut = t
+            out = {}
+            for name, idx in (doc.get("tiles") or {}).items():
+                surfs = [cut(i) for i in (idx if isinstance(idx, list) else [idx])]
+                surfs = [s_ for s_ in surfs if s_ is not None]
+                if surfs:
+                    out[name] = surfs
+        _misc["td24"] = out
+    return _misc["td24"]
+
+
+def td_path_name(n: bool, e: bool, s: bool, w: bool) -> str:
+    """`td_path_<sides>`: the sides (in the order n e s w) where grass lies; none = interior."""
+    sides = "".join(c for c, g in zip("nesw", (n, e, s, w)) if g)
+    return f"td_path_{sides or 'none'}"
+
+
+def withered(img: pygame.Surface, wither: float) -> pygame.Surface:
+    """The game's own wither greying (build.withered) on a v2 sprite, cached per 10 points."""
+    bucket = int(wither // 10)
+    key = ("wither", img, bucket)
+    if key not in _misc:
+        from ..art import build as B
+        _misc[key] = B.withered(img, bucket * 10)
+    return _misc[key]
+
+
+def stone_small() -> pygame.Surface | None:
+    """The HUD's spirit stone: the v2 linh thạch icon at a clean 2:1 (16 px), cut to its pixels."""
+    if "stone_small" not in _misc:
+        ic = stone_icon() if on() else None
+        _misc["stone_small"] = trim(pygame.transform.scale(ic, (16, 16))) if ic is not None else None
+    return _misc["stone_small"]

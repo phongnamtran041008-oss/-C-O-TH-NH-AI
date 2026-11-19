@@ -89,7 +89,6 @@ class MenuScene(Scene):
     def draw_ui(self, ui):
         ui.fill(0, 0, 480, 270, (20, 18, 15, 120))
         ui.panel(130, 30, 220, 205)
-        ui.text(T.SUBTITLE, 240, 52, 16, "#BC4749", kind="han", anchor="center")
         ui.text(T.TITLE, 240, 80, 18, "#2B2B2B", anchor="center")
         ui.text(T.TAGLINE, 240, 98, 8, "#5A5A5A", anchor="center")
         y = 114

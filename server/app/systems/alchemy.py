@@ -172,8 +172,8 @@ async def overview(db: AsyncSession, user: User) -> dict:
     for rid, r in recipes().items():
         pill = catalog.pills()[rid]
         known = st.get(r["item"], 0) > 0
-        e = {"id": rid, "name_vi": pill["name_vi"], "hanzi": pill["hanzi"], "desc_vi": pill["desc_vi"],
-             "chars": [{"c": c["c"], "hv": c["hv"]} for c in r["chars"]], "known": known,
+        e = {"id": rid, "name_vi": pill["name_vi"], "hanzi": pill.get("hanzi", ""), "desc_vi": pill["desc_vi"],
+             "chars": [{"c": c["c"], "hv": c["hv"]} for c in r.get("chars", [])], "known": known,
              "difficulty": r["difficulty"], "fee": r["fee"], "yield": r["yield"], "have_pills": st.get(rid, 0),
              "min_realm": r["min_realm"], "min_realm_vi": realm_name(r["min_realm"]),
              "realm_ok": _realm_ok(realm, r["min_realm"])}
@@ -260,8 +260,12 @@ async def start(db: AsyncSession, user: User, recipe_id: str, rng: random.Random
               "perfect": c["perfect_width"] + bonus // 2} for _ in range(c["presses"])]
     known = await learned_chars(db, user.id)
     chars = []
+    names = r.get("chars") or []
     for i in range(c["presses"]):
-        ch_ = r["chars"][i % len(r["chars"])]
+        if not names:      # a pill without name characters: nothing to read or type, only the fire
+            chars.append({"c": "", "hv": "", "ask": False, "pinyin": ""})
+            continue
+        ch_ = names[i % len(names)]
         ask = ch_["c"] in known
         e = {"c": ch_["c"], "hv": ch_["hv"], "ask": ask}
         if ask:
@@ -270,7 +274,7 @@ async def start(db: AsyncSession, user: User, recipe_id: str, rng: random.Random
             e["pinyin"] = ch_["pinyin"]
         chars.append(e)
     pill = catalog.pills()[recipe_id]
-    params = {"name_vi": pill["name_vi"], "hanzi": pill["hanzi"], "bar": c["bar"],
+    params = {"name_vi": pill["name_vi"], "hanzi": pill.get("hanzi", ""), "bar": c["bar"],
               "periods": list(c["period_ms"][d]), "zones": zones, "chars": chars, "furnace_level": level,
               "where": where, "used": used}
     s = AlchemySession(id=sid, user_id=user.id, recipe_id=recipe_id, params=params, created_at=now,
@@ -323,7 +327,8 @@ async def finish(db: AsyncSession, user: User, session_id: str, timings: list, a
                            "right": pinyin_ok[-1]})
         else:
             pinyin_ok.append(None)
-            reveal.append({"c": ch["c"], "pinyin": ch["pinyin"], "hv": ch["hv"], "right": None})
+            if ch["c"]:
+                reveal.append({"c": ch["c"], "pinyin": ch["pinyin"], "hv": ch["hv"], "right": None})
     got, best = alchemy_fire.total(hits, pinyin_ok, c["points"])
     q = alchemy_fire.quality(got, best, c["quality"])
     r = recipes()[s.recipe_id]

@@ -150,8 +150,14 @@ class Effects:
                 img = sprites.horse()[int(r.age * 8) % 2]
                 surf.blit(view.img(img), view.to_screen(r.x, r.y - 16))
             else:
-                img = sprites.villager()[("right", 1 + int(r.age * 8) % 2)]
-                surf.blit(view.img(img), view.to_screen(r.x, r.y - 24))
+                from . import art2
+                vs = art2.npc("villager")
+                if vs is not None:      # the v2 villager walking (the horse has no v2 art: old, at the zoom)
+                    fx_, fy_ = view.to_screen(r.x + 8, r.y)
+                    surf.blit(vs.frame(vs.index("walk", r.age, "right")), (fx_ - int(vs.pivot[0]), fy_ - int(vs.pivot[1])))
+                else:
+                    img = sprites.villager()[("right", 1 + int(r.age * 8) % 2)]
+                    surf.blit(view.img(img), view.to_screen(r.x, r.y - 24))
             if r.bubble:
                 bx, by = view.to_screen(r.x + 8, r.y - 30)
                 self._bubble(surf, r.bubble, bx, by, text_render)

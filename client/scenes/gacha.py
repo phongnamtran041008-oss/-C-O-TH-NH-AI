@@ -103,8 +103,9 @@ class GachaScene(Scene):
             return
         me = self.game.state.me
         # altar art
-        img = sprites.prop("shrine", 0, int(ui.time * 3) % 4)
-        ui.image(img, x + 60, y + 100, zoom=2.5, anchor="center")
+        sv2 = art2.prop("shrine", "buildings") if art2.on() else None     # v2: twice the old size
+        img = sv2.at(ui.time) if sv2 else sprites.prop("shrine", 0, int(ui.time * 3) % 4)
+        ui.image(img, x + 60, y + 100, zoom=1.25 if sv2 else 2.5, anchor="center")
         rx, rw = x + 120, w - 132
         yy = ui.text(T.GACHA_RATES, rx, y + 16, 8, max_w=rw).bottom + 3
         yy = ui.text(T.GACHA_PITY, rx, yy, 7, "#5A5A5A", max_w=rw).bottom + 3
@@ -119,8 +120,8 @@ class GachaScene(Scene):
         left = me.get("daily_rolls_left", 15)
         ui.text(T.GACHA_LEFT.format(n=left), rx, y + 118, 9, "#BC4749" if left <= 0 else "#2B2B2B")
         stones = me.get("spirit_stones", 0)
-        ui.image(sprites.icon("stone"), rx, y + 131, zoom=1)
-        ui.text(f"{stones:,}".replace(",", "."), rx + 11, y + 135, 9, anchor="midleft")
+        ui.image((art2.stone_small() or sprites.icon("stone")), rx, y + 131, zoom=1)
+        ui.text(f"{stones:,}".replace(",", "."), rx + (15 if art2.stone_small() else 11), y + 135, 9, anchor="midleft")
         by = y + 146
         free = me.get("free_rolls_left", 0) > 0
         if ui.button("g_free", rx, by, 200, 16, T.GACHA_FREE, style="gold", enabled=free and left > 0 and not self.busy):
@@ -141,8 +142,14 @@ class GachaScene(Scene):
         t = ui.time
         for i, r in enumerate(BEE_ORDER):     # five eggs on the altar, gently bobbing
             ex = x + 20 + i * 20
-            ui.image(sprites.egg(BEE_COLORS[r])[0], ex, y + 60 + math.sin(t * 2 + i) * 2, zoom=1.5, anchor="center")
-        ui.image(sprites.prop("hive", 0, int(t * 3) % 4), x + 60, y + 140, zoom=2, anchor="center")
+            ev2 = art2.egg_frames(r)
+            if ev2:      # the v2 egg of that rarity (twice the old size)
+                ui.image(ev2[0], ex, y + 60 + math.sin(t * 2 + i) * 2, zoom=0.75, anchor="center")
+            else:
+                ui.image(sprites.egg(BEE_COLORS[r])[0], ex, y + 60 + math.sin(t * 2 + i) * 2, zoom=1.5, anchor="center")
+        hv = art2.prop("hive", "buildings") if art2.on() else None
+        ui.image(hv.at(t) if hv else sprites.prop("hive", 0, int(t * 3) % 4), x + 60, y + 140, zoom=1 if hv else 2,
+                 anchor="center")
         rx, rw = x + 120, w - 132
         yy = ui.text(T.GACHA_BEE_RATES, rx, y + 16, 8, max_w=rw).bottom + 3
         yy = ui.text(T.GACHA_BEE_PITY, rx, yy, 7, "#5A5A5A", max_w=rw).bottom + 3
@@ -155,8 +162,8 @@ class GachaScene(Scene):
                                                  h=round(eff.get("huyen", 0) * 100, 1)), rx, yy, 7, "#8E877A",
                     max_w=rw)
         stones, jade = me.get("spirit_stones", 0), me.get("immortal_jade", 0)
-        ui.image(sprites.icon("stone"), rx, y + 128, zoom=1)
-        ui.text(f"{stones:,}".replace(",", ".") + f"  ·  {jade} {T.JADE}", rx + 11, y + 132, 8, anchor="midleft")
+        ui.image((art2.stone_small() or sprites.icon("stone")), rx, y + 128, zoom=1)
+        ui.text(f"{stones:,}".replace(",", ".") + f"  ·  {jade} {T.JADE}", rx + (15 if art2.stone_small() else 11), y + 132, 8, anchor="midleft")
         by = y + 142
         b = self.banner or {}
         p1 = (b.get("price") or {}).get("spirit_stones", 300)
@@ -191,7 +198,9 @@ class GachaScene(Scene):
             else:
                 ui.image(sprites.pet(kind, int(t * 4 + i) % 2, math.sin(ang) < 0), x + 60 + math.cos(ang) * 44,
                          y + 104 + math.sin(ang) * 30, zoom=1.2, anchor="center")
-        ui.image(sprites.prop("shrine", 0, int(t * 3) % 4), x + 60, y + 100, zoom=1.6, anchor="center")
+        sv2 = art2.prop("shrine", "buildings") if art2.on() else None
+        ui.image(sv2.at(t) if sv2 else sprites.prop("shrine", 0, int(t * 3) % 4), x + 60, y + 100,
+                 zoom=0.8 if sv2 else 1.6, anchor="center")
         rx, rw = x + 120, w - 132
         yy = ui.text(T.GACHA_PET_RATES, rx, y + 16, 8, max_w=rw).bottom + 3
         yy = ui.text(T.GACHA_PET_PITY, rx, yy, 7, "#5A5A5A", max_w=rw).bottom + 3
@@ -200,8 +209,8 @@ class GachaScene(Scene):
             ui.text(T.GACHA_PET_PITY_NOW.format(e=pc.get("epic", 0), l=pc.get("legendary", 0)), rx, yy, 7, "#8E877A",
                     max_w=rw)
         stones, jade = me.get("spirit_stones", 0), me.get("immortal_jade", 0)
-        ui.image(sprites.icon("stone"), rx, y + 128, zoom=1)
-        ui.text(f"{stones:,}".replace(",", ".") + f"  ·  {jade} {T.JADE}", rx + 11, y + 132, 8, anchor="midleft")
+        ui.image((art2.stone_small() or sprites.icon("stone")), rx, y + 128, zoom=1)
+        ui.text(f"{stones:,}".replace(",", ".") + f"  ·  {jade} {T.JADE}", rx + (15 if art2.stone_small() else 11), y + 132, 8, anchor="midleft")
         by = y + 142
         b = self.banner or {}
         p1 = (b.get("price") or {}).get("spirit_stones", 500)
@@ -281,18 +290,20 @@ class GachaScene(Scene):
         for i, s in enumerate(res):
             cx = ox + (i % cols) * cell + cell / 2
             cy = oy + (i // cols) * (cell + 16) + cell / 2
-            frames = sprites.seeds(s["rarity"])
+            sv2 = art2.seed_frames(s["rarity"])
+            frames = sv2 or sprites.seeds(s["rarity"])
             col = RARITY_COLORS[s["rarity"]]
+            sz = (3 if n > 1 else 5) / (2 if sv2 else 1)       # v2 seeds are twice the old size
             if t < 0.9:  # shaking
                 dx = math.sin(t * 40 + i) * (1 + t * 2)
-                ui.image(frames[0], cx + dx, cy, zoom=3 if n > 1 else 5, anchor="center")
+                ui.image(frames[0], cx + dx, cy, zoom=sz, anchor="center")
             elif t < 1.3:  # cracking with light leaking out
                 self._glow(ui, cx, cy, col, (t - 0.9) / 0.4 * 0.6, n)
-                ui.image(frames[1 if t < 1.1 else 2], cx, cy, zoom=3 if n > 1 else 5, anchor="center")
+                ui.image(frames[1 if t < 1.1 else 2], cx, cy, zoom=sz, anchor="center")
             else:
                 k = min(1.0, (t - 1.3 - i * 0.08) / 0.4)
                 if k <= 0:
-                    ui.image(frames[2], cx, cy, zoom=3 if n > 1 else 5, anchor="center")
+                    ui.image(frames[2], cx, cy, zoom=sz, anchor="center")
                     continue
                 self._glow(ui, cx, cy, col, 0.6 + 0.4 * k, n)
                 cw, chh = (cell - 14) * k, (cell - 4) * k
@@ -340,7 +351,9 @@ class GachaScene(Scene):
             cx = ox + (i % cols) * cell + cell / 2
             cy = oy + (i // cols) * (cell + 16) + cell / 2
             col = BEE_COLORS[e["rarity"]]
-            frames = sprites.egg(col)
+            ev2 = art2.egg_frames(e["rarity"])
+            frames = ev2 or sprites.egg(col)
+            zoom = (3 if n > 1 else 5) / (2 if ev2 else 1)      # v2 eggs are twice the old size
             if t < 0.9:
                 ui.image(frames[0], cx + math.sin(t * 40 + i) * (1 + t * 2), cy, zoom=zoom, anchor="center")
             elif t < 1.3:

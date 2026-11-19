@@ -34,7 +34,12 @@ _TOWER: dict = {}
 
 
 def tower_sprite(role: str, level: int) -> pygame.Surface:
-    """A small stone tower in the colour of its behaviour; one more band per level."""
+    """A small stone tower in the colour of its behaviour; one more band per level. With the
+    v2 tower-defence kit: the tower of that role and level (props/td)."""
+    from ..engine import art2
+    pr = art2.td_prop(f"tower_{role}_{max(1, min(3, level))}")
+    if pr is not None:
+        return pr.img
     key = (role, level)
     if key not in _TOWER:
         s = pygame.Surface((24, 26), pygame.SRCALPHA)

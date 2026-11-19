@@ -96,6 +96,6 @@ class BookScene(Scene):
                     if ui.hover(cx, cy, 162, 52):
                         ui.set_tooltip(d["text_vi"])
                 else:
-                    ui.text("？＋？＝？", cx + 81, cy + 26, 14, "#B8AE9C", kind="han", anchor="center")
+                    ui.text("? + ? = ?", cx + 81, cy + 26, 14, "#B8AE9C", anchor="center")
         if ui.button("book_close", x + w / 2 - 35, y + h - 20, 70, 14, T.CLOSE, key=pygame.K_ESCAPE):
             self.close()

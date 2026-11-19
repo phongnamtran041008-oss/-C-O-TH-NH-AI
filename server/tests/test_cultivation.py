@@ -157,6 +157,117 @@ async def test_tribulation_timeout_counts_wrong_and_resumes(client, frozen):
         assert (run.index, run.correct) == (1, 0)
 
 
+
+# ------------------------------------------------------------------ the eight realms
+EIGHT = ["luyen_khi", "truc_co", "kim_dan", "nguyen_anh", "hoa_than", "luyen_hu", "hop_the", "dai_thua"]
+
+
+def test_the_realm_ladder_is_phàm_nhân_then_eight_realms():
+    assert cultivation.order() == ["pham_nhan"] + EIGHT
+    names = {r: cultivation.realm_name(r) for r in cultivation.order()}
+    assert names == {"pham_nhan": "Phàm Nhân", "luyen_khi": "Luyện Khí", "truc_co": "Trúc Cơ", "kim_dan": "Kết Đan",
+                     "nguyen_anh": "Nguyên Anh", "hoa_than": "Hóa Thần", "luyen_hu": "Luyện Hư",
+                     "hop_the": "Hợp Thể", "dai_thua": "Đại Thừa"}
+    assert cultivation.stage_label("kim_dan", 1) == "Kết Đan sơ kỳ"
+    assert cultivation.stage_label("dai_thua", 3) == "Đại Thừa hậu kỳ"
+
+
+def test_every_realm_has_every_per_realm_entry():
+    """Adding a realm to realms_cultivation.json must never again silently give 0 of something
+    (guard bees, stats) or a KeyError (last_stage) somewhere else."""
+    import json
+    from app import balance
+    from app.config import DATA_DIR
+    from app.realtime import world as wmod
+    from app.systems import bees, gacha_service
+    realms = catalog_realms()
+    ids = [r["id"] for r in realms]
+    assert wmod.realm_order() == ids
+    c = cultivation.cfg()
+    dev = balance._merge(json.loads((DATA_DIR / "balance" / "cultivation.json").read_text("utf-8")),
+                         json.loads((DATA_DIR / "balance" / "dev" / "cultivation.json").read_text("utf-8")))
+    slots = bees.cfg()["guard"]["slots_by_realm"]
+    for i, r in enumerate(realms):
+        rid = r["id"]
+        assert r["name_vi"] and isinstance(r.get("hsk"), int), rid
+        n = 1 if rid == "pham_nhan" else r["stages"]
+        for prof, cc in (("default", c), ("dev", dev)):
+            xs = cc["xp_to_next"].get(rid)
+            assert xs is not None and len(xs) == n and all(x > 0 for x in xs), (prof, rid)
+        assert rid in slots, rid
+        assert rid in cultivation.REALM_TIER and rid in gacha_service.REALM_TIER, rid
+        if rid != "pham_nhan":
+            assert rid in c["stats"]["realm_bonus"], rid
+        if i >= 2:                                   # Trúc Cơ and up: a pill and a Thiên Kiếp
+            pill = c["tribulation_to"].get(rid)
+            assert pill and catalog_pill(pill)["realm"] == rid and pill in catalog_recipes(), rid
+    # every curve keeps climbing realm after realm
+    for a, b in zip(ids[1:], ids[2:]):
+        assert c["xp_to_next"][b][0] > c["xp_to_next"][a][-1], (a, b)
+        assert slots[b] > slots[a], (a, b)
+        for k, v in c["stats"]["realm_bonus"][a].items():
+            assert c["stats"]["realm_bonus"][b].get(k, 0) >= v, (a, b, k)
+        assert cultivation.stats_for(b, 1, [])["max_hp"] > cultivation.stats_for(a, 1, [])["max_hp"], (a, b)
+
+
+def catalog_realms():
+    from app.systems import catalog
+    return catalog.realms()
+
+
+def catalog_pill(pid):
+    from app.systems import catalog
+    return catalog.pills()[pid]
+
+
+def catalog_recipes():
+    from app.systems import catalog
+    return catalog.recipes()
+
+
+async def test_a_character_climbs_from_luyện_khí_to_the_last_stage_of_đại_thừa(client, frozen):
+    """The real rule all the way up: Tu Vi fills each stage by itself; each new realm waits at
+    full Tu Vi for its pill and a passed Thiên Kiếp."""
+    h, uid = await make(client, "tu_thang", "Tu Thăng")
+    async with dbm.SessionLocal() as db:
+        await cultivation.add_xp(db, uid, cultivation.xp_needed("pham_nhan", 0))
+        await db.commit()
+    hp = 0
+    for realm in EIGHT:
+        ch = await getchar(uid)
+        assert (ch.realm, ch.realm_stage, ch.cultivation_xp) == (realm, 1, 0)
+        assert ch.max_hp > hp, realm                              # a new realm makes the body stronger
+        hp = ch.max_hp
+        for stage in range(1, cultivation.last_stage(realm) + 1):
+            need = cultivation.xp_needed(realm, stage)
+            async with dbm.SessionLocal() as db:
+                r = await cultivation.add_xp(db, uid, need)
+                await db.commit()
+            if stage < cultivation.last_stage(realm):
+                assert (r["realm"], r["stage"], r["xp"]) == (realm, stage + 1, 0) and r["stage_up"], r
+                ch = await getchar(uid)
+                assert ch.max_hp > hp, (realm, stage)
+                hp = ch.max_hp
+        if realm == "dai_thua":
+            break
+        assert r["bottleneck"] and (r["realm"], r["xp"]) == (realm, need), r
+        v = (await client.get("/cultivation", headers=h)).json()
+        nxt = EIGHT[EIGHT.index(realm) + 1]
+        assert v["next_realm"] == nxt and not v["can_tribulation"] and v["pill"] == cultivation.cfg()["tribulation_to"][nxt]
+        await give(uid, v["pill"])
+        assert (await client.get("/cultivation", headers=h)).json()["can_tribulation"]
+        res = await run_tribulation(client, h, right=20)
+        assert res["passed"] and res["realm"] == nxt and res["label"] == cultivation.stage_label(nxt, 1), res
+        frozen.advance(seconds=5)
+    ch = await getchar(uid)
+    assert (ch.realm, ch.realm_stage) == ("dai_thua", 3)
+    assert ch.max_hp == cultivation.stats_for("dai_thua", 3, [])["max_hp"]
+    v = (await client.get("/cultivation", headers=h)).json()
+    assert v["label"] == "Đại Thừa hậu kỳ" and v["realm_name"] == "Đại Thừa" and v["pill"] is None
+    r = await client.post("/cultivation/breakthrough/start", headers=h)
+    assert r.json()["error"]["code"] == "no_tribulation"          # the top of the ladder
+
+
 # ------------------------------------------------------------------ đả tọa
 async def test_meditation(client, frozen):
     h, uid = await make(client, "tu_7", "Tu Bảy")

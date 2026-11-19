@@ -524,14 +524,20 @@ class WorldScene(Scene):
             return
         if k == "hit" and ev.get("b"):                  # a guard bee stung a monster (spec 10.2.3)
             self.bee_hits += 1
+            for fb in self.flock.bees.values():         # that bee plays its sting clip
+                if fb.sp == ev.get("b") and getattr(fb, "target", None) == ev.get("id"):
+                    fb.sting_t0 = self.game.now
+                    break
             ent = self.entities.get(ev.get("id"))
             if ent is not None:
                 ent.hurt_t = 0.08
             self.fx.float_text(str(ev.get("v", "")), x + random.uniform(-6, 6), y - 18, "#F2D58A")
             return
         if k == "ink":                                   # Ong Thư Pháp: a brush stroke writes its character
-            sp = (self.game.state.bee_species.get(ev.get("s")) or {}).get("hanzi", "笔蜂")
-            self.big_chars.append([sp[:-1] or sp, x, y - 30, 1.0])
+            if not art2.on():        # the old game's Chinese character, not on the v2 (math game) screen
+                sp = (self.game.state.bee_species.get(ev.get("s")) or {}).get("hanzi", "")
+                if sp:
+                    self.big_chars.append([sp[:-1] or sp, x, y - 30, 1.0])
             self.fx.burst(x, y - 8, "K", 12, 30)
             return
         if k == "bee_down":
@@ -810,8 +816,15 @@ class WorldScene(Scene):
             src = v.to_screen(sx, sy)
             if f["ok"] and self.draw_skill_v2(surf, f, max(0.0, p), src, dst, "ground" if ground else "over"):
                 continue
-            if not ground:
-                skill_fx.draw(surf, f["fx"], max(0.0, p), src, dst, ok=f["ok"], radius=v.len(f["r"]))
+            if not ground and v.zoom == 1:
+                skill_fx.draw(surf, f["fx"], max(0.0, p), src, dst, ok=f["ok"], radius=f["r"])
+            elif not ground:     # the code-drawn effect (a fizzle) at the world's zoom: drawn at 1x, scaled up
+                z = v.zoom
+                sw, sh = surf.get_size()
+                layer = pygame.Surface((sw // z + 1, sh // z + 1), pygame.SRCALPHA)
+                half = lambda pt: None if pt is None else (pt[0] / z, pt[1] / z)  # noqa: E731
+                if skill_fx.draw(layer, f["fx"], max(0.0, p), half(src), half(dst), ok=f["ok"], radius=f["r"]):
+                    surf.blit(pygame.transform.scale(layer, (layer.get_width() * z, layer.get_height() * z)), (0, 0))
         if not ground:
             self.skill_fx = keep
 
@@ -977,6 +990,7 @@ class WorldScene(Scene):
                 if down:
                     continue                      # resting in the hive
                 fb = self.flock.get(f"{eid}:{i}", sp, ox, oy, now)
+                fb.target = tgt
                 target = self.entities.get(tgt) if tgt else None
                 if target is not None and target.alive:
                     fb.update(dt, target.pos[0], target.pos[1] - 4, 6, 120, 12)    # stinging
@@ -1642,7 +1656,8 @@ class WorldScene(Scene):
             x, y, f, m = s
             if e.kind == "r":
                 if e.alive:
-                    drawables.append((y, v.img(self._ent_frame(e, f, m)), v.to_screen(x - 12, y - 32)))
+                    from .realm import realm_img
+                    drawables.append((y, realm_img(v, "rift", int(self.t * 6) % 8), v.to_screen(x - 12, y - 32)))
                 continue
             if e.kind == "m":
                 self.monster_v2(e, x, y, f, m, drawables, bars)
@@ -1685,6 +1700,12 @@ class WorldScene(Scene):
             look = (species.get(fb.sp) or {}).get("look")
             sx, sy = v.to_screen(fb.x - 2, fb.y)
             pygame.draw.ellipse(surf, (30, 36, 26), (sx, sy, int(v.len(4)), int(v.len(2))))
+            st = getattr(fb, "sting_t0", None)
+            img = art2.bee_frame(fb.sp, fb.t, fb.left, now - st if st is not None else None)
+            if img is not None:          # the v2 bee: fly, or sting just after it struck
+                bx, by = v.to_screen(fb.x, fb.y - fb.z)
+                drawables.append((fb.y + 6, img, (bx - 16, by - 16)))
+                continue
             drawables.append((fb.y + 6, v.img(sprites.bee(look, fb.frame(), fb.left)),
                               v.to_screen(fb.x - 4, fb.y - fb.z - 4)))
         for d in sorted(drawables, key=lambda d: d[0]):
@@ -1810,9 +1831,9 @@ class WorldScene(Scene):
         need = cult.get("need") or 0
         ui.progress(39, 41, 96, 5, (cult.get("xp", 0) / need) if need else 1.0, "#B8862E")
         ui.text(f"{T.TU_VI} {cult.get('xp', 0)}/{need or '—'}", 41, 43.5, 6, "#FFFFFF", anchor="midleft")
-        ui.image(sprites.icon("stone"), 7, 57, zoom=1)
+        ui.image((art2.stone_small() or sprites.icon("stone")), 7, 57, zoom=1)
         stones = f"{me.get('spirit_stones', 0):,}".replace(",", ".")
-        ui.text(stones, 18, 60.5, 8, "#FFFFFF", anchor="midleft")
+        ui.text(stones, 22 if art2.stone_small() else 18, 60.5, 8, "#FFFFFF", anchor="midleft")
         self.draw_bee_hud(ui, 64, 56)
         from .realm import draw_party_frames
         draw_party_frames(ui, g, 4, 72)
@@ -1966,7 +1987,13 @@ class WorldScene(Scene):
             bx = x + i * 16
             ui.fill(bx, y, 14, 14, (20, 18, 15, 170))
             info = species.get(sp) or {}
-            ui.image(sprites.bee(info.get("look"), int(ui.time * 10 + i) % 2), bx + 7, y + 6, zoom=1, anchor="center")
+            vb = art2.bee_frame(sp, ui.time + i * 0.1, False)
+            if vb is not None:     # the v2 bee, cut to its pixels and fitted to the 14 px slot
+                vb = art2.trim(vb)
+                k = min(1.0, 12 / max(vb.get_width(), vb.get_height()))
+                ui.image(vb, bx + 7, y + 6, zoom=k, anchor="center")
+            else:
+                ui.image(sprites.bee(info.get("look"), int(ui.time * 10 + i) % 2), bx + 7, y + 6, zoom=1, anchor="center")
             if rest > 0:
                 ui.fill(bx, y, 14, 14, (0, 0, 0, 150))
                 ui.text(f"{int(rest)}", bx + 7, y + 7, 6, "#FFFFFF", anchor="center")

@@ -109,7 +109,11 @@ class TileMap:
                     near = [g[ny * w + nx] for nx, ny in ((x + dx, y + dy) for dx in (-1, 0, 1) for dy in (-1, 0, 1))
                             if 0 <= nx < w and 0 <= ny < h and cls(nx, ny) in outer]
                     og = max(set(near), key=near.count) if near else None
-                    under = ts.pick(og - 1, x, y) if og else None
+                    painted = rule.get("painted", "grass")
+                    same = og is None or names[og - 1] == painted or (
+                        painted == "grass" and names[og - 1] in ("grass", "flowers"))
+                    # only a sheet painted with grass can have its grass swapped for another ground
+                    under = ts.pick(og - 1, x, y) if (not same and painted == "grass") else None
                     whole_tile = special[(x * 3 + y) % len(special)] if special else None
                     tile, _ok = autotile.compose(tile, pieces, terrain, rule["pair"], x * 3 + y, under, whole_tile)
                     self.autotiled += 1

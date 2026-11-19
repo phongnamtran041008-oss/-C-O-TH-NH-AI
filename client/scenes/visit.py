@@ -98,11 +98,11 @@ class VisitScene(AbodeScene):
         ui.border(240 - w / 2, 4, w, 30, "#8B5A2B")
         ui.text(title, 240, 7, 10, anchor="midtop")
         ui.text(T.VISIT_HINT.format(n=d.get("help_reward", 10)), 240, 21, 7, "#5A5A5A", anchor="midtop")
-        from ..engine import sprites
+        from ..engine import art2, sprites
         ui.fill(4, 38, 110, 26, (20, 18, 15, 150))
         ui.text(T.HELPS_LEFT.format(n=d.get("helps_left", 0)), 8, 41, 7, "#FFFFFF")
-        ui.image(sprites.icon("stone"), 8, 52, zoom=1)
-        ui.text(f"{self.game.state.me.get('spirit_stones', 0):,}".replace(",", "."), 19, 55.5, 8, "#FFFFFF",
+        ui.image((art2.stone_small() or sprites.icon("stone")), 8, 52, zoom=1)
+        ui.text(f"{self.game.state.me.get('spirit_stones', 0):,}".replace(",", "."), 23 if art2.stone_small() else 19, 55.5, 8, "#FFFFFF",
                 anchor="midleft")
         if ui.button("visit_back", 480 - 74, 252, 70, 14, T.VISIT_BACK, style="primary",
                      key=pygame.K_ESCAPE if top else None, enabled=top):

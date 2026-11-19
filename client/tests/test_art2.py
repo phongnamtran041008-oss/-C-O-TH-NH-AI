@@ -76,6 +76,10 @@ def test_every_id_the_wiring_names_exists_on_disk():
         assert exists("weapons", e["layer"]) and e["clip"] in ("slash", "cast", "shoot"), kind
     for kind, bid in entries(w["pets"]).items():
         assert exists("beasts", bid), kind
+    for kind, bid in entries(w["bees"]).items():
+        assert exists("beasts", bid), kind
+    for name, (atlas, pid) in w["garden"]["decorations"].items():
+        assert pid in json.loads((V2 / "props" / f"{atlas}.json").read_text("utf-8"))["props"], name
     for fx_id, e in entries(w["skill_fx"]).items():
         assert e["kind"] in ("strike", "bolt", "circle", "ward") and exists("fx", e["fx"]) and exists("fx", e["impact"])
     for name, fid in w["combat_fx"].items():
@@ -105,15 +109,17 @@ def test_an_unlisted_monster_goes_by_its_subject_and_rank():
 
 
 def test_every_realm_the_server_knows_has_a_look():
-    realms = {"pham_nhan", "luyen_khi", "truc_co", "kim_dan", "nguyen_anh"}
-    for f in ("realms.json", "realms_cultivation.json"):
-        doc = data(f)
-        for key in ("realms", "order"):
-            v = doc.get(key) if isinstance(doc, dict) else None
-            if isinstance(v, list):
-                realms |= {r if isinstance(r, str) else r.get("id") for r in v} - {None}
-            elif isinstance(v, dict):
-                realms |= set(v)
+    server = [r["id"] for r in data("realms_cultivation.json")["realms"]]
+    assert server == ["pham_nhan", "luyen_khi", "truc_co", "kim_dan", "nguyen_anh", "hoa_than", "luyen_hu",
+                      "hop_the", "dai_thua"]
+    realms = set(server)
+    doc = data("realms.json")          # the bí cảnh file: whatever realm ids it may list
+    for key in ("realms", "order"):
+        v = doc.get(key) if isinstance(doc, dict) else None
+        if isinstance(v, list):
+            realms |= {r if isinstance(r, str) else r.get("id") for r in v} - {None}
+        elif isinstance(v, dict):
+            realms |= set(v)
     want = {"pham_nhan": "luyen_khi", "luyen_khi": "luyen_khi", "kim_dan": "ket_dan"}
     for r in realms:
         assert art2.char_for(r) is not None, r
@@ -121,6 +127,28 @@ def test_every_realm_the_server_knows_has_a_look():
             assert art2.look_for(r) == want[r]
     assert all(art2.char(look) is not None for look in
                ("luyen_khi", "truc_co", "ket_dan", "nguyen_anh", "hoa_than", "luyen_hu", "hop_the", "dai_thua"))
+
+
+def test_every_server_realm_is_wired_to_its_own_look_and_an_aura_on_disk():
+    """Each of the eight realms has its wiring entry (no fallback to the default look), its
+    character sheet and both aura layers on disk; the four high realms also their glow."""
+    wired = entries(W()["realms"])
+    for r in data("realms_cultivation.json")["realms"]:
+        rid = r["id"]
+        assert rid in wired, rid
+        look = wired[rid]["look"]
+        assert exists("chars", f"dao_si_{look}") and art2.char_for(rid) is art2.char(look), rid
+        if rid == "pham_nhan":
+            assert art2.aura_for(rid) == (None, None)          # no aura before Luyện Khí
+            continue
+        aura = wired[rid]["aura"]
+        assert exists("fx", f"aura_{aura}_back") and exists("fx", f"aura_{aura}_front"), rid
+        back, front = art2.aura_for(rid)
+        assert back is not None and front is not None, rid
+        if rid in ("hoa_than", "luyen_hu", "hop_the", "dai_thua"):
+            assert look == rid and art2.glow_for(look) is not None, rid
+    looks = [wired[r["id"]]["look"] for r in data("realms_cultivation.json")["realms"][1:]]
+    assert len(set(looks)) == len(looks) == 8                    # eight realms, eight looks
 
 
 def test_every_chieu_has_an_effect_and_an_icon_and_every_weapon_kind_a_layer():
@@ -461,3 +489,137 @@ def test_without_32px_tiles_the_16px_ones_are_scaled(tmp_path):
     o = types.SimpleNamespace(x=0, y=0, w=48, h=48, foot_y=48, type="", props={"sprite": "house", "variant": 0})
     from client.engine.view import View
     assert art2.prop_drawable(o, View(2)) is None             # no buildings atlas: the world draws the old one 2x
+
+
+# ------------------------------------------------------------------ round 3: the rest of the old art
+def test_every_pet_and_bee_species_has_its_own_sheet():
+    pets = entries(data("creatures/pets.json")["species"])
+    w = W()
+    assert set(entries(w["pets"])) == set(pets)
+    for sp in pets:
+        s = art2.beast_for(sp)
+        assert s is not None and s.id == f"pet_{sp}", sp                  # its own sheet, no borrowed beast
+        assert all(s.has(c) for c in ("idle", "walk", "happy", "sleep")), sp
+    bees = entries(data("creatures/bees.json"))
+    assert set(entries(w["bees"])) == set(bees)
+    for sp in bees:
+        b = art2.bee(sp)
+        assert b is not None and b.has("fly") and b.has("sting") and (b.fw, b.fh) == (32, 32), sp
+        assert art2.bee_frame(sp, 0.1, True) is b.frame(b.index("fly", 0.1, "left"))
+        assert art2.bee_frame(sp, 0.1, False, sting_t=0.05) is b.frame(b.index("sting", 0.05, "right"))
+
+
+def test_the_garden_family_hash_is_stable_across_runs():
+    import subprocess
+    import sys
+    keys = ["w_shui", "w_mu", "123", "Thủy", "a" * 40]
+    here = [art2.plant_family(k) for k in keys]
+    code = ("import sys, json; sys.path.insert(0, r'%s'); from client.engine import art2; "
+            "print(json.dumps([art2.plant_family(k) for k in %r]))") % (ROOT, keys)
+    for seed in ("1", "12345"):
+        out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True,
+                             env={**__import__("os").environ, "PYTHONHASHSEED": seed}, check=True).stdout
+        assert [tuple(x) for x in json.loads(out.strip().splitlines()[-1])] == here, seed
+    fams = {art2.plant_family(f"k{i}")[0] for i in range(60)}
+    assert fams == set(W()["garden"]["families"])                     # every family is used
+
+
+def test_every_garden_realm_and_td_name_the_code_asks_for_exists():
+    g = W()["garden"]
+    for fam in g["families"]:
+        for stage in range(6):
+            for rar in g["rarities"]:
+                key = next(k for k in (f"x{i}" for i in range(500)) if art2.plant_family(k)[0] == fam)
+                assert art2.plant(stage, rar, key) is not None, (fam, stage, rar)
+    assert art2.plant(5, "khong_co", "x0") is not None                 # an unknown rarity falls back
+    for locked, dry in ((True, False), (False, False), (False, True)):
+        assert art2.bed(locked, dry).get_size() == (64, 64)
+    for rar in g["rarities"]:
+        assert len(art2.seed_frames(rar)) == 3 and len(art2.egg_frames(rar)) == 3
+    for bee_rarity in g["egg_by_bee_rarity"]:
+        assert art2.egg_frames(bee_rarity)
+    for deco in g["decorations"]:
+        assert art2.decoration(deco) is not None, deco
+    from client.scenes.realm import realm_v2_name
+    calls = [("pedestal", a, b) for a in (True, False) for b in (True, False)] + \
+        [("rune_tile", s) for s in ("off", "idle", "next", "done")] + \
+        [("pillar", t, lit) for t in (1, 2, 3, 4) for lit in (True, False)] + \
+        [("realm_exit", o, 1) for o in (True, False)] + [("chest", o) for o in (True, False)] + \
+        [("statue", 1), ("mirror", 3), ("rift", 7)]
+    from client.engine import sprites
+    for call in calls:
+        name, frame = realm_v2_name(*call)
+        pr = art2.realm_prop(name)
+        assert pr is not None and frame < len(pr.frames), call
+        old = sprites.realm(*call)
+        assert pr.img.get_size() == (old.get_width() * 2, old.get_height() * 2), (call, pr.img.get_size())
+    td = W()["td"]
+    for role in td["roles"]:
+        for lv in (1, 2, 3):
+            assert art2.td_prop(f"tower_{role}_{lv}") is not None, (role, lv)
+    for role in td["shots"]:
+        assert art2.td_prop(f"shot_{role}") and art2.td_prop(f"hit_{role}"), role
+    for n in ("td_core", "td_spawn", "td_rock_0", "td_rock_1", "hit_puff"):
+        assert art2.td_prop(n) is not None, n
+    tiles = art2.td_tiles()
+    assert tiles["grass"][0].get_size() == (24, 24)
+    import itertools
+    for sides in itertools.product((False, True), repeat=4):
+        assert art2.td_path_name(*sides) in tiles, sides
+    balance_roles = set(json.loads((DATA / "balance" / "td.json").read_text("utf-8"))["roles"])
+    for role in balance_roles - set(td["roles"]):       # word-board roles with no v2 tower: the old plant stays
+        assert art2.td_prop(f"tower_{role}_1") is None, role
+
+
+def test_every_autotile_pair_has_its_tiles():
+    terrain, native = art2.terrain32()
+    assert native
+    suffixes = ["nw", "n", "ne", "w", "e", "sw", "s", "se", "in_nw", "in_ne", "in_sw", "in_se"]
+    whole = ["island", "h", "v", "cap_n", "cap_s", "cap_e", "cap_w"]
+    from client.art import build as B
+    names = {n for n, _ in B.TILESET}
+    for cell, rule in entries(W()["autotile"]).items():
+        assert cell in names and set(rule["outer"]) <= names, cell
+        for suf in suffixes + (whole if rule["pair"] not in ("realm_edge", "shore") else []):
+            assert f"{rule['pair']}_{suf}" in terrain, (cell, suf)
+
+
+def test_stone_islands_are_round_and_dark_grass_gets_its_edge():
+    from client.engine.tilemap import TileMap
+    from client.art import build as B
+    names = [n for n, _ in B.TILESET]
+    m = TileMap(ROOT / "client" / "assets" / "maps" / "loan_so_coc.tmj")
+    g = m.ground32()
+    stone = [i for i, gid in enumerate(m.ground) if gid and names[gid - 1] == "stone"]
+    lone = [i for i in stone if all(0 <= (i // m.w + dy) < m.h and 0 <= i % m.w + dx < m.w and
+                                    names[m.ground[(i // m.w + dy) * m.w + i % m.w + dx] - 1] in ("grass", "dark_grass")
+                                    for dx, dy in ((0, -1), (1, 0), (0, 1), (-1, 0)))]
+    assert lone, "the map has stone islands"
+    x, y = (lone[0] % m.w) * 32, (lone[0] // m.w) * 32
+    assert g.get_at((x + 1, y + 1)) != g.get_at((x + 16, y + 16))      # the corner is ground: rounded
+
+
+CJK = __import__("re").compile(r"[⺀-鿿豈-﫿　-〿＀-￯]")
+# Where a CJK character may stay in client code, and why. None of these reach the math game's screen
+# as a hard-coded literal: comments, a regex that detects Chinese input, the full-width blank of the
+# old word game's own Chinese sentences, and the protected strings file (listed in the report).
+CJK_ALLOWED = {
+    "client/art/sprites/people.py": "a code comment (the tone gag) - never drawn",
+    "client/engine/td_sim.py": "code comments naming the old word combos - never drawn",
+    "client/engine/text.py": "a docstring - never drawn",
+    "client/scenes/quiz.py": "the CJK detector regex and the full-width blank inside the old word game's "
+                             "own Chinese sentences (the sentence itself is Chinese)",
+    "client/strings_vi.py": "protected file of another session - its Chinese is listed in the report",
+}
+
+
+def test_no_chinese_in_the_client_scene_and_ui_sources():
+    bad = []
+    for p in sorted((ROOT / "client").rglob("*.py")):
+        rel = p.relative_to(ROOT).as_posix()
+        if "/tests/" in rel or rel in CJK_ALLOWED:
+            continue
+        for i, line in enumerate(p.read_text("utf-8").splitlines(), 1):
+            if CJK.search(line):
+                bad.append(f"{rel}:{i}: {line.strip()[:80]}")
+    assert not bad, "\n".join(bad)

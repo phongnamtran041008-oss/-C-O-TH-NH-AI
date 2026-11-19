@@ -116,7 +116,7 @@ def t_hotro(col, lv):
     ob.rotation_euler = (math.pi / 2, 0, 0)
     ob.location = (X(4.0), Y(1.2), Z(12 + 2 * lv))
     if lv >= 2:
-        tubep(col, [(4, 1, 12 + 2 * lv), (11 + 3 * lv, 1, 16 + 4 * lv)], 0.8, mat("glow_g", 3, emit=2.2, prio=3.0), seg=4)
+        tubep(col, [(4, 1, 12 + 2 * lv), (8 + 2 * lv, 1, 15 + 3 * lv)], 0.8, mat("glow_g", 3, emit=2.2, prio=3.0), seg=4)
     if lv >= 3:
         bl(col, 4, 1, 12 + 2 * lv, 1.6, 1.6, mat("glow_g", 3, emit=2.8, prio=4.0), sub=1)
 
@@ -199,7 +199,7 @@ def shot(role):
 
 def hit(role):
     def b(col, f):
-        r = 2 + f * 2.2
+        r = 1.5 + f * 1.6
         kind = {"hoa": "lava", "thuy": "crys_c", "kim": "white", "son": "glow_y", "quang": "glow_y", "puff": "bone"}[role]
         n = 8
         em = role != "puff"
@@ -221,17 +221,17 @@ def specs():
     mk = lambda **k: out.append(k)
     for role, mid, vi, sig in TOWERS:
         for lv in (1, 2, 3):
-            mk(name=f"tower_{role}_{lv}", W=24, H=30, base=3, ppm=38, build=tower_builder(role, lv), vi=f"{vi} cấp {lv}",
+            mk(name=f"tower_{role}_{lv}", W=24, H=30, base=3, ppm=34 if role != "ho_tro" else 28, build=tower_builder(role, lv), vi=f"{vi} cấp {lv}",
                extra={"role": role, "math_tower": mid, "level": lv, "silhouette": sig})
     mk(name="td_core", W=24, H=28, frames=4, base=3, ppm=38, build=core, vi="Lõi linh khí", extra={"old": "the blue circle at the core cell"})
     mk(name="td_spawn", W=24, H=24, frames=4, base=3, ppm=38, build=spawn, vi="Cửa quái", extra={"old": "the dark circle at the spawn cell"})
     for v in (0, 1):
-        mk(name=f"td_rock_{v}", W=20, H=16, base=2, ppm=38, build=rock(v), vi="Đá", extra={"old": f"B.rock({v})"})
+        mk(name=f"td_rock_{v}", W=20, H=16, base=2, ppm=32, build=rock(v), vi="Đá", extra={"old": f"B.rock({v})"})
     for role in ("hoa", "thuy", "kim", "son", "quang"):
-        mk(name=f"shot_{role}", W=18 if role == "kim" else 14, H=10 if role == "kim" else 14, frames=2 if role == "kim" else 3, mode="top", ppm=44,
-           build=shot(role), vi="Đạn", pivot=((18 if role == "kim" else 14) // 2, (10 if role == "kim" else 14) // 2),
+        mk(name=f"shot_{role}", W=20 if role == "kim" else 16, H=12 if role == "kim" else 16, frames=2 if role == "kim" else 3, mode="top", ppm=44,
+           build=shot(role), vi="Đạn", pivot=((20 if role == "kim" else 16) // 2, (12 if role == "kim" else 16) // 2),
            extra={"role": role, "note": "points to the right; the game rotates it to the target; pivot = centre"})
     for role in ("hoa", "thuy", "kim", "son", "quang", "puff"):
-        mk(name=f"hit_{role}", W=24, H=24, frames=4, mode="top", ppm=44, build=hit(role), vi="Hiệu ứng trúng", pivot=(12, 12),
+        mk(name=f"hit_{role}", W=24, H=24, frames=4, mode="top", ppm=40, build=hit(role), vi="Hiệu ứng trúng", pivot=(12, 12),
            extra={"role": role, "note": "4 frames, expanding; pivot = centre; draw additively or normally"})
     return out
