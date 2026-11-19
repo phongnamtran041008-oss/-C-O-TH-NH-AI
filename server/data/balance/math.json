@@ -73,9 +73,10 @@
     "generator_variety": 8
   },
   "placement_test": {
-    "_comment": "Bài kiểm tra đầu vào (rule 7, app/systems/math_placement.py). per_floor questions for every written main floor, clamped to [min_questions, max_questions] in all (max_questions must cover one per main floor); a floor's bar is pass_pct of its questions right; the start floor is the lowest floor whose bar was not met (at most the last written floor) and the floors below it count as cleared. One sitting per subject: a result that skipped a floor is final; a result on the first floor (or an abandoned sitting) may be taken again after retake_after_days days (null = never).",
+    "_comment": "Bài kiểm tra đầu vào (rule 7, app/systems/math_placement.py, M11 đợt 2). The sitting climbs the written main floors in blocks: a block is block_min..per_floor questions on one floor (tiers rising); a block passed jumps `stride` written floors up, a block failed stops the climb (stepping back one floor at a time to confirm the floors that were jumped over). The block size and the stride are the smallest that keep every possible sitting at most max_questions long while a sitting answered all right asks at least min_questions (when it can). A block's bar is pass_pct of its questions right; the start floor is the lowest floor whose block failed (at most the last written floor) and the main floors below it count as cleared. One sitting per subject: a result that skipped a floor is final; a result on the first floor (or an abandoned sitting) may be taken again after retake_after_days days (null = never).",
     "min_questions": 10,
     "max_questions": 15,
+    "block_min": 3,
     "per_floor": 5,
     "pass_pct": 80,
     "retake_after_days": 7

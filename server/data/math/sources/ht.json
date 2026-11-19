@@ -1,0 +1,414 @@
+{
+ "branch": "ht",
+ "researched": "2026-11-19",
+ "backbone": [
+  {
+   "title": "Designing Machine Learning Systems",
+   "author": "Chip Huyen (O'Reilly 2022)",
+   "kind": "sach",
+   "lang": "en",
+   "url": "https://github.com/chiphuyen/dmls-book",
+   "where": "mục lục và tóm tắt chương trong kho; chương 1, 2 và 11 cho người không chuyên",
+   "free": false,
+   "minutes": null,
+   "why_vi": "Sách trả phí; kho mã miễn phí có tóm tắt, giấy phép chưa rõ.",
+   "checked": true
+  },
+  {
+   "title": "Full Stack Deep Learning 2022, Bài 1: Course Vision and When to Use ML",
+   "author": "Full Stack Deep Learning",
+   "kind": "video",
+   "lang": "en",
+   "url": "https://fullstackdeeplearning.com/course/2022/lecture-1-course-vision-and-when-to-use-ml/",
+   "where": "toàn bài giảng",
+   "free": true,
+   "minutes": 75,
+   "why_vi": "Bản đồ toàn bộ vòng đời hệ thống học máy.",
+   "checked": false
+  },
+  {
+   "title": "MLOps Zoomcamp",
+   "author": "DataTalks.Club (Alexey Grigorev)",
+   "kind": "khoa_hoc",
+   "lang": "en",
+   "url": "https://github.com/DataTalksClub/mlops-zoomcamp",
+   "where": "6 mô-đun: theo dõi thí nghiệm, điều phối, triển khai, giám sát, thực hành tốt, dự án cuối",
+   "free": true,
+   "minutes": 4000,
+   "why_vi": "Miễn phí, có bài tập; bản 2025 là lần mới nhất, trang nói chưa có khoá trực tiếp 2026.",
+   "checked": true
+  }
+ ],
+ "nodes": {
+  "lh_ky_thuat_phan_mem": {
+   "primary": {
+    "title": "Made With ML",
+    "author": "Goku Mohandas",
+    "kind": "khoa_hoc",
+    "lang": "en",
+    "url": "https://madewithml.com/",
+    "where": "mục MLOps: Testing (code, data, models), Reproducibility, Production (CI/CD, monitoring)",
+    "free": true,
+    "minutes": 1200,
+    "why_vi": "Tập bài viết có mã đi từ thí nghiệm đến sản xuất; chưa kiểm tình trạng cập nhật.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Rules of Machine Learning: Best Practices for ML Engineering",
+     "author": "Martin Zinkevich (Google)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://developers.google.com/machine-learning/guides/rules-of-ml",
+     "where": "bốn giai đoạn: Before ML, Phase I pipeline, Phase II đặc trưng, Phase III",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Những quy tắc thực chiến cho hệ thống học máy trong sản xuất.",
+     "checked": true
+    },
+    {
+     "title": "Hidden Technical Debt in Machine Learning Systems",
+     "author": "Sculley và cộng sự (NIPS 2015)",
+     "kind": "bai_bao",
+     "lang": "en",
+     "url": "https://papers.nips.cc/paper_files/paper/2015/hash/86df7dcfd896fcaf2674f757a2463eba-Abstract.html",
+     "where": "toàn bài báo (nhấn mạnh các 'mùi' hệ thống)",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Bài báo nền tảng giải thích vì sao mã học máy khó bảo trì.",
+     "checked": true
+    },
+    {
+     "title": "Full Stack Deep Learning 2022, Bài 3: Troubleshooting & Testing",
+     "author": "Full Stack Deep Learning",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://fullstackdeeplearning.com/course/2022/lecture-3-troubleshooting-and-testing/",
+     "where": "toàn bài giảng",
+     "free": true,
+     "minutes": 75,
+     "why_vi": "Cách kiểm thử và chẩn bệnh mã học máy.",
+     "checked": false
+    }
+   ],
+   "practice": [],
+   "note_vi": "Đọc Rules of ML và Made With ML (Testing, Styling, Pre-commit) song song; bài báo Technical Debt đọc để hiểu vì sao cần làm vậy."
+  },
+  "lh_du_lieu_lon": {
+   "primary": {
+    "title": "Full Stack Deep Learning 2022, Bài 4: Data Management",
+    "author": "Full Stack Deep Learning",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://fullstackdeeplearning.com/course/2022/lecture-4-data-management/",
+    "where": "toàn bài giảng",
+    "free": true,
+    "minutes": 75,
+    "why_vi": "Tổng quan về nguồn, gán nhãn, phiên bản và đường ống dữ liệu.",
+    "checked": false
+   },
+   "also": [
+    {
+     "title": "Designing Machine Learning Systems",
+     "author": "Chip Huyen (O'Reilly 2022)",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://github.com/chiphuyen/dmls-book",
+     "where": "mục lục và tóm tắt chương trong kho; chương 1, 2 và 11 cho người không chuyên",
+     "free": false,
+     "minutes": null,
+     "why_vi": "Sách trả phí; kho mã miễn phí có tóm tắt, giấy phép chưa rõ.",
+     "checked": true
+    },
+    {
+     "title": "MLOps Zoomcamp",
+     "author": "DataTalks.Club (Alexey Grigorev)",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://github.com/DataTalksClub/mlops-zoomcamp",
+     "where": "6 mô-đun: theo dõi thí nghiệm, điều phối, triển khai, giám sát, thực hành tốt, dự án cuối",
+     "free": true,
+     "minutes": 4000,
+     "why_vi": "Miễn phí, có bài tập; bản 2025 là lần mới nhất, trang nói chưa có khoá trực tiếp 2026.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "note_vi": "Xem bài 4 FSDL, rồi đọc tóm tắt chương dữ liệu của Chip Huyen; Zoomcamp mô-đun điều phối để thực hành đường ống."
+  },
+  "lh_huan_luyen_lon": {
+   "primary": {
+    "title": "CS336 bài 5, 7, 8: GPUs, Parallelism (Spring 2026)",
+    "author": "Stanford CS336",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://cs336.stanford.edu/",
+    "where": "bài 2 (FLOPs/bộ nhớ), 5 (GPU, TPU), 7-8 (song song hoá)",
+    "free": true,
+    "minutes": 240,
+    "why_vi": "Trình bày giới hạn bộ nhớ và cách chia dữ liệu/mô hình qua nhiều GPU.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 6.5940 TinyML and Efficient Deep Learning, bài 19-20: Distributed Training",
+     "author": "Song Han (MIT, Fall 2024)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://hanlab.mit.edu/courses/2024-fall-65940",
+     "where": "bài 19 và 20",
+     "free": true,
+     "minutes": 160,
+     "why_vi": "Phiên bản dễ thở hơn, có video.",
+     "checked": true
+    },
+    {
+     "title": "nanochat (kho mã)",
+     "author": "Andrej Karpathy",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/karpathy/nanochat",
+     "where": "README: speedrun.sh và tham số --depth",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đường ống trọn vẹn từ tokenizer đến chat; bản mới thay nanoGPT, MIT.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "CS336 assignment 2: Systems",
+     "author": "Stanford CS336",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://github.com/stanford-cs336/assignment2-systems",
+     "where": "toàn bộ",
+     "free": true,
+     "minutes": 1200,
+     "why_vi": "Bài tập tự viết attention bằng Triton và song song hoá; rất nặng.",
+     "checked": false
+    }
+   ],
+   "note_vi": "Xem bài 2 và 5 của CS336 trước để hiểu bộ nhớ GPU; song song hoá (bài 7-8) chỉ cần nắm ý, không cần tự cài."
+  },
+  "lh_trien_khai": {
+   "primary": {
+    "title": "Full Stack Deep Learning 2022, Bài 5: Deployment",
+    "author": "Full Stack Deep Learning",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://fullstackdeeplearning.com/course/2022/lecture-5-deployment/",
+    "where": "toàn bài giảng",
+    "free": true,
+    "minutes": 75,
+    "why_vi": "Các mẫu phục vụ mô hình: API, container, tối ưu.",
+    "checked": false
+   },
+   "also": [
+    {
+     "title": "MIT 6.5940, bài 5-6: Quantization và bài 13: Efficient LLM Deployment",
+     "author": "Song Han (MIT, Fall 2024)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://hanlab.mit.edu/courses/2024-fall-65940",
+     "where": "bài 5, 6, 13",
+     "free": true,
+     "minutes": 240,
+     "why_vi": "Lượng tử hoá để giảm chi phí và độ trễ.",
+     "checked": true
+    },
+    {
+     "title": "CS336 bài 10: Inference",
+     "author": "Stanford CS336 (2026)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://cs336.stanford.edu/",
+     "where": "bài 10",
+     "free": true,
+     "minutes": 80,
+     "why_vi": "Nút thắt khi phục vụ mô hình lớn.",
+     "checked": true
+    },
+    {
+     "title": "MLOps Zoomcamp",
+     "author": "DataTalks.Club (Alexey Grigorev)",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://github.com/DataTalksClub/mlops-zoomcamp",
+     "where": "6 mô-đun: theo dõi thí nghiệm, điều phối, triển khai, giám sát, thực hành tốt, dự án cuối",
+     "free": true,
+     "minutes": 4000,
+     "why_vi": "Miễn phí, có bài tập; bản 2025 là lần mới nhất, trang nói chưa có khoá trực tiếp 2026.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "note_vi": "Xem bài 5 FSDL rồi làm mô-đun Model Deployment của Zoomcamp; lượng tử hoá của MIT là phần mở rộng."
+  },
+  "lh_giam_sat": {
+   "primary": {
+    "title": "MLOps Zoomcamp, mô-đun 5: Model Monitoring",
+    "author": "DataTalks.Club",
+    "kind": "khoa_hoc",
+    "lang": "en",
+    "url": "https://github.com/DataTalksClub/mlops-zoomcamp",
+    "where": "mô-đun Model Monitoring",
+    "free": true,
+    "minutes": 360,
+    "why_vi": "Thực hành đo trôi dữ liệu và dựng bảng giám sát.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Full Stack Deep Learning 2022, Bài 6: Continual Learning",
+     "author": "Full Stack Deep Learning",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://fullstackdeeplearning.com/course/2022/lecture-6-continual-learning/",
+     "where": "toàn bài giảng",
+     "free": true,
+     "minutes": 75,
+     "why_vi": "Cách học liên tục và thí nghiệm trực tuyến.",
+     "checked": false
+    },
+    {
+     "title": "Rules of Machine Learning: Best Practices for ML Engineering",
+     "author": "Martin Zinkevich (Google)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://developers.google.com/machine-learning/guides/rules-of-ml",
+     "where": "bốn giai đoạn: Before ML, Phase I pipeline, Phase II đặc trưng, Phase III",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Những quy tắc thực chiến cho hệ thống học máy trong sản xuất.",
+     "checked": true
+    },
+    {
+     "title": "Made With ML",
+     "author": "Goku Mohandas",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://madewithml.com/",
+     "where": "mục MLOps: Testing (code, data, models), Reproducibility, Production (CI/CD, monitoring)",
+     "free": true,
+     "minutes": 1200,
+     "why_vi": "Tập bài viết có mã đi từ thí nghiệm đến sản xuất; chưa kiểm tình trạng cập nhật.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "note_vi": "Làm mô-đun giám sát của Zoomcamp trước; bài 6 FSDL cho bức tranh về vòng đời mô hình."
+  },
+  "du_an_luyen_hu": {
+   "primary": {
+    "title": "MLOps Zoomcamp",
+    "author": "DataTalks.Club (Alexey Grigorev)",
+    "kind": "khoa_hoc",
+    "lang": "en",
+    "url": "https://github.com/DataTalksClub/mlops-zoomcamp",
+    "where": "6 mô-đun: theo dõi thí nghiệm, điều phối, triển khai, giám sát, thực hành tốt, dự án cuối",
+    "free": true,
+    "minutes": 4000,
+    "why_vi": "Miễn phí, có bài tập; bản 2025 là lần mới nhất, trang nói chưa có khoá trực tiếp 2026.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Made With ML",
+     "author": "Goku Mohandas",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://madewithml.com/",
+     "where": "mục MLOps: Testing (code, data, models), Reproducibility, Production (CI/CD, monitoring)",
+     "free": true,
+     "minutes": 1200,
+     "why_vi": "Tập bài viết có mã đi từ thí nghiệm đến sản xuất; chưa kiểm tình trạng cập nhật.",
+     "checked": true
+    },
+    {
+     "title": "Full Stack Deep Learning 2022, Bài 8: ML Teams and Project Management",
+     "author": "Full Stack Deep Learning",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://fullstackdeeplearning.com/course/2022/lecture-8-teams-and-pm/",
+     "where": "toàn bài giảng",
+     "free": true,
+     "minutes": 75,
+     "why_vi": "Quản lý dự án học máy.",
+     "checked": false
+    }
+   ],
+   "practice": [],
+   "note_vi": "Làm dự án cuối của Zoomcamp: huấn luyện, triển khai, giám sát, mô phỏng trôi dữ liệu và ghi lại sự cố.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Fashion-MNIST",
+      "url": "https://github.com/zalandoresearch/fashion-mnist",
+      "size_mb": 35,
+      "license": "MIT",
+      "why_vi": "Nhỏ, dễ phục vụ và dễ giả lập trôi dữ liệu (xoay, nhiễu ảnh)."
+     },
+     {
+      "name": "CIFAR-10 (bản Python)",
+      "url": "https://cave.cs.toronto.edu/kriz/cifar.html",
+      "size_mb": 163,
+      "license": "không ghi rõ, yêu cầu trích dẫn",
+      "why_vi": "Dữ liệu khó hơn để giám sát chất lượng dự đoán."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "MLOps Zoomcamp",
+      "author": "DataTalks.Club (Alexey Grigorev)",
+      "kind": "khoa_hoc",
+      "lang": "en",
+      "url": "https://github.com/DataTalksClub/mlops-zoomcamp",
+      "where": "6 mô-đun: theo dõi thí nghiệm, điều phối, triển khai, giám sát, thực hành tốt, dự án cuối",
+      "free": true,
+      "minutes": 4000,
+      "why_vi": "Miễn phí, có bài tập; bản 2025 là lần mới nhất, trang nói chưa có khoá trực tiếp 2026.",
+      "checked": true
+     },
+     {
+      "title": "Made With ML",
+      "author": "Goku Mohandas",
+      "kind": "khoa_hoc",
+      "lang": "en",
+      "url": "https://madewithml.com/",
+      "where": "mục MLOps: Testing (code, data, models), Reproducibility, Production (CI/CD, monitoring)",
+      "free": true,
+      "minutes": 1200,
+      "why_vi": "Tập bài viết có mã đi từ thí nghiệm đến sản xuất; chưa kiểm tình trạng cập nhật.",
+      "checked": true
+     }
+    ],
+    "target_vi": "Chưa kiểm chứng con số chuẩn: mục tiêu là hệ thống chạy liên tục một tuần, có cảnh báo khi độ chính xác giảm và một bản ghi sự cố; độ chính xác Fashion-MNIST khoảng 92% từ CNN nhỏ.",
+    "compute_vi": "CPU laptop đủ cho mô hình nhỏ và Docker; GPU miễn phí (Colab không bảo đảm, Kaggle ~30 giờ/tuần theo nguồn thứ cấp) chỉ cần nếu dùng CIFAR-10."
+   }
+  }
+ },
+ "exam_proofs": [],
+ "rejected": [
+  {
+   "title": "CMU Deep Learning Systems (dlsyscourse.org)",
+   "why_vi": "Rất hay nhưng chủ yếu cho sinh viên ghi danh và bài tập nặng; chỉ dùng HW1 cho autograd."
+  },
+  {
+   "title": "Stanford CS329S",
+   "why_vi": "Không tải được trang (chứng chỉ bị từ chối) nên không đưa vào."
+  },
+  {
+   "title": "MLOps Zoomcamp làm nguồn duy nhất",
+   "why_vi": "Cần kiến thức Docker và cohort 2026 không mở; chỉ dùng tài liệu mở."
+  },
+  {
+   "title": "Chip Huyen, AI Engineering (2025)",
+   "why_vi": "Sách trả phí, chỉ có trang mua; không có phần miễn phí kiểm chứng được."
+  },
+  {
+   "title": "FSDL 2022 làm nguồn mới nhất",
+   "why_vi": "Nội dung 2022 và bootcamp 2023: dùng cho khung ý tưởng, công cụ đã đổi nhiều."
+  }
+ ]
+}

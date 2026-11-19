@@ -34,6 +34,9 @@ def tiers_text(lo: int, hi: int) -> str:
     return T.MATH_TIER_ONE.format(lo=lo) if lo == hi else T.MATH_TIERS.format(lo=lo, hi=hi)
 
 
+TRIBULATION_REVEAL_SECONDS = 20.0   # how long the combat card of a missed Thiên kiếp stays up
+
+
 class MathQuizScene(QuizScene):
     """One math question: true/false, multiple choice or a typed number."""
 
@@ -61,6 +64,12 @@ class MathQuizScene(QuizScene):
         self.match = MI.MatchingState(len(prompt.get("left") or [])) if question.get("input") == "matching" else None
         self.ordering = MI.OrderingState(len(prompt.get("steps") or [])) if question.get("input") == "ordering" else None
         self.mistake = MI.FindMistakeState(len(prompt.get("lines") or [])) if question.get("input") == "find_mistake" else None
+        # M11 đợt 2: a Thiên kiếp - its parts answered one at a time, all sent together
+        self.trib = MI.TribulationState(prompt.get("parts") or []) if question.get("input") == "tribulation" else None
+        if self.trib is not None:                   # the number boxes keep their text by id: start empty
+            for k in range(self.trib.n):
+                game.ui.set_value(f"trib_text_{k}", "")
+        self.reveal_scroll = 0          # the first line of the reveal in view (a Thiên kiếp's is long)
 
     # ------------------------------------------------------------ actions
     def submit(self, answer: dict):
@@ -127,6 +136,12 @@ class MathQuizScene(QuizScene):
             top = y + 42
         ui.text(self.q.get("instruction_vi", ""), x + w / 2, top, 7, GREY, anchor="midtop", max_w=w - 30)
         prompt = self.q.get("prompt", {})
+        if self.q.get("input") == "tribulation" and self.trib is not None:     # M11 đợt 2: Thiên kiếp
+            ans = MI.draw_tribulation(ui, self.trib, prompt, x, top + 13, w, y + h - self.input_margin(), self.sent)
+            if ans is not None:
+                self.submit(ans)
+            self.draw_run(ui, x, y, w, h)
+            return
         text = prompt.get("text", "")
         cy = top + 16
         cy += ui.text(text, x + w / 2, cy, 10 if len(text) <= 110 else 9, anchor="midtop", max_w=w - 36).h
@@ -166,8 +181,16 @@ class MathQuizScene(QuizScene):
             n = min(total, r.get("asked", 0) + (0 if answered else 1))
             left = max(0, t.get("max_wrong", 0) - t.get("wrong", 0))
             return f"{T.MATH_TRIAL_PROGRESS.format(n=n, t=total)}   {T.MATH_TRIAL_ALLOWED.format(n=left)}"
-        return (f"{T.MATH_COMBO.format(n=r.get('combo', 0))}   "
+        line = (f"{T.MATH_COMBO.format(n=r.get('combo', 0))}   "
                 f"{T.MATH_SCORE.format(c=r.get('correct', 0), a=r.get('asked', 0))}")
+        # M11 đợt 2, rule 8: a rung of a ladder says so; a tier-5 miss says a ladder comes next
+        rung = (self.q.get("math") or {}).get("ladder")
+        opened = ((getattr(self, "result", None) or {}).get("math") or {}).get("ladder") if answered else None
+        if rung:
+            line = f"{T.MATH_LADDER_STEP.format(n=rung.get('step', 1), t=rung.get('steps', 1))}   {line}"
+        elif opened and opened.get("started"):
+            line = f"{T.MATH_LADDER_OPENED.format(t=opened.get('steps', 0))}   {line}"
+        return line
 
     def draw_run(self, ui, x, y, w, h):
         if self.run:
@@ -221,6 +244,30 @@ class MathQuizScene(QuizScene):
             cy += ui.text(line, x + 24, cy, 8, UICOL["green"], max_w=w - 56).h + 1
         return cy + 3
 
+    def draw_reveal_body(self, ui, x, y, w, h, res: dict, good: bool, timed_out: bool) -> None:
+        """Under the verdict: the question, the player's answer, the right one and - after a
+        wrong answer - the solution steps, stopping above the bottom row."""
+        cy = y + 48
+        prompt = self.q.get("prompt", {})
+        if self.q.get("input") != "find_mistake":     # (its prompt is the same long sentence every time: the reveal skips it)
+            cy += ui.text(prompt.get("text", ""), x + 16, cy, 8, GREY, max_w=w - 32).h + 3
+        if prompt.get("matrices"):
+            cy = draw_matrices(ui, prompt["matrices"], x + 20, cy + 1, centered=False) + 4
+        rv = res.get("reveal") or {}
+        if not good and not timed_out and self.given_text():
+            cy += ui.text(T.MATH_YOUR_ANSWER.format(a=self.given_text()), x + 16, cy, 8, UICOL["accent"],
+                          max_w=w - 32).h + 2
+        cy = self.draw_answer(ui, x, cy, w, y + h - 40, rv.get("answer_text", ""))
+        if not good and rv.get("solution_vi"):      # rule 6: after a wrong answer, the steps
+            cy += ui.text(T.MATH_SOLUTION, x + 16, cy, 8, "#2B2B2B").h + 2
+            pitch = ui.text_size("Ag", 8)[1] * 1.15
+            for n, step in enumerate(rv["solution_vi"], 1):
+                rows = len(ui.f.wrap(step, 8, int((w - 52) * ui.s), ui.s)) or 1
+                if cy + rows * pitch > y + h - self.solution_margin + 12:     # a step that would run into the line below stops here
+                    break
+                ui.text(f"{n}.", x + 18, cy, 8, GREY)
+                cy += ui.text(step, x + 32, cy, 8, "#2B2B2B", max_w=w - 52).h + 2
+
     def draw_math_result(self, ui, x, y, w, h):
         res = self.result
         good = res.get("correct")
@@ -248,26 +295,16 @@ class MathQuizScene(QuizScene):
             notes.append(T.MATH_TRIAL_PASSED if verdict else T.MATH_TRIAL_FAILED)
         ui.text("   ".join(notes), x + w - 18, y + 31, 9, "#C99A3A", anchor="midright")
 
-        cy = y + 48
-        prompt = self.q.get("prompt", {})
-        if self.q.get("input") != "find_mistake":     # (its prompt is the same long sentence every time: the reveal skips it)
-            cy += ui.text(prompt.get("text", ""), x + 16, cy, 8, GREY, max_w=w - 32).h + 3
-        if prompt.get("matrices"):
-            cy = draw_matrices(ui, prompt["matrices"], x + 20, cy + 1, centered=False) + 4
-        rv = res.get("reveal") or {}
-        if not good and not timed_out and self.given_text():
-            cy += ui.text(T.MATH_YOUR_ANSWER.format(a=self.given_text()), x + 16, cy, 8, UICOL["accent"],
-                          max_w=w - 32).h + 2
-        cy = self.draw_answer(ui, x, cy, w, y + h - 40, rv.get("answer_text", ""))
-        if not good and rv.get("solution_vi"):      # rule 6: after a wrong answer, the steps
-            cy += ui.text(T.MATH_SOLUTION, x + 16, cy, 8, "#2B2B2B").h + 2
-            pitch = ui.text_size("Ag", 8)[1] * 1.15
-            for n, step in enumerate(rv["solution_vi"], 1):
-                rows = len(ui.f.wrap(step, 8, int((w - 52) * ui.s), ui.s)) or 1
-                if cy + rows * pitch > y + h - self.solution_margin + 12:     # a step that would run into the line below stops here
-                    break
-                ui.text(f"{n}.", x + 18, cy, 8, GREY)
-                cy += ui.text(step, x + 32, cy, 8, "#2B2B2B", max_w=w - 52).h + 2
+        if self.q.get("input") == "tribulation":       # M11 đợt 2: part by part, then the steps (rule 6)
+            rv = res.get("reveal") or {}
+            rows = MI.tribulation_reveal_rows((self.q.get("prompt") or {}).get("parts") or [],
+                                              {**rv, "solution_vi": [] if good else rv.get("solution_vi") or []},
+                                              self.given, bool(good), bool(timed_out))
+            # a Thiên kiếp's solution is long: it scrolls (wheel, Up / Down) instead of running over
+            self.reveal_scroll = MI.draw_scrolled(ui, rows, x + 16, y + 48, w - 32,
+                                                  y + h - self.solution_margin + 12, self.reveal_scroll)
+        else:
+            self.draw_reveal_body(ui, x, y, w, h, res, good, timed_out)
         if run:
             ui.text(self.run_line(run, answered=True), x + 12, y + h - 12, 7, GREY, anchor="midleft")
         doc = (self.q.get("math") or {}).get("doc")
@@ -343,6 +380,10 @@ class MathCombatQuizScene(CombatCard, MathQuizScene):
         if c.get("cast"):           # M9: a chiêu lands or fizzles; it never costs a Mặc Kích
             if c.get("missed"):
                 ui.text(T.MSKILL_MISSED, x + w / 2, y + 31, 8, UICOL["accent"], anchor="center", max_w=w - 200)
+                if self.q.get("input") == "tribulation":
+                    # a missed Thiên kiếp shows which part went wrong and a long solution: the two
+                    # seconds of an ordinary card are not enough to read it (Enter still closes it)
+                    self.close_after = TRIBULATION_REVEAL_SECONDS
             else:
                 txt = (T.MSKILL_LANDED_CRIT if c.get("crit") else T.MSKILL_LANDED).format(n=c.get("damage", 0))
                 if c.get("combo", 0) > 1:
@@ -356,6 +397,9 @@ class MathCombatQuizScene(CombatCard, MathQuizScene):
         elif c.get("mac_kich"):
             ui.text(f"{T.MAC_KICH} -{c['mac_kich']}", x + w - 12, y + h - 12, 8, UICOL["accent"],
                     anchor="bottomright")
+        # the card closes by itself; a player who has read enough may close it sooner
+        if self.result_t >= 0.5 and (ui.key(pygame.K_RETURN) or ui.key(pygame.K_ESCAPE)):
+            self.finish()
 
 
 # M10: (widget id, label, module, scene class) of the doors along the bottom of the hub. The
@@ -598,12 +642,15 @@ class MathPracticeScene(Scene):
                      T.MATH_SUMMARY_TIER.format(name=r["tier_name_vi"])]
             if r.get("review_asked"):
                 lines.append(T.MATH_REVIEW_COUNT.format(n=r["review_asked"]))
+            if r.get("ladders"):                    # M11 đợt 2, rule 8
+                lines.append(T.MATH_LADDER_COUNT.format(n=r["ladders"]))
             hint = self.gate_hint(r)
             if hint:
                 lines.append(hint)
         ui.text(title, x + w / 2, y + 44, 12, colour, anchor="center")
+        pitch = 18 if len(lines) <= 6 else 15       # (seven lines still clear the button)
         for i, line in enumerate(lines):
-            ui.text(line, x + w / 2, y + 70 + i * 18, 9, "#2B2B2B", anchor="center", max_w=w - 40)
+            ui.text(line, x + w / 2, y + 70 + i * pitch, 9, "#2B2B2B", anchor="center", max_w=w - 40)
         if ui.button("math_back", x + w / 2 - 45, y + 176, 90, 16, T.MATH_BACK, style="primary",
                      key=pygame.K_RETURN):
             self.summary = self.trial = None

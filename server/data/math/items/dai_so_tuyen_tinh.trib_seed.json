@@ -1,0 +1,44 @@
+{
+ "_comment": "Agent TRIB (M11 đợt 2): hai câu Thiên kiếp (tribulation) mẫu cho tầng 5 Đại Số Tuyến Tính, để loại câu mới có câu thật mà chơi và test trước khi ngân hàng tầng 4-6 về. Định dạng: xem math_items.py. Mọi đáp án đã được kiểm lại bằng sympy.",
+ "subject": "dai_so_tuyen_tinh",
+ "items": [
+  {"id": "dstt_t5_bac_thang_91", "skill": "dstt_t5_bac_thang", "tier": 4, "type": "tribulation",
+   "prompt_vi": "Đệ tử giải hệ ba phương trình: (1) x + y + z = 6, (2) 2x + 3y + z = 11, (3) x - y + 2z = 5. Ma trận mở rộng của hệ là A.",
+   "matrices": {"A": [[1, 1, 1, 6], [2, 3, 1, 11], [1, -1, 2, 5]]},
+   "parts": [
+    {"type": "multiple_choice", "prompt_vi": "a) Phép biến đổi nào khử được x khỏi phương trình (2)?",
+     "options_vi": ["(2) - 2*(1)", "(2) - (1)", "(2) + 2*(1)", "(2) - 3*(1)"], "answer": 0},
+    {"type": "numeric", "prompt_vi": "b) Khử Gauss rồi thế ngược. Nhập nghiệm x, y, z theo đúng thứ tự, cách nhau bằng dấu phẩy.",
+     "answer": "1, 2, 3"},
+    {"type": "true_false", "prompt_vi": "c) Dạng bậc thang của A có ba phần tử trụ, nên hệ có đúng một nghiệm.",
+     "answer": true}
+   ],
+   "solution_vi": [
+    "a) Phương trình (2) có 2x, phương trình (1) có x: lấy (2) - 2*(1) thì x mất, được y - z = -1.",
+    "b) Lấy (3) - (1): -2y + z = -1. Cộng với y - z = -1: -y = -2, nên y = 2.",
+    "b) Thế ngược: z = y + 1 = 3, rồi từ (1): x = 6 - 2 - 3 = 1. Nghiệm (1, 2, 3); thử lại cả ba phương trình đều đúng.",
+    "c) Ba cột x, y, z đều có trụ (1, 1 và -1 sau khi khử), không có ẩn tự do: hệ có đúng một nghiệm. Mệnh đề đúng."
+   ],
+   "reviewed": false},
+  {"id": "dstt_t5_so_nghiem_91", "skill": "dstt_t5_so_nghiem", "tier": 4, "type": "tribulation",
+   "prompt_vi": "Cho hệ có tham số m: (1) x + 2y - z = 1, (2) 2x + 5y + z = 4, (3) x + 3y + mz = 3. Con khử x khỏi (2) và (3), rồi khử y khỏi phương trình cuối.",
+   "parts": [
+    {"type": "numeric", "prompt_vi": "a) Sau hai bước khử, phương trình cuối có dạng (m - k)*z = 0. Tìm k.",
+     "answer": "2"},
+    {"type": "multiple_choice", "prompt_vi": "b) Với m = 2, hệ có bao nhiêu nghiệm?",
+     "options_vi": ["Vô số nghiệm", "Đúng một nghiệm", "Vô nghiệm"], "answer": 0},
+    {"type": "numeric", "prompt_vi": "c) Với m = 5, nhập nghiệm x, y, z theo đúng thứ tự, cách nhau bằng dấu phẩy.",
+     "answer": "-3, 2, 0"},
+    {"type": "true_false", "prompt_vi": "d) Có ít nhất một giá trị thực của m làm hệ vô nghiệm.",
+     "answer": false}
+   ],
+   "solution_vi": [
+    "a) (2) - 2*(1): y + 3z = 2. (3) - (1): y + (m + 1)z = 2. Trừ hai phương trình này: (m - 2)z = 0, nên k = 2.",
+    "b) Với m = 2, phương trình cuối là 0 = 0: còn hai phương trình cho ba ẩn, z là ẩn tự do, hệ có vô số nghiệm.",
+    "c) Với m = 5: 3z = 0 nên z = 0, rồi y = 2 - 3*0 = 2 và x = 1 - 2*2 + 0 = -3. Nghiệm (-3, 2, 0).",
+    "d) Vế phải của (m - 2)z = 0 luôn bằng 0, nên không bao giờ ra 0 = c với c khác 0: hệ không vô nghiệm với m nào. Mệnh đề sai."
+   ],
+   "reviewed": false}
+ ],
+ "generators": []
+}

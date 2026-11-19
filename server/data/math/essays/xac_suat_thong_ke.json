@@ -1,0 +1,174 @@
+{
+  "_comment": "Đề tự luận của Luận Đạo Đài (docs/LUAN_DAO_DAI.md). Tuỳ chọn, không nằm trên chính đạo, chưa nối vào game. Đề, lời giải và thang điểm tự viết; mỗi thang điểm tổng 10.",
+  "subject": "xac_suat_thong_ke",
+  "wired": false,
+  "essays": [
+    {
+      "id": "xs_tl_bayes_ba_day_chuyen",
+      "node": "xs_bayes",
+      "kind": "tinh_co_lap_luan",
+      "level": 1,
+      "minutes": 10,
+      "title_vi": "Sản phẩm lỗi đến từ dây chuyền nào",
+      "statement_vi": "Một xưởng có ba dây chuyền A, B, C làm ra lần lượt 50%, 30%, 20% số sản phẩm. Tỉ lệ sản phẩm lỗi của ba dây chuyền lần lượt là 2%, 3%, 5%. Lấy ngẫu nhiên một sản phẩm của xưởng thì thấy nó bị lỗi. Tính xác suất sản phẩm ấy do dây chuyền C làm ra. Trình bày đầy đủ.",
+      "why_vi": "Bộ lọc thư rác Bayes làm đúng phép tính này: từ 'thư rác thì hay có từ này' suy ngược ra 'thư có từ này thì có phải thư rác không'.",
+      "hints_vi": [
+        "Đặt tên các sự kiện trước khi viết công thức.",
+        "Tính xác suất một sản phẩm bất kỳ bị lỗi trước, bằng công thức xác suất đầy đủ."
+      ],
+      "solution_vi": [
+        "Gọi A, B, C là sự kiện sản phẩm do dây chuyền A, B, C làm ra; L là sự kiện sản phẩm bị lỗi.",
+        "A, B, C lập thành một hệ đầy đủ: đôi một xung khắc và P(A) + P(B) + P(C) = 0,5 + 0,3 + 0,2 = 1.",
+        "Đề cho P(L | A) = 0,02; P(L | B) = 0,03; P(L | C) = 0,05.",
+        "Công thức xác suất đầy đủ: P(L) = 0,5 . 0,02 + 0,3 . 0,03 + 0,2 . 0,05 = 0,010 + 0,009 + 0,010 = 0,029.",
+        "Công thức Bayes: P(C | L) = P(C) . P(L | C) / P(L) = 0,010 / 0,029 = 10 / 29, khoảng 0,345.",
+        "Nhận xét: C chỉ làm 20% sản phẩm nhưng chiếm khoảng 34,5% số sản phẩm lỗi, vì tỉ lệ lỗi của nó cao nhất."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 2, "need_vi": "Đặt tên sự kiện và nêu A, B, C là hệ đầy đủ."},
+        {"id": "r2", "points": 1, "need_vi": "Viết đúng các xác suất có điều kiện P(L | A), P(L | B), P(L | C) từ đề."},
+        {"id": "r3", "points": 3, "need_vi": "Dùng công thức xác suất đầy đủ, ra P(L) = 0,029."},
+        {"id": "r4", "points": 3, "need_vi": "Dùng công thức Bayes, ra 10/29 (khoảng 0,345)."},
+        {"id": "r5", "points": 1, "need_vi": "Có một câu nhận xét kết quả so với tỉ lệ 20% ban đầu."}
+      ],
+      "fatal_vi": [
+        "Trả lời 5%: nhầm P(L | C) với P(C | L).",
+        "Cộng thẳng ba tỉ lệ lỗi 2% + 3% + 5% làm xác suất lỗi."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "xs_tl_ky_vong_nhi_thuc",
+      "node": "xs_ky_vong_phan_phoi",
+      "kind": "chung_minh",
+      "level": 2,
+      "minutes": 15,
+      "title_vi": "Kỳ vọng và phương sai của phân phối nhị thức",
+      "statement_vi": "Cho X có phân phối nhị thức B(n, p). Bằng cách viết X thành tổng của n biến Bernoulli, chứng minh E(X) = np và V(X) = np(1 - p).",
+      "why_vi": "Độ chính xác đo trên n mẫu kiểm tra là một biến nhị thức chia cho n. Công thức phương sai này cho biết con số ấy dao động bao nhiêu.",
+      "hints_vi": [
+        "Gọi X_i = 1 nếu phép thử thứ i thành công, bằng 0 nếu không.",
+        "Kỳ vọng của tổng luôn bằng tổng kỳ vọng. Phương sai của tổng thì cần thêm một điều kiện."
+      ],
+      "solution_vi": [
+        "Gọi X_i = 1 nếu phép thử thứ i thành công và X_i = 0 nếu thất bại (i = 1, ..., n). Khi đó X = X_1 + ... + X_n, các X_i độc lập và P(X_i = 1) = p.",
+        "E(X_i) = 1 . p + 0 . (1 - p) = p.",
+        "Vì X_i chỉ nhận 0 và 1 nên X_i^2 = X_i, do đó E(X_i^2) = p và V(X_i) = E(X_i^2) - (E(X_i))^2 = p - p^2 = p(1 - p).",
+        "Kỳ vọng có tính tuyến tính (không cần độc lập): E(X) = E(X_1) + ... + E(X_n) = np.",
+        "Vì các X_i độc lập nên phương sai của tổng bằng tổng các phương sai: V(X) = V(X_1) + ... + V(X_n) = np(1 - p)."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 2, "need_vi": "Viết X thành tổng n biến Bernoulli độc lập, định nghĩa rõ X_i."},
+        {"id": "r2", "points": 1, "need_vi": "Tính E(X_i) = p."},
+        {"id": "r3", "points": 2, "need_vi": "Tính V(X_i) = p(1 - p), có qua E(X_i^2)."},
+        {"id": "r4", "points": 2, "need_vi": "Dùng tính tuyến tính của kỳ vọng để có E(X) = np."},
+        {"id": "r5", "points": 3, "need_vi": "Nêu rõ dùng tính độc lập để cộng phương sai, ra V(X) = np(1 - p)."}
+      ],
+      "fatal_vi": [
+        "Viết X = n . X_1 (coi n phép thử là một) rồi suy ra V(X) = n^2 p(1 - p).",
+        "Chỉ kiểm tra công thức với n = 1 hoặc n = 2."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "xs_tl_trung_binh_mau_khong_chech",
+      "node": "xs_mau_uoc_luong",
+      "kind": "chung_minh",
+      "level": 2,
+      "minutes": 12,
+      "title_vi": "Trung bình mẫu là ước lượng không chệch",
+      "statement_vi": "Cho X_1, ..., X_n là mẫu ngẫu nhiên (độc lập, cùng phân phối) từ một tổng thể có kỳ vọng m và phương sai s^2. Gọi T = (X_1 + ... + X_n) / n. (a) Chứng minh T là ước lượng không chệch của m. (b) Chứng minh V(T) = s^2 / n. (c) Muốn độ lệch chuẩn của T giảm một nửa thì cỡ mẫu phải tăng mấy lần?",
+      "why_vi": "Câu (c) là lý do tập kiểm tra gấp đôi không làm con số đáng tin gấp đôi, và vì sao lô dữ liệu lớn gấp bốn chỉ làm gradient bớt nhiễu một nửa.",
+      "hints_vi": [
+        "Không chệch nghĩa là kỳ vọng của ước lượng bằng đúng tham số.",
+        "V(aX) = a^2 V(X). Phương sai của tổng các biến độc lập bằng tổng phương sai."
+      ],
+      "solution_vi": [
+        "(a) Ước lượng T của m là không chệch khi E(T) = m.",
+        "E(T) = (1 / n)(E(X_1) + ... + E(X_n)) = (1 / n) . n . m = m, theo tính tuyến tính của kỳ vọng. Vậy T không chệch.",
+        "(b) V(T) = (1 / n^2) V(X_1 + ... + X_n). Vì các X_i độc lập nên V(X_1 + ... + X_n) = n s^2.",
+        "Do đó V(T) = n s^2 / n^2 = s^2 / n.",
+        "(c) Độ lệch chuẩn của T là s / sqrt(n). Để nó giảm một nửa cần sqrt(n) tăng gấp đôi, tức cỡ mẫu tăng 4 lần."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 1, "need_vi": "Nêu định nghĩa không chệch: E(T) = m."},
+        {"id": "r2", "points": 3, "need_vi": "Tính E(T) = m bằng tính tuyến tính của kỳ vọng."},
+        {"id": "r3", "points": 2, "need_vi": "Đưa hệ số ra ngoài phương sai đúng: 1 / n^2."},
+        {"id": "r4", "points": 2, "need_vi": "Dùng tính độc lập để cộng phương sai, ra s^2 / n."},
+        {"id": "r5", "points": 2, "need_vi": "Trả lời câu (c): tăng 4 lần, có lập luận qua s / sqrt(n)."}
+      ],
+      "fatal_vi": [
+        "Viết V(T) = (1 / n)(V(X_1) + ... + V(X_n)) = s^2: đưa hệ số ra ngoài phương sai mà không bình phương.",
+        "Trả lời câu (c) là tăng 2 lần."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "xs_tl_hop_ly_cuc_dai_mu",
+      "node": "xs_mau_uoc_luong",
+      "kind": "tinh_co_lap_luan",
+      "level": 3,
+      "minutes": 15,
+      "title_vi": "Ước lượng hợp lý cực đại cho phân phối mũ",
+      "statement_vi": "Thời gian chờ giữa hai yêu cầu tới một máy chủ có phân phối mũ với hàm mật độ f(x) = c . e^(-c x) với x > 0 (c > 0 chưa biết). Quan sát được mẫu độc lập x_1, ..., x_n. Tìm ước lượng hợp lý cực đại của c.",
+      "why_vi": "Huấn luyện một mô hình phân loại hay mô hình ngôn ngữ chính là cực đại hoá hàm hợp lý. Đây là phiên bản một tham số, giải được bằng tay.",
+      "hints_vi": [
+        "Hàm hợp lý của mẫu độc lập là tích các mật độ.",
+        "Lấy logarit trước khi đạo hàm. Đừng quên kiểm tra đó là điểm cực đại."
+      ],
+      "solution_vi": [
+        "Vì mẫu độc lập, hàm hợp lý là L(c) = tích của c . e^(-c x_i) = c^n . e^(-c S), với S = x_1 + ... + x_n.",
+        "Lấy logarit: l(c) = ln L(c) = n ln c - c S. Cực đại của L và của l đạt tại cùng một điểm vì ln là hàm tăng.",
+        "Đạo hàm: l'(c) = n / c - S. Cho l'(c) = 0 được c = n / S.",
+        "Đạo hàm cấp hai: l''(c) = -n / c^2 < 0 với mọi c > 0, nên điểm dừng là điểm cực đại (duy nhất).",
+        "Vậy ước lượng hợp lý cực đại của c là n / S, tức nghịch đảo của trung bình mẫu."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 2, "need_vi": "Viết hàm hợp lý là tích các mật độ, có nêu tính độc lập."},
+        {"id": "r2", "points": 2, "need_vi": "Lấy logarit đúng: n ln c - c S."},
+        {"id": "r3", "points": 2, "need_vi": "Đạo hàm và lập phương trình l'(c) = 0."},
+        {"id": "r4", "points": 2, "need_vi": "Giải ra c = n / S (nghịch đảo trung bình mẫu)."},
+        {"id": "r5", "points": 2, "need_vi": "Kiểm tra đó là cực đại (đạo hàm cấp hai âm, hoặc xét dấu đạo hàm)."}
+      ],
+      "fatal_vi": [
+        "Lấy hàm hợp lý là tổng các mật độ thay vì tích.",
+        "Trả lời ước lượng là trung bình mẫu (nhầm tham số c với kỳ vọng 1 / c)."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "xs_tl_doc_lap_va_xung_khac",
+      "node": "xs_dieu_kien",
+      "kind": "chung_minh",
+      "level": 1,
+      "minutes": 10,
+      "title_vi": "Độc lập không phải là xung khắc",
+      "statement_vi": "Cho hai sự kiện A, B với P(A) > 0 và P(B) > 0. (a) Chứng minh nếu A và B xung khắc thì chúng không độc lập. (b) Chứng minh nếu A và B độc lập thì A và sự kiện đối của B cũng độc lập.",
+      "why_vi": "Naive Bayes giả định các đặc trưng độc lập. Hiểu sai 'độc lập' thành 'không xảy ra cùng nhau' là nhầm lẫn phổ biến nhất về giả định ấy.",
+      "hints_vi": [
+        "Độc lập nghĩa là P(AB) = P(A) P(B).",
+        "A là hợp của hai phần rời nhau: phần nằm trong B và phần nằm ngoài B."
+      ],
+      "solution_vi": [
+        "A và B độc lập khi và chỉ khi P(AB) = P(A) P(B).",
+        "(a) Nếu A, B xung khắc thì AB là sự kiện không thể, nên P(AB) = 0. Trong khi đó P(A) P(B) > 0 vì cả hai thừa số dương.",
+        "Vậy P(AB) khác P(A) P(B): A và B không độc lập.",
+        "(b) Gọi B' là sự kiện đối của B. A là hợp của hai sự kiện xung khắc AB và AB', nên P(A) = P(AB) + P(AB').",
+        "Suy ra P(AB') = P(A) - P(AB) = P(A) - P(A) P(B) = P(A)(1 - P(B)) = P(A) P(B').",
+        "Vậy A và B' độc lập."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 1, "need_vi": "Nêu định nghĩa độc lập: P(AB) = P(A) P(B)."},
+        {"id": "r2", "points": 3, "need_vi": "Câu (a): chỉ ra P(AB) = 0 nhưng P(A) P(B) > 0."},
+        {"id": "r3", "points": 2, "need_vi": "Câu (b): tách A thành AB và AB' xung khắc, viết P(A) = P(AB) + P(AB')."},
+        {"id": "r4", "points": 3, "need_vi": "Biến đổi ra P(AB') = P(A) P(B'), có dùng P(B') = 1 - P(B)."},
+        {"id": "r5", "points": 1, "need_vi": "Kết luận cho cả hai câu."}
+      ],
+      "fatal_vi": [
+        "Coi 'xung khắc' và 'độc lập' là một.",
+        "Ở câu (b) dùng luôn P(AB') = P(A) P(B') là điều phải chứng minh."
+      ],
+      "reviewed": false
+    }
+  ]
+}

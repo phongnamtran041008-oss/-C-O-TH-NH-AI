@@ -36,8 +36,38 @@ def _matrices(item: math_items.MathItem) -> list[str]:
             for name, rows in item.matrices]
 
 
+def _extras(item: math_items.MathItem) -> list[str]:
+    """M11 đợt 2: the ladder of a tier-5 question (rule 8) and a numeric tolerance, when set."""
+    out = []
+    if getattr(item, "ladder", ()):
+        out.append("  - **Thang câu (luật 8, hỏi theo thứ tự sau khi sai):** "
+                   + ", ".join(f"`{rung}`" for rung in item.ladder))
+    if item.tolerance is not None:
+        out.append(f"  - **Sai số cho phép:** ±{item.tolerance:g}")
+    return out
+
+
+def _tribulation(item: math_items.MathItem) -> list[str]:
+    """A Thiên kiếp: the situation (above), then each part with its own answer, then the solution."""
+    lines = []
+    for k, part in enumerate(item.parts):
+        letter = math_items.PART_LETTERS[k]
+        lines.append(f"  - **Phần {letter}** ({_type_vi(part.qtype)}): {part.prompt_vi}")
+        if part.qtype == "multiple_choice":
+            lines += [f"    - {'**(đúng)** ' if n == part.answer else ''}{text}"
+                      for n, text in enumerate(part.options_vi)]
+        extra = ("  (thứ tự nào cũng được)" if part.unordered else "") + \
+                (f"  (sai số cho phép ±{part.tolerance:g})" if part.tolerance is not None else "")
+        lines.append(f"    - **Đáp án {letter}:** {part.answer_text}{extra}")
+    lines.append("  - **Lời giải:**")
+    lines += [f"    {n}. {step}" for n, step in enumerate(item.solution_vi, 1)]
+    return lines
+
+
 def _question(item: math_items.MathItem) -> list[str]:
-    lines = [f"  - **Câu hỏi:** {item.prompt_vi}", *_matrices(item)]
+    lines = [f"  - **Câu hỏi:** {item.prompt_vi}", *_matrices(item), *_extras(item)]
+    if item.qtype == "tribulation":
+        return lines + _tribulation(item)
     if item.qtype == "find_mistake":
         # the lines as the player sees them, numbered, then which one is wrong, then why
         lines.append("  - **Lời giải đưa ra (có một bước sai):**")
@@ -107,7 +137,8 @@ def main(argv: list[str] | None = None) -> int:
             continue
         path = args.out / f"math_review_{subject.id}.md"
         path.write_text(subject_sheet(subject, args.floor), "utf-8", newline="\n")
-        print(f"{path.relative_to(ROOT)}: {sum(1 for _ in path.open(encoding='utf-8'))} lines")
+        shown = path.relative_to(ROOT) if path.is_relative_to(ROOT) else path     # (--out may be elsewhere)
+        print(f"{shown}: {sum(1 for _ in path.open(encoding='utf-8'))} lines")
     return 0
 
 

@@ -1,5 +1,5 @@
 {
- "_comment": "Hầm ngục (M10, kế hoạch 4.3): một chuỗi phòng sinh ra từ một hạt giống; mỗi phòng hỏi một dạng câu. Đọc qua app/systems/math_dungeon.py, kiểm tra bằng math_dungeon.validate(). Các khoá: 'hearts' = số tâm lực lúc vào hầm, một câu sai hoặc hết giờ mất một, về 0 là hầm kết thúc (giữ nguyên những gì đã nhận). 'rooms' = số phòng của một hầm kể cả phòng trấn thủ ở cuối, rút trong [min, max] theo hạt giống. 'questions_per_room' = số câu trả lời đúng để qua một phòng thường; 'warden_questions' = như thế cho phòng trấn thủ (câu khó nhất người chơi được hỏi). 'seed_max' = hạt giống là số nguyên 0..seed_max (gõ được, chia sẻ được). 'rewards_per_day' = số hầm mỗi ngày (giờ UTC của máy chủ) được nhận Linh Thạch và vật liệu; hầm sau đó vẫn chơi, vẫn được Tu Vi và vẫn tính cho lộ trình học, chỉ là không có phần thưởng. 'room_kinds' = một loại phòng cho mỗi dạng câu chơi được (khoá là dạng câu của balance/math.json): 'name_vi' tên phòng, 'short_vi' tên ngắn trên bản đồ, 'desc_vi' một câu tả. 'guardians' = kẻ giữ phòng thường, 'wardens' = trấn thủ phòng cuối: 'name_vi' và 'flavour_vi', hạt giống chọn một. 'rewards' = theo tầng: 'room' là thưởng mỗi phòng thường qua được, 'chests' là các rương cuối hầm (hạt giống chọn một); 'stones' là Linh Thạch, 'items' là {vật phẩm: số lượng}, vật phẩm phải có trong data/math/drops.json và là vật liệu (ghi chú lỗi sai chỉ rơi từ quái giữ lỗi ấy). Mọi tầng có câu hỏi phải có phần thưởng ở đây.",
+ "_comment": "Hầm ngục (M10, kế hoạch 4.3): một chuỗi phòng sinh ra từ một hạt giống; mỗi phòng hỏi một dạng câu. Đọc qua app/systems/math_dungeon.py, kiểm tra bằng math_dungeon.validate(). Các khoá: 'hearts' = số tâm lực lúc vào hầm, một câu sai hoặc hết giờ mất một, về 0 là hầm kết thúc (giữ nguyên những gì đã nhận). 'rooms' = số phòng của một hầm kể cả phòng trấn thủ ở cuối, rút trong [min, max] theo hạt giống. 'questions_per_room' = số câu trả lời đúng để qua một phòng thường; 'warden_questions' = như thế cho phòng trấn thủ (câu khó nhất người chơi được hỏi). 'seed_max' = hạt giống là số nguyên 0..seed_max (gõ được, chia sẻ được). 'rewards_per_day' = số hầm mỗi ngày (giờ UTC của máy chủ) được nhận Linh Thạch và vật liệu; hầm sau đó vẫn chơi, vẫn được Tu Vi và vẫn tính cho lộ trình học, chỉ là không có phần thưởng. 'room_kinds' = một loại phòng cho mỗi dạng câu chơi được (khoá là dạng câu của balance/math.json): 'name_vi' tên phòng, 'short_vi' tên ngắn trên bản đồ, 'desc_vi' một câu tả. Một loại phòng có thể có thêm 'questions' = số câu đúng để qua phòng loại này, thay cho questions_per_room, và cũng là số câu của trấn thủ khi trấn thủ hỏi loại này (M11 đợt 2: một câu Thiên kiếp dài 8-12 phút, nên phòng Thiên kiếp chỉ hỏi một câu). Phòng Thiên kiếp chỉ sinh ra ở tầng có Thiên kiếp ở bậc thấp nhất của tầng (tầng 7-9). 'guardians' = kẻ giữ phòng thường, 'wardens' = trấn thủ phòng cuối: 'name_vi' và 'flavour_vi', hạt giống chọn một. 'rewards' = theo tầng: 'room' là thưởng mỗi phòng thường qua được, 'chests' là các rương cuối hầm (hạt giống chọn một); 'stones' là Linh Thạch, 'items' là {vật phẩm: số lượng}, vật phẩm phải có trong data/math/drops.json và là vật liệu (ghi chú lỗi sai chỉ rơi từ quái giữ lỗi ấy). Mọi tầng có câu hỏi phải có phần thưởng ở đây.",
  "hearts": 3,
  "rooms": {"min": 4, "max": 6},
  "questions_per_room": 2,
@@ -36,6 +36,12 @@
    "name_vi": "Phòng Soi Lỗi",
    "short_vi": "Soi Lỗi",
    "desc_vi": "Trên vách đá khắc một lời giải, trong đó có một bước lệch. Soi ra bước sai đầu tiên thì vách mới mở."
+  },
+  "tribulation": {
+   "name_vi": "Phòng Lôi Kiếp",
+   "short_vi": "Lôi Kiếp",
+   "desc_vi": "Mây đen tụ trên trần đá, sấm nổ từng hồi. Giải trọn bài tổng hợp, đúng mọi phần, thì lôi kiếp mới tan.",
+   "questions": 1
   }
  },
  "guardians": [
@@ -74,6 +80,54 @@
     {"name_vi": "Rương Gỗ Mục", "stones": 16, "items": {"loi_ma_tran": 2}},
     {"name_vi": "Rương Đồng Xanh", "stones": 12, "items": {"loi_ma_tran": 3}},
     {"name_vi": "Rương Đá Cổ", "stones": 22, "items": {"loi_ma_tran": 1, "tinh_so_phuc": 1}}
+   ]
+  },
+  "4": {
+   "room": {"stones": 6, "items": {}},
+   "chests": [
+    {"name_vi": "Rương Gỗ Mục", "stones": 20, "items": {"loi_ma_tran": 2}},
+    {"name_vi": "Rương Đồng Xanh", "stones": 16, "items": {"loi_ma_tran": 3}},
+    {"name_vi": "Rương Đá Cổ", "stones": 26, "items": {"loi_ma_tran": 1, "manh_tap_hop": 1}}
+   ]
+  },
+  "5": {
+   "room": {"stones": 7, "items": {}},
+   "chests": [
+    {"name_vi": "Rương Gỗ Mục", "stones": 24, "items": {"loi_ma_tran": 3}},
+    {"name_vi": "Rương Đồng Xanh", "stones": 20, "items": {"loi_ma_tran": 4}},
+    {"name_vi": "Rương Đá Cổ", "stones": 30, "items": {"loi_ma_tran": 2, "tinh_so_phuc": 1}}
+   ]
+  },
+  "6": {
+   "room": {"stones": 8, "items": {}},
+   "chests": [
+    {"name_vi": "Rương Gỗ Mục", "stones": 28, "items": {"tinh_so_phuc": 3}},
+    {"name_vi": "Rương Đồng Xanh", "stones": 24, "items": {"tinh_so_phuc": 4}},
+    {"name_vi": "Rương Đá Cổ", "stones": 34, "items": {"tinh_so_phuc": 2, "manh_tap_hop": 2}}
+   ]
+  },
+  "7": {
+   "room": {"stones": 9, "items": {}},
+   "chests": [
+    {"name_vi": "Rương Gỗ Mục", "stones": 32, "items": {"loi_ma_tran": 4}},
+    {"name_vi": "Rương Đồng Xanh", "stones": 28, "items": {"loi_ma_tran": 5}},
+    {"name_vi": "Rương Đá Cổ", "stones": 38, "items": {"loi_ma_tran": 3, "tinh_so_phuc": 2}}
+   ]
+  },
+  "8": {
+   "room": {"stones": 10, "items": {}},
+   "chests": [
+    {"name_vi": "Rương Gỗ Mục", "stones": 36, "items": {"loi_ma_tran": 4}},
+    {"name_vi": "Rương Đồng Xanh", "stones": 32, "items": {"loi_ma_tran": 5}},
+    {"name_vi": "Rương Đá Cổ", "stones": 42, "items": {"loi_ma_tran": 3, "manh_tap_hop": 2}}
+   ]
+  },
+  "9": {
+   "room": {"stones": 11, "items": {}},
+   "chests": [
+    {"name_vi": "Rương Gỗ Mục", "stones": 40, "items": {"loi_ma_tran": 5}},
+    {"name_vi": "Rương Đồng Xanh", "stones": 36, "items": {"loi_ma_tran": 6}},
+    {"name_vi": "Rương Đá Cổ", "stones": 46, "items": {"loi_ma_tran": 4, "tinh_so_phuc": 3}}
    ]
   }
  }

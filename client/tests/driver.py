@@ -196,6 +196,31 @@ class Driver:
         self.game.shutdown()
 
 
+def fill_tribulation(drv: Driver, q: dict, key: dict, correct: bool) -> None:
+    """A Thiên kiếp (M11 đợt 2) through its widgets: each part in turn - Đúng / Sai, an option or
+    the number box - then "Phần sau", and "Trả lời" at the end. Wrong = the first part wrong,
+    every other part right."""
+    import pygame
+    parts = q["prompt"]["parts"]
+    for k, (part, pk) in enumerate(zip(parts, key["parts"])):
+        right = correct or k > 0
+        drv.wait(lambda: drv.game.top.trib.cur == k, 5, f"part {k + 1}")
+        drv.step(2)
+        if part["input"] == "truefalse":
+            drv.click("trib_true" if pk["value"] == right else "trib_false")
+        elif part["input"] == "choice":
+            drv.click("trib_opt_" + (pk["option"] if right
+                                     else next(o["id"] for o in part["options"] if o["id"] != pk["option"])))
+        else:
+            drv.click(f"trib_text_{k}")
+            drv.type(", ".join(pk["numbers"]) if right else "987654")
+        drv.step(2)
+        if k < len(parts) - 1:
+            drv.click("trib_next")
+        else:
+            drv.press(pygame.K_RETURN)               # Enter on the last part sends every part
+
+
 def fill_math_answer(drv: Driver, q: dict, key: dict, correct: bool) -> None:
     """Give the right (or a wrong) answer to the math question `q` through the card's own
     widgets, whatever its input: true/false, choice, number, matching (M9), ordering (M9) or
@@ -222,6 +247,8 @@ def fill_math_answer(drv: Driver, q: dict, key: dict, correct: bool) -> None:
         line = key["line"] if correct else (key["line"] + 1) % len(q["prompt"]["lines"])
         drv.click(f"fm_line_{line}")
         drv.click("mq_submit")
+    elif kind == "tribulation":
+        fill_tribulation(drv, q, key, correct)
     else:
         drv.click("quiz_text")
         drv.type(", ".join(key["numbers"]) if correct else "987654")

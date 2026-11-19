@@ -168,17 +168,26 @@ async def test_a_seed_replays_through_the_api_and_without_one_the_server_draws_i
 
 
 @pytest.mark.asyncio
-async def test_only_floors_the_player_has_reached(client):
+async def test_only_floors_the_player_has_reached(client, monkeypatch):
     h, _ = await make(client, "dg_floor")
     view = (await client.get("/math/dungeon", headers=h)).json()
     assert view["own_floor"] == 1 and view["run"] is None and view["hearts"] == math_dungeon.data()["hearts"]
     floors = {f["floor"]: f for f in view["floors"]}
+    assert sorted(floors) == list(range(1, 10))                          # main floors only, never the hidden 10
     assert floors[1]["open"] and not floors[2]["open"] and floors[2]["locked_vi"]
-    assert floors[4]["locked_vi"] == "Tầng này chưa có câu hỏi."      # rule 5: shown, locked, with a reason
+    assert floors[4]["locked_vi"] == "Chưa tới tầng này trên lộ trình học."     # written, not reached
     r = await client.post("/math/dungeon/start", json={"floor": 2}, headers=h)
     assert r.status_code == 403 and r.json()["error"]["code"] == "floor_locked"
+    r = await client.post("/math/dungeon/start", json={"floor": 10}, headers=h)    # the hidden floor: no questions
+    assert r.status_code == 400 and r.json()["error"]["code"] == "no_questions"
+    # rule 5 (every main floor is written today, so floor 4 is made to look unwritten)
+    real = math_practice._templates
+    monkeypatch.setattr(math_practice, "_templates", lambda s, f: [] if f == 4 else real(s, f))
+    floors = {f["floor"]: f for f in (await client.get("/math/dungeon", headers=h)).json()["floors"]}
+    assert floors[4]["locked_vi"] == "Tầng này chưa có câu hỏi."      # rule 5: shown, locked, with a reason
     r = await client.post("/math/dungeon/start", json={"floor": 4}, headers=h)
     assert r.status_code == 400 and r.json()["error"]["code"] == "no_questions"
+    monkeypatch.undo()
     r = await client.get("/math/dungeon/layout", params={"seed": 1, "floor": 2}, headers=h)
     assert r.status_code == 403
     h3, _ = await make(client, "dg_floor3", floor=3)
@@ -425,3 +434,37 @@ def test_a_room_view_never_says_more_than_the_layout():
     lay = math_dungeon.layout_view(math_dungeon.generate(5, SUBJECT, 1))
     assert set(lay["rooms"][0]) == {"kind", "name_vi", "short_vi", "desc_vi", "skill", "skill_name_vi",
                                     "guardian_vi", "flavour_vi", "warden", "need", "index", "qtype_vi"}
+
+
+# ------------------------------------------------------------------ Thiên kiếp (M11 đợt 2)
+def test_a_thien_kiep_room_asks_one_question_and_so_does_its_warden(monkeypatch):
+    """A Thiên kiếp takes 8-12 minutes: its room kind (`questions` 1) is cleared by one right
+    answer, a trấn thủ of that kind too; the other kinds keep questions_per_room."""
+    d = math_dungeon.data()
+    assert d["room_kinds"]["tribulation"]["questions"] == 1 and d["questions_per_room"] > 1
+    skills = [k.id for k in math_path.subject(SUBJECT).floor(7).skills]
+    monkeypatch.setattr(math_dungeon, "askable", lambda s, f: {"tribulation": skills[:2], "numeric": skills})
+    seen = set()
+    for seed in range(60):
+        lay = math_dungeon.generate(seed, SUBJECT, 7)
+        for r in lay["rooms"]:
+            want = 1 if r["kind"] == "tribulation" else (d["warden_questions"] if r["warden"] else d["questions_per_room"])
+            assert r["need"] == want, r
+            seen.add((r["kind"], r["warden"]))
+            if r["kind"] == "tribulation":
+                assert r["name_vi"] == "Phòng Lôi Kiếp"
+    assert ("tribulation", True) in seen and ("tribulation", False) in seen
+
+
+def test_a_thien_kiep_room_is_only_generated_where_the_floor_has_one_at_its_lowest_tier():
+    for f in (1, 2, 3, 4, 5, 6):                              # (the lowest tier of these floors is 1-3)
+        assert "tribulation" not in math_dungeon.askable(SUBJECT, f)
+
+
+def test_validate_checks_the_questions_of_a_room_kind():
+    raw = copy.deepcopy(math_dungeon._read())
+    raw["room_kinds"]["tribulation"]["questions"] = 0
+    raw["room_kinds"]["numeric"]["mo_ta"] = "x"
+    problems = math_dungeon.validate(raw)
+    assert "room_kinds.tribulation.questions: must be a whole number >= 1" in problems
+    assert any(p.startswith("room_kinds.numeric: must be {name_vi, short_vi, desc_vi}") for p in problems)

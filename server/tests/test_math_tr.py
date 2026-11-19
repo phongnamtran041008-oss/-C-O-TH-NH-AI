@@ -26,11 +26,12 @@ GENERATORS = sorted(g for g in mi.generators() if g.startswith("tr_g"))
 
 @pytest.fixture(scope="module")
 def recompute():
-    """tools/math_verify_tr.py EXPECTED (needs sympy)."""
+    """The recomputations of every generator of the subject: tools/math_verify.py gathers
+    math_verify_tr.py (floors 1-3), _tr_t4.py and _tr_t7.py (needs sympy)."""
     pytest.importorskip("sympy", reason="pip install -r server/requirements-dev.txt")
     sys.path.insert(0, str(ROOT / "tools"))
     try:
-        import math_verify_tr as module
+        import math_verify as module
         yield module.EXPECTED
     finally:
         sys.path.remove(str(ROOT / "tools"))
@@ -89,7 +90,7 @@ def test_every_written_floor_mixes_all_six_types(floor):
 
 
 def test_floors_not_written_yet_have_no_templates():
-    for floor in range(4, 11):
+    for floor in range(10, 11):
         assert mi.floor_templates(SUBJECT, floor, allow_unreviewed=True) == []
 
 
@@ -120,7 +121,8 @@ def test_everything_is_unreviewed_until_a_person_checks_it():
 
 # ------------------------------------------------------------------ the generators
 def test_every_generator_is_listed_and_registered():
-    listed = {g["id"] for g in raw_items()["generators"]}
+    listed = {g["id"] for part in mi.item_files(SUBJECT)        # floors 1-3, 4-6 and 7-9 are separate files
+              for g in json.loads(part.read_text("utf-8")).get("generators", [])}
     registered = {g for g in math_gen.REGISTRY if g.startswith("tr_g")}
     assert listed == registered == set(GENERATORS)
     assert len(GENERATORS) >= 3 * len(WRITTEN_FLOORS)
@@ -179,7 +181,7 @@ async def test_a_fresh_player_practises_floor_1_right_and_wrong(client):
     h, _ = await make(client, "roi_rac_1")
     subjects = (await client.get("/math/path", headers=h)).json()["subjects"]
     mine = next(s for s in subjects if s["id"] == SUBJECT)
-    assert [f["has_questions"] for f in mine["floors"]] == [True, True, True] + [False] * 7
+    assert [f["has_questions"] for f in mine["floors"]] == [True] * 9 + [False]
     assert mine["floors"][0]["playable"]
     assert mine["floors"][0]["questions"] == len(mi.floor_templates(SUBJECT, 1, True))
     run_id = await start(client, h, floor=1, subject=SUBJECT)

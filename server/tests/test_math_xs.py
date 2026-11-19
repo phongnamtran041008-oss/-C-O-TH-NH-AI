@@ -94,7 +94,7 @@ def test_every_written_floor_mixes_all_six_types(floor):
 
 
 def test_unwritten_floors_have_no_questions():
-    for floor in range(4, 11):
+    for floor in range(10, 11):
         assert mi.floor_templates(SUBJECT, floor, allow_unreviewed=True) == []
 
 

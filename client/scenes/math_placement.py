@@ -1,4 +1,6 @@
-"""Bài kiểm tra đầu vào (M11, learning-path rule 7), opened from the math hub.
+"""Bài kiểm tra đầu vào (M11, learning-path rule 7; a climb in blocks since M11 đợt 2), opened
+from the math hub. The result lists only the floors the climb asked about; the floors it
+jumped over are among "Được miễn".
 
 One scene over the hub: a short explanation first (what the test is, that it is optional,
 that the start floor's gate still applies), then the questions one by one on the ordinary
@@ -120,7 +122,7 @@ class PlacementScene(Scene):
             p = st.get("progress") or {}
             cy += ui.text(T.MATH_PLACE_RESUME_INTRO.format(a=p.get("asked", 0), t=p.get("total", 0)),
                           x + 16, cy, 8, UICOL["green"], max_w=w - 32).h + 6
-        intro = T.MATH_PLACE_INTRO
+        intro = T.MATH_PLACE_INTRO_CLIMB        # M11 đợt 2: the climb in blocks
         lines = [intro[0].format(name=self.subject["name_vi"]), intro[1].format(n=st.get("planned", 0)),
                  intro[2].format(pct=st.get("pass_pct", 80)), *intro[3:]]
         for line in lines:

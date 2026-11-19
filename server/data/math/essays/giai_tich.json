@@ -1,0 +1,173 @@
+{
+  "_comment": "Đề tự luận của Luận Đạo Đài (docs/LUAN_DAO_DAI.md). Tuỳ chọn, không nằm trên chính đạo, chưa nối vào game. Đề, lời giải và thang điểm tự viết; mỗi thang điểm tổng 10. Công thức viết kiểu chữ thường như các câu hỏi khác (sqrt, ^, lim, +vô cùng).",
+  "subject": "giai_tich",
+  "wired": false,
+  "essays": [
+    {
+      "id": "gt_tl_dao_ham_dinh_nghia",
+      "node": "gt_dao_ham",
+      "kind": "tinh_co_lap_luan",
+      "level": 1,
+      "minutes": 10,
+      "title_vi": "Đạo hàm bằng định nghĩa của x|x|",
+      "statement_vi": "Cho hàm số f(x) = x . |x| xác định trên R. (a) Dùng định nghĩa đạo hàm, chứng minh f khả vi tại x = 0 và tính f'(0). (b) Chứng minh f'(x) = 2|x| với mọi số thực x.",
+      "why_vi": "Hàm kích hoạt ReLU cũng gãy tại 0 như |x|. Biết xét khả vi tại điểm gãy bằng định nghĩa là biết chỗ nào đạo hàm của một mạng nơ-ron có nghĩa.",
+      "hints_vi": [
+        "Tại x = 0 không được dùng quy tắc đạo hàm của tích, vì |x| không khả vi tại 0.",
+        "Viết tỉ số (f(0 + h) - f(0)) / h rồi rút gọn với h khác 0."
+      ],
+      "solution_vi": [
+        "(a) Với h khác 0: (f(0 + h) - f(0)) / h = (h . |h| - 0) / h = |h|.",
+        "Khi h tiến tới 0 thì |h| tiến tới 0 (từ cả hai phía), nên giới hạn của tỉ số tồn tại và bằng 0.",
+        "Vậy f khả vi tại 0 và f'(0) = 0.",
+        "(b) Với x > 0: quanh x ta có f(x) = x^2, nên f'(x) = 2x = 2|x|.",
+        "Với x < 0: quanh x ta có f(x) = -x^2, nên f'(x) = -2x = 2|x|.",
+        "Tại x = 0: f'(0) = 0 = 2|0| theo câu (a). Vậy f'(x) = 2|x| với mọi x."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 2, "need_vi": "Viết đúng tỉ số sai phân tại 0 và rút gọn được thành |h| với h khác 0."},
+        {"id": "r2", "points": 3, "need_vi": "Lập luận được giới hạn của |h| khi h tiến tới 0 bằng 0 (có thể xét hai phía)."},
+        {"id": "r3", "points": 2, "need_vi": "Kết luận rõ: f khả vi tại 0 và f'(0) = 0."},
+        {"id": "r4", "points": 2, "need_vi": "Tính đúng f'(x) trên hai miền x > 0 và x < 0 bằng cách bỏ dấu giá trị tuyệt đối."},
+        {"id": "r5", "points": 1, "need_vi": "Gộp ba trường hợp x > 0, x < 0, x = 0 thành f'(x) = 2|x|."}
+      ],
+      "fatal_vi": [
+        "Dùng quy tắc đạo hàm của tích cho x . |x| ngay tại x = 0, trong khi |x| không khả vi tại 0.",
+        "Chỉ tính đạo hàm ở hai bên rồi suy ra f'(0) mà không dùng định nghĩa như đề yêu cầu."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "gt_tl_gioi_han_epsilon_delta",
+      "node": "gt_gioi_han",
+      "kind": "chung_minh",
+      "level": 2,
+      "minutes": 15,
+      "title_vi": "Giới hạn của x^2 tại 3 bằng ngôn ngữ epsilon - delta",
+      "statement_vi": "Dùng định nghĩa giới hạn (ngôn ngữ epsilon - delta), chứng minh lim x^2 = 9 khi x tiến tới 3.",
+      "why_vi": "Đây là dạng chứng minh kinh điển của đề cuối kỳ Giải tích 1. Với người làm AI, nó là bài tập về thứ tự lượng từ: 'với mọi sai số cho phép, tồn tại mức gần đủ'.",
+      "hints_vi": [
+        "Phân tích x^2 - 9 thành tích có chứa x - 3.",
+        "Thừa số còn lại chưa bị chặn. Hãy tự giới hạn trước: chỉ xét x cách 3 chưa tới 1."
+      ],
+      "solution_vi": [
+        "Cần chứng minh: với mọi epsilon > 0, tồn tại delta > 0 sao cho 0 < |x - 3| < delta kéo theo |x^2 - 9| < epsilon.",
+        "Ta có |x^2 - 9| = |x - 3| . |x + 3|.",
+        "Nếu |x - 3| < 1 thì 2 < x < 4, nên 5 < x + 3 < 7, tức |x + 3| < 7.",
+        "Cho epsilon > 0 tuỳ ý. Chọn delta = min(1, epsilon / 7).",
+        "Khi 0 < |x - 3| < delta: vì delta <= 1 nên |x + 3| < 7; vì delta <= epsilon / 7 nên |x - 3| < epsilon / 7.",
+        "Do đó |x^2 - 9| = |x - 3| . |x + 3| < (epsilon / 7) . 7 = epsilon. Vậy lim x^2 = 9 khi x tiến tới 3."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 2, "need_vi": "Phát biểu đúng điều cần chứng minh, đúng thứ tự: với mọi epsilon, tồn tại delta."},
+        {"id": "r2", "points": 2, "need_vi": "Phân tích |x^2 - 9| = |x - 3| . |x + 3|."},
+        {"id": "r3", "points": 3, "need_vi": "Chặn được |x + 3| bằng một hằng số sau khi giới hạn |x - 3| (ví dụ |x - 3| < 1 thì |x + 3| < 7)."},
+        {"id": "r4", "points": 2, "need_vi": "Chọn delta chỉ phụ thuộc epsilon, dạng min của hai số, khớp với cách chặn ở trên."},
+        {"id": "r5", "points": 1, "need_vi": "Kiểm tra lại: với delta đã chọn thì |x^2 - 9| < epsilon."}
+      ],
+      "fatal_vi": [
+        "Chọn delta phụ thuộc vào x (ví dụ delta = epsilon / |x + 3|).",
+        "Đảo thứ tự lượng từ: chọn delta trước rồi mới cho epsilon.",
+        "Thay x = 3 vào x^2 rồi coi đó là chứng minh."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "gt_tl_lien_tuc_tham_so",
+      "node": "gt_gioi_han",
+      "kind": "tinh_co_lap_luan",
+      "level": 1,
+      "minutes": 10,
+      "title_vi": "Tìm tham số để hàm liên tục tại một điểm",
+      "statement_vi": "Cho f(x) = (sqrt(x + 4) - 2) / x với x khác 0 (x >= -4) và f(0) = m. Tìm m để f liên tục tại x = 0. Trình bày đầy đủ lập luận.",
+      "why_vi": "Dạng 0/0 xuất hiện mỗi khi tính một đạo hàm. Khử nó bằng biến đổi đại số thay vì 'thay số' là thói quen cần có trước khi học đạo hàm.",
+      "hints_vi": [
+        "f liên tục tại 0 khi giới hạn của f(x) lúc x tiến tới 0 tồn tại và bằng f(0).",
+        "Nhân tử và mẫu với biểu thức liên hợp sqrt(x + 4) + 2."
+      ],
+      "solution_vi": [
+        "f liên tục tại 0 khi và chỉ khi lim f(x) (x tiến tới 0) tồn tại và bằng f(0) = m.",
+        "Với x khác 0: nhân tử và mẫu với sqrt(x + 4) + 2 được f(x) = ((x + 4) - 4) / (x . (sqrt(x + 4) + 2)) = 1 / (sqrt(x + 4) + 2).",
+        "Hàm sqrt(x + 4) + 2 liên tục tại 0 và có giá trị 4 khác 0, nên lim f(x) = 1 / 4 khi x tiến tới 0.",
+        "Vậy f liên tục tại 0 khi và chỉ khi m = 1 / 4."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 2, "need_vi": "Nêu đúng điều kiện liên tục tại 0: giới hạn tại 0 tồn tại và bằng f(0)."},
+        {"id": "r2", "points": 3, "need_vi": "Nhân liên hợp và rút gọn được x, có nói rõ x khác 0."},
+        {"id": "r3", "points": 3, "need_vi": "Tính được giới hạn bằng 1/4, có nêu lý do (mẫu liên tục và khác 0 tại 0)."},
+        {"id": "r4", "points": 2, "need_vi": "Kết luận m = 1/4."}
+      ],
+      "fatal_vi": [
+        "Thay x = 0 vào dạng 0/0 rồi kết luận giới hạn bằng 0 hoặc không tồn tại.",
+        "Rút gọn x khi chưa loại trường hợp x = 0 và dùng luôn công thức ấy tại x = 0 để định nghĩa f(0)."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "gt_tl_bat_dang_thuc_e_mu_x",
+      "node": "gt_cuc_tri",
+      "kind": "chung_minh",
+      "level": 2,
+      "minutes": 12,
+      "title_vi": "Chứng minh e^x >= 1 + x bằng đạo hàm",
+      "statement_vi": "Chứng minh rằng e^x >= 1 + x với mọi số thực x. Dấu bằng xảy ra khi nào?",
+      "why_vi": "Đổi biến, bất đẳng thức này thành ln t <= t - 1: chính là lý do độ lệch KL giữa hai phân phối không bao giờ âm.",
+      "hints_vi": [
+        "Xét hàm g(x) = e^x - 1 - x và tìm giá trị nhỏ nhất của nó.",
+        "Dấu của g'(x) đổi tại đâu?"
+      ],
+      "solution_vi": [
+        "Đặt g(x) = e^x - 1 - x, xác định và khả vi trên R. Cần chứng minh g(x) >= 0 với mọi x.",
+        "g'(x) = e^x - 1.",
+        "g'(x) < 0 khi x < 0 và g'(x) > 0 khi x > 0, vì e^x < 1 khi x < 0 và e^x > 1 khi x > 0.",
+        "Nên g giảm trên (-vô cùng, 0] và tăng trên [0, +vô cùng): g đạt giá trị nhỏ nhất tại x = 0.",
+        "g(0) = 1 - 1 - 0 = 0, vậy g(x) >= 0 với mọi x, tức e^x >= 1 + x.",
+        "Vì g giảm ngặt bên trái 0 và tăng ngặt bên phải 0 nên dấu bằng chỉ xảy ra tại x = 0."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 2, "need_vi": "Đưa về xét dấu một hàm hiệu g(x) = e^x - 1 - x (hoặc tương đương)."},
+        {"id": "r2", "points": 2, "need_vi": "Tính đúng g'(x) = e^x - 1."},
+        {"id": "r3", "points": 3, "need_vi": "Xét đúng dấu g' ở hai phía của 0 và suy ra g giảm rồi tăng."},
+        {"id": "r4", "points": 2, "need_vi": "Suy ra g(x) >= g(0) = 0 với mọi x."},
+        {"id": "r5", "points": 1, "need_vi": "Nêu dấu bằng chỉ xảy ra tại x = 0."}
+      ],
+      "fatal_vi": [
+        "Chỉ thử vài giá trị của x, hoặc chỉ dựa vào hình vẽ đồ thị.",
+        "Chỉ chứng minh cho x >= 0 rồi kết luận cho mọi x."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "gt_tl_tich_phan_suy_rong",
+      "node": "gt_tich_phan_ung_dung",
+      "kind": "tinh_co_lap_luan",
+      "level": 2,
+      "minutes": 12,
+      "title_vi": "Tích phân với cận vô hạn",
+      "statement_vi": "Xét sự hội tụ và tính tích phân của 1 / (x(x + 1)) trên [1, +vô cùng).",
+      "why_vi": "Kỳ vọng của một biến ngẫu nhiên liên tục là một tích phân cận vô hạn. Viết nó thành giới hạn là cách duy nhất để không tính nhầm 'vô cùng trừ vô cùng'.",
+      "hints_vi": [
+        "Viết tích phân thành giới hạn của tích phân trên [1, b] khi b tiến tới +vô cùng.",
+        "Tách 1 / (x(x + 1)) thành hiệu hai phân thức đơn giản, nhưng đừng tách tích phân thành hai tích phân cận vô hạn."
+      ],
+      "solution_vi": [
+        "Theo định nghĩa, tích phân cần tính là giới hạn khi b tiến tới +vô cùng của I(b) = tích phân từ 1 tới b của 1 / (x(x + 1)) dx.",
+        "Ta có 1 / (x(x + 1)) = 1 / x - 1 / (x + 1).",
+        "Trên [1, b]: I(b) = [ln x - ln(x + 1)] từ 1 tới b = ln(b / (b + 1)) - ln(1 / 2).",
+        "Khi b tiến tới +vô cùng thì b / (b + 1) tiến tới 1, nên ln(b / (b + 1)) tiến tới 0.",
+        "Vậy tích phân hội tụ và có giá trị -ln(1 / 2) = ln 2."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 2, "need_vi": "Viết tích phân cận vô hạn thành giới hạn của tích phân trên [1, b]."},
+        {"id": "r2", "points": 3, "need_vi": "Tách đúng phân thức: 1 / (x(x + 1)) = 1 / x - 1 / (x + 1)."},
+        {"id": "r3", "points": 2, "need_vi": "Tìm nguyên hàm và gộp thành một logarit: ln(x / (x + 1))."},
+        {"id": "r4", "points": 2, "need_vi": "Tính đúng giới hạn khi b tiến tới +vô cùng."},
+        {"id": "r5", "points": 1, "need_vi": "Kết luận hội tụ, giá trị ln 2."}
+      ],
+      "fatal_vi": [
+        "Tách thành hai tích phân của 1/x và 1/(x + 1) trên [1, +vô cùng) (cả hai đều phân kỳ) rồi trừ 'vô cùng cho vô cùng'."
+      ],
+      "reviewed": false
+    }
+  ]
+}

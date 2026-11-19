@@ -11,8 +11,11 @@ changes only *what is asked*, and this module is that part:
     fighting one monster get questions of two different floors;
   * the boss asks each player their "bài tổng hợp": pick_own(highest=True), the hardest
     question that player may be asked. The data names the type the boss would rather ask
-    ("find_mistake", Tìm chỗ sai); that type is not playable yet (M11), so until it is the
-    boss asks the bài tổng hợp instead - never a faked Tìm chỗ sai;
+    ("find_mistake", Tìm chỗ sai, playable since M11); a player who has no question of that
+    type at their tier gets the bài tổng hợp instead - never a faked Tìm chỗ sai;
+  * nobody here is asked a Thiên kiếp (tribulation, M11 đợt 2): one takes 8-12 minutes and a
+    math bí cảnh lasts 15-20 minutes with a group waiting on every shield, so every asker -
+    the boss's bài tổng hợp included - draws from QUICK_TYPES;
   * the answer is written to math_answers with no run (math_ask.record) before the fight
     or the seal hears about it, so it counts for the learning path; running out of time is
     graded as a wrong answer by the quiz service and costs nothing else.
@@ -37,6 +40,7 @@ if TYPE_CHECKING:
 
 CONTEXT = "math_realm"
 ASKERS = ("monster", "seal", "boss")
+QUICK_TYPES = tuple(t for t in math_items.PLAYABLE_TYPES if t != "tribulation")    # what a bí cảnh asks
 
 
 # ------------------------------------------------------------------ which question
@@ -48,7 +52,7 @@ def boss_type(rdef: dict) -> str | None:
     """The question type the boss asks, or None for the bài tổng hợp (any playable type).
     The preferred type only counts once the game can ask it."""
     prefer = rules(rdef).get("boss_question", {}).get("prefer")
-    return prefer if prefer in math_items.PLAYABLE_TYPES else None
+    return prefer if prefer in QUICK_TYPES else None
 
 
 async def question_for(db: AsyncSession, user: User, rdef: dict, asker: str, rng: random.Random | None = None,
@@ -62,9 +66,9 @@ async def question_for(db: AsyncSession, user: User, rdef: dict, asker: str, rng
         if prefer is not None:
             q = await math_ask.pick_own(db, user, qtypes=[prefer], highest=True, rng=rng)
         if q is None:
-            q = await math_ask.pick_own(db, user, highest=True, rng=rng)
+            q = await math_ask.pick_own(db, user, qtypes=QUICK_TYPES, highest=True, rng=rng)
     else:
-        q = await math_ask.pick_own(db, user, rng=rng)
+        q = await math_ask.pick_own(db, user, qtypes=QUICK_TYPES, rng=rng)
     if q is not None:   # the card names who asks (math_practice.MathCombatQuizScene draws it)
         q.meta["monster_vi"] = who_vi or rdef.get("name_vi", "")
         q.meta["mistake_vi"] = rules(rdef).get("lines_vi", {}).get(asker, "")
@@ -169,6 +173,9 @@ def validate(realms_data: dict | None = None, realm_cfg: dict | None = None) -> 
         bq = rules(r).get("boss_question", {})
         if bq.get("prefer") not in qtypes:
             out.append(f"{here}: boss_question.prefer must be a question type of balance/math.json")
+        elif bq["prefer"] in math_items.PLAYABLE_TYPES and bq["prefer"] not in QUICK_TYPES:
+            out.append(f"{here}: boss_question.prefer {bq['prefer']!r} takes too long for a bí cảnh "
+                       f"(one of {', '.join(QUICK_TYPES)})")
         if bq.get("fallback") != "highest":
             out.append(f"{here}: boss_question.fallback must be 'highest' (the bài tổng hợp)")
         lines = rules(r).get("lines_vi", {})

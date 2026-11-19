@@ -1,0 +1,1503 @@
+{
+ "branch": "ds",
+ "researched": "2026-11-19",
+ "backbone": [
+  {
+   "title": "Essence of Linear Algebra (16 chương)",
+   "author": "3Blue1Brown (Grant Sanderson)",
+   "kind": "video",
+   "lang": "en",
+   "url": "https://www.3blue1brown.com/topics/linear-algebra",
+   "where": "xem trước, 10-15 phút mỗi chương, theo thứ tự chương",
+   "free": true,
+   "minutes": 180,
+   "why_vi": "Cho trực giác hình học cho mọi nút từ ma trận tới trị riêng; xem trước rồi mới vào bài giảng chặt chẽ.",
+   "checked": true
+  },
+  {
+   "title": "MIT 18.06 Linear Algebra (Spring 2010)",
+   "author": "Gilbert Strang (MIT OpenCourseWare)",
+   "kind": "khoa_hoc",
+   "lang": "en",
+   "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/",
+   "where": "34 bài giảng, có bài tập và đề thi kèm đáp án",
+   "free": true,
+   "minutes": 1700,
+   "why_vi": "Giáo trình chuẩn, giảng đơn giản mà đúng; có pset và đề thi có lời giải để tự kiểm tra.",
+   "checked": true
+  },
+  {
+   "title": "Interactive Linear Algebra",
+   "author": "Margalit, Rabinoff (Georgia Tech)",
+   "kind": "sach",
+   "lang": "en",
+   "url": "https://textbooks.math.gatech.edu/ila/",
+   "where": "6 chương, có hình tương tác và bài tập có đáp án",
+   "free": true,
+   "minutes": null,
+   "why_vi": "Sách miễn phí có hình tương tác, tiếng Anh dễ đọc, bù cho phần tính tay mà 3Blue1Brown bỏ qua.",
+   "checked": true
+  },
+  {
+   "title": "Mathematics for Machine Learning, chương 2-4",
+   "author": "Deisenroth, Faisal, Ong",
+   "kind": "sach",
+   "lang": "en",
+   "url": "https://mml-book.github.io/",
+   "where": "chương 2 Linear Algebra, 3 Analytic Geometry, 4 Matrix Decompositions",
+   "free": true,
+   "minutes": null,
+   "why_vi": "Nối thẳng đại số tuyến tính với học máy; đọc sau khi đã quen ma trận để thấy vì sao cần.",
+   "checked": true
+  }
+ ],
+ "nodes": {
+  "ds_ngon_ngu": {
+   "primary": {
+    "title": "Book of Proof, chương 1 (Sets) và chương 12 (Functions)",
+    "author": "Richard Hammack",
+    "kind": "sach",
+    "lang": "en",
+    "url": "https://richardhammack.github.io/BookOfProof/",
+    "where": "chương 1 Tập hợp; chương 12 Ánh xạ (đơn ánh, toàn ánh, hàm hợp, hàm ngược)",
+    "free": true,
+    "minutes": null,
+    "why_vi": "Sách miễn phí giải thích tập hợp và ánh xạ từ đầu; lướt phần chứng minh, chỉ lấy khái niệm.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Paul's Online Math Notes: Combining Functions (hàm hợp)",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/Alg/CombineFunctions.aspx",
+     "where": "hàm hợp f∘g",
+     "free": true,
+     "minutes": 15,
+     "why_vi": "Trang ngắn có ví dụ về hàm hợp, chính là các lớp mạng xếp chồng.",
+     "checked": true
+    },
+    {
+     "title": "Paul's Online Math Notes: Inverse Functions",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/Alg/InverseFunctions.aspx",
+     "where": "hàm ngược, đơn ánh",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Giải thích khi nào hàm có ngược và cách tìm, kèm bài luyện có lời giải.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Paul's Online Math Notes: The Definition of a Function",
+     "author": "Paul Dawkins (Lamar University)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://tutorial.math.lamar.edu/Classes/Alg/FunctionDefn.aspx",
+     "where": "định nghĩa hàm và bài luyện",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Có bài luyện kèm lời giải để kiểm tra khái niệm ánh xạ.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Chỉ cần khái niệm: ánh xạ, hàm hợp, đơn/toàn/song ánh. Đọc chương 12 trước, chương 1 sau, bỏ hết phần chứng minh."
+  },
+  "ds_vecto_ma_tran": {
+   "primary": {
+    "title": "Essence of Linear Algebra, chương 1: Vectors, what even are they?",
+    "author": "3Blue1Brown (Grant Sanderson)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://www.3blue1brown.com/lessons/vectors",
+    "where": "chương 1",
+    "free": true,
+    "minutes": 10,
+    "why_vi": "Ba cách nhìn một vectơ (mũi tên, dãy số, phần tử trừu tượng); nền cho cả nhánh.",
+    "checked": false
+   },
+   "also": [
+    {
+     "title": "Immersive Linear Algebra: chương 2 Vectors",
+     "author": "J. Ström, K. Åström, T. Akenine-Möller",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://immersivemath.com/ila/ch02_vectors/ch02.html",
+     "where": "chương 2",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Vectơ với hình tương tác kéo thả, dễ thấy phép cộng và nhân với số.",
+     "checked": true
+    },
+    {
+     "title": "Immersive Linear Algebra: chương 6 The Matrix",
+     "author": "J. Ström, K. Åström, T. Akenine-Möller",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://immersivemath.com/ila/ch06_matrices/ch06.html",
+     "where": "chương 6",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Giới thiệu ma trận, chuyển vị và ma trận đặc biệt bằng hình.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Interactive Linear Algebra: chương 3 Linear Transformations and Matrix Algebra",
+     "author": "Margalit, Rabinoff (Georgia Tech)",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://textbooks.math.gatech.edu/ila/chap-matrices.html",
+     "where": "đầu chương 3 (ma trận, chuyển vị)",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Có bài tập có đáp án cho ma trận và phép toán cơ bản.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Đắm mình vào học sâu, phụ lục toán: 18.1 Các phép toán hình học và đại số tuyến tính",
+     "author": "Aston Zhang và cộng sự; nhóm dịch tình nguyện tiếng Việt",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://github.com/d2l-ai/d2l-vi/blob/v0.15/chapter_appendix-mathematics-for-deep-learning/geometry-linear-algebraic-ops_vn.md",
+     "where": "mục 18.1.1 và 18.1.9",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Xem 3Blue1Brown chương 1, rồi làm quen bảng số và chuyển vị bằng NumPy; vết và các ma trận đặc biệt chỉ cần nhớ tên."
+  },
+  "ds_nhan_ma_tran": {
+   "primary": {
+    "title": "Essence of Linear Algebra, chương 4: Matrix multiplication as composition",
+    "author": "3Blue1Brown (Grant Sanderson)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://www.3blue1brown.com/lessons/matrix-multiplication",
+    "where": "chương 4",
+    "free": true,
+    "minutes": 10,
+    "why_vi": "Cho thấy nhân ma trận là ghép hai phép biến đổi, và vì sao AB khác BA.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 18.06 Lecture 3: Multiplication and inverse matrices",
+     "author": "Gilbert Strang (MIT OpenCourseWare)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-3-multiplication-and-inverse-matrices/",
+     "where": "bài giảng 3 (video + ghi chú)",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Bốn cách nhìn phép nhân ma trận, rất hợp để tính tay có hiểu.",
+     "checked": true
+    },
+    {
+     "title": "Essence of Linear Algebra, chương 9: Dot products and duality",
+     "author": "3Blue1Brown (Grant Sanderson)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://www.3blue1brown.com/lessons/dot-products",
+     "where": "chương 9",
+     "free": true,
+     "minutes": 14,
+     "why_vi": "Tích vô hướng là phép chiếu, giải thích vì sao đo được độ giống nhau.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "MIT 18.06 Problem Set 1 (có lời giải)",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_pset1_s10_soln/",
+     "where": "mục 1.2 tới 2.5 của sách Strang",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Bài tập về nhân ma trận và khử Gauss, có đáp án đầy đủ.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Xem chương 4 trước khi tính tay; luôn tự kiểm tra điều kiện kích thước và thử AB so với BA bằng NumPy."
+  },
+  "ds_he_gauss": {
+   "primary": {
+    "title": "MIT 18.06 Lecture 2: Elimination with matrices",
+    "author": "Gilbert Strang (MIT OpenCourseWare)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-2-elimination-with-matrices/",
+    "where": "bài giảng 2 (video + ghi chú)",
+    "free": true,
+    "minutes": 48,
+    "why_vi": "Giảng khử Gauss và thế ngược rất rõ ràng, từng bước.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 18.06 Lecture 7: Solving Ax = 0: pivot variables, special solutions",
+     "author": "Gilbert Strang (MIT OpenCourseWare)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-7-solving-ax-0-pivot-variables-special-solutions/",
+     "where": "bài giảng 7 (video + ghi chú)",
+     "free": true,
+     "minutes": 45,
+     "why_vi": "Hệ thuần nhất, biến tự do và nghiệm cơ sở.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Lecture 8: Solving Ax = b: row reduced form R",
+     "author": "Gilbert Strang (MIT OpenCourseWare)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-8-solving-ax-b-row-reduced-form-r/",
+     "where": "bài giảng 8 (video + ghi chú)",
+     "free": true,
+     "minutes": 48,
+     "why_vi": "Biện luận khi nào vô nghiệm, một nghiệm hay vô số nghiệm.",
+     "checked": true
+    },
+    {
+     "title": "Immersive Linear Algebra: chương 5 Gaussian Elimination",
+     "author": "J. Ström, K. Åström, T. Akenine-Möller",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://immersivemath.com/ila/ch05_gausselim/ch05.html",
+     "where": "chương 5",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Khử Gauss tương tác, tự bấm từng phép biến đổi hàng.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Interactive Linear Algebra: chương 1 Systems of Linear Equations: Algebra",
+     "author": "Margalit, Rabinoff (Georgia Tech)",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://textbooks.math.gatech.edu/ila/chap-algebra.html",
+     "where": "mục 1.2 Row Reduction",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Có nhiều bài khử hàng với đáp án, tự kiểm tra dạng bậc thang.",
+     "checked": true
+    },
+    {
+     "title": "Linear Algebra (Hefferon), sách đáp án đầy đủ",
+     "author": "Jim Hefferon",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://jheffero.w3.uvm.edu/linearalgebra/jhanswer.pdf",
+     "where": "chương 1 Linear Systems",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Mọi bài tập đều có lời giải chi tiết, tiện luyện biện luận nghiệm.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Học bài 2, rồi 7 và 8 của MIT 18.06; tập luyện tới khi tự khử nhanh một hệ 3x3 và gọi tên số nghiệm."
+  },
+  "ds_dinh_thuc_nghich_dao": {
+   "primary": {
+    "title": "Essence of Linear Algebra, chương 6: The determinant",
+    "author": "3Blue1Brown (Grant Sanderson)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://www.3blue1brown.com/lessons/determinant",
+    "where": "chương 6",
+    "free": true,
+    "minutes": 10,
+    "why_vi": "Định thức là hệ số co giãn diện tích; bằng 0 nghĩa là mất một chiều.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Essence of Linear Algebra, chương 7: Inverse matrices, column space and null space",
+     "author": "3Blue1Brown (Grant Sanderson)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://www.3blue1brown.com/lessons/inverse-matrices",
+     "where": "chương 7",
+     "free": true,
+     "minutes": 12,
+     "why_vi": "Nối nghịch đảo, hạng và không gian cột trong một bài.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Lecture 18: Properties of determinants",
+     "author": "Gilbert Strang (MIT OpenCourseWare)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-18-properties-of-determinants/",
+     "where": "bài giảng 18 (video + ghi chú)",
+     "free": true,
+     "minutes": 50,
+     "why_vi": "Ba tính chất nền của định thức rồi suy ra mọi thứ khác.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Lecture 19: Determinant formulas and cofactors",
+     "author": "Gilbert Strang (MIT OpenCourseWare)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-19-determinant-formulas-and-cofactors/",
+     "where": "bài giảng 19 (video + ghi chú)",
+     "free": true,
+     "minutes": 50,
+     "why_vi": "Khai triển theo hàng/cột (cofactor) kiểu thi cử.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Interactive Linear Algebra: chương 4 Determinants",
+     "author": "Margalit, Rabinoff (Georgia Tech)",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://textbooks.math.gatech.edu/ila/chap-determinant.html",
+     "where": "cả chương 4",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Tính định thức bằng khử hàng và cofactor, có bài tập kèm đáp án.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Đắm mình vào học sâu, phụ lục toán: 18.1 Các phép toán hình học và đại số tuyến tính",
+     "author": "Aston Zhang và cộng sự; nhóm dịch tình nguyện tiếng Việt",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://github.com/d2l-ai/d2l-vi/blob/v0.15/chapter_appendix-mathematics-for-deep-learning/geometry-linear-algebraic-ops_vn.md",
+     "where": "mục 18.1.6 Hạng, 18.1.7 Khả nghịch, 18.1.8 Định thức",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Xem chương 6-7 của 3Blue1Brown để hiểu, rồi bài 18-19 của MIT để tính tay; hạng nên nắm bằng ý 'số chiều thật của dữ liệu'."
+  },
+  "ds_khong_gian": {
+   "primary": {
+    "title": "MIT 18.06 Lecture 9: Independence, basis, and dimension",
+    "author": "Gilbert Strang (MIT OpenCourseWare)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-9-independence-basis-and-dimension/",
+    "where": "bài giảng 9 (video + ghi chú)",
+    "free": true,
+    "minutes": 50,
+    "why_vi": "Bài giảng chuẩn về độc lập tuyến tính, cơ sở và số chiều.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Essence of Linear Algebra, chương 2: Linear combinations, span, and basis vectors",
+     "author": "3Blue1Brown (Grant Sanderson)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://www.3blue1brown.com/lessons/span",
+     "where": "chương 2",
+     "free": true,
+     "minutes": 10,
+     "why_vi": "Bao tuyến tính và cơ sở bằng hình, rất dễ nhớ.",
+     "checked": true
+    },
+    {
+     "title": "Essence of Linear Algebra, chương 16: Abstract vector spaces",
+     "author": "3Blue1Brown (Grant Sanderson)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://www.3blue1brown.com/lessons/abstract-vector-spaces",
+     "where": "chương 16",
+     "free": true,
+     "minutes": 16,
+     "why_vi": "Cho thấy vì sao hàm và đa thức cũng là vectơ, phần tiên đề.",
+     "checked": true
+    },
+    {
+     "title": "Essence of Linear Algebra, chương 13: Change of basis",
+     "author": "3Blue1Brown (Grant Sanderson)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://www.3blue1brown.com/lessons/change-of-basis",
+     "where": "chương 13",
+     "free": true,
+     "minutes": 12,
+     "why_vi": "Tọa độ và ma trận chuyển cơ sở bằng cách hai người quan sát dùng hai hệ trục.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "MIT 18.06 Exam 1 (có lời giải)",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam1_s10/",
+     "where": "đề thi 1 (kèm lời giải ở trang kế)",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật về không gian cột, nullspace, độc lập tuyến tính, có đáp án để so.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Đắm mình vào học sâu, phụ lục toán: 18.1 Các phép toán hình học và đại số tuyến tính",
+     "author": "Aston Zhang và cộng sự; nhóm dịch tình nguyện tiếng Việt",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://github.com/d2l-ai/d2l-vi/blob/v0.15/chapter_appendix-mathematics-for-deep-learning/geometry-linear-algebraic-ops_vn.md",
+     "where": "mục 18.1.5 Phụ thuộc tuyến tính",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Học bài 6 rồi 9 của MIT; tiên đề không gian vectơ chỉ cần biết, tập trung vào độc lập, cơ sở, số chiều và tọa độ."
+  },
+  "ds_truc_giao_chieu": {
+   "primary": {
+    "title": "MIT 18.06 Lecture 15: Projections onto subspaces",
+    "author": "Gilbert Strang (MIT OpenCourseWare)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-15-projections-onto-subspaces/",
+    "where": "bài giảng 15 (video + ghi chú)",
+    "free": true,
+    "minutes": 50,
+    "why_vi": "Dẫn ra công thức phép chiếu từ hình học, chính là gốc của bình phương tối thiểu.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 18.06 Lecture 16: Projection matrices and least squares",
+     "author": "Gilbert Strang (MIT OpenCourseWare)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-16-projection-matrices-and-least-squares/",
+     "where": "bài giảng 16 (video + ghi chú)",
+     "free": true,
+     "minutes": 50,
+     "why_vi": "Từ phép chiếu tới khớp đường thẳng vào dữ liệu.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Lecture 17: Orthogonal matrices and Gram-Schmidt",
+     "author": "Gilbert Strang (MIT OpenCourseWare)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-17-orthogonal-matrices-and-gram-schmidt/",
+     "where": "bài giảng 17 (video + ghi chú)",
+     "free": true,
+     "minutes": 50,
+     "why_vi": "Trực giao hóa Gram-Schmidt từng bước.",
+     "checked": true
+    },
+    {
+     "title": "Mathematics for Machine Learning (sách miễn phí)",
+     "author": "Deisenroth, Faisal, Ong",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://mml-book.github.io/book/mml-book.pdf",
+     "where": "chương 3 Analytic Geometry, mục 3.4 tới 3.8",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Chương về trực giao và phép chiếu viết cho học máy, có bài tập.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Interactive Linear Algebra: chương 6 Orthogonality",
+     "author": "Margalit, Rabinoff (Georgia Tech)",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://textbooks.math.gatech.edu/ila/chap-orthogonality.html",
+     "where": "mục 6.1 tới 6.5",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Trực giao, chiếu và bình phương tối thiểu có hình tương tác và bài có đáp án.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Học bài 14-17 của MIT theo thứ tự; nối ngay với bài toán 'khớp đường thẳng' để thấy phép chiếu dùng vào đâu."
+  },
+  "ds_anh_xa_tuyen_tinh": {
+   "primary": {
+    "title": "Essence of Linear Algebra, chương 3: Linear transformations and matrices",
+    "author": "3Blue1Brown (Grant Sanderson)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://www.3blue1brown.com/lessons/linear-transformations",
+    "where": "chương 3",
+    "free": true,
+    "minutes": 10,
+    "why_vi": "Ma trận là phép biến hình không gian; đúng điều nút này cần.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 18.06 Lecture 30: Linear transformations and their matrices",
+     "author": "Gilbert Strang (MIT OpenCourseWare)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-30-linear-transformations-and-their-matrices/",
+     "where": "bài giảng 30 (video + ghi chú)",
+     "free": true,
+     "minutes": 50,
+     "why_vi": "Ma trận của ánh xạ tuyến tính theo cơ sở, kèm ví dụ đạo hàm.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Lecture 31: Change of basis; image compression",
+     "author": "Gilbert Strang (MIT OpenCourseWare)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-31-change-of-basis-image-compression/",
+     "where": "bài giảng 31 (video + ghi chú)",
+     "free": true,
+     "minutes": 50,
+     "why_vi": "Đổi cơ sở và ma trận đồng dạng.",
+     "checked": true
+    },
+    {
+     "title": "Mathematics for Machine Learning (sách miễn phí)",
+     "author": "Deisenroth, Faisal, Ong",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://mml-book.github.io/book/mml-book.pdf",
+     "where": "chương 2, mục 2.7 Linear Mappings (kể cả Ker, Im và định lý số chiều)",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Định nghĩa gọn của Ker, Im và rank-nullity theo phong cách học máy.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "MIT 18.06 Exam 3 (có lời giải)",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam3_s10/",
+     "where": "đề thi 3 (lời giải ở trang kế)",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Có câu về ma trận của ánh xạ tuyến tính, đổi cơ sở và SVD.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Xem chương 3 trước, rồi bài 30-31 của MIT; Ker, Im và số chiều chỉ cần hiểu và tính được trên ma trận."
+  },
+  "ds_tri_rieng": {
+   "primary": {
+    "title": "Essence of Linear Algebra, chương 14: Eigenvectors and eigenvalues",
+    "author": "3Blue1Brown (Grant Sanderson)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://www.3blue1brown.com/lessons/eigenvalues",
+    "where": "chương 14",
+    "free": true,
+    "minutes": 17,
+    "why_vi": "Trị riêng là hướng chỉ bị kéo giãn; chéo hóa nghĩa là chọn đúng hệ trục.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 18.06 Lecture 21: Eigenvalues and eigenvectors",
+     "author": "Gilbert Strang (MIT OpenCourseWare)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-21-eigenvalues-and-eigenvectors/",
+     "where": "bài giảng 21 (video + ghi chú)",
+     "free": true,
+     "minutes": 50,
+     "why_vi": "Cách tìm trị riêng bằng tay, từ phương trình đặc trưng.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Lecture 22: Diagonalization and powers of A",
+     "author": "Gilbert Strang (MIT OpenCourseWare)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-22-diagonalization-and-powers-of-a/",
+     "where": "bài giảng 22 (video + ghi chú)",
+     "free": true,
+     "minutes": 50,
+     "why_vi": "Chéo hóa và tính lũy thừa ma trận, như dãy Fibonacci.",
+     "checked": true
+    },
+    {
+     "title": "Essence of Linear Algebra, chương 15: A quick trick for computing eigenvalues",
+     "author": "3Blue1Brown (Grant Sanderson)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://www.3blue1brown.com/lessons/quick-eigen",
+     "where": "chương 15",
+     "free": true,
+     "minutes": 12,
+     "why_vi": "Mẹo tính trị riêng ma trận 2x2 rất nhanh.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Interactive Linear Algebra: chương 5 Eigenvalues and Eigenvectors",
+     "author": "Margalit, Rabinoff (Georgia Tech)",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://textbooks.math.gatech.edu/ila/chap-eigenvalues.html",
+     "where": "mục 5.1 tới 5.4",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Hình tương tác cho trị riêng và chéo hóa, có bài tập kèm đáp án.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Đắm mình vào học sâu, phụ lục toán: 18.2 Phân rã trị riêng",
+     "author": "Aston Zhang và cộng sự; nhóm dịch tình nguyện tiếng Việt",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://github.com/d2l-ai/d2l-vi/blob/v0.15/chapter_appendix-mathematics-for-deep-learning/eigendecomposition_vn.md",
+     "where": "toàn bài 18.2",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bản dịch tay của nhóm tình nguyện (v0.15), đọc trên GitHub vì tên miền của trang sách cũ đã bị chiếm; bản ở vi.d2l.ai là dịch máy, sai thuật ngữ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Xem chương 14, rồi bài 21-22 của MIT; trị riêng phức và dạng Jordan có thể bỏ qua."
+  },
+  "ds_pca_svd": {
+   "primary": {
+    "title": "MIT 18.06 Lecture 29: Singular value decomposition",
+    "author": "Gilbert Strang (MIT OpenCourseWare)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-29-singular-value-decomposition/",
+    "where": "bài giảng 29 (video + ghi chú)",
+    "free": true,
+    "minutes": 50,
+    "why_vi": "Bài giảng SVD của Strang, ngắn mà đủ ý, nối được với nén dữ liệu.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 18.06 Lecture 25: Symmetric matrices and positive definiteness",
+     "author": "Gilbert Strang (MIT OpenCourseWare)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-25-symmetric-matrices-and-positive-definiteness/",
+     "where": "bài giảng 25 (video + ghi chú)",
+     "free": true,
+     "minutes": 50,
+     "why_vi": "Ma trận đối xứng, xác định dương, dạng toàn phương.",
+     "checked": true
+    },
+    {
+     "title": "Mathematics for Machine Learning (sách miễn phí)",
+     "author": "Deisenroth, Faisal, Ong",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://mml-book.github.io/book/mml-book.pdf",
+     "where": "chương 4 mục 4.5 Singular Value Decomposition và chương 10 PCA",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Dẫn xuất PCA từ phương sai lớn nhất rồi từ SVD, dành cho người học máy.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "MML tutorial: PCA (notebook có lời giải)",
+     "author": "Deisenroth, Faisal, Ong",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://mml-book.github.io/tutorials/tutorial_pca.solution.ipynb",
+     "where": "cả notebook",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Tự cài đặt PCA bằng NumPy rồi so với đáp án.",
+     "checked": false
+    }
+   ],
+   "vi": [
+    {
+     "title": "Machine Learning cơ bản, bài 26: Singular Value Decomposition",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/06/07/svd/",
+     "where": "toàn bài (SVD, SVD rút gọn, nén ảnh)",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Bài SVD tiếng Việt rõ ràng, có ví dụ nén ảnh và mã Python.",
+     "checked": true
+    },
+    {
+     "title": "Machine Learning cơ bản, bài 27: Principal Component Analysis (phần 1)",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/06/15/pca/",
+     "where": "toàn bài, các bước thực hiện PCA",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Dẫn PCA từ ma trận hiệp phương sai, có bảy bước làm.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Học bài 29 SVD, rồi bài 26-27 của Vũ Hữu Tiệp để làm PCA bằng tay; dạng toàn phương chỉ cần biết 'xác định dương = cực tiểu'."
+  },
+  "ds_so_phuc": {
+   "primary": {
+    "title": "Paul's Online Math Notes: Complex Numbers",
+    "author": "Paul Dawkins (Lamar University)",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://tutorial.math.lamar.edu/Classes/Alg/ComplexNumbers.aspx",
+    "where": "dạng đại số, cộng, trừ, nhân, chia, liên hợp",
+    "free": true,
+    "minutes": 20,
+    "why_vi": "Gọn, đủ cho dạng đại số; dạng lượng giác phải tìm thêm.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "MIT 18.06 Lecture 26: Complex matrices; fast Fourier transform",
+     "author": "Gilbert Strang (MIT OpenCourseWare)",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-26-complex-matrices-fast-fourier-transform/",
+     "where": "bài giảng 26 (video + ghi chú)",
+     "free": true,
+     "minutes": 50,
+     "why_vi": "Chỗ số phức thật sự được dùng: ma trận phức và FFT (để sau).",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Chỉ học dạng đại số và liên hợp khi cần; dạng lượng giác và công thức Moivre chưa tìm được nguồn tốt, xem sách giáo trình trên lớp."
+  },
+  "ds_cramer": {
+   "primary": {
+    "title": "MIT 18.06 Lecture 20: Cramer's rule, inverse matrix, and volume",
+    "author": "Gilbert Strang (MIT OpenCourseWare)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-20-cramers-rule-inverse-matrix-and-volume/",
+    "where": "bài giảng 20 (video + ghi chú)",
+    "free": true,
+    "minutes": 50,
+    "why_vi": "Giải thích quy tắc Cramer và công thức nghịch đảo bằng phần phụ đại số.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Interactive Linear Algebra: chương 4 Determinants",
+     "author": "Margalit, Rabinoff (Georgia Tech)",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://textbooks.math.gatech.edu/ila/chap-determinant.html",
+     "where": "mục 4.3 Cramer's rule",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Có phần Cramer kèm giải thích hình học.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Chỉ cần biết công thức cho thi cử; đời thực dùng khử Gauss."
+  }
+ },
+ "exam_proofs": [
+  {
+   "node": "ds_he_gauss",
+   "topic_vi": "Biện luận hệ phương trình theo tham số",
+   "type_vi": "Cho hệ có tham số m; khử Gauss rồi biện luận vô nghiệm, một nghiệm, vô số nghiệm và viết nghiệm tổng quát.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Exam 1 và lời giải",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam1_s10_sol/",
+     "where": "đề 1 phần lời giải",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật có lời giải về không gian và hệ phương trình.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_khong_gian",
+   "topic_vi": "Chứng minh một tập là không gian con",
+   "type_vi": "Cho tập vectơ hoặc ma trận thỏa một điều kiện; kiểm tra chứa 0, đóng với phép cộng và nhân với số.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Linear Algebra (Hefferon): sách đáp án mọi bài tập",
+     "author": "Jim Hefferon",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://jheffero.w3.uvm.edu/linearalgebra/jhanswer.pdf",
+     "where": "chương Vector Spaces, Maps Between Spaces, Determinants, Similarity",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Nhiều bài kiểu 'chứng minh rằng' kèm lời giải đầy đủ, hợp luyện tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Exam 1 và lời giải",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam1_s10_sol/",
+     "where": "đề 1 phần lời giải",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật có lời giải về không gian và hệ phương trình.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_khong_gian",
+   "topic_vi": "Độc lập hoặc phụ thuộc tuyến tính",
+   "type_vi": "Chứng minh một hệ vectơ độc lập tuyến tính, hoặc tìm điều kiện của tham số để hệ phụ thuộc.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Linear Algebra (Hefferon): sách đáp án mọi bài tập",
+     "author": "Jim Hefferon",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://jheffero.w3.uvm.edu/linearalgebra/jhanswer.pdf",
+     "where": "chương Vector Spaces, Maps Between Spaces, Determinants, Similarity",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Nhiều bài kiểu 'chứng minh rằng' kèm lời giải đầy đủ, hợp luyện tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Exam 1 và lời giải",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam1_s10_sol/",
+     "where": "đề 1 phần lời giải",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật có lời giải về không gian và hệ phương trình.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_khong_gian",
+   "topic_vi": "Cơ sở, số chiều và tọa độ",
+   "type_vi": "Chứng minh một hệ là cơ sở của không gian, tìm số chiều của bao tuyến tính, tọa độ và ma trận chuyển cơ sở.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Linear Algebra (Hefferon): sách đáp án mọi bài tập",
+     "author": "Jim Hefferon",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://jheffero.w3.uvm.edu/linearalgebra/jhanswer.pdf",
+     "where": "chương Vector Spaces, Maps Between Spaces, Determinants, Similarity",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Nhiều bài kiểu 'chứng minh rằng' kèm lời giải đầy đủ, hợp luyện tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Exam 1 và lời giải",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam1_s10_sol/",
+     "where": "đề 1 phần lời giải",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề thi thật có lời giải về không gian và hệ phương trình.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_anh_xa_tuyen_tinh",
+   "topic_vi": "Chứng minh một ánh xạ là tuyến tính",
+   "type_vi": "Cho ánh xạ định nghĩa bằng công thức hoặc trên đa thức, ma trận; kiểm tra cộng tính và thuần nhất.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Linear Algebra (Hefferon): sách đáp án mọi bài tập",
+     "author": "Jim Hefferon",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://jheffero.w3.uvm.edu/linearalgebra/jhanswer.pdf",
+     "where": "chương Vector Spaces, Maps Between Spaces, Determinants, Similarity",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Nhiều bài kiểu 'chứng minh rằng' kèm lời giải đầy đủ, hợp luyện tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Exam 3 và lời giải",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam3_s10_soln/",
+     "where": "đề 3 phần lời giải",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề về xác định dương, SVD, ánh xạ tuyến tính.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_anh_xa_tuyen_tinh",
+   "topic_vi": "Nhân, ảnh và định lý số chiều",
+   "type_vi": "Tìm cơ sở và số chiều của Ker f và Im f, rồi dùng định lý số chiều để kiểm tra hoặc kết luận đơn ánh, toàn ánh.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Linear Algebra (Hefferon): sách đáp án mọi bài tập",
+     "author": "Jim Hefferon",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://jheffero.w3.uvm.edu/linearalgebra/jhanswer.pdf",
+     "where": "chương Vector Spaces, Maps Between Spaces, Determinants, Similarity",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Nhiều bài kiểu 'chứng minh rằng' kèm lời giải đầy đủ, hợp luyện tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Exam 3 và lời giải",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam3_s10_soln/",
+     "where": "đề 3 phần lời giải",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề về xác định dương, SVD, ánh xạ tuyến tính.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_anh_xa_tuyen_tinh",
+   "topic_vi": "Ma trận ánh xạ trong cơ sở và đồng dạng",
+   "type_vi": "Viết ma trận của ánh xạ theo hai cơ sở, đổi cơ sở, chứng minh hai ma trận đồng dạng có cùng định thức, vết, trị riêng.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Linear Algebra (Hefferon): sách đáp án mọi bài tập",
+     "author": "Jim Hefferon",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://jheffero.w3.uvm.edu/linearalgebra/jhanswer.pdf",
+     "where": "chương Vector Spaces, Maps Between Spaces, Determinants, Similarity",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Nhiều bài kiểu 'chứng minh rằng' kèm lời giải đầy đủ, hợp luyện tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Exam 3 và lời giải",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam3_s10_soln/",
+     "where": "đề 3 phần lời giải",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề về xác định dương, SVD, ánh xạ tuyến tính.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_tri_rieng",
+   "topic_vi": "Chéo hóa ma trận và điều kiện chéo hóa được",
+   "type_vi": "Tìm trị riêng, vectơ riêng, ma trận làm chéo hóa, tính lũy thừa; hoặc chứng minh không chéo hóa được.",
+   "frequency_vi": "rất hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Exam 2 và lời giải",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam2_s10_soln/",
+     "where": "đề 2 phần lời giải",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề về trực giao, định thức, trị riêng, có lời giải.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Final exam và đáp án",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_final_answers/",
+     "where": "đề cuối kỳ kèm đáp án",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Đề tổng hợp cả môn.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_tri_rieng",
+   "topic_vi": "Chứng minh tính chất trị riêng",
+   "type_vi": "Từ điều kiện như A bình phương bằng A, ma trận lũy linh, ma trận trực giao, suy ra các trị riêng khả dĩ; trị riêng của A và A chuyển vị.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Linear Algebra (Hefferon): sách đáp án mọi bài tập",
+     "author": "Jim Hefferon",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://jheffero.w3.uvm.edu/linearalgebra/jhanswer.pdf",
+     "where": "chương Vector Spaces, Maps Between Spaces, Determinants, Similarity",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Nhiều bài kiểu 'chứng minh rằng' kèm lời giải đầy đủ, hợp luyện tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Exam 2 và lời giải",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam2_s10_soln/",
+     "where": "đề 2 phần lời giải",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề về trực giao, định thức, trị riêng, có lời giải.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_truc_giao_chieu",
+   "topic_vi": "Trực giao hóa Gram-Schmidt và không gian Euclide",
+   "type_vi": "Trực giao hóa một hệ vectơ, tìm cơ sở trực chuẩn; chứng minh bất đẳng thức Cauchy-Schwarz hoặc tính chất của tích vô hướng và chuẩn.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Exam 2 và lời giải",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam2_s10_soln/",
+     "where": "đề 2 phần lời giải",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề về trực giao, định thức, trị riêng, có lời giải.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_truc_giao_chieu",
+   "topic_vi": "Phép chiếu trực giao và khoảng cách",
+   "type_vi": "Tìm hình chiếu của một vectơ lên không gian con, khoảng cách tới không gian con, hoặc nghiệm bình phương tối thiểu.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Exam 2 và lời giải",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam2_s10_soln/",
+     "where": "đề 2 phần lời giải",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề về trực giao, định thức, trị riêng, có lời giải.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_dinh_thuc_nghich_dao",
+   "topic_vi": "Tính chất của định thức",
+   "type_vi": "Tính định thức cấp n có cấu trúc đặc biệt; chứng minh det(AB)=det(A)det(B), det của ma trận chuyển vị, hoặc ma trận suy biến.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Exam 2 và lời giải",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam2_s10_soln/",
+     "where": "đề 2 phần lời giải",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề về trực giao, định thức, trị riêng, có lời giải.",
+     "checked": true
+    },
+    {
+     "title": "Linear Algebra (Hefferon): sách đáp án mọi bài tập",
+     "author": "Jim Hefferon",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://jheffero.w3.uvm.edu/linearalgebra/jhanswer.pdf",
+     "where": "chương Vector Spaces, Maps Between Spaces, Determinants, Similarity",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Nhiều bài kiểu 'chứng minh rằng' kèm lời giải đầy đủ, hợp luyện tự luận.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_dinh_thuc_nghich_dao",
+   "topic_vi": "Nghịch đảo, chuyển vị và hạng",
+   "type_vi": "Chứng minh (AB) nghịch đảo bằng B nghịch đảo nhân A nghịch đảo, tính chất chuyển vị, hạng của tích và tổng; tìm nghịch đảo bằng biến đổi sơ cấp.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Linear Algebra (Hefferon): sách đáp án mọi bài tập",
+     "author": "Jim Hefferon",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://jheffero.w3.uvm.edu/linearalgebra/jhanswer.pdf",
+     "where": "chương Vector Spaces, Maps Between Spaces, Determinants, Similarity",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Nhiều bài kiểu 'chứng minh rằng' kèm lời giải đầy đủ, hợp luyện tự luận.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_nhan_ma_tran",
+   "topic_vi": "Chứng minh đẳng thức ma trận",
+   "type_vi": "Cho điều kiện như A^2 = A hoặc AB = BA; chứng minh một đẳng thức hoặc tính lũy thừa A^n bằng quy nạp.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "Linear Algebra (Hefferon): sách đáp án mọi bài tập",
+     "author": "Jim Hefferon",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://jheffero.w3.uvm.edu/linearalgebra/jhanswer.pdf",
+     "where": "chương Vector Spaces, Maps Between Spaces, Determinants, Similarity",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Nhiều bài kiểu 'chứng minh rằng' kèm lời giải đầy đủ, hợp luyện tự luận.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_pca_svd",
+   "topic_vi": "Dạng toàn phương và xác định dương",
+   "type_vi": "Đưa dạng toàn phương về dạng chính tắc bằng Lagrange hoặc trực giao hóa; xét xác định dương theo tham số.",
+   "frequency_vi": "hay gặp",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    },
+    {
+     "title": "MIT 18.06 Exam 3 và lời giải",
+     "author": "MIT OpenCourseWare",
+     "kind": "de_thi",
+     "lang": "en",
+     "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/mit18_06s10_exam3_s10_soln/",
+     "where": "đề 3 phần lời giải",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Đề về xác định dương, SVD, ánh xạ tuyến tính.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_ngon_ngu",
+   "topic_vi": "Đơn ánh, toàn ánh, song ánh",
+   "type_vi": "Chứng minh một ánh xạ là đơn ánh, toàn ánh hoặc song ánh, tìm ánh xạ ngược; mệnh đề về tạo ảnh của tập con.",
+   "frequency_vi": "thỉnh thoảng",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    }
+   ]
+  },
+  {
+   "node": "ds_so_phuc",
+   "topic_vi": "Số phức: lượng giác, Moivre, căn bậc n",
+   "type_vi": "Tính lũy thừa số phức bằng công thức Moivre, giải phương trình bậc cao trên số phức.",
+   "frequency_vi": "thỉnh thoảng",
+   "sources": [
+    {
+     "title": "Đề cương học phần MI1141 Đại số (CTĐT tài năng, bản 2023)",
+     "author": "Viện Toán ứng dụng và Tin học, ĐH Bách khoa Hà Nội",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://fami.hust.edu.vn/wp-content/uploads/MI1141-Decuong-Daiso-Tainang.pdf",
+     "where": "nội dung học phần, giáo trình, thi tự luận cuối kỳ 50%",
+     "free": true,
+     "minutes": null,
+     "why_vi": "Cho biết cấu trúc môn Đại số và giáo trình dùng; thi cuối kỳ là tự luận.",
+     "checked": true
+    }
+   ]
+  }
+ ],
+ "rejected": [
+  {
+   "title": "Khan Academy Linear Algebra (video)",
+   "why_vi": "Không mở được trang để kiểm; video dài, dạy tính tay; không bản tiếng Việt cho môn này."
+  },
+  {
+   "title": "MIT 18.06 toàn bộ 34 bài làm đường chính",
+   "why_vi": "Mỗi bài ~50 phút, quá dài cho đường chính; dùng như bài đọc sâu sau khi xem 3Blue1Brown."
+  },
+  {
+   "title": "Linear Algebra Done Right (Axler)",
+   "why_vi": "Chặt chẽ nhưng gần như không có tính toán, hợp người thích chứng minh hơn là người muốn xây mô hình."
+  },
+  {
+   "title": "Các bộ đề thi đăng trên studocu, 123doc, scribd",
+   "why_vi": "Không phải nguồn chính thức, có thể vi phạm bản quyền; chỉ dùng đề minh họa của fami.hust.edu.vn."
+  },
+  {
+   "title": "Trang Pressbooks eCampusOntario Đại số tuyến tính tiếng Việt",
+   "why_vi": "Trang trả lỗi 403 khi kiểm, chưa xác nhận được nội dung."
+  },
+  {
+   "title": "Sách The Matrix Cookbook",
+   "why_vi": "Là bảng tra cứu công thức, không phải bài học cho người mới."
+  },
+  {
+   "title": "d2l.aivivn.com (trang cũ của Đắm mình vào Học Sâu)",
+   "why_vi": "Tên miền đã bị chiếm: trang chủ hiện là quảng cáo cờ bạc. Dùng bản dịch tay trên GitHub (thẻ v0.15)."
+  },
+  {
+   "title": "vi.d2l.ai (Đắm mình vào Học Sâu 0.17.5)",
+   "why_vi": "Bản dịch máy, sai thuật ngữ (mạng tích chập thành 'mạng thần kinh phức tạp'). Không dùng làm nguồn tiếng Việt."
+  }
+ ]
+}

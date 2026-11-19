@@ -106,7 +106,15 @@ def matrix(rng: random.Random, rows: int, cols: int, lo: int = -5, hi: int = 9) 
     return [[rng.randint(lo, hi) for _ in range(cols)] for _ in range(rows)]
 
 
-from . import dstt_floor1, dstt_floor2, dstt_floor3  # noqa: E402,F401  (register their generators)
-from . import gt_floor1, gt_floor2, gt_floor3        # noqa: E402,F401  (M11: Giải Tích)
-from . import xs_floor1, xs_floor2, xs_floor3        # noqa: E402,F401  (M11: Xác Suất và Thống Kê)
-from . import tr_floor1, tr_floor2, tr_floor3        # noqa: E402,F401  (M11: Tối Ưu và Toán Rời Rạc)
+def _register_floors() -> None:
+    """Import every `<prefix>_floor<N>.py` of this package, which registers its generators. A
+    new floor is one new file: nothing here has to be edited (so two writers never share it)."""
+    import importlib
+    import pkgutil
+    import re
+    for info in sorted(pkgutil.iter_modules(__path__), key=lambda m: m.name):
+        if re.fullmatch(r"[a-z]+_floor\d+", info.name):
+            importlib.import_module(f"{__name__}.{info.name}")
+
+
+_register_floors()

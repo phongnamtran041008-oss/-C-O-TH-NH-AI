@@ -1,0 +1,676 @@
+{
+ "branch": "lt",
+ "researched": "2026-11-19",
+ "backbone": [
+  {
+   "title": "CS50's Introduction to Programming with Python (OpenCourseWare)",
+   "author": "David J. Malan, Harvard",
+   "kind": "khoa_hoc",
+   "lang": "en",
+   "url": "https://cs50.harvard.edu/python/weeks/0/",
+   "where": "tuần 0 đến 9; có video, ghi chú, bài tập tự chấm",
+   "free": true,
+   "minutes": 1200,
+   "why_vi": "Khoá nhập môn Python bài bản nhất, miễn phí, bài tập có kiểm tra tự động; dùng cho các nút tầng thấp.",
+   "checked": true
+  },
+  {
+   "title": "Data Science from Scratch, 2nd ed. (code repo)",
+   "author": "Joel Grus",
+   "kind": "code",
+   "lang": "en",
+   "url": "https://github.com/joelgrus/data-science-from-scratch",
+   "where": "thư mục scratch: linear_algebra.py, gradient_descent.py, probability.py, network_analysis.py",
+   "free": true,
+   "minutes": null,
+   "why_vi": "Mã nguồn Python thuần cho vectơ, ma trận, hạ gradient: đúng tinh thần 'tự viết một lần'. Giấy phép MIT.",
+   "checked": true
+  },
+  {
+   "title": "Python Data Science Handbook",
+   "author": "Jake VanderPlas",
+   "kind": "sach",
+   "lang": "en",
+   "url": "https://jakevdp.github.io/PythonDataScienceHandbook/",
+   "where": "chương 2 (NumPy), 3 (pandas), 4 (Matplotlib)",
+   "free": true,
+   "minutes": 600,
+   "why_vi": "Sách đọc trực tuyến miễn phí, nối NumPy, pandas và vẽ biểu đồ thành một mạch.",
+   "checked": true
+  },
+  {
+   "title": "The Missing Semester of Your CS Education (2026)",
+   "author": "MIT (Anish, Jon, Jose)",
+   "kind": "khoa_hoc",
+   "lang": "en",
+   "url": "https://missing.csail.mit.edu/",
+   "where": "bài Dòng lệnh, Môi trường phát triển, Git, Đóng gói mã",
+   "free": true,
+   "minutes": 600,
+   "why_vi": "Những thứ trường ít dạy nhưng làm dự án thật nào cũng cần: shell, git, gỡ lỗi.",
+   "checked": true
+  }
+ ],
+ "nodes": {
+  "lt_python_co_ban": {
+   "primary": {
+    "title": "CS50P tuần 0: Functions, Variables",
+    "author": "David J. Malan",
+    "kind": "khoa_hoc",
+    "lang": "en",
+    "url": "https://cs50.harvard.edu/python/weeks/0/",
+    "where": "tuần 0, rồi tuần 1 (Conditionals) và tuần 2 (Loops)",
+    "free": true,
+    "minutes": 360,
+    "why_vi": "Đi đúng thứ tự biến, điều kiện, vòng lặp, hàm; mỗi tuần có bài tập tự chấm.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Think Python, 3rd edition",
+     "author": "Allen B. Downey",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://allendowney.github.io/ThinkPython/",
+     "where": "chương 1 đến 4 (chương và bài tập, bản trực tuyến)",
+     "free": true,
+     "minutes": 300,
+     "why_vi": "Giải thích chậm và chắc cho người chưa từng lập trình; giấy phép CC BY-NC-SA.",
+     "checked": true
+    },
+    {
+     "title": "Automate the Boring Stuff with Python, 3rd ed., chương 1 đến 4",
+     "author": "Al Sweigart",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://automatetheboringstuff.com/3e/chapter1.html",
+     "where": "chương 1 Python Basics, 2 Flow Control, 3 Loops, 4 Functions",
+     "free": true,
+     "minutes": 240,
+     "why_vi": "Nhiều ví dụ ngắn có thể gõ lại ngay, đáp án câu hỏi ôn ở phụ lục B.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Exercism Python track",
+     "author": "Exercism",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://exercism.org/tracks/python",
+     "where": "các bài đầu của track (Basics, Conditionals, Loops)",
+     "free": true,
+     "minutes": 300,
+     "why_vi": "146 bài miễn phí có bộ kiểm thử, có thể nhờ người hướng dẫn nhận xét.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Làm CS50P tuần 0-2 kèm bài tập, đọc Think Python khi bí; bỏ qua OOP và biểu thức chính quy ở mức này."
+  },
+  "lt_cau_truc_du_lieu": {
+   "primary": {
+    "title": "Python Tutorial, mục 5: Data Structures",
+    "author": "Python Software Foundation",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://docs.python.org/3/tutorial/datastructures.html",
+    "where": "5.1 (list), 5.4 (set), 5.5 (dict), 5.6 (kỹ thuật duyệt)",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Tài liệu chính thức, ngắn, có ví dụ về set với các toán tử | & - ^ đúng như phép toán tập hợp.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Think Python 3e, chương 9 Lists và chương 10 Dictionaries",
+     "author": "Allen B. Downey",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://allendowney.github.io/ThinkPython/chap10.html",
+     "where": "chương 9 và 10",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Cho thấy dict dùng để đếm và tra cứu bằng ví dụ đếm chữ cái.",
+     "checked": true
+    },
+    {
+     "title": "Python Numpy Tutorial, phần Containers",
+     "author": "Justin Johnson (Stanford CS231n)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cs231n.github.io/python-numpy-tutorial/",
+     "where": "mục Python > Containers (list, dict, set, tuple)",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bản tóm tắt gọn một trang, có sổ tay Colab chạy được.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Exercism Python track (bài về list, dict, set)",
+     "author": "Exercism",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://exercism.org/tracks/python",
+     "where": "chọn các bài thuộc concept lists, dicts, sets",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Luyện đếm từ, tra cứu, lọc trùng với bộ kiểm thử có sẵn.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Đọc mục 5.1, 5.4, 5.5 rồi tự viết lại các phép giao, hợp, hiệu của tập hợp toán học bằng set; bỏ qua deque."
+  },
+  "lt_vecto_bang_code": {
+   "primary": {
+    "title": "Data Science from Scratch: linear_algebra.py (chương 4 Linear Algebra)",
+    "author": "Joel Grus",
+    "kind": "code",
+    "lang": "en",
+    "url": "https://github.com/joelgrus/data-science-from-scratch",
+    "where": "scratch/linear_algebra.py: cộng vectơ, tích vô hướng, độ dài, ma trận là list của list, chuyển vị",
+    "free": true,
+    "minutes": 90,
+    "why_vi": "Đúng bài toán của nút: vectơ là list, ma trận là list của list, toàn bằng Python thuần; giấy phép MIT.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Python Tutorial 5.1.4: Nested List Comprehensions",
+     "author": "Python Software Foundation",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://docs.python.org/3/tutorial/datastructures.html",
+     "where": "mục 5.1.4, ví dụ chuyển vị ma trận bằng comprehension",
+     "free": true,
+     "minutes": 15,
+     "why_vi": "Cho cách viết chuyển vị trong một dòng, rồi so với bản dùng vòng lặp.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Tự gõ lại các hàm add, dot, norm, transpose trước khi đọc bản của Grus rồi so sánh; kiểm tra kích thước đầu vào bằng assert."
+  },
+  "lt_ham_de_quy": {
+   "primary": {
+    "title": "Think Python 3e, chương 5: Conditionals and Recursion",
+    "author": "Allen B. Downey",
+    "kind": "sach",
+    "lang": "en",
+    "url": "https://allendowney.github.io/ThinkPython/chap05.html",
+    "where": "chương 5 (đệ quy, điều kiện dừng)",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Giới thiệu đệ quy từ hàm gọi hàm, có biểu đồ ngăn xếp gọi.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "CS50P tuần 0 và 3 (hàm, ngoại lệ)",
+     "author": "David J. Malan",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://cs50.harvard.edu/python/weeks/0/",
+     "where": "phần Functions của tuần 0",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Ôn cách viết hàm có tham số và giá trị trả về trước khi vào đệ quy.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Exercism Python track (giai thừa, Fibonacci, hoán vị)",
+     "author": "Exercism",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://exercism.org/tracks/python",
+     "where": "tìm các bài tính toán đệ quy trong track",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Có kiểm thử tự động cho từng bài.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Học theo thứ tự: giai thừa, Fibonacci, tháp Hà Nội, rồi hoán vị bằng quay lui; chưa cần tối ưu bằng nhớ đệm."
+  },
+  "lt_ma_tran_gauss": {
+   "primary": {
+    "title": "MIT 18.06 Lecture 2: Elimination with Matrices",
+    "author": "Gilbert Strang (MIT OpenCourseWare)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-2-elimination-with-matrices/index.html",
+    "where": "bài giảng 2 (khoảng 47 phút), phần khử và thế ngược",
+    "free": true,
+    "minutes": 47,
+    "why_vi": "Nắm thuật toán khử Gauss bằng tay trước, rồi mới đem viết thành ba vòng lặp.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Data Science from Scratch: linear_algebra.py",
+     "author": "Joel Grus",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/joelgrus/data-science-from-scratch",
+     "where": "scratch/linear_algebra.py: hàm tạo ma trận và nhân ma trận (không có sẵn khử Gauss, phải tự viết)",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Nền để dựng các hàm ma trận trước khi viết khử Gauss.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Xem bài giảng 2, tự giải một hệ 3x3 trên giấy, rồi viết nhân ma trận bằng ba vòng lặp và khử Gauss; kiểm lại bằng NumPy sau khi xong."
+  },
+  "lt_numpy": {
+   "primary": {
+    "title": "NumPy: the absolute basics for beginners",
+    "author": "NumPy developers",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://numpy.org/doc/stable/user/absolute_beginners.html",
+    "where": "ndarray, shape, indexing and slicing, broadcasting, aggregation theo trục",
+    "free": true,
+    "minutes": 90,
+    "why_vi": "Trang chính thức cho người mới, đủ bốn ý của nút: shape, cắt lát, broadcasting, hàm theo trục.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Python Numpy Tutorial (with Jupyter and Colab)",
+     "author": "Justin Johnson (Stanford CS231n)",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://cs231n.github.io/python-numpy-tutorial/",
+     "where": "mục Numpy: Arrays, Array indexing, Array math, Broadcasting",
+     "free": true,
+     "minutes": 45,
+     "why_vi": "Bản ngắn, ví dụ rõ về broadcasting; có sổ tay Colab.",
+     "checked": true
+    },
+    {
+     "title": "From Python to NumPy",
+     "author": "Nicolas P. Rougier",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://www.labri.fr/perso/nrougier/from-python-to-numpy/",
+     "where": "chương Anatomy of an array và Code vectorization",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Dạy cách nghĩ vector hoá thay vì vòng lặp; sách CC BY-NC-SA, mã BSD.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "100 numpy exercises (with solutions)",
+     "author": "Nicolas P. Rougier",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://github.com/rougier/numpy-100",
+     "where": "100_Numpy_exercises.ipynb và file lời giải .md",
+     "free": true,
+     "minutes": 240,
+     "why_vi": "100 bài có lời giải và gợi ý, giấy phép MIT.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Đọc absolute basics rồi làm 30 bài đầu của numpy-100; sau đó viết lại phép nhân ma trận của nút trước bằng @ và so thời gian."
+  },
+  "lt_mo_phong_xac_suat": {
+   "primary": {
+    "title": "Seeing Theory: Basic Probability và Compound Probability",
+    "author": "Brown University (Daniel Kunin và cộng sự)",
+    "kind": "tuong_tac",
+    "lang": "en",
+    "url": "https://seeing-theory.brown.edu/",
+    "where": "chương 1 và 2 (xác suất cơ bản, xác suất có điều kiện); trang đã ngừng cập nhật nhưng vẫn dùng được",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Cho thấy tần suất tiến về xác suất khi gieo nhiều lần, đúng ý 'gieo triệu lần rồi đếm'.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "NumPy absolute basics: Generating random numbers",
+     "author": "NumPy developers",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://numpy.org/doc/stable/user/absolute_beginners.html",
+     "where": "mục Generating random numbers (default_rng, hạt giống)",
+     "free": true,
+     "minutes": 15,
+     "why_vi": "Cách tạo số ngẫu nhiên có hạt giống bằng API hiện đại.",
+     "checked": true
+    },
+    {
+     "title": "Data Science from Scratch: probability.py",
+     "author": "Joel Grus",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/joelgrus/data-science-from-scratch",
+     "where": "scratch/probability.py (xác suất có điều kiện, ví dụ hai đứa trẻ)",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Có bài mô phỏng xác suất có điều kiện để so với công thức.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Mô phỏng rút bi và gieo xúc xắc, rồi mô phỏng chính bài xác suất có điều kiện ở nhánh xác suất để kiểm công thức."
+  },
+  "lt_do_phuc_tap": {
+   "primary": {
+    "title": "VisuAlgo: Sorting",
+    "author": "Steven Halim",
+    "kind": "tuong_tac",
+    "lang": "en",
+    "url": "https://visualgo.net/en",
+    "where": "mục Sorting: bubble, insertion, merge, quick; chạy từng bước và đếm phép so sánh",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Thấy tận mắt vì sao O(n log n) nhanh hơn O(n^2) khi n lớn.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Learn Big O Notation",
+     "author": "freeCodeCamp",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://www.freecodecamp.org/news/learn-big-o-notation/",
+     "where": "toàn bài (ký hiệu O, ví dụ vòng lặp)",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Bài viết ngắn, chưa kiểm chất lượng sâu; chỉ dùng làm bản đọc nhanh.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Cài tìm kiếm tuyến tính, nhị phân và một thuật toán sắp xếp, đếm số phép so sánh và đo thời gian với n tăng gấp đôi; chưa cần chứng minh cận."
+  },
+  "lt_dao_ham_so": {
+   "primary": {
+    "title": "Neural networks chapter 2: Gradient descent, how neural networks learn",
+    "author": "3Blue1Brown (Grant Sanderson)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://3blue1brown.com/lessons/gradient-descent",
+    "where": "bài 2 của chuỗi Neural Networks (khoảng 21 phút)",
+    "free": true,
+    "minutes": 21,
+    "why_vi": "Hình ảnh quả bóng lăn xuống thung lũng cho trực giác của hạ gradient và tốc độ học.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Data Science from Scratch: gradient_descent.py (chương 8)",
+     "author": "Joel Grus",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/joelgrus/data-science-from-scratch",
+     "where": "scratch/gradient_descent.py: sai phân, bước hạ gradient, chọn tốc độ học",
+     "free": true,
+     "minutes": 45,
+     "why_vi": "Bản code ngắn dùng sai phân để xấp xỉ đạo hàm rồi hạ gradient.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [
+    {
+     "title": "Machine Learning cơ bản, bài 7: Gradient Descent (1/2)",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/01/12/gradientdescent/",
+     "where": "toàn bài, phần một biến",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Giải thích tiếng Việt rõ, có ví dụ một biến và bàn về tốc độ học.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Viết hạ gradient cho f(x)=x^2 rồi thử tốc độ học 0,001 / 0,1 / 1,1 để thấy chậm, vừa và nổ; so sai phân với đạo hàm tính tay."
+  },
+  "lt_do_thi": {
+   "primary": {
+    "title": "VisuAlgo: Graph Traversal (DFS/BFS) và SS Shortest Paths",
+    "author": "Steven Halim",
+    "kind": "tuong_tac",
+    "lang": "en",
+    "url": "https://visualgo.net/en",
+    "where": "các mục Graph Traversal và SSSP (BFS, Dijkstra)",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Chạy từng bước BFS, DFS, Dijkstra trên đồ thị tự vẽ trước khi cài.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Graph Algorithms in Python: BFS, DFS and Beyond",
+     "author": "freeCodeCamp",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://www.freecodecamp.org/news/graph-algorithms-in-python-bfs-dfs-and-beyond/",
+     "where": "toàn bài: danh sách kề bằng dict, BFS, DFS, Dijkstra",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Mã Python dùng dict và deque, vừa với nút này; chất lượng blog, nên tự gõ lại.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Dùng dict làm danh sách kề, BFS dùng collections.deque, DFS bằng đệ quy, Dijkstra dùng heapq; bỏ qua Bellman-Ford."
+  },
+  "tc_python_nang_cao": {
+   "primary": {
+    "title": "Python Tutorial, mục 8 và 9: Errors and Exceptions, Classes",
+    "author": "Python Software Foundation",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://docs.python.org/3/tutorial/classes.html",
+    "where": "mục 9.3 đến 9.5 (lớp, đối tượng, kế thừa) và mục 8 (xử lý lỗi)",
+    "free": true,
+    "minutes": 90,
+    "why_vi": "Tài liệu chính thức, đủ cho lớp, module, ngoại lệ ở mức dự án nhỏ.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "CS50P tuần 3, 5, 8: Exceptions, Unit Tests, OOP",
+     "author": "David J. Malan",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://cs50.harvard.edu/python/weeks/5/",
+     "where": "tuần 3 (ngoại lệ), 4 (thư viện), 5 (kiểm thử), 8 (hướng đối tượng)",
+     "free": true,
+     "minutes": 300,
+     "why_vi": "Dạy cả viết test với pytest ngay trong bài tập.",
+     "checked": true
+    },
+    {
+     "title": "Think Python 3e, chương 14 đến 17: Classes",
+     "author": "Allen B. Downey",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://allendowney.github.io/ThinkPython/chap14.html",
+     "where": "chương 14 đến 17",
+     "free": true,
+     "minutes": 150,
+     "why_vi": "Dẫn từ hàm sang lớp từng bước nhỏ.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "pytest: Get Started",
+     "author": "pytest-dev",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://docs.pytest.org/en/stable/getting-started.html",
+     "where": "toàn bài (assert, ngoại lệ, pytest.approx cho số thực)",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bắt đầu viết test; pytest.approx hữu ích cho code số học.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Chia dự án nhỏ thành module, viết lớp đơn giản, bắt lỗi cụ thể, rồi thêm vài test pytest; bỏ qua generator, decorator ở mức này."
+  },
+  "tc_du_lieu": {
+   "primary": {
+    "title": "10 minutes to pandas",
+    "author": "pandas developers",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://pandas.pydata.org/docs/user_guide/10min.html",
+    "where": "toàn bài (selection, missing data, grouping, plotting)",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Điểm khởi đầu chính thức, bản mới nhất của tài liệu (pandas 3).",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Kaggle Learn: Pandas",
+     "author": "Kaggle",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://www.kaggle.com/learn/pandas",
+     "where": "cả khoá (khoảng 6 bài, mỗi bài có bài tập có đáp án)",
+     "free": true,
+     "minutes": 240,
+     "why_vi": "Bài tập tương tác trong notebook, có gợi ý và lời giải.",
+     "checked": true
+    },
+    {
+     "title": "Python Data Science Handbook, chương 3 và 4",
+     "author": "Jake VanderPlas",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://jakevdp.github.io/PythonDataScienceHandbook/",
+     "where": "chương 3 (pandas, 3.01 đến 3.13) và 4 (Matplotlib)",
+     "free": true,
+     "minutes": 300,
+     "why_vi": "Chi tiết hơn về làm sạch dữ liệu và vẽ phân phối, tương quan.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Học pandas và Kaggle Learn Pandas, rồi làm sạch một bảng thật (thiếu, sai kiểu) và vẽ phân phối; bỏ qua chuỗi thời gian và parquet.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Palmer Penguins",
+      "url": "https://github.com/allisonhorst/palmerpenguins",
+      "size_mb": 0.02,
+      "license": "CC0 (dữ liệu, theo Palmer Station LTER Data Policy), đã kiểm",
+      "why_vi": "344 dòng, có giá trị thiếu, nhẹ và dùng tự do; hợp để thực hành làm sạch và vẽ."
+     },
+     {
+      "name": "Titanic (Kaggle)",
+      "url": "https://www.kaggle.com/competitions/titanic",
+      "size_mb": 0.1,
+      "license": "chưa rõ giấy phép: dữ liệu thuộc điều khoản cuộc thi Kaggle, không nên đóng gói trong game",
+      "why_vi": "Bảng kinh điển nhưng cần tài khoản Kaggle và điều khoản riêng."
+     }
+    ],
+    "reference_impl": [],
+    "target_vi": "Không có chỉ số cố định; xong khi bảng đã làm sạch, có ít nhất ba biểu đồ phân phối và tương quan, và viết được hai câu hỏi cho dữ liệu.",
+    "compute_vi": "Máy xách tay, pandas và Matplotlib, dưới 1 phút."
+   }
+  },
+  "tc_git": {
+   "primary": {
+    "title": "Pro Git (2nd ed.), chương 2: Git Basics",
+    "author": "Scott Chacon, Ben Straub",
+    "kind": "sach",
+    "lang": "en",
+    "url": "https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository",
+    "where": "chương 2 (init, add, commit, log, undo) rồi chương 3 (nhánh)",
+    "free": true,
+    "minutes": 120,
+    "why_vi": "Sách chuẩn về git, miễn phí; chưa có bản dịch tiếng Việt chính thức theo trang sách.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Missing Semester 2026: Version Control and Git; Packaging and Shipping Code",
+     "author": "MIT",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://missing.csail.mit.edu/2026/version-control/",
+     "where": "bài Version Control and Git và bài Packaging and Shipping Code (môi trường, phiên bản)",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Cho mô hình tư duy của git và cách đóng gói, cố định môi trường.",
+     "checked": false
+    }
+   ],
+   "practice": [
+    {
+     "title": "Learn Git Branching",
+     "author": "Peter Cottle",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://learngitbranching.js.org/",
+     "where": "các cấp Main (commit, branch, merge, rebase)",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Trò chơi tương tác trong trình duyệt để hiểu nhánh; trang chưa nói rõ giấy phép.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Học git cơ bản và nhánh, rồi tự ghi nhật ký thí nghiệm (hạt giống, phiên bản thư viện, kết quả) vào repo; bỏ qua git nội bộ và máy chủ.",
+   "project": {
+    "datasets": [],
+    "reference_impl": [],
+    "target_vi": "Chạy lại thí nghiệm trên máy khác từ repo và ra đúng cùng số (cùng hạt giống, requirements đã ghim).",
+    "compute_vi": "Chỉ cần git và Python; chưa kiểm chứng thêm."
+   }
+  }
+ },
+ "exam_proofs": [],
+ "rejected": [
+  {
+   "title": "Runestone: Problem Solving with Algorithms and Data Structures using Python",
+   "why_vi": "Trang trả lỗi 403 khi kiểm tra, không xác nhận được nội dung."
+  },
+  {
+   "title": "Khan Academy khoá Algorithms",
+   "why_vi": "Không tìm được trang chính thức trong kết quả tìm kiếm nên không đưa vào."
+  },
+  {
+   "title": "Python Crash Course (Matthes)",
+   "why_vi": "Sách in trả phí, đã nằm trong nguồn cấp nhánh; CS50P miễn phí và có tự chấm tốt hơn."
+  },
+  {
+   "title": "Pro Git bản tiếng Việt",
+   "why_vi": "Trang sách không liệt kê tiếng Việt trong các bản dịch."
+  },
+  {
+   "title": "Các trang dán lại sách thương mại (scribd, studocu)",
+   "why_vi": "Vi phạm luật nguồn hợp pháp của hợp đồng."
+  },
+  {
+   "title": "Python Data Science Handbook làm nguồn nền tảng cho từng nút nhỏ",
+   "why_vi": "Quá dài cho nút nhập môn; chỉ dùng ở nút dữ liệu bảng."
+  }
+ ]
+}

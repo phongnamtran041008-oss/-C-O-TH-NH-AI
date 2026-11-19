@@ -95,7 +95,9 @@ def run_placement_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.shot("placement_intro")
         drv.click("math_place_go")
 
-        # ---- the sitting: floor 1 all right, floor 2 missed twice -> start on floor 2
+        # ---- the sitting: everything right on floor 1, everything wrong from floor 2 up -> start
+        # on floor 2, however many floors are written (the climb may jump past floor 2 and then
+        # step back down to confirm it)
         seen = []
         for n in range(20):
             drv.wait(lambda: drv.top_is("PlacementQuizScene") and not top(drv).result, 10, "a placement question")
@@ -104,19 +106,24 @@ def run_placement_flow(workdir: Path, shots: Path | None = None) -> None:
             assert q["context"] == "math_placement" and q["math"]["subject"] == sid
             if n == 0:
                 drv.shot("placement_question")
-            res = answer(drv, server, correct=q["math"]["floor"] != 2)
+            res = answer(drv, server, correct=q["math"]["floor"] < 2)
             if n == 0:
                 drv.shot("placement_answered")
             if res["math"].get("placement_result"):
                 break
             drv.click("math_next")
-        assert seen == sorted(seen)                                        # rising, floor by floor
-        assert [f for f, _ in seen].count(2) == 2 and max(f for f, _ in seen) == 2
+        assert len(seen) <= st["planned"] <= 15
+        first_miss = next(i for i, (f, _) in enumerate(seen) if f >= 2)
+        assert seen[:first_miss + 1] == sorted(seen[:first_miss + 1])     # rising until the first miss
+        floors_after = [f for f, _ in seen[first_miss:]]
+        assert floors_after == sorted(floors_after, reverse=True)         # then only down, to confirm
+        assert [f for f, _ in seen].count(2) == 1 and floors_after[-1] == 2   # floor 2: one miss decides it
         drv.click("math_next")
         drv.wait(lambda: drv.top_is("PlacementScene") and top(drv).result is not None, 10, "the result")
         result = top(drv).result
         assert result["start_floor"] == 2 and result["skipped"] == [1] and not result["abandoned"]
         assert [(f["floor"], f["met"]) for f in result["floors"][:2]] == [(1, True), (2, False)]
+        assert all(not f["met"] for f in result["floors"][1:])             # (floors asked above 2: missed too)
         drv.shot("placement_result")
 
         # ---- back in the hub: floor 1 skipped, floor 2 open and playable

@@ -1,0 +1,890 @@
+{
+ "branch": "ml",
+ "researched": "2026-11-19",
+ "backbone": [
+  {
+   "title": "Machine Learning cơ bản (blog) và sách",
+   "author": "Vũ Hữu Tiệp",
+   "kind": "bai_viet",
+   "lang": "vi",
+   "url": "https://machinelearningcoban.com/",
+   "where": "các bài Linear Regression, Overfitting, K-means, PCA, SVM, Feature Engineering",
+   "free": true,
+   "minutes": 600,
+   "why_vi": "Tiếng Việt, có công thức, trực giác và mã; dùng làm lớp đầu tiên cho từng nút.",
+   "checked": true
+  },
+  {
+   "title": "An Introduction to Statistical Learning with Applications in Python (ISLP)",
+   "author": "James, Witten, Hastie, Tibshirani, Taylor",
+   "kind": "sach",
+   "lang": "en",
+   "url": "https://www.statlearning.com/",
+   "where": "chương 2 đến 10 và bài giảng video của các tác giả",
+   "free": true,
+   "minutes": 1500,
+   "why_vi": "Sách giáo trình chuẩn, PDF miễn phí trên trang; có playlist video bài giảng chính thức cả bản R và Python.",
+   "checked": true
+  },
+  {
+   "title": "Hands-On Machine Learning, 3rd ed. (sổ tay công khai)",
+   "author": "Aurélien Géron",
+   "kind": "code",
+   "lang": "en",
+   "url": "https://github.com/ageron/handson-ml3",
+   "where": "notebook chương 2 đến 9 (01 đến 09), giấy phép Apache-2.0",
+   "free": true,
+   "minutes": 900,
+   "why_vi": "Mã chạy được cho hầu hết nút; bản sách in trả phí nhưng các notebook miễn phí.",
+   "checked": true
+  },
+  {
+   "title": "MLU-Explain",
+   "author": "Amazon MLU (Jared Wilber, Lucía Santamaría)",
+   "kind": "tuong_tac",
+   "lang": "en",
+   "url": "https://mlu-explain.github.io/",
+   "where": "các bài cây quyết định, rừng ngẫu nhiên, ROC, kiểm định chéo, bias-variance",
+   "free": true,
+   "minutes": 150,
+   "why_vi": "Bài tương tác trực quan, đọc nhanh, đúng 'giải thích đơn giản nhưng đúng'.",
+   "checked": true
+  }
+ ],
+ "nodes": {
+  "tc_hoc_co_giam_sat": {
+   "primary": {
+    "title": "MLU-Explain: Train, Test, and Validation Sets",
+    "author": "Amazon MLU",
+    "kind": "tuong_tac",
+    "lang": "en",
+    "url": "https://mlu-explain.github.io/train-test-validation/",
+    "where": "toàn bài",
+    "free": true,
+    "minutes": 15,
+    "why_vi": "Hình ảnh tương tác về chia tập; đọc nhanh, đúng ý nút.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Machine Learning Crash Course: Datasets, generalization, and overfitting",
+     "author": "Google",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://developers.google.com/machine-learning/crash-course/overfitting",
+     "where": "module Datasets, Generalization, and Overfitting (bản làm mới)",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Gồm cả rò rỉ dữ liệu và tập kiểm định.",
+     "checked": true
+    },
+    {
+     "title": "Kaggle Learn: Intro to Machine Learning",
+     "author": "Kaggle",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://www.kaggle.com/learn/intro-to-machine-learning",
+     "where": "bài 5 Underfitting and Overfitting, bài 6 Random Forests",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Học bằng cách chạy, có bài tập; chưa mở được danh sách bài nên chỉ ghi theo mô tả.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Kaggle Learn: Intermediate Machine Learning (rò rỉ dữ liệu, kiểm định chéo)",
+     "author": "Kaggle",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://www.kaggle.com/learn/intermediate-machine-learning",
+     "where": "bài Data Leakage và Cross-Validation",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Bài tập có thể thấy rò rỉ làm điểm đẹp giả ra sao.",
+     "checked": true
+    }
+   ],
+   "vi": [
+    {
+     "title": "Machine Learning cơ bản, bài 15: Overfitting",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/03/04/overfitting/",
+     "where": "toàn bài (quá khớp, validation, regularization)",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Giải thích quá khớp bằng tiếng Việt kèm ví dụ.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Đọc MLU, rồi làm bài tập rò rỉ dữ liệu của Kaggle; chia dữ liệu trước mọi bước chuẩn hoá hay điền thiếu."
+  },
+  "tc_hoi_quy": {
+   "primary": {
+    "title": "ISLP chương 3 (hồi quy tuyến tính) và chương 6 (chính quy hoá)",
+    "author": "James, Witten, Hastie, Tibshirani",
+    "kind": "sach",
+    "lang": "en",
+    "url": "https://www.statlearning.com/",
+    "where": "chương 3 và mục Ridge, Lasso của chương 6, có lab Python",
+    "free": true,
+    "minutes": 300,
+    "why_vi": "Cách đọc hệ số, ridge và lasso giải thích kỹ; PDF miễn phí.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StatQuest: Regularization Part 1: Ridge (L2) và Part 2: Lasso (L1)",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/Q81RR3yKn30",
+     "where": "Part 1 rồi Part 2 (https://youtu.be/NGf0voTMlcs)",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Trực giác ridge co hệ số, lasso về 0; chưa mở được YouTube để kiểm.",
+     "checked": false
+    },
+    {
+     "title": "Hands-On ML 3e, chương 4: Training Linear Models",
+     "author": "Aurélien Géron",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/ageron/handson-ml3",
+     "where": "04_training_linear_models.ipynb",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Mã hồi quy nhiều biến, ridge, lasso chạy được.",
+     "checked": true
+    },
+    {
+     "title": "scikit-learn: Linear Models (Ridge, Lasso)",
+     "author": "scikit-learn",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://scikit-learn.org/stable/modules/linear_model.html",
+     "where": "mục 1.1.2 Ridge, 1.1.3 Lasso",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Tài liệu tham chiếu khi cần chọn tham số chính quy hoá.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [
+    {
+     "title": "Machine Learning cơ bản, bài 3: Linear Regression",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2016/12/28/linearregression/",
+     "where": "toàn bài; chính quy hoá nằm ở bài Overfitting (bài 15)",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Tiếng Việt, nối được với nút ud_hoi_quy_1_bien.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Chuẩn hoá đặc trưng trước ridge/lasso, đọc hệ số sau khi chuẩn hoá; bỏ qua mục chọn mô hình theo AIC, BIC."
+  },
+  "tc_phan_loai": {
+   "primary": {
+    "title": "MLU-Explain: Precision & Recall và ROC & AUC",
+    "author": "Amazon MLU",
+    "kind": "tuong_tac",
+    "lang": "en",
+    "url": "https://mlu-explain.github.io/roc-auc/",
+    "where": "bài ROC & AUC, kèm bài Precision & Recall (https://mlu-explain.github.io/precision-recall/)",
+    "free": true,
+    "minutes": 30,
+    "why_vi": "Kéo ngưỡng và xem ma trận nhầm lẫn, precision, recall, ROC đổi thế nào.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StatQuest: The Confusion Matrix và ROC and AUC",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/4jRBRDbJemM",
+     "where": "ROC and AUC; ma trận nhầm lẫn: https://youtu.be/Kdsp6soqA7o",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Giải thích chậm từng bước; chưa mở được YouTube để kiểm.",
+     "checked": false
+    },
+    {
+     "title": "scikit-learn: Metrics and scoring",
+     "author": "scikit-learn",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://scikit-learn.org/stable/modules/model_evaluation.html",
+     "where": "mục Confusion matrix, Precision recall F-measures, ROC",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Công thức và hàm dùng ngay.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Hands-On ML 3e, chương 3: Classification",
+     "author": "Aurélien Géron",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/ageron/handson-ml3",
+     "where": "03_classification.ipynb (đo bằng ma trận nhầm lẫn, đường cong precision-recall, ROC)",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Chạy sổ tay để chọn ngưỡng trên dữ liệu thật.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Làm bài tập 'độ chính xác 99% vô dụng' trên dữ liệu lệch lớp; chưa cần ROC đa lớp."
+  },
+  "tc_cay_quyet_dinh": {
+   "primary": {
+    "title": "MLU-Explain: Decision Trees",
+    "author": "Jared Wilber, Lucía Santamaría",
+    "kind": "tuong_tac",
+    "lang": "en",
+    "url": "https://mlu-explain.github.io/decision-tree/",
+    "where": "toàn bài (entropy, thông tin thu được, quá khớp, cắt tỉa)",
+    "free": true,
+    "minutes": 20,
+    "why_vi": "Trực quan hoá độ thuần của nút và vì sao cây quá khớp.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StatQuest: Decision and Classification Trees, Clearly Explained",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/_L39rN6gz7Y",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 18,
+     "why_vi": "Tính Gini từng bước bằng tay; chưa mở được YouTube để kiểm.",
+     "checked": false
+    },
+    {
+     "title": "scikit-learn: Decision Trees",
+     "author": "scikit-learn",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://scikit-learn.org/stable/modules/tree.html",
+     "where": "mục 1.10.5 Tips, 1.10.9 Minimal Cost-Complexity Pruning",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Cho tham số max_depth, min_samples_leaf, ccp_alpha để cắt tỉa.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Hands-On ML 3e, chương 6: Decision Trees",
+     "author": "Aurélien Géron",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/ageron/handson-ml3",
+     "where": "06_decision_trees.ipynb",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Chạy cây và xem độ nhạy với dữ liệu xoay.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Đọc MLU rồi tự tính Gini cho một lần chia bằng tay; bỏ qua CART hồi quy tới nút rừng ngẫu nhiên."
+  },
+  "tc_danh_gia": {
+   "primary": {
+    "title": "MLU-Explain: Cross-Validation và The Bias Variance Tradeoff",
+    "author": "Amazon MLU",
+    "kind": "tuong_tac",
+    "lang": "en",
+    "url": "https://mlu-explain.github.io/cross-validation/",
+    "where": "bài Cross-Validation, kèm bài Bias-Variance (https://mlu-explain.github.io/bias-variance/)",
+    "free": true,
+    "minutes": 30,
+    "why_vi": "Hai bài tương tác ngắn đúng hai chủ đề của nút.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StatQuest: Cross Validation và Bias and Variance",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/fSytzGwwBVw",
+     "where": "Cross Validation; Bias and Variance: https://youtu.be/EuBBz3bI-aA",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Ví dụ chuột và đường cong; chưa mở được YouTube để kiểm.",
+     "checked": false
+    },
+    {
+     "title": "scikit-learn: Cross-validation và Validation curves, learning curves",
+     "author": "scikit-learn",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://scikit-learn.org/stable/modules/learning_curve.html",
+     "where": "mục 3.5.2 Learning curve; kiểm định chéo: https://scikit-learn.org/stable/modules/cross_validation.html",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Vẽ đường cong học và đọc nó.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Dùng K-fold phân tầng, báo trung bình và độ lệch chuẩn; để so hai mô hình hãy dùng cùng các lần chia. Bỏ qua kiểm định chéo cho chuỗi thời gian."
+  },
+  "du_an_truc_co": {
+   "primary": {
+    "title": "Hands-On ML 3e, chương 2: End-to-End Machine Learning Project",
+    "author": "Aurélien Géron",
+    "kind": "code",
+    "lang": "en",
+    "url": "https://github.com/ageron/handson-ml3",
+    "where": "02_end_to_end_machine_learning_project.ipynb",
+    "free": true,
+    "minutes": 240,
+    "why_vi": "Đi trọn quy trình: hiểu bài toán, làm sạch, mô hình nền, cải tiến, đánh giá.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Kaggle Learn: Intermediate Machine Learning",
+     "author": "Kaggle",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://www.kaggle.com/learn/intermediate-machine-learning",
+     "where": "thiếu dữ liệu, biến phân loại, pipeline, kiểm định chéo, XGBoost",
+     "free": true,
+     "minutes": 240,
+     "why_vi": "Bổ sung pipeline và xử lý thiếu dữ liệu.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [
+    {
+     "title": "Machine Learning cơ bản (sách tabml)",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "sach",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/ebook/",
+     "where": "trang giới thiệu ebook Machine Learning cơ bản (bản trả phí); chưa kiểm được trang tabml",
+     "free": false,
+     "minutes": null,
+     "why_vi": "Sách tiếng Việt của tác giả; nội dung bảng nên xem trực tiếp trên trang.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Chọn một bảng nhỏ, dựng mô hình nền trước, mỗi lần cải tiến một thứ và ghi lại; báo cáo kèm kiểm định chéo.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Adult / Census Income (UCI)",
+      "url": "https://archive.ics.uci.edu/dataset/2/adult",
+      "size_mb": 5.7,
+      "license": "CC BY 4.0 (đã kiểm)",
+      "why_vi": "48842 dòng, 14 đặc trưng, có thiếu và biến phân loại; adult.data 3,8 MB cộng adult.test 1,9 MB."
+     },
+     {
+      "name": "Palmer Penguins",
+      "url": "https://github.com/allisonhorst/palmerpenguins",
+      "size_mb": 0.02,
+      "license": "CC0 (đã kiểm)",
+      "why_vi": "344 dòng, nhẹ, hợp bài làm nhanh."
+     },
+     {
+      "name": "California Housing (scikit-learn)",
+      "url": "https://scikit-learn.org/stable/datasets/real_world.html",
+      "size_mb": 1.9,
+      "license": "chưa rõ giấy phép (trang scikit-learn không nêu; nguồn StatLib)",
+      "why_vi": "20640 mẫu cho hồi quy; kích thước ước lượng, chưa kiểm."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "Hands-On ML 3e, chương 2",
+      "author": "Aurélien Géron",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://github.com/ageron/handson-ml3",
+      "where": "02_end_to_end_machine_learning_project.ipynb",
+      "free": true,
+      "minutes": 240,
+      "why_vi": "Bản mẫu cho cả quy trình.",
+      "checked": true
+     }
+    ],
+    "target_vi": "Chưa kiểm chứng chỉ số cụ thể từ nguồn. Xong khi mô hình vượt rõ mô hình nền (đoán lớp đa số hay đoán trung bình), kèm báo cáo kiểm định chéo và một đoạn về rò rỉ dữ liệu.",
+    "compute_vi": "CPU máy xách tay, scikit-learn, vài phút."
+   }
+  },
+  "kd_thong_tin": {
+   "primary": {
+    "title": "Visual Information Theory",
+    "author": "Christopher Olah",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://colah.github.io/posts/2015-09-Visual-Information/",
+    "where": "các mục Calculating Entropy và Cross-Entropy (KL nằm trong mục Cross-Entropy)",
+    "free": true,
+    "minutes": 40,
+    "why_vi": "Hình ảnh trực quan nhất về entropy, cross-entropy và KL, không cần chứng minh.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StatQuest: Entropy, Clearly Explained",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/YtebGVx-Fxw",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 17,
+     "why_vi": "Bản video ngắn cho entropy; chưa mở được YouTube để kiểm.",
+     "checked": false
+    },
+    {
+     "title": "Machine Learning cơ bản, bài 10: Logistic Regression (hợp lý cực đại)",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/01/27/logisticregression/",
+     "where": "phần hàm mất mát cross-entropy từ hợp lý cực đại",
+     "free": true,
+     "minutes": 25,
+     "why_vi": "Nối cross-entropy với hợp lý cực đại bằng tiếng Việt.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Đọc Olah tới hết Cross-Entropy, rồi tự tính tay entropy và cross-entropy cho hai phân phối nhỏ; bỏ qua thông tin tương hỗ."
+  },
+  "kd_ensemble": {
+   "primary": {
+    "title": "MLU-Explain: Random Forest",
+    "author": "Amazon MLU",
+    "kind": "tuong_tac",
+    "lang": "en",
+    "url": "https://mlu-explain.github.io/random-forest/",
+    "where": "toàn bài (bagging, rừng ngẫu nhiên)",
+    "free": true,
+    "minutes": 20,
+    "why_vi": "Trực quan cách nhiều cây bỏ phiếu giảm phương sai.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StatQuest: Random Forests Part 1 và Gradient Boost Part 1",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/J4Wdy0Wc_xQ",
+     "where": "Random Forests Part 1; Gradient Boost Part 1: https://youtu.be/3CC4N4z3GJc",
+     "free": true,
+     "minutes": 35,
+     "why_vi": "Giải thích bagging và boosting từng bước; chưa mở được YouTube để kiểm.",
+     "checked": false
+    },
+    {
+     "title": "XGBoost: Introduction to Boosted Trees",
+     "author": "XGBoost developers",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://xgboost.readthedocs.io/en/stable/tutorials/model.html",
+     "where": "toàn bài (hàm mục tiêu, cộng dần, độ phức tạp)",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Tài liệu chính thức giải thích boosting; phần toán có thể đọc lướt.",
+     "checked": true
+    },
+    {
+     "title": "scikit-learn: Ensembles",
+     "author": "scikit-learn",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://scikit-learn.org/stable/modules/ensemble.html",
+     "where": "mục 1.11.1 Gradient-boosted trees, 1.11.2 Random forests, Feature importance",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Cho cách đọc tầm quan trọng đặc trưng và tham số chính.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Hands-On ML 3e, chương 7: Ensemble Learning and Random Forests",
+     "author": "Aurélien Géron",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/ageron/handson-ml3",
+     "where": "07_ensemble_learning_and_random_forests.ipynb",
+     "free": true,
+     "minutes": 90,
+     "why_vi": "Mã bagging, rừng, boosting.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Học bagging, rừng ngẫu nhiên rồi gradient boosting theo thứ tự đó; XGBoost chỉ để biết, không cần đọc phần tối ưu hoá."
+  },
+  "kd_toi_uu_ml": {
+   "primary": {
+    "title": "An overview of gradient descent optimization algorithms",
+    "author": "Sebastian Ruder",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://www.ruder.io/optimizing-gradient-descent/",
+    "where": "mục SGD, Mini-batch, Momentum, Adam",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Bài tổng quan chuẩn về SGD, momentum, Adam; đọc mục theo thứ tự, bỏ phần xa hơn.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Why Momentum Really Works",
+     "author": "Gabriel Goh (Distill)",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://distill.pub/2017/momentum/",
+     "where": "phần mở đầu và các ví dụ tương tác về bước nhảy",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Trực quan vì sao momentum cho phép bước lớn hơn; phần toán có thể bỏ qua.",
+     "checked": true
+    },
+    {
+     "title": "StatQuest: Stochastic Gradient Descent",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/vMh0zPT0tLI",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 10,
+     "why_vi": "Giải thích SGD ngắn gọn; chưa mở được YouTube để kiểm.",
+     "checked": false
+    }
+   ],
+   "practice": [],
+   "vi": [
+    {
+     "title": "Machine Learning cơ bản, bài 8: Gradient Descent (2/2)",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/01/16/gradientdescent2/",
+     "where": "toàn bài (SGD, momentum, Nesterov)",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Tiếng Việt, có SGD và momentum kèm mã.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Tự cài SGD, momentum, Adam trên một hàm hai biến dạng thung lũng hẹp và vẽ quỹ đạo; bỏ qua các biến thể như AMSGrad, Nadam."
+  },
+  "kd_khong_giam_sat": {
+   "primary": {
+    "title": "Machine Learning cơ bản, bài 4 và 5: K-means Clustering",
+    "author": "Vũ Hữu Tiệp",
+    "kind": "bai_viet",
+    "lang": "vi",
+    "url": "https://machinelearningcoban.com/2017/01/01/kmeans/",
+    "where": "bài 4 (thuật toán), bài 5 (ứng dụng: https://machinelearningcoban.com/2017/01/04/kmeans2/)",
+    "free": true,
+    "minutes": 60,
+    "why_vi": "Tiếng Việt, có mã và ví dụ nén ảnh.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StatQuest: K-Means Clustering và PCA Step-by-Step",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/4b5d3muPQmA",
+     "where": "K-Means; PCA: https://youtu.be/FgakZw6K1QQ",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Trực giác, chưa mở được YouTube để kiểm.",
+     "checked": false
+    },
+    {
+     "title": "scikit-learn: Clustering (k-means) và Novelty and Outlier Detection",
+     "author": "scikit-learn",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://scikit-learn.org/stable/modules/outlier_detection.html",
+     "where": "mục 2.7.3 Isolation Forest, Local Outlier Factor; k-means: mục 2.3.2 ở trang clustering",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Cho phát hiện bất thường bằng Isolation Forest và LOF.",
+     "checked": true
+    },
+    {
+     "title": "Hands-On ML 3e, chương 8 và 9: Dimensionality Reduction, Unsupervised Learning",
+     "author": "Aurélien Géron",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/ageron/handson-ml3",
+     "where": "08_dimensionality_reduction.ipynb, 09_unsupervised_learning.ipynb",
+     "free": true,
+     "minutes": 120,
+     "why_vi": "Mã k-means, PCA, giảm chiều để nhìn dữ liệu.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "K-means rồi PCA áp dụng cho trực quan hoá; phát hiện bất thường chỉ cần một phương pháp (Isolation Forest)."
+  },
+  "kd_dac_trung": {
+   "primary": {
+    "title": "Kaggle Learn: Feature Engineering",
+    "author": "Kaggle",
+    "kind": "khoa_hoc",
+    "lang": "en",
+    "url": "https://www.kaggle.com/learn/feature-engineering",
+    "where": "bài Mutual Information, Target Encoding và các bài tạo đặc trưng",
+    "free": true,
+    "minutes": 240,
+    "why_vi": "Học bằng bài tập, có cả bài về mã hoá theo biến mục tiêu và nguy cơ rò rỉ; trang chưa được kiểm trực tiếp.",
+    "checked": false
+   },
+   "also": [
+    {
+     "title": "StatQuest: One-Hot, Label, Target and K-Fold Target Encoding",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/589nCGeWG1w",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 15,
+     "why_vi": "Giải thích các cách mã hoá biến phân loại; chưa mở được YouTube để kiểm.",
+     "checked": false
+    },
+    {
+     "title": "scikit-learn: Imputation of missing values",
+     "author": "scikit-learn",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://scikit-learn.org/stable/modules/impute.html",
+     "where": "SimpleImputer, KNNImputer, MissingIndicator",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Điền thiếu và đánh dấu thiếu, đúng nội dung nút.",
+     "checked": true
+    },
+    {
+     "title": "imbalanced-learn User Guide",
+     "author": "imbalanced-learn developers",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://imbalanced-learn.org/stable/user_guide.html",
+     "where": "mục Over-sampling, Under-sampling, Common pitfalls and recommended practices",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Chỉ cách xử lý lệch lớp và bẫy khi tăng mẫu trước kiểm định.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [
+    {
+     "title": "Machine Learning cơ bản, bài 11: Feature Engineering",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/general/2017/02/06/featureengineering/",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Tiếng Việt, khái quát các kiểu đặc trưng.",
+     "checked": true
+    }
+   ],
+   "note_vi": "Chưa tìm được nguồn tốt riêng cho nhiễu nhãn: chỉ cần biết nó tồn tại và thử bỏ mẫu có mất mát lớn; mọi bước điền, mã hoá, tăng mẫu làm bên trong pipeline và chỉ trên tập huấn luyện."
+  },
+  "kd_svm": {
+   "primary": {
+    "title": "Machine Learning cơ bản, bài 19 đến 21: Support Vector Machine, Soft Margin, Kernel SVM",
+    "author": "Vũ Hữu Tiệp",
+    "kind": "bai_viet",
+    "lang": "vi",
+    "url": "https://machinelearningcoban.com/2017/04/09/smv/",
+    "where": "bài 19 (lề), bài 20 (soft margin: https://machinelearningcoban.com/2017/04/13/softmarginsmv/), bài 21 (kernel: https://machinelearningcoban.com/2017/04/22/kernelsmv/); đọc phần ý tưởng, bỏ phần đối ngẫu",
+    "free": true,
+    "minutes": 90,
+    "why_vi": "Đủ lề, vectơ hỗ trợ và mẹo kernel bằng tiếng Việt.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StatQuest: Support Vector Machines, Clearly Explained",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/efR1C6CvhmE",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Trực giác lề và kernel không cần chứng minh; chưa mở được YouTube để kiểm.",
+     "checked": false
+    },
+    {
+     "title": "scikit-learn: Support Vector Machines, mục Kernel functions",
+     "author": "scikit-learn",
+     "kind": "bai_viet",
+     "lang": "en",
+     "url": "https://scikit-learn.org/stable/modules/svm.html",
+     "where": "mục 1.4.6 Kernel functions, tham số C và gamma của RBF",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Cách chọn C và gamma khi dùng thật.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Hands-On ML 3e, chương 5: Support Vector Machines",
+     "author": "Aurélien Géron",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/ageron/handson-ml3",
+     "where": "05_support_vector_machines.ipynb",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Chạy kernel tuyến tính, đa thức, RBF.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Xem lề và kernel ở mức hình học; thử SVC với RBF trên dữ liệu hai trăng và đổi C, gamma."
+  },
+  "du_an_ket_dan": {
+   "primary": {
+    "title": "Kaggle: Spaceship Titanic (cuộc thi nhập môn)",
+    "author": "Kaggle",
+    "kind": "bai_tap",
+    "lang": "en",
+    "url": "https://www.kaggle.com/competitions/spaceship-titanic",
+    "where": "cuộc thi; dùng làm cuộc thi bảng đầu tiên, đọc notebook công khai sau khi tự làm một bản",
+    "free": true,
+    "minutes": 600,
+    "why_vi": "Cuộc thi khởi đầu, dữ liệu bảng, có bảng xếp hạng; cần tài khoản Kaggle.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Kaggle: House Prices - Advanced Regression Techniques",
+     "author": "Kaggle",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques",
+     "where": "cuộc thi hồi quy kinh điển",
+     "free": true,
+     "minutes": 600,
+     "why_vi": "Hợp để thực hành kiểm định chéo và kết hợp mô hình.",
+     "checked": true
+    },
+    {
+     "title": "Kaggle: Titanic - Machine Learning from Disaster",
+     "author": "Kaggle",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://www.kaggle.com/competitions/titanic",
+     "where": "cuộc thi khởi đầu nổi tiếng",
+     "free": true,
+     "minutes": 300,
+     "why_vi": "Dễ làm nhưng bảng xếp hạng đã đầy điểm gian; dùng để học quy trình, không để so thứ hạng.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Dựng mô hình nền trong ngày đầu, ghi điểm kiểm định chéo, thêm một thay đổi mỗi lần, rồi kết hợp vài mô hình; cuối cùng viết lại bài học.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Spaceship Titanic (Kaggle)",
+      "url": "https://www.kaggle.com/competitions/spaceship-titanic",
+      "size_mb": 1,
+      "license": "chưa rõ giấy phép: dữ liệu theo điều khoản cuộc thi Kaggle, không đóng gói trong game; kích thước ước lượng",
+      "why_vi": "Người chơi tải một lần bằng tài khoản Kaggle của mình."
+     },
+     {
+      "name": "House Prices (Kaggle)",
+      "url": "https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques",
+      "size_mb": 1,
+      "license": "chưa rõ giấy phép: điều khoản cuộc thi Kaggle; kích thước ước lượng",
+      "why_vi": "Dữ liệu Ames, hồi quy."
+     },
+     {
+      "name": "Adult / Census Income (UCI)",
+      "url": "https://archive.ics.uci.edu/dataset/2/adult",
+      "size_mb": 5.7,
+      "license": "CC BY 4.0 (đã kiểm)",
+      "why_vi": "Phương án đóng gói được trong game nếu muốn một 'cuộc thi' ngoại tuyến tự chấm."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "Hands-On ML 3e, chương 7",
+      "author": "Aurélien Géron",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://github.com/ageron/handson-ml3",
+      "where": "07_ensemble_learning_and_random_forests.ipynb",
+      "free": true,
+      "minutes": 90,
+      "why_vi": "Mã kết hợp mô hình.",
+      "checked": true
+     }
+    ],
+    "target_vi": "Chưa kiểm chứng điểm cụ thể: mục tiêu là vượt mô hình nền và vào nửa trên của bảng xếp hạng công khai; cần tự lấy số từ bảng xếp hạng lúc làm.",
+    "compute_vi": "CPU máy xách tay; mô hình cây và boosting trên vài chục nghìn dòng chạy trong vài phút; không cần GPU."
+   }
+  }
+ },
+ "exam_proofs": [],
+ "rejected": [
+  {
+   "title": "Andrew Ng Machine Learning Specialization (làm nguồn chính)",
+   "why_vi": "Trang cho thấy cập nhật tháng 9 năm 2026, có thể học miễn phí theo kiểu dự thính nhưng không có chứng chỉ; dùng TensorFlow, dài; chỉ nên coi là nguồn bổ sung."
+  },
+  {
+   "title": "Stanford CS229 lecture notes",
+   "why_vi": "Trang khoá không cho đường dẫn ghi chú công khai; tài liệu chính nằm sau tài khoản Stanford."
+  },
+  {
+   "title": "R2D3 A Visual Introduction to Machine Learning",
+   "why_vi": "Trang trả lỗi 522 khi kiểm, không xác nhận được; MLU-Explain thay thế được."
+  },
+  {
+   "title": "Trustworthy Online Controlled Experiments làm nguồn chính cho người mới",
+   "why_vi": "Sách thương mại trả phí, dày; chỉ phù hợp tham khảo."
+  },
+  {
+   "title": "ISLP chương 9 làm nguồn SVM chính",
+   "why_vi": "Chứng minh đối ngẫu nặng hơn mục tiêu của nút (chỉ cần trực giác)."
+  },
+  {
+   "title": "Nielsen Neural Networks and Deep Learning",
+   "why_vi": "Trang báo lỗi chứng chỉ khi kiểm nên không dùng làm nguồn đã kiểm."
+  }
+ ]
+}

@@ -381,10 +381,18 @@ sau khi trả lời.
 |---|---|---|
 | `true_false` | `truefalse` | `{"value": true}` hoặc `{"value": false}` |
 | `multiple_choice` | `choice` (`options[{id, text}]`, đã xáo) | `{"option": "a"}` |
-| `numeric` | `number` | `{"text": "3/4"}` — số nguyên, số thập phân (dấu chấm), phân số `a/b`, hoặc nhiều số cách nhau bằng dấu phẩy; sai số cho phép `numeric_tolerance` |
+| `numeric` | `number` | `{"text": "3/4"}` — số nguyên, số thập phân (dấu chấm), phân số `a/b`, hoặc nhiều số cách nhau bằng dấu phẩy; sai số cho phép `numeric_tolerance`, hoặc `tolerance` riêng của câu (M11 đợt 2, xem dưới bảng) |
 | `matching` | `matching` (`prompt.left[]`, `prompt.right[]` đã xáo) | `{"pairs": [r0, r1, ...]}`: `pairs[k]` = vị trí (trong `right`) của vế phải ghép với vế trái thứ k; một hoán vị của `0..n-1` |
 | `ordering` | `ordering` (`prompt.steps[]` đã xáo, không bao giờ hiện sẵn đúng thứ tự) | `{"order": [i0, i1, ...]}`: vị trí các bước (trong `steps`) theo thứ tự đúng của lời giải; một hoán vị của `0..n-1` |
 | `find_mistake` (M11, từ bậc 2) | `find_mistake` (`prompt.lines[]`: 3-6 dòng của một lời giải, **giữ nguyên thứ tự, không xáo**) | `{"line": i}`: `i` là số nguyên (không phải `true`, `1.0`, chuỗi) từ 0 của dòng đầu tiên bị sai. Sai kiểu, thiếu khoá hay ngoài khoảng chỉ là câu sai, không phải lỗi. `reveal.answer_text` = `"Bước <i+1>: <dòng sai>"`, `reveal.solution_vi` nói vì sao sai và bước đúng |
+| `tribulation` (Thiên kiếp, M11 đợt 2, chỉ bậc 4-5, 480 / 720 giây) | `tribulation` (`prompt.text` = tình huống chung, có thể kèm `prompt.matrices`; `prompt.parts[{text, input, options}]`: 2-4 phần theo thứ tự, `input` của mỗi phần là `truefalse`, `choice` hoặc `number`; `options` của phần `choice` đã xáo như một câu trắc nghiệm, các phần khác `null`) | `{"parts": [a0, a1, ...]}`: đúng một câu trả lời cho mỗi phần, theo đúng hình của loại phần ấy (`{"value": bool}`, `{"option": id}`, `{"text": "..."}`). Đúng chỉ khi **mọi** phần đúng, mỗi phần chấm theo luật của loại nó. Thiếu, thừa, sai kiểu phần nào cũng chỉ là câu sai, không phải lỗi. `reveal.answer_text` = `"a) ...; b) ..."`, `reveal.parts[{answer_text, key}]` (chỉ gửi sau khi trả lời) để thẻ nói từng phần đúng hay sai |
+
+`tolerance` (M11 đợt 2): một câu `numeric`, hay một phần `numeric` của Thiên kiếp, có thể có sai số riêng
+(0 < `tolerance` ≤ 1) cho đáp án là số thập phân đã làm tròn; đề nói rõ làm tròn thế nào. Khi có, nó thay
+`numeric_tolerance` cho riêng câu ấy (nằm trong khoá đáp án); `reveal.answer_text` giữ số như viết (`12.35`).
+Không có thì câu số vẫn chấm như cũ. Thiên kiếp không bao giờ được hỏi ở hầm ngục trừ Phòng Lôi Kiếp (tầng 7-9,
+một câu là qua phòng), ở thủ thành toán (`td.json` `qtypes`) hay ở bí cảnh toán (`math_realm.QUICK_TYPES`); chiêu
+Thiên Lôi Tuyệt Kỹ hỏi nó, và Hộ Thể kéo dài suốt thời gian của câu.
 
 Hết giờ trên máy khách thì game gửi `{"timed_out": true}`; máy chủ cũng tự tính hết giờ theo `expires_at`
 (`time_limit` + `network_grace`). Cả hai đều là một câu sai và làm mất chuỗi đúng, không mất gì khác.
@@ -707,7 +715,8 @@ bậc của chính người trả lời, không bao giờ theo tầng của quá
   nó thì không đủ ấn cho người chưa phá: `{"t": "realm", "event": "hint", "code": "seal_share"}`.
 - Boss: mỗi người được hỏi "bài tổng hợp" của mình (`pick_own(highest=True)`); khiên lớn cần mỗi người còn sống
   (trừ người không có câu nào) trả lời đúng một câu. Dạng boss muốn hỏi (`boss_question.prefer:
-  "find_mistake"`, Tìm chỗ sai) chưa chơi được: chờ M11.
+  "find_mistake"`, Tìm chỗ sai) chơi được từ M11; ai không có câu dạng ấy ở bậc của mình thì nhận bài tổng hợp,
+  không bao giờ là một Thiên kiếp (M11 đợt 2: một câu 8-12 phút không hợp với bí cảnh 15-20 phút).
 - Người chơi mà ngân hàng không có câu: `{"t": "error", "code": "no_math_question"}`; phòng và khiên boss không
   chờ người đó.
 - Thưởng: như bí cảnh cũ (`realm loot`), nhưng chỉ Linh Thạch và vật liệu của `data/math/drops.json`
@@ -747,3 +756,35 @@ Luật 7 của lộ trình: bài kiểm tra đầu vào, tùy chọn, mỗi bí 
   miễn, và mọi chế độ hỏi "người chơi đang ở tầng nào" (`math_ask.open_floor`: bí cảnh, hầm ngục, cơ duyên, thủ
   thành, chiêu thức) đọc cùng một nguồn `math_practice.cleared_floors`. `run` (buổi đang dở) không bao giờ là một
   lần kiểm tra đầu vào.
+
+## M11 đợt 2 — Bậc thang của câu bậc 5, kiểm tra đầu vào cho chín tầng (agent LADDER)
+
+**Luật 8, bậc thang** (luật chi tiết: docstring của `server/app/systems/math_practice.py`; dữ liệu: `ladder` của
+câu viết tay bậc 5, xem `server/app/learning/math_items.py`). Bảng mới `math_ladders` (migration
+`0015_math_ladder`), cột mới `math_runs.ladders`.
+
+- `run` (mọi chỗ trả về `run_view`) có thêm `ladders`: số bậc thang đã leo xong trong buổi luyện này.
+- Câu hỏi là một bậc thang: `question.math.ladder = {of, step, steps}` (`of` = id câu bậc 5 vừa sai, `step` = bậc
+  này, đếm từ 1). Câu thường không có khoá này.
+- Kết quả `POST /quiz/answer` trong buổi luyện (`context: "math"`, `mode: "practice"`):
+  - câu bậc 5 viết tay trả lời sai (hoặc hết giờ) mở bậc thang: `math.ladder = {of, step: 0, steps, started:
+    true, rung: false, done: false}`;
+  - trả lời một bậc: `math.ladder = {of, step, steps, rung: true, done, missed, returns}` (`step` = số bậc đã
+    trả lời, `missed` = số bậc sai, `returns` = câu bậc 5 sẽ quay lại ngay câu sau, tức bậc thang leo sạch);
+  - câu khác: không có `math.ladder`.
+- Thứ tự câu của buổi luyện: bậc tiếp theo của bậc thang đang leo ở tầng này → câu song song của lỗi sai (tâm ma;
+  lỗi bậc 5 bị giữ lại khi bậc thang chưa xong, hoặc khi đã sai một bậc thì chờ buổi sau; leo sạch thì nó đi
+  trước) → câu ôn → câu thường. Thiên kiếp nhỏ, kiểm tra đầu vào và các chế độ khác không mở bậc thang.
+
+**Kiểm tra đầu vào cho chín tầng** (luật chi tiết: docstring của `server/app/systems/math_placement.py`).
+`balance/math.json` → `placement_test` thêm `block_min` 3; `per_floor` 5 nay là số câu nhiều nhất của một khối.
+
+- Leo theo khối: mỗi tầng được hỏi một khối `block` câu (bậc thấp lên cao); đạt thì nhảy `stride` tầng có câu,
+  không đạt thì dừng và lùi từng tầng để xác nhận những tầng đã nhảy qua. 3 tầng: khối 4 câu, mọi tầng; 6 tầng:
+  khối 3, tầng 1-3-5-6; 9 tầng: khối 3, tầng 1-4-7-9. Không lần làm nào quá `max_questions`.
+- `GET /math/placement`: thêm `block`, `stride`; `planned` = số câu nhiều nhất một lần làm có thể hỏi.
+  `progress` thêm `block`, `stride`; `total` = số câu nhiều nhất, `left` = số câu còn có thể hỏi nhiều nhất;
+  `progress.floors[]` = các khối đã hỏi, theo thứ tự hỏi. `result.floors[]` = chỉ các tầng đã được hỏi, tầng thấp
+  trước; tầng nhảy qua nằm trong `skipped[]`.
+- Câu Thiên kiếp (`tribulation`) không bao giờ là câu kiểm tra đầu vào; tầng chỉ có câu Thiên kiếp không tính là
+  tầng có câu.

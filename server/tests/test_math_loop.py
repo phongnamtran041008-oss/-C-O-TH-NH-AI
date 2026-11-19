@@ -54,7 +54,18 @@ async def ask(client, h, run_id) -> dict:
     return r.json()["question"]
 
 
+PART_QTYPES = {"truefalse": "true_false", "choice": "multiple_choice", "number": "numeric"}
+
+
+def part_questions(q: dict) -> list[dict]:
+    """The parts of a Thiên kiếp (M11 đợt 2), each shaped like a question of its own type."""
+    return [{"qtype": PART_QTYPES[p["input"]], "options": p["options"], "prompt": {"text": p["text"]}}
+            for p in q["prompt"]["parts"]]
+
+
 def right_answer(q: dict, key: dict) -> dict:
+    if q["qtype"] == "tribulation":                     # every part right
+        return {"parts": [right_answer(pq, k) for pq, k in zip(part_questions(q), key["parts"])]}
     if q["qtype"] == "true_false":
         return {"value": key["value"]}
     if q["qtype"] == "multiple_choice":
@@ -69,6 +80,9 @@ def right_answer(q: dict, key: dict) -> dict:
 
 
 def wrong_answer(q: dict, key: dict) -> dict:
+    if q["qtype"] == "tribulation":                     # one part wrong (the first), the others right
+        parts = [right_answer(pq, k) for pq, k in zip(part_questions(q), key["parts"])]
+        return {"parts": [wrong_answer(part_questions(q)[0], key["parts"][0])] + parts[1:]}
     if q["qtype"] == "true_false":
         return {"value": not key["value"]}
     if q["qtype"] == "multiple_choice":
@@ -252,8 +266,8 @@ async def test_path_lists_the_floors_and_which_have_questions(client):
     assert r.status_code == 200
     data = r.json()
     assert [s["id"] for s in data["subjects"]] == [SUBJECT, "giai_tich", "xac_suat_thong_ke", "toi_uu_roi_rac"]
-    for s in data["subjects"]:      # M11: every subject is written up to floor 3, and only floor 1 is open
-        assert [f["has_questions"] for f in s["floors"]] == [True, True, True] + [False] * 7, s["id"]
+    for s in data["subjects"]:      # floors 1-9 of every subject are written, and only floor 1 is open
+        assert [f["has_questions"] for f in s["floors"]] == [True] * 9 + [False], s["id"]
         assert [f["playable"] for f in s["floors"]] == [True] + [False] * 9, s["id"]
         assert s["cleared"] == [] and s["next_floor"] == 1 and s["placement"]["offered"]
     floors = data["subjects"][0]["floors"]
@@ -261,7 +275,7 @@ async def test_path_lists_the_floors_and_which_have_questions(client):
     assert floors[0]["playable"] and floors[0]["questions"] == len(mi.floor_templates(SUBJECT, 1, True))
     assert floors[0]["generators"] == 13 and floors[0]["questions"] >= 30
     assert (floors[0]["tier_min"], floors[0]["tier_max"]) == (1, 2)
-    assert [f["has_questions"] for f in floors] == [True, True, True] + [False] * 7  # M3: floors 1-3 are written
+    assert [f["has_questions"] for f in floors] == [True] * 9 + [False]  # floors 1-9 are written; the hidden floor 10 is not
     # M5: only floor 1 is open until its Thiên kiếp nhỏ is passed
     assert [f["playable"] for f in floors] == [True] + [False] * 9
     assert [f["state"] for f in floors] == ["open"] + ["locked"] * 9
@@ -271,9 +285,10 @@ async def test_path_lists_the_floors_and_which_have_questions(client):
 
 async def test_start_refuses_a_floor_without_questions_or_that_does_not_exist(client):
     h, _ = await make(client)
-    for body, status, code in (({"subject_id": SUBJECT, "floor": 4}, 400, "no_questions"),
+    for body, status, code in (({"subject_id": SUBJECT, "floor": 10}, 400, "no_questions"),   # the hidden floor
                                ({"subject_id": SUBJECT, "floor": 11}, 404, "no_floor"),
-                               ({"subject_id": "giai_tich", "floor": 4}, 400, "no_questions"),
+                               ({"subject_id": "giai_tich", "floor": 10}, 400, "no_questions"),
+                               ({"subject_id": SUBJECT, "floor": 4}, 403, "floor_locked"),    # written, not open
                                ({"subject_id": "hinh_hoc", "floor": 1}, 404, "no_floor")):
         r = await client.post("/math/run/start", json=body, headers=h)
         assert r.status_code == status and r.json()["error"]["code"] == code, r.text

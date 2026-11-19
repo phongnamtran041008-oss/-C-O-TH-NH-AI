@@ -1,0 +1,172 @@
+{
+  "_comment": "Đề tự luận của Luận Đạo Đài (docs/LUAN_DAO_DAI.md). Tuỳ chọn, không nằm trên chính đạo, chưa nối vào game. Đề, lời giải và thang điểm tự viết; mỗi thang điểm tổng 10.",
+  "subject": "dai_so_tuyen_tinh",
+  "wired": false,
+  "essays": [
+    {
+      "id": "ds_tl_khong_gian_con",
+      "node": "ds_khong_gian",
+      "kind": "chung_minh",
+      "level": 1,
+      "minutes": 12,
+      "title_vi": "Một mặt phẳng qua gốc là không gian con",
+      "statement_vi": "Cho W = {(x, y, z) thuộc R^3 : x + 2y - z = 0}. (a) Chứng minh W là không gian con của R^3. (b) Tìm một cơ sở và số chiều của W.",
+      "why_vi": "Tập nghiệm của Ax = 0 luôn là một không gian con. Đó là lý do có vô số bộ trọng số cho cùng một kết quả khi dữ liệu ít hơn số tham số.",
+      "hints_vi": [
+        "Kiểm tra ba điều: chứa vectơ không, đóng với phép cộng, đóng với phép nhân với một số.",
+        "Ở câu (b), rút z theo x và y rồi tách vectơ tổng quát thành tổ hợp của hai vectơ cố định."
+      ],
+      "solution_vi": [
+        "(a) Vectơ (0, 0, 0) thuộc W vì 0 + 2 . 0 - 0 = 0, nên W khác rỗng.",
+        "Lấy u = (x1, y1, z1) và v = (x2, y2, z2) thuộc W. Khi đó (x1 + x2) + 2(y1 + y2) - (z1 + z2) = (x1 + 2y1 - z1) + (x2 + 2y2 - z2) = 0 + 0 = 0, nên u + v thuộc W.",
+        "Lấy số thực k bất kỳ: kx1 + 2ky1 - kz1 = k(x1 + 2y1 - z1) = 0, nên ku thuộc W. Vậy W là không gian con của R^3.",
+        "(b) Từ x + 2y - z = 0 có z = x + 2y. Mọi vectơ của W có dạng (x, y, x + 2y) = x(1, 0, 1) + y(0, 1, 2).",
+        "Vậy W sinh bởi a = (1, 0, 1) và b = (0, 1, 2), và cả hai đều thuộc W.",
+        "Nếu sa + tb = 0 thì (s, t, s + 2t) = (0, 0, 0), suy ra s = t = 0: a, b độc lập tuyến tính.",
+        "Do đó {a, b} là một cơ sở của W và dim W = 2."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 1, "need_vi": "Chỉ ra W chứa vectơ không (W khác rỗng)."},
+        {"id": "r2", "points": 3, "need_vi": "Chứng minh đóng với phép cộng bằng hai vectơ tổng quát của W."},
+        {"id": "r3", "points": 2, "need_vi": "Chứng minh đóng với phép nhân với một số thực bất kỳ."},
+        {"id": "r4", "points": 2, "need_vi": "Biểu diễn vectơ tổng quát của W thành tổ hợp tuyến tính của hai vectơ cụ thể."},
+        {"id": "r5", "points": 1, "need_vi": "Chứng minh hai vectơ ấy độc lập tuyến tính."},
+        {"id": "r6", "points": 1, "need_vi": "Kết luận cơ sở và dim W = 2."}
+      ],
+      "fatal_vi": [
+        "Chỉ kiểm tra với vài vectơ cụ thể thay vì vectơ tổng quát.",
+        "Kết luận dim W = 3 vì W nằm trong R^3."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "ds_tl_doc_lap_tuyen_tinh",
+      "node": "ds_khong_gian",
+      "kind": "chung_minh",
+      "level": 2,
+      "minutes": 12,
+      "title_vi": "Độc lập tuyến tính của các tổng từng đôi",
+      "statement_vi": "Cho u, v, w là ba vectơ độc lập tuyến tính trong một không gian vectơ thực. Chứng minh ba vectơ u + v, v + w, w + u cũng độc lập tuyến tính.",
+      "why_vi": "Các đặc trưng của dữ liệu thường là tổ hợp của nhau. Kiểm tra chúng còn độc lập hay không quyết định hệ phương trình chuẩn có nghiệm duy nhất hay không.",
+      "hints_vi": [
+        "Bắt đầu từ định nghĩa: giả sử một tổ hợp tuyến tính của ba vectơ mới bằng vectơ không.",
+        "Nhóm lại theo u, v, w rồi dùng giả thiết."
+      ],
+      "solution_vi": [
+        "Giả sử a(u + v) + b(v + w) + c(w + u) = 0 với a, b, c là các số thực.",
+        "Nhóm lại: (a + c)u + (a + b)v + (b + c)w = 0.",
+        "Vì u, v, w độc lập tuyến tính nên cả ba hệ số bằng 0: a + c = 0, a + b = 0, b + c = 0.",
+        "Từ hai phương trình đầu: c = -a và b = -a. Thay vào phương trình thứ ba: -a - a = 0, nên a = 0, kéo theo b = c = 0.",
+        "Tổ hợp tuyến tính bằng 0 chỉ khi mọi hệ số bằng 0, vậy u + v, v + w, w + u độc lập tuyến tính."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 2, "need_vi": "Xuất phát đúng từ định nghĩa: giả sử một tổ hợp tuyến tính bằng vectơ không."},
+        {"id": "r2", "points": 2, "need_vi": "Nhóm đúng theo u, v, w."},
+        {"id": "r3", "points": 2, "need_vi": "Dùng giả thiết độc lập của u, v, w để có hệ ba phương trình cho a, b, c."},
+        {"id": "r4", "points": 3, "need_vi": "Giải hệ và chỉ ra nghiệm duy nhất a = b = c = 0, có các bước."},
+        {"id": "r5", "points": 1, "need_vi": "Kết luận theo định nghĩa."}
+      ],
+      "fatal_vi": [
+        "Kết luận độc lập chỉ vì 'không vectơ nào là bội của vectơ khác'.",
+        "Chọn u, v, w là ba vectơ cụ thể (ví dụ cơ sở chính tắc) rồi coi như đã chứng minh trường hợp tổng quát."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "ds_tl_nhan_anh",
+      "node": "ds_anh_xa_tuyen_tinh",
+      "kind": "tinh_co_lap_luan",
+      "level": 2,
+      "minutes": 15,
+      "title_vi": "Nhân, ảnh và định lý số chiều",
+      "statement_vi": "Cho f : R^3 -> R^2, f(x, y, z) = (x + y, y - z). (a) Chứng minh f là ánh xạ tuyến tính. (b) Tìm một cơ sở của Ker f và của Im f. (c) Kiểm tra định lý số chiều.",
+      "why_vi": "Mỗi lớp tuyến tính của mạng nơ-ron là một ánh xạ như thế này. Ker f là phần thông tin của đầu vào mà lớp ấy làm mất hẳn.",
+      "hints_vi": [
+        "f(x) = Ax với một ma trận A cỡ 2 x 3. Hoặc kiểm tra trực tiếp f(u + v) và f(ku).",
+        "Ker f là tập nghiệm của hệ x + y = 0, y - z = 0."
+      ],
+      "solution_vi": [
+        "(a) Với u = (x1, y1, z1), v = (x2, y2, z2): f(u + v) = (x1 + x2 + y1 + y2, y1 + y2 - z1 - z2) = f(u) + f(v).",
+        "Với số thực k: f(ku) = (kx1 + ky1, ky1 - kz1) = k f(u). Vậy f tuyến tính.",
+        "(b) (x, y, z) thuộc Ker f khi x + y = 0 và y - z = 0, tức x = -y và z = y. Vậy Ker f = {y(-1, 1, 1)}, một cơ sở là {(-1, 1, 1)}, dim Ker f = 1.",
+        "f(1, 0, 0) = (1, 0) và f(0, 0, -1) = (0, 1) đều thuộc Im f. Hai vectơ này là cơ sở chính tắc của R^2, nên Im f = R^2, dim Im f = 2.",
+        "(c) dim Ker f + dim Im f = 1 + 2 = 3 = dim R^3, đúng với định lý số chiều."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 3, "need_vi": "Chứng minh tuyến tính: bảo toàn phép cộng và phép nhân với một số (hoặc viết f(x) = Ax và nêu lý do)."},
+        {"id": "r2", "points": 3, "need_vi": "Lập và giải đúng hệ của Ker f, nêu cơ sở và số chiều."},
+        {"id": "r3", "points": 2, "need_vi": "Tìm Im f có lập luận (hai ảnh độc lập, hoặc hạng của ma trận bằng 2), nêu cơ sở và số chiều."},
+        {"id": "r4", "points": 2, "need_vi": "Kiểm tra dim Ker f + dim Im f = 3."}
+      ],
+      "fatal_vi": [
+        "Nhầm Ker f là tập con của R^2 hoặc Im f là tập con của R^3.",
+        "Dùng định lý số chiều để suy ra dim Im f rồi lại dùng chính kết quả đó để 'kiểm tra' định lý."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "ds_tl_tri_rieng_doi_xung",
+      "node": "ds_tri_rieng",
+      "kind": "chung_minh",
+      "level": 3,
+      "minutes": 15,
+      "title_vi": "Vectơ riêng của ma trận đối xứng thì trực giao",
+      "statement_vi": "Cho A là ma trận thực đối xứng. Giả sử u, v là hai vectơ riêng của A ứng với hai giá trị riêng khác nhau. Chứng minh u vuông góc với v.",
+      "why_vi": "Ma trận hiệp phương sai là ma trận đối xứng. Kết quả này là lý do các trục chính của PCA vuông góc với nhau.",
+      "hints_vi": [
+        "Tính tích vô hướng (Au) . v theo hai cách.",
+        "Với mọi vectơ x, y: (Ax) . y = x . (A^T y)."
+      ],
+      "solution_vi": [
+        "Gọi Au = a u và Av = b v, với a khác b.",
+        "Ta có (Au) . v = (Au)^T v = u^T A^T v = u . (A^T v).",
+        "Vì A đối xứng nên A^T = A, do đó (Au) . v = u . (Av).",
+        "Vế trái bằng (a u) . v = a (u . v). Vế phải bằng u . (b v) = b (u . v).",
+        "Suy ra (a - b)(u . v) = 0. Vì a khác b nên u . v = 0, tức u vuông góc với v."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 2, "need_vi": "Viết giả thiết thành Au = a u, Av = b v với a khác b."},
+        {"id": "r2", "points": 3, "need_vi": "Nêu và dùng đúng đẳng thức (Au) . v = u . (A^T v)."},
+        {"id": "r3", "points": 2, "need_vi": "Dùng A^T = A để đổi thành u . (Av)."},
+        {"id": "r4", "points": 2, "need_vi": "Suy ra (a - b)(u . v) = 0."},
+        {"id": "r5", "points": 1, "need_vi": "Dùng a khác b để kết luận u . v = 0."}
+      ],
+      "fatal_vi": [
+        "Dùng ngay định lý 'ma trận đối xứng chéo hoá trực giao được' mà không chứng minh: đó là kết quả mạnh hơn điều cần chứng minh.",
+        "Chứng minh bằng một ma trận 2 x 2 cụ thể."
+      ],
+      "reviewed": false
+    },
+    {
+      "id": "ds_tl_nghich_dao_tich",
+      "node": "ds_dinh_thuc_nghich_dao",
+      "kind": "chung_minh",
+      "level": 1,
+      "minutes": 8,
+      "title_vi": "Nghịch đảo của một tích",
+      "statement_vi": "Cho A, B là hai ma trận vuông cấp n khả nghịch. Chứng minh AB khả nghịch và (AB)^(-1) = B^(-1) A^(-1).",
+      "why_vi": "Thứ tự đảo ngược này cũng là thứ tự của lan truyền ngược: muốn gỡ một chuỗi phép biến đổi thì gỡ phép làm sau cùng trước.",
+      "hints_vi": [
+        "Một ma trận C là nghịch đảo của AB khi (AB)C = C(AB) = I.",
+        "Phép nhân ma trận có tính kết hợp nhưng không giao hoán."
+      ],
+      "solution_vi": [
+        "Đặt C = B^(-1) A^(-1). Cần chứng minh (AB)C = I và C(AB) = I.",
+        "(AB)C = A (B B^(-1)) A^(-1) = A I A^(-1) = A A^(-1) = I, dùng tính kết hợp của phép nhân.",
+        "C(AB) = B^(-1) (A^(-1) A) B = B^(-1) I B = B^(-1) B = I.",
+        "Vậy AB khả nghịch và nghịch đảo của nó là B^(-1) A^(-1). Chú ý thứ tự bị đảo."
+      ],
+      "rubric": [
+        {"id": "r1", "points": 2, "need_vi": "Nêu điều cần kiểm tra: tìm C sao cho (AB)C = C(AB) = I."},
+        {"id": "r2", "points": 3, "need_vi": "Tính (AB)(B^(-1) A^(-1)) = I, có dùng tính kết hợp."},
+        {"id": "r3", "points": 3, "need_vi": "Tính chiều còn lại (B^(-1) A^(-1))(AB) = I, hoặc nêu rõ vì sao với ma trận vuông một chiều là đủ."},
+        {"id": "r4", "points": 2, "need_vi": "Kết luận AB khả nghịch và công thức nghịch đảo."}
+      ],
+      "fatal_vi": [
+        "Viết (AB)^(-1) = A^(-1) B^(-1).",
+        "Đổi chỗ các ma trận trong tích như thể phép nhân ma trận giao hoán, hoặc 'chia' cho ma trận."
+      ],
+      "reviewed": false
+    }
+  ]
+}

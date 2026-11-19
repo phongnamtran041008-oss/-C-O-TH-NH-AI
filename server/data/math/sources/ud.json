@@ -1,0 +1,722 @@
+{
+ "branch": "ud",
+ "researched": "2026-11-19",
+ "backbone": [
+  {
+   "title": "Machine Learning cơ bản (blog)",
+   "author": "Vũ Hữu Tiệp",
+   "kind": "bai_viet",
+   "lang": "vi",
+   "url": "https://machinelearningcoban.com/",
+   "where": "các bài KNN, Linear Regression, Gradient Descent, Logistic Regression, PCA, Naive Bayes, MLP",
+   "free": true,
+   "minutes": 600,
+   "why_vi": "Loạt bài tiếng Việt tự viết thuật toán bằng NumPy, mỗi bài có công thức và mã; hợp học từng mô hình nhỏ.",
+   "checked": true
+  },
+  {
+   "title": "Data Science from Scratch, 2nd ed. (code repo)",
+   "author": "Joel Grus",
+   "kind": "code",
+   "lang": "en",
+   "url": "https://github.com/joelgrus/data-science-from-scratch",
+   "where": "scratch/: k_nearest_neighbors.py, naive_bayes.py, simple_linear_regression.py, logistic_regression.py, neural_networks.py",
+   "free": true,
+   "minutes": null,
+   "why_vi": "Mỗi mô hình viết bằng Python thuần, MIT; dùng làm bản đối chiếu sau khi tự viết.",
+   "checked": true
+  },
+  {
+   "title": "Neural Networks: Zero to Hero, bài 1: building micrograd",
+   "author": "Andrej Karpathy",
+   "kind": "video",
+   "lang": "en",
+   "url": "https://youtu.be/VMj-3S1tku0",
+   "where": "bài 1 (2 giờ 25 phút): lan truyền ngược viết từ đầu",
+   "free": true,
+   "minutes": 145,
+   "why_vi": "Cách tốt nhất để thấy lan truyền ngược chỉ là quy tắc dây chuyền áp dụng nhiều lần.",
+   "checked": false
+  }
+ ],
+ "nodes": {
+  "ud_knn": {
+   "primary": {
+    "title": "Machine Learning cơ bản, bài 6: K-nearest neighbors",
+    "author": "Vũ Hữu Tiệp",
+    "kind": "bai_viet",
+    "lang": "vi",
+    "url": "https://machinelearningcoban.com/2017/01/08/knn/",
+    "where": "toàn bài (khoảng cách, bỏ phiếu, chọn k)",
+    "free": true,
+    "minutes": 40,
+    "why_vi": "Giải thích KNN bằng tiếng Việt với mã NumPy chạy được trên dữ liệu thật.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Data Science from Scratch: k_nearest_neighbors.py (chương 12)",
+     "author": "Joel Grus",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/joelgrus/data-science-from-scratch",
+     "where": "scratch/k_nearest_neighbors.py",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bản Python thuần, ngắn, có bỏ phiếu và xử lý hoà.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "Digits Classification Exercise",
+     "author": "scikit-learn",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://scikit-learn.org/1.5/auto_examples/exercises/plot_digits_classification_exercise.html",
+     "where": "tài liệu scikit-learn bản 1.5 (ví dụ này đã bị gỡ khỏi các bản mới hơn)",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Đối chiếu kết quả của mình với bài mẫu chính thức.",
+     "checked": true
+    }
+   ],
+   "vi": [],
+   "note_vi": "Tự viết khoảng cách, sắp xếp lấy k điểm gần nhất, bỏ phiếu; rồi đo độ chính xác trên tập tách riêng; chưa cần cây k-d.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Optical Recognition of Handwritten Digits (UCI, 8x8)",
+      "url": "https://archive.ics.uci.edu/dataset/80/optical+recognition+of+handwritten+digits",
+      "size_mb": 0.58,
+      "license": "CC BY 4.0 (đã kiểm trên trang UCI)",
+      "why_vi": "5620 ảnh 8x8, 64 đặc trưng; nhỏ, đóng gói được. scikit-learn có sẵn bản 1797 mẫu qua load_digits."
+     },
+     {
+      "name": "Iris (qua scikit-learn load_iris)",
+      "url": "https://scikit-learn.org/stable/datasets/toy_dataset.html",
+      "size_mb": 0.01,
+      "license": "chưa rõ giấy phép (trang scikit-learn không nêu; dữ liệu Fisher 1936, thường coi như dùng tự do)",
+      "why_vi": "150 mẫu, 4 đặc trưng, để chạy thử nhanh."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "Data Science from Scratch: k_nearest_neighbors.py",
+      "author": "Joel Grus",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://github.com/joelgrus/data-science-from-scratch",
+      "where": "scratch/k_nearest_neighbors.py",
+      "free": true,
+      "minutes": 30,
+      "why_vi": "Bản Python thuần để so.",
+      "checked": true
+     }
+    ],
+    "target_vi": "Trên digits 8x8, KNN thường đạt khoảng 95% đến 99% tuỳ cách chia và k (trang mẫu scikit-learn cho 0,96; một notebook công khai cho 99,1% ở k=1); mục tiêu hợp lý: từ 95% trở lên.",
+    "compute_vi": "CPU máy xách tay, Python thuần hoặc NumPy, dưới 1 phút với 1797 mẫu."
+   }
+  },
+  "ud_naive_bayes": {
+   "primary": {
+    "title": "Machine Learning cơ bản, bài 32: Naive Bayes Classifier",
+    "author": "Vũ Hữu Tiệp",
+    "kind": "bai_viet",
+    "lang": "vi",
+    "url": "https://machinelearningcoban.com/2017/08/08/nbc/",
+    "where": "toàn bài, ví dụ phân loại văn bản",
+    "free": true,
+    "minutes": 40,
+    "why_vi": "Có ví dụ phân loại văn bản và mã; đúng với bộ lọc thư rác.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StatQuest: Naive Bayes",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/O2L2Uv9pdDA",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 15,
+     "why_vi": "Hình dung từng bước đếm từ và nhân xác suất; trang mục lục StatQuest dẫn tới video này.",
+     "checked": false
+    },
+    {
+     "title": "Data Science from Scratch: naive_bayes.py (chương 13)",
+     "author": "Joel Grus",
+     "kind": "code",
+     "lang": "en",
+     "url": "https://github.com/joelgrus/data-science-from-scratch",
+     "where": "scratch/naive_bayes.py (bộ lọc thư rác Python thuần)",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Cùng bài toán thư rác, có làm trơn Laplace.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Đếm từ theo nhãn, làm trơn Laplace, cộng log xác suất để khỏi tràn số; không cần tinh lọc chữ.",
+   "project": {
+    "datasets": [
+     {
+      "name": "SMS Spam Collection (UCI)",
+      "url": "https://archive.ics.uci.edu/dataset/228/sms+spam+collection",
+      "size_mb": 0.47,
+      "license": "CC BY 4.0 (đã kiểm trên trang UCI)",
+      "why_vi": "5574 tin nhắn có nhãn spam/ham, 467 KB; đóng gói được kèm ghi công."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "Data Science from Scratch: naive_bayes.py",
+      "author": "Joel Grus",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://github.com/joelgrus/data-science-from-scratch",
+      "where": "scratch/naive_bayes.py",
+      "free": true,
+      "minutes": 30,
+      "why_vi": "Bản đối chiếu.",
+      "checked": true
+     }
+    ],
+    "target_vi": "Naive Bayes đa thức trên SMS Spam thường đạt từ 96,6% đến 99% độ chính xác tuỳ cách chia (các báo cáo công khai: 96,6%, 98,995%); tập lệch lớp (spam khoảng 13%) nên cần báo thêm precision và recall; chưa có nguồn chuẩn duy nhất.",
+    "compute_vi": "CPU máy xách tay, Python thuần, vài giây."
+   }
+  },
+  "ud_hoi_quy_1_bien": {
+   "primary": {
+    "title": "Machine Learning cơ bản, bài 3: Linear Regression",
+    "author": "Vũ Hữu Tiệp",
+    "kind": "bai_viet",
+    "lang": "vi",
+    "url": "https://machinelearningcoban.com/2016/12/28/linearregression/",
+    "where": "hàm mất mát, nghiệm, ví dụ Python",
+    "free": true,
+    "minutes": 40,
+    "why_vi": "Dẫn từ hàm mất mát tới đạo hàm theo tham số rồi tới mã.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Machine Learning cơ bản, bài 7: Gradient Descent (1/2)",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/01/12/gradientdescent/",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Đào sâu vòng huấn luyện và tốc độ học.",
+     "checked": true
+    },
+    {
+     "title": "StatQuest: Gradient Descent, Step-by-Step",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/sDv4f4s2SB8",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 23,
+     "why_vi": "Ví dụ hai tham số, tính tay từng bước.",
+     "checked": false
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Viết vòng lặp: dự đoán, tính mất mát, hai đạo hàm, cập nhật; vẽ mất mát theo bước. Bỏ qua hồi quy nhiều biến cho tới nút sau.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Palmer Penguins (chiều dài cánh và khối lượng)",
+      "url": "https://github.com/allisonhorst/palmerpenguins",
+      "size_mb": 0.02,
+      "license": "CC0 (đã kiểm)",
+      "why_vi": "344 dòng, quan hệ gần tuyến tính, hợp để khớp một biến."
+     },
+     {
+      "name": "Dữ liệu tự sinh y = a*x + b + nhiễu",
+      "url": "https://numpy.org/doc/stable/user/absolute_beginners.html",
+      "size_mb": 0,
+      "license": "không áp dụng (tự sinh bằng NumPy)",
+      "why_vi": "Biết đáp án đúng nên kiểm được mô hình học ra a và b."
+     }
+    ],
+    "reference_impl": [],
+    "target_vi": "Hệ số học được gần với a, b đã sinh (sai lệch vài phần trăm); chưa có số chuẩn từ nguồn cho dữ liệu penguins, chưa kiểm chứng.",
+    "compute_vi": "CPU máy xách tay, NumPy, dưới 1 giây."
+   }
+  },
+  "ud_binh_phuong_toi_thieu": {
+   "primary": {
+    "title": "MIT 18.06 Lecture 16: Projection Matrices and Least Squares",
+    "author": "Gilbert Strang (MIT OpenCourseWare)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/resources/lecture-16-projection-matrices-and-least-squares/index.html",
+    "where": "bài 16 (khoảng 48 phút), ví dụ khớp đường thẳng",
+    "free": true,
+    "minutes": 48,
+    "why_vi": "Cho thấy phương trình chuẩn là phép chiếu, đúng nút này.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Machine Learning cơ bản, bài 3: Linear Regression (nghiệm đóng)",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2016/12/28/linearregression/",
+     "where": "phần Nghiệm đóng và so với hạ gradient",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Viết phương trình chuẩn bằng NumPy và so với kết quả hạ gradient.",
+     "checked": true
+    }
+   ],
+   "practice": [
+    {
+     "title": "18.06SC Fall 2011, bài tập phiên 2.3 (least squares)",
+     "author": "MIT OpenCourseWare",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://www.ocw.mit.edu/courses/18-06sc-linear-algebra-fall-2011/33fdb9f7b7787e26752169e249def994_MIT18_06SCF11_Ses2.3prob.pdf",
+     "where": "bài khớp đường thẳng, có đáp án ở file sol",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Bài tay có đáp án để kiểm cách đặt Ax gần bằng b.",
+     "checked": false
+    }
+   ],
+   "vi": [],
+   "note_vi": "Đặt ma trận thiết kế, giải A^T A x = A^T b bằng np.linalg.solve, rồi so với kết quả hạ gradient ở nút trước; thử cả np.linalg.lstsq.",
+   "project": {
+    "datasets": [
+     {
+      "name": "California Housing (scikit-learn fetch_california_housing)",
+      "url": "https://scikit-learn.org/stable/datasets/real_world.html",
+      "size_mb": 1.9,
+      "license": "chưa rõ giấy phép (trang scikit-learn không nêu; nguồn StatLib 1990)",
+      "why_vi": "20640 mẫu, 8 đặc trưng, hợp để thấy nhiều biến; tải một lần. Kích thước là ước lượng, chưa kiểm."
+     },
+     {
+      "name": "Dữ liệu tự sinh nhiều biến",
+      "url": "https://numpy.org/doc/stable/user/absolute_beginners.html",
+      "size_mb": 0,
+      "license": "không áp dụng",
+      "why_vi": "Biết hệ số thật nên kiểm được nghiệm."
+     }
+    ],
+    "reference_impl": [],
+    "target_vi": "Nghiệm của phương trình chuẩn trùng np.linalg.lstsq tới sai số làm tròn, và trùng nghiệm hạ gradient đã hội tụ; chưa có số R^2 chuẩn từ nguồn.",
+    "compute_vi": "CPU máy xách tay, NumPy, dưới 1 giây."
+   }
+  },
+  "ud_mang_no_ron": {
+   "primary": {
+    "title": "Neural networks chapter 3 và 4: Backpropagation intuitively, và What is backpropagation really doing?",
+    "author": "3Blue1Brown (Grant Sanderson)",
+    "kind": "video",
+    "lang": "en",
+    "url": "https://3blue1brown.com/lessons/backpropagation",
+    "where": "trang bài 4 của chuỗi (backpropagation bằng quy tắc dây chuyền); bài 3 là bản trực giác",
+    "free": true,
+    "minutes": 25,
+    "why_vi": "Trực giác và quy tắc dây chuyền cho từng lớp, trước khi gõ code.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Neural Networks and Deep Learning, chương 1 và 2",
+     "author": "Michael Nielsen",
+     "kind": "sach",
+     "lang": "en",
+     "url": "http://neuralnetworksanddeeplearning.com/chap2.html",
+     "where": "chương 1 (mạng sigmoid, MNIST) và chương 2 (4 phương trình lan truyền ngược)",
+     "free": true,
+     "minutes": 240,
+     "why_vi": "Mã Python/NumPy từng bước; trang bị lỗi chứng chỉ khi kiểm, nên chưa xác nhận được.",
+     "checked": true
+    },
+    {
+     "title": "Machine Learning cơ bản, bài 14: Multi-layer Perceptron và Backpropagation",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/02/24/mlp/",
+     "where": "toàn bài, có mã NumPy",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Tiếng Việt, có kiểm gradient và ví dụ chạy được.",
+     "checked": true
+    },
+    {
+     "title": "The spelled-out intro to neural networks and backpropagation: building micrograd",
+     "author": "Andrej Karpathy",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/VMj-3S1tku0",
+     "where": "toàn bài (2 giờ 25 phút)",
+     "free": true,
+     "minutes": 145,
+     "why_vi": "Tự dựng bộ đạo hàm tự động; dài nhưng đáng làm sau khi viết bản NumPy.",
+     "checked": false
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Làm theo thứ tự: 3Blue1Brown, rồi tự viết hai lớp trên XOR, kiểm gradient bằng sai phân, rồi mới thử trên digits; bỏ qua thuật toán dùng ma trận Hadamard nếu thấy rối.",
+   "project": {
+    "datasets": [
+     {
+      "name": "XOR (4 điểm tự viết)",
+      "url": "http://neuralnetworksanddeeplearning.com/chap2.html",
+      "size_mb": 0,
+      "license": "không áp dụng",
+      "why_vi": "Bài thử nhỏ nhất để thấy mạng hai lớp giải được thứ mô hình tuyến tính không giải được."
+     },
+     {
+      "name": "scikit-learn digits 8x8 (bản UCI optdigits)",
+      "url": "https://archive.ics.uci.edu/dataset/80/optical+recognition+of+handwritten+digits",
+      "size_mb": 0.58,
+      "license": "CC BY 4.0 (đã kiểm)",
+      "why_vi": "Nhỏ, huấn luyện được trong vài chục giây trên CPU."
+     },
+     {
+      "name": "MNIST",
+      "url": "http://yann.lecun.com/exdb/mnist/",
+      "size_mb": 11,
+      "license": "chưa rõ giấy phép (trang gốc không kiểm được; không đóng gói trong game, để người chơi tải một lần)",
+      "why_vi": "Chuẩn ngành, 60000 ảnh 28x28; kích thước ước lượng, chưa kiểm."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "Michael Nielsen, neural-networks-and-deep-learning (mã chương 1)",
+      "author": "Michael Nielsen",
+      "kind": "code",
+      "lang": "en",
+      "url": "http://neuralnetworksanddeeplearning.com/chap1.html",
+      "where": "mã network.py trong chương 1",
+      "free": true,
+      "minutes": 60,
+      "why_vi": "Bản NumPy chuẩn để đối chiếu; chưa xác nhận được trang.",
+      "checked": true
+     }
+    ],
+    "target_vi": "XOR: sai số về gần 0 và đúng cả 4 điểm. Digits 8x8: kỳ vọng từ 93% trở lên; MNIST mạng 30 nơ-ron ẩn thường đạt khoảng 95% sau vài chục epoch theo sách Nielsen; chưa kiểm chứng trực tiếp.",
+    "compute_vi": "CPU máy xách tay, NumPy; digits mất khoảng 10 đến 60 giây, MNIST vài phút."
+   }
+  },
+  "ud_logistic": {
+   "primary": {
+    "title": "Machine Learning cơ bản, bài 10: Logistic Regression",
+    "author": "Vũ Hữu Tiệp",
+    "kind": "bai_viet",
+    "lang": "vi",
+    "url": "https://machinelearningcoban.com/2017/01/27/logisticregression/",
+    "where": "toàn bài (sigmoid, hàm mất mát, gradient)",
+    "free": true,
+    "minutes": 50,
+    "why_vi": "Đủ bốn ý của nút, có mã NumPy và hình minh hoạ.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StatQuest: Logistic Regression",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/yIYKR4sgzI8",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 9,
+     "why_vi": "Trực giác về xác suất và hợp lý cực đại; chưa mở được YouTube để kiểm.",
+     "checked": false
+    },
+    {
+     "title": "Machine Learning Crash Course: Logistic regression",
+     "author": "Google",
+     "kind": "khoa_hoc",
+     "lang": "en",
+     "url": "https://developers.google.com/machine-learning/crash-course/logistic-regression",
+     "where": "module Logistic Regression (sigmoid, mất mát log, ngưỡng)",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Có bài tương tác và câu hỏi tự kiểm.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Dùng mất mát log và gradient X^T(p - y)/n, thử các ngưỡng 0,3 / 0,5 / 0,7 và xem kết quả.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Breast Cancer Wisconsin (Diagnostic), qua scikit-learn",
+      "url": "https://scikit-learn.org/stable/datasets/toy_dataset.html",
+      "size_mb": 0.12,
+      "license": "chưa rõ giấy phép (trang scikit-learn không nêu; nguồn UCI, cần xác nhận)",
+      "why_vi": "569 mẫu, 30 đặc trưng, 2 lớp; nhỏ, phân loại nhị phân kinh điển."
+     },
+     {
+      "name": "SMS Spam Collection (UCI)",
+      "url": "https://archive.ics.uci.edu/dataset/228/sms+spam+collection",
+      "size_mb": 0.47,
+      "license": "CC BY 4.0 (đã kiểm)",
+      "why_vi": "Có thể so logistic với Naive Bayes trên cùng dữ liệu."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "Data Science from Scratch: logistic_regression.py",
+      "author": "Joel Grus",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://github.com/joelgrus/data-science-from-scratch",
+      "where": "scratch/logistic_regression.py",
+      "free": true,
+      "minutes": 30,
+      "why_vi": "Bản Python thuần.",
+      "checked": true
+     }
+    ],
+    "target_vi": "Chưa kiểm chứng số cụ thể; logistic tự viết trên Breast Cancer thường đạt từ 95% trở lên nếu chuẩn hoá đặc trưng.",
+    "compute_vi": "CPU máy xách tay, NumPy, dưới 5 giây."
+   }
+  },
+  "ud_pca": {
+   "primary": {
+    "title": "Machine Learning cơ bản, bài 27 và 28: Principal Component Analysis (1/2 và 2/2)",
+    "author": "Vũ Hữu Tiệp",
+    "kind": "bai_viet",
+    "lang": "vi",
+    "url": "https://machinelearningcoban.com/2017/06/15/pca/",
+    "where": "bài 27 (ma trận hiệp phương sai, vectơ riêng), bài 28 (cách tính khác và ví dụ)",
+    "free": true,
+    "minutes": 80,
+    "why_vi": "Nối giá trị riêng của ma trận hiệp phương sai với giữ lại bao nhiêu phần trăm thông tin.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "StatQuest: Principal Component Analysis (PCA), Step-by-Step",
+     "author": "Josh Starmer",
+     "kind": "video",
+     "lang": "en",
+     "url": "https://youtu.be/FgakZw6K1QQ",
+     "where": "toàn video",
+     "free": true,
+     "minutes": 21,
+     "why_vi": "Trực giác chiếu dữ liệu và tỉ lệ phương sai; chưa mở được YouTube để kiểm.",
+     "checked": false
+    },
+    {
+     "title": "Machine Learning cơ bản, bài 28: PCA (2/2)",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/06/21/pca2/",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 40,
+     "why_vi": "Phần hai, có mã và ví dụ trên ảnh.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Trừ trung bình, tính hiệp phương sai, lấy np.linalg.eigh, chiếu xuống 2 chiều; không cần SVD tới khi nhánh đại số tuyến tính dạy.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Digits 8x8 (UCI optdigits)",
+      "url": "https://archive.ics.uci.edu/dataset/80/optical+recognition+of+handwritten+digits",
+      "size_mb": 0.58,
+      "license": "CC BY 4.0 (đã kiểm)",
+      "why_vi": "64 chiều nén xuống 2 chiều để vẽ và xuống 20 chiều để nhận dạng."
+     },
+     {
+      "name": "Wine (qua scikit-learn)",
+      "url": "https://scikit-learn.org/stable/datasets/toy_dataset.html",
+      "size_mb": 0.01,
+      "license": "chưa rõ giấy phép (nguồn UCI, cần xác nhận)",
+      "why_vi": "178 mẫu, 13 đặc trưng, nhẹ."
+     }
+    ],
+    "reference_impl": [],
+    "target_vi": "Vectơ riêng tự tính trùng np.linalg.eigh / sklearn.decomposition.PCA; chưa có phần trăm phương sai chuẩn từ nguồn cho digits, chưa kiểm chứng.",
+    "compute_vi": "CPU máy xách tay, NumPy, dưới 1 giây."
+   }
+  },
+  "ud_ab_test": {
+   "primary": {
+    "title": "How Not To Run an A/B Test",
+    "author": "Evan Miller",
+    "kind": "bai_viet",
+    "lang": "en",
+    "url": "https://www.evanmiller.org/how-not-to-run-an-ab-test.html",
+    "where": "toàn bài (ví dụ nhìn kết quả giữa chừng và sai lầm loại một)",
+    "free": true,
+    "minutes": 15,
+    "why_vi": "Cho thấy dừng sớm khi 'có ý nghĩa' làm tỉ lệ dương tính giả vượt 5% thế nào.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Seeing Theory chương 4: Frequentist Inference",
+     "author": "Brown University",
+     "kind": "tuong_tac",
+     "lang": "en",
+     "url": "https://seeing-theory.brown.edu/",
+     "where": "chương 4 (khoảng tin cậy, ước lượng khoảng)",
+     "free": true,
+     "minutes": 30,
+     "why_vi": "Tương tác để hiểu khoảng tin cậy và mẫu lặp lại.",
+     "checked": true
+    },
+    {
+     "title": "Trustworthy Online Controlled Experiments",
+     "author": "Ron Kohavi, Diane Tang, Ya Xu",
+     "kind": "sach",
+     "lang": "en",
+     "url": "https://experimentguide.com/",
+     "where": "chương về thống kê của thí nghiệm A/B và kích thước mẫu",
+     "free": false,
+     "minutes": null,
+     "why_vi": "Sách tham khảo nghiêm túc; trả phí qua Cambridge, trang phụ trợ chưa kiểm.",
+     "checked": false
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Mô phỏng nhiều lần A/A để thấy dương tính giả khoảng 5%, rồi tính khoảng tin cậy cho hiệu hai tỉ lệ; bỏ qua kiểm định tuần tự.",
+   "project": {
+    "datasets": [
+     {
+      "name": "Kết quả dự đoán của hai mô hình trên cùng tập kiểm tra digits",
+      "url": "https://archive.ics.uci.edu/dataset/80/optical+recognition+of+handwritten+digits",
+      "size_mb": 0.58,
+      "license": "CC BY 4.0 (đã kiểm)",
+      "why_vi": "So KNN với mạng nơ-ron tự viết bằng bootstrap hoặc kiểm định McNemar."
+     }
+    ],
+    "reference_impl": [],
+    "target_vi": "Báo cáo được khoảng tin cậy 95% của hiệu độ chính xác hai mô hình và kết luận đúng khi khoảng chứa 0; chưa có số chuẩn.",
+    "compute_vi": "CPU máy xách tay, NumPy, dưới 1 phút cho 10000 lần bootstrap."
+   }
+  },
+  "du_an_luyen_khi": {
+   "primary": {
+    "title": "Neural Networks and Deep Learning, chương 1: phân loại chữ số viết tay",
+    "author": "Michael Nielsen",
+    "kind": "sach",
+    "lang": "en",
+    "url": "http://neuralnetworksanddeeplearning.com/chap1.html",
+    "where": "chương 1 (mạng sigmoid nhận dạng MNIST)",
+    "free": true,
+    "minutes": 120,
+    "why_vi": "Ví dụ gần như trùng dự án; trang bị lỗi chứng chỉ khi kiểm, chưa xác nhận.",
+    "checked": true
+   },
+   "also": [
+    {
+     "title": "Machine Learning cơ bản, bài 14: MLP và Backpropagation",
+     "author": "Vũ Hữu Tiệp",
+     "kind": "bai_viet",
+     "lang": "vi",
+     "url": "https://machinelearningcoban.com/2017/02/24/mlp/",
+     "where": "toàn bài",
+     "free": true,
+     "minutes": 60,
+     "why_vi": "Bản tiếng Việt cho phần mạng nơ-ron.",
+     "checked": true
+    },
+    {
+     "title": "Digits Classification Exercise",
+     "author": "scikit-learn",
+     "kind": "bai_tap",
+     "lang": "en",
+     "url": "https://scikit-learn.org/1.5/auto_examples/exercises/plot_digits_classification_exercise.html",
+     "where": "tài liệu scikit-learn bản 1.5 (ví dụ này đã bị gỡ khỏi các bản mới hơn)",
+     "free": true,
+     "minutes": 20,
+     "why_vi": "Mốc so sánh khi báo cáo.",
+     "checked": true
+    }
+   ],
+   "practice": [],
+   "vi": [],
+   "note_vi": "Làm tuần tự: nạp ảnh thành ma trận, nén bằng PCA, huấn luyện mạng tự viết, rồi báo độ chính xác kèm khoảng tin cậy (dùng A/B ở nút trước).",
+   "project": {
+    "datasets": [
+     {
+      "name": "Optical Recognition of Handwritten Digits (UCI, 8x8)",
+      "url": "https://archive.ics.uci.edu/dataset/80/optical+recognition+of+handwritten+digits",
+      "size_mb": 0.58,
+      "license": "CC BY 4.0 (đã kiểm)",
+      "why_vi": "Dữ liệu chính của dự án: nhỏ, hợp đóng gói."
+     },
+     {
+      "name": "MNIST",
+      "url": "http://yann.lecun.com/exdb/mnist/",
+      "size_mb": 11,
+      "license": "chưa rõ giấy phép (không kiểm được trang gốc)",
+      "why_vi": "Bản đầy đủ 28x28 cho người muốn thử thách thêm."
+     },
+     {
+      "name": "Fashion-MNIST",
+      "url": "https://github.com/zalandoresearch/fashion-mnist",
+      "size_mb": 30,
+      "license": "MIT (đã kiểm, bản quyền Zalando SE)",
+      "why_vi": "Khó hơn MNIST, cùng định dạng; 26 MB ảnh huấn luyện nén cộng 4,3 MB ảnh kiểm tra."
+     }
+    ],
+    "reference_impl": [
+     {
+      "title": "Digits Classification Exercise (scikit-learn)",
+      "author": "scikit-learn",
+      "kind": "code",
+      "lang": "en",
+      "url": "https://scikit-learn.org/1.5/auto_examples/exercises/plot_digits_classification_exercise.html",
+      "where": "tài liệu scikit-learn bản 1.5 (ví dụ này đã bị gỡ khỏi các bản mới hơn)",
+      "free": true,
+      "minutes": 20,
+      "why_vi": "Mốc đối chiếu.",
+      "checked": true
+     }
+    ],
+    "target_vi": "Digits 8x8: mục tiêu từ 95% trở lên (KNN mẫu của scikit-learn đạt 96,1%, một notebook công khai 99,1%); MNIST với mạng 30 nơ-ron ẩn khoảng 95% theo Nielsen, chưa kiểm chứng trực tiếp.",
+    "compute_vi": "CPU máy xách tay, NumPy; digits dưới 1 phút, MNIST vài phút."
+   }
+  }
+ },
+ "exam_proofs": [],
+ "rejected": [
+  {
+   "title": "Stanford CS229 lecture notes",
+   "why_vi": "Trang khoá chỉ dẫn tới bảng tính cần tài khoản Stanford, không có đường dẫn ghi chú công khai kiểm được."
+  },
+  {
+   "title": "Andrew Ng Machine Learning Specialization cho nút nhỏ",
+   "why_vi": "Dài, dùng TensorFlow, chứng chỉ trả phí; không hợp mục tiêu tự viết bằng tay."
+  },
+  {
+   "title": "Nielsen Neural Networks and Deep Learning (kiểm trực tiếp)",
+   "why_vi": "Trang lỗi chứng chỉ khi tải nên không kiểm được, vẫn giữ vì nội dung phù hợp."
+  },
+  {
+   "title": "Các bản đăng lại sách và slide trên scribd, studocu",
+   "why_vi": "Không hợp pháp, bị loại theo hợp đồng."
+  },
+  {
+   "title": "Dữ liệu Titanic của Kaggle để đóng gói",
+   "why_vi": "Chịu điều khoản cuộc thi; không rõ quyền phân phối lại."
+  }
+ ]
+}

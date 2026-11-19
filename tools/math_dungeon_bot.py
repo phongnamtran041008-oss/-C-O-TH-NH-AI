@@ -35,7 +35,18 @@ class BotError(RuntimeError):
     pass
 
 
+PART_QTYPES = {"truefalse": "true_false", "choice": "multiple_choice", "number": "numeric"}
+
+
+def part_questions(q: dict) -> list[dict]:
+    """The parts of a Thiên kiếp (M11 đợt 2), each shaped like a question of its own type."""
+    return [{"qtype": PART_QTYPES[p["input"]], "options": p["options"], "prompt": {"text": p["text"]}}
+            for p in q["prompt"]["parts"]]
+
+
 def right_answer(q: dict, key: dict) -> dict:
+    if q["qtype"] == "tribulation":                     # every part right
+        return {"parts": [right_answer(pq, k) for pq, k in zip(part_questions(q), key["parts"])]}
     if q["qtype"] == "true_false":
         return {"value": key["value"]}
     if q["qtype"] == "multiple_choice":
@@ -50,6 +61,9 @@ def right_answer(q: dict, key: dict) -> dict:
 
 
 def wrong_answer(q: dict, key: dict) -> dict:
+    if q["qtype"] == "tribulation":                     # one part wrong (the first), the others right
+        parts = [right_answer(pq, k) for pq, k in zip(part_questions(q), key["parts"])]
+        return {"parts": [wrong_answer(part_questions(q)[0], key["parts"][0])] + parts[1:]}
     if q["qtype"] == "true_false":
         return {"value": not key["value"]}
     if q["qtype"] == "multiple_choice":
