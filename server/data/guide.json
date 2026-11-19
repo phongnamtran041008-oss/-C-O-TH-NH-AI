@@ -1,0 +1,501 @@
+{
+  "version": 1,
+  "title_vi": "Lộ Trình Tu Tiên",
+  "welcome": {
+    "speaker_vi": "Trúc Lão",
+    "lines_vi": [
+      "Con đến rồi. Ta là Trúc Lão, người giữ Đạo Thụ ở Trúc Lâm. Từ nay con tu tiên bằng toán đại học.",
+      "Đạo Thụ là cây giáo trình: mỗi nút là một phần kiến thức. Học xong nút nào, con nhận Tu Vi và mở thêm đường đi.",
+      "Mỗi nút học ba bước: đọc bài ở Tàng Thư Các, luyện câu hỏi, rồi vượt Thiên kiếp nhỏ để chứng tỏ con đã vững.",
+      "Ta đã ghi sẵn Lộ Trình từ bước đầu tiên đến hết Luyện Khí. Làm tới đâu, nhận thưởng tới đó.",
+      "Bấm F1 bất cứ lúc nào để xem việc tiếp theo. Giờ con hãy mở bảng Lộ Trình ra nhé."
+    ]
+  },
+  "chapters": [
+    {
+      "id": "c1_nhap_mon",
+      "title_vi": "Nhập Môn",
+      "intro_vi": "Mười lăm phút đầu: gặp Trúc Lão, mở Đạo Thụ, luyện buổi đầu và vượt Thiên kiếp nhỏ đầu tiên.",
+      "rewards": {"spirit_stones": 120, "immortal_jade": 5},
+      "steps": [
+        {
+          "id": "g_welcome",
+          "title_vi": "Gặp Trúc Lão",
+          "desc_vi": "Trúc Lão là người dẫn đường của con. Nghe hết lời chào để biết đường tu ở đây đi bằng toán.",
+          "how_vi": ["Bấm chuột, Enter hoặc Space để qua từng câu của Trúc Lão."],
+          "check": {"type": "seen", "key": "welcome"},
+          "rewards": {"spirit_stones": 20, "xp": 10}
+        },
+        {
+          "id": "g_board",
+          "title_vi": "Mở bảng Lộ Trình",
+          "desc_vi": "Bảng này là bản đồ cả chặng đường: con luôn thấy mình đang ở đâu và việc kế tiếp là gì.",
+          "how_vi": [
+            "Bấm phím F1, hoặc bấm vào ô Việc tiếp theo trên màn hình.",
+            "Bước nào xong thì nhận thưởng ngay trên bảng."
+          ],
+          "check": {"type": "seen", "key": "board"},
+          "help": "lo_trinh",
+          "rewards": {"spirit_stones": 20, "xp": 10}
+        },
+        {
+          "id": "g_open_tree",
+          "title_vi": "Mở Đạo Thụ",
+          "desc_vi": "Đạo Thụ là cây giáo trình, nơi con đọc, luyện và vượt kiếp mỗi ngày. Hãy mở ra xem một lần.",
+          "how_vi": [
+            "Ở Động Phủ, bấm phím M hoặc nút Toán ở dải nút phía dưới màn hình.",
+            "Thẻ Nên học liệt kê các nút đang mở; mỗi nhánh toán có một thẻ riêng."
+          ],
+          "check": {"type": "seen", "key": "math_hub"},
+          "goto": "math",
+          "help": "dao_thu",
+          "rewards": {"spirit_stones": 25, "xp": 10}
+        },
+        {
+          "id": "g_read_doc",
+          "title_vi": "Đọc trang sách đầu tiên",
+          "desc_vi": "Tàng Thư Các có bài đọc cho từng phần. Đọc trước khi luyện thì câu hỏi đỡ bỡ ngỡ hơn nhiều.",
+          "how_vi": [
+            "Trong Đạo Thụ, bấm nút Đọc ở dòng của một nút đang mở.",
+            "Mục trước, Mục sau (phím Trái, Phải) để lật trang; Đóng hoặc Esc để thoát."
+          ],
+          "check": {"type": "seen", "key": "library_doc"},
+          "goto": "library",
+          "help": "tang_thu_cac",
+          "rewards": {"spirit_stones": 30, "xp": 10}
+        },
+        {
+          "id": "g_placement",
+          "title_vi": "Kiểm tra đầu vào",
+          "desc_vi": "Con đã biết sẵn phần nào thì làm bài này để được bỏ qua. Làm trước khi vượt Thiên kiếp nhỏ của môn ấy.",
+          "how_vi": [
+            "Trong Đạo Thụ, chọn thẻ một nhánh (như Đại Số), bấm nút Kiểm tra đầu vào.",
+            "Tối đa 15 câu, không bắt buộc. Nút chỉ hiện khi môn ấy chưa vượt Thiên kiếp nhỏ nào."
+          ],
+          "check": {"type": "placement_done", "count": 1},
+          "goto": "math",
+          "help": "buoi_luyen",
+          "optional": true,
+          "rewards": {"spirit_stones": 60, "xp": 20}
+        },
+        {
+          "id": "g_first_run",
+          "title_vi": "Buổi luyện đầu tiên",
+          "desc_vi": "Buổi luyện là các câu hỏi liên tiếp trên một nút. Câu đúng cho Tu Vi, câu càng khó Tu Vi càng nhiều.",
+          "how_vi": [
+            "Trong Đạo Thụ, bấm Luyện ở một nút đang mở, ví dụ Tập hợp và ánh xạ.",
+            "Trả lời bằng chuột hoặc phím số; Enter hay Space sang câu tiếp, Nghỉ để dừng."
+          ],
+          "check": {"type": "practice_runs", "count": 1},
+          "goto": "math",
+          "help": "buoi_luyen",
+          "rewards": {"spirit_stones": 30, "xp": 20}
+        },
+        {
+          "id": "g_right_5",
+          "title_vi": "Đúng 5 câu",
+          "desc_vi": "Trả lời đúng 5 câu, cộng dồn qua mọi buổi luyện. Sai cũng không sao: lời giải từng bước sẽ hiện ra.",
+          "how_vi": ["Cứ luyện tiếp trong Đạo Thụ; câu sai thì đọc kỹ lời giải rồi qua câu sau."],
+          "check": {"type": "math_answers", "count": 5, "correct": true},
+          "goto": "math",
+          "help": "buoi_luyen",
+          "rewards": {"spirit_stones": 40, "xp": 20}
+        },
+        {
+          "id": "g_first_trial",
+          "title_vi": "Vượt Thiên kiếp nhỏ đầu tiên",
+          "desc_vi": "Cổng thuần thục mở thì Thiên kiếp nhỏ hiện ra: mỗi vi kỹ năng một câu ở bậc cao nhất. Qua là phần ấy xong.",
+          "how_vi": [
+            "Luyện tới khi chữ Cổng n/m trên dòng nút đổi thành nút Thiên kiếp, rồi bấm nó.",
+            "Cổng mở khi mỗi vi kỹ năng đúng 4 trong 5 câu gần nhất ở bậc cao nhất của phần.",
+            "Được sai 1 câu nếu phần có từ 4 vi kỹ năng, ít hơn thì đúng hết. Trượt thì thử lại ngay."
+          ],
+          "check": {"type": "trials_passed", "count": 1},
+          "goto": "math",
+          "help": "cong_thien_kiep",
+          "rewards": {"spirit_stones": 80, "xp": 40}
+        },
+        {
+          "id": "g_first_node",
+          "title_vi": "Xong nút đầu tiên",
+          "desc_vi": "Một nút xong khi mọi phần có câu hỏi của nó đã vượt Thiên kiếp nhỏ. Xong nút thì các nút cần nó được mở.",
+          "how_vi": [
+            "Nút một phần thì vượt Thiên kiếp là xong; nút nhiều phần thì vượt từng phần.",
+            "Màn kết quả cho biết nút nào vừa mở, kể cả nút của nhánh khác."
+          ],
+          "check": {"type": "nodes_done", "count": 1},
+          "goto": "math",
+          "help": "dao_thu",
+          "rewards": {"spirit_stones": 100, "xp": 50}
+        }
+      ]
+    },
+    {
+      "id": "c2_bon_nhanh",
+      "title_vi": "Bốn Nhánh Toán",
+      "intro_vi": "Bốn nhánh toán đi song song, mỗi nhánh có một nút đầu mở sẵn. Làm đủ cả bốn để lên tầng Luyện Khí.",
+      "rewards": {"spirit_stones": 200, "immortal_jade": 7},
+      "steps": [
+        {
+          "id": "g_node_ds",
+          "title_vi": "Nút đầu Đại Số",
+          "desc_vi": "Đại Số Tuyến Tính là ngôn ngữ của dữ liệu: vectơ, ma trận, phép biến đổi. Nút đầu là Tập hợp và ánh xạ.",
+          "how_vi": ["Đạo Thụ, thẻ Đại Số: luyện nút Tập hợp và ánh xạ rồi vượt Thiên kiếp nhỏ."],
+          "check": {"type": "nodes_done", "count": 1, "branch": "ds"},
+          "goto": "math",
+          "help": "dao_thu",
+          "rewards": {"spirit_stones": 60, "xp": 30}
+        },
+        {
+          "id": "g_node_gt",
+          "title_vi": "Nút đầu Giải Tích",
+          "desc_vi": "Giải Tích dạy cách một mô hình biết phải sửa mình theo hướng nào. Nút đầu là Hàm số, hàm hợp, mũ và logarit.",
+          "how_vi": ["Đạo Thụ, thẻ Giải Tích: luyện nút Hàm số, hàm hợp, mũ và logarit, rồi vượt kiếp."],
+          "check": {"type": "nodes_done", "count": 1, "branch": "gt"},
+          "goto": "math",
+          "help": "dao_thu",
+          "rewards": {"spirit_stones": 60, "xp": 30}
+        },
+        {
+          "id": "g_node_xs",
+          "title_vi": "Nút đầu Xác Suất",
+          "desc_vi": "Xác Suất và Thống Kê giúp suy luận khi không chắc chắn. Nút đầu là Sự kiện và phép đếm.",
+          "how_vi": ["Đạo Thụ, thẻ Xác Suất: luyện nút Sự kiện và phép đếm rồi vượt Thiên kiếp nhỏ."],
+          "check": {"type": "nodes_done", "count": 1, "branch": "xs"},
+          "goto": "math",
+          "help": "dao_thu",
+          "rewards": {"spirit_stones": 60, "xp": 30}
+        },
+        {
+          "id": "g_node_tr",
+          "title_vi": "Nút đầu Thuật Toán",
+          "desc_vi": "Thuật Toán và Tối Ưu là nền của mọi cách huấn luyện mô hình. Nút đầu là Logic mệnh đề và quy tắc đếm.",
+          "how_vi": ["Đạo Thụ, thẻ Thuật Toán: luyện nút Logic mệnh đề và quy tắc đếm rồi vượt kiếp."],
+          "check": {"type": "nodes_done", "count": 1, "branch": "tr"},
+          "goto": "math",
+          "help": "dao_thu",
+          "rewards": {"spirit_stones": 60, "xp": 30}
+        },
+        {
+          "id": "g_tam_ma",
+          "title_vi": "Phá 3 tâm ma",
+          "desc_vi": "Câu con làm sai sẽ quay lại với số mới. Làm đúng lần quay lại là phá một tâm ma, ý ấy mới vào đầu thật.",
+          "how_vi": [
+            "Sai một câu: sau một câu khác, ý ấy quay lại với nhãn Tâm ma và số mới.",
+            "Đọc lời giải khi sai, rồi làm đúng câu quay lại để thấy chữ Đã phá tâm ma."
+          ],
+          "check": {"type": "mistakes_cleared", "count": 3},
+          "goto": "math",
+          "help": "tam_ma",
+          "optional": true,
+          "rewards": {"spirit_stones": 80, "xp": 30}
+        },
+        {
+          "id": "g_answers_50",
+          "title_vi": "50 câu đã trả lời",
+          "desc_vi": "Cộng dồn mọi câu con đã trả lời, đúng hay sai. Luyện đều mỗi ngày dễ hơn là dồn một lần.",
+          "how_vi": ["Mỗi ngày một hai buổi luyện ngắn; thẻ Nên học trong Đạo Thụ chỉ sẵn nút nên làm."],
+          "check": {"type": "math_answers", "count": 50},
+          "goto": "math",
+          "help": "mot_ngay",
+          "rewards": {"spirit_stones": 100, "xp": 40}
+        },
+        {
+          "id": "g_trials_4",
+          "title_vi": "4 Thiên kiếp nhỏ",
+          "desc_vi": "Mỗi phần của một nút có Thiên kiếp nhỏ riêng. Vượt đủ 4 phần ở bất kỳ nhánh nào.",
+          "how_vi": ["Trượt không mất gì: ôn vi kỹ năng yếu rồi thử lại ngay."],
+          "check": {"type": "trials_passed", "count": 4},
+          "goto": "math",
+          "help": "cong_thien_kiep",
+          "rewards": {"spirit_stones": 120, "xp": 50}
+        }
+      ]
+    },
+    {
+      "id": "c3_thuc_chien",
+      "title_vi": "Thực Chiến",
+      "intro_vi": "Ngoài buổi luyện còn nhiều cách dùng kiến thức vừa học: hầm ngục, thủ thành, chiêu thức, cơ duyên.",
+      "rewards": {"spirit_stones": 280, "immortal_jade": 10},
+      "steps": [
+        {
+          "id": "g_village",
+          "title_vi": "Xuống Trúc Lâm Thôn",
+          "desc_vi": "Trúc Lâm Thôn là nơi các đạo hữu tụ họp; cổng đông ra Rừng Mực Loang, cổng tây ra Hồ Nghiên Mực.",
+          "how_vi": [
+            "Ở Động Phủ, đi xuống phía nam (phím S hoặc mũi tên xuống) tới cổng tre rồi bấm E.",
+            "Đường phía nam trong làng đưa con về lại Động Phủ."
+          ],
+          "check": {"type": "seen", "key": "village"},
+          "help": "phim_tat",
+          "rewards": {"spirit_stones": 50, "xp": 20}
+        },
+        {
+          "id": "g_dungeon",
+          "title_vi": "Phá đảo một Hầm Ngục",
+          "desc_vi": "Hầm Ngục là chuỗi phòng, mỗi phòng một dạng câu. Chơi để ôn kiến thức theo cách khác, có Linh Thạch.",
+          "how_vi": [
+            "Trong Đạo Thụ, bấm nút Hầm Ngục, chọn tầng rồi bấm Vào hầm.",
+            "Có 3 tâm lực: sai hoặc hết giờ mất 1. Qua hết phòng và Trấn Thủ là phá đảo."
+          ],
+          "check": {"type": "dungeon_cleared", "count": 1},
+          "goto": "dungeon",
+          "help": "ham_nguc",
+          "rewards": {"spirit_stones": 100, "xp": 40}
+        },
+        {
+          "id": "g_td",
+          "title_vi": "Thắng một ải Thủ Thành",
+          "desc_vi": "Mỗi tháp là một mảng toán: trả lời đúng một câu thì tháp mới dựng lên. Giữ Linh Mạch tới hết đợt quái là thắng.",
+          "how_vi": [
+            "Trong Đạo Thụ, bấm nút Thủ Thành, chọn ải rồi bấm Vào ải.",
+            "Chọn tháp ở dưới, bấm ô cạnh đường, trả lời đúng để dựng; rồi bấm Bắt đầu đợt."
+          ],
+          "check": {"type": "td_wins", "count": 1},
+          "goto": "td",
+          "help": "thu_thanh",
+          "rewards": {"spirit_stones": 100, "xp": 40}
+        },
+        {
+          "id": "g_skill",
+          "title_vi": "Mở chiêu thức thứ tư",
+          "desc_vi": "Chiêu thức là đòn đánh quái bằng toán: ra chiêu, trả lời đúng thì trúng. Ba chiêu đầu mở sẵn, học lên thì mở thêm.",
+          "how_vi": [
+            "Xong Luyện Khí tầng 1 trên Đạo Thụ là mở Ngũ Hành Trận và Hộ Thân Trận.",
+            "Thử chiêu ở Rừng Mực Loang (cổng đông của làng): lại gần Mặc Quái, bấm phím 1 đến 6."
+          ],
+          "check": {"type": "skills_unlocked", "count": 4},
+          "help": "chieu_thuc",
+          "rewards": {"spirit_stones": 60, "xp": 30}
+        },
+        {
+          "id": "g_fortune",
+          "title_vi": "Gặp một Cơ Duyên",
+          "desc_vi": "Trả lời đúng nhiều câu thì đôi khi lão nhân hay rương đề hiện ra. Giải đúng hết là có quà.",
+          "how_vi": [
+            "Khi có cơ duyên, mở nút Cơ Duyên trong Đạo Thụ rồi bấm Nhận (còn hiệu lực 10 phút).",
+            "Phải đúng hết các câu của cơ duyên; sai hay hết giờ chỉ là không có quà."
+          ],
+          "check": {"type": "fortune_won", "count": 1},
+          "goto": "fortune",
+          "help": "co_duyen",
+          "optional": true,
+          "rewards": {"spirit_stones": 80, "xp": 30}
+        },
+        {
+          "id": "g_code",
+          "title_vi": "Bài lập trình đầu tiên",
+          "desc_vi": "Viết một chương trình Python nhỏ cho một bài toán. Chương trình chạy trên máy của con, máy chủ chỉ chấm kết quả.",
+          "how_vi": [
+            "Trong Đạo Thụ, thẻ Đại Số, bấm nút Bài tập, chọn một bài rồi bấm Làm bài.",
+            "Chạy thử với ví dụ trong đề; Nộp bài để chạy trên test ẩn và nhận Tu Vi."
+          ],
+          "check": {"type": "code_solved", "count": 1},
+          "help": "lap_trinh",
+          "optional": true,
+          "rewards": {"spirit_stones": 100, "xp": 50}
+        }
+      ]
+    },
+    {
+      "id": "c4_luyen_khi",
+      "title_vi": "Đường Luyện Khí",
+      "intro_vi": "Chín tầng Luyện Khí: mỗi tầng là các nút chính đạo của cả bốn nhánh toán. Xong chín tầng là hết chặng đầu.",
+      "generated": "tree_stages",
+      "realm": "luyen_khi",
+      "step": {
+        "title_vi": "Luyện Khí tầng {stage}",
+        "desc_vi": "Xong mọi nút chính đạo của Đạo Thụ cho tới hết tầng {stage}. Nút đang biên soạn tính là xong.",
+        "how_vi": ["Mở Đạo Thụ (phím M), thẻ Nên học: luyện rồi vượt Thiên kiếp nhỏ của từng nút."],
+        "goto": "math",
+        "help": "dao_thu"
+      },
+      "stage_rewards": [
+        {"spirit_stones": 100, "xp": 40},
+        {"spirit_stones": 120, "xp": 50},
+        {"spirit_stones": 140, "xp": 60},
+        {"spirit_stones": 160, "xp": 70},
+        {"spirit_stones": 180, "xp": 80},
+        {"spirit_stones": 200, "xp": 90},
+        {"spirit_stones": 220, "xp": 100},
+        {"spirit_stones": 240, "xp": 110},
+        {"spirit_stones": 300, "xp": 150, "immortal_jade": 10}
+      ]
+    }
+  ],
+  "handbook": [
+    {
+      "id": "lo_trinh",
+      "title_vi": "Bảng Lộ Trình",
+      "lines_vi": [
+        "Lộ Trình là bản đồ từ bước đầu tiên đến hết Luyện Khí, chia thành các chương.",
+        "Mỗi bước nói rõ việc cần làm, phím hoặc nút bấm, và vì sao việc ấy quan trọng.",
+        "Bấm F1 hoặc ô Việc tiếp theo trên màn hình để mở bảng.",
+        "Bước nào xong thì nhận thưởng một lần; xong hết các bước bắt buộc của chương thì nhận thêm thưởng chương.",
+        "Bước ghi tuỳ chọn không chặn chương: làm khi con muốn.",
+        "Mọi tiến độ được tính từ những gì con đã làm, nên bước đã làm từ trước vẫn nhận được thưởng."
+      ]
+    },
+    {
+      "id": "dao_thu",
+      "title_vi": "Đạo Thụ là gì",
+      "lines_vi": [
+        "Đạo Thụ là cây giáo trình. Mỗi nút là một phần kiến thức, mở bằng phím M ở Động Phủ.",
+        "Bốn nhánh toán đi song song: Đại Số, Giải Tích, Xác Suất, Thuật Toán. Thẻ Nên học gom các nút đang mở.",
+        "Nút đang mở: học được ngay. Nút đã xong: mọi phần đã vượt Thiên kiếp nhỏ.",
+        "Nút chưa mở: dòng ghi rõ cần xong nút nào trước. Nút đang biên soạn: chưa có nội dung, tính là xong.",
+        "Chính đạo là các nút chặn đường lên tầng. Bàng môn mở theo cùng luật nhưng không chặn gì.",
+        "Luyện Khí tầng k nghĩa là mọi nút chính đạo từ tầng 1 đến k đã xong. Dòng đầu Đạo Thụ ghi tầng của con.",
+        "Mỗi nút gồm một hay hai phần. Mỗi phần có bậc khó, ô Cổng, nút Đọc và nút Luyện.",
+        "Bấm vào tên nút để mở thẻ nút: vì sao học, cần gì trước, học những gì, và nguồn nên học."
+      ]
+    },
+    {
+      "id": "buoi_luyen",
+      "title_vi": "Buổi luyện",
+      "lines_vi": [
+        "Bấm Luyện ở một nút đang mở để bắt đầu; buổi dở thì nút đổi thành Luyện tiếp.",
+        "Câu hỏi có 5 bậc: Nhập môn, Cơ bản, Vận dụng, Nâng cao, Thử thách. Bậc tự đổi theo sức con.",
+        "Đúng liền 2 câu thì lên một bậc, sai liền 2 câu thì xuống một bậc.",
+        "Bậc mới của một vi kỹ năng chỉ mở khi con đúng 3 trong 5 câu gần nhất ở bậc dưới.",
+        "Mỗi câu đúng cho Tu Vi: 3, 5, 8, 12, 18 theo bậc 1 đến 5. Sai hoặc hết giờ thì không có.",
+        "Cứ khoảng 4 câu lại có một câu ôn từ phần trước, để kiến thức không rơi mất.",
+        "Sai thì có lời giải từng bước. Enter hoặc Space sang câu tiếp, Nghỉ (Esc) để kết thúc buổi.",
+        "Nên dừng khi thấy mệt: 10 đến 15 phút tập trung tốt hơn một giờ lơ đãng.",
+        "Kiểm tra đầu vào: bài tối đa 15 câu cho ai đã biết sẵn, làm được trước khi vượt Thiên kiếp nhỏ của môn."
+      ]
+    },
+    {
+      "id": "cong_thien_kiep",
+      "title_vi": "Cổng và Thiên kiếp nhỏ",
+      "lines_vi": [
+        "Mỗi phần của nút có một Cổng thuần thục, hiện dạng Cổng 2/4: số vi kỹ năng đã đạt.",
+        "Một vi kỹ năng đạt khi nó được hỏi ở bậc cao nhất của phần và con đúng 4 trong 5 câu gần nhất.",
+        "Cổng đo phong độ gần đây, không khoá vĩnh viễn: phong độ tụt thì luyện thêm là mở lại.",
+        "Cổng mở thì nút Thiên kiếp hiện ra thay chỗ ô Cổng.",
+        "Thiên kiếp nhỏ: mỗi vi kỹ năng một câu ở bậc cao nhất, mỗi câu giữ giờ riêng của nó.",
+        "Được sai 1 câu nếu phần có từ 4 vi kỹ năng; ít hơn thì phải đúng hết. Màn hình ghi Được sai n câu.",
+        "Trượt không mất gì: ôn vi kỹ năng yếu rồi thử lại ngay.",
+        "Qua Thiên kiếp là phần ấy xong. Mọi phần xong thì nút xong, và các nút cần nó được mở."
+      ]
+    },
+    {
+      "id": "tam_ma",
+      "title_vi": "Tâm ma",
+      "lines_vi": [
+        "Câu con vừa sai không biến mất: ý ấy quay lại với số mới, gọi là tâm ma.",
+        "Chỉ sau một câu khác, câu quay lại sẽ hiện, kèm nhãn Tâm ma.",
+        "Làm đúng thì hiện Đã phá tâm ma. Làm sai thì ý ấy còn chờ quay lại.",
+        "Mỗi tầng giữ tối đa 5 tâm ma đang chờ; cái cũ hơn sẽ bị bỏ.",
+        "Đừng sợ tâm ma: đó là cách nhanh nhất để biến một lỗi thành kiến thức chắc.",
+        "Lộ Trình có bước Phá 3 tâm ma."
+      ]
+    },
+    {
+      "id": "tang_thu_cac",
+      "title_vi": "Tàng Thư Các",
+      "lines_vi": [
+        "Tàng Thư Các là nơi cất bài đọc cho từng phần của Đạo Thụ.",
+        "Mở bằng nút Đọc ở dòng của một phần, hoặc nút Tàng Thư Các ở đáy màn hình Đạo Thụ.",
+        "Đang trả lời câu hỏi mà bí thì bấm nút Tàng Thư (phím T) để xem bài của phần đang luyện.",
+        "Trong bài: Mục trước, Mục sau (phím Trái, Phải) đổi mục; PageUp, PageDown hoặc Space cuộn; Esc đóng.",
+        "Bấm vào tên một nút để mở thẻ nút. Mục Nên học từ ghi sách, khoá học hay trang web tốt nhất cho nút ấy.",
+        "Nút Mở trang mở đường dẫn ấy bằng trình duyệt của máy. Game không tự mở trang nào."
+      ]
+    },
+    {
+      "id": "ham_nguc",
+      "title_vi": "Hầm Ngục",
+      "lines_vi": [
+        "Mở bằng nút Hầm Ngục trong Đạo Thụ. Chọn tầng, có thể gõ một Linh thạch số rồi bấm Vào hầm.",
+        "Mỗi hầm là một chuỗi 4 đến 6 phòng sinh từ số ấy; cùng số thì ra cùng hầm. Để trống thì ngẫu nhiên.",
+        "Mỗi phòng một dạng câu, phải đúng 2 câu để qua. Phòng cuối có Trấn Thủ, rồi tới rương.",
+        "Con có 3 tâm lực. Sai hoặc hết giờ mất 1; hết tâm lực thì ra khỏi hầm, đồ đã nhận vẫn giữ.",
+        "Mỗi ngày có 5 hầm được nhận Linh Thạch và vật liệu; các hầm sau vẫn cho Tu Vi.",
+        "Câu hỏi theo bậc của con. Tầng nào còn khoá thì màn hình ghi lý do."
+      ]
+    },
+    {
+      "id": "thu_thanh",
+      "title_vi": "Thủ Thành Toán",
+      "lines_vi": [
+        "Mở bằng nút Thủ Thành trong Đạo Thụ, chọn một ải rồi bấm Vào ải.",
+        "Mặc Quái kéo theo đường về Linh Mạch của thành. Linh Mạch hết điểm là thua.",
+        "Mỗi tháp ứng với một mảng toán. Dựng hay nâng cấp tháp phải trả lời đúng một câu của mảng ấy.",
+        "Trả lời sai thì Linh Khí bỏ ra không hoàn lại, ngoài ra không mất gì.",
+        "Linh Khí tự hồi theo thời gian, thêm khi hết đợt, qua câu Vấn Đạo giữa đợt và nút Tụ Khí.",
+        "Chọn tháp ở dưới, bấm ô cạnh đường, rồi bấm Bắt đầu đợt. Chuột phải để thôi chọn.",
+        "Giữ Linh Mạch còn điểm tới hết các đợt là thắng; còn càng nhiều điểm thì càng nhiều sao.",
+        "Mỗi ngày có 5 lượt chơi lại được nhận thưởng Linh Thạch."
+      ]
+    },
+    {
+      "id": "co_duyen",
+      "title_vi": "Cơ Duyên",
+      "lines_vi": [
+        "Cơ duyên tìm đến người chăm chỉ: cứ trả lời đúng một chặng câu hỏi, đôi khi lão nhân hay rương đề hiện ra.",
+        "Câu của chính cơ duyên không được tính vào chặng. Mỗi ngày có tối đa 3 cơ duyên.",
+        "Khi có cơ duyên, mở nút Cơ Duyên trong Đạo Thụ rồi bấm Nhận. Lời mời tan sau 10 phút nếu để đó.",
+        "Nhận rồi thì con có 7 phút trả lời. Lão nhân ra một câu khó nhất con gặp được; rương đề có vài câu.",
+        "Phải đúng hết. Sai hoặc hết giờ thì không có quà, nhưng cũng không mất gì.",
+        "Quà là Linh Thạch và vật liệu, đôi khi có món hiếm. Nút Bỏ qua để từ chối.",
+        "Bảng Những cơ duyên gần đây ghi lại các lần trước."
+      ]
+    },
+    {
+      "id": "chieu_thuc",
+      "title_vi": "Chiêu thức",
+      "lines_vi": [
+        "Chiêu thức là đòn đánh quái bằng toán, dùng ngoài làng như ở Rừng Mực Loang (cổng đông).",
+        "Mỗi chiêu gắn một dạng câu. Bấm phím 1 đến 6 trên thanh chiêu, rồi trả lời câu hỏi hiện ra.",
+        "Đúng thì chiêu trúng. Sai hoặc hết giờ thì chiêu hụt: không gây sát thương, chuỗi liên chiêu về 0.",
+        "Linh Lực đã dùng và thời gian hồi chiêu vẫn tính dù chiêu hụt.",
+        "Chiêu cần một Mặc Quái gần đó; đưa chuột lên quái để chọn mục tiêu. Space là đòn đánh thường.",
+        "Mở theo tầng Luyện Khí con đang học trên Đạo Thụ: Thường Quyền, Phá Mê Kiếm Quyết, Hỏa Cầu Thuật từ tầng 1.",
+        "Ngũ Hành Trận và Hộ Thân Trận từ tầng 2; Thiên Lôi Tuyệt Kỹ từ tầng 7.",
+        "Rê chuột lên một chiêu để xem loại câu, Linh Lực và thời gian hồi."
+      ]
+    },
+    {
+      "id": "lap_trinh",
+      "title_vi": "Bài tập lập trình",
+      "lines_vi": [
+        "Mở trong Đạo Thụ: thẻ Đại Số, nút Bài tập ở bên phải dòng tầng; chọn một bài rồi bấm Làm bài.",
+        "Đề ghi Dữ liệu vào, Kết quả ra, giới hạn và ví dụ. Chương trình đọc từ stdin và in ra stdout.",
+        "Con viết Python ngay trong game, hoặc trong trình soạn riêng: bài lưu thành tệp, dòng Bài làm ghi chỗ để.",
+        "Chạy thử dùng các ví dụ trong đề. Nộp bài chạy trên test ẩn, được chấm và nhận Tu Vi.",
+        "Chương trình chạy trên máy của con. Máy chủ chỉ nhận chữ in ra rồi chấm, không chạy mã của con.",
+        "Máy cần có Python. Chưa có thì cài, hoặc ghi đường dẫn vào config.json.",
+        "Kết quả: Đúng hết, Sai kết quả, Quá thời gian, Lỗi khi chạy, Lỗi cú pháp.",
+        "Bài mở khi vi kỹ năng của nó thuộc một nút đang mở hoặc đã xong."
+      ]
+    },
+    {
+      "id": "phim_tat",
+      "title_vi": "Phím tắt",
+      "lines_vi": [
+        "Đi lại: W A S D hoặc các mũi tên. E: nói chuyện, mở cổng, tương tác. F: câu cá chỗ có nước.",
+        "F1: bảng Lộ Trình. M: Đạo Thụ (chỉ ở Động Phủ). J: Nhiệm vụ. K: Tu luyện. Tab: Túi đồ.",
+        "Esc: đóng cửa sổ đang mở; không có cửa sổ nào thì mở Cài đặt. P: Bạn bè.",
+        "Trả lời câu hỏi: phím số chọn đáp án, Enter hoặc Space sang câu tiếp, Esc để Nghỉ, T mở Tàng Thư.",
+        "Đọc Tàng Thư: Trái, Phải đổi mục; PageUp, PageDown, Space hoặc mũi tên lên xuống để cuộn; Esc đóng.",
+        "Trong Đạo Thụ: Trái, Phải đổi thẻ nhánh; lên, xuống hoặc lăn chuột để cuộn danh sách nút.",
+        "Ngoài làng: Space đánh quái gần nhất, phím 1 đến 6 ra chiêu thức.",
+        "Muốn xuống Trúc Lâm Thôn: đi xuống phía nam Động Phủ tới cổng tre rồi bấm E."
+      ]
+    },
+    {
+      "id": "mot_ngay",
+      "title_vi": "Một ngày tu luyện",
+      "lines_vi": [
+        "Gợi ý 20 đến 30 phút mỗi ngày, đều đặn hơn là dồn một buổi dài.",
+        "1. Bấm F1 xem việc tiếp theo, rồi mở Đạo Thụ (M), thẻ Nên học.",
+        "2. Đọc một mục Tàng Thư của nút đang học (3 đến 5 phút).",
+        "3. Luyện 10 đến 15 phút. Gặp tâm ma thì làm cho đúng để phá nó.",
+        "4. Khi Cổng mở, vượt Thiên kiếp nhỏ ngay lúc đang vững nhất.",
+        "5. Cuối buổi chơi một Hầm Ngục hoặc một ải Thủ Thành để ôn theo cách vui hơn.",
+        "6. Nhận thưởng trên bảng Lộ Trình rồi nghỉ. Mai làm tiếp."
+      ]
+    }
+  ]
+}

@@ -538,6 +538,7 @@ class MathPracticeScene(Scene):
             self.summary = res["run"]
             self.run = None
             self.load()
+            self.game.refresh_guide()      # a step may be done now: the "Xong" toast
         self.api.post("/math/run/end", {"run_id": self.run["run_id"]}, ok, self.fail)
 
     # ------------------------------------------------------------ drawing

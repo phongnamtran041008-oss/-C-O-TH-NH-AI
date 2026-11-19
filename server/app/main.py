@@ -22,6 +22,7 @@ from .realtime.world import world
 from .routers import (auth_routes, bee_routes, economy_routes, fishing_routes, game_routes,
                       math_dungeon_routes, math_fortune_routes, math_routes, math_td_routes,
                       realm_routes, rpg_routes, server_routes, social_routes, td_routes)
+from .routers import guide_routes
 from .systems import cultivation as _cultivation  # noqa: F401  (registers meditate/tribulation handlers)
 from .systems import inscription as _inscription  # noqa: F401  (registers the khắc văn handler)
 
@@ -96,6 +97,7 @@ def create_app(use_lifespan: bool = True) -> FastAPI:
     app.include_router(math_dungeon_routes.router)    # M10: hầm ngục
     app.include_router(math_fortune_routes.router)    # M10: cơ duyên
     app.include_router(math_td_routes.router)         # M10: thủ thành toán
+    app.include_router(guide_routes.router)           # Lộ Trình tân thủ
     app.include_router(ws_routes.router)
 
     @app.exception_handler(HTTPException)

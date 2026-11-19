@@ -1312,3 +1312,32 @@ NODE_SRC_FAILED = "Không mở được trình duyệt. Hãy chép đường d�
 NODE_LANG = {"vi": "tiếng Việt", "en": "tiếng Anh"}
 NODE_KIND = {"bai_viet": "bài viết", "video": "video", "sach": "sách", "khoa_hoc": "khoá học",
              "tuong_tac": "bài tương tác", "code": "mã nguồn", "bai_tap": "bài tập", "bai_bao": "bài báo"}
+
+
+# ---- Lộ Trình tân thủ (guide): the board, the HUD box and the welcome
+GUIDE_TITLE = "Lộ Trình Tu Tiên"
+GUIDE_TAB_ROAD = "Lộ trình"
+GUIDE_TAB_BOOK = "Cẩm nang"
+GUIDE_LOADING = "Đang tải lộ trình..."
+GUIDE_STUDYING = "Đang học"
+GUIDE_STUDY_NONE = "Chưa có nút nào đang mở. Hãy xem Đạo Thụ (phím M)."
+GUIDE_STAGE = "{realm} tầng {n}/{t}"
+GUIDE_MARK_CLAIM = "Nhận"
+GUIDE_MARK_DONE = "Xong"
+GUIDE_OPTIONAL = "(tuỳ chọn)"
+GUIDE_BONUS_ROW = "Thưởng chương"
+GUIDE_BONUS_DESC = "Làm xong mọi bước bắt buộc của chương thì nhận thêm phần thưởng này."
+GUIDE_REWARDS = "Thưởng: {r}"
+GUIDE_REMAINING = "Còn: {names}"
+GUIDE_GOTO = "Đi tới"
+GUIDE_HELP = "Cẩm nang"
+GUIDE_CLAIM = "Nhận thưởng"
+GUIDE_STATE = {"active": "đang làm", "done": "xong, chờ nhận thưởng", "claimed": "đã nhận thưởng"}
+GUIDE_CLAIMABLE = "Nhận thưởng: {n}"
+GUIDE_CLAIMED = "Đã nhận: {r}"
+GUIDE_NOTHING = "Chọn một bước để xem."
+GUIDE_HUD_NEXT = "Việc tiếp theo · F1"
+GUIDE_HUD_STUDY = "Đang học · F1"
+GUIDE_HUD_CLAIM = "Nhận thưởng ({n}) · F1"
+GUIDE_HUD_ALL_DONE = "Con đã làm hết lộ trình hiện có. Cứ luyện tiếp trên Đạo Thụ nhé."
+GUIDE_STEP_DONE_TOAST = "Xong: {title}"       # short: in the world it sits beside the HUD box, which says F1

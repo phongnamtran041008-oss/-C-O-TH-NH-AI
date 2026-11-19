@@ -96,6 +96,8 @@ class Driver:
         self.shots = shots
         self.keys = Keys()
         pygame.key.get_pressed = lambda: self.keys  # movement reads this
+        from client.scenes import guide
+        guide.WELCOME = False       # the Lộ Trình welcome would sit on top of what the old flows click
         cfg = Config(server_url=server_url)
         self.session_path = workdir / "session.json"
         self.game = Game(cfg, Session(self.session_path), size=(1440, 810))

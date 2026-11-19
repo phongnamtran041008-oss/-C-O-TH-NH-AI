@@ -14,6 +14,7 @@ from ..engine.beeflock import Flock
 from ..engine.effects import Effects
 from ..engine.tilemap import load_map
 from ..ui.dialog import DialogScene
+from . import guide
 from .base import Scene
 
 SPEED = 74.0
@@ -83,7 +84,7 @@ class AbodeScene(Scene):
     def on_enter(self):
         self.refresh_garden()
         self.refresh_me()
-        if self.tutorial_step == 0:
+        if self.tutorial_step == 0 and not guide.WELCOME:      # the Lộ Trình welcome replaces it
             self.game.push(DialogScene(self.game, T.TUTORIAL[0], on_done=lambda: self.set_tutorial(1)))
 
     def on_exit(self):
@@ -107,6 +108,8 @@ class AbodeScene(Scene):
 
     def tutorial_event(self, event: str) -> None:
         """plant -> learn -> answered: each first time moves the tutorial on."""
+        if guide.WELCOME:
+            return
         nxt = {"plant": 2, "learn": 3, "answered": 4}.get(event)
         if nxt and self.tutorial_step == nxt - 1:
             self.set_tutorial(nxt)
@@ -265,8 +268,12 @@ class AbodeScene(Scene):
         self.fx.bubble(f"{m.get('wrong_hanzi', '')} {m.get('wrong_pinyin', '')} = {m.get('wrong_vi', '')}", cx, cy - 26, 3.5)
 
     # ------------------------------------------------------------ update
+    def on_resume(self):
+        guide.resume_refresh(self.game)
+
     def update(self, dt, top):
         self.t += dt
+        guide.hud_update(self.game, self)
         self.fx.update(dt)
         self.update_bees(dt)
         self.update_pet(dt)
@@ -689,6 +696,9 @@ class AbodeScene(Scene):
                 action()
         if top and not typing and ui.key(pygame.K_l):
             self.game.open_library()
+        if top and not typing and ui.key(pygame.K_F1):
+            self.game.open_guide()
+        guide.draw_tracker(ui, self.game, 476 - guide.TRACKER_W, 4, top)
         if top and not typing and ui.key(pygame.K_o):
             self.game.open_pets()
         if not top or typing:
@@ -718,7 +728,7 @@ class AbodeScene(Scene):
                 self.start_fishing(spot[1])
                 return
         # tutorial hint
-        if self.tutorial_step in (1, 2, 3):
+        if self.tutorial_step in (1, 2, 3) and not guide.WELCOME:
             hint = {1: "Gieo hạt 水 vào một ô đất trong vườn",
                     2: "Bấm vào cây vừa gieo để xem thẻ chữ",
                     3: "Đợi cây đến giờ ôn (dấu ! vàng) rồi bấm vào để ôn"}[self.tutorial_step]
