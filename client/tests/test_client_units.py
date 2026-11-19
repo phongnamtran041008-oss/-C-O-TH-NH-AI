@@ -31,13 +31,6 @@ def test_all_appearances_build():
         assert all(f.get_size() == (16, 24) for f in frames.values())
 
 
-def test_plants_all_stages_and_rarities():
-    for stage in range(6):
-        for r in ("common", "rare", "epic", "legendary"):
-            assert B.plant(stage, r, "k").get_size() == (24, 24)
-    assert B.withered(B.plant(5, "rare", "k"), 90).get_size() == (24, 24)
-
-
 def test_fonts_fallback_and_wrap():
     f = Fonts()
     assert not f.missing, "run tools/fetch_assets.py"
@@ -56,15 +49,14 @@ def test_abode_map():
     m = TileMap(assets_dir() / "maps" / "abode.tmj")
     spawn = m.find("spawn")[0]
     assert not m.blocked(pygame.Rect(int(spawn.x) - 5, int(spawn.y) - 6, 10, 6))
-    garden = m.find("area", "garden")[0]
-    assert (garden.w, garden.h) == (160, 160)
+    assert not m.find("area", "garden"), "the word garden is gone"
     actions = {o.props.get("action") for o in m.find("interact")}
-    assert {"gacha", "discoveries", "craft", "exit", "hive", "alchemy"} <= actions
+    assert {"gacha", "meditate", "exit", "hive", "alchemy"} <= actions
+    assert not actions & {"discoveries", "craft"}          # Bia Phát Hiện and Bàn Ghép Câu went with it
     assert m.find("npc")
     for o in m.objects:
         if "sprite" in o.props:
-            assert o.props["sprite"] in {"bamboo", "hut", "shrine", "tablet", "table", "gate", "mat", "rock", "hive",
-                                          "furnace"}
+            assert o.props["sprite"] in {"bamboo", "hut", "shrine", "gate", "mat", "rock", "hive", "furnace"}
 
 
 def test_display_integer_scaling():

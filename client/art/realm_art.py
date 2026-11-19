@@ -1,9 +1,7 @@
 """Bí cảnh art (stage 9), drawn with code from the palette like the rest of client/art: the
 three realm Mặc Quái (Mặc Ảnh, Bút Yêu and the boss Nghiên Ma, 48x48), the gate in the
 village, the Khe Nứt Mực rift, and the room props: the pedestals, floor stones and pillars
-that serve as Trận Nhãn seals, the statue, the door and the chest. (`mirror` belonged to a
-word room that is gone; it stays only while client/tests/test_art2.py still checks its v2
-twin.)"""
+that serve as Trận Nhãn seals, the statue, the door and the chest."""
 from __future__ import annotations
 
 import math
@@ -170,19 +168,6 @@ def statue(frame: int = 0) -> pygame.Surface:
     pygame.draw.rect(s, rgb("k"), (7, 15, 10, 5), 1)
     if frame % 2:
         pygame.draw.circle(s, rgb("o"), (12, 7), 2)
-    return s
-
-
-def mirror(frame: int = 0) -> pygame.Surface:
-    """48x40 the meaning mirror: a round bronze mirror on a stand over a pool of light."""
-    s = _s(48, 40)
-    pygame.draw.ellipse(s, (*rgb("a"), 90), (4, 26, 40, 13))
-    pygame.draw.rect(s, rgb("O"), (22, 18, 4, 12))
-    pygame.draw.circle(s, rgb("O"), (24, 12), 11)
-    pygame.draw.circle(s, rgb("k"), (24, 12), 11, 1)
-    pygame.draw.circle(s, rgb("a"), (24, 12), 8)
-    a = frame * 0.8
-    pygame.draw.line(s, rgb("W"), (20 + int(math.cos(a) * 2), 8), (23, 6), 1)
     return s
 
 

@@ -8,8 +8,8 @@ from app import db as dbm
 from app.learning import math_path
 from app.models import Character, EquipmentInstance, InventoryItem, MathAnswer, Quest, TribulationRun
 from app.systems import cultivation, inventory, items, math_ask, math_combat, math_practice
-from tests.helpers import answer_key, correct_answer, register
-from tests.test_combat import LOOK, learn
+from tests.helpers import answer_key, register
+from tests.test_combat import LOOK
 from tests.test_math_loop import right_answer, wrong_answer
 
 
@@ -54,16 +54,6 @@ async def test_stages_advance_by_themselves_until_a_new_realm(client):
     ch = await getchar(uid)
     st = cultivation.stats_for("luyen_khi", 9, [])
     assert ch.max_hp == st["max_hp"] == 100 + 12 * 9 + 20
-
-
-async def test_right_answers_anywhere_give_tu_vi(client):
-    h, uid = await make(client, "tu_2", "Tu Hai")
-    await learn(uid, ("水",))
-    q = (await client.post("/quiz/practice", json={}, headers=h)).json()
-    key = await answer_key(q["session_id"])
-    r = (await client.post("/quiz/answer", json={"session_id": q["session_id"],
-                                                "answer": correct_answer(q["qtype"], key)}, headers=h)).json()
-    assert r["xp"]["gained"] == cultivation.cfg()["xp_per_correct"]["practice"]
 
 
 # ------------------------------------------------------------------ Thiên Kiếp
@@ -253,7 +243,7 @@ def test_every_realm_has_every_per_realm_entry():
     from app import balance
     from app.config import DATA_DIR
     from app.realtime import world as wmod
-    from app.systems import bees, gacha_service
+    from app.systems import bees
     realms = catalog_realms()
     ids = [r["id"] for r in realms]
     assert wmod.realm_order() == ids
@@ -269,7 +259,6 @@ def test_every_realm_has_every_per_realm_entry():
             xs = cc["xp_to_next"].get(rid)
             assert xs is not None and len(xs) == n and all(x > 0 for x in xs), (prof, rid)
         assert rid in slots, rid
-        assert rid in cultivation.REALM_TIER and rid in gacha_service.REALM_TIER, rid
         if rid != "pham_nhan":
             assert rid in c["stats"]["realm_bonus"], rid
         if i >= 2:                                   # Trúc Cơ and up: a pill and a Thiên Kiếp

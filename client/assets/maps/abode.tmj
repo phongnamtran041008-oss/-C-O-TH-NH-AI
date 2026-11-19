@@ -11,7 +11,7 @@
  "type": "map",
  "version": "1.10",
  "nextlayerid": 4,
- "nextobjectid": 148,
+ "nextobjectid": 143,
  "properties": [
   {
    "name": "zone",
@@ -3737,52 +3737,6 @@
     },
     {
      "id": 128,
-     "name": "Bia Phát Hiện",
-     "type": "interact",
-     "x": 400,
-     "y": 64,
-     "width": 16,
-     "height": 24,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "tablet"
-      },
-      {
-       "name": "action",
-       "type": "string",
-       "value": "discoveries"
-      }
-     ]
-    },
-    {
-     "id": 130,
-     "name": "Bàn Ghép Câu",
-     "type": "interact",
-     "x": 144,
-     "y": 160,
-     "width": 24,
-     "height": 16,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "table"
-      },
-      {
-       "name": "action",
-       "type": "string",
-       "value": "craft"
-      }
-     ]
-    },
-    {
-     "id": 132,
      "name": "Bàn đả tọa",
      "type": "interact",
      "x": 480,
@@ -3805,7 +3759,7 @@
      ]
     },
     {
-     "id": 133,
+     "id": 129,
      "name": "Linh Phong Sào",
      "type": "interact",
      "x": 432,
@@ -3828,7 +3782,7 @@
      ]
     },
     {
-     "id": 135,
+     "id": 131,
      "name": "Đan Lô",
      "type": "interact",
      "x": 544,
@@ -3851,7 +3805,7 @@
      ]
     },
     {
-     "id": 137,
+     "id": 133,
      "name": "Cổng tre",
      "type": "interact",
      "x": 296,
@@ -3874,7 +3828,7 @@
      ]
     },
     {
-     "id": 138,
+     "id": 134,
      "name": "pond",
      "type": "area",
      "x": 64,
@@ -3892,7 +3846,7 @@
      ]
     },
     {
-     "id": 140,
+     "id": 136,
      "name": "rock",
      "type": "prop",
      "x": 432,
@@ -3910,7 +3864,7 @@
      ]
     },
     {
-     "id": 142,
+     "id": 138,
      "name": "rock",
      "type": "prop",
      "x": 544,
@@ -3928,7 +3882,7 @@
      ]
     },
     {
-     "id": 144,
+     "id": 140,
      "name": "rock",
      "type": "prop",
      "x": 192,
@@ -3946,25 +3900,7 @@
      ]
     },
     {
-     "id": 146,
-     "name": "garden",
-     "type": "area",
-     "x": 224,
-     "y": 112,
-     "width": 160,
-     "height": 160,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "kind",
-       "type": "string",
-       "value": "garden"
-      }
-     ]
-    },
-    {
-     "id": 147,
+     "id": 142,
      "name": "spawn",
      "type": "spawn",
      "x": 312,
@@ -4076,29 +4012,7 @@
      "visible": true
     },
     {
-     "id": 129,
-     "name": "",
-     "type": "solid",
-     "x": 402,
-     "y": 80,
-     "width": 12,
-     "height": 8,
-     "rotation": 0,
-     "visible": true
-    },
-    {
-     "id": 131,
-     "name": "",
-     "type": "solid",
-     "x": 145,
-     "y": 166,
-     "width": 22,
-     "height": 8,
-     "rotation": 0,
-     "visible": true
-    },
-    {
-     "id": 134,
+     "id": 130,
      "name": "",
      "type": "solid",
      "x": 439,
@@ -4109,7 +4023,7 @@
      "visible": true
     },
     {
-     "id": 136,
+     "id": 132,
      "name": "",
      "type": "solid",
      "x": 547,
@@ -4120,7 +4034,7 @@
      "visible": true
     },
     {
-     "id": 139,
+     "id": 135,
      "name": "",
      "type": "solid",
      "x": 64,
@@ -4131,7 +4045,7 @@
      "visible": true
     },
     {
-     "id": 141,
+     "id": 137,
      "name": "",
      "type": "solid",
      "x": 434,
@@ -4142,7 +4056,7 @@
      "visible": true
     },
     {
-     "id": 143,
+     "id": 139,
      "name": "",
      "type": "solid",
      "x": 546,
@@ -4153,7 +4067,7 @@
      "visible": true
     },
     {
-     "id": 145,
+     "id": 141,
      "name": "",
      "type": "solid",
      "x": 194,

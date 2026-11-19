@@ -11,7 +11,7 @@ from app.learning import quiz
 from app.models import AdminAction, ChatReport, User
 from app.realtime import protocol
 from app.realtime.world import Session, World
-from tests.helpers import answer_key, correct_answer, register
+from tests.helpers import register
 from tests.test_social import player
 
 
@@ -225,15 +225,12 @@ def test_bot_watch_streak():
 
 
 async def test_bot_watch_through_the_api(client, db):
-    from tests.test_practice import _learned
-    h, data = await register(client)
-    pid = await _learned(client, h)
-    await client.post("/garden/learn", json={"plot_id": pid}, headers=h)
+    from tests.test_math_loop import make, play, start
+    h, uid = await make(client, "bot_watch")
+    run_id = await start(client, h)
     for _ in range(3):   # the frozen test clock makes every answer take 0 ms
-        q = (await client.post("/quiz/practice", json={"qtype": "Q2"}, headers=h)).json()
-        key = await answer_key(q["session_id"])
-        await client.post("/quiz/answer", json={"session_id": q["session_id"],
-                                                "answer": correct_answer("Q2", key)}, headers=h)
-    u = await db.get(User, data["user_id"])
+        _, r = await play(client, h, run_id)
+        assert r["correct"], r
+    u = await db.get(User, uid)
     await db.refresh(u)
     assert u.flags["fast_streak"] == 3 and u.suspicious_flag is None

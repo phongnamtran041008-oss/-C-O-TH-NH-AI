@@ -1196,3 +1196,49 @@ một lần, lần sau chỉ đăng nhập, dùng Firebase (dự án và API key
   độ kia là việc chưa làm.
 - **Quái lỗi sai (M7) và bài tập lập trình (M6) chưa có cho ba môn mới.**
 - **Xưng hô:** game gọi người chơi là "con" ở mọi nơi, kể cả phần kiểm tra đầu vào.
+
+## 2026-11-20: the Chinese-vocabulary game is removed
+
+Tác giả quyết định xoá hẳn mọi thứ của trò học chữ Hán cũ ("Khu Vườn Tu Tiên") và xoá hẳn khu vườn; game bây
+giờ chỉ là Toán tu tiên. Làm theo ba đợt:
+
+- **Đợt 1 (đã gộp):** đả tọa, Thiên Kiếp, quái ngoài thế giới, câu cá, bí cảnh và thủ thành hỏi câu toán qua
+  `systems/math_ask.py`; bản hỏi chữ của chúng bị xoá, cùng ải Thủ Vườn trồng cây chữ (`/td/*`, `td_bot`,
+  `gen_td_levels`, Vô Tận Trận) và các phòng câu đố chữ của bí cảnh.
+- **Đợt 2:** vườn chữ, khắc văn, Pháp Chữ, Sổ Phát Hiện và mọi phần chỉ dùng chữ của ong, Linh Thú, luyện đan,
+  sạp, gacha, nhiệm vụ, bạn bè (mỗi phần do một agent ghi trong báo cáo của mình). Riêng Tàng Thư Các cũ: xoá
+  Bách Thảo Phổ, ô tìm kiếm chữ / pinyin, Sổ Lỗi chữ, bí kíp trên kệ Thủ Thư, `/library*`, `/codex/plant`,
+  `systems/library.py`, `systems/word_plants.py`, `data/plants/plant_roles.json`, các khoá `roles`,
+  `idiom_skills`, `power` của `balance/td.json`. Tin `ract` của bí cảnh và đồ vật Gương Nghĩa cũng đi.
+- **Đợt 3 (sau):** các module chữ (`learning/wordbank, question_bank, pinyin, srs, selection`), bảng cơ sở dữ
+  liệu của chữ (một migration), `server/data/words`, công cụ dựng từ vựng.
+
+Quyết định khi tách Tàng Thư Các:
+
+- **Thứ không dính chữ thì giữ, chuyển sang `systems/books.py` (`/books`).** Kệ phổ còn Yêu Quái, Ong, Ngư, Bảo
+  Vật, Linh Thú với mốc 25/50/75/100% như cũ; danh hiệu và khung avatar do các mốc ấy cho vẫn đeo được. Danh
+  hiệu và khung chỉ Bách Thảo Phổ / Sổ Phát Hiện cho (Người Gieo Chữ, Bách Thảo Tiên, Người Giải Chữ, Khung
+  Trúc Xanh) không còn hiện ở đâu; cờ trong `users.flags` để nguyên, không cần migration.
+- **Kệ đan phương ở lại với Thủ Thư.** Nhiều đan phương đột phá (Trúc Cơ trở lên) chỉ mua được ở đây, nên bỏ kệ
+  là chặn đường tu luyện. Giá không đổi.
+- **Thủ Thư và phím L mở kinh thư toán trước**; đóng kinh thư là thấy kệ phổ bên dưới (mua đan phương vẫn phải
+  đứng cạnh Thủ Thư).
+
+Quyết định khi gỡ chữ khỏi luyện đan, Pháp Chữ và Khắc Văn:
+
+- **Luyện đan chỉ còn canh lửa.** Không còn gõ pinyin tên đan, không còn quả chữ. Điểm = ba lần bấm (perfect 2,
+  good 1, miss 0, tối đa 6); ngưỡng phẩm chất hạ xuống 0,8 / 0,5 / 0,15 để cùng một tay canh lửa ra đúng phẩm
+  chất mà trước đây người gõ đúng hết mọi chữ nhận được (hai perfect một good vẫn là Thượng phẩm, ba good là
+  Trung phẩm, một good là Hạ phẩm). Khác duy nhất: trượt cả ba giờ là Phế đan (trước còn Hạ phẩm nhờ 3 điểm
+  pinyin). Tu Vi 3 mỗi chữ gõ đúng (tối đa 9) đổi thành Tu Vi cố định mỗi mẻ ra đan: hạ 3, trung 6, thượng 9
+  (`balance/alchemy.json` `brew_xp`, nhân Tụ Linh).
+- **Quả chữ và Linh Quả trong đan phương đổi sang thứ đang rơi/bán.** Hồi Huyết: 3 Mực Tinh + 1 Trúc Diệp Thảo;
+  Hồi Khí: 2 Mực Tinh + 1 Gỗ Linh Mộc + 1 Trúc Diệp Thảo (bỏ cả Linh Mật để người mới luyện được ngay); các đan
+  khác lấy Mảnh Tập Hợp, Tinh Số Phức, Lõi Ma Trận của quái lỗi sai, Mặc Linh Chi, Gỗ Linh Mộc. Hồi Huyết / Hồi
+  Khí lấy 3 và 2 Mực Tinh chứ không ít hơn để giá bán đan vẫn dưới giá nguyên liệu (`test_economy`).
+- **Pháp Chữ và bốn bí kíp bị xoá hẳn**; chiêu thức (M9) là kỹ năng duy nhất. Phần thưởng bí kíp của chuỗi Nhập
+  Môn đổi thành đan: 2 Hồi Khí Đan, 1 Kháng Mực Đan, 1 Tụ Linh Đan, 1 Ngộ Tính Đan; quái không còn rơi bí kíp.
+  Bảng `skills` để nguyên tới đợt 3.
+- **Khắc Văn bị xoá hẳn.** Cột `equipment_instances.inscriptions` để nguyên (không migration) nhưng không ai đọc
+  nữa, chỉ số trang bị không còn cộng chữ khắc. Bước "Chữ trên binh khí" của chuỗi Đan Đạo đổi thành "Đan hồi
+  khí": luyện một mẻ Hồi Khí Đan; giữ id `dd3_khac_van` để người đang làm dở bước ấy không bị kẹt chuỗi.

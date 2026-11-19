@@ -14,7 +14,7 @@ item catalogue grows every milestone:
 
 * a piece of equipment goes by its **kind** first (sword, brush, fan...), then by its
   **slot** (áo, mũ, giày, ngọc bội, nhẫn);
-* a stackable goes by its **kind** (đan dược, bí kíp, ghi chú lỗi sai, linh thảo);
+* a stackable goes by its **kind** (đan dược, ghi chú lỗi sai, linh thảo);
 * anything with no rule gets None and keeps the art it always had.
 """
 from __future__ import annotations
@@ -34,7 +34,7 @@ BY_WEAPON = {"sword": "kiem", "brush": "truong", "fan": "quat", "staff": "truong
 BY_SLOT = {"body": "ao_giap", "hat": "mu", "shoes": "giay", "jade": "day_chuyen",
            "ring": "nhan", "shield": "khien"}
 # stackable `kind` -> icon
-BY_KIND = {"pill": "dan", "manual": "sach", "note": "cuon_thu", "herb": "linh_thao",
+BY_KIND = {"pill": "dan", "note": "cuon_thu", "herb": "linh_thao",
            "bait": "dan", "rod": "thuong"}
 # a few by name, where the rules would miss (checked before the rules)
 BY_ID = {"truc_diep_thao": "linh_thao", "linh_qua": "linh_thao", "linh_mat": "dan",

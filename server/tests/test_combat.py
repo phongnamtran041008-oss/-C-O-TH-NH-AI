@@ -5,11 +5,9 @@ import asyncio
 import pytest_asyncio
 from sqlalchemy import select
 
-from app import clock
 from app import db as dbm
 from app.learning import math_path
-from app.learning.wordbank import bank
-from app.models import Character, CodexEntry, Collection, InventoryItem, MathAnswer, Quest, Skill
+from app.models import Character, CodexEntry, InventoryItem, MathAnswer, Quest
 from app.realtime import combat
 from app.realtime import world as wmod
 from app.realtime.world import Session, World
@@ -49,27 +47,13 @@ def run(w: World, seconds: float, dt_: float = 0.05) -> None:
         w.tick(dt_)
 
 
-async def learn(uid: int, words=("水", "火", "木", "山"), mastery: int = 60) -> None:
-    async with dbm.SessionLocal() as db:
-        for hz in words:
-            w = bank().by_hanzi[hz]
-            col = (await db.execute(select(Collection).where(Collection.user_id == uid,
-                                                             Collection.word_id == w.id))).scalar_one_or_none()
-            if col is None:
-                db.add(Collection(user_id=uid, word_id=w.id, introduced=True, mastery=mastery,
-                                  first_seen_at=clock.now()))
-            else:
-                col.introduced, col.mastery = True, mastery
-        await db.commit()
-
-
-async def fighter(client, w: World, username: str, display: str, learned=True):
+async def fighter(client, w: World, username: str, display: str, learned=None):
+    """A character in the world. `learned` is still accepted for old callers and ignored:
+    nothing about words is needed to fight since the purge."""
     h, data = await register(client, username)
     r = await client.post("/character/create", json={"display_name": display, "appearance": LOOK}, headers=h)
     assert r.status_code == 200, r.text
     uid = data["user_id"]
-    if learned:
-        await learn(uid)
     async with dbm.SessionLocal() as db:
         ch = await db.get(Character, uid)
         s = Session(uid, username, display, ch.realm, LOOK)
@@ -245,7 +229,7 @@ async def test_a_forest_monster_asks_math_at_the_players_own_floor_and_logs_it_o
     """A Mặc Quái of the forest is no quái lỗi sai: it asks a quick question at the player's
     own floor (math_ask.pick_own), and the answer is written to the learning log once."""
     from app.systems import math_ask, math_combat
-    h, uid, s = await fighter(client, gw, "kiem_8", "Kiếm Chín", learned=False)   # no word learned at all
+    h, uid, s = await fighter(client, gw, "kiem_8", "Kiếm Chín")
     p, m = at_monster(gw, s)
     await hit(gw, p, m)
     q = last(s, "q")["q"]
@@ -277,7 +261,7 @@ async def test_no_question_when_the_bank_has_none_for_the_player(client, gw, mon
     err = last(s, "error")
     assert err["code"] == "no_math_question" and p.question is None and not p.q_pending
     assert "chữ" not in err["message_vi"] and "vườn" not in err["message_vi"]
-    assert p.no_words_until > gw.mono()                  # not asked again at once
+    assert p.no_question_until > gw.mono()                  # not asked again at once
     s.sent.clear()
     run(gw, 3.0)
     await hit(gw, p, m)
@@ -303,37 +287,7 @@ async def test_death_loses_tu_vi_and_respawns_in_village(client, gw):
     assert not p.dead and p.channel.zone_id == "truc_lam_thon" and p.hp == p.max_hp
 
 
-# ------------------------------------------------------------------ skills & pills
-async def test_learn_and_cast_skill(client, gw):
-    h, uid, s = await fighter(client, gw, "phap_1", "Pháp Một")
-    async with dbm.SessionLocal() as db:
-        from app.systems import inventory
-        await inventory.change_item(db, uid, "bi_kip_hoa", 1, "test")
-        await db.commit()
-    p, m = at_monster(gw, s)
-    r = await client.post("/inventory/use", json={"item_id": "bi_kip_hoa"}, headers=h)
-    assert r.status_code == 200, r.text
-    assert p.skills["hoa"]["level"] == 1                       # mastery 60 -> level 1
-    qi = p.qi
-    assert combat.cast(p, "hoa", m.eid, gw.mono(), gw.rng) is None
-    assert p.qi == qi - catalog.skills()["skills"]["hoa"]["qi"] and m.hp == m.max_hp - 1  # shielded: 1
-    assert combat.cast(p, "hoa", m.eid, gw.mono(), gw.rng) == "cooldown"
-    assert combat.cast(p, "son", None, gw.mono(), gw.rng) == "not_learned"
-
-
-async def test_manual_needs_mastery(client, gw):
-    h, uid, s = await fighter(client, gw, "phap_2", "Pháp Hai", learned=False)
-    await learn(uid, ("火",), mastery=30)
-    async with dbm.SessionLocal() as db:
-        from app.systems import inventory
-        await inventory.change_item(db, uid, "bi_kip_hoa", 1, "test")
-        await db.commit()
-    r = await client.post("/inventory/use", json={"item_id": "bi_kip_hoa"}, headers=h)
-    assert r.status_code == 400 and r.json()["error"]["code"] == "mastery_low"
-    async with dbm.SessionLocal() as db:
-        assert await db.get(Skill, (uid, "hoa")) is None
-
-
+# ------------------------------------------------------------------ pills
 async def test_pill_heals_in_world_with_cooldown(client, gw):
     h, uid, s = await fighter(client, gw, "dan_1", "Đan Một")
     async with dbm.SessionLocal() as db:
@@ -372,7 +326,7 @@ async def test_kill_counts_for_quest(client, gw):
     assert last(s, "quest")["quest"]["id"] == "nm2_muc_con"
     r = (await client.post("/quests/claim", json={"quest_id": "nm2_muc_con"}, headers=h)).json()
     assert r["next"]["id"] == "nm3_thanh_dieu"
-    assert {i["item"] for i in r["rewards"]["items"]} == {"hoi_huyet_dan", "bi_kip_thuy"}
+    assert {i["item"] for i in r["rewards"]["items"]} == {"hoi_huyet_dan", "hoi_khi_dan"}
 
 
 def test_monster_data_is_complete():
@@ -393,6 +347,22 @@ def test_monster_data_is_complete():
                 assert catalog.stack_item(d["item"]), d
             else:
                 assert all(e in catalog.equipment()["items"] for e in d["equipment"])
-    for sid, s in catalog.skills()["skills"].items():
-        assert s["hanzi"] in bank().by_hanzi, sid
+
+
+async def test_the_old_word_skills_are_gone(client, gw):
+    """Pháp Chữ (skills bound to a word) and their manuals are deleted: the world no longer
+    takes a word-skill cast, and nothing in the bag teaches one. The chiêu thức (M9, mskill)
+    are the only skills."""
+    from app.realtime import protocol
+    assert "skill" not in protocol.MESSAGES and "mskill" in protocol.MESSAGES
+    assert not hasattr(combat, "cast")
+    assert not any(m.get("kind") == "manual" for m in catalog.materials().values() if isinstance(m, dict))
+    for kind, m in catalog.monsters().items():
+        assert not any(str(d.get("item", "")).startswith("bi_kip") for d in m["drops"]), kind
+    h, uid, s = await fighter(client, gw, "phap_0", "Pháp Không")
+    p, m = at_monster(gw, s)
+    await gw.handle(s, {"t": "skill", "k": "hoa", "id": m.eid})
+    assert last(s, "error")["code"] == "bad_message" and m.hp == m.max_hp
+    cult = (await client.get("/cultivation", headers=h)).json()
+    assert "skills" not in cult
 

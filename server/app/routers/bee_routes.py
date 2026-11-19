@@ -27,7 +27,7 @@ class MoveIn(BaseModel):
 
 class RoleIn(BaseModel):
     bee_id: int
-    role: Literal["hive", "pollinate", "guard"]
+    role: Literal["hive", "guard"]
 
 
 class FeedIn(BaseModel):

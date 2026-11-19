@@ -71,7 +71,6 @@ def run_fishing_flow(workdir: Path, shots: Path | None = None) -> None:
         url = server.url
         token, uid = make_account(url, "ngu_phu", "Ngư Phủ")
         h = {"Authorization": f"Bearer {token}"}
-        httpx.get(url + "/garden", headers=h).raise_for_status()
         httpx.get(url + "/quests", headers=h).raise_for_status()
         give(server, uid, "can_long_cot", 1)
         server.sql("update users set flags=? where id=?",
@@ -104,10 +103,11 @@ def run_fishing_flow(workdir: Path, shots: Path | None = None) -> None:
         assert {r[0] for r in rows} == set(caught)
         items = {r[0]: r[1] for r in server.sql("select item_id, quantity from inventory_items where user_id=?", (uid,))}
         assert any(k.startswith("fish_") or k == "ca_nho" for k in items)
-        # Ngư Phổ, through the Sổ Phát Hiện
+        # Ngư Phổ, through the shelf of phổ (B)
         drv.press(pygame.K_b)
-        drv.wait_scene("BookScene")
-        drv.click("book_to_fish")
+        drv.wait_scene("BooksScene")
+        drv.wait(lambda: drv.game.top.data is not None, 5, "the shelf of phổ")
+        drv.click("lib_open_fish")
         drv.wait_scene("FishBookScene")
         drv.wait(lambda: drv.game.top.data is not None, 5, "Ngư Phổ")
         assert drv.game.top.data["found"] == len(set(caught))

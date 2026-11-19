@@ -2,8 +2,8 @@
 
 Player A is the real game client driven through its UI; player B is a second WebSocket
 client on another thread (the same network code the game uses). They see each other
-walk, chat, become friends, A visits B's abode and "tưới giúp", walks to Rừng Mực Loang,
-quits, and comes back where they left off."""
+walk, chat, become friends, A walks to Rừng Mực Loang, quits, and comes back where they
+left off."""
 from __future__ import annotations
 
 import json
@@ -16,7 +16,7 @@ import pygame
 
 from client.config import PROTOCOL_VERSION
 from client.net.ws_client import WsClient
-from client.tests.driver import Driver, ServerProcess, answer_current_quiz
+from client.tests.driver import Driver, ServerProcess
 from client.tests.test_flow import advance_dialogs
 
 LOOK = {"hair_color": "#A0522D", "hair_style": "buoi", "body": "nu"}
@@ -137,42 +137,7 @@ def run_world_flow(workdir: Path, shots: Path | None = None) -> None:
         assert f["display_name"] == "Lão Mai" and f["online"] and f["zone_id"] == "truc_lam_thon"
         drv.shot("friends")
 
-        # B has a 水 seedling; A has learned 水, so A can water it
-        httpx.get(url + "/garden", headers=hb)
-        w_id = server.sql("select id from words where hanzi='水'")[0][0]
-        server.sql("update plots set word_id=?, stage=2, next_review_at=datetime('now','+3 days'), "
-                   "wither_checked_at=datetime('now') where user_id=? and x=1 and y=1", (w_id, b_id))
-        server.sql("update collection set introduced=1 where user_id=? and word_id=?", (a_id, w_id))
-        stones = lambda uid: server.sql("select spirit_stones from users where id=?", (uid,))[0][0]  # noqa: E731
-        a0, b0 = stones(a_id), stones(b_id)
-        drv.click(f"fr_visit_{b_id}")
-        drv.wait_scene("VisitScene")
-        drv.wait(lambda: drv.game.top.data.get("plots"), 5, "visit garden")
-        visit = drv.game.top
-        plot = next(p for p in visit.plots() if p.get("word"))
-        assert plot["helpable"]
-        drv.step(10)
-        drv.shot("visit_friend")
-        r = visit.plot_rect(plot)
-        for _ in range(40):     # the 2x world (v2 art) shows less of the garden: walk until the plot is in view
-            sx, sy = visit.world_to_screen(r.centerx, r.centery)
-            if 30 < sx < 450 and 40 < sy < 240:
-                break
-            keys = ([pygame.K_d if sx > 240 else pygame.K_a] if not 30 < sx < 450 else []) +                    ([pygame.K_s if sy > 135 else pygame.K_w] if not 40 < sy < 240 else [])
-            drv.hold(keys, 0.1)
-        drv.click_at(drv.game.display.to_window(*visit.world_to_screen(r.centerx, r.centery)))
-        drv.wait_scene("HelpPanel")
-        drv.click("help_go")
-        drv.wait_scene("QuizScene")
-        res = answer_current_quiz(drv, server, correct=True)
-        assert res["correct"] and res["reward"] == {"spirit_stones": 10}
-        drv.shot("help_result")
-        drv.click("quiz_continue")
-        drv.wait_api()
-        assert (stones(a_id), stones(b_id)) == (a0 + 10, b0 + 10)
-        drv.wait(lambda: bot.pump() is not None and bot.find("friend", lambda m: m["event"] == "helped"), 5,
-                 "B told about the help")
-        drv.click("visit_back")
+        drv.press(pygame.K_ESCAPE)
         drv.wait_scene("WorldScene")
 
         # channels

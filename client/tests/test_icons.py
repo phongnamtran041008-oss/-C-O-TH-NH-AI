@@ -87,7 +87,6 @@ def test_packing_says_which_file_is_missing(tmp_path):
     ({"item_id": "nhan_ma_tran", "slot": "ring"}, "nhan"),
     ({"item_id": "ngoc_so_phuc", "slot": "jade"}, "day_chuyen"),
     ({"item_id": "hoi_huyet_dan", "kind": "pill"}, "dan"),
-    ({"item_id": "bi_kip_thuy", "kind": "manual"}, "sach"),
     ({"item_id": "ghi_chu_phan_tu", "kind": "note"}, "cuon_thu"),
     ({"item_id": "manh_tap_hop", "kind": "material"}, "lo_dan"),
     ({"item_id": "muc_tinh", "kind": "material"}, None),       # no rule: keeps its old art

@@ -119,6 +119,8 @@ async def record(db: AsyncSession, user: User, s: QuizSession, correct: bool, no
     block = {"tier": meta["tier"], "timed_out": timed_out, "parallel": False, "parallel_waiting": False,
              "review": False, "xp_base": math_path.xp_for_tier(meta["tier"]) if correct else 0}
     block.update(await notify_answer(db, user, s, correct, now))
+    from . import pets   # Rồng and Gà (stage 8): Tu Vi on top of the answer's own
+    block.update(await pets.on_math_answer(db, user, s, correct))
     return block
 
 

@@ -1,23 +1,19 @@
 """Sạp Tạp Hóa (spec 12.4): Bà Chủ Sạp in Trúc Lâm Thôn sells basic goods (pills, herbs,
-Mực Tinh, bait, common seeds) with a daily limit per player and Phàm/Linh equipment, and
-buys things back. There is no trading between players (v1); friends can give each other
+Mực Tinh, bait) with a daily limit per player and Phàm/Linh equipment, and buys things
+back. There is no trading between players (v1); friends can give each other
 small presents (systems/social.gift).
 
 Buying is only possible standing next to her (the server checks the real position, as for
-the Ngư Ông and the Thủ Thư). Selling stack items and quả chữ goes through the existing
-/inventory/sell and /fruits/sell, which work anywhere; selling a piece of equipment is here.
+the Ngư Ông and the Thủ Thư). Selling stack items goes through the existing /inventory/sell,
+which works anywhere; selling a piece of equipment is here.
 """
 from __future__ import annotations
 
-import random
-
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import balance, clock
-from ..learning.wordbank import bank
-from ..models import AuditLog, Collection, EquipmentInstance, Seed, User
-from . import catalog, gacha_service, inventory, items
+from ..models import AuditLog, EquipmentInstance, User
+from . import catalog, inventory, items
 
 
 class ShopError(Exception):
@@ -43,9 +39,6 @@ def _bought_today(user: User) -> dict[str, int]:
 
 
 def _stock_name(item_id: str) -> tuple[str, str]:
-    c = cfg()
-    if item_id == c["seed_item"]:
-        return c["seed_name_vi"], c["seed_desc_vi"]
     info = catalog.stack_item(item_id) or {}
     return info.get("name_vi", item_id), info.get("desc_vi", "")
 
@@ -77,8 +70,7 @@ async def view(db: AsyncSession, user: User) -> dict:
             "spirit_stones": user.spirit_stones}
 
 
-async def buy(db: AsyncSession, user: User, item_id: str, qty: int, rarity: str | None = None,
-              rng: random.Random | None = None) -> dict:
+async def buy(db: AsyncSession, user: User, item_id: str, qty: int, rarity: str | None = None) -> dict:
     c = cfg()
     if not at_shop(user.id):
         raise ShopError(400, "too_far", "Muốn mua thì tới Sạp Tạp Hóa gặp Bà Chủ Sạp ở Trúc Lâm Thôn.")
@@ -99,42 +91,12 @@ async def buy(db: AsyncSession, user: User, item_id: str, qty: int, rarity: str 
     except inventory.InsufficientFunds as e:
         raise ShopError(400, "insufficient_funds", e.message_vi)
     out: dict = {"bought": item_id, "qty": qty, "price": price, "spirit_stones": stones}
-    if item_id == c["seed_item"]:
-        out["seeds"] = await _seeds(db, user, qty, rng or random.Random())
-    else:
-        out["total"] = await inventory.change_item(db, user.id, item_id, qty, "shop_buy")
+    out["total"] = await inventory.change_item(db, user.id, item_id, qty, "shop_buy")
     flags = dict(user.flags or {})
     flags["shop_day"] = clock.local_date(clock.now())
     flags["shop_bought"] = {**bought, item_id: bought.get(item_id, 0) + qty}
     user.flags = flags
     await db.flush()
-    return out
-
-
-async def _seeds(db: AsyncSession, user: User, qty: int, rng: random.Random) -> list[dict]:
-    """Common seeds count toward the 15 new seeds a day of the gacha (spec 6.1)."""
-    now = clock.now()
-    gacha_service.reset_daily(user, clock.local_date(now))
-    limit = balance.gacha()["daily_roll_limit"]
-    if user.daily_new_seeds_count + qty > limit:
-        raise ShopError(400, "daily_limit", "Hôm nay con đã nhận đủ hạt mới rồi, mai quay lại nhé.")
-    tier = await gacha_service.player_tier(db, user.id)
-    b = bank()
-    pool = b.gacha_pool(tier, "common")
-    owned = set((await db.execute(select(Collection.word_id).where(Collection.user_id == user.id))).scalars().all())
-    out = []
-    for _ in range(qty):
-        new = [w for w in pool if w.id not in owned]
-        w = rng.choice(new or pool)
-        dup = not new
-        seed = Seed(user_id=user.id, word_id=w.id, duplicate=dup, source="shop", obtained_at=now)
-        db.add(seed)
-        if not dup:
-            owned.add(w.id)
-            db.add(Collection(user_id=user.id, word_id=w.id, first_seen_at=now))
-        await db.flush()
-        out.append({"seed_id": seed.id, "rarity": "common", "duplicate": dup, "word": {"id": w.id, "hanzi": w.hanzi}})
-    user.daily_new_seeds_count += qty
     return out
 
 

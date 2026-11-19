@@ -1,25 +1,20 @@
-"""Stage 5: Linh Phong (spec 10). Hive, eggs, honey, feeding, Ong Phổ, pollination and the
-guard-slot rule. The checks asked for by the stage plan:
-  * pollination never moves a plant to the next stage without an answer;
-  * the review wait is never cut by more than 25 %;
-  * the number of guard bees follows the realm.
-Guard bees in combat are tested in test_bee_guard.py."""
-import datetime as dt
+"""Stage 5: Linh Phong (spec 10). Hive, eggs, honey, feeding, Ong Phổ and the guard-slot rule.
+Since the purge of the old word game bees have two roles (hive, guard), eat honey, fish, herbs
+and bee pills, and owe nothing to words. Guard bees in combat are tested in test_bee_guard.py."""
 import random
+import re
 
 import pytest
 from sqlalchemy import select
 
-from app import clock
-from app.learning import srs
-from app.learning.wordbank import bank
-from app.models import Bee, Character, CodexEntry, Collection, Fruit, Hive, InventoryItem, Plot, Quest, User
+from app import balance, clock
+from app.models import Bee, Character, CodexEntry, Hive, InventoryItem, Quest, User
 from app.systems import bees as beesys
 from app.systems import catalog
-from tests.helpers import answer_key, correct_answer, register, wrong_answer
+from tests.helpers import register
 
-B = bank()
 LOOK = {"hair_color": "#2B2B2B", "hair_style": "ngan", "body": "nam"}
+HAN = re.compile("[" + chr(0x3400) + "-" + chr(0x9FFF) + "]")    # CJK ideographs
 
 
 async def player(client, db, name="ongchu", character=True):
@@ -28,7 +23,6 @@ async def player(client, db, name="ongchu", character=True):
         r = await client.post("/character/create", json={"display_name": name.replace("_", " ").title(), "appearance": LOOK},
                               headers=h)
         assert r.status_code == 200, r.text
-    await client.get("/garden", headers=h)   # creates the plots
     return h, data["user_id"]
 
 
@@ -58,53 +52,31 @@ class Ref:
         self.id = id_
 
 
-async def put(db, uid, x, y, hanzi, stage=3, wait_days=None):
-    w = B.by_hanzi[hanzi]
-    p = (await db.execute(select(Plot).where(Plot.user_id == uid, Plot.x == x, Plot.y == y))).scalar_one()
-    now = clock.now()
-    p.word_id, p.stage, p.wither, p.pollen, p.pollinated, p.pollen_boost = w.id, stage, 0.0, 0.0, False, False
-    wait = srs.wait_after_reaching(stage) if wait_days is None else dt.timedelta(days=wait_days)
-    p.next_review_at = now + wait if (stage and wait is not None) else None
-    p.wither_checked_at = now
-    p.fire_checked_date = clock.local_date(now)
-    if not (await db.execute(select(Collection).where(Collection.user_id == uid,
-                                                     Collection.word_id == w.id))).scalar_one_or_none():
-        db.add(Collection(user_id=uid, word_id=w.id, introduced=True, first_seen_at=now))
-    pid, nra = p.id, p.next_review_at
-    await db.commit()
-    r = Ref(pid)
-    r.next_review_at = nra
-    return r
-
-
-async def plot_of(client, h, pid):
-    g = (await client.get("/garden", headers=h)).json()
-    return next(p for p in g["plots"] if p["id"] == pid), g
-
-
-async def answer_garden(client, h, pid, right=True):
-    q = (await client.post("/garden/review", json={"plot_id": pid}, headers=h)).json()
-    key = await answer_key(q["session_id"])
-    a = correct_answer(q["qtype"], key) if right else wrong_answer(q["qtype"], key)
-    r = await client.post("/quiz/answer", json={"session_id": q["session_id"], "answer": a}, headers=h)
-    assert r.status_code == 200, r.text
-    return r.json()
-
-
-# ------------------------------------------------------------------ species data (spec 10.1, 5)
-def test_species_data_is_verified():
+# ------------------------------------------------------------------ species data (spec 10.1)
+def test_species_data_has_no_words_and_edible_favourites():
     sp = catalog.bees()
     assert len(sp) >= 15
     assert {s["rarity"] for s in sp.values()} == {"pham", "linh", "huyen", "dia", "thien"}
     for kind, s in sp.items():
-        w = B.get(s["word_id"])
-        assert s["hanzi"] == w.hanzi + "蜂" and s["pinyin"] == w.pinyin + "fēng", kind
-        assert not w.hidden, kind
         assert s["element"] in beesys.cfg()["element_names_vi"]
-        fav = s["favorite"]
-        assert fav in ("linh_mat", "linh_qua") or fav[6:] in B.by_hanzi
-    assert sp["hoang_kim"]["real_word"] and "wasp" in sp["hoang_kim"]["real_meaning_en"]
-    assert not sp["hoa_diem"]["real_word"]
+        assert not {"hanzi", "pinyin", "word_id", "word_hanzi", "word_pinyin", "word_vi", "real_word",
+                    "pollen"} & set(s), kind
+        assert not HAN.search(str(s)), kind
+        assert "thụ phấn" not in str(s).lower(), kind
+        assert beesys.food_xp(s["favorite"]), (kind, s["favorite"])      # every favourite can be fed
+        assert catalog.stack_item(s["favorite"]) is not None, kind
+    assert "pollination" not in beesys.cfg() and "word_mastery_bonus_at_100" not in beesys.cfg()
+    assert set(beesys.cfg()["role_names_vi"]) == set(beesys.ROLES) == {"hive", "guard"}
+
+
+def test_food_table():
+    assert beesys.food_xp("linh_mat") == 25
+    assert beesys.food_xp("truc_diep_thao") == 20
+    assert beesys.food_xp("fish_ca_diec") == 12            # a Phàm fish
+    assert beesys.food_xp("fish_con") == 100               # a Thiên fish
+    assert beesys.food_xp("phong_vuong_dan") == 400        # the bee pill
+    for no in ("muc_tinh", "sap_ong", "trung_ong_pham", "fish", "fish_khong_co", "fruit:abc"):
+        assert beesys.food_xp(no) is None, no
 
 
 def test_hex_grid():
@@ -123,23 +95,31 @@ async def test_starter_egg_hatch_and_book(client, db):
     hv = (await client.get("/hive", headers=h)).json()
     assert hv["cells"] == 5 and len(hv["open_cells"]) == 5 and hv["bees"] == []
     assert [e["item_id"] for e in hv["eggs"]] == ["trung_ong_pham"]
+    assert "pollinate_max" not in hv and "pollinate_used" not in hv
     hv2 = (await client.get("/hive", headers=h)).json()
     assert hv2["eggs"][0]["qty"] == 1                   # given once only
     r = (await client.post("/hive/hatch", json={"item_id": "trung_ong_pham"}, headers=h)).json()
     bee = r["bee"]
     assert r["new_species"] and bee["rarity"] == "pham" and bee["slot"] in hv["open_cells"]
     assert bee["role"] == "hive" and bee["level"] == 1 and bee["favorite"] is None
+    assert not {"hanzi", "pinyin", "word", "word_mastery", "pollen_per_hour", "real_word"} & set(bee)
     assert await item_qty(db, uid, "trung_ong_pham") == 0
     book = (await client.get("/codex/bee", headers=h)).json()
     assert book["found"] == 1 and book["total"] >= 15
     found = next(e for e in book["entries"] if e["found"])
-    assert found["id"] == bee["species"] and found["hanzi"].endswith("蜂") and found["favorite"] is None
+    assert found["id"] == bee["species"] and found["name_vi"].startswith("Ong ") and found["favorite"] is None
+    assert not {"hanzi", "pinyin", "word", "pollen"} & set(found)
     hidden = next(e for e in book["entries"] if not e["found"])
     assert "name_vi" not in hidden and hidden["look"] is None
     q = await db.get(Quest, (uid, "lp1_trung_ong"))
     assert q.state == "done"
     r = await client.post("/hive/hatch", json={"item_id": "trung_ong_pham"}, headers=h)
     assert r.json()["error"]["code"] == "no_egg"
+
+
+async def test_species_catalog_is_vietnamese_only(client):
+    sp = (await client.get("/bees/species")).json()["species"]
+    assert sp and all("hanzi" not in s and not HAN.search(str(s)) for s in sp.values())
 
 
 async def test_hive_full_and_cells(client, db):
@@ -212,12 +192,56 @@ async def test_honey_is_made_lazily_and_capped(client, db, frozen):
     frozen.advance(days=10)
     hv = (await client.get("/hive", headers=h)).json()
     assert hv["honey"] == pytest.approx(hv["capacity"], abs=0.5)   # the comb is full, nothing more
-    # pollinating bees make no honey
+    # guard bees make no honey
     await client.post("/hive/collect", headers=h)
-    await client.post("/bees/role", json={"bee_id": b.id, "role": "pollinate"}, headers=h)
+    ch = await db.get(Character, uid)
+    ch.realm, ch.realm_stage = "luyen_khi", 1
+    await db.commit()
+    r = await client.post("/bees/role", json={"bee_id": b.id, "role": "guard"}, headers=h)
+    assert r.status_code == 200, r.text
     frozen.advance(hours=5)
     hv = (await client.get("/hive", headers=h)).json()
     assert hv["honey"] < 1
+
+
+async def test_old_pollinate_role_is_a_honey_bee(client, db, frozen):
+    """A bee saved with the deleted garden role works as a hive bee, and the role is gone
+    from the API."""
+    h, uid = await player(client, db)
+    await client.get("/hive", headers=h)
+    b = await give_bee(db, uid, "tra", role="pollinate")
+    hv = (await client.get("/hive", headers=h)).json()
+    bee = next(x for x in hv["bees"] if x["id"] == b.id)
+    assert bee["role"] == "hive" and bee["role_vi"] == "Ở tổ" and hv["honey_per_hour"] > 0
+    db.expire_all()
+    assert (await db.get(Bee, b.id)).role == "hive"                    # fixed in the save
+    frozen.advance(hours=5)
+    assert (await client.get("/hive", headers=h)).json()["honey"] == pytest.approx(1.6 * 5, abs=0.05)
+    r = await client.post("/bees/role", json={"bee_id": b.id, "role": "pollinate"}, headers=h)
+    assert r.status_code == 422
+    with pytest.raises(beesys.BeeError) as e:
+        await beesys.set_role(db, await db.get(User, uid), b.id, "pollinate")
+    assert e.value.code == "bad_role"
+
+
+async def test_collect_honey_finishes_the_quest_step(client, db, frozen):
+    h, uid = await player(client, db)
+    await client.get("/hive", headers=h)
+    await client.get("/quests", headers=h)
+    q = await db.get(Quest, (uid, "lp1_trung_ong"))
+    q.state = "claimed"
+    db.add(Quest(user_id=uid, quest_id="lp3_thu_phan", state="active", progress={"n": 0}))
+    await give_bee(db, uid, "tra")
+    await db.commit()
+    frozen.advance(hours=3)
+    r = await client.post("/hive/collect", headers=h)
+    assert r.status_code == 200, r.text
+    db.expire_all()
+    assert (await db.get(Quest, (uid, "lp3_thu_phan"))).state == "done"
+    step = next(s for s in catalog.quests()["chains"]["linh_phong"]["steps"] if s["id"] == "lp3_thu_phan")
+    assert step["objective"]["type"] == "collect_honey"
+    text = str(catalog.quests()["chains"]["linh_phong"]).lower()
+    assert "thụ phấn" not in text and "quả chữ" not in text and "vườn" not in text
 
 
 async def test_sell_honey(client, db):
@@ -235,31 +259,33 @@ async def test_sell_honey(client, db):
 async def test_feeding_levels_and_favourite(client, db):
     h, uid = await player(client, db)
     await client.get("/hive", headers=h)
-    b = await give_bee(db, uid, "hoa_diem")     # likes fruit 火
+    b = await give_bee(db, uid, "hoa_diem")     # likes Mặc Linh Chi
+    assert catalog.bees()["hoa_diem"]["favorite"] == "mac_linh_chi"
     db.add(CodexEntry(user_id=uid, codex="bee", entry_id="hoa_diem", discovered_at=clock.now(),
                       progress={"hatched": 1, "favorite_known": False, "best_level": 1}))
     from app.systems import inventory
     await inventory.change_item(db, uid, "linh_mat", 5, "test")
-    await inventory.change_fruit(db, uid, B.by_hanzi["火"].id, 3, "test")
-    await inventory.change_fruit(db, uid, B.by_hanzi["水"].id, 1, "test")
+    await inventory.change_item(db, uid, "mac_linh_chi", 2, "test")
+    await inventory.change_item(db, uid, "fish_ca_diec", 1, "test")
     await db.commit()
+    hv = (await client.get("/hive", headers=h)).json()
+    assert {f["food"] for f in hv["foods"]} == {"linh_mat", "mac_linh_chi", "fish_ca_diec"}
     r = (await client.post("/bees/feed", json={"bee_id": b.id, "food": "linh_mat"}, headers=h)).json()
     assert r["xp_gained"] == 25 and not r["favorite"] and r["bond"] == 2
-    r = (await client.post("/bees/feed", json={"bee_id": b.id, "food": f"fruit:{B.by_hanzi['水'].id}"},
-                           headers=h)).json()
+    r = (await client.post("/bees/feed", json={"bee_id": b.id, "food": "fish_ca_diec"}, headers=h)).json()
     assert r["xp_gained"] == 12 and not r["favorite"]
-    r = (await client.post("/bees/feed", json={"bee_id": b.id, "food": f"fruit:{B.by_hanzi['火'].id}"},
-                           headers=h)).json()
-    assert r["favorite"] and r["favorite_discovered"] and r["xp_gained"] == 24 and r["bond"] == 12
-    assert r["favorite_vi"] == "Quả chữ 火"
-    assert r["level"] == 2   # 25 + 12 + 24 = 61 >= 50 (level 1 -> 2)
+    r = (await client.post("/bees/feed", json={"bee_id": b.id, "food": "mac_linh_chi"}, headers=h)).json()
+    assert r["favorite"] and r["favorite_discovered"] and r["xp_gained"] == 90 and r["bond"] == 12
+    assert r["favorite_vi"] == "Mặc Linh Chi"
+    assert r["level"] == 3   # 25 + 12 + 90 = 127: level 2 at 50, level 3 at 50 + 70
     book = (await client.get("/codex/bee", headers=h)).json()
     e = next(x for x in book["entries"] if x["id"] == "hoa_diem")
-    assert e["favorite_known"] and e["favorite"] == "Quả chữ 火" and e["best_level"] == 2
-    r = await client.post("/bees/feed", json={"bee_id": b.id, "food": f"fruit:{B.by_hanzi['水'].id}"}, headers=h)
+    assert e["favorite_known"] and e["favorite"] == "Mặc Linh Chi" and e["best_level"] == 3
+    r = await client.post("/bees/feed", json={"bee_id": b.id, "food": "fish_ca_diec"}, headers=h)
     assert r.json()["error"]["code"] == "no_food"
-    r = await client.post("/bees/feed", json={"bee_id": b.id, "food": "muc_tinh"}, headers=h)
-    assert r.json()["error"]["code"] == "bad_food"
+    for bad in ("muc_tinh", "fruit:abc"):
+        r = await client.post("/bees/feed", json={"bee_id": b.id, "food": bad}, headers=h)
+        assert r.json()["error"]["code"] == "bad_food", bad
 
 
 async def test_level_and_bond_make_bees_stronger(client, db):
@@ -273,6 +299,9 @@ async def test_level_and_bond_make_bees_stronger(client, db):
     w = next(x for x in hv["bees"] if x["id"] == weak.id)
     s = next(x for x in hv["bees"] if x["id"] == strong.id)
     assert s["guard"]["atk"] > w["guard"]["atk"] and s["honey_per_hour"] > w["honey_per_hour"]
+    # a level-1 Phàm bee with no bond is its species' base numbers (times its resonance)
+    k = 1 + w["resonance_pct"] / 100
+    assert w["guard"] == {"hp": int(round(30 * k)), "atk": round(3 * k, 1), "cd": 1.5}
 
 
 async def test_release_gives_wax(client, db):
@@ -318,6 +347,9 @@ async def test_bee_gacha_gives_eggs(client, db):
                            headers=h)).json()
     assert r["immortal_jade"] == 5 and len(r["results"]) == 10
     assert any(x["rarity"] != "pham" for x in r["results"])     # ten-pull: at least one Linh
+    if balance.gacha().get("free_roll_banner") == "bees":    # the daily free roll: once a day
+        r = await client.post("/gacha/roll", json={"banner": "bees", "free": True}, headers=h)
+        assert r.status_code == 200, r.text
     r = await client.post("/gacha/roll", json={"banner": "bees", "free": True}, headers=h)
     assert r.json()["error"]["code"] == "no_free_roll"
     info = (await client.get("/gacha/banners", headers=h)).json()["banners"]
@@ -339,140 +371,6 @@ def test_bee_banner_rates_and_pity():
     assert out == ["thien"]
     out, _ = b.roll(1, {"thien": 0, "huyen": 29}, rng)
     assert out[0] in ("huyen", "dia", "thien")
-
-
-# ------------------------------------------------------------------ pollination (spec 10.2.2)
-async def test_pollination_never_grows_a_plant_without_an_answer(client, db, frozen):
-    h, uid = await player(client, db)
-    await client.get("/hive", headers=h)
-    for kind in ("hai_trieu", "hoa", "thuy_linh"):
-        await give_bee(db, uid, kind, role="pollinate")
-    p3 = await put(db, uid, 0, 0, "花", stage=3)
-    p4 = await put(db, uid, 1, 0, "水", stage=4)
-    p1 = await put(db, uid, 2, 0, "火", stage=2)
-    for _ in range(12):
-        frozen.advance(hours=6)
-        await client.get("/garden", headers=h)
-    a, _ = await plot_of(client, h, p3.id)
-    b, _ = await plot_of(client, h, p4.id)
-    c, _ = await plot_of(client, h, p1.id)
-    assert a["pollinated"] and b["pollinated"]
-    assert a["stage"] == 3 and b["stage"] == 4          # still the same stage after days of bees
-    assert not c["pollinated"] and c["pollen"] == 0 and c["stage"] == 2   # below Ra hoa: bees ignore it
-    r = await client.post("/garden/harvest", json={"plot_id": p4.id}, headers=h)
-    assert r.json()["error"]["code"] == "not_ripe"
-    # only a right answer moves it on
-    res = await answer_garden(client, h, p3.id, right=False)
-    assert res["plot"]["stage"] == 3
-    frozen.advance(minutes=6)
-    res = await answer_garden(client, h, p3.id, right=True)
-    assert res["plot"]["stage"] == 4
-
-
-async def test_pollination_cut_is_at_most_25_percent(client, db, frozen, monkeypatch):
-    """The running wait shrinks by at most 25 % of the scheduled wait, whatever the bees, even
-    if balance/bees.json asked for more."""
-    h, uid = await player(client, db)
-    await client.get("/hive", headers=h)
-    cfg = dict(beesys.cfg())
-    cfg["pollination"] = {**cfg["pollination"], "review_wait_cut": 0.9}
-    monkeypatch.setattr(beesys, "cfg", lambda: cfg)
-    assert beesys.review_cut() == 0.25
-    rng = random.Random(3)
-    kinds = list(catalog.bees())
-    for trial in range(6):
-        for b in (await db.execute(select(Bee).where(Bee.user_id == uid))).scalars().all():
-            await db.delete(b)
-        await db.commit()
-        for _ in range(rng.randint(1, 6)):
-            await give_bee(db, uid, rng.choice(kinds), role="pollinate", level=rng.randint(1, 20))
-        hanzi = rng.choice(["花", "水", "火", "山", "茶"])
-        stage = rng.choice([3, 4])
-        p = await put(db, uid, 0, 0, hanzi, stage=stage)
-        hive = await db.get(Hive, uid)
-        await db.refresh(hive)
-        hive.pollen_checked_at = clock.now()
-        await db.commit()
-        start = clock.now()
-        scheduled = p.next_review_at - start
-        for _ in range(48):
-            frozen.advance(hours=1)
-            v, _g = await plot_of(client, h, p.id)
-            if v["pollinated"]:
-                break
-        assert v["pollinated"], trial
-        db.expire_all()
-        q = await db.get(Plot, p.id)
-        new_wait = q.next_review_at - start
-        assert new_wait >= scheduled * 0.75 - dt.timedelta(seconds=1), (trial, new_wait, scheduled)
-        assert new_wait <= scheduled
-        assert q.stage == stage
-
-
-async def test_pollinated_while_due_cuts_the_next_wait(client, db, frozen):
-    h, uid = await player(client, db)
-    await client.get("/hive", headers=h)
-    await give_bee(db, uid, "hai_trieu", role="pollinate", level=20)
-    p = await put(db, uid, 0, 0, "花", stage=3, wait_days=0)   # due right now
-    for _ in range(10):
-        frozen.advance(hours=1)
-        v, _ = await plot_of(client, h, p.id)
-        if v["pollinated"]:
-            break
-    assert v["pollinated"]
-    db.expire_all()
-    assert (await db.get(Plot, p.id)).pollen_boost
-    res = await answer_garden(client, h, p.id, right=True)
-    assert res["plot"]["stage"] == 4
-    normal = srs.wait_after_reaching(4).total_seconds()
-    left = res["plot"]["seconds_until_due"]
-    assert normal * 0.75 - 2 <= left <= normal * 0.75 + 2
-    db.expire_all()
-    assert not (await db.get(Plot, p.id)).pollen_boost       # used once
-
-
-async def test_water_bee_is_faster_next_to_water(client, db, frozen):
-    h, uid = await player(client, db)
-    await client.get("/hive", headers=h)
-    await give_bee(db, uid, "thuy_linh", role="pollinate")
-    wet = await put(db, uid, 0, 0, "花", stage=3)
-    await put(db, uid, 1, 0, "水", stage=1)                  # a 水 neighbour (stage 1: not pollinated itself)
-    dry = await put(db, uid, 0, 2, "茶", stage=3)            # Mộc, no water nearby
-    frozen.advance(hours=2)
-    a, _ = await plot_of(client, h, wet.id)
-    b, _ = await plot_of(client, h, dry.id)
-    assert a["pollen"] == pytest.approx(b["pollen"] * 1.5, rel=0.02) and a["pollen"] > 0
-
-
-async def test_pollinated_harvest_gives_more(client, db, frozen):
-    h, uid = await player(client, db)
-    await client.get("/hive", headers=h)
-    p = await put(db, uid, 0, 0, "花", stage=5)
-    q = await db.get(Plot, p.id)
-    q.pollinated, q.pollen = True, 100.0
-    await db.commit()
-    r = (await client.post("/garden/harvest", json={"plot_id": p.id}, headers=h)).json()
-    assert r["fruits_gained"] == 5 and r["pollinated"]
-    p2 = await put(db, uid, 1, 0, "水", stage=5)
-    r = (await client.post("/garden/harvest", json={"plot_id": p2.id}, headers=h)).json()
-    assert r["fruits_gained"] == 3 and not r["pollinated"] and r["spirit_fruit"] == 0
-
-
-async def test_pollinate_quest_and_bee_xp(client, db, frozen):
-    h, uid = await player(client, db)
-    await client.get("/hive", headers=h)
-    await client.get("/quests", headers=h)
-    q = await db.get(Quest, (uid, "lp1_trung_ong"))
-    q.state = "claimed"
-    db.add(Quest(user_id=uid, quest_id="lp3_thu_phan", state="active", progress={"n": 0}))
-    b = await give_bee(db, uid, "hai_trieu", role="pollinate")
-    await db.commit()
-    await put(db, uid, 0, 0, "花", stage=3)
-    frozen.advance(hours=10)
-    await client.get("/garden", headers=h)
-    db.expire_all()
-    assert (await db.get(Quest, (uid, "lp3_thu_phan"))).state == "done"
-    assert (await db.get(Bee, b.id)).xp == beesys.cfg()["xp_pollinated_plant"]
 
 
 # ------------------------------------------------------------------ guard slots (spec 7.3, 10.2.3)
@@ -506,16 +404,3 @@ def test_guard_slot_table_matches_spec():
     assert beesys.cfg()["guard"]["slots_by_realm"] == {"pham_nhan": 0, "luyen_khi": 2, "truc_co": 3,
                                                         "kim_dan": 4, "nguyen_anh": 5, "hoa_than": 6,
                                                         "luyen_hu": 7, "hop_the": 8, "dai_thua": 9}
-
-
-async def test_pollinator_cap(client, db):
-    h, uid = await player(client, db)
-    await client.get("/hive", headers=h)
-    hive = await db.get(Hive, uid)
-    await db.refresh(hive)
-    hive.cells = 10
-    await db.commit()
-    ids = [(await give_bee(db, uid, "hoa")).id for _ in range(7)]
-    codes = [(await client.post("/bees/role", json={"bee_id": i, "role": "pollinate"}, headers=h)).status_code
-             for i in ids]
-    assert codes.count(200) == 6 and codes[-1] == 400

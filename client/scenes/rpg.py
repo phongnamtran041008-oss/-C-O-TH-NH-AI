@@ -67,7 +67,7 @@ class CharacterScene(Scene):
             else:
                 look = sprites.character(ch.get("appearance", {}))[("down", 0)]
                 ui.image(look, x + 38, y + 44, zoom=2, anchor="center")
-            from .library import portrait_frame, title_after
+            from .books import portrait_frame, title_after
             me = self.game.state.me
             portrait_frame(ui, me.get("frame"), x + 12, y + 14, 52, 60)
             title_after(ui, me.get("title"), ui.text(ch.get("display_name", ""), x + 72, y + 14, 10), y + 17)
@@ -139,9 +139,8 @@ class CharacterScene(Scene):
                 else:
                     ui.image(sprites.pet(pet["pet_type"], int(ui.time * 3) % 2), x + 24, py_ + 8, zoom=1.5,
                              anchor="center")
-                ui.text(f"{pet['name_vi']}{'' if art2.on() else ' ' + pet['hanzi']} · "
-                        f"{T.PETS_LEVEL.format(l=pet['level'], m=pet['max_level'])}",
-                        x + 38, py_ + 2, 7, "#2B2B2B", kind="han")
+                ui.text(f"{pet['name_vi']} · {T.PETS_LEVEL.format(l=pet['level'], m=pet['max_level'])}",
+                        x + 38, py_ + 2, 7, "#2B2B2B")
                 if ui.hover(x + 12, py_, 200, 16):
                     ui.set_tooltip(pet["skill_vi"])
             if ui.button("ch_pets", x + 14, py_ + 18, 70, 14, T.HUD_PETS + " (O)", size=7):
@@ -391,17 +390,8 @@ class ForgeScene(Scene):
                 ui.fill(x + 10, ry, 3, 18, e["color"])
                 lvl = f" +{e['enhance']}" if e["enhance"] else ""
                 ui.text(e["name_vi"] + lvl, x + 18, ry + 1, 8, e["color"])
-                carved = "".join(c["hanzi"] for c in e.get("inscriptions", []))   # Khắc Văn (stage 8)
-                if carved and not art2.on():      # carved characters: old-game Chinese, hidden in v2
-                    ui.text(carved, x + 22 + ui.text_size(e["name_vi"] + lvl, 8)[0], ry + 5, 7, "#C99A3A", kind="han",
-                            anchor="midleft")
                 stats = " ".join(f"{T.STATS_VI.get(k, k)} {v}" for k, v in e["stats"].items())
                 ui.text(f"{e['slot_vi']} · {e['rarity_vi']} · {stats}", x + 18, ry + 11, 6, "#5A5A5A")
-                if ui.button(f"forge_ins_{e['id']}", x + w - 134, ry + 2, 36, 14, T.INSCRIBE_BUTTON, size=7,
-                             tooltip=f"{len(e.get('inscriptions', []))}/{e.get('inscribe_slots', 1)}"):
-                    from .inscribe import InscribeScene
-                    self.game.push(InscribeScene(self.game, e["id"], on_close=self.reload))
-                    return
                 n = e.get("next_enhance")
                 if n:
                     ui.text(T.FORGE_COST.format(p=n["success_pct"], s=n["stones"], q=n["material_qty"],
@@ -513,11 +503,6 @@ class MonsterBookScene(Scene):
         ui.dim()
         x, y, w, h = 40, 24, 400, 226
         ui.panel(x, y, w, h, T.MONSTER_BOOK)
-        if ui.button("mb_to_disc", x + 12, y + 10, 90, 13, T.DISCOVERY_BOOK, size=7):
-            from .book import BookScene
-            self.close()
-            self.game.push(BookScene(self.game))
-            return
         if self.data:
             ui.text(f"{self.data['found']}/{self.data['total']}", x + w - 14, y + 12, 8, "#BC4749", anchor="topright")
             per = 3

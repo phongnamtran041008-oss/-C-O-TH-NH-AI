@@ -29,11 +29,6 @@ def materials() -> dict:
 
 
 @lru_cache(maxsize=1)
-def skills() -> dict:
-    return _load("skills.json")
-
-
-@lru_cache(maxsize=1)
 def quests() -> dict:
     return _load("quests.json")
 
@@ -101,7 +96,7 @@ def math_drops() -> dict:
 
 
 def stack_item(item_id: str) -> dict | None:
-    """Stackable things in inventory_items: pills, materials (incl. manuals), the math
+    """Stackable things in inventory_items: pills, materials, the math
     edition's materials and ghi chú lỗi sai, fishing rods, baits and caught fish
     (`fish_<species>`)."""
     if item_id in pills():
@@ -126,7 +121,3 @@ def stack_item(item_id: str) -> dict | None:
 def item_name(item_id: str) -> str:
     info = stack_item(item_id) or equipment()["items"].get(item_id)
     return info["name_vi"] if info else item_id
-
-
-def skill_for_word(hanzi: str) -> str | None:
-    return next((sid for sid, s in skills()["skills"].items() if s["hanzi"] == hanzi), None)

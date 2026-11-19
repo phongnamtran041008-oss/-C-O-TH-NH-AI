@@ -1,6 +1,6 @@
-"""Inventory, equipment, enhancing, pills and skill manuals (spec 8.4, 12). Every change of
-an item goes through inventory.change_item (audited, never negative); new equipment
-pieces are audited too."""
+"""Inventory, equipment, enhancing and pills (spec 12). Every change of an item goes
+through inventory.change_item (audited, never negative); new equipment pieces are audited
+too."""
 from __future__ import annotations
 
 import random
@@ -9,8 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import balance, clock
-from ..learning.wordbank import bank
-from ..models import AuditLog, Character, Collection, EquipmentInstance, InventoryItem, Skill, User
+from ..models import AuditLog, Character, EquipmentInstance, InventoryItem, User
 from . import catalog, cultivation, inventory
 
 
@@ -51,9 +50,7 @@ def equipment_view(e: EquipmentInstance) -> dict:
             "slot_vi": eq["slots"].get(item.get("slot"), ""), "kind": item.get("kind"),
             "rarity": e.rarity, "rarity_vi": rar["name_vi"], "color": rar["color"], "enhance": lvl,
             "stats": cultivation.instance_stats(e), "equipped": e.equipped_slot, "desc_vi": item.get("desc_vi", ""),
-            "next_enhance": nxt, "inscriptions": list(e.inscriptions or []),
-            "inscribe_slots": int(balance.load("inscription")["slots"].get(e.rarity, 1)),
-            "sell_price": sell_price(e)}
+            "next_enhance": nxt, "sell_price": sell_price(e)}
 
 
 def sell_price(e: EquipmentInstance) -> int:
@@ -93,28 +90,6 @@ async def stacks(db: AsyncSession, user_id: int) -> dict[str, int]:
     return out
 
 
-# ------------------------------------------------------------------ skills
-async def skill_list(db: AsyncSession, user_id: int) -> list[dict]:
-    """Learned Pháp Chữ with their level from the word's current mastery (spec 8.4)."""
-    sk = catalog.skills()
-    rows = {r.skill_id: r for r in (await db.execute(select(Skill).where(Skill.user_id == user_id))).scalars().all()}
-    out = []
-    b = bank()
-    for sid, s in sk["skills"].items():
-        w = b.by_hanzi.get(s["hanzi"])
-        col = (await db.execute(select(Collection).where(Collection.user_id == user_id,
-                                                         Collection.word_id == w.id))).scalar_one_or_none() if w else None
-        mastery = col.mastery if col else 0
-        level = sum(1 for m in sk["level_mastery"] if mastery >= m)
-        row = rows.get(sid)
-        if row is not None and row.level != max(1, level):
-            row.level = max(1, level)
-        out.append({"id": sid, "name_vi": s["name_vi"], "hanzi": s["hanzi"], "word_id": w.id if w else None,
-                    "learned": row is not None, "mastery": mastery, "level": level if row else 0,
-                    "qi": s["qi"], "cooldown": s["cooldown"], "effect": s["effect"], "desc_vi": s["desc_vi"]})
-    return out
-
-
 # ------------------------------------------------------------------ inventory view
 async def inventory_view(db: AsyncSession, user: User) -> dict:
     st = await stacks(db, user.id)
@@ -123,10 +98,9 @@ async def inventory_view(db: AsyncSession, user: User) -> dict:
         info = catalog.stack_item(iid) or {}
         items.append({"item_id": iid, "qty": qty, "name_vi": info.get("name_vi", iid), "kind": info.get("kind"),
                       "desc_vi": info.get("desc_vi", ""),
-                      "usable": info.get("kind") == "note" or (info.get("kind") in ("manual", "pill")
+                      "usable": info.get("kind") == "note" or (info.get("kind") == "pill"
                       and info.get("effect") not in ("breakthrough", "bee_food")),
-                      "sell_price": info.get("sell_price"),
-                      "hanzi": info.get("hanzi")})
+                      "sell_price": info.get("sell_price")})
     eq = (await db.execute(select(EquipmentInstance).where(EquipmentInstance.user_id == user.id)
                            .order_by(EquipmentInstance.id))).scalars().all()
     return {"items": items, "equipment": [equipment_view(e) for e in eq],
@@ -201,8 +175,6 @@ async def use(db: AsyncSession, user: User, item_id: str) -> dict:
     info = catalog.stack_item(item_id)
     if info is None:
         raise ItemError(404, "no_item", "Không có vật phẩm này.")
-    if info.get("kind") == "manual":
-        return await _learn(db, user, item_id, info)
     if info.get("kind") == "note":
         # A ghi chú lỗi sai (M7) is read, not spent: it opens the part of Tàng Thư Các that
         # explains the mistake the monster was making. Keeping it is what lets the player
@@ -250,28 +222,6 @@ async def _take_buff(db: AsyncSession, user: User, item_id: str, info: dict) -> 
     return {"used": item_id, "left": left, "buff": info["buff"], "seconds": seconds, "buffs": buffs.view(user, now)}
 
 
-async def _learn(db: AsyncSession, user: User, item_id: str, info: dict) -> dict:
-    sk = catalog.skills()
-    sid = info["skill"]
-    s = sk["skills"][sid]
-    if await db.get(Skill, (user.id, sid)) is not None:
-        raise ItemError(400, "already_learned", f"Bạn đã biết {s['name_vi']} rồi.")
-    w = bank().by_hanzi[s["hanzi"]]
-    col = (await db.execute(select(Collection).where(Collection.user_id == user.id,
-                                                     Collection.word_id == w.id))).scalar_one_or_none()
-    mastery = col.mastery if col else 0
-    if mastery < sk["unlock_mastery"]:
-        raise ItemError(400, "mastery_low",
-                        f"Cần thông thạo chữ {s['hanzi']} từ {sk['unlock_mastery']}% (hiện {mastery}%). "
-                        "Trồng và ôn chữ này trong vườn nhé.")
-    await inventory.consume_item(db, user.id, item_id, 1, "learn_skill", sid)
-    db.add(Skill(user_id=user.id, skill_id=sid, level=1, unlocked_at=clock.now()))
-    await db.flush()
-    from ..realtime.world import world
-    world.set_skills(user.id, await skill_list(db, user.id))
-    return {"learned": sid, "name_vi": s["name_vi"]}
-
-
 async def sell(db: AsyncSession, user: User, item_id: str, qty: int) -> dict:
     """The village buys materials and foods that have a sell_price (Linh Mật, Sáp Ong...)."""
     info = catalog.stack_item(item_id)
@@ -284,5 +234,7 @@ async def sell(db: AsyncSession, user: User, item_id: str, qty: int) -> dict:
     except inventory.InsufficientFunds as e:
         raise ItemError(400, "not_enough", f"Chỉ có {e.have} {info['name_vi']}.")
     earned = info["sell_price"] * qty
+    from . import pets   # Lợn (stage 8): the village pays more
+    earned = int(round(earned * (1 + await pets.skill_value(db, user.id, "sell_stones"))))
     stones = await inventory.change_currency(db, user.id, "spirit_stones", earned, "sell_item", item_id)
     return {"sold": qty, "item_id": item_id, "earned": earned, "left": left, "spirit_stones": stones}

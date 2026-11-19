@@ -360,6 +360,7 @@ Quy tắc sinh câu:
 - Mọi câu trả lời ở chiến đấu/ải/bí cảnh đều cập nhật `collection` (times_correct/wrong, mastery ±2) nhưng **không đổi giai đoạn cây** trong vườn. Giai đoạn cây chỉ đổi khi ôn ở vườn (đúng lịch SRS của bản 1).
 - Từ bị trả lời sai ở chiến đấu được đánh dấu "cần ôn", hiện chấm đỏ trên cây tương ứng trong vườn.
 - Màn **Sổ Lỗi** (trong Tàng Thư Các) liệt kê các từ hay sai nhất kèm nút luyện riêng.
+  (Đã bỏ cùng trò học chữ cũ.)
 
 ### 8.4 Kỹ năng = chữ
 - Kỹ năng chiến đấu là các **Pháp Chữ**: mỗi kỹ năng gắn với một chữ trong data, mở khóa khi chữ đó có mastery ≥ 50 và người chơi có bí kíp tương ứng (rơi từ quái, mua ở Tàng Thư Các).
@@ -404,6 +405,11 @@ Mỗi chữ trong data được gán một vai trò. Chữ đặc biệt gán ta
 - Quái trong ải có kháng/yếu nguyên tố (vd "Mực Đặc" kháng Thủy, yếu Hỏa), thể hiện trên thẻ thông tin quái.
 
 ### 9.3 Tàng Thư Các và Bách Thảo Phổ
+
+> Đã bỏ cùng trò học chữ cũ (2026-11-20): Bách Thảo Phổ, Sổ Phát Hiện, Sổ Lỗi chữ, ô tìm kiếm và bí kíp trên kệ
+> Thủ Thư. Tàng Thư Các bây giờ là kinh thư toán (`/math/library`) cùng kệ phổ còn lại (Yêu Quái, Ong, Ngư,
+> Bảo Vật, Linh Thú: mốc thưởng, danh hiệu, khung) và kệ đan phương (`/books`, docs/API.md giai đoạn 7).
+
 **Tàng Thư Các** là thư viện chung trong game (một tòa nhà ở Trúc Lâm Thôn và một nút trên menu), chứa các "phổ" (bộ sưu tập):
 - **Bách Thảo Phổ** (cây): mỗi trang một loại cây — sprite pixel theo 5 giai đoạn, chữ Hán to, pinyin, nút nghe, nghĩa tiếng Việt, câu ví dụ, vai trò và chỉ số tower defense, mastery hiện tại, cấu tạo chữ (nếu có), lời bình của Trúc Lão. Cây chưa có hiện bóng đen với dấu "?". Cây ẩn (明, 林, 森, 好, 休, 吗...) chỉ hiện khung trống cho đến khi phát hiện.
 - **Ngư Phổ** (cá, mục 11), **Ong Phổ** (mục 10), **Yêu Quái Phổ** (quái đã gặp: tên, dạng câu hay hỏi, điểm yếu, vật phẩm rơi), **Linh Thú Phổ** (pet), **Bảo Vật Phổ** (trang bị, đan dược đã từng có), **Sổ Phát Hiện** (công thức ghép chữ), **Sổ Lỗi**.

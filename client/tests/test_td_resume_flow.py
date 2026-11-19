@@ -1,5 +1,6 @@
-"""Stage 7 through the real client UI, part 2: at the Thủ Thư in Trúc Lâm Thôn wear a title and
-an avatar frame, buy a bí kíp from her shelf, read the Bảo Vật Phổ; then start a level of Thủ
+"""Stage 7 through the real client UI, part 2: the Thủ Thư in Trúc Lâm Thôn opens the math
+scrolls; under them, on the shelf of phổ, wear a title and an avatar frame, buy an đan phương
+from her shelf, read the Bảo Vật Phổ; then start a level of Thủ
 Thành Toán, build towers by answering their questions, start a wave, close the game in the
 middle, open it again and continue the same run from the saved log to the end."""
 from __future__ import annotations
@@ -56,7 +57,10 @@ def run_resume_flow(workdir: Path, shots: Path | None = None) -> None:
                 break
             drv.press(pygame.K_RETURN)
             drv.step(20)
-        drv.wait(lambda: drv.top_is("LibraryScene") and top(drv).data is not None, 10, "Tàng Thư Các")
+        drv.wait(lambda: drv.top_is("LibraryListScene") and top(drv).data is not None, 10, "the math scrolls")
+        drv.shot("library_scrolls")
+        drv.press(pygame.K_ESCAPE)
+        drv.wait(lambda: drv.top_is("BooksScene") and top(drv).data is not None, 10, "the shelf of phổ")
         lib = top(drv)
         assert lib.data["at_desk"]
         # wear the title and the frame
@@ -66,24 +70,24 @@ def run_resume_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait(lambda: lib.data.get("frame") == "khung_muc", 5, "frame worn")
         assert drv.game.state.me["title"] == "Kẻ Săn Mực" and drv.game.state.me["frame"] == "khung_muc"
         drv.shot("library_badges")
-        # buy a manual from the shelf
+        # buy an đan phương from the shelf
         drv.click("lib_shop")
-        drv.wait_scene("LibraryShopScene")
-        drv.click("lib_buy_bi_kip_moc")
+        drv.wait_scene("BooksShopScene")
+        drv.click("lib_buy_dp_hoi_khi")
         drv.wait_api()
-        drv.wait(lambda: next(s for s in lib.data["shop"] if s["item_id"] == "bi_kip_moc")["have"] == 1, 5, "bought")
+        drv.wait(lambda: next(s for s in lib.data["shop"] if s["item_id"] == "dp_hoi_khi")["have"] == 1, 5, "bought")
         drv.shot("library_shop")
-        have = server.sql("select sum(quantity) from inventory_items where user_id=? and item_id='bi_kip_moc'", (uid,))
+        have = server.sql("select sum(quantity) from inventory_items where user_id=? and item_id='dp_hoi_khi'", (uid,))
         assert have[0][0] == 1
         drv.press(pygame.K_ESCAPE)
-        drv.wait_scene("LibraryScene")
+        drv.wait_scene("BooksScene")
         drv.click("lib_open_treasure")
         drv.wait(lambda: drv.top_is("TreasureBookScene") and top(drv).data is not None, 5, "Bảo Vật Phổ")
         tb = top(drv).data
         assert any(e["id"] == "hoi_huyet_dan" and e["found"] for e in tb["entries"]) and tb["found"] >= 1
         drv.shot("bao_vat_pho")
         drv.press(pygame.K_ESCAPE)
-        drv.wait_scene("LibraryScene")
+        drv.wait_scene("BooksScene")
         drv.press(pygame.K_ESCAPE)
         drv.wait(lambda: drv.top_is("WorldScene"), 5, "back in the village")
         drv.shot("hud_title_frame")

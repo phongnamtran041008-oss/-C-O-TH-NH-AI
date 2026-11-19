@@ -2,15 +2,14 @@
 
 A bee hatches from a Trứng Ong (gacha, quests) into one cell of the hexagon hive in the
 abode. Every bee has exactly one role at a time:
-  * hive      — makes Linh Mật (and a little Sáp Ong), counted lazily when the hive is opened;
-  * pollinate — fills the pollen bar of flowering plants (stage >= 3) in the garden. A full
-                bar marks the plant "pollinated": 5 fruits instead of 3, a chance of Linh Quả,
-                and the review wait that is running (or the next one) is cut by at most 25 %.
-                Pollination never moves a plant to its next stage: only a right answer does;
-  * guard     — 2-5 of them (by realm) follow the character in the shared world and attack
-                monsters whose Mặc Thuẫn is already broken (realtime/combat.py).
-Feeding (Linh Mật, word fruits, Linh Quả) gives XP and, with the species' favourite food,
-bond. Bees of the same element in neighbouring cells resonate (small bonus to everything).
+  * hive  — makes Linh Mật (and a little Sáp Ong), counted lazily when the hive is opened;
+  * guard — 2-9 of them (by realm) follow the character in the shared world and attack
+            monsters whose Mặc Thuẫn is already broken (realtime/combat.py).
+(A bee saved with a role that no longer exists — the old garden's "pollinate" — is read
+as a hive bee.)
+Feeding (Linh Mật, fish, herbs, the bee pill) gives XP and, with the species' favourite
+food, bond. Bees of the same element in neighbouring cells resonate (small bonus to
+everything).
 """
 from __future__ import annotations
 
@@ -23,12 +22,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import balance, clock
 from ..config import settings
-from ..learning.wordbank import bank
-from ..models import Bee, Character, CodexEntry, Collection, Fruit, Hive, Plot, User
+from ..models import Bee, Character, CodexEntry, Hive, User
 from . import catalog, inventory
 
-ROLES = ("hive", "pollinate", "guard")
-MAX_REVIEW_CUT = 0.25   # spec 10.2: hard cap, whatever balance/bees.json says (see DECISIONS.md)
+ROLES = ("hive", "guard")
 
 
 class BeeError(Exception):
@@ -106,14 +103,13 @@ def xp_to_next(level: int) -> int | None:
     return lv["xp_base"] + lv["xp_per_level"] * level
 
 
-def power(bee: Bee, mastery: int = 0) -> float:
+def power(bee: Bee) -> float:
     """How strong this bee is compared with a level-1 Phàm bee of the same species."""
     c = cfg()
     s = sp(bee)
     lvl = 1 + c["level"]["stat_per_level"] * (bee.level - 1)
     bond = 1 + c["bond"]["stat_bonus_at_max"] * min(bee.bond, c["bond"]["max"]) / c["bond"]["max"]
-    word = 1 + c["word_mastery_bonus_at_100"] * max(0, min(100, mastery)) / 100
-    return rarity_mult(s["rarity"]) * lvl * bond * word
+    return rarity_mult(s["rarity"]) * lvl * bond
 
 
 def resonance(bee: Bee, by_slot: dict[int, Bee]) -> float:
@@ -131,17 +127,13 @@ def hive_level_info(level: int) -> dict:
     return levels[max(0, min(len(levels), level) - 1)]
 
 
-def honey_per_hour(bee: Bee, res: float, hive_level: int, mastery: int = 0) -> float:
-    return sp(bee)["honey"] * power(bee, mastery) * (1 + res) * hive_level_info(hive_level)["honey_mult"]
+def honey_per_hour(bee: Bee, res: float, hive_level: int) -> float:
+    return sp(bee)["honey"] * power(bee) * (1 + res) * hive_level_info(hive_level)["honey_mult"]
 
 
-def pollen_per_hour(bee: Bee, res: float, mastery: int = 0) -> float:
-    return sp(bee)["pollen"] * power(bee, mastery) * (1 + res)
-
-
-def guard_stats(bee: Bee, res: float = 0.0, mastery: int = 0) -> dict:
+def guard_stats(bee: Bee, res: float = 0.0) -> dict:
     s = sp(bee)
-    k = power(bee, mastery) * (1 + res)
+    k = power(bee) * (1 + res)
     g = s["guard"]
     return {"hp": int(round(g["hp"] * k)), "atk": round(g["atk"] * k, 1), "cd": g["cd"]}
 
@@ -150,32 +142,20 @@ def guard_slots(realm: str) -> int:
     return int(cfg()["guard"]["slots_by_realm"].get(realm, 0))
 
 
-def review_cut() -> float:
-    """Share of a review wait that pollination removes; never more than 25 % (spec 10.2)."""
-    return max(0.0, min(MAX_REVIEW_CUT, float(cfg()["pollination"]["review_wait_cut"])))
-
-
 def _speed() -> float:
-    """Production follows TIME_SCALE, like the SRS waits it is meant to fit into."""
+    """Production follows TIME_SCALE, like every other timer of the game."""
     return float(settings.time_scale)
 
 
 # ------------------------------------------------------------------ loading
 async def bees_of(db: AsyncSession, user_id: int) -> list[Bee]:
-    return list((await db.execute(select(Bee).where(Bee.user_id == user_id).order_by(Bee.id))).scalars().all())
-
-
-async def masteries(db: AsyncSession, user_id: int, bees: list[Bee]) -> dict[str, int]:
-    ids = {sp(b)["word_id"] for b in bees}
-    if not ids:
-        return {}
-    rows = (await db.execute(select(Collection.word_id, Collection.mastery).where(
-        Collection.user_id == user_id, Collection.word_id.in_(ids), Collection.introduced.is_(True)))).all()
-    return {w: m for w, m in rows}
-
-
-def _mastery(bee: Bee, mast: dict[str, int]) -> int:
-    return mast.get(sp(bee)["word_id"], 0)
+    """A user's bees. A role that no longer exists (the old garden's "pollinate") becomes
+    "hive" here, so every reader sees honey bees and the row is fixed on the next commit."""
+    bees = list((await db.execute(select(Bee).where(Bee.user_id == user_id).order_by(Bee.id))).scalars().all())
+    for b in bees:
+        if b.role not in ROLES:
+            b.role = "hive"
+    return bees
 
 
 async def get_hive(db: AsyncSession, user_id: int) -> Hive | None:
@@ -188,7 +168,7 @@ async def ensure_hive(db: AsyncSession, user: User) -> Hive:
     now = clock.now()
     if hive is None:
         hive = Hive(user_id=user.id, layout={}, level=1, decorations=[], honey=0.0, wax=0.0,
-                    cells=cfg()["hive"]["cells_start"], honey_checked_at=now, pollen_checked_at=now)
+                    cells=cfg()["hive"]["cells_start"], honey_checked_at=now)
         db.add(hive)
         await db.flush()
     flags = dict(user.flags or {})
@@ -200,7 +180,7 @@ async def ensure_hive(db: AsyncSession, user: User) -> Hive:
 
 
 # ------------------------------------------------------------------ honey (role: hive)
-def refresh_honey(hive: Hive, bees: list[Bee], mast: dict[str, int], now: dt.datetime) -> float:
+def refresh_honey(hive: Hive, bees: list[Bee], now: dt.datetime) -> float:
     """Lazy production since the last look (spec 10.2.1). Returns Linh Mật made now."""
     last = hive.honey_checked_at or now
     hive.honey_checked_at = now
@@ -208,119 +188,13 @@ def refresh_honey(hive: Hive, bees: list[Bee], mast: dict[str, int], now: dt.dat
     if secs <= 0:
         return 0.0
     by_slot = {b.hive_slot: b for b in bees if b.hive_slot is not None}
-    rate = sum(honey_per_hour(b, resonance(b, by_slot), hive.level, _mastery(b, mast))
+    rate = sum(honey_per_hour(b, resonance(b, by_slot), hive.level)
                for b in bees if b.role == "hive") / 3600 * _speed()
     cap = hive_level_info(hive.level)["capacity"]
     made = max(0.0, min(cap - (hive.honey or 0.0), rate * secs))
     hive.honey = (hive.honey or 0.0) + made
     hive.wax = (hive.wax or 0.0) + made * cfg()["hive"]["wax_per_honey"]
     return made
-
-
-# ------------------------------------------------------------------ pollination (role: pollinate)
-def plant_elements(hanzi: str) -> set[str]:
-    return {el for el, words in cfg()["pollination"]["plant_elements"].items() if hanzi in words}
-
-
-def _affinity(element: str, p: Plot, plots_by_xy: dict) -> float:
-    """Ong hệ Thủy thụ phấn nhanh hơn cạnh cây 水: the plant itself or a neighbour shares the element."""
-    from ..garden import combos
-    near = [p] + [plots_by_xy.get((p.x + dx, p.y + dy)) for dx, dy in combos.NEIGHBOURS]
-    for q in near:
-        if q is not None and q.word_id and element in plant_elements(bank().get(q.word_id).hanzi):
-            return float(cfg()["pollination"]["affinity_mult"])
-    return 1.0
-
-
-def eligible(p: Plot) -> bool:
-    return bool(p.unlocked and p.word_id and p.stage >= cfg()["pollination"]["min_stage"] and not p.pollinated)
-
-
-def _on_pollinated(p: Plot, at: dt.datetime, plots: list[Plot]) -> None:
-    """Full bar: cut the review wait that is running now by at most 25 %, or keep the cut
-    for the next wait if the plant is already due (spec 10.2.2)."""
-    from ..garden import combos
-    from ..learning import srs
-    p.pollinated, p.pollen = True, 100.0
-    p.pollen_boost = False
-    if p.stage >= srs.RIPE:
-        return
-    full = srs.wait_after_reaching(p.stage)
-    if p.next_review_at is not None and p.next_review_at > at and full is not None:
-        wait = full * combos.wait_multiplier(plots, p)
-        p.next_review_at = max(at, p.next_review_at - wait * review_cut())
-    else:
-        p.pollen_boost = True
-
-
-def run_pollination(plots: list[Plot], rates: list[tuple[str, float]], t0: dt.datetime,
-                    t1: dt.datetime) -> list[tuple[Plot, dt.datetime]]:
-    """Advances every eligible plant's pollen from t0 to t1. rates = (element, % per second)
-    for each pollinating bee; each bee spreads its work evenly over the eligible plants.
-    Returns the plants that filled up and when. Only pollen changes — never the stage."""
-    done: list[tuple[Plot, dt.datetime]] = []
-    if not rates or t1 <= t0:
-        return done
-    by_xy = {(p.x, p.y): p for p in plots}
-    t = t0
-    for _ in range(len(plots) + 1):
-        el = [p for p in plots if eligible(p)]
-        if not el:
-            break
-        per = {p.id: sum(r * _affinity(e, p, by_xy) for e, r in rates) / len(el) for p in el}
-        need = {p.id: max(0.0, 100.0 - (p.pollen or 0.0)) / per[p.id] for p in el if per[p.id] > 0}
-        if not need:
-            break
-        step = min(need.values())
-        left = (t1 - t).total_seconds()
-        if step >= left:
-            for p in el:
-                p.pollen = min(100.0, (p.pollen or 0.0) + per[p.id] * left)
-            break
-        t = t + dt.timedelta(seconds=step)
-        for p in el:
-            p.pollen = min(100.0, (p.pollen or 0.0) + per[p.id] * step)
-            if need.get(p.id, 1e18) <= step + 1e-9:
-                _on_pollinated(p, t, plots)
-                done.append((p, t))
-    return done
-
-
-async def sync_garden(db: AsyncSession, user_id: int, plots: list[Plot], now: dt.datetime | None = None) -> list[dict]:
-    """Brings pollination up to now. Called before anything reads or changes the garden."""
-    now = now or clock.now()
-    hive = await db.get(Hive, user_id)
-    if hive is None:
-        return []
-    last = hive.pollen_checked_at or now
-    hive.pollen_checked_at = now
-    bees = [b for b in await bees_of(db, user_id) if b.role == "pollinate"]
-    if not bees or now <= last:
-        return []
-    mast = await masteries(db, user_id, bees)
-    all_bees = await bees_of(db, user_id)
-    by_slot = {b.hive_slot: b for b in all_bees if b.hive_slot is not None}
-    rates = [(sp(b)["element"], pollen_per_hour(b, resonance(b, by_slot), _mastery(b, mast)) / 3600 * _speed())
-             for b in bees]
-    done = run_pollination(plots, rates, last, now)
-    out = []
-    for p, _ in done:
-        out.append({"plot_id": p.id, "hanzi": bank().get(p.word_id).hanzi})
-    if done:
-        for b in bees:
-            await add_bee_xp(db, b, cfg()["xp_pollinated_plant"] * len(done))
-        from . import quests
-        await quests.on_event(db, user_id, "pollinate", "", len(done))
-    return out
-
-
-def harvest_bonus(p: Plot, rng: random.Random) -> tuple[int, int]:
-    """(fruits, Linh Quả) for a harvest; a pollinated plant gives more (spec 10.2.2)."""
-    po = cfg()["pollination"]
-    if not p.pollinated:
-        return balance.garden()["harvest_fruits"], 0
-    rar = bank().get(p.word_id).rarity
-    return po["harvest_fruits_pollinated"], int(rng.random() < po["spirit_fruit_chance"].get(rar, 0.25))
 
 
 # ------------------------------------------------------------------ XP, levels, codex
@@ -395,37 +269,49 @@ async def _milestones(db: AsyncSession, user: User, found: int) -> list[dict]:
 def species_public(kind: str) -> dict:
     s = species()[kind]
     c = cfg()
-    return {"id": kind, "name_vi": s["name_vi"], "hanzi": s["hanzi"], "pinyin": s["pinyin"],
+    return {"id": kind, "name_vi": s["name_vi"],
             "rarity": s["rarity"], "rarity_vi": c["rarity_names_vi"][s["rarity"]],
             "rarity_color": c["rarity_colors"][s["rarity"]],
             "element": s["element"], "element_vi": c["element_names_vi"][s["element"]],
             "element_color": c["element_colors"][s["element"]],
             "skill": s["skill"]["type"], "skill_vi": s["skill"]["desc_vi"], "look": s["look"],
-            "word": {"id": s["word_id"], "hanzi": s["word_hanzi"], "pinyin": s["word_pinyin"], "vi": s["word_vi"]},
-            "real_word": s["real_word"], "desc_vi": s["desc_vi"]}
+            "desc_vi": s["desc_vi"]}
 
 
-def bee_view(b: Bee, by_slot: dict[int, Bee], hive_level: int, mast: dict[str, int],
-             favorite_known: bool = False) -> dict:
+def bee_view(b: Bee, by_slot: dict[int, Bee], hive_level: int, favorite_known: bool = False) -> dict:
     res = resonance(b, by_slot)
-    m = _mastery(b, mast)
     s = sp(b)
     return {**species_public(b.bee_type), "id": b.id, "species": b.bee_type, "level": b.level, "xp": b.xp,
             "xp_next": xp_to_next(b.level), "bond": b.bond, "bond_max": cfg()["bond"]["max"], "role": b.role,
             "role_vi": cfg()["role_names_vi"][b.role], "slot": b.hive_slot,
-            "resonance_pct": int(round(res * 100)), "word_mastery": m,
-            "honey_per_hour": round(honey_per_hour(b, res, hive_level, m) * _speed(), 2),
-            "pollen_per_hour": round(pollen_per_hour(b, res, m) * _speed(), 1),
-            "guard": guard_stats(b, res, m),
+            "resonance_pct": int(round(res * 100)),
+            "honey_per_hour": round(honey_per_hour(b, res, hive_level) * _speed(), 2),
+            "guard": guard_stats(b, res),
             "favorite_known": favorite_known,
             "favorite": _food_label(s["favorite"]) if favorite_known else None,
             "favorite_hint_vi": s["favorite_hint_vi"]}
 
 
 def _food_label(food: str) -> str:
-    if food.startswith("fruit:"):
-        return f"Quả chữ {food[6:]}"
     return catalog.item_name(food)
+
+
+def _pill_foods() -> dict:
+    """Pills brewed for bees (balance/alchemy.json bee_food)."""
+    return balance.load("alchemy").get("bee_food", {})
+
+
+def food_xp(food: str) -> int | None:
+    """Base XP of one bite of this food, or None when bees do not eat it. Foods: the items
+    listed in balance/bees.json "feed", every caught fish (by its rarity) and the bee pills."""
+    feed = cfg()["feed"]
+    if food in _pill_foods():
+        return int(_pill_foods()[food]["xp"])
+    if food.startswith("fish_") and food[5:] in catalog.fish():
+        return feed["fish"].get(catalog.fish()[food[5:]]["rarity"])
+    if food != "fish" and food in feed and catalog.stack_item(food) is not None:
+        return int(feed[food]["xp"])
+    return None
 
 
 async def _favorites_known(db: AsyncSession, user_id: int) -> set[str]:
@@ -438,8 +324,7 @@ async def hive_view(db: AsyncSession, user: User) -> dict:
     now = clock.now()
     hive = await ensure_hive(db, user)
     bees = await bees_of(db, user.id)
-    mast = await masteries(db, user.id, bees)
-    refresh_honey(hive, bees, mast, now)
+    refresh_honey(hive, bees, now)
     c = cfg()
     h = c["hive"]
     by_slot = {b.hive_slot: b for b in bees if b.hive_slot is not None}
@@ -453,9 +338,7 @@ async def hive_view(db: AsyncSession, user: User) -> dict:
     unlocked_decor = [lv["decoration"] for lv in h["levels"][:hive.level] if lv.get("decoration")]
     eggs = [{"item_id": iid, "rarity": r, "name_vi": catalog.item_name(iid), "qty": st.get(iid, 0)}
             for r, iid in c["eggs"].items() if st.get(iid, 0) > 0]
-    fruits = (await db.execute(select(Fruit).where(Fruit.user_id == user.id, Fruit.count > 0))).scalars().all()
-    b = bank()
-    rate = sum(honey_per_hour(x, resonance(x, by_slot), hive.level, _mastery(x, mast))
+    rate = sum(honey_per_hour(x, resonance(x, by_slot), hive.level)
                for x in bees if x.role == "hive") * _speed()
     return {
         "level": hive.level, "level_max": len(h["levels"]),
@@ -471,15 +354,11 @@ async def hive_view(db: AsyncSession, user: User) -> dict:
                        if nxt_level else None),
         "decorations": [{"id": d, "name_vi": h["decorations_vi"][d], "on": d in (hive.decorations or [])}
                         for d in unlocked_decor],
-        "bees": [bee_view(x, by_slot, hive.level, mast, x.bee_type in fav) for x in bees],
+        "bees": [bee_view(x, by_slot, hive.level, x.bee_type in fav) for x in bees],
         "eggs": eggs,
-        "foods": [{"food": k, "name_vi": catalog.item_name(k), "qty": st.get(k, 0)}
-                  for k in ("linh_mat", "linh_qua", "ca_nho") if st.get(k, 0) > 0]
-                 + [{"food": f"fruit:{r.word_id}", "name_vi": f"Quả {b.get(r.word_id).hanzi}",
-                     "hanzi": b.get(r.word_id).hanzi, "qty": r.count} for r in fruits],
+        "foods": [{"food": k, "name_vi": catalog.item_name(k), "qty": q}
+                  for k, q in sorted(st.items()) if q > 0 and food_xp(k) is not None],
         "guard_slots": guard_slots(realm), "guard_used": sum(1 for x in bees if x.role == "guard"),
-        "pollinate_max": c["pollination"]["max_pollinators"],
-        "pollinate_used": sum(1 for x in bees if x.role == "pollinate"),
         "species_found": found, "species_total": len(species()),
         "server_time": now.isoformat() + "Z",
     }
@@ -510,13 +389,10 @@ async def _bee(db: AsyncSession, user: User, bee_id: int) -> Bee:
 
 
 async def _sync_all(db: AsyncSession, user: User, now: dt.datetime) -> tuple[Hive, list[Bee]]:
-    """Counts honey and pollen up to now with the current roles, before anything changes them."""
-    from ..garden import garden as gd
+    """Counts honey up to now with the current roles, before anything changes them."""
     hive = await ensure_hive(db, user)
     bees = await bees_of(db, user.id)
-    refresh_honey(hive, bees, await masteries(db, user.id, bees), now)
-    plots = await gd.ensure_plots(db, user.id)
-    await sync_garden(db, user.id, plots, now)
+    refresh_honey(hive, bees, now)
     return hive, bees
 
 
@@ -535,6 +411,8 @@ async def collect(db: AsyncSession, user: User) -> dict:
         got["linh_mat"] = await inventory.change_item(db, user.id, "linh_mat", honey, "hive_collect")
     if wax:
         got["sap_ong"] = await inventory.change_item(db, user.id, "sap_ong", wax, "hive_collect")
+    from . import quests
+    await quests.on_event(db, user.id, "collect_honey", "", 1)
     return {"honey": honey, "wax": wax, "totals": got, "hive_honey": round(hive.honey, 2), "pet_bonus": bonus}
 
 
@@ -567,8 +445,7 @@ async def hatch(db: AsyncSession, user: User, item_id: str, rng: random.Random |
     await quests.on_event(db, user.id, "hatch", "", 1)
     bees.append(bee)
     by_slot = {b.hive_slot: b for b in bees if b.hive_slot is not None}
-    mast = await masteries(db, user.id, bees)
-    return {"bee": bee_view(bee, by_slot, hive.level, mast, False), "new_species": new, "milestones": milestones}
+    return {"bee": bee_view(bee, by_slot, hive.level, False), "new_species": new, "milestones": milestones}
 
 
 async def move(db: AsyncSession, user: User, bee_id: int, slot: int) -> dict:
@@ -603,10 +480,6 @@ async def set_role(db: AsyncSession, user: User, bee_id: int, role: str) -> dict
             raise BeeError(400, "no_guard_slot", "Phàm Nhân chưa điều khiển được ong hộ vệ. Lên Luyện Khí đã nhé!")
         if sum(1 for x in bees if x.role == "guard") >= slots:
             raise BeeError(400, "guard_full", f"Cảnh giới hiện tại chỉ cho {slots} ong hộ vệ.")
-    if role == "pollinate":
-        mx = cfg()["pollination"]["max_pollinators"]
-        if sum(1 for x in bees if x.role == "pollinate") >= mx:
-            raise BeeError(400, "pollinate_full", f"Vườn chỉ cần tối đa {mx} ong thụ phấn.")
     b.role = role
     await db.flush()
     if role == "guard":
@@ -616,39 +489,20 @@ async def set_role(db: AsyncSession, user: User, bee_id: int, role: str) -> dict
     return await hive_view(db, user)
 
 
-def _pill_foods() -> dict:
-    """Pills brewed for bees (balance/alchemy.json bee_food)."""
-    return balance.load("alchemy")["bee_food"]
-
-
 async def feed(db: AsyncSession, user: User, bee_id: int, food: str) -> dict:
     c = cfg()
     b = await _bee(db, user, bee_id)
     s = sp(b)
-    if food.startswith("fruit:"):
-        word_id = food[6:]
-        w = bank().words.get(word_id)
-        if w is None:
-            raise BeeError(400, "bad_food", "Ong không ăn được thứ này.")
-        try:
-            await inventory.change_fruit(db, user.id, word_id, -1, "feed_bee", str(b.id))
-        except inventory.InsufficientFunds:
-            raise BeeError(400, "no_food", "Không còn quả chữ này.")
-        xp = c["feed"]["fruit"].get(w.rarity, 12)
-        fav = s["favorite"] == f"fruit:{w.hanzi}"
-    elif food in ("linh_mat", "linh_qua", "ca_nho") or food in _pill_foods():
-        try:
-            await inventory.consume_item(db, user.id, food, 1, "feed_bee", str(b.id))
-        except inventory.InsufficientFunds:
-            raise BeeError(400, "no_food", f"Không còn {catalog.item_name(food)}.")
-        if food in _pill_foods():   # Phong Vương Đan (stage 8)
-            xp = _pill_foods()[food]["xp"]
-            b.bond = min(c["bond"]["max"], b.bond + _pill_foods()[food]["bond"])
-        else:
-            xp = c["feed"][food]["xp"]
-        fav = s["favorite"] == food
-    else:
+    xp = food_xp(food)
+    if xp is None:
         raise BeeError(400, "bad_food", "Ong không ăn được thứ này.")
+    try:
+        await inventory.consume_item(db, user.id, food, 1, "feed_bee", str(b.id))
+    except inventory.InsufficientFunds:
+        raise BeeError(400, "no_food", f"Không còn {catalog.item_name(food)}.")
+    if food in _pill_foods():   # Phong Vương Đan (stage 8)
+        b.bond = min(c["bond"]["max"], b.bond + _pill_foods()[food]["bond"])
+    fav = s["favorite"] == food
     if fav:
         xp *= 2
     before = b.bond
@@ -760,7 +614,7 @@ async def bee_book(db: AsyncSession, user: User) -> dict:
                           "owned": owned.get(kind, 0), "favorite_known": bool(prog.get("favorite_known")),
                           "favorite": _food_label(s["favorite"]) if prog.get("favorite_known") else None,
                           "favorite_hint_vi": s["favorite_hint_vi"],
-                          "honey": s["honey"], "pollen": s["pollen"], "guard": s["guard"]})
+                          "honey": s["honey"], "guard": s["guard"]})
         out.append(entry)
     found = sum(1 for x in out if x["found"])
     claimed = set((user.flags or {}).get("bee_milestones", []))
@@ -782,7 +636,7 @@ def _milestone_vi(m: dict) -> str:
 
 def species_catalog() -> dict:
     """Public, static: what each species looks like (the client draws other players' bees)."""
-    return {"species": {k: {"name_vi": s["name_vi"], "hanzi": s["hanzi"], "rarity": s["rarity"],
+    return {"species": {k: {"name_vi": s["name_vi"], "rarity": s["rarity"],
                             "element": s["element"], "skill": s["skill"]["type"], "look": s["look"]}
                         for k, s in species().items()}}
 
@@ -796,12 +650,11 @@ async def guard_loadout(db: AsyncSession, user_id: int) -> list[dict]:
     guards = [b for b in bees if b.role == "guard"][:slots]
     if not guards:
         return []
-    mast = await masteries(db, user_id, guards)
     by_slot = {b.hive_slot: b for b in bees if b.hive_slot is not None}
     out = []
     for b in guards:
         s = sp(b)
-        st = guard_stats(b, resonance(b, by_slot), _mastery(b, mast))
+        st = guard_stats(b, resonance(b, by_slot))
         out.append({"id": b.id, "sp": b.bee_type, "level": b.level, "hp": st["hp"], "atk": st["atk"], "cd": st["cd"],
                     "skill": dict(s["skill"]), "element": s["element"]})
     return out

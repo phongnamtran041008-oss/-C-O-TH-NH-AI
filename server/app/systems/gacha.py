@@ -1,5 +1,5 @@
-"""Gacha (spec 6.1, 13): a pure rarity engine shared by every banner, plus the seed
-banner's server-side resolution. All randomness and all charging happen on the server."""
+"""Gacha (spec 6.1, 13): a pure rarity engine shared by every banner (bee eggs, Linh Thú).
+All randomness and all charging happen on the server (systems/gacha_service.py)."""
 from __future__ import annotations
 
 import random

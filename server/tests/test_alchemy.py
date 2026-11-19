@@ -1,17 +1,19 @@
 """Stage 8: luyện đan (spec 12.3). Đan phương, ingredients, the fee, the canh lửa minigame replayed
-on the server, pinyin of learned characters, quality, the furnace, and the pills it makes
-(Tụ Linh, Kháng Mực, Ngộ Tính, Phong Vương)."""
-import re
+on the server, quality from the fire alone, a little Tu Vi per brew, the furnace, and the pills it
+makes (Tụ Linh, Kháng Mực, Ngộ Tính, Phong Vương)."""
+import json
 from pathlib import Path
 
 import pytest
 from sqlalchemy import select
 
 from app import balance, clock
-from app.models import AlchemySession, Bee
+from app.learning import math_path
+from app.models import Bee
 from app.systems import alchemy_fire, catalog
-from tests.econ_helpers import common_word, fruits, give, give_fruit, player, qty, set_stones, stones
-from tests.helpers import answer_key, correct_answer
+from tests.econ_helpers import give, player, qty, set_stones, stones
+from tests.helpers import answer_key
+from tests.test_math_loop import right_answer
 
 ROOT = Path(__file__).resolve().parents[2]
 C = balance.load("alchemy")
@@ -35,18 +37,27 @@ def miss_timings(fire: dict) -> list[int]:
 
 
 async def brewer(client, name="dan_su", **kw):
+    """A beginner with the Hồi Huyết đan phương and enough for two brews."""
     h, uid = await player(client, name, stones=500, **kw)
     await give(uid, "dp_hoi_huyet", 1)
     await give(uid, "truc_diep_thao", 3)
-    await give_fruit(uid, common_word(), 6)
+    await give(uid, "muc_tinh", 6)
     return h, uid
 
 
-async def finish(client, h, fire, timings, answers=None, frozen=None):
+async def finish(client, h, fire, timings, frozen=None):
     if frozen is not None:
         frozen.advance(milliseconds=sum(timings) + 50)
-    return await client.post("/alchemy/finish", json={"session_id": fire["session_id"], "timings": timings,
-                                                      "pinyin_answers": answers or [None] * len(timings)}, headers=h)
+    return await client.post("/alchemy/finish", json={"session_id": fire["session_id"], "timings": timings},
+                             headers=h)
+
+
+def no_word_game(obj) -> None:
+    """Nothing of the old Chinese-word game in an alchemy payload."""
+    text = json.dumps(obj, ensure_ascii=False)
+    for key in ("hanzi", "pinyin", "chars", "fruit"):
+        assert f'"{key}' not in text, key
+    assert not any("一" <= ch <= "鿿" for ch in text)
 
 
 # ------------------------------------------------------------------ data
@@ -64,26 +75,37 @@ def test_needle_and_judging():
     assert alchemy_fire.judge(50, 50, 20, 6) == "perfect"
     assert alchemy_fire.judge(58, 50, 20, 6) == "good"
     assert alchemy_fire.judge(70, 50, 20, 6) == "miss"
-    q = C["quality"]
-    assert alchemy_fire.quality(*alchemy_fire.total(["perfect"] * 3, [None] * 3, C["points"]), q) == "thuong"
-    assert alchemy_fire.quality(*alchemy_fire.total(["miss"] * 3, [None] * 3, C["points"]), q) == "phe"
-    # wrong readings pull a perfect fire down
-    assert alchemy_fire.quality(*alchemy_fire.total(["perfect"] * 3, [False] * 3, C["points"]), q) != "thuong"
+    assert alchemy_fire.total(["perfect", "good", "miss"], C["points"]) == (3, 6)
 
 
-def test_every_recipe_is_complete():
+@pytest.mark.parametrize("hits,want", [
+    (["perfect"] * 3, "thuong"),
+    (["perfect", "perfect", "good"], "thuong"),
+    (["perfect", "good", "good"], "trung"),
+    (["good"] * 3, "trung"),
+    (["perfect", "good", "miss"], "trung"),
+    (["good", "good", "miss"], "ha"),
+    (["good", "miss", "miss"], "ha"),
+    (["miss"] * 3, "phe"),
+])
+def test_quality_comes_from_the_fire_alone(hits, want):
+    """The same hand at the fire gives the quality a player who also typed every reading right
+    got before the purge (only three misses, once still Hạ phẩm, are now Phế đan)."""
+    assert alchemy_fire.quality(*alchemy_fire.total(hits, C["points"]), C["quality"]) == want
+
+
+def test_every_recipe_is_complete_and_free_of_the_word_game():
     pills, mats = catalog.pills(), catalog.materials()
     for rid, r in catalog.recipes().items():
         assert rid in pills, rid
+        assert "chars" not in r and "hanzi" not in pills[rid], rid
         assert mats[r["item"]]["kind"] == "recipe" and mats[r["item"]]["recipe"] == rid
-        if "chars" in r:       # the old pills spell their name in characters, one per press
-            assert len(r["chars"]) == C["presses"] and "".join(c["c"] for c in r["chars"]) == pills[rid]["hanzi"]
-        else:                  # the breakthrough pills from Kết Đan on have none, and no hanzi either
-            assert "hanzi" not in pills[rid], rid
         for ing in r["ingredients"]:
+            assert ing["kind"] in ("item", "fish"), (rid, ing)
             if ing["kind"] == "item":
                 assert catalog.stack_item(ing["item"]) is not None, ing
         assert set(r["yield"]) == {"ha", "trung", "thuong"}
+    assert set(C["brew_xp"]) == {"ha", "trung", "thuong"} and "pinyin_right" not in C["points"]
     # spec 12.3 names every one of these pills
     for pid in ("hoi_huyet_dan", "hoi_khi_dan", "tu_linh_dan", "khang_muc_dan", "ngo_tinh_dan", "truc_co_dan",
                 "kim_dan_dan", "phong_vuong_dan", "nguyen_anh_dan", "hoa_than_dan", "luyen_hu_dan", "hop_the_dan",
@@ -91,10 +113,7 @@ def test_every_recipe_is_complete():
         assert pid in catalog.recipes()
 
 
-def _obtainable_items() -> set[str]:
-    """Every item some part of today's game hands out: monster drops (old and math), bí cảnh
-    rooms and chests, the math dungeon and cơ duyên, quest rewards and the Tàng Thư Các shelf.
-    Recipes and the Lò Toán only consume, so they are not read."""
+def _walk_items(rel: str) -> set[str]:
     found: set[str] = set()
 
     def walk(v):
@@ -108,21 +127,52 @@ def _obtainable_items() -> set[str]:
         elif isinstance(v, list):
             for x in v:
                 walk(x)
-    import json
-    for rel in ("creatures/monsters.json", "math/monsters.json", "balance/realm.json", "math/dungeon.json",
-                "math/fortune.json", "quests.json"):
-        walk(json.loads((ROOT / "server" / "data" / rel).read_text("utf-8")))
-    found.update(balance.load("library")["shop"])
+    walk(json.loads((ROOT / "server" / "data" / rel).read_text("utf-8")))
     return found
 
 
+def _shop_stock() -> set[str]:
+    return {s["item"] for s in balance.load("shop")["stock"]}
+
+
+def _obtainable_items() -> set[str]:
+    """Every item some part of today's game hands out: monster drops (old and math), bí cảnh
+    rooms and chests, the math dungeon and cơ duyên, quest rewards, the Sạp Tạp Hóa, the đan
+    phương shelf of Tàng Thư Các and what the hive makes. Recipes only consume, so they are not read."""
+    found: set[str] = set()
+    for rel in ("creatures/monsters.json", "math/monsters.json", "balance/realm.json", "math/dungeon.json",
+                "math/fortune.json", "quests.json"):
+        found |= _walk_items(rel)
+    found |= _shop_stock()
+    found.update(balance.load("books")["shop"])
+    found.update(("linh_mat", "sap_ong"))           # collected from the hive (systems/bees.py)
+    return found
+
+
+def test_every_ingredient_is_handed_out_somewhere_and_the_first_pills_need_nothing_rare():
+    got = _obtainable_items()
+    mats = catalog.materials()
+    for rid, r in catalog.recipes().items():
+        for ing in r["ingredients"]:
+            if ing["kind"] == "item":
+                assert ing["item"] in got, (rid, ing)
+                assert ing["item"] not in mats or mats[ing["item"]]["kind"] != "recipe", (rid, ing)
+    # a beginner brews Hồi Huyết / Hồi Khí Đan from what the shop sells or the first monsters drop
+    first = _shop_stock() | {d["item"] for kind in ("ink_slime", "tone_wisp")
+                             for d in catalog.monsters()[kind]["drops"] if "item" in d}
+    for rid in ("hoi_huyet_dan", "hoi_khi_dan"):
+        r = catalog.recipes()[rid]
+        assert r["min_realm"] == "pham_nhan"
+        for ing in r["ingredients"]:
+            assert ing["kind"] == "item" and ing["item"] in first, (rid, ing)
+
+
 def test_every_breakthrough_pill_is_craftable_from_what_the_game_hands_out():
-    """Each realm's pill has a recipe, the đan phương for it is sold or dropped, and the pills of
-    the new realms (Nguyên Anh on) ask only for item ingredients that drop today: no quả chữ, no fish."""
+    """Each realm's pill has a recipe and the đan phương for it is sold or dropped."""
     from app.systems import cultivation
     order = cultivation.order()
     got = _obtainable_items()
-    pills, mats = catalog.pills(), catalog.materials()
+    pills = catalog.pills()
     trib = cultivation.cfg()["tribulation_to"]
     assert set(trib) == set(order[2:]), "every realm after Luyện Khí needs its pill"
     for realm, pid in trib.items():
@@ -131,14 +181,82 @@ def test_every_breakthrough_pill_is_craftable_from_what_the_game_hands_out():
         assert r["item"] in got, f"{r['item']} (the đan phương of {pid}) is nowhere to be had"
         assert order.index(r["min_realm"]) == order.index(realm) - 1, pid       # brewed at the realm below
         if order.index(realm) >= order.index("nguyen_anh"):
-            assert "chars" not in r and "hanzi" not in pills[pid], pid
-            for ing in r["ingredients"]:
-                assert ing["kind"] == "item", (pid, ing)
-                assert catalog.stack_item(ing["item"]) is not None and ing["item"] in got, (pid, ing)
-                assert ing["item"] not in mats or mats[ing["item"]]["kind"] != "recipe", (pid, ing)
+            assert all(ing["kind"] == "item" for ing in r["ingredients"]), pid
 
 
-async def test_a_pill_without_name_characters_brews_on_the_fire_alone(client, frozen):
+# ------------------------------------------------------------------ brewing
+async def test_brew_takes_ingredients_and_fee_and_perfect_fire_gives_thuong_pham(client, frozen):
+    h, uid = await brewer(client)
+    ov = (await client.get("/alchemy", headers=h)).json()
+    no_word_game(ov)
+    hh = next(r for r in ov["recipes"] if r["id"] == "hoi_huyet_dan")
+    assert hh["known"] and hh["ready"] and ov["where"] == "home"
+    assert [(i["name_vi"], i["qty"], i["have"]) for i in hh["ingredients"]] == [("Mực Tinh", 3, 6),
+                                                                                ("Trúc Diệp Thảo", 1, 3)]
+    unknown = next(r for r in ov["recipes"] if r["id"] == "truc_co_dan")
+    assert not unknown["known"] and "ingredients" not in unknown and unknown["sources_vi"]
+    r = await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)
+    assert r.status_code == 200, r.text
+    no_word_game(r.json())
+    fire = r.json()["fire"]
+    assert len(fire["zones"]) == len(fire["periods"]) == C["presses"]
+    assert await stones(uid) == 500 - 10
+    assert await qty(uid, "truc_diep_thao") == 2 and await qty(uid, "muc_tinh") == 3
+    assert await qty(uid, "dp_hoi_huyet") == 1          # the recipe is kept
+    res = (await finish(client, h, fire, perfect_timings(fire), frozen=frozen)).json()
+    no_word_game(res)
+    assert res["quality"] == "thuong" and res["hits"] == ["perfect"] * 3 and (res["points"], res["best"]) == (6, 6)
+    assert res["made"] == 3 and await qty(uid, "hoi_huyet_dan") == 3
+    assert res["xp"]["gained"] == C["brew_xp"]["thuong"]      # a little Tu Vi for a good brew
+    # the same session cannot pay out twice
+    r = await finish(client, h, fire, perfect_timings(fire))
+    assert r.status_code == 409
+
+
+async def test_a_missed_fire_is_phe_dan_and_the_ingredients_are_gone(client, frozen):
+    h, uid = await brewer(client)
+    fire = (await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)).json()["fire"]
+    res = (await finish(client, h, fire, miss_timings(fire), frozen=frozen)).json()
+    assert res["quality"] == "phe" and res["made"] == 0 and res["xp"] is None
+    assert await qty(uid, "hoi_huyet_dan") == 0 and await qty(uid, "muc_tinh") == 3
+
+
+async def test_without_recipe_ingredients_or_money_nothing_is_taken(client):
+    h, uid = await player(client, stones=500)
+    r = await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)
+    assert r.json()["error"]["code"] == "no_recipe"
+    await give(uid, "dp_hoi_huyet", 1)
+    await give(uid, "truc_diep_thao", 1)
+    await give(uid, "muc_tinh", 2)                       # needs 3
+    r = await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)
+    assert r.json()["error"]["code"] == "no_ingredient"
+    assert await qty(uid, "truc_diep_thao") == 1 and await qty(uid, "muc_tinh") == 2 and await stones(uid) == 500
+    await give(uid, "muc_tinh", 1)
+    await set_stones(uid, 5)                              # the fee is 10
+    r = await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)
+    assert r.json()["error"]["code"] == "insufficient_funds"
+    assert await qty(uid, "truc_diep_thao") == 1 and await qty(uid, "muc_tinh") == 3 and await stones(uid) == 5
+
+
+async def test_a_fish_ingredient_takes_the_least_precious_fish(client, frozen):
+    h, uid = await player(client, stones=500)
+    await give(uid, "dp_khang_muc", 1)
+    await give(uid, "muc_tinh", 2)
+    await give(uid, "truc_diep_thao", 1)
+    fish = catalog.fish()
+    linh = sorted((fid for fid, f in fish.items() if f["rarity"] == "linh"), key=lambda f: (fish[f]["sell_price"], f))
+    pham = next(fid for fid, f in fish.items() if f["rarity"] == "pham")
+    await give(uid, f"fish_{pham}", 1)                    # too common to count
+    await give(uid, f"fish_{linh[-1]}", 1)
+    await give(uid, f"fish_{linh[0]}", 1)
+    r = await client.post("/alchemy/start", json={"recipe_id": "khang_muc_dan"}, headers=h)
+    assert r.status_code == 200, r.text
+    assert await qty(uid, f"fish_{pham}") == 1
+    if linh[0] != linh[-1]:
+        assert await qty(uid, f"fish_{linh[0]}") == 0 and await qty(uid, f"fish_{linh[-1]}") == 1
+
+
+async def test_a_breakthrough_pill_brews_on_the_fire_alone(client, frozen):
     h, uid = await player(client, "dan_hoa_than", stones=5000)
     from app import db as dbm
     from app.models import Character
@@ -152,81 +270,14 @@ async def test_a_pill_without_name_characters_brews_on_the_fire_alone(client, fr
         await give(uid, ing["item"], ing["qty"])
     ov = (await client.get("/alchemy", headers=h)).json()
     e = next(x for x in ov["recipes"] if x["id"] == "hoa_than_dan")
-    assert e["known"] and e["ready"] and e["hanzi"] == "" and e["chars"] == []
+    assert e["known"] and e["ready"]
     fire = (await client.post("/alchemy/start", json={"recipe_id": "hoa_than_dan"}, headers=h)).json()["fire"]
-    assert len(fire["chars"]) == C["presses"] and not any(c["ask"] or c["c"] for c in fire["chars"])
     assert await stones(uid) == 5000 - r["fee"]
     res = (await finish(client, h, fire, perfect_timings(fire), frozen=frozen)).json()
-    assert res["quality"] == "thuong" and res["made"] >= 1 and res["chars"] == [] and res["xp"] is None
+    assert res["quality"] == "thuong" and res["made"] >= 1
     assert await qty(uid, "hoa_than_dan") == res["made"]
     for ing in r["ingredients"]:
         assert await qty(uid, ing["item"]) == 0
-
-
-def test_recipe_readings_match_cc_cedict():
-    path = ROOT / "tools" / "raw" / "cedict.txt"
-    if not path.exists():
-        pytest.skip("CC-CEDICT not downloaded (tools/raw/cedict.txt)")
-    readings: dict[str, set[str]] = {}
-    for line in path.read_text("utf-8").splitlines():
-        m = re.match(r"^(\S+) (\S+) \[([^\]]+)\]", line)
-        if m and len(m.group(2)) == 1:
-            readings.setdefault(m.group(2), set()).add(m.group(3).lower())
-    from app.learning import pinyin as py
-    for r in catalog.recipes().values():
-        for c in r.get("chars", []):
-            assert c["numeric"] in readings.get(c["c"], set()), (c, readings.get(c["c"]))
-            assert py.numeric_to_marked(c["numeric"]) == c["pinyin"], c
-
-
-# ------------------------------------------------------------------ brewing
-async def test_brew_takes_ingredients_and_fee_and_perfect_fire_gives_thuong_pham(client, frozen):
-    h, uid = await brewer(client)
-    ov = (await client.get("/alchemy", headers=h)).json()
-    hh = next(r for r in ov["recipes"] if r["id"] == "hoi_huyet_dan")
-    assert hh["known"] and hh["ready"] and ov["where"] == "home"
-    unknown = next(r for r in ov["recipes"] if r["id"] == "truc_co_dan")
-    assert not unknown["known"] and "ingredients" not in unknown and unknown["sources_vi"]
-    r = await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)
-    assert r.status_code == 200, r.text
-    fire = r.json()["fire"]
-    assert await stones(uid) == 500 - 10
-    assert await qty(uid, "truc_diep_thao") == 2 and await fruits(uid) == 4
-    assert await qty(uid, "dp_hoi_huyet") == 1          # the recipe is kept
-    # nothing learned yet: every character comes with its reading, nothing to type
-    assert all(not c["ask"] and c["pinyin"] for c in fire["chars"])
-    assert [c["c"] for c in fire["chars"]] == ["回", "血", "丹"]
-    res = (await finish(client, h, fire, perfect_timings(fire), frozen=frozen)).json()
-    assert res["quality"] == "thuong" and res["hits"] == ["perfect"] * 3
-    assert res["made"] == 3 and await qty(uid, "hoi_huyet_dan") == 3
-    # the same session cannot pay out twice
-    r = await finish(client, h, fire, perfect_timings(fire))
-    assert r.status_code == 409
-
-
-async def test_a_missed_fire_is_phe_dan_and_the_ingredients_are_gone(client, frozen):
-    h, uid = await brewer(client)
-    fire = (await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)).json()["fire"]
-    res = (await finish(client, h, fire, miss_timings(fire), frozen=frozen)).json()
-    assert res["quality"] == "phe" and res["made"] == 0
-    assert await qty(uid, "hoi_huyet_dan") == 0 and await fruits(uid) == 4
-
-
-async def test_without_recipe_ingredients_or_money_nothing_is_taken(client):
-    h, uid = await player(client, stones=500)
-    r = await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)
-    assert r.json()["error"]["code"] == "no_recipe"
-    await give(uid, "dp_hoi_huyet", 1)
-    await give(uid, "truc_diep_thao", 1)
-    await give_fruit(uid, common_word(), 1)               # needs 2
-    r = await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)
-    assert r.json()["error"]["code"] == "no_ingredient"
-    assert await qty(uid, "truc_diep_thao") == 1 and await fruits(uid) == 1 and await stones(uid) == 500
-    await give_fruit(uid, common_word(), 1)
-    await set_stones(uid, 5)                              # the fee is 10
-    r = await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)
-    assert r.json()["error"]["code"] == "insufficient_funds"
-    assert await qty(uid, "truc_diep_thao") == 1 and await fruits(uid) == 2 and await stones(uid) == 5
 
 
 async def test_realm_gate(client):
@@ -239,11 +290,10 @@ async def test_realm_gate(client):
 async def test_finishing_faster_than_the_needle_can_run_is_refused(client, frozen):
     h, uid = await brewer(client)
     fire = (await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)).json()["fire"]
-    r = await client.post("/alchemy/finish", json={"session_id": fire["session_id"], "timings": [9000, 9000, 9000],
-                                                   "pinyin_answers": [None] * 3}, headers=h)
+    r = await client.post("/alchemy/finish", json={"session_id": fire["session_id"], "timings": [9000, 9000, 9000]},
+                          headers=h)
     assert r.json()["error"]["code"] == "too_fast"
-    r = await client.post("/alchemy/finish", json={"session_id": fire["session_id"], "timings": [1, 2],
-                                                   "pinyin_answers": [None] * 2}, headers=h)
+    r = await client.post("/alchemy/finish", json={"session_id": fire["session_id"], "timings": [1, 2]}, headers=h)
     assert r.json()["error"]["code"] == "bad_timings"
     # still open: an honest finish works
     res = (await finish(client, h, fire, perfect_timings(fire), frozen=frozen)).json()
@@ -256,6 +306,8 @@ async def test_starting_again_resumes_the_same_fire(client):
     b = (await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)).json()
     assert b["resumed"] and b["fire"]["session_id"] == a["fire"]["session_id"]
     assert await qty(uid, "truc_diep_thao") == 2            # taken once
+    ov = (await client.get("/alchemy", headers=h)).json()
+    assert ov["open"]["session_id"] == a["fire"]["session_id"]
 
 
 async def test_a_fire_left_too_long_goes_out(client, frozen):
@@ -266,27 +318,20 @@ async def test_a_fire_left_too_long_goes_out(client, frozen):
     assert res["expired"] and res["made"] == 0
 
 
-async def test_learned_characters_are_asked_and_graded_on_the_server(client, frozen, db):
-    """回气丹: 气 is in 天气, so a player who learned 天气 has to type qì."""
-    h, uid = await player(client, learn=["天气"], stones=500)
-    await give(uid, "dp_hoi_khi", 1)
-    await give(uid, "linh_mat", 2)
-    await give(uid, "truc_diep_thao", 2)
-    await give_fruit(uid, common_word(), 2)
-    fire = (await client.post("/alchemy/start", json={"recipe_id": "hoi_khi_dan"}, headers=h)).json()["fire"]
-    by = {c["c"]: c for c in fire["chars"]}
-    assert by["气"]["ask"] and "pinyin" not in by["气"] and "key" not in by["气"]
-    assert not by["回"]["ask"] and by["回"]["pinyin"] == "huí"
-    row = await db.get(AlchemySession, fire["session_id"])
-    assert row.params["chars"][1]["key"] == "qi4"
-    answers = [None, "qi2", None]          # wrong tone
-    res = (await finish(client, h, fire, perfect_timings(fire), answers, frozen=frozen)).json()
-    assert res["chars"][1] == {"c": "气", "pinyin": "qì", "hv": "khí", "right": False}
-    assert res["points"] == 6 - 1 and res["best"] == 7 and res["quality"] == "trung"
-    # right this time: Thượng phẩm and a little Tu Vi
-    fire = (await client.post("/alchemy/start", json={"recipe_id": "hoi_khi_dan"}, headers=h)).json()["fire"]
-    res = (await finish(client, h, fire, perfect_timings(fire), [None, "qi4", None], frozen=frozen)).json()
-    assert res["quality"] == "thuong" and res["chars"][1]["right"] and res["xp"]["gained"] == C["xp_per_right_pinyin"]
+async def test_brew_tu_vi_follows_quality_and_tu_linh(client, frozen):
+    """Trung phẩm pays brew_xp["trung"]; under Tụ Linh Đan the same brew pays x1.5."""
+    h, uid = await brewer(client)
+
+    def trung(fire):     # perfect, perfect, then a miss: 4/6
+        return perfect_timings(fire)[:2] + miss_timings(fire)[2:]
+    fire = (await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)).json()["fire"]
+    res = (await finish(client, h, fire, trung(fire), frozen=frozen)).json()
+    assert res["quality"] == "trung" and res["xp"]["gained"] == C["brew_xp"]["trung"]
+    await give(uid, "tu_linh_dan", 1)
+    assert (await client.post("/inventory/use", json={"item_id": "tu_linh_dan"}, headers=h)).status_code == 200
+    fire = (await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)).json()["fire"]
+    res = (await finish(client, h, fire, trung(fire), frozen=frozen)).json()
+    assert res["xp"]["gained"] == round(C["brew_xp"]["trung"] * C["buffs"]["tu_linh"]["xp_mult"])
 
 
 async def test_far_from_any_furnace(client, monkeypatch):
@@ -313,54 +358,80 @@ async def test_upgrading_the_furnace_widens_the_zones(client):
     await set_stones(uid, lv2["cost"]["spirit_stones"] + 10)
     r = await client.post("/alchemy/furnace/upgrade", headers=h)
     assert r.status_code == 200 and r.json()["furnace"]["level"] == 2
-    assert await stones(uid) == 10 and await qty(uid, "muc_tinh") == 0
+    assert await stones(uid) == 10 and await qty(uid, "muc_tinh") == 6     # the brewer's own 6 are left
     fire = (await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)).json()["fire"]
     assert fire["zones"][0]["width"] == C["zone_width"]["1"] + lv2["zone_bonus"] and fire["furnace_level"] == 2
 
 
 async def test_brewing_counts_for_quests(client, frozen):
+    """Đan Đạo: Mẻ đan đầu tiên takes any pill, the next step a Hồi Khí Đan only."""
     h, uid = await brewer(client)
+    await give(uid, "dp_hoi_khi", 1)
+    await give(uid, "go_linh_moc", 1)
     from app.models import Quest
     from app import db as dbm
     async with dbm.SessionLocal() as s:
         s.add(Quest(user_id=uid, quest_id="dd2_me_dan_dau", state="active", progress={"n": 0}))
+        s.add(Quest(user_id=uid, quest_id="dd3_khac_van", state="active", progress={"n": 0}))
         await s.commit()
     fire = (await client.post("/alchemy/start", json={"recipe_id": "hoi_huyet_dan"}, headers=h)).json()["fire"]
     await finish(client, h, fire, perfect_timings(fire), frozen=frozen)
-    qs = (await client.get("/quests", headers=h)).json()
-    q = next(x for x in qs["quests"] if x["id"] == "dd2_me_dan_dau")
-    assert q["state"] == "done"
+    qs = {x["id"]: x for x in (await client.get("/quests", headers=h)).json()["quests"]}
+    assert qs["dd2_me_dan_dau"]["state"] == "done" and qs["dd3_khac_van"]["state"] == "active"
+    assert qs["dd3_khac_van"]["objective"]["type"] == "brew"
+    fire = (await client.post("/alchemy/start", json={"recipe_id": "hoi_khi_dan"}, headers=h)).json()["fire"]
+    await finish(client, h, fire, perfect_timings(fire), frozen=frozen)
+    qs = {x["id"]: x for x in (await client.get("/quests", headers=h)).json()["quests"]}
+    assert qs["dd3_khac_van"]["state"] == "done"
+
+
+def test_no_quest_asks_for_the_old_inscription():
+    for chain in catalog.quests()["chains"].values():
+        for st in chain["steps"]:
+            assert st["objective"]["type"] != "inscribe", st["id"]
+            for it in st["rewards"].get("items", []):
+                assert catalog.stack_item(it["item"]) is not None, (st["id"], it)
 
 
 # ------------------------------------------------------------------ the pills
-async def test_tu_linh_dan_gives_more_tu_vi_for_right_answers(client, db):
-    h, uid = await player(client, learn=["水"], stones=0)
+async def _meditate_right(client, h) -> tuple[dict, dict]:
+    q = (await client.post("/cultivation/meditate", headers=h)).json()
+    assert "session_id" in q, q
+    key = await answer_key(q["session_id"])
+    res = (await client.post("/quiz/answer", json={"session_id": q["session_id"], "answer": right_answer(q, key)},
+                             headers=h)).json()
+    return q, res
+
+
+async def test_tu_linh_dan_gives_more_tu_vi_for_right_answers(client, frozen):
+    h, uid = await player(client, "tu_linh", stones=0)
     await give(uid, "tu_linh_dan", 1)
-    q = (await client.post("/quiz/practice", json={}, headers=h)).json()
-    base = (await client.post("/quiz/answer", json={"session_id": q["session_id"],
-                                                    "answer": correct_answer(q["qtype"], await answer_key(q["session_id"]))},
-                              headers=h)).json()["xp"]["gained"]
+    q, res = await _meditate_right(client, h)
+    assert res["xp"]["gained"] == math_path.xp_for_tier(q["math"]["tier"])
     r = await client.post("/inventory/use", json={"item_id": "tu_linh_dan"}, headers=h)
     assert r.status_code == 200 and r.json()["buff"] == "tu_linh" and r.json()["seconds"] == C["buff_seconds"]
-    q = (await client.post("/quiz/practice", json={}, headers=h)).json()
-    more = (await client.post("/quiz/answer", json={"session_id": q["session_id"],
-                                                    "answer": correct_answer(q["qtype"], await answer_key(q["session_id"]))},
-                              headers=h)).json()["xp"]["gained"]
-    assert more == round(base * C["buffs"]["tu_linh"]["xp_mult"])
+    frozen.advance(seconds=121)                              # one meditation question every 2 minutes
+    q, res = await _meditate_right(client, h)
+    assert res["xp"]["gained"] == round(math_path.xp_for_tier(q["math"]["tier"]) * C["buffs"]["tu_linh"]["xp_mult"])
     cult = (await client.get("/cultivation", headers=h)).json()
-    assert cult["buffs"][0]["id"] == "tu_linh"
+    assert cult["buffs"][0]["id"] == "tu_linh" and "skills" not in cult
 
 
 async def test_ngo_tinh_dan_adds_seconds_to_every_question(client, frozen):
-    h, uid = await player(client, learn=["水"])
+    h, uid = await player(client, "ngo_tinh")
     await give(uid, "ngo_tinh_dan", 1)
-    q1 = (await client.post("/quiz/practice", json={"qtype": "Q1"}, headers=h)).json()
+
+    def plain(q):
+        return math_path.time_limit(q["qtype"], q["math"]["tier"])
+    q1 = (await client.post("/cultivation/meditate", headers=h)).json()
+    assert q1["time_limit"] == plain(q1)
     await client.post("/inventory/use", json={"item_id": "ngo_tinh_dan"}, headers=h)
-    q2 = (await client.post("/quiz/practice", json={"qtype": "Q1"}, headers=h)).json()
-    assert q2["time_limit"] == q1["time_limit"] + C["buffs"]["ngo_tinh"]["extra_seconds"]
+    frozen.advance(seconds=121)
+    q2 = (await client.post("/cultivation/meditate", headers=h)).json()
+    assert q2["time_limit"] == plain(q2) + C["buffs"]["ngo_tinh"]["extra_seconds"]
     frozen.advance(seconds=C["buff_seconds"] + 1)            # it wears off
-    q3 = (await client.post("/quiz/practice", json={"qtype": "Q1"}, headers=h)).json()
-    assert q3["time_limit"] == q1["time_limit"]
+    q3 = (await client.post("/cultivation/meditate", headers=h)).json()
+    assert q3["time_limit"] == plain(q3)
 
 
 async def test_taking_the_same_buff_twice_stacks_up_to_two_doses(client):
@@ -385,7 +456,6 @@ async def test_khang_muc_dan_softens_mac_kich():
 
 async def test_phong_vuong_dan_feeds_a_bee(client, db):
     h, uid = await player(client)
-    await client.get("/garden", headers=h)
     await client.get("/hive", headers=h)
     db.add(Bee(user_id=uid, bee_type="muc", level=1, xp=0, hive_slot=0, role="hive", bond=0, obtained_at=clock.now()))
     await db.commit()

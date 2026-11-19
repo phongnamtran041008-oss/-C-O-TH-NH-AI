@@ -1,10 +1,11 @@
 """Stage 5 through the real client UI: open the Linh Phong Sào, hatch the starter egg, feed
-the bee, send it to pollinate, see bees fly over the garden, roll the bee-egg gacha, read
-the Ong Phổ; then take two guard bees into Rừng Mực Loang and watch them sting a monster
-whose Mặc Thuẫn the player broke."""
+the bee, move it, see the two roles (ở tổ / hộ vệ), collect honey, upgrade the hive, roll the
+bee-egg gacha, read the Ong Phổ; then take two guard bees into Rừng Mực Loang and watch them
+sting a monster whose Mặc Thuẫn the player broke."""
 from __future__ import annotations
 
 import json
+import re
 import tempfile
 from pathlib import Path
 
@@ -15,11 +16,7 @@ from client.tests.driver import Driver, ServerProcess
 from client.tests.test_combat_flow import CARD, answer_math, beat, engage, world
 from client.tests.test_world_flow import make_account
 
-
-def learn(server: ServerProcess, uid: int, hanzi: str) -> None:
-    server.sql("insert or replace into collection(user_id, word_id, introduced, mastery, times_correct, "
-               "times_wrong, needs_review, first_seen_at) select ?, id, 1, 60, 0, 0, 0, datetime('now') "
-               "from words where hanzi=?", (uid, hanzi))
+HAN = re.compile("[" + chr(0x3400) + "-" + chr(0x9FFF) + "]")    # CJK ideographs
 
 
 def give(server: ServerProcess, uid: int, item: str, qty: int) -> None:
@@ -38,16 +35,9 @@ def run_bee_flow(workdir: Path, shots: Path | None = None) -> None:
         token, uid = make_account(url, "nuoi_ong", "Phong Nữ", {"hair_color": "#A0522D", "hair_style": "dai",
                                                                 "body": "nu"})
         h = {"Authorization": f"Bearer {token}"}
-        httpx.get(url + "/garden", headers=h).raise_for_status()
         httpx.get(url + "/quests", headers=h).raise_for_status()
         server.sql("update users set flags=?, spirit_stones=2000, immortal_jade=20 where id=?",
                    (json.dumps({"tutorial": 5}), uid))
-        # a garden in flower: three plants at Ra hoa, one already half full of pollen
-        for (x, y), hz, pollen in (((1, 0), "花", 45.0), ((1, 1), "水", 0.0), ((2, 1), "茶", 70.0), ((0, 2), "火", 0)):
-            learn(server, uid, hz)
-            server.sql("update plots set word_id=(select id from words where hanzi=?), stage=3, wither=0, pollen=?, "
-                       "next_review_at=datetime('now', '+2 days'), wither_checked_at=datetime('now'), "
-                       "planted_at=datetime('now') where user_id=? and x=? and y=?", (hz, pollen, uid, x, y))
         give(server, uid, "linh_mat", 6)
         give(server, uid, "trung_ong_linh", 1)
         give(server, uid, "sap_ong", 5)
@@ -69,8 +59,7 @@ def run_bee_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait_scene("HiveScene")
         drv.wait(lambda: drv.game.top.hive is not None, 5, "hive data")
         hive = drv.game.top
-        assert [e["item_id"] for e in hive.hive["eggs"]] == ["trung_ong_linh", "trung_ong_pham"] or \
-            sorted(e["item_id"] for e in hive.hive["eggs"]) == ["trung_ong_linh", "trung_ong_pham"]
+        assert sorted(e["item_id"] for e in hive.hive["eggs"]) == ["trung_ong_linh", "trung_ong_pham"]
         drv.shot("hive_empty")
         drv.click("hv_hatch_trung_ong_pham")
         drv.wait_scene("HatchScene")
@@ -89,10 +78,14 @@ def run_bee_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait_scene("HiveScene")
         drv.wait_api()
         drv.wait(lambda: len(hive.hive["bees"]) == 2, 5, "two bees")
+        for b in hive.hive["bees"]:                       # Vietnamese names only, no word attached
+            assert not {"hanzi", "pinyin", "word", "word_mastery", "pollen_per_hour"} & set(b), b
+            assert not HAN.search(b["name_vi"] + b["desc_vi"] + b["skill_vi"]), b
         first = hive.hive["bees"][0]
         hive.sel = first["id"]
         drv.step(3)
-        # feed the first one Linh Mật
+        # feed the first one Linh Mật (the only food in the bag)
+        assert [f["food"] for f in hive.hive["foods"]] == ["linh_mat"]
         drv.click("hv_feed")
         drv.wait_scene("FoodPicker")
         drv.shot("feed_picker")
@@ -109,15 +102,21 @@ def run_bee_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.click(f"hv_cell_{empty}")
         drv.wait_api()
         drv.wait(lambda: hive.bee(first["id"])["slot"] == empty, 5, "moved")
-        # roles: both pollinate; guard is locked for a Phàm Nhân
-        drv.click("hv_role_pollinate")
-        drv.wait_api()
-        hive.sel = hive.hive["bees"][1]["id"]
+        # two roles: Ở tổ (both bees, by default) and Hộ vệ, locked for a Phàm Nhân
         drv.step(2)
-        drv.click("hv_role_pollinate")
+        assert "hv_role_hive" in drv.game.ui.widgets and "hv_role_guard" in drv.game.ui.widgets
+        assert "hv_role_pollinate" not in drv.game.ui.widgets
+        assert all(b["role"] == "hive" for b in hive.hive["bees"]) and hive.hive["guard_slots"] == 0
+        # honey: the comb fills (here by hand), "Thu mật" puts it in the bag
+        server.sql("update hive set honey=5.5, wax=1.2 where user_id=?", (uid,))
+        hive.reload()
         drv.wait_api()
-        drv.wait(lambda: all(b["role"] == "pollinate" for b in hive.hive["bees"]), 5, "pollinators")
-        assert hive.hive["guard_slots"] == 0
+        drv.wait(lambda: hive.hive["honey"] >= 5, 5, "honey in the comb")
+        drv.click("hv_collect")
+        drv.wait_api()
+        drv.wait(lambda: hive.hive["honey"] < 1, 5, "honey collected")
+        drv.wait(lambda: any(f["food"] == "linh_mat" and f["qty"] >= 10 for f in hive.hive["foods"]), 5,
+                 "honey in the bag")
         drv.click("hv_upgrade")                  # Sáp Ong + Gỗ Linh Mộc: level 2 and a lantern
         drv.wait_api()
         drv.wait(lambda: hive.hive["level"] == 2, 5, "hive level 2")
@@ -128,6 +127,7 @@ def run_bee_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait_scene("BeeBookScene")
         drv.wait(lambda: drv.game.top.book is not None, 5, "book")
         assert drv.game.top.book["found"] >= 1
+        assert all("hanzi" not in e and "word" not in e for e in drv.game.top.book["entries"])
         drv.step(3)
         drv.shot("bee_book")
         drv.press(pygame.K_ESCAPE)
@@ -135,15 +135,6 @@ def run_bee_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.press(pygame.K_ESCAPE)
         drv.wait(lambda: drv.top_is("AbodeScene"), 5, "abode again")
         drv.wait_api()
-        # bees fly out over the flowering plants
-        ab = abode(drv)
-        drv.wait(lambda: len([b for b in ab.bee_list() if b["role"] == "pollinate"]) == 2, 5, "garden bees")
-        for _ in range(4):
-            drv.hold([pygame.K_a], 0.25)
-        drv.hold([pygame.K_w], 0.4)
-        drv.step(120)
-        assert len(ab.flock.bees) == 2
-        drv.shot("garden_pollinators")
         # bee eggs at Thiên Cơ Các
         drv.press(pygame.K_g)
         drv.wait_scene("GachaScene")
@@ -164,8 +155,6 @@ def run_bee_flow(workdir: Path, shots: Path | None = None) -> None:
         server.sql("update characters set realm='luyen_khi', realm_stage=1, zone_id='rung_muc_loang', x=?, y=? "
                    "where user_id=?", (16 * 18, 16 * 20, uid))
         server.sql("update bees set role='guard', level=3 where user_id=?", (uid,))
-        for hz in "木山人日口大":   # (bare hands: the Ngộ Đạo strike alone does not kill a Mực Con)
-            learn(server, uid, hz)
         n_shots = drv.n_shots
         drv = Driver(url, workdir, shots)
         drv.n_shots = n_shots

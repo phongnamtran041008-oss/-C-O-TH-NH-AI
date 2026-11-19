@@ -3,7 +3,7 @@
 
 A needle sweeps the heat bar from 0 to `bar` and back, one sweep every `period_ms`. Each
 press stops it; the next round starts from 0 again. The client only sends how long the
-needle ran before each press (needle time, typing pinyin does not count); the server puts
+needle ran before each press (needle time, the pause between presses does not count); the server puts
 those times through the same functions to know where the needle stood. Whole milliseconds
 and one division, so both sides always get the same number.
 """
@@ -36,16 +36,9 @@ def press_points(hits: list[str], points: dict) -> int:
     return sum(int(points[h]) for h in hits)
 
 
-def total(hits: list[str], pinyin: list[bool | None], points: dict) -> tuple[int, int]:
-    """(points scored, best possible). pinyin: True right, False wrong, None not asked."""
-    got = press_points(hits, points)
-    best = len(hits) * int(points[PERFECT])
-    for p in pinyin:
-        if p is None:
-            continue
-        best += int(points["pinyin_right"])
-        got += int(points["pinyin_right"] if p else points["pinyin_wrong"])
-    return got, best
+def total(hits: list[str], points: dict) -> tuple[int, int]:
+    """(points scored, best possible): the presses alone, best = every press perfect."""
+    return press_points(hits, points), len(hits) * int(points[PERFECT])
 
 
 def quality(got: int, best: int, table: list[dict]) -> str:

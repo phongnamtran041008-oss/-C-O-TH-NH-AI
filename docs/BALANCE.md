@@ -9,7 +9,7 @@ thì chạy lại script, đừng sửa tay bảng này.
 
 | Tiền | Có từ đâu | Tiêu vào đâu |
 |---|---|---|
-| **Linh Thạch** (tiền chính) | trả lời đúng (ôn vườn), bán quả chữ / cá / mật / đồ, hạ quái, ải Thủ Vườn, nhiệm vụ (cốt truyện, hằng ngày), tưới giúp bạn, mốc phổ | gacha, mở ô đất, mở ô tổ ong, nâng tổ, cường hóa, lò đan, cần câu, phí luyện đan, khắc văn, sạp tạp hóa, giâm cành |
+| **Linh Thạch** (tiền chính) | bán cá / mật / đồ, hạ quái, ải Thủ Thành, nhiệm vụ (cốt truyện, hằng ngày), mốc phổ | gacha, mở ô tổ ong, nâng tổ, cường hóa, lò đan, cần câu, phí luyện đan, sạp tạp hóa |
 | **Tiên Ngọc** (hiếm) | Thiên Kiếp, nhiệm vụ cốt truyện, mốc Tàng Thư Các / Ong Phổ / Ngư Phổ, sao đầu ải, quà xong cả ngày (1/ngày) | gacha Trứng Ong, Linh Thú (giá thay thế); không mua được bằng tiền thật, không đổi qua lại với Linh Thạch |
 
 Không có giao dịch giữa người chơi (v1). Bạn bè chỉ tặng nhau **vật phẩm** không ràng buộc (5 lần/ngày, mỗi lần tối đa
@@ -17,10 +17,10 @@ Không có giao dịch giữa người chơi (v1). Bạn bè chỉ tặng nhau *
 
 ## Nguyên tắc: tiền chỉ đến từ thời gian chơi và câu trả lời
 
-1. **Mọi nguồn vào đều bị giới hạn bởi thời gian hoặc câu hỏi.** Ôn vườn theo lịch SRS (10 phút, 1, 3, 7 ngày); quái
-   chỉ chết khi trả lời đúng; cá cắn theo thời gian thực; mật làm theo giờ và tổ có sức chứa; thưởng chơi lại ải tối
-   đa 5 lần/ngày; nhiệm vụ hằng ngày 3 việc/ngày; tưới giúp 5 lần/ngày; mốc phổ và nhiệm vụ cốt truyện chỉ một lần.
-2. **Không có "lãi".** Không nguồn nào lớn lên theo số dư. Đầu tư (ô đất, ô tổ, cấp tổ, lò đan, cần câu) làm nguồn
+1. **Mọi nguồn vào đều bị giới hạn bởi thời gian hoặc câu hỏi.** Quái chỉ chết khi trả lời đúng; cá cắn theo thời
+   gian thực; mật làm theo giờ và tổ có sức chứa; thưởng chơi lại ải tối đa 5 lần/ngày; nhiệm vụ hằng ngày 3 việc/ngày;
+   mốc phổ và nhiệm vụ cốt truyện chỉ một lần.
+2. **Không có "lãi".** Không nguồn nào lớn lên theo số dư. Đầu tư (ô tổ, cấp tổ, lò đan, cần câu) làm nguồn
    vào nhích lên nhưng mỗi thứ có mức tối đa, nên thu nhập một ngày có trần.
 3. **Mọi phép đổi tức thời đều lỗ.** Bất cứ thứ gì mua được bằng Linh Thạch đều bán lại rẻ hơn nhiều (thường 10–25%
    giá mua). Luyện đan, cắt mồi, cường hóa rồi bán, mở gacha rồi bán đồ trùng — giá trị trung bình nhận về luôn thấp
@@ -30,51 +30,51 @@ Không có giao dịch giữa người chơi (v1). Bạn bè chỉ tặng nhau *
 
 `tools/economy_sim.py` (và `server/tests/test_economy.py`) xây một đồ thị từ dữ liệu thật:
 
-- **Đỉnh**: mọi vật phẩm, `fruit:<độ hiếm>`, `fish_<loài>`, `equip:<độ hiếm>:<cấp cường hóa>`, hạt trùng.
+- **Đỉnh**: mọi vật phẩm, `fish_<loài>`, `equip:<độ hiếm>:<cấp cường hóa>`.
 - **Cạnh**: mua ở Sạp Tạp Hóa, Ngư Ông, Tàng Thư Các; luyện đan (ở lò tốt nhất, chất lượng cao nhất, cộng 1 viên của
   lò Tử Kim); cắt mồi; cường hóa (chi phí kỳ vọng = chi phí / tỉ lệ thành công); gacha theo **giá trị trung bình**.
 - **Giá có được**: với mỗi món, cách rẻ nhất để có nó chỉ bằng Linh Thạch (điểm bất động trên đồ thị).
 
 Nếu có món nào bán được bằng hoặc hơn giá có được, đó là vòng lặp tạo tiền. Kết quả hiện tại: **không có**. Món
-"lời" nhất là Trúc Diệp Thảo, giun đất và hạt trùng (bán lại được 25% giá có được). Quả chữ, cá, mật, Linh Quả, đồ
+"lời" nhất là Hồi Huyết Đan (31%), Trúc Diệp Thảo và giun đất (bán lại được 25% giá có được). Cá, mật, Linh Quả, đồ
 rơi không có giá Linh Thạch (chỉ có bằng thời gian + câu trả lời), nên không thể khép một vòng lặp.
 
 Test còn kiểm tra:
 
 - mọi thứ sạp bán đều thu mua lại thấp hơn giá bán;
 - mỗi đan phương: (số viên tối đa × giá bán đan) < (phí lò + giá bán nguyên liệu), kể cả nguyên liệu quý;
-- gacha Linh Thú khi mọi con đã đủ cấp chỉ hoàn trung bình ~117 Linh Thạch trên 500;
-- bán hạt trùng (20) < giá một lượt Hạt Chữ (100) hay Hạt Giống Thường (80).
+- gacha Linh Thú khi mọi con đã đủ cấp chỉ hoàn trung bình ~117 Linh Thạch trên 500.
 
 ## Mô hình 30 ngày, ba kiểu người chơi
 
 | Kiểu | Thời gian | Hoạt động mỗi ngày (mô hình) |
 |---|---|---|
-| **Thong Thả** | 20 phút | mở vườn 1 lần (đúng 75%), 8 quái, 1/3 việc hằng ngày, chỉ quay lượt miễn phí |
-| **Chăm Chỉ** | 1 giờ | mở vườn 2 lần (đúng 85%), 30 quái, 10 lần câu, 2 ải, 1 mẻ đan, gần đủ việc hằng ngày, 1 lượt Hạt Chữ, trứng ong 4 ngày/lần, Linh Thú 10 ngày/lần, cường hóa tới +5, khắc văn mỗi tuần |
-| **Cày Cuốc** | 4 giờ | mở vườn 4 lần (đúng 90%), 140 quái, 50 lần câu, 6 ải, 4 mẻ đan, đủ việc hằng ngày, 4 lượt Hạt Chữ, trứng ong mỗi ngày, Linh Thú 3 ngày/lần, cường hóa tới +8, khắc văn 3 ngày/lần |
+| **Thong Thả** | 20 phút | về động phủ 1 lần (đúng 75%), 8 quái, 1/3 việc hằng ngày, trứng ong 3 ngày/lần, cường hóa tới +2 |
+| **Chăm Chỉ** | 1 giờ | về động phủ 2 lần (đúng 85%), 30 quái, 10 lần câu, 2 ải, 1 mẻ đan, gần đủ việc hằng ngày, trứng ong 4 ngày/lần, Linh Thú 10 ngày/lần, cường hóa tới +5 |
+| **Cày Cuốc** | 4 giờ | về động phủ 4 lần (đúng 90%), 140 quái, 50 lần câu, 6 ải, 4 mẻ đan, đủ việc hằng ngày, trứng ong mỗi ngày, Linh Thú 3 ngày/lần, cường hóa tới +8 |
 
 Giá trị mỗi hành động lấy thẳng từ dữ liệu: một lần hạ quái trung bình **16,1** Linh Thạch (gồm đồ rơi theo giá làng
-mua), một con cá **30,4** (theo `rarity_weight`), một cây ra 140 Linh Thạch tiền ôn + 3 quả (~29 mỗi quả theo tỉ lệ
-gacha), một lượt chơi lại ải 15, việc hằng ngày ~134 + 50 khi xong cả ngày, nhiệm vụ cốt truyện tổng 1.660 (một lần).
+mua), một con cá **30,4** (theo `rarity_weight`), một lượt chơi lại ải Thủ Thành 15 (thưởng sao đầu theo
+`server/data/math/td.json`), việc hằng ngày ~136 + 50 khi xong cả ngày, nhiệm vụ cốt truyện tổng 1.660 (một lần).
+Mật làm theo giờ; số lần về động phủ mỗi ngày quyết định tổ đầy rồi tràn hay được vét kịp.
 
 Kết quả sau 30 ngày (`python tools/economy_sim.py`, có bảng từng ngày):
 
 | Kiểu | Vào | Ra (vòi xả) | % quay về vòi xả | Còn lại | Tiên Ngọc |
 |---|---:|---:|---:|---:|---:|
-| Thong Thả | 12.705 | 11.409 | 90% | 1.596 | 36 |
-| Chăm Chỉ | 48.772 | 42.268 | 87% | 6.804 | 50 |
-| Cày Cuốc | 139.193 | 95.865 | 69% | 43.628 | 80 |
+| Thong Thả | 10.952 | 7.949 | 73% | 3.303 | 36 |
+| Chăm Chỉ | 30.165 | 26.628 | 88% | 3.838 | 50 |
+| Cày Cuốc | 121.467 | 76.365 | 63% | 45.402 | 80 |
 
-Nguồn vào lớn nhất của người chơi thong thả là hạ quái và ôn vườn; người chơi nhiều giờ dựa vào quái, cá và mật — tức
-là đều phải trả lời câu hỏi hoặc chờ thời gian thật. Vòi xả lớn nhất: mở ô đất (11–13 nghìn), mở ô tổ ong, gacha,
-nâng tổ, cần câu, lò đan, cường hóa.
+Nguồn vào lớn nhất của người chơi thong thả là mật và hạ quái; người chơi nhiều giờ dựa vào quái, cá và mật — tức
+là đều phải trả lời câu hỏi hoặc chờ thời gian thật. Vòi xả lớn nhất: mở ô tổ ong, gacha Trứng Ong, nâng tổ, cần câu,
+lò đan, cường hóa. (Khi vườn chữ còn, mở ô đất là vòi xả lớn nhất của người chơi thong thả; vườn đã xóa, mô hình cho
+người chơi ấy mua một trứng ong mỗi 3 ngày.)
 
 Điều test khẳng định (`test_thirty_days_of_three_kinds_of_player`, `test_money_does_not_breed_money`):
 
 - không ngày nào số dư âm; ít nhất 60% Linh Thạch kiếm được quay về vòi xả;
-- chơi nhiều giờ **không** kiếm nhanh hơn mỗi phút (Cày Cuốc ≈ 19,3/phút, Thong Thả ≈ 21,2/phút): vườn đi theo lịch
-  ôn nên 4 giờ/ngày chỉ được tiền vườn gấp ~2,2 lần 20 phút/ngày;
+- chơi nhiều giờ **không** kiếm nhanh hơn mỗi phút (Cày Cuốc ≈ 16,9/phút, Thong Thả ≈ 18,3/phút);
 - một người bắt đầu với 1 tỉ Linh Thạch, mua hết mọi nâng cấp ngay ngày đầu, vẫn chỉ kiếm tối đa ~1,6 lần một ngày
   tốt nhất của Cày Cuốc bình thường, và thu nhập phẳng hẳn sau khi đã mua hết: **tiền không đẻ ra tiền**.
 
@@ -88,13 +88,12 @@ cường hóa +9/+10 (tỉ lệ 30%/20%), bí cảnh (giai đoạn 9).
 |---|---|---|
 | Phí lò luyện đan | 10–500 mỗi mẻ (theo đan) | `recipes.json` |
 | Nâng Đan Lô | 800 + 10 Mực Tinh + 8 Gỗ; 2.500 + 25 Mực Tinh + 5 Mặc Linh Chi | `balance/alchemy.json` |
-| Khắc Văn | 60 Linh Thạch + 2 Mực Tinh mỗi lần thử (sai là mất); mài chữ 30 | `balance/inscription.json` |
 | Gacha Linh Thú | 500 / 4.500 cho 10 (hoặc 10 / 90 Tiên Ngọc) | `balance/gacha.json` |
-| Sạp Tạp Hóa | đan 40, Trúc Diệp Thảo 8, Mực Tinh 15, giun 5, hạt thường 80; đồ Phàm 120, Linh 450 | `balance/shop.json` |
+| Sạp Tạp Hóa | đan 40, Trúc Diệp Thảo 8, Mực Tinh 15, giun 5; đồ Phàm 120, Linh 450 | `balance/shop.json` |
 | Đan phương ở Tàng Thư Các | 150–4.000 (mỗi loại một lần) | `balance/library.json` |
 
-Sạp có **giới hạn mỗi ngày** cho từng món (10 đan, 30 dược thảo, 20 Mực Tinh, 3 hạt...) để không ai mua sạch Mực Tinh
-mà cường hóa thay cho việc đánh quái, và Hạt Giống Thường tính vào giới hạn 15 hạt mới/ngày của gacha.
+Sạp có **giới hạn mỗi ngày** cho từng món (10 đan, 30 dược thảo, 20 Mực Tinh, 40 giun...) để không ai mua sạch Mực
+Tinh mà cường hóa thay cho việc đánh quái.
 
 ## Linh Thú và kinh tế
 

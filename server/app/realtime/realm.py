@@ -236,7 +236,7 @@ class SealPuzzle(Puzzle):
             self.on_seal[p.user_id] = here
             if (here is None or p.user_id in self.asking or p.question is not None or p.q_pending
                     or here in self.asking.values() or now < self.cool.get(p.user_id, 0.0)
-                    or now < p.no_words_until):
+                    or now < p.no_question_until):
                 continue
             if not self.may_take(p):
                 if here != before and p.session is not None:
@@ -437,7 +437,7 @@ class RealmInstance(ChannelZone):
             self.no_question.discard(p.user_id)
             return True
         self.no_question.add(p.user_id)
-        p.no_words_until = self.world.mono() + 10
+        p.no_question_until = self.world.mono() + 10
         if p.session is not None:
             p.session.send({"t": "error", "code": "no_math_question",
                             "message_vi": "Chưa có câu toán nào ở tầng của con. Luyện ở Động Phủ một lúc "
@@ -903,10 +903,6 @@ class RealmService:
             self._err(s, "cannot_enter", err)
             return
         self.start(list(party.members), realm_id)
-
-    def act(self, s: "Session", m: protocol.RealmAct) -> None:
-        """`ract` (striking a prop) belonged to the old word rooms; no room of a math bí cảnh
-        has anything to strike, so it is ignored."""
 
     # ------------------------------------------------------------ entering
     def start(self, uids: list[int], realm_id: str) -> None:

@@ -71,8 +71,6 @@ class FriendsScene(Scene):
             if ui.button(f"fr_tab_{key}", tx, y + 12, tw, 13, label, selected=self.tab == key):
                 self.tab, self.scroll = key, 0
             tx += tw + 4
-        if self.data is not None:
-            ui.text(T.HELPS_LEFT.format(n=d.get("helps_left", 0)), x + w - 12, y + 15, 7, "#6A994E", anchor="topright")
         ui.input_box("fr_add", x + 12, y + 30, w - 92, 14, T.FRIEND_ADD_PH, max_len=20)
         if ui.button("fr_add_btn", x + w - 76, y + 30, 64, 14, T.FRIEND_ADD, style="primary",
                      enabled=not self.busy) or ui.submitted("fr_add"):
@@ -118,7 +116,6 @@ class FriendsScene(Scene):
                 (f"fr_rm_{uid}", T.REMOVE, "normal", lambda: self.game.message(
                     T.REMOVE_CONFIRM.format(name=f["display_name"]), cancel=T.CANCEL,
                     on_ok=lambda: self._post("/friends/remove", {"user_id": uid}))),
-                (f"fr_visit_{uid}", T.VISIT, "green", lambda: self.visit(f)),
                 (f"fr_gift_{uid}", T.GIFT_BUTTON, "gold", lambda: self.game.push(GiftScene(self.game, f))),
                 (f"fr_msg_{uid}", T.MSG, "normal", lambda: self.message(f))]:
             bw = ui.text_size(label, 7)[0] + 10
@@ -144,11 +141,6 @@ class FriendsScene(Scene):
     def message(self, f: dict) -> None:
         self.close()
         self.game.chatbox.open(whisper_to=f["display_name"])
-
-    def visit(self, f: dict) -> None:
-        from .visit import VisitScene
-        self.close()
-        self.game.push(VisitScene(self.game, f["user_id"], f["display_name"]))
 
 
 class PlayerMenu(Scene):

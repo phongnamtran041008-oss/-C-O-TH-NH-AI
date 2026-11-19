@@ -125,9 +125,7 @@
     "hai_trieu": "bee_hai_trieu", "ngoc_bich": "bee_ngoc_bich", "thu_phap": "bee_thu_phap", "kim_o": "bee_kim_o"
   },
   "garden": {
-    "_comment": "props/garden: plants <family>_<stage>[_<rarity>], family = families[crc32(plant key) % 6] (mirrored when bit 3 of the hash is set); egg sheet by the rarity colour of an egg; hive decorations",
-    "families": ["herb", "flower", "root", "vine", "shroom", "shrub"],
-    "rarities": ["common", "rare", "epic", "legendary"],
+    "_comment": "props/garden (named after the old word garden): egg sheet egg_<colour> by the rarity of a bee egg; hive decorations",
     "egg_by_bee_rarity": {"pham": "common", "linh": "rare", "huyen": "rare", "dia": "epic", "thien": "legendary"},
     "decorations": {"den_long": ["buildings", "lantern"], "hoa_sen": ["garden", "hoa_sen"],
                     "chuong_gio": ["garden", "chuong_gio"], "co_phuong": ["garden", "co_phuong"]}
@@ -135,7 +133,7 @@
   "realm_props": {
     "_comment": "bí cảnh pieces (props/realm): old realm_art call -> v2 name pattern",
     "rift": "rift", "pedestal": ["pedestal_off", "pedestal_on", "pedestal_lit"], "rune_tile": "rune_{state}",
-    "pillar": "pillar_{tone}_{lit}", "statue": "statue", "mirror": "mirror", "exit": ["exit_closed", "exit_open"],
+    "pillar": "pillar_{tone}_{lit}", "statue": "statue", "exit": ["exit_closed", "exit_open"],
     "chest": ["chest_closed", "chest_open"]
   },
   "td": {

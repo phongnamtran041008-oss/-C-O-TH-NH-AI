@@ -11,13 +11,11 @@ from ..auth import (accounts_created_today_from_ip, acheck, ahash, anon_limit, a
                     current_user, make_token, new_recovery_code, normalize_recovery, validate_credentials)
 from ..config import settings
 from ..db import get_db
-from ..learning.wordbank import bank
 from .. import firebase_auth
-from ..models import Collection, Seed, User
+from ..models import User
 from ..schemas import ChangePasswordIn, FirebaseIn, LoginIn, RegisterIn, ResetPasswordIn
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-STARTER_SEED = "水"  # tutorial: Trúc Lão hands over the first seed (spec 6.9)
 
 
 def _local_accounts_on() -> None:
@@ -27,7 +25,7 @@ def _local_accounts_on() -> None:
 
 async def _create_user(db: AsyncSession, username: str, password_hash: str, recovery_hash: str, ip: str,
                        **extra) -> User:
-    """A new account with the starter seed (spec 6.9: Trúc Lão hands over 水)."""
+    """A new account with the starting Linh Thạch and Tiên Ngọc of balance/economy.json."""
     now = clock.now()
     eco = balance.economy()
     user = User(username=username, password_hash=password_hash, recovery_code_hash=recovery_hash,
@@ -35,9 +33,6 @@ async def _create_user(db: AsyncSession, username: str, password_hash: str, reco
                 created_at=now, last_login_at=now, register_ip=ip, **extra)
     db.add(user)
     await db.flush()
-    starter = bank().by_hanzi[STARTER_SEED]
-    db.add(Seed(user_id=user.id, word_id=starter.id, duplicate=False, source="tutorial", obtained_at=now))
-    db.add(Collection(user_id=user.id, word_id=starter.id, first_seen_at=now))
     return user
 
 
@@ -92,7 +87,7 @@ def _username_base(email: str, uid: str) -> str:
 @router.post("/firebase")
 async def firebase_login(body: FirebaseIn, request: Request, db: AsyncSession = Depends(get_db)):
     """LAN worlds: trade a Firebase ID token for this world's own session token. The first
-    visit creates the local account (with the starter seed); later visits find it again."""
+    visit creates the local account; later visits find it again."""
     if not settings.firebase_api_key:
         raise api_error(404, "firebase_off", "Máy chủ này không dùng tài khoản Firebase.")
     anon_limit(request, "firebase", 30)

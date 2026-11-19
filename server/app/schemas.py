@@ -30,38 +30,15 @@ class ChangePasswordIn(BaseModel):
 
 
 class GachaRollIn(BaseModel):
-    banner: Literal["seeds", "bees", "pets"] = "seeds"
+    banner: Literal["bees", "pets"] = "bees"
     count: int = 1
     free: bool = False
     currency: Literal["spirit_stones", "immortal_jade"] = "spirit_stones"
 
 
-class PlantIn(BaseModel):
-    plot_id: int
-    seed_id: int
-
-
-class PlotIn(BaseModel):
-    plot_id: int
-
-
 class AnswerIn(BaseModel):
     session_id: str = Field(max_length=36)
     answer: dict[str, Any] | None = None
-
-
-class SellFruitIn(BaseModel):
-    word_id: str = Field(max_length=40)
-    count: int = 1
-
-
-class SellSeedIn(BaseModel):
-    seed_id: int
-
-
-class PracticeIn(BaseModel):
-    qtype: str | None = Field(default=None, max_length=4)
-    word_id: str | None = Field(default=None, max_length=40)
 
 
 class CharacterCreateIn(BaseModel):
@@ -76,14 +53,5 @@ class PositionIn(BaseModel):
     facing: str = Field(default="down", max_length=5)
 
 
-class CraftIn(BaseModel):
-    sentence_id: str = Field(max_length=20)
-    word_ids: list[str] = Field(max_length=30)
-
-
 class TutorialIn(BaseModel):
     step: int = Field(ge=0, le=100)
-
-
-class WordIn(BaseModel):
-    word_id: str = Field(max_length=40)

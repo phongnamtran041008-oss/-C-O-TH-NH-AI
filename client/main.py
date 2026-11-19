@@ -44,16 +44,13 @@ class Toast:
 class State:
     me: dict = field(default_factory=dict)
     character: dict = field(default_factory=dict)
-    garden: dict = field(default_factory=dict)
-    garden_at: float = 0.0
-    seeds: list = field(default_factory=list)
-    fruits: list = field(default_factory=list)
+    home: dict = field(default_factory=dict)        # /hive of my abode: the bees flying there
     friends: list = field(default_factory=list)
     cult: dict = field(default_factory=dict)       # /cultivation: Tu Vi, realm, stats, skills
     inv: dict = field(default_factory=dict)        # /inventory
     quests: dict = field(default_factory=dict)     # /quests
     hive: dict = field(default_factory=dict)       # /hive (stage 5)
-    bee_species: dict = field(default_factory=dict)  # /bees/species: id -> name, hanzi, look
+    bee_species: dict = field(default_factory=dict)  # /bees/species: id -> name, look
     pets: dict = field(default_factory=dict)       # /pets (stage 8): owned Linh Thú, the worn one, the book
     party: dict | None = None                      # tổ đội (stage 9), kept current by the WebSocket
     realm_queue: dict | None = None                # the bí cảnh matchmaking queue we wait in
@@ -429,13 +426,20 @@ class Game:
         self.push(SettingsScene(self, in_game=True))
 
     def open_book(self) -> None:
-        from .scenes.book import BookScene
-        self.push(BookScene(self))
+        """The B key: the shelf of phổ (monsters, bees, fish, treasures, Linh Thú)."""
+        self.open_books()
 
     def open_library(self) -> None:
-        """Tàng Thư Các (spec 9.3): also a button in the Sổ Phát Hiện and the L key."""
-        from .scenes.library import LibraryScene
-        self.push(LibraryScene(self))
+        """Tàng Thư Các (the Thủ Thư in the village, the L key): the math scrolls open first; closing
+        them shows the shelf of phổ, titles, frames and đan phương underneath."""
+        from .scenes.math_library import LibraryListScene
+        self.open_books()
+        self.push(LibraryListScene(self))
+
+    def open_books(self) -> None:
+        """The Tàng Thư Các shelf of phổ alone."""
+        from .scenes.books import BooksScene
+        self.push(BooksScene(self))
 
     def open_math(self) -> None:
         """Bí Cảnh Toán (M2): the math question loop; also the M key in the abode."""
@@ -487,9 +491,6 @@ class Game:
             if self.state.cult is not None:
                 self.state.cult["stats"] = m.get("stats", {})
             self.refresh_cult()
-        elif t == "skills":
-            if self.state.cult is not None:
-                self.state.cult["skills"] = m.get("skills", [])
         elif t == "loot":
             self.on_xp(m.get("xp"))
             if "spirit_stones" in m:
@@ -525,7 +526,7 @@ class Game:
             self.chat.system(m.get("message_vi", ""))  # chat problems show up in the chat box
             return
         if ws is not None and t in ("welcome", "zone", "snap", "error", "chat", "q", "q_end", "dead", "loot",
-                                    "act_fail", "cast", "mcast", "realm"):
+                                    "act_fail", "mcast", "realm"):
             ws.on_net(m)
 
     def _on_friend(self, m: dict) -> None:
@@ -542,11 +543,6 @@ class Game:
             self.toast(T.GIFT_GOT.format(name=name, item=m.get("name_vi", ""), n=m.get("qty", 1)), "#C99A3A")
             self.audio.play("coin")
             self.refresh_inv()
-        elif ev == "helped":
-            n = m.get("reward", 0)
-            self.state.me["spirit_stones"] = self.state.me.get("spirit_stones", 0) + n
-            self.toast(T.FRIEND_HELPED.format(name=name, n=n), "#6A994E")
-            self.audio.play("coin")
         if ev in ("online", "offline", "accepted"):
             self.refresh_friends()
 

@@ -1,4 +1,4 @@
-"""Stage 8 REST: luyện đan, khắc văn, Linh Thú, the Sạp Tạp Hóa and presents between friends
+"""Stage 8 REST: luyện đan, Linh Thú, the Sạp Tạp Hóa and presents between friends
 (docs/API.md). The economy itself is described in docs/BALANCE.md."""
 from __future__ import annotations
 
@@ -9,11 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..auth import api_error, current_user, write_user
 from ..db import get_db
 from ..models import User
-from ..systems import alchemy, inscription, pets, shop, social
+from ..systems import alchemy, pets, shop, social
 
 router = APIRouter(tags=["economy"])
 
-ERRORS = (alchemy.AlchemyError, inscription.InscribeError, pets.PetError, shop.ShopError, social.SocialError)
+ERRORS = (alchemy.AlchemyError, pets.PetError, shop.ShopError, social.SocialError)
 
 
 async def _run(db: AsyncSession, coro):
@@ -33,17 +33,6 @@ class RecipeIn(BaseModel):
 class AlchemyFinishIn(BaseModel):
     session_id: str = Field(max_length=36)
     timings: list[int] = Field(max_length=10)
-    pinyin_answers: list[str | None] = Field(max_length=10)
-
-
-class InscribeIn(BaseModel):
-    instance_id: int
-    word_id: str = Field(max_length=40)
-
-
-class EraseIn(BaseModel):
-    instance_id: int
-    index: int
 
 
 class PetIn(BaseModel):
@@ -79,29 +68,12 @@ async def alchemy_start(body: RecipeIn, user: User = Depends(write_user), db: As
 
 @router.post("/alchemy/finish")
 async def alchemy_finish(body: AlchemyFinishIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
-    return await _run(db, alchemy.finish(db, user, body.session_id, body.timings, body.pinyin_answers))
+    return await _run(db, alchemy.finish(db, user, body.session_id, body.timings))
 
 
 @router.post("/alchemy/furnace/upgrade")
 async def furnace_upgrade(user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
     return await _run(db, alchemy.upgrade_furnace(db, user))
-
-
-# ---------------------------------------------------------------- khắc văn
-@router.get("/forge/inscribe/{instance_id}")
-async def inscribe_options(instance_id: int, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
-    await inscription.abandon_if_stale(db, user)
-    return await _run(db, inscription.options(db, user, instance_id))
-
-
-@router.post("/forge/inscribe/start")
-async def inscribe_start(body: InscribeIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
-    return await _run(db, inscription.start(db, user, body.instance_id, body.word_id))
-
-
-@router.post("/forge/inscribe/erase")
-async def inscribe_erase(body: EraseIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
-    return await _run(db, inscription.erase(db, user, body.instance_id, body.index))
 
 
 # ---------------------------------------------------------------- Linh Thú

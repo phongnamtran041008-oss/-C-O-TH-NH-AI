@@ -11,16 +11,15 @@ Two parts, both reading the real data files in server/data (nothing is copied he
    gacha (by its expected value). For every good we compute the cheapest way to get it with
    Linh Thạch only (a fixed point over those exchanges). If anything could then be sold for
    at least what it costs, there is a loop that makes money without playing: `arbitrage()`
-   must be empty. Things that only come with time or answers (quả chữ, cá, mật, đồ rơi) have
-   no Linh Thạch price at all, so they can never close a loop.
+   must be empty. Things that only come with time or answers (cá, mật, đồ rơi) have no Linh
+   Thạch price at all, so they can never close a loop.
 
 2. The model. Three players (Thong Thả 20 minutes a day, Chăm Chỉ 1 hour, Cày Cuốc 4 hours)
-   play 30 days. Every income is a number from the data (stones per review, fruit prices,
-   loot tables, fish prices by rarity, Thủ Vườn rewards and their daily cap, daily tasks,
-   honey...) times how much of that activity the player does; every sink (gacha, opening
-   plots and hive cells, enhancing, furnace, rods, alchemy fees, khắc văn, shop) is bought by
-   a simple shopping list when the player can afford it. Daily caps and the review schedule
-   bound what more hours can bring.
+   play 30 days. Every income is a number from the data (loot tables, fish prices by
+   rarity, Thủ Thành rewards and their daily cap, daily tasks, honey...) times how much of
+   that activity the player does; every sink (gacha, opening hive cells, enhancing, furnace,
+   rods, alchemy fees, shop) is bought by a simple shopping list when the player can afford
+   it. Daily caps bound what more hours can bring.
 """
 from __future__ import annotations
 
@@ -59,7 +58,7 @@ def _stack_sell_prices() -> dict[str, float]:
 
 def market() -> tuple[dict[str, float], dict[str, float], list[dict]]:
     """(buy prices, sell prices, conversions). A conversion: {name, inputs {good: qty},
-    fee, outputs {good: expected qty}}. Goods: item ids, fish_<id>, fruit:<rarity>,
+    fee, outputs {good: expected qty}}. Goods: item ids, fish_<id>,
     equip:<id>:<rarity>:<level>, stones are the unit."""
     buy: dict[str, float] = {}
     sell = _stack_sell_prices()
@@ -71,7 +70,7 @@ def market() -> tuple[dict[str, float], dict[str, float], list[dict]]:
     shop = bal("shop")
     for s in shop["stock"]:
         cheaper(s["item"], s["price"])
-    for iid, price in bal("library")["shop"].items():
+    for iid, price in bal("books")["shop"].items():
         cheaper(iid, price)
     for bid, b in load("items/baits.json").items():
         if b.get("buy"):
@@ -79,13 +78,6 @@ def market() -> tuple[dict[str, float], dict[str, float], list[dict]]:
         if b.get("craft"):
             conv.append({"name": f"cắt mồi {bid}", "inputs": {b["craft"]["from"]: 1}, "fee": 0,
                          "outputs": {bid: b["craft"]["makes"]}})
-    # fruits, by rarity (the cheapest word of that rarity is what a recipe would use)
-    garden = bal("garden")
-    pet_fruit = max((s["skill"]["value"] for s in load("creatures/pets.json")["species"].values()
-                     if s["skill"]["type"] == "fruit_sell"), default=0)
-    for r, p in garden["fruit_sell_price"].items():
-        sell[f"fruit:{r}"] = p * (1 + pet_fruit)
-    sell["seed:dup"] = bal("gacha")["duplicate_seed_sell_price"]
     # equipment: bought Phàm/Linh, enhanced level by level, sold back
     eq = load("items/equipment.json")
     enh = eq["enhance"]
@@ -111,8 +103,6 @@ def market() -> tuple[dict[str, float], dict[str, float], list[dict]]:
         for ing in r["ingredients"]:
             if ing["kind"] == "item":
                 ins[ing["item"]] = ins.get(ing["item"], 0) + ing["qty"]
-            elif ing["kind"] == "fruit":
-                ins[f"fruit:{ing['rarity']}"] = ing["qty"]
             else:   # the cheapest fish allowed
                 lo = fish_r.index(ing["rarity"])
                 f = min((fid for fid, x in fish.items() if fish_r.index(x["rarity"]) >= lo),
@@ -129,11 +119,6 @@ def market() -> tuple[dict[str, float], dict[str, float], list[dict]]:
     wax = bal("bees")["release_wax"]
     conv.append({"name": "Trứng Ong (thả ong lấy sáp)", "inputs": {}, "fee": g["bees"]["price"]["spirit_stones"],
                  "outputs": {"sap_ong": sum(g["bees"]["rates"][r] * wax[r] for r in wax)}})
-    conv.append({"name": "Hạt Chữ (hạt trùng)", "inputs": {}, "fee": g["seeds"]["price"]["spirit_stones"],
-                 "outputs": {"seed:dup": 1}})
-    conv.append({"name": "Hạt Giống Thường (hạt trùng)", "inputs": {},
-                 "fee": next(s["price"] for s in shop["stock"] if s["item"] == shop["seed_item"]),
-                 "outputs": {"seed:dup": 1}})
     return buy, sell, conv
 
 
@@ -196,14 +181,13 @@ class Profile:
     id: str
     name_vi: str
     minutes: int
-    review_checks: int          # times a day the garden is opened (reviews due get answered then)
+    home_checks: int            # times a day the player goes home (the hive is emptied then)
     accuracy: float             # share of right answers
     kills: int                  # monsters a day
     casts: int                  # fishing casts a day
-    td_plays: int               # Thủ Vườn levels a day
+    td_plays: int               # Thủ Thành levels a day
     brews: int                  # pills brewed a day
     dailies: float              # share of daily tasks finished
-    seed_rolls: int             # paid Hạt Chữ rolls a day (on top of the free one)
     egg_every: int              # buys a bee egg every N days (0 = never)
     pet_every: int              # rolls Linh Thú every N days (0 = never)
     enhance_to: int             # wants its gear at this +level
@@ -212,9 +196,9 @@ class Profile:
 
 
 PROFILES = [
-    Profile("thong_tha", "Thong Thả (20 phút/ngày)", 20, 1, 0.75, 8, 0, 0, 0, 0.35, 0, 0, 0, 2, 0, 100),
-    Profile("cham_chi", "Chăm Chỉ (1 giờ/ngày)", 60, 2, 0.85, 30, 10, 2, 1, 0.9, 1, 4, 10, 5, 7, 200),
-    Profile("cay_cuoc", "Cày Cuốc (4 giờ/ngày)", 240, 4, 0.9, 140, 50, 6, 4, 1.0, 4, 1, 3, 8, 3, 300),
+    Profile("thong_tha", "Thong Thả (20 phút/ngày)", 20, 1, 0.75, 8, 0, 0, 0, 0.35, 3, 0, 2, 0, 100),
+    Profile("cham_chi", "Chăm Chỉ (1 giờ/ngày)", 60, 2, 0.85, 30, 10, 2, 1, 0.9, 4, 10, 5, 7, 200),
+    Profile("cay_cuoc", "Cày Cuốc (4 giờ/ngày)", 240, 4, 0.9, 140, 50, 6, 4, 1.0, 1, 3, 8, 3, 300),
 ]
 
 
@@ -223,7 +207,6 @@ class Sim:
     p: Profile
     stones: float
     jade: float = 0
-    plots: int = 9
     hive_cells: int = 5
     bees: int = 1
     hive_level: int = 1
@@ -261,11 +244,6 @@ def _avg(xs) -> float:
 
 def rates() -> dict:
     """Per-action values taken from the data files."""
-    garden = bal("garden")
-    seeds = bal("gacha")["banners"]["seeds"]
-    fruit_value = sum(seeds["rates"][r] * garden["fruit_sell_price"][r] for r in seeds["rates"])
-    per_stage = garden["reward_per_new_stage"]
-    review_stones = [per_stage * s for s in range(2, 6)]          # 1 -> 5: four paid reviews per plant
     sell = _stack_sell_prices()
     eq_sell = bal("shop")["equipment_sell"]["by_rarity"]
     mons = load("creatures/monsters.json")
@@ -285,7 +263,7 @@ def rates() -> dict:
     w = fishing["rarity_weight"]
     fish_v = sum(w[r] * _avg(f["sell_price"] for f in fish.values() if f["rarity"] == r) for r in w) / sum(w.values())
     bait = next(b["buy"] for b in load("items/baits.json").values() if b.get("buy"))
-    td = bal("td")["rewards"]
+    td = load("math/td.json")
     q = load("quests.json")
     daily = q["daily"]
     pool = {t["id"]: t for t in daily["pool"]}
@@ -294,42 +272,29 @@ def rates() -> dict:
         daily["count"] * _avg(t["rewards"].get("spirit_stones", 0) for t in other)
     chain_stones = sum(st["rewards"].get("spirit_stones", 0) for c in q["chains"].values() for st in c["steps"])
     chain_jade = sum(st["rewards"].get("immortal_jade", 0) for c in q["chains"].values() for st in c["steps"])
-    return {"fruit_value": fruit_value, "review_stones": review_stones, "harvest": garden["harvest_fruits"],
-            "kill": kill, "fish": fish_v, "bait": bait, "td_replay": td["replay_stones"]["1"],
-            "td_daily_cap": td["daily_rewarded_plays"], "td_first": [sum(v) for v in td["first_star_stones"].values()],
+    return {"kill": kill, "fish": fish_v, "bait": bait, "td_replay": td["rewards"]["replay_stones"],
+            "td_daily_cap": td["rewards"]["daily_rewarded_plays"],
+            "td_first": [sum(r.get("spirit_stones", 0) for r in lv["first_rewards"]) for lv in td["levels"]],
             "daily_stones": daily_stones, "daily_bonus": daily["all_done_bonus"].get("spirit_stones", 0),
             "daily_jade": daily["all_done_bonus"].get("immortal_jade", 0),
-            "chain_stones": chain_stones, "chain_jade": chain_jade, "honey_price": sell["linh_mat"],
-            "help": bal("social")["help_reward"] * bal("social")["help_daily_limit"]}
+            "chain_stones": chain_stones, "chain_jade": chain_jade, "honey_price": sell["linh_mat"]}
 
 
 def simulate(p: Profile, days: int = 30, start_stones: float | None = None) -> Sim:
     r = rates()
     eco = bal("economy")
-    garden = bal("garden")
     gacha = bal("gacha")["banners"]
     eq = load("items/equipment.json")["enhance"]
     hive = bal("bees")["hive"]
     alc = bal("alchemy")
-    ins = bal("inscription")
     rods = load("items/rods.json")
     rod_list = [x["price"]["spirit_stones"] for x in rods.values() if x.get("price")]
     s = Sim(p, float(eco["starting_spirit_stones"] if start_stones is None else start_stones))
     hours = p.minutes / 60
-    # a plant needs 5 right reviews over 10 min + 1 + 3 + 7 days; a player who opens the
-    # garden k times a day loses about half a check interval on each of the 3 long waits
-    cycle_days = (11 + 3 * 0.5 / p.review_checks) / p.accuracy
-    plant_slots = 0.0
-    td_first_left = list(r["td_first"]) * 10      # 30 levels, first stars once
+    td_first_left = list(r["td_first"])           # every level's first stars, once
     for d in range(1, days + 1):
         day = {"day": d, "in": {}, "out": {}}
         # --- income
-        plant_slots = min(s.plots, plant_slots + 1 + p.seed_rolls)            # seeds: free roll + bought
-        cycles = plant_slots / cycle_days
-        s.earn("ôn vườn", cycles * sum(r["review_stones"]) * p.accuracy, day)
-        fruit = cycles * r["harvest"] * r["fruit_value"]
-        brew_fruit = min(fruit, p.brews * 2 * garden["fruit_sell_price"]["common"])   # fruits go into the furnace
-        s.earn("bán quả chữ", fruit - brew_fruit, day)
         s.earn("hạ quái", p.kills * r["kill"], day)
         s.earn("câu cá", p.casts * 0.55 * r["fish"], day)                 # about half the casts land a fish
         s.spend("mồi câu", p.casts * r["bait"], day, force=True)
@@ -338,7 +303,7 @@ def simulate(p: Profile, days: int = 30, start_stones: float | None = None) -> S
         for _ in range(min(p.td_plays, 3)):
             if td_first_left and p.td_plays:
                 first += td_first_left.pop(0)
-        s.earn("ải Thủ Vườn", plays * r["td_replay"] + first, day)
+        s.earn("ải Thủ Thành", plays * r["td_replay"] + first, day)
         s.earn("nhiệm vụ hằng ngày", p.dailies * r["daily_stones"] + (r["daily_bonus"] if p.dailies >= 0.99 else 0), day)
         s.jade += r["daily_jade"] if p.dailies >= 0.99 else 0
         chain_days = max(1, round(14 * 60 / p.minutes))                      # one-off story rewards
@@ -346,15 +311,9 @@ def simulate(p: Profile, days: int = 30, start_stones: float | None = None) -> S
             s.earn("nhiệm vụ cốt truyện", r["chain_stones"] / chain_days, day)
             s.jade += r["chain_jade"] / chain_days
         honey = min(s.bees * 24 * hive["levels"][s.hive_level - 1]["honey_mult"],
-                    hive["levels"][s.hive_level - 1]["capacity"] * p.review_checks)
+                    hive["levels"][s.hive_level - 1]["capacity"] * p.home_checks)
         s.earn("bán Linh Mật", honey * 0.5 * r["honey_price"], day)          # half goes to bees and pills
-        s.earn("tưới giúp bạn", r["help"] * min(1.0, p.minutes / 60), day)
         # --- spending, most wanted first
-        for _ in range(p.seed_rolls):
-            s.spend("gacha Hạt Chữ", gacha["seeds"]["price"]["spirit_stones"], day)
-        costs = garden["plot_unlock_costs"]
-        if s.plots - 9 < len(costs) and s.spend("mở ô đất", costs[s.plots - 9], day):
-            s.plots += 1
         if p.brews:
             fee = _avg(x["fee"] for x in load("recipes.json")["recipes"].values() if x["min_realm"] == "pham_nhan")
             s.spend("phí luyện đan + dược thảo", p.brews * (fee + 8), day, force=True)
@@ -374,8 +333,6 @@ def simulate(p: Profile, days: int = 30, start_stones: float | None = None) -> S
             k = 100 / eq["success_pct"][lvl]
             if s.spend("cường hóa", 6 * (eq["cost_stones"][lvl] * k), day):   # six pieces
                 s.gear_level += 1
-        if p.inscribe_every and d % p.inscribe_every == 0:
-            s.spend("khắc văn", ins["fee"]["spirit_stones"], day)
         if p.pet_every and d % p.pet_every == 0:
             s.spend("gacha Linh Thú", gacha["pets"]["price"]["spirit_stones"], day)
         if p.casts and s.rods < len(rod_list) and s.spend("mua cần câu", rod_list[s.rods], day):

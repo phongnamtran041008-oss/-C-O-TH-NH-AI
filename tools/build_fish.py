@@ -1,8 +1,5 @@
 """Build server/data/creatures/fish.json from tools/curation/fish.json (spec 11.3, 5).
 
-The curation file may still carry the old Chinese-name fields (hanzi, pinyin_numeric,
-meaning_en); they are ignored: the game shows the Vietnamese name only.
-
     python tools/build_fish.py
 """
 from __future__ import annotations

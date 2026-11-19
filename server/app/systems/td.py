@@ -30,18 +30,6 @@ from . import inventory, items, td_sim
 
 MATH_PREFIX = "math_"      # every level id of the tower defence starts with this
 
-# Wave 2: the old library (systems/library.py) and inscription (systems/inscription.py) still
-# read a word's plant role as td.role_of / td.roles_data / td.power / td.plant_entries. Those
-# helpers live in word_plants.py; this forwards the names until those features are deleted.
-_WORD_LEFTOVERS = ("role_of", "roles_data", "power", "plant_entries")
-
-
-def __getattr__(name: str):
-    if name in _WORD_LEFTOVERS:
-        from . import word_plants
-        return getattr(word_plants, name)
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-
 
 def is_math(level_id: str) -> bool:
     return level_id.startswith(MATH_PREFIX)

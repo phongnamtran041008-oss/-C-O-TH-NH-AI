@@ -1,8 +1,8 @@
 """Stage 8 through the real client UI: brew Hồi Khí Đan at the abode's Đan Lô (canh lửa: three
-presses, type the pinyin of 气 learned from 天气), wear a Linh Thú that then follows the player,
-roll the Linh Thú banner, carve 火 on a sword at the Lò Rèn (three right answers), look at the
-daily tasks and the Linh Thú Phổ; then, next time the game opens in Trúc Lâm Thôn, buy a herb
-from Bà Chủ Sạp at the Sạp Tạp Hóa."""
+presses, the fire alone decides the quality), wear a Linh Thú that then follows the player, roll
+the Linh Thú banner, look at the Lò Rèn (no more Khắc Văn there), the daily tasks and the Linh
+Thú Phổ; then, next time the game opens in Trúc Lâm Thôn, buy a herb from Bà Chủ Sạp at the
+Sạp Tạp Hóa."""
 from __future__ import annotations
 
 import json
@@ -13,12 +13,20 @@ import pygame
 
 from client.tests.driver import Driver, ServerProcess, answer_current_quiz
 from client.tests.test_combat_flow import world
-from client.tests.test_linh_phong_flow import abode, give, learn
 from client.tests.test_world_flow import make_account
 
 
 def top(drv: Driver):
     return drv.game.top
+
+
+def give(server: ServerProcess, uid: int, item: str, qty: int) -> None:
+    server.sql("insert into inventory_items(user_id, item_id, quantity, bound) values (?, ?, ?, 0)", (uid, item, qty))
+
+
+def abode(drv: Driver):
+    from client.scenes.abode import AbodeScene
+    return next((s for s in drv.game.scenes if isinstance(s, AbodeScene)), None)
 
 
 def middle_of_zone(zone: dict, period_ms: int, bar: int) -> float:
@@ -38,16 +46,10 @@ def run_alchemy_flow(workdir: Path, shots: Path | None = None) -> None:
         token, uid = make_account(url, "dan_khach", "Đan Khách")
         import httpx
         h = {"Authorization": f"Bearer {token}"}
-        httpx.get(url + "/garden", headers=h).raise_for_status()
-        for hz in ("天气", "火", "山"):
-            learn(server, uid, hz)
-        server.sql("update collection set mastery=85 where user_id=? and word_id=(select id from words where hanzi='火')",
-                   (uid,))
         give(server, uid, "dp_hoi_khi", 1)
-        give(server, uid, "linh_mat", 3)
+        give(server, uid, "go_linh_moc", 1)
         give(server, uid, "truc_diep_thao", 1)          # spent by the brew; one more is bought at the shop
         give(server, uid, "muc_tinh", 6)
-        server.sql("insert into fruits(user_id, word_id, count) select ?, id, 4 from words where hanzi='火'", (uid,))
         server.sql("insert into equipment_instances(user_id, item_id, rarity, enhance_level, inscriptions) "
                    "values (?, 'kiem_go_dao', 'linh', 0, '[]')", (uid,))
         eid = server.sql("select id from equipment_instances where user_id=?", (uid,))[0][0]
@@ -70,8 +72,7 @@ def run_alchemy_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.click("alc_brew_hoi_khi_dan")
         drv.wait(lambda: drv.top_is("FireScene"), 10, "the fire")
         fire = top(drv)
-        assert [c["c"] for c in fire.fire["chars"]] == ["回", "气", "丹"]
-        assert fire.fire["chars"][1]["ask"] and not fire.fire["chars"][0]["ask"]
+        assert "chars" not in fire.fire and "hanzi" not in fire.fire and len(fire.fire["zones"]) == 3
         from client.engine import alchemy_fire
         drv.fixed_dt = 1 / 60           # the needle is judged to the millisecond: pin the clock
         for rnd in range(3):
@@ -87,25 +88,23 @@ def run_alchemy_flow(workdir: Path, shots: Path | None = None) -> None:
             drv.press(pygame.K_SPACE)
             drv.wait(lambda: fire.state != "run", 3, "the press")
             assert fire.hits[-1] == "perfect", (rnd, fire.hits, fire.timings[-1], want, z)
-            if rnd == 1:
-                drv.shot("fire_type_pinyin")
-                drv.type("qi4")
-                drv.press(pygame.K_RETURN)
-            else:
-                if rnd == 0:
-                    drv.shot("fire_new_char")
-                drv.click("fire_next")
+            if rnd == 0:
+                drv.shot("fire_hit")
+            drv.click("fire_next")
         drv.fixed_dt = None         # back to real time for the rest of the walk-about
         drv.wait(lambda: fire.state == "result", 10, "the pills")
         res = fire.result
         assert res["hits"] == fire.hits, (res["hits"], fire.hits)       # the server replayed the same fire
         assert fire.hits == ["perfect"] * 3                             # every press was dead centre
-        assert res["made"] >= 1 and res["chars"][1]["right"] and res["quality"] == "thuong"
+        assert res["made"] >= 1 and res["quality"] == "thuong" and res["xp"]["gained"] > 0
         assert all(h != "miss" for h in res["hits"])
         drv.shot("fire_result")
         n = server.sql("select coalesce(sum(quantity), 0) from inventory_items where user_id=? and item_id='hoi_khi_dan'",
                        (uid,))[0][0]
         assert n == res["made"]
+        left = server.sql("select coalesce(sum(quantity), 0) from inventory_items where user_id=? and item_id='muc_tinh'",
+                          (uid,))[0][0]
+        assert left == 4                                # two Mực Tinh went into the fire
         drv.click("fire_done")
         drv.wait_scene("AlchemyScene")
         drv.press(pygame.K_ESCAPE)
@@ -137,28 +136,14 @@ def run_alchemy_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.click("g_done")
         drv.press(pygame.K_ESCAPE)
 
-        # ---- khắc văn at the Lò Rèn
+        # ---- the Lò Rèn: enhancing only, nothing is carved any more
         from client.scenes.rpg import ForgeScene
         drv.game.push(ForgeScene(drv.game))
-        drv.click(f"forge_ins_{eid}")
-        drv.wait(lambda: drv.top_is("InscribeScene") and top(drv).data is not None, 10, "khắc văn")
-        drv.shot("inscribe_list")
-        fire_id = server.sql("select id from words where hanzi='火'")[0][0]
-        drv.click(f"ins_go_{fire_id}")
-        for _ in range(3):
-            drv.wait_scene("QuizScene")
-            answer_current_quiz(drv, server)
-            drv.step(10)
-            drv.click("quiz_continue") if drv.has("quiz_continue") else drv.press(pygame.K_RETURN)
-            drv.step(10)
-        drv.wait(lambda: drv.top_is("InscribeScene") and top(drv).data and top(drv).data["used"] == 1, 10,
-                 "carved")
-        ins = json.loads(server.sql("select inscriptions from equipment_instances where id=?", (eid,))[0][0])
-        assert ins[0]["hanzi"] == "火"
-        drv.shot("inscribed")
-        drv.press(pygame.K_ESCAPE)
-        drv.wait_scene("ForgeScene")
-        drv.shot("forge_with_carving")
+        drv.wait(lambda: drv.top_is("ForgeScene") and (top(drv).inv or {}).get("equipment"), 10, "the forge")
+        drv.step(3)
+        assert drv.has(f"forge_{eid}") and not drv.has(f"forge_ins_{eid}")
+        assert "inscriptions" not in top(drv).inv["equipment"][0]
+        drv.shot("forge")
         drv.press(pygame.K_ESCAPE)
 
         # ---- daily tasks and the Linh Thú Phổ
@@ -169,7 +154,9 @@ def run_alchemy_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.shot("quests_daily")
         drv.press(pygame.K_ESCAPE)
         drv.press(pygame.K_l)
-        drv.wait(lambda: drv.top_is("LibraryScene") and top(drv).data is not None, 10, "the library")
+        drv.wait_scene("LibraryListScene")
+        drv.press(pygame.K_ESCAPE)
+        drv.wait(lambda: drv.top_is("BooksScene") and top(drv).data is not None, 10, "the shelf of phổ")
         drv.click("lib_open_pet")
         drv.wait_scene("PetBookScene")
         drv.shot("pet_book")

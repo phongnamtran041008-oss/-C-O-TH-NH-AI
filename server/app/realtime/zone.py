@@ -59,13 +59,11 @@ class Player:
     qi: float = 50.0
     max_qi: float = 50.0
     stage: int = 0
-    skills: dict = field(default_factory=dict)         # skill id -> {"level", "word_id"} (learned only)
-    skill_ready: dict = field(default_factory=dict)    # skill id -> time it can be cast again
     next_attack_at: float = 0.0
     question: dict | None = None                       # the open Vấn Đạo question
     q_pending: bool = False                            # a question is being created
     next_q: tuple | None = None                        # (monster eid, time) of the next question
-    no_words_until: float = 0.0                        # nothing learned yet: do not ask again at once
+    no_question_until: float = 0.0                     # no question to ask: do not ask again at once
     protect_until: float = 0.0                         # Hộ Thể while answering (spec 8.1)
     guard_until: float = 0.0
     guard_reduce: float = 0.0

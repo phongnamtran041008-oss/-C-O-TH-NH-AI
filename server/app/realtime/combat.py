@@ -161,7 +161,7 @@ def end_question(p: "Player", reason: str) -> None:
 
 
 def request_question(ch: "ChannelZone", p: "Player", m: "Monster", now: float) -> None:
-    if p.question is not None or p.q_pending or now < p.no_words_until:
+    if p.question is not None or p.q_pending or now < p.no_question_until:
         return
     if p.user_id in m.group_hits:   # a bí cảnh boss: this player already did their part of the shield
         return
@@ -177,7 +177,7 @@ async def _own_floor_question(db, user, p: "Player", info: dict | None, rng: ran
     from ..systems import math_ask, math_combat
     question = await math_ask.pick_own(db, user, qtypes=math_combat.QUICK_TYPES, rng=rng)
     if question is None:
-        p.no_words_until = _world().mono() + 10
+        p.no_question_until = _world().mono() + 10
         if p.session:
             p.session.send({"t": "error", "code": "no_math_question",
                             "message_vi": "Con chưa mở được câu toán nào nên chưa phá được Mặc Thuẫn. "
@@ -192,7 +192,7 @@ async def _math_question(db, user, p: "Player", info: dict, rng: random.Random):
     from ..systems import math_combat
     question = await math_combat.question_for(db, user, info, rng)
     if question is None:
-        p.no_words_until = _world().mono() + 10
+        p.no_question_until = _world().mono() + 10
         if p.session:
             p.session.send({"t": "error", "code": "no_math_question",
                             "message_vi": "Chưa có câu toán nào cho lỗi này ở bậc của con. "
@@ -346,52 +346,6 @@ def attack(p: "Player", eid: str, now: float, rng: random.Random) -> str | None:
 
 def cfg_mult(key: str) -> float:
     return float(cfg()[key])
-
-
-def cast(p: "Player", sid: str, eid: str | None, now: float, rng: random.Random) -> str | None:
-    from ..systems import catalog
-    ch = p.channel
-    if ch is None or p.dead:
-        return "cannot"
-    if p.protected(now):
-        return "answering"
-    known = p.skills.get(sid)
-    if not known or known.get("level", 0) < 1:
-        return "not_learned"
-    sk = catalog.skills()
-    s = sk["skills"][sid]
-    if now < p.skill_ready.get(sid, 0):
-        return "cooldown"
-    if p.qi < s["qi"]:
-        return "no_qi"
-    mult = sk["level_mult"][min(4, known["level"]) - 1]
-    if s["effect"] == "damage":
-        m = ch.monster(eid) if eid else None
-        if m is None or not m.alive:
-            return "no_target"
-        if dist(p.x, p.y, m.x, m.y) > s["range"]:
-            return "too_far"
-        ch.event(k="skill", by=p.eid, s=sid, x=p.x, y=p.y - 12, tx=m.x, ty=m.y - 8)
-        engage(ch, m, p, now)
-        hurt_monster(ch, m, p, base_damage(p, m) * s["power"] * mult, False, now)
-    elif s["effect"] == "slow":
-        ch.event(k="skill", by=p.eid, s=sid, x=p.x, y=p.y, r=s["radius"])
-        for m in ch.monsters:
-            if m.alive and dist(p.x, p.y, m.x, m.y) <= s["radius"]:
-                m.slow_until, m.slow_mult = now + s["duration"], s["slow"]
-                engage(ch, m, p, now)
-                hurt_monster(ch, m, p, base_damage(p, m) * s["power"] * mult, False, now)
-    elif s["effect"] == "heal":
-        amount = p.max_hp * s["heal_pct"] / 100 * mult
-        p.hp = min(p.max_hp, p.hp + amount)
-        ch.event(k="skill", by=p.eid, s=sid, x=p.x, y=p.y - 12)
-        ch.event(k="heal", id=p.eid, v=int(round(amount)), x=p.x, y=p.y)
-    elif s["effect"] == "guard":
-        p.guard_until, p.guard_reduce = now + s["duration"] * mult, s["reduce"]
-        ch.event(k="skill", by=p.eid, s=sid, x=p.x, y=p.y - 12, d=s["duration"] * mult)
-    p.qi -= s["qi"]
-    p.skill_ready[sid] = now + s["cooldown"]
-    return None
 
 
 # ------------------------------------------------------------------ death & rewards

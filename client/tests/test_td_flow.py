@@ -110,16 +110,18 @@ def run_td_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.press(pygame.K_ESCAPE)
         drv.wait(lambda: drv.top_is("WorldScene"), 5, "back in the village")
 
-        # ---- the Mặc Quái met are in the Yêu Quái Phổ (Tàng Thư Các, the L key)
+        # ---- the Mặc Quái met are in the Yêu Quái Phổ (Tàng Thư Các, the L key: under the math scrolls)
         drv.press(pygame.K_l)
-        drv.wait(lambda: drv.top_is("LibraryScene") and top(drv).data is not None, 10, "Tàng Thư Các")
+        drv.wait_scene("LibraryListScene")
+        drv.press(pygame.K_ESCAPE)
+        drv.wait(lambda: drv.top_is("BooksScene") and top(drv).data is not None, 10, "Tàng Thư Các")
         assert {b["id"]: b for b in top(drv).data["books"]}["monster"]["found"] >= 1
         drv.click("lib_open_monster")
         drv.wait(lambda: drv.top_is("MonsterBookScene") and top(drv).data is not None, 5, "Yêu Quái Phổ")
         assert any(e["id"].startswith("td_") and e["found"] for e in top(drv).data["entries"])
         drv.shot("td_monster_book")
         drv.press(pygame.K_ESCAPE)
-        drv.wait_scene("LibraryScene")
+        drv.wait_scene("BooksScene")
         drv.press(pygame.K_ESCAPE)
         drv.close()
     finally:

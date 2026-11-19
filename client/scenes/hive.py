@@ -1,6 +1,5 @@
 """Linh Phong Sào — the spirit-bee hive (spec 10): a hexagon comb where every bee has a
-cell. Pick a bee to see it, feed it, give it a role (ở tổ / thụ phấn / hộ vệ) or release
-it; drag a bee (or pick it, then click an empty cell) to move it. Eggs hatch here.
+cell. Pick a bee to see it, feed it, give it a role (ở tổ / hộ vệ) or release it; drag a bee (or pick it, then click an empty cell) to move it. Eggs hatch here.
 Ong Phổ, the bee codex, is in this file too. All numbers come from the server."""
 from __future__ import annotations
 
@@ -14,6 +13,7 @@ from ..ui.dialog import DialogScene
 from .base import MessageBox, Scene
 
 HEX_W, HEX_H = 32, 28          # pointy-top cell, base pixels
+ROLES = ("hive", "guard")      # what a bee can do (the server reads an unknown role as "hive")
 COL_STEP, ROW_STEP = 34, 25
 
 
@@ -62,12 +62,6 @@ def egg_pics(rarity: str, color: str) -> tuple[list, float]:
     from ..engine import art2
     v2 = art2.egg_frames(rarity)
     return (v2, 0.5) if v2 else (sprites.egg(color), 1.0)
-
-
-def show_hanzi() -> bool:
-    """The old game's Chinese names of bees are not shown with the v2 art (math game UI)."""
-    from ..engine import art2
-    return not art2.on()
 
 
 class HiveScene(Scene):
@@ -157,7 +151,7 @@ class HiveScene(Scene):
             self.game.refresh_quests()
             ab = self._abode()
             if ab is not None:
-                ab.refresh_garden()
+                ab.refresh_home()
         self.post("/bees/role", {"bee_id": bid, "role": role}, ok)
 
     def feed(self, bid: int, food: str):
@@ -202,7 +196,7 @@ class HiveScene(Scene):
         super().close()
         ab = self._abode()
         if ab is not None:
-            ab.refresh_garden()
+            ab.refresh_home()
         if self.on_close:
             self.on_close()
 
@@ -243,8 +237,7 @@ class HiveScene(Scene):
             self.game.push(BeeBookScene(self.game))
         ui.text(T.HIVE_LEVEL.format(lv=hv["level"], mx=hv["level_max"]) + " · " +
                 T.HIVE_CELLS.format(n=hv["cells"], mx=hv["cells_max"]) + " · " +
-                T.HIVE_GUARDS.format(n=hv["guard_used"], mx=hv["guard_slots"]) + " · " +
-                T.HIVE_POLLINATORS.format(n=hv["pollinate_used"], mx=hv["pollinate_max"]),
+                T.HIVE_GUARDS.format(n=hv["guard_used"], mx=hv["guard_slots"]),
                 info_x, y + 7.5, 7, "#3A342C", anchor="midleft")
         self.draw_honey(ui, x + 6, y + 19)
         self.draw_comb(ui)
@@ -289,10 +282,10 @@ class HiveScene(Scene):
                 continue
             bob = math.sin(t * 3 + i) * 1.2
             bee_pic(ui, b, t, cx, cy - 2 + bob, 2, i)
-            role_col = {"hive": "#C99A3A", "pollinate": "#E89AB0", "guard": "#BC4749"}[b["role"]]
-            ui.fill(cx - 13, cy + 5, 9, 7, role_col)
-            ui.text({"hive": "T", "pollinate": "H", "guard": "V"}[b["role"]], cx - 8.5, cy + 8.5, 5, "#FFFFFF",
-                    anchor="center")      # Tổ, Hoa (thụ phấn), Vệ (hộ vệ)
+            role = b["role"] if b["role"] in ROLES else "hive"
+            ui.fill(cx - 13, cy + 5, 9, 7, {"hive": "#C99A3A", "guard": "#BC4749"}[role])
+            ui.text({"hive": "T", "guard": "V"}[role], cx - 8.5, cy + 8.5, 5, "#FFFFFF",
+                    anchor="center")      # Tổ, Vệ (hộ vệ)
             ui.text(str(b["level"]), cx + 10, cy + 8, 6, "#2B2B2B", anchor="center")
             ui.fill(cx + 4, cy - 12, 5, 3, b["rarity_color"])
         # unlock-next marker on the next cell to open
@@ -326,7 +319,7 @@ class HiveScene(Scene):
         if hover_cell is not None and ui.hover(14, 50, 228, 140) and not down:
             b = self.bee_at(hover_cell)
             if b is not None:
-                ui.set_tooltip(f"{b['name_vi']}{' ' + b['hanzi'] if show_hanzi() else ''} · {T.BEE_LEVEL.format(lv=b['level'])} · {b['role_vi']}")
+                ui.set_tooltip(f"{b['name_vi']} · {T.BEE_LEVEL.format(lv=b['level'])} · {b['role_vi']}")
             elif hover_cell not in opened:
                 ui.set_tooltip(T.HIVE_LOCKED_CELL)
         if not hv["bees"]:
@@ -405,10 +398,8 @@ class HiveScene(Scene):
         ui.fill(x + 6, y + 6, 40, 40, "#F2D58A")
         ui.border(x + 6, y + 6, 40, 40, b["rarity_color"], 2)
         bee_pic(ui, b, t, x + 26, y + 26 + math.sin(t * 3) * 1.5, 4, 0)
-        ui.text(b["name_vi"], x + 52, y + 8, 9)
-        ui.text(f"{b['hanzi']}  {b['pinyin']}" if show_hanzi() else b["pinyin"], x + 52, y + 20, 9, "#BC4749", kind="han")
-        ui.text(f"{b['rarity_vi']} · hệ {b['element_vi']}" + ("" if b.get("real_word") else "  " + T.BEE_GAME_NAME),
-                x + 52, y + 33, 7, b["rarity_color"])
+        ui.text(b["name_vi"], x + 52, y + 10, 9)
+        ui.text(f"{b['rarity_vi']} · hệ {b['element_vi']}", x + 52, y + 26, 7, b["rarity_color"])
         yy = y + 50
         ui.text(T.BEE_LEVEL.format(lv=b["level"]), x + 6, yy, 8)
         nxt = b.get("xp_next")
@@ -420,32 +411,24 @@ class HiveScene(Scene):
         ui.text(T.BEE_BOND.format(b=b["bond"], mx=b["bond_max"]), x + 43, yy + 5, 6, "#2B2B2B", anchor="midleft")
         yy += 13
         g = b["guard"]
-        yy = ui.text(T.BEE_STATS.format(h=f"{b['honey_per_hour']:.1f}", p=f"{b['pollen_per_hour']:.0f}",
-                                        hp=g["hp"], atk=g["atk"]), x + 6, yy, 7, max_w=w - 12).bottom + 2
+        yy = ui.text(T.BEE_STATS.format(h=f"{b['honey_per_hour']:.1f}", hp=g["hp"], atk=g["atk"]), x + 6, yy, 7,
+                     max_w=w - 12).bottom + 2
         yy = ui.text(b["skill_vi"], x + 6, yy, 7, "#4A7CC8", max_w=w - 12).bottom + 2
         if b["resonance_pct"]:
             yy = ui.text(T.BEE_RESONANCE.format(p=b["resonance_pct"]), x + 6, yy, 7, b["element_color"]).bottom + 1
-        wd = b["word"]
-        r = ui.text(T.BEE_WORD.format(hz=wd["hanzi"], py=wd["pinyin"], vi=wd["vi"], m=b["word_mastery"]), x + 6, yy, 7,
-                    "#5A5A5A", max_w=w - 12)
-        if ui.hover(x + 6, yy, w - 12, r.height):
-            ui.set_tooltip(T.BEE_WORD_TIP)
-        yy = r.bottom + 2
         fav = (T.BEE_FAV.format(f=b["favorite"]) if b["favorite_known"]
                else T.BEE_FAV_HINT.format(h=b["favorite_hint_vi"]))
         ui.text(fav, x + 6, yy, 7, "#8B5A2B", max_w=w - 12)
         # roles
         ry = y + h - 46
         hv = self.hive
-        for i, role in enumerate(("hive", "pollinate", "guard")):
+        for i, role in enumerate(ROLES):
             enabled = not self.busy
             tip = T.BEE_ROLE_TIP[role]
             if role == "guard" and b["role"] != "guard" and hv["guard_used"] >= hv["guard_slots"]:
                 enabled = False
                 tip += f" ({T.HIVE_GUARDS.format(n=hv['guard_used'], mx=hv['guard_slots'])})"
-            if role == "pollinate" and b["role"] != "pollinate" and hv["pollinate_used"] >= hv["pollinate_max"]:
-                enabled = False
-            if ui.button(f"hv_role_{role}", x + 6 + i * 69, ry, 65, 14, T.BEE_ROLE[role], size=7,
+            if ui.button(f"hv_role_{role}", x + 6 + i * 104, ry, 98, 14, T.BEE_ROLE[role], size=7,
                          selected=b["role"] == role, enabled=enabled or b["role"] == role, tooltip=tip):
                 if b["role"] != role:
                     self.set_role(b["id"], role)
@@ -486,8 +469,7 @@ class FoodPicker(Scene):
         for i, f in enumerate(foods[self.scroll:self.scroll + 8]):
             fy = y + 20 + i * 16
             label = f"{f['name_vi']}  ×{f['qty']}"
-            if ui.button(f"food_{self.scroll + i}", x + 8, fy, w - 16, 14, label, size=7,
-                         kind="han" if f.get("hanzi") else "ui"):
+            if ui.button(f"food_{self.scroll + i}", x + 8, fy, w - 16, 14, label, size=7):
                 self.close()
                 self.hive.feed(self.b["id"], f["food"])
                 return
@@ -533,10 +515,8 @@ class HatchScene(Scene):
             ui.image(frames[2], cx, cy + 14, zoom=4 * ek, anchor="center")
             bee_pic(ui, b, t, cx + math.sin(t * 2) * 10 * k, cy - 20 * k + math.sin(t * 5) * 2, 5, 0)
             if k >= 1:
-                ui.text(T.HIVE_HATCHED.format(name=b["name_vi"], hanzi=b["hanzi"] if show_hanzi() else ""), cx, cy + 50, 11, "#F4EBD9",
-                        anchor="center")
-                ui.text(f"{b['pinyin']} · {b['rarity_vi']} · hệ {b['element_vi']}", cx, cy + 64, 8, col,
-                        anchor="center")
+                ui.text(T.HIVE_HATCHED.format(name=b["name_vi"]), cx, cy + 50, 11, "#F4EBD9", anchor="center")
+                ui.text(f"{b['rarity_vi']} · hệ {b['element_vi']}", cx, cy + 64, 8, col, anchor="center")
                 if self.r.get("new_species"):
                     ui.text(T.HIVE_NEW_SPECIES, cx, cy + 76, 8, "#E9C46A", anchor="center")
                 ui.text(b["desc_vi"], cx, cy + 88, 7, "#E3D5BA", anchor="midtop", max_w=300)
@@ -588,8 +568,8 @@ class BeeBookScene(Scene):
             ui.widgets[f"bb_{e['id']}"] = ui.rect(cx, cy, 36, 46)
             if e["found"]:
                 bee_pic(ui, e, t, cx + 18, cy + 16, 3, i)
-                if show_hanzi():
-                    ui.text(e["hanzi"], cx + 18, cy + 37, 8, "#2B2B2B", kind="han", anchor="center")
+                ui.text(e["name_vi"].removeprefix("Ong "), cx + 18, cy + 38, 5, "#2B2B2B", anchor="center",
+                        max_w=34)
             else:
                 ui.text("?", cx + 18, cy + 18, 16, "#C9B48A", anchor="center")
                 ui.text(e["rarity_vi"], cx + 18, cy + 38, 6, e["rarity_color"], anchor="center")
@@ -614,18 +594,13 @@ class BeeBookScene(Scene):
             ui.text(T.BEE_BOOK_UNKNOWN, dx + 8, dy + 8, 8, "#8E877A")
             return
         bee_pic(ui, e, t, dx + 24, dy + 22, 5, 0)
-        ui.text(e["name_vi"], dx + 48, dy + 6, 9)
-        ui.text(f"{e['hanzi']}  {e['pinyin']}" if show_hanzi() else e["pinyin"], dx + 48, dy + 18, 9, "#BC4749", kind="han")
-        ui.text(f"{e['rarity_vi']} · hệ {e['element_vi']}", dx + 48, dy + 31, 7, e["rarity_color"])
+        ui.text(e["name_vi"], dx + 48, dy + 8, 9)
+        ui.text(f"{e['rarity_vi']} · hệ {e['element_vi']}", dx + 48, dy + 24, 7, e["rarity_color"])
         yy = dy + 46
-        word = e["word"]
-        yy = ui.text(f"{word['hanzi']} {word['pinyin']}: {word['vi']}" + (
-            "  · " + T.BEE_REAL_WORD.format(hz=e["hanzi"]) if e.get("real_word") else "  " + T.BEE_GAME_NAME),
-            dx + 6, yy, 7, "#5A5A5A", max_w=dw - 12, kind="ui").bottom + 3
         yy = ui.text(e["desc_vi"], dx + 6, yy, 7, max_w=dw - 12).bottom + 3
         yy = ui.text(e["skill_vi"], dx + 6, yy, 7, "#4A7CC8", max_w=dw - 12).bottom + 3
         g = e["guard"]
-        yy = ui.text(T.BEE_BOOK_STATS.format(h=e["honey"], p=e["pollen"], hp=g["hp"], atk=g["atk"]), dx + 6, yy, 7,
+        yy = ui.text(T.BEE_BOOK_STATS.format(h=e["honey"], hp=g["hp"], atk=g["atk"]), dx + 6, yy, 7,
                      "#5A5A5A", max_w=dw - 12).bottom + 3
         fav = T.BEE_FAV.format(f=e["favorite"]) if e["favorite_known"] else T.BEE_FAV_HINT.format(h=e["favorite_hint_vi"])
         yy = ui.text(fav, dx + 6, yy, 7, "#8B5A2B", max_w=dw - 12).bottom + 3

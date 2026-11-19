@@ -46,7 +46,7 @@ def abode() -> dict:
             for y in range(min(y0, y1), max(y0, y1) + 1):
                 setg(x, y, GID["path0"] if (x + y) % 3 else GID["path1"])
 
-    # garden 5x5 plots of 32px at tiles (14..23, 7..16), framed by a path
+    # the courtyard at tiles (14..23, 7..16), framed by a path (the old word garden stood there)
     gx, gy = 14, 7
     path(gx - 1, gy - 1, gx + 10, gy - 1)
     path(gx - 1, gy + 10, gx + 10, gy + 10)
@@ -105,10 +105,6 @@ def abode() -> dict:
     solid(9 * T + 2, 6 * T + 14, 12, 10)
     obj("Thiên Cơ Đài", "interact", 30 * T, 5 * T, 32, 44, sprite="shrine", action="gacha")
     solid(30 * T + 2, 5 * T + 30, 28, 14)
-    obj("Bia Phát Hiện", "interact", 25 * T, 4 * T, 16, 24, sprite="tablet", action="discoveries")
-    solid(25 * T + 2, 4 * T + 16, 12, 8)
-    obj("Bàn Ghép Câu", "interact", 9 * T, 10 * T, 24, 16, sprite="table", action="craft")
-    solid(9 * T + 1, 10 * T + 6, 22, 8)
     obj("Bàn đả tọa", "interact", 30 * T, 15 * T, 24, 16, sprite="mat", action="meditate")
     obj("Linh Phong Sào", "interact", 27 * T, 11 * T, 24, 32, sprite="hive", action="hive")
     solid(27 * T + 7, 11 * T + 24, 10, 8)
@@ -120,7 +116,6 @@ def abode() -> dict:
     for (x, y) in ((27, 17), (34, 11), (12, 18)):
         obj("rock", "prop", x * T, y * T, 16, 12, sprite="rock")
         solid(x * T + 2, y * T + 4, 12, 8)
-    obj("garden", "area", gx * T, gy * T, 5 * 32, 5 * 32, kind="garden")
     obj("spawn", "spawn", 19 * T + 8, (H - 5) * T, 1, 1)
 
     return {
@@ -330,7 +325,7 @@ def village() -> dict:
     m.building("Lò Rèn", "anvil", 21, 27, 24, 20, 10, otype="interact", action="forge")
     m.npc("Thợ Rèn", "smith", 23, 26, action="forge")
     m.building("Bảng Nhiệm Vụ", "board", 32, 10, 24, 28, 8, otype="interact", action="quests")
-    m.building("Cổng Thủ Vườn", "td_gate", 44, 24, 40, 40, 6, otype="interact", action="td")
+    m.building("Cổng Thủ Thành", "td_gate", 44, 24, 40, 40, 6, otype="interact", action="td")
     m.obj("Giếng", "prop", 27 * T + 4, 16 * T, 24, 24, sprite="well")
     m.solid(27 * T + 6, 16 * T + 12, 20, 12)
     m.npc("Tiểu Lan", "guide", 30, 29, action="talk_guide")

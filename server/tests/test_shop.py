@@ -3,10 +3,10 @@ import pytest
 from sqlalchemy import select
 
 from app import balance
-from app.models import EquipmentInstance, Quest, Seed, User
+from app.models import EquipmentInstance, Quest
 from app.systems import quests, shop
 from tests.econ_helpers import give, player, qty, set_stones, stones
-from tests.helpers import answer_key, correct_answer
+from tests.test_math_loop import play, start
 
 C = balance.load("shop")
 
@@ -34,8 +34,9 @@ async def test_buy_with_a_daily_limit(client, at_shop):
     assert r.json()["error"]["code"] == "sold_out"
     left = next(s for s in (await client.get("/shop", headers=h)).json()["stock"] if s["item_id"] == "hoi_huyet_dan")
     assert left["left"] == line["daily"] - 3
-    r = await client.post("/shop/buy", json={"item_id": "linh_qua", "qty": 1}, headers=h)
-    assert r.json()["error"]["code"] == "not_sold"
+    for not_sold in ("linh_qua", "hat_giong_thuong"):          # no seeds any more: the garden is gone
+        r = await client.post("/shop/buy", json={"item_id": not_sold, "qty": 1}, headers=h)
+        assert r.json()["error"]["code"] == "not_sold"
     await set_stones(uid, 1)
     r = await client.post("/shop/buy", json={"item_id": "hoi_huyet_dan", "qty": 1}, headers=h)
     assert r.json()["error"]["code"] == "insufficient_funds" and await qty(uid, "hoi_huyet_dan") == 3
@@ -50,22 +51,6 @@ async def test_the_next_day_the_stock_is_back(client, at_shop, frozen):
     assert r.json()["error"]["code"] == "sold_out"
     frozen.advance(days=1)
     assert (await client.post("/shop/buy", json={"item_id": "truc_diep_thao", "qty": 1}, headers=h)).status_code == 200
-
-
-async def test_common_seeds_count_toward_the_daily_new_seeds(client, at_shop, db):
-    h, uid = await player(client, "khach_hat", stones=5000)
-    r = await client.post("/shop/buy", json={"item_id": "hat_giong_thuong", "qty": 2}, headers=h)
-    assert r.status_code == 200, r.text
-    assert all(s["rarity"] == "common" for s in r.json()["seeds"])
-    seeds = (await db.execute(select(Seed).where(Seed.user_id == uid, Seed.source == "shop"))).scalars().all()
-    assert len(seeds) == 2
-    user = await db.get(User, uid)
-    assert user.daily_new_seeds_count == 2
-    user.daily_new_seeds_count = balance.gacha()["daily_roll_limit"]
-    await db.commit()
-    r = await client.post("/shop/buy", json={"item_id": "hat_giong_thuong", "qty": 1}, headers=h)
-    assert r.json()["error"]["code"] == "daily_limit"
-    assert len((await db.execute(select(Seed).where(Seed.user_id == uid, Seed.source == "shop"))).scalars().all()) == 2
 
 
 async def test_equipment_is_sold_pham_and_linh_only_and_bought_back_cheaper(client, at_shop, db):
@@ -124,7 +109,7 @@ async def test_presents_between_friends(client, db):
 
 # ------------------------------------------------------------------ daily tasks
 async def test_daily_tasks_progress_claim_bonus_and_rotate(client, db, frozen):
-    h, uid = await player(client, "hang_ngay", learn=["水", "火"], stones=0)
+    h, uid = await player(client, "hang_ngay", stones=0)
     qs = (await client.get("/quests", headers=h)).json()
     daily = qs["daily"]
     from app.systems import catalog
@@ -133,11 +118,10 @@ async def test_daily_tasks_progress_claim_bonus_and_rotate(client, db, frozen):
     assert daily[0]["id"].endswith(":d_answer") and all(q["chain"] == "daily" for q in daily)
     assert not any(q["id"].startswith("d2") for q in qs["quests"])        # the chains list stays as it was
     need = daily[0]["objective"]["count"]
-    for _ in range(need):
-        q = (await client.post("/quiz/practice", json={}, headers=h)).json()
-        await client.post("/quiz/answer", json={"session_id": q["session_id"],
-                                                "answer": correct_answer(q["qtype"], await answer_key(q["session_id"]))},
-                          headers=h)
+    run_id = await start(client, h)
+    for _ in range(need):                       # right math answers count toward "answer"
+        _, r = await play(client, h, run_id)
+        assert r["correct"], r
     daily = (await client.get("/quests", headers=h)).json()["daily"]
     assert daily[0]["state"] == "done"
     r = await client.post("/quests/claim", json={"quest_id": daily[0]["id"]}, headers=h)

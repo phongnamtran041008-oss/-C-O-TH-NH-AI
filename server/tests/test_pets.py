@@ -1,24 +1,67 @@
 """Stage 8: Linh Thú (spec 13, 6.8). The banner, the 12 con giáp, duplicates, wearing one pet, its
-combat bonus, and each skill where it acts. No skill answers or skips a question."""
-import datetime as dt
+combat bonus, and each skill where it acts. No skill answers or skips a question.
+
+Six skills used to act in the old word garden; since the purge they act on loops that live on:
+Chuột (Linh Thú banner), Trâu (Hầm Ngục stones), Hổ (failed Thiên Kiếp), Rồng (a streak of right
+math answers), Gà (meditation), Lợn (selling to the village)."""
+import math
 import random
 import re
 from collections import Counter
-from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from sqlalchemy import select
 
-from app import balance, clock
-from app.learning.wordbank import bank
-from app.models import CodexEntry, Pet, Plot, User
-from app.systems import catalog, pets
+from app import balance
+from app import db as dbm
+from app.models import Character, CodexEntry, Pet, QuizSession, User
+from app.systems import catalog, cultivation, inventory, math_dungeon, pets
 from app.systems.gacha import Banner
-from tests.econ_helpers import give_fruit, player, stones
-from tests.helpers import answer_key, correct_answer
+from tests.econ_helpers import player, stones
+from tests.helpers import answer_key
+from tests.test_math_loop import right_answer, wrong_answer
 
-ROOT = Path(__file__).resolve().parents[2]
 SP = catalog.pets()["species"]
+HAN = re.compile("[" + chr(0x3400) + "-" + chr(0x9FFF) + "]")    # CJK ideographs
+
+
+async def make(client, name, display=None):
+    return await player(client, name)
+
+
+async def getchar(uid):
+    async with dbm.SessionLocal() as db:
+        return await db.get(Character, uid)
+
+
+async def bottleneck(uid):
+    """Luyện Khí 9 with full Tu Vi (500): waiting for Thiên Kiếp."""
+    async with dbm.SessionLocal() as db:
+        ch = await db.get(Character, uid)
+        ch.realm, ch.realm_stage, ch.cultivation_xp = "luyen_khi", 9, 500
+        await db.commit()
+
+
+async def give(uid, item, qty=1):
+    async with dbm.SessionLocal() as db:
+        await inventory.change_item(db, uid, item, qty, "test")
+        await db.commit()
+
+
+async def run_tribulation(client, h, right: int) -> dict:
+    """A whole Thiên Kiếp: the first `right` questions right, the others wrong."""
+    r = await client.post("/cultivation/breakthrough/start", headers=h)
+    assert r.status_code == 200, r.text
+    q, res, i = r.json()["question"], None, 0
+    while q is not None:
+        key = await answer_key(q["session_id"])
+        ans = right_answer(q, key) if i < right else wrong_answer(q, key)
+        res = (await client.post("/quiz/answer", json={"session_id": q["session_id"], "answer": ans},
+                                 headers=h)).json()
+        q, i = res.get("next"), i + 1
+    assert i == 20
+    return res["tribulation"]
 
 
 async def give_pet(db, uid, kind, level=1, equipped=True) -> int:
@@ -26,6 +69,11 @@ async def give_pet(db, uid, kind, level=1, equipped=True) -> int:
     db.add(p)
     await db.commit()
     return p.id
+
+
+async def wear(uid, kind):
+    async with dbm.SessionLocal() as db:
+        await give_pet(db, uid, kind)
 
 
 def test_twelve_zodiac_pets_with_the_banner_rarities():
@@ -36,26 +84,22 @@ def test_twelve_zodiac_pets_with_the_banner_rarities():
     assert [s["zodiac_vi"] for s in SP.values()] == ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân",
                                                     "Dậu", "Tuất", "Hợi"]
     assert SP["rong"]["rarity"] == "legendary"
-    # the four skills of bản 1 are there as written (spec 13)
-    assert SP["chuot"]["skill"] == {"type": "seed_rare", "value": 0.05}
-    assert SP["trau"]["skill"] == {"type": "review_stones", "value": 0.2}
-    assert SP["ho"]["skill"] == {"type": "wither_slow", "value": 0.5}
+    assert SP["chuot"]["skill"] == {"type": "pet_rare", "value": 0.05}
+    assert SP["trau"]["skill"] == {"type": "dungeon_stones", "value": 0.2}
+    assert SP["ho"]["skill"] == {"type": "tribulation_guard", "value": 0.5}
     assert SP["rong"]["skill"] == {"type": "streak_double", "every": 5}
+    assert SP["ga"]["skill"] == {"type": "xp_meditate", "value": 0.1}
+    assert SP["lon"]["skill"] == {"type": "sell_stones", "value": 0.1}
     assert len({s["skill"]["type"] for s in SP.values()}) == 12
 
 
-def test_pet_names_match_cc_cedict():
-    path = ROOT / "tools" / "raw" / "cedict.txt"
-    if not path.exists():
-        pytest.skip("CC-CEDICT not downloaded (tools/raw/cedict.txt)")
-    from app.learning import pinyin as py
-    readings: dict[str, set[str]] = {}
-    for line in path.read_text("utf-8").splitlines():
-        m = re.match(r"^(\S+) (\S+) \[([^\]]+)\]", line)
-        if m and len(m.group(2)) == 1:
-            readings.setdefault(m.group(2), set()).add(m.group(3).lower())
+def test_no_words_in_the_pet_data():
     for pid, s in SP.items():
-        assert py.marked_to_numeric(s["pinyin"]) in readings.get(s["hanzi"], set()), (pid, s, readings.get(s["hanzi"]))
+        assert "hanzi" not in s and "pinyin" not in s, pid
+        assert not HAN.search(str(s)), pid
+        low = s["skill_vi"].lower()
+        assert not any(w in low for w in ("vườn", "hạt", "quả", "chữ")), (pid, s["skill_vi"])
+    assert not HAN.search(str(catalog.pets()))
 
 
 def test_banner_rates_hold_over_many_rolls():
@@ -76,6 +120,7 @@ async def test_rolling_gives_pets_levels_duplicates_and_codex(client, db):
         for res in r.json()["results"]:
             seen[res["pet_type"]] += 1
             assert res["rarity"] == SP[res["pet_type"]]["rarity"]
+            assert "hanzi" not in res and "pinyin" not in res
     rows = (await db.execute(select(Pet).where(Pet.user_id == uid))).scalars().all()
     assert len(rows) == len(seen)                         # one row per species
     for p in rows:
@@ -87,6 +132,7 @@ async def test_rolling_gives_pets_levels_duplicates_and_codex(client, db):
     assert ov["found"] == len(seen) and ov["total"] == 12
     hidden = [b for b in ov["book"] if not b["found"]]
     assert all("name_vi" not in b and "skill_vi" not in b for b in hidden)
+    assert all("hanzi" not in b and "pinyin" not in b for b in ov["book"] + ov["pets"])
 
 
 async def test_a_copy_past_the_top_level_becomes_stones(client, db):
@@ -122,100 +168,144 @@ async def test_wearing_one_pet_adds_its_stats(client, db):
     assert r.json()["error"]["code"] == "no_pet"
 
 
-# ------------------------------------------------------------------ skills
-async def _ripe_review(client, db, h, uid, hanzi="水"):
-    """A plant due for review; returns the answer of a right review."""
-    w = bank().by_hanzi[hanzi]
-    plot = (await db.execute(select(Plot).where(Plot.user_id == uid, Plot.unlocked.is_(True)))).scalars().first()
-    plot.word_id, plot.stage = w.id, 2
-    plot.next_review_at = clock.now() - dt.timedelta(seconds=1)
-    plot.wither, plot.wither_checked_at = 0.0, clock.now()
-    await db.commit()
-    q = (await client.post("/garden/review", json={"plot_id": plot.id}, headers=h)).json()
-    return (await client.post("/quiz/answer", json={"session_id": q["session_id"],
-                                                    "answer": correct_answer(q["qtype"], await answer_key(q["session_id"]))},
-                              headers=h)).json()
+# ------------------------------------------------------------------ the six replaced skills
+class _Lucky:
+    """An rng whose random() is always `r` and whose choice() takes the first species."""
+
+    def __init__(self, r: float):
+        self.r = r
+
+    def random(self):
+        return self.r
+
+    def choice(self, xs):
+        return xs[0]
 
 
-async def test_trau_adds_20_percent_to_review_stones(client, db):
-    h, uid = await player(client, "chu_trau", learn=["水"])
-    await client.get("/garden", headers=h)
-    plain = (await _ripe_review(client, db, h, uid))["reward"]["spirit_stones"]
+async def test_chuot_moves_five_percent_of_the_pet_banner_from_common_to_rare(client, db):
+    common = balance.gacha()["banners"]["pets"]["rates"]["common"]
+    assert pets.rare_upgrade_chance(0.05) == pytest.approx(0.05 / common)
+    assert pets.rare_upgrade_chance(0.0) == 0.0
+    h, uid = await player(client, "chu_chuot", stones=0)
+    user = await db.get(User, uid)
+    just_under = 0.05 / common - 1e-6
+    out = await pets.resolve_gacha(db, user, ["common"], _Lucky(just_under))
+    assert out[0]["rarity"] == "common"                   # no Chuột: nothing changes
+    await give_pet(db, uid, "chuot", equipped=True)
+    out = await pets.resolve_gacha(db, user, ["common", "epic"], _Lucky(just_under))
+    assert out[0]["rarity"] == "rare" and SP[out[0]["pet_type"]]["rarity"] == "rare"
+    assert out[1]["rarity"] == "epic"                     # only Common is touched
+    out = await pets.resolve_gacha(db, user, ["common"], _Lucky(0.05 / common + 1e-6))
+    assert out[0]["rarity"] == "common"
+    # over many rolls: P(Rare) grows by 5 points, P(Common) shrinks by the same
+    rng = random.Random(5)
+    lucky = pets.rare_upgrade_chance(0.05)
+    n = 200_000
+    up = sum(1 for _ in range(n) if rng.random() < common and rng.random() < lucky)
+    assert up / n == pytest.approx(0.05, abs=0.003)
+    assert balance.gacha()["banners"]["pets"]["rates"]["common"] == common   # the config is untouched
+
+
+async def test_trau_adds_20_percent_to_ham_nguc_stones(client, db):
+    h, uid = await player(client, "chu_trau", stones=0)
+
+    def run():
+        return SimpleNamespace(id=1, rewarded=True, stones_gained=0, items_gained={})
+
+    r1 = run()
+    plain = await math_dungeon._grant(db, uid, r1, {"stones": 50, "items": {}}, "room")
+    assert plain["stones"] == 50 and r1.stones_gained == 50
     await give_pet(db, uid, "trau")
-    res = await _ripe_review(client, db, h, uid)
-    assert res["reward"]["spirit_stones"] == plain + round(plain * 0.2) and res["pet_bonus"]["pet"] == "trau"
+    r2 = run()
+    more = await math_dungeon._grant(db, uid, r2, {"stones": 50, "items": {}}, "chest")
+    assert more["stones"] == 60 and r2.stones_gained == 60
+    await db.commit()
+    assert await stones(uid) == 110
+    withheld = SimpleNamespace(id=2, rewarded=False, stones_gained=0, items_gained={})
+    assert (await math_dungeon._grant(db, uid, withheld, {"stones": 50, "items": {}}, "room"))["stones"] == 0
 
 
-async def test_rong_doubles_the_fifth_right_answer_in_a_row(client, db):
-    h, uid = await player(client, "chu_rong", learn=["水"])
-    await client.get("/garden", headers=h)
+async def test_ho_halves_the_tu_vi_lost_on_a_failed_tribulation(client, frozen):
+    h, uid = await make(client, "chu_ho", "Chủ Hổ")
+    await bottleneck(uid)
+    await give(uid, "truc_co_dan")
+    await wear(uid, "ho")
+    res = await run_tribulation(client, h, right=15)            # 75%: failed
+    assert not res["passed"] and res["xp_lost"] == 25           # half of the usual 10% (50)
+    assert (await getchar(uid)).cultivation_xp == 475
+
+
+async def _meditate(client, h, frozen, right=True) -> dict:
+    frozen.advance(seconds=121)
+    r = await client.post("/cultivation/meditate", headers=h)
+    assert r.status_code == 200, r.text
+    q = r.json()
+    key = await answer_key(q["session_id"])
+    ans = right_answer(q, key) if right else wrong_answer(q, key)
+    res = (await client.post("/quiz/answer", json={"session_id": q["session_id"], "answer": ans}, headers=h)).json()
+    assert res["correct"] == right
+    return res
+
+
+async def test_ga_adds_ten_percent_tu_vi_to_meditation(client, frozen):
+    h, uid = await make(client, "chu_ga", "Chủ Gà")
+    plain = await _meditate(client, h, frozen)
+    assert "pet_xp" not in plain["math"]
+    await wear(uid, "ga")
+    before = (await getchar(uid)).cultivation_xp
+    res = await _meditate(client, h, frozen)
+    base = res["xp"]["gained"]
+    assert res["math"]["pet_skill"] == "xp_meditate" and res["math"]["pet_xp"] == math.ceil(base * 0.1)
+    if not res["xp"]["stage_up"]:                   # both parts reached the Tu Vi bar
+        assert (await getchar(uid)).cultivation_xp == before + base + res["math"]["pet_xp"]
+    wrong = await _meditate(client, h, frozen, right=False)
+    assert "pet_xp" not in wrong["math"]
+
+
+async def test_rong_doubles_the_tu_vi_of_every_fifth_right_math_answer_in_a_row(client, frozen):
+    h, uid = await make(client, "chu_rong", "Chủ Rồng")
+    await wear(uid, "rong")
+    got = [await _meditate(client, h, frozen) for _ in range(5)]
+    assert all("pet_xp" not in r["math"] for r in got[:4])
+    assert got[4]["math"]["pet_skill"] == "streak_double" and got[4]["math"]["pet_xp"] == got[4]["xp"]["gained"]
+    # a wrong answer breaks the streak: four right after it are not enough
+    await _meditate(client, h, frozen, right=False)
+    got = [await _meditate(client, h, frozen) for _ in range(4)]
+    assert all("pet_xp" not in r["math"] for r in got)
+    assert "pet_xp" in (await _meditate(client, h, frozen))["math"]
+
+
+async def test_rong_streak_counts_any_math_context_and_keeps_through_answers_without_tu_vi(client, db):
+    """on_math_answer, the hook of every math mode's learning log: an answer that pays no Tu Vi
+    (a Thiên Kiếp question) keeps the streak for the next one that does."""
+    h, uid = await player(client, "rong_2")
     await give_pet(db, uid, "rong")
-    rewards = []
-    for _ in range(5):
-        res = await _ripe_review(client, db, h, uid)
-        rewards.append(res["reward"]["spirit_stones"])
-    assert rewards[:4] == [rewards[0]] * 4 and rewards[4] == 2 * rewards[0] and res["streak"] == 5
+    user = await db.get(User, uid)
+
+    def sess(context):
+        return QuizSession(id="x", user_id=uid, context=context, qtype="MC", item_id="i",
+                           payload={"math": {"tier": 1}}, answer_key={})
+    for _ in range(4):
+        assert await pets.on_math_answer(db, user, sess("math_combat"), True) == {}
+    assert await pets.on_math_answer(db, user, sess(cultivation.TRIBULATION_CONTEXT), True) == {}   # 0 Tu Vi
+    out = await pets.on_math_answer(db, user, sess("math_combat"), True)
+    assert out == {"pet_xp": 3, "pet_skill": "streak_double"}           # tier 1 pays 3
+    assert user.flags["pet_streak"] == 0
 
 
-async def test_ho_slows_wither_by_half(client, db, frozen):
-    h, uid = await player(client, "chu_ho", learn=["水"])
-    await client.get("/garden", headers=h)
-    w = bank().by_hanzi["水"]
-    plots = (await db.execute(select(Plot).where(Plot.user_id == uid, Plot.unlocked.is_(True)))).scalars().all()
-    for p in plots[:1]:
-        p.word_id, p.stage, p.next_review_at = w.id, 2, clock.now()
-        p.wither, p.wither_checked_at = 0.0, clock.now()
-    await db.commit()
-    frozen.advance(days=4)   # 1 day of grace, then 3 days overdue
-    plain = next(p for p in (await client.get("/garden", headers=h)).json()["plots"] if p.get("word"))["wither"]
-    p = await db.get(Plot, plots[0].id)
-    await db.refresh(p)
-    p.wither, p.wither_checked_at, p.next_review_at = 0.0, clock.now(), clock.now()
-    await db.commit()
-    await give_pet(db, uid, "ho")
-    frozen.advance(days=4)
-    slow = next(p for p in (await client.get("/garden", headers=h)).json()["plots"] if p.get("word"))["wither"]
-    assert plain > 0 and slow == pytest.approx(plain / 2, abs=0.2)
-
-
-async def test_chuot_moves_five_percent_from_common_to_rare(client, db, monkeypatch):
-    h, uid = await player(client, "chu_chuot", stones=1000)
-    seen = []
-    real = Banner.roll
-
-    def spy(self, n, state, rng, use_pity=True):
-        seen.append(dict(self.rates))
-        return real(self, n, state, rng, use_pity)
-    monkeypatch.setattr(Banner, "roll", spy)
-    await client.post("/gacha/roll", json={"banner": "seeds", "count": 1}, headers=h)
-    await give_pet(db, uid, "chuot")
-    await client.post("/gacha/roll", json={"banner": "seeds", "count": 1}, headers=h)
-    base = balance.gacha()["banners"]["seeds"]["rates"]
-    assert seen[0] == base
-    assert seen[1]["rare"] == pytest.approx(base["rare"] + 0.05) and seen[1]["common"] == pytest.approx(base["common"] - 0.05)
-    assert sum(seen[1].values()) == pytest.approx(1.0)
-    assert balance.gacha()["banners"]["seeds"]["rates"] == base   # the config itself is untouched
-
-
-async def test_lon_sells_fruit_for_more(client, db):
+async def test_lon_sells_to_the_village_for_more(client, db):
     h, uid = await player(client, "chu_lon", stones=0)
-    w = next(x for x in bank().words.values() if x.rarity == "common")
-    await give_fruit(uid, w.hanzi, 10)
-    r = await client.post("/fruits/sell", json={"word_id": w.id, "count": 5}, headers=h)
-    plain = r.json()["earned"]
+    await inventory.change_item(db, uid, "fish_ca_chep", 6, "test")
+    await db.commit()
+    price = catalog.stack_item("fish_ca_chep")["sell_price"]
+    r = (await client.post("/inventory/sell", json={"item_id": "fish_ca_chep", "qty": 3}, headers=h)).json()
+    assert r["earned"] == 3 * price
     await give_pet(db, uid, "lon")
-    r = await client.post("/fruits/sell", json={"word_id": w.id, "count": 5}, headers=h)
-    assert r.json()["earned"] == int(plain * 1.1)
+    r = (await client.post("/inventory/sell", json={"item_id": "fish_ca_chep", "qty": 3}, headers=h)).json()
+    assert r["earned"] == round(3 * price * 1.1)
 
 
-async def test_ga_adds_tu_vi_to_garden_reviews(client, db):
-    h, uid = await player(client, "chu_ga", learn=["水"])
-    await client.get("/garden", headers=h)
-    plain = (await _ripe_review(client, db, h, uid))["xp"]["gained"]
-    await give_pet(db, uid, "ga")
-    assert (await _ripe_review(client, db, h, uid))["xp"]["gained"] == round(plain * 1.1)
-
-
+# ------------------------------------------------------------------ the other six
 async def test_combat_pets_ran_cho_ngua():
     from app.realtime import combat
     from app.realtime.zone import Player

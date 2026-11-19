@@ -34,8 +34,7 @@ SPEED = 74.0
 SEND_EVERY = 0.05          # 20 input messages a second at most
 BUBBLE_SECONDS = 5.0
 
-# The hotbar: the six chiêu thức (M9), keys 1-6. The row and the keys 1-4 used to belong to the
-# word-bound Pháp Chữ of the old game, which the math game no longer shows.
+# The hotbar: the six chiêu thức (M9), keys 1-6.
 MSKILL_KEYS = (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6)
 MSKILL_KEY_NAMES = "123456"
 MSKILL_ROW = (252, 226)            # top-left of the first slot; a slot is 22 px, 24 px apart
@@ -247,7 +246,6 @@ class WorldScene(Scene):
         self.my_atk_t0: float | None = None       # v2: my attack swing started
         self.my_hurt_t0: float | None = None      # v2: my hit clip started
         self.sparks: list[list] = []              # v2 one-shot FX: [fx id, x, y, t0]
-        self.skill_ready: dict[str, float] = {}
         self.mskills: list[dict] | None = None    # M9: GET /math/skills (None: not loaded, or an old server)
         self.mskill_ready: dict[str, float] = {}
         self.casting: dict[str, dict] = {}        # eid -> the chiêu animation it is playing
@@ -528,11 +526,7 @@ class WorldScene(Scene):
                 ent.hurt_t = 0.08
             self.fx.float_text(str(ev.get("v", "")), x + random.uniform(-6, 6), y - 18, "#F2D58A")
             return
-        if k == "ink":                                   # Ong Thư Pháp: a brush stroke writes its character
-            if not art2.on():        # the old game's Chinese character, not on the v2 (math game) screen
-                sp = (self.game.state.bee_species.get(ev.get("s")) or {}).get("hanzi", "")
-                if sp:
-                    self.big_chars.append([sp[:-1] or sp, x, y - 30, 1.0])
+        if k == "ink":                                   # Ong Thư Pháp: a brush stroke
             self.fx.burst(x, y - 8, "K", 12, 30)
             return
         if k == "bee_down":
@@ -600,23 +594,6 @@ class WorldScene(Scene):
             if ent is not None:
                 ent.swing_t = 0.25
                 ent.atk_t0 = now
-        elif k == "skill":
-            sid = ev.get("s")
-            if sid == "hoa":
-                tx, ty = ev.get("tx", x), ev.get("ty", y)
-                for i in range(8):
-                    f = i / 8
-                    self.fx.burst(x + (tx - x) * f, y + (ty - y) * f, "r" if i % 2 else "o", 3, 12)
-                self.fx.burst(tx, ty, "r", 18, 40)
-            elif sid == "thuy":
-                r = ev.get("r", 60)
-                for i in range(16):
-                    a = i / 16 * 6.283
-                    self.fx.burst(x + math.cos(a) * r * 0.8, y + math.sin(a) * r * 0.5, "a", 2, 15)
-            elif sid == "moc":
-                self.fx.burst(x, y, "l", 14, 25)
-            elif sid == "son":
-                self.fx.burst(x, y + 8, "T", 16, 20)
         elif k == "heal":
             self.fx.float_text(f"+{ev.get('v', '')}", x, y - 30, "#4A7CC8" if ev.get("q") else "#B5D67A")
             if v2 and art2.fx(art2.combat_fx("heal")) is not None:
@@ -1802,7 +1779,7 @@ class WorldScene(Scene):
         else:
             head = sprites.character(self.player.appearance)[("down", 0)].subsurface(pygame.Rect(2, 1, 12, 11))
             ui.image(head, 21, 21, zoom=2, anchor="center")
-        from .library import portrait_frame, title_after
+        from .books import portrait_frame, title_after
         portrait_frame(ui, me.get("frame"), 7, 7, 28, 28)
         title_after(ui, me.get("title"), ui.text(ch.get("display_name", ""), 39, 6, 8), 7.5)
         ui.text(cult.get("label") or T.REALMS.get(ch.get("realm", "pham_nhan"), ""), 39, 15, 7, "#6A994E")
@@ -1862,7 +1839,7 @@ class WorldScene(Scene):
             tw = ui.text_size(line, 7)[0] + 8
             ui.fill(476 - tw, my + mh + 4, tw, 11, (20, 18, 15, 150))
             ui.text(line, 472, my + mh + 9.5, 7, col, anchor="midright")
-        # hotbar: Pháp Chữ 1-4 and the healing pill (spec 18)
+        # hotbar: the chiêu thức 1-6 and the healing pill (spec 18)
         self.draw_hotbar(ui, top and not g.chatbox.typing)
         # chat (before hotkeys, so typing never triggers them)
         g.chatbox.draw(ui, in_zone=self.joined, enabled=top)

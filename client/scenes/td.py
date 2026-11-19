@@ -1,5 +1,5 @@
 """Drawing helpers of the tower-defence board (Thủ Thành Toán, scenes/math_td.py), shared with
-the books that show its monsters and tower numbers (scenes/rpg.py, scenes/library.py): the
+the book that shows its monsters (scenes/rpg.py): the
 Mặc Quái sprites, the stars, a reward line and a tower's numbers."""
 from __future__ import annotations
 

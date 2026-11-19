@@ -782,7 +782,7 @@ def monster_picture(sheet: Sheet | None, t: float = 0.0, clip: str = "idle", fac
     return trim(sheet.frame(sheet.index(clip, t, facing))) if sheet is not None else None
 
 
-# ------------------------------------------------------------------ round 3: bees, garden, bí cảnh, tower defence
+# ------------------------------------------------------------------ round 3: bees, eggs, bí cảnh, tower defence
 def bee(species: str | None) -> Sheet | None:
     """A Linh Phong species' sheet (beasts/bee_<id>: fly, sting; right/left), or None."""
     sid = _w("bees").get(species or "") if (species and on()) else None
@@ -801,57 +801,12 @@ def bee_frame(species: str | None, t: float, left: bool, sting_t: float | None =
 
 
 def garden_prop(name: str | None) -> Prop | None:
+    """A piece of the props/garden atlas (eggs, hive decorations; named after the old word garden)."""
     return prop(name, "garden") if on() else None
 
 
-def plant_family(key: str) -> tuple[str, bool]:
-    """The plant family of a garden key and whether it is mirrored: a STABLE hash (crc32), so a
-    word keeps its plant across runs and machines (Python's hash() of a str is randomised)."""
-    import zlib
-    fams = (_w("garden").get("families") or ["herb", "flower", "root", "vine", "shroom", "shrub"])
-    h = zlib.crc32(str(key).encode("utf-8"))
-    return fams[h % len(fams)], bool((h >> 3) & 1)
-
-
-def plant_name(stage: int, rarity: str, key: str) -> str:
-    fam, _ = plant_family(key)
-    stage = max(0, min(5, int(stage)))
-    if stage <= 2:
-        return f"{fam}_{stage}"
-    rars = _w("garden").get("rarities") or ["common", "rare", "epic", "legendary"]
-    return f"{fam}_{stage}_{rarity if rarity in rars else rars[0]}"
-
-
-def plant(stage: int, rarity: str, key: str, t: float = 0.0) -> tuple[pygame.Surface, tuple[int, int]] | None:
-    """(frame, pivot) of a garden plant: the family's sprite at that stage (and rarity), its
-    2-frame sway, mirrored for half the keys. None without the garden atlas."""
-    pr = garden_prop(plant_name(stage, rarity, key))
-    if pr is None:
-        return None
-    _, mirror = plant_family(key)
-    n = int(t * 2.5) % len(pr.frames)
-    img = pr.frames[n]
-    if mirror:
-        k = ("mirror", img)
-        if k not in _misc:
-            _misc[k] = pygame.transform.flip(img, True, False)
-        img = _misc[k]
-        return img, (img.get_width() - pr.pivot[0], pr.pivot[1])
-    return img, pr.pivot
-
-
-def bed(locked: bool, dry: bool = False) -> pygame.Surface | None:
-    pr = garden_prop("plot_locked" if locked else ("plot_dry" if dry else "plot_open"))
-    return pr.img if pr is not None else None
-
-
-def seed_frames(rarity: str) -> list | None:
-    pr = garden_prop(f"seed_{rarity}")
-    return pr.frames if pr is not None else None
-
-
 def egg_frames(rarity: str) -> list | None:
-    """The egg sheet of a rarity: garden rarities, or a bee rarity (pham, linh, ...) mapped by wiring."""
+    """The egg sheet of a bee rarity (pham, linh, ...), mapped by wiring to an egg_<colour> sheet."""
     r = (_w("garden").get("egg_by_bee_rarity") or {}).get(rarity, rarity)
     pr = garden_prop(f"egg_{r}")
     return pr.frames if pr is not None else None
@@ -891,16 +846,6 @@ def td_path_name(n: bool, e: bool, s: bool, w: bool) -> str:
     """`td_path_<sides>`: the sides (in the order n e s w) where grass lies; none = interior."""
     sides = "".join(c for c, g in zip("nesw", (n, e, s, w)) if g)
     return f"td_path_{sides or 'none'}"
-
-
-def withered(img: pygame.Surface, wither: float) -> pygame.Surface:
-    """The game's own wither greying (build.withered) on a v2 sprite, cached per 10 points."""
-    bucket = int(wither // 10)
-    key = ("wither", img, bucket)
-    if key not in _misc:
-        from ..art import build as B
-        _misc[key] = B.withered(img, bucket * 10)
-    return _misc[key]
 
 
 def stone_small() -> pygame.Surface | None:

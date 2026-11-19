@@ -103,12 +103,10 @@ class AlchemyScene(Scene):
             ry = y + 24 + i * 28
             ui.fill(lx, ry, lw, 26, "#FFFDF7" if rcp["known"] else "#EDE4D2")
             ui.border(lx, ry, lw, 26, "#C9B48A")
-            ui.text(rcp["hanzi"], lx + 4, ry + 13, 12, "#2B2B2B" if rcp["known"] else "#8E877A", kind="han",
-                    anchor="midleft")
-            ui.text(rcp["name_vi"], lx + 46, ry + 2, 8, "#2B2B2B" if rcp["known"] else "#8E877A")
+            ui.text(rcp["name_vi"], lx + 6, ry + 2, 8, "#2B2B2B" if rcp["known"] else "#8E877A")
             if rcp["known"]:
                 ings = "  ".join(f"{g['name_vi']} {g['have']}/{g['qty']}" for g in rcp["ingredients"])
-                ui.text(ings, lx + 46, ry + 13, 6, "#5A5A5A", max_w=lw - 160)
+                ui.text(ings, lx + 6, ry + 13, 6, "#5A5A5A", max_w=lw - 120)
                 y_ = rcp["yield"]
                 ui.text(T.ALCHEMY_FEE.format(n=rcp["fee"]) + " · " +
                         T.ALCHEMY_YIELD.format(h=y_["ha"], m=y_["trung"], t=y_["thuong"]),
@@ -125,7 +123,7 @@ class AlchemyScene(Scene):
                     ui.text(T.ALCHEMY_HAVE.format(n=rcp["have_pills"]), lx + lw - 74, ry + 15, 6, "#6A994E",
                             anchor="topright")
             else:
-                ui.text(T.ALCHEMY_UNKNOWN, lx + 46, ry + 13, 7, "#8E877A")
+                ui.text(T.ALCHEMY_UNKNOWN, lx + 6, ry + 13, 7, "#8E877A")
                 if rcp.get("sources_vi"):
                     ui.text(T.ALCHEMY_SOURCES.format(s=", ".join(rcp["sources_vi"])), lx + lw - 6, ry + 13, 6,
                             "#8E877A", anchor="midright")
@@ -134,7 +132,7 @@ class AlchemyScene(Scene):
 
 
 class FireScene(Scene):
-    """Canh lửa: three presses, each followed by one character of the pill's name."""
+    """Canh lửa: three presses; after each one the player sees how it landed, then goes on."""
 
     def __init__(self, game, fire: dict, on_close=None):
         super().__init__(game)
@@ -143,9 +141,8 @@ class FireScene(Scene):
         self.round = 0
         self.round_ms = 0.0
         self.timings: list[int] = []
-        self.answers: list[str | None] = []
         self.hits: list[str] = []
-        self.state = "run"           # run | char | send | result
+        self.state = "run"           # run | hit | send | result
         self.result: dict | None = None
         self.t = 0.0
         self.flash = 0.0
@@ -176,14 +173,9 @@ class FireScene(Scene):
         self.hits.append(hit)
         self.flash = 1.0
         self.game.audio.play("correct" if hit != "miss" else "wrong")
-        self.state = "char"
-        self.game.ui.set_value("fire_pinyin", "")
-        if self.fire["chars"][self.round]["ask"]:
-            self.game.ui.set_focus("fire_pinyin")
+        self.state = "hit"
 
-    def next_char(self, typed: str | None):
-        self.answers.append(typed)
-        self.game.ui.set_focus(None)
+    def next_round(self):
         self.round += 1
         self.round_ms = 0.0
         if self.round >= self.n:
@@ -205,8 +197,7 @@ class FireScene(Scene):
         def err(e):
             self.game.api_error(e)
             self.close()
-        self.api.post("/alchemy/finish", {"session_id": self.fire["session_id"], "timings": self.timings,
-                                          "pinyin_answers": self.answers}, ok, err)
+        self.api.post("/alchemy/finish", {"session_id": self.fire["session_id"], "timings": self.timings}, ok, err)
 
     def close(self):
         super().close()
@@ -235,8 +226,6 @@ class FireScene(Scene):
         x, y, w, h = 50, 30, 380, 210
         f = self.fire
         ui.panel(x, y, w, h, T.FIRE_TITLE.format(name=f["name_vi"]))
-        if not art2.on():            # the furnace's Chinese name: not on the v2 (math game) screen
-            ui.text(f["hanzi"], x + 46, y + 40, 18, "#BC4749", kind="han", anchor="center")
         fv2 = art2.prop("furnace", "buildings") if art2.on() else None
         img = fv2.at(self.t * 2) if fv2 else sprites.prop("furnace", 0, int(self.t * 6) % 4)
         ui.image(img, x + 46, y + 92, zoom=(2.5 + self.flash * 0.3) / (2 if fv2 else 1), anchor="center")
@@ -260,27 +249,12 @@ class FireScene(Scene):
                          key=pygame.K_SPACE) or ui.click_in(rx, y + 50, w - 112, 36):
                 self.press()
             return
-        # a character of the name, after the press
-        ch = f["chars"][self.round]
+        # how the press landed, then on to the next one
         hit = self.hits[-1]
         ui.text(T.FIRE_HITS[hit], rx + (w - 112) / 2, y + 90, 9,
                 {"perfect": "#C99A3A", "good": "#6A994E", "miss": "#BC4749"}[hit], anchor="center")
-        if not ch.get("c"):          # a pill without name characters: nothing to read, on to the next press
-            if ui.button("fire_next", rx + 178, y + 150, 60, 16, T.FIRE_NEXT, style="primary", key=pygame.K_RETURN):
-                self.next_char(None)
-            return
-        ui.text(ch["c"], rx + 26, y + 136, 26, "#2B2B2B", kind="han", anchor="center")
-        if ch["ask"]:
-            ui.text(T.FIRE_TYPE, rx + 52, y + 112, 7, "#5A5A5A", max_w=w - 160)
-            val = ui.input_box("fire_pinyin", rx + 52, y + 126, 120, 18, placeholder="pinyin", max_len=12)
-            if (ui.button("fire_ok", rx + 178, y + 126, 60, 18, T.OK, style="primary") or ui.submitted("fire_pinyin")) \
-                    and val.strip():
-                self.next_char(val.strip())
-        else:
-            ui.text(T.FIRE_LEARN.format(c=ch["c"], p=ch["pinyin"], hv=ch["hv"]), rx + 52, y + 120, 8, "#2B2B2B",
-                    max_w=w - 160)
-            if ui.button("fire_next", rx + 178, y + 150, 60, 16, T.FIRE_NEXT, style="primary", key=pygame.K_RETURN):
-                self.next_char(None)
+        if ui.button("fire_next", rx + 178, y + 150, 60, 16, T.FIRE_NEXT, style="primary", key=pygame.K_RETURN):
+            self.next_round()
 
     def draw_result(self, ui, x, y, w, h):
         r = self.result or {}
@@ -293,18 +267,11 @@ class FireScene(Scene):
         else:
             ui.text(T.FIRE_RESULT_NONE if not r.get("expired") else T.FIRE_RESULT_NONE, rx, y + 16, 9, "#BC4749",
                     max_w=w - 110)
-        for i, c in enumerate(r.get("chars", [])):
+        for i, hit in enumerate(r.get("hits") or []):        # each press, as the server replayed it
             cy = y + 52 + i * 22
-            ui.text(c["c"], rx + 10, cy + 8, 14, "#2B2B2B", kind="han", anchor="center")
-            if c["right"] is None:
-                line, col = f"{c['pinyin']} · {c['hv']}", "#5A5A5A"
-            elif c["right"]:
-                line, col = T.FIRE_PINYIN_RIGHT.format(c="", p=c["pinyin"]).strip(), "#6A994E"
-            else:
-                line, col = T.FIRE_PINYIN_WRONG.format(c="", p=c["pinyin"]).strip(), "#BC4749"
-            ui.text(line, rx + 26, cy + 8, 8, col, kind="han", anchor="midleft")
-            hit = (r.get("hits") or ["", "", ""])[i]
-            ui.text(T.FIRE_HITS.get(hit, ""), x + w - 16, cy + 8, 7, "#8E877A", anchor="midright")
+            ui.text(T.FIRE_PRESS.format(n=i + 1, t=len(r["hits"])), rx + 10, cy + 8, 8, "#5A5A5A", anchor="midleft")
+            ui.text(T.FIRE_HITS.get(hit, ""), rx + 70, cy + 8, 8,
+                    {"perfect": "#C99A3A", "good": "#6A994E", "miss": "#BC4749"}.get(hit, "#8E877A"), anchor="midleft")
         if ui.button("fire_done", x + w / 2 - 40, y + h - 22, 80, 16, T.FIRE_DONE, style="primary",
                      key=pygame.K_RETURN) or ui.key(pygame.K_ESCAPE):
             self.close()

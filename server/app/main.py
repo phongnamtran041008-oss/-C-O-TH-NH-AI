@@ -14,16 +14,14 @@ from sqlalchemy import select
 from . import admin
 from . import db as dbm
 from .config import GAME_VERSION, SERVER_DIR, settings
-from .garden import garden as _garden  # noqa: F401  (registers the garden quiz handler)
 from .learning.wordbank import bank
 from .models import Word
 from .realtime import ws as ws_routes
 from .realtime.world import world
 from .routers import (auth_routes, bee_routes, economy_routes, fishing_routes, game_routes,
                       math_dungeon_routes, math_fortune_routes, math_routes, math_td_routes,
-                      realm_routes, rpg_routes, server_routes, social_routes, td_routes)
+                      realm_routes, rpg_routes, server_routes, social_routes, books_routes)
 from .systems import cultivation as _cultivation  # noqa: F401  (registers meditate/tribulation handlers)
-from .systems import inscription as _inscription  # noqa: F401  (registers the khắc văn handler)
 
 log = logging.getLogger("khu_vuon")
 
@@ -89,7 +87,7 @@ def create_app(use_lifespan: bool = True) -> FastAPI:
     app.include_router(rpg_routes.router)
     app.include_router(bee_routes.router)
     app.include_router(fishing_routes.router)
-    app.include_router(td_routes.router)
+    app.include_router(books_routes.router)           # Tàng Thư Các: the shelf of phổ
     app.include_router(economy_routes.router)
     app.include_router(realm_routes.router)
     app.include_router(math_routes.router)

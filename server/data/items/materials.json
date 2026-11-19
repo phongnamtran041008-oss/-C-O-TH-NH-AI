@@ -1,34 +1,10 @@
 {
- "_comment": "Materials, skill manuals, đan phương, herbs, bee eggs and bee foods (spec 8.4, 10, 12). A manual teaches a Pháp Chữ when its word has mastery >= 50. A recipe (đan phương) is kept, not used up: owning one lets you brew that pill. sell_price: what the village buys it for (Linh Thạch).",
+ "_comment": "Materials, đan phương, herbs, bee eggs and bee foods (spec 8.4, 10, 12). A recipe (đan phương) is kept, not used up: owning one lets you brew that pill. sell_price: what the village buys it for (Linh Thạch).",
  "muc_tinh": {
   "name_vi": "Mực Tinh",
   "kind": "material",
   "desc_vi": "Tinh chất mực của Mặc Quái, dùng để cường hóa trang bị.",
   "sell_price": 3
- },
- "bi_kip_hoa": {
-  "name_vi": "Bí kíp Hỏa Chữ Quyết",
-  "kind": "manual",
-  "skill": "hoa",
-  "desc_vi": "Dạy Hỏa Chữ Quyết (chữ 火)."
- },
- "bi_kip_thuy": {
-  "name_vi": "Bí kíp Thủy Chữ Quyết",
-  "kind": "manual",
-  "skill": "thuy",
-  "desc_vi": "Dạy Thủy Chữ Quyết (chữ 水)."
- },
- "bi_kip_moc": {
-  "name_vi": "Bí kíp Mộc Chữ Quyết",
-  "kind": "manual",
-  "skill": "moc",
-  "desc_vi": "Dạy Mộc Chữ Quyết (chữ 木)."
- },
- "bi_kip_son": {
-  "name_vi": "Bí kíp Sơn Chữ Quyết",
-  "kind": "manual",
-  "skill": "son",
-  "desc_vi": "Dạy Sơn Chữ Quyết (chữ 山)."
  },
  "linh_mat": {
   "name_vi": "Linh Mật",

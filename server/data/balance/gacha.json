@@ -1,43 +1,9 @@
 {
-  "_comment": "All gacha numbers (spec 6.1, 13). rates are base probabilities per roll; pity rules force at least min_rarity on the Nth consecutive roll without it. The effective rate with pity is slightly higher than the base rate and is shown in game next to the base rate.",
+  "_comment": "All gacha numbers (spec 6.1, 13). rates are base probabilities per roll; pity rules force at least min_rarity on the Nth consecutive roll without it. The effective rate with pity is slightly higher than the base rate and is shown in game next to the base rate. daily_roll_limit caps the rolls a day on banners with counts_toward_daily_limit; daily_free_rolls are taken on free_roll_banner.",
   "daily_roll_limit": 15,
   "daily_free_rolls": 1,
-  "duplicate_seed_sell_price": 20,
+  "free_roll_banner": "bees",
   "banners": {
-    "seeds": {
-      "enabled": true,
-      "name_vi": "Hạt Chữ",
-      "price": {
-        "spirit_stones": 100
-      },
-      "price_10": {
-        "spirit_stones": 900
-      },
-      "rarities": [
-        "common",
-        "rare",
-        "epic",
-        "legendary"
-      ],
-      "rates": {
-        "common": 0.7,
-        "rare": 0.22,
-        "epic": 0.07,
-        "legendary": 0.01
-      },
-      "pity": [
-        {
-          "min_rarity": "legendary",
-          "every": 90
-        },
-        {
-          "min_rarity": "epic",
-          "every": 40
-        }
-      ],
-      "ten_pull_min_rarity": "rare",
-      "counts_toward_daily_limit": true
-    },
     "bees": {
       "enabled": true,
       "opens_in_stage": 5,

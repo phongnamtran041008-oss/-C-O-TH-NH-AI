@@ -1,6 +1,6 @@
 """Client-side flight of spirit bees (spec 10.2: "bay theo đường cong mượt quanh chủ").
 
-The server only says what each bee is doing (following, stinging monster X, pollinating);
+The server only says what each bee is doing (following, stinging monster X);
 where exactly it flies between snapshots is drawn here: every bee steers smoothly towards
 a point that itself circles its anchor on a Lissajous curve, so a swarm never moves in step.
 """
@@ -22,8 +22,6 @@ class FlyingBee:
         self.left = False
         self.t = rnd.uniform(0, 10)
         self.seen = 0.0
-        self.task_until = 0.0                   # pollinators: when to pick the next flower
-        self.task = None
 
     def update(self, dt: float, ax: float, ay: float, radius: float = 12.0, speed: float = 70.0,
                z: float | None = None) -> None:

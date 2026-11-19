@@ -5,7 +5,5 @@
   "chat_world_history": 40,
   "chat_zone_history": 20,
   "friends_max": 100,
-  "help_reward": 10,
-  "help_daily_limit": 5,
   "reports_per_day": 20
 }

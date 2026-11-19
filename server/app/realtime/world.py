@@ -98,7 +98,6 @@ class Session:
         # character state used when the character steps into the world (stage 4)
         self.stage = 0
         self.stats: dict = {}
-        self.skills: dict = {}
         self.hp: float | None = None
         self.qi: float | None = None
         self.bees: list[dict] = []               # guard bee loadout (stage 5)
@@ -395,15 +394,13 @@ class World:
                 Block.user_id == s.user_id))).scalars().all())
 
     async def _load_combat(self, s: Session, character: Character) -> None:
-        from ..systems import buffs, cultivation, items, pets
+        from ..systems import buffs, cultivation, pets
         async with dbm.SessionLocal() as db:
             s.stats = await cultivation.current_stats(db, character)
             worn = await pets.worn(db, s.user_id)
             s.pet = worn.pet_type if worn else None
             user = await db.get(User, s.user_id)
             s.buffs = buffs.active(user, clock.now()) if user else {}
-            s.skills = {k["id"]: {"level": k["level"], "word_id": k["word_id"]}
-                        for k in await items.skill_list(db, s.user_id) if k["learned"]}
             from ..systems import bees
             s.bees = await bees.guard_loadout(db, s.user_id)
             await db.commit()
@@ -454,13 +451,8 @@ class World:
         elif isinstance(msg, protocol.Attack):
             p = s.player
             err = combat.attack(p, msg.id, self.mono(), self.rng) if p else "cannot"
-            if err in ("too_far", "no_target", "not_learned", "no_qi"):
+            if err in ("too_far", "no_target"):
                 s.send({"t": "act_fail", "code": err})
-        elif isinstance(msg, protocol.Cast):
-            p = s.player
-            err = combat.cast(p, msg.k, msg.id, self.mono(), self.rng) if p else "cannot"
-            s.send({"t": "cast", "k": msg.k, "ok": err is None, "code": err,
-                    "ready_in": round(max(0.0, p.skill_ready.get(msg.k, 0) - self.mono()), 2) if p else 0})
         elif isinstance(msg, protocol.MathCast):
             from ..systems import math_skills   # chiêu thức gắn câu hỏi (M9)
             p = s.player
@@ -472,8 +464,6 @@ class World:
             self.parties.handle(s, msg)
         elif isinstance(msg, protocol.RealmCmd):
             self.realms.handle(s, msg)
-        elif isinstance(msg, protocol.RealmAct):
-            self.realms.act(s, msg)
         elif isinstance(msg, protocol.Mark):
             p = s.player
             if p is not None and p.channel is not None and self.mono() - s.last_mark >= 1.0:
@@ -561,7 +551,7 @@ class World:
             p.channel.remove(p)
         if p is None:
             p = Player(s.user_id, s.name, s.appearance, s.realm, x, y, facing)
-            p.stage, p.skills = s.stage, dict(s.skills)
+            p.stage = s.stage
             from . import guard
             p.bees = guard.build(s.bees)
             p.pet = s.pet
@@ -708,16 +698,6 @@ class World:
             s.send({"t": "stats", "realm": realm, "stage": stage, "stats": stats, "stage_up": stage_up,
                     "hp": p.hp if p else None, "max_hp": stats.get("max_hp")})
 
-    def set_skills(self, user_id: int, skill_list: list[dict]) -> None:
-        learned = {k["id"]: {"level": k["level"], "word_id": k["word_id"]} for k in skill_list if k["learned"]}
-        s = self.sessions.get(user_id)
-        if s is not None:
-            s.skills = learned
-            s.send({"t": "skills", "skills": skill_list})
-        p = self.players.get(user_id)
-        if p is not None:
-            p.skills = dict(learned)
-
     def set_bees(self, user_id: int, loadout: list[dict]) -> None:
         """Guard bees changed (role, level, release): the ones out in the world follow."""
         from . import guard
@@ -753,18 +733,6 @@ class World:
     def buffs_left(self, p: Player) -> dict[str, float]:
         now = self.mono()
         return {k: t - now for k, t in getattr(p, "buffs", {}).items() if t > now}
-
-    def word_mastery_changed(self, user_id: int, word_id: str, mastery: int) -> None:
-        """A skill grows or weakens with its word's mastery (spec 8.4)."""
-        from ..systems import catalog
-        sk = catalog.skills()
-        level = sum(1 for m in sk["level_mastery"] if mastery >= m)
-        for holder in (self.players.get(user_id), self.sessions.get(user_id)):
-            if holder is None:
-                continue
-            for sid, info in holder.skills.items():
-                if info.get("word_id") == word_id:
-                    info["level"] = level
 
     def can_use_pill(self, user_id: int) -> bool:
         p = self.players.get(user_id)

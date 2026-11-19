@@ -64,7 +64,7 @@ async def _char(db: AsyncSession, user: User) -> Character:
 async def cultivation_view(user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
     ch = await _char(db, user)
     stats = await cultivation.current_stats(db, ch)
-    out = cultivation.view(ch, stats, await items.skill_list(db, user.id), await items.stacks(db, user.id), clock.now())
+    out = cultivation.view(ch, stats, await items.stacks(db, user.id), clock.now())
     from ..systems import buffs, pets
     out["buffs"] = buffs.view(user, clock.now())          # stage 8: pill buffs and the worn Linh Thú
     worn = await pets.worn(db, user.id)

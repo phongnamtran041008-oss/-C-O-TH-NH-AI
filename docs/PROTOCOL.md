@@ -56,7 +56,6 @@ Mỗi gói tin là **một object JSON**, trường `t` cho biết loại. Phiê
 | `channel` | `n` | đổi kênh trong vùng hiện tại (`n` = số kênh có sẵn, hoặc số lớn nhất + 1 để mở kênh mới) |
 | `chat` | `ch`: `world` \| `zone` \| `friend` \| `party`, `text`, `to` (đạo hiệu của bạn, khi `friend`) | chat |
 | `atk` | `id` (quái) | đánh thường (giai đoạn 4); server kiểm tra tầm vũ khí và thời gian hồi |
-| `skill` | `k`: `hoa` \| `thuy` \| `moc` \| `son`, `id` (quái, với pháp đánh một mục tiêu) | dùng Pháp Chữ |
 
 ### Vào vùng (`join`)
 
@@ -106,10 +105,8 @@ và client tự kéo về vị trí đúng nhờ snapshot. Gói trùng hoặc s�
 | `xp_lost` | `lost` | Tu Vi mất do chết |
 | `loot` | `monster`, `stones`, `spirit_stones` (số dư mới), `items`, `equipment` [trang bị], `kills`, `xp`, `quests` | phần thưởng khi hạ quái (gửi cho mọi người đã đánh trúng) |
 | `stats` | `realm`, `stage`, `stats`, `stage_up`, `hp`, `max_hp` | chỉ số đổi (lên tầng, đổi trang bị) |
-| `skills` | `skills` [{`id`, `learned`, `level`, …}] | học Pháp Chữ / độ thuộc chữ đổi bậc pháp |
 | `quest` | `event: "done"`, `quest` | một nhiệm vụ vừa đủ điều kiện |
 | `act_fail` | `code`: `too_far` \| `no_target` | đòn đánh bị từ chối (đang hồi chiêu thì bỏ qua im lặng) |
-| `cast` | `k`, `ok`, `code` (`not_learned`, `no_qi`, `cooldown`, `too_far`, `no_target`, `answering`), `ready_in` | kết quả dùng Pháp Chữ |
 
 Câu trả lời của `q` gửi qua REST `POST /quiz/answer` như mọi câu hỏi khác; server chấm, rồi áp kết quả vào trận
 đấu trong bộ nhớ ngay lập tức. Hết giờ mà không trả lời thì vòng tick tự chấm là sai.
@@ -186,7 +183,6 @@ Client → server:
 |---|---|---|
 | `party` | `op`: `invite` (`name` = đạo hiệu) \| `accept` / `decline` (`uid` = người mời) \| `leave` \| `kick` (`uid`) \| `promote` (`uid`) | tổ đội, tối đa 5 người |
 | `realm` | `op`: `enter` \| `queue` \| `unqueue` \| `leave`; `realm` (id bí cảnh định kỳ) hoặc `rift` (id khe nứt) | đội trưởng dẫn đội vào; người đi một mình vào hàng chờ; rời bí cảnh |
-| `ract` | `obj` | (còn trong giao thức nhưng bị bỏ qua: không gian nào của bí cảnh toán có đồ vật để đánh) |
 | `mark` | `x`, `y`, `i` (0–3) | ping cho đội, tối đa 1 lần/giây |
 | `chat` | `ch: "party"` | kênh Tổ Đội |
 

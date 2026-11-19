@@ -193,13 +193,16 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.shot("quests")
         drv.press(pygame.K_ESCAPE)
         drv.press(pygame.K_b)
-        drv.wait_scene("BookScene")
-        drv.click("book_to_monsters")
+        drv.wait_scene("BooksScene")
+        drv.wait(lambda: drv.game.top.data is not None, 5, "the shelf of phổ")
+        drv.click("lib_open_monster")
         drv.wait(lambda: drv.top_is("MonsterBookScene") and drv.game.top.data, 5, "monster book")
         drv.step(3)
         drv.shot("monster_book")
         assert not any("qtypes_vi" in e or "hanzi" in e for e in drv.game.top.data["entries"])
         drv.press(pygame.K_ESCAPE)
+        drv.wait_scene("BooksScene")
+        drv.press(pygame.K_ESCAPE)                   # and the shelf of phổ under it
         from client.scenes.rpg import ForgeScene
         drv.game.push(ForgeScene(drv.game))
         drv.wait(lambda: drv.game.top.inv is not None, 5, "forge")

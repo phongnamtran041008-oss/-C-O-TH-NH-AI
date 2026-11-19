@@ -1,25 +1,5 @@
 {
-  "_comment": "Thủ Thành Toán: số chung của mọi ải (quái, chống gian lận, giới hạn an toàn của td_sim.py); phần còn lại ở math/td.json. Còn sót cho đợt 2: roles, idiom_skills, power (Tàng Thư Các cũ và khắc văn còn đọc vai trò cây của chữ) và rewards (tools/economy_sim.py còn đọc); xóa cùng các phần ấy.",
-  "power": {"mastery_min": 0.6, "mastery_max": 1.3, "wither_max_penalty": 0.3},
-  "roles": {
-    "hoa":      {"cost": 60, "range": 2.3, "cd": 1.5, "dmg": 16, "splash": 1.2, "elem": "hoa"},
-    "thuy":     {"cost": 45, "range": 2.3, "cd": 0.9, "dmg": 5, "slow": 0.6, "slow_s": 1.8, "elem": "thuy"},
-    "moc":      {"cost": 30, "hp": 160, "thorns": 6, "elem": "moc", "on_path": true},
-    "son":      {"cost": 60, "range": 1.6, "cd": 3.5, "dmg": 8, "stun_s": 1.0, "elem": "son"},
-    "kim":      {"cost": 70, "range": 3.0, "cd": 1.3, "dmg": 34, "elem": "kim"},
-    "quang":    {"cost": 35, "range": 2.2, "cd": 1.1, "dmg": 6, "elem": "quang"},
-    "sinh_khi": {"cost": 50, "cd": 5.0, "qi": 12},
-    "ho_tro":   {"cost": 40, "haste": 0.25, "heal": 6},
-    "thanh_ngu": {"cost": 0, "skill_only": true}
-  },
-  "idiom_skills": {
-    "一石二鸟": {"type": "strike_strongest", "targets": 2, "dmg": 400,
-                 "desc_vi": "Một hòn đá trúng hai con chim: đánh mạnh vào hai con quái nhiều máu nhất."},
-    "画蛇添足": {"type": "slow_all", "mult": 0.35, "seconds": 8,
-                 "desc_vi": "Vẽ rắn thêm chân: mọi con quái vướng chân, chậm hẳn lại trong 8 giây."},
-    "对牛弹琴": {"type": "stun_all", "seconds": 5,
-                 "desc_vi": "Đàn gảy tai trâu: cả đám quái đứng ngẩn ra nghe đàn 5 giây."}
-  },
+  "_comment": "Thủ Thành Toán: số chung của mọi ải (quái, chống gian lận, giới hạn an toàn của td_sim.py); phần còn lại ở math/td.json. Còn sót: rewards (tools/economy_sim.py còn đọc).",
   "monsters": {
     "muc_con":   {"name_vi": "Mực Con", "hp": 90, "speed": 0.9, "leak": 1, "qi": 3, "atk": 8,
                   "resist": {}, "weakness_vi": "Không kháng gì, dễ đối phó."},

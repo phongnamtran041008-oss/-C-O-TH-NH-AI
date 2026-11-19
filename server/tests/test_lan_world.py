@@ -2,11 +2,11 @@
 import socket
 
 import pytest
-from sqlalchemy import select
 
 from app import firebase_auth, lan
 from app.config import settings
-from app.models import Seed, User
+from app import balance
+from app.models import User
 
 ACCOUNTS = {
     "tok-host": {"uid": "UIDhost000000000000000000001", "email": "chu.vuon@gmail.com", "name": ""},
@@ -44,8 +44,7 @@ async def test_first_visit_creates_account_then_finds_it(client, db, firebase):
     assert not again["created"] and again["user_id"] == first["user_id"]
     user = await db.get(User, first["user_id"])
     assert user.firebase_uid == ACCOUNTS["tok-ban"]["uid"] and user.email == "ban.be@gmail.com"
-    seeds = (await db.execute(select(Seed).where(Seed.user_id == user.id))).scalars().all()
-    assert len(seeds) == 1                                   # the starter 水, once
+    assert user.spirit_stones == balance.economy()["starting_spirit_stones"]   # a new account, set up once
     # same e-mail name on another provider: a different account, a free username
     other = (await fb_login(client, "tok-ban2")).json()
     assert other["username"] == "ban_be2" and other["user_id"] != first["user_id"]

@@ -1,6 +1,8 @@
+import pytest
 from sqlalchemy import select
 
 from app.models import User
+from app.moderation import contains_banned
 from tests.helpers import register
 
 
@@ -84,3 +86,56 @@ async def test_write_rate_limit(client, monkeypatch):
 async def test_server_info(client):
     info = (await client.get("/server/info")).json()
     assert info["protocol_version"] == 5 and info["name"] == "Khu Vườn Tu Tiên"
+
+
+# ---- moved from test_garden_depth.py (the garden is gone; character creation stays)
+async def test_character_create(client, db):
+    h, _ = await register(client, "taonv")
+    assert (await client.get("/me", headers=h)).json()["has_character"] is False
+    opts = (await client.get("/character/options")).json()
+    good = {"hair_color": opts["hair_colors"][1], "hair_style": "dai", "body": "nu"}
+    for name, code in [("a", "bad_name"), ("Tên  có__gạch", "bad_name"), ("địt mẹ", "banned_name")]:
+        r = await client.post("/character/create", json={"display_name": name, "appearance": good}, headers=h)
+        assert r.json()["error"]["code"] == code, name
+    r = await client.post("/character/create", json={"display_name": "Tiểu Phong", "appearance": {"hair_color": "#FFFFFF"}},
+                          headers=h)
+    assert r.json()["error"]["code"] == "bad_appearance"
+    r = (await client.post("/character/create", json={"display_name": "Tiểu Phong", "appearance": good}, headers=h)).json()
+    assert r["realm"] == "pham_nhan" and r["outfit"] == "ao_vai_pham_nhan" and r["zone_id"] == "abode"
+    assert (await client.post("/character/create", json={"display_name": "Khác", "appearance": good},
+                              headers=h)).status_code == 409
+    h2, _ = await register(client, "taonv2")
+    r = await client.post("/character/create", json={"display_name": "tiểu phong", "appearance": good}, headers=h2)
+    assert r.json()["error"]["code"] == "name_taken"
+    r = await client.post("/character/position", json={"x": 100, "y": 120, "facing": "left"}, headers=h)
+    assert r.status_code == 200
+    ch = (await client.get("/character", headers=h)).json()
+    assert (ch["x"], ch["y"], ch["facing"]) == (100, 120, "left")
+    me = (await client.get("/me", headers=h)).json()
+    assert me["has_character"]
+
+
+async def test_tutorial_step_only_moves_forward(client):
+    h, _ = await register(client, "hocviec")
+    assert (await client.post("/tutorial", json={"step": 3}, headers=h)).json()["tutorial_step"] == 3
+    assert (await client.post("/tutorial", json={"step": 1}, headers=h)).json()["tutorial_step"] == 3
+    assert (await client.get("/me", headers=h)).json()["tutorial_step"] == 3
+
+
+@pytest.mark.parametrize("name,bad", [("Trúc Lão", False), ("Lớn Lên", False), ("lồn", True), ("dmmm", True),
+                                       ("Vcl", True), ("Đệ tử", False), ("dit me", True), ("Phong 2008", False)])
+def test_name_filter(name, bad):
+    assert contains_banned(name) is bad
+
+
+async def test_new_account_starts_in_the_abode_without_a_garden(client):
+    """No starter seed any more: a new account only has its starting Linh Thạch, and the
+    garden, seed, fruit and word-collection endpoints are gone."""
+    from app import balance
+    h, _ = await register(client, "nhapmon")
+    me = (await client.get("/me", headers=h)).json()
+    assert me["spirit_stones"] == balance.economy()["starting_spirit_stones"]
+    for path in ("/garden", "/seeds", "/fruits", "/collection", "/discoveries", "/sentences"):
+        assert (await client.get(path, headers=h)).status_code == 404, path
+    for path in ("/garden/plant", "/garden/review", "/quiz/practice", "/seeds/sell", "/friends/help"):
+        assert (await client.post(path, json={}, headers=h)).status_code in (404, 405), path

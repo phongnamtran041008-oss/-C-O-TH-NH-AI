@@ -1,5 +1,5 @@
 {
- "_comment": "Linh Phong numbers (spec 10). Species base numbers live in data/creatures/bees.json; these scale them. Times are real seconds; honey and pollen production speed up with TIME_SCALE like SRS waits do.",
+ "_comment": "Linh Phong numbers (spec 10). Species base numbers live in data/creatures/bees.json; these scale them. Times are real seconds; honey production speeds up with TIME_SCALE. feed: XP of one bite; every caught fish is food too, by its rarity (feed.fish).",
  "rarities": [
   "pham",
   "linh",
@@ -54,7 +54,6 @@
  },
  "role_names_vi": {
   "hive": "Ở tổ",
-  "pollinate": "Thụ phấn",
   "guard": "Hộ vệ"
  },
  "eggs": {
@@ -78,7 +77,6 @@
   "per_favorite": 8,
   "stat_bonus_at_max": 0.1
  },
- "word_mastery_bonus_at_100": 0.1,
  "feed": {
   "linh_mat": {
    "xp": 25
@@ -89,14 +87,23 @@
   "ca_nho": {
    "xp": 35
   },
-  "fruit": {
-   "common": 12,
-   "rare": 20,
-   "epic": 35,
-   "legendary": 60
+  "truc_diep_thao": {
+   "xp": 20
+  },
+  "mac_linh_chi": {
+   "xp": 45
+  },
+  "tinh_so_phuc": {
+   "xp": 30
+  },
+  "fish": {
+   "pham": 12,
+   "linh": 20,
+   "huyen": 35,
+   "dia": 60,
+   "thien": 100
   }
  },
- "xp_pollinated_plant": 12,
  "xp_kill_assist": 8,
  "release_wax": {
   "pham": 1,
@@ -224,83 +231,6 @@
    "co_phuong": "Cờ phướn"
   },
   "wax_per_honey": 0.1
- },
- "pollination": {
-  "min_stage": 3,
-  "affinity_mult": 1.5,
-  "max_pollinators": 6,
-  "harvest_fruits_pollinated": 5,
-  "spirit_fruit_chance": {
-   "common": 0.25,
-   "rare": 0.35,
-   "epic": 0.5,
-   "legendary": 0.75
-  },
-  "spirit_fruit_item": "linh_qua",
-  "review_wait_cut": 0.25,
-  "plant_elements": {
-   "thuy": [
-    "水",
-    "雨",
-    "海",
-    "河",
-    "湖",
-    "鱼",
-    "船"
-   ],
-   "hoa": [
-    "火",
-    "热",
-    "太阳",
-    "日",
-    "红"
-   ],
-   "moc": [
-    "木",
-    "树",
-    "草",
-    "花",
-    "林",
-    "森",
-    "茶",
-    "绿",
-    "菜",
-    "春天"
-   ],
-   "tho": [
-    "山"
-   ],
-   "kim": [
-    "黄",
-    "银行"
-   ],
-   "loi": [
-    "云",
-    "天气"
-   ],
-   "bang": [
-    "雪",
-    "冷",
-    "冬天"
-   ],
-   "quang": [
-    "月",
-    "月亮",
-    "明",
-    "星星",
-    "灯"
-   ],
-   "phong": [
-    "风",
-    "空气"
-   ],
-   "mac": [
-    "黑",
-    "笔",
-    "写",
-    "画"
-   ]
-  }
  },
  "guard": {
   "slots_by_realm": {

@@ -509,35 +509,11 @@ def test_every_pet_and_bee_species_has_its_own_sheet():
         assert art2.bee_frame(sp, 0.1, False, sting_t=0.05) is b.frame(b.index("sting", 0.05, "right"))
 
 
-def test_the_garden_family_hash_is_stable_across_runs():
-    import subprocess
-    import sys
-    keys = ["w_shui", "w_mu", "123", "Thủy", "a" * 40]
-    here = [art2.plant_family(k) for k in keys]
-    code = ("import sys, json; sys.path.insert(0, r'%s'); from client.engine import art2; "
-            "print(json.dumps([art2.plant_family(k) for k in %r]))") % (ROOT, keys)
-    for seed in ("1", "12345"):
-        out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True,
-                             env={**__import__("os").environ, "PYTHONHASHSEED": seed}, check=True).stdout
-        assert [tuple(x) for x in json.loads(out.strip().splitlines()[-1])] == here, seed
-    fams = {art2.plant_family(f"k{i}")[0] for i in range(60)}
-    assert fams == set(W()["garden"]["families"])                     # every family is used
-
-
-def test_every_garden_realm_and_td_name_the_code_asks_for_exists():
+def test_every_egg_realm_and_td_name_the_code_asks_for_exists():
     g = W()["garden"]
-    for fam in g["families"]:
-        for stage in range(6):
-            for rar in g["rarities"]:
-                key = next(k for k in (f"x{i}" for i in range(500)) if art2.plant_family(k)[0] == fam)
-                assert art2.plant(stage, rar, key) is not None, (fam, stage, rar)
-    assert art2.plant(5, "khong_co", "x0") is not None                 # an unknown rarity falls back
-    for locked, dry in ((True, False), (False, False), (False, True)):
-        assert art2.bed(locked, dry).get_size() == (64, 64)
-    for rar in g["rarities"]:
-        assert len(art2.seed_frames(rar)) == 3 and len(art2.egg_frames(rar)) == 3
+    assert not {"families", "rarities"} & set(g)                       # the word garden's plants are gone
     for bee_rarity in g["egg_by_bee_rarity"]:
-        assert art2.egg_frames(bee_rarity)
+        assert len(art2.egg_frames(bee_rarity)) == 3, bee_rarity
     for deco in g["decorations"]:
         assert art2.decoration(deco) is not None, deco
     from client.scenes.realm import realm_v2_name
@@ -545,7 +521,7 @@ def test_every_garden_realm_and_td_name_the_code_asks_for_exists():
         [("rune_tile", s) for s in ("off", "idle", "next", "done")] + \
         [("pillar", t, lit) for t in (1, 2, 3, 4) for lit in (True, False)] + \
         [("realm_exit", o, 1) for o in (True, False)] + [("chest", o) for o in (True, False)] + \
-        [("statue", 1), ("mirror", 3), ("rift", 7)]
+        [("statue", 1), ("rift", 7)]
     from client.engine import sprites
     for call in calls:
         name, frame = realm_v2_name(*call)
@@ -566,9 +542,6 @@ def test_every_garden_realm_and_td_name_the_code_asks_for_exists():
     import itertools
     for sides in itertools.product((False, True), repeat=4):
         assert art2.td_path_name(*sides) in tiles, sides
-    balance_roles = set(json.loads((DATA / "balance" / "td.json").read_text("utf-8"))["roles"])
-    for role in balance_roles - set(td["roles"]):       # word-board roles with no v2 tower: the old plant stays
-        assert art2.td_prop(f"tower_{role}_1") is None, role
 
 
 def test_every_autotile_pair_has_its_tiles():

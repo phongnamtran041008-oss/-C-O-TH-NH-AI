@@ -1,5 +1,5 @@
 """Server side of a gacha roll: limits, charging, pity persistence and turning rarities
-into rewards: seeds (Hạt Chữ), bee eggs (Trứng Ong) and Linh Thú (stage 8)."""
+into rewards: bee eggs (Trứng Ong) and Linh Thú (stage 8)."""
 from __future__ import annotations
 
 import random
@@ -8,15 +8,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import balance, clock
-from ..learning.wordbank import bank
-from ..models import Character, Collection, Seed, User
+from ..models import User
 from . import inventory
 from .gacha import Banner, GachaError, expected_rate_with_pity
-
-# The old word game's vocabulary tier for each realm. The realms after Nguyen Anh reuse the
-# highest tier (4): no word content is planned for them.
-REALM_TIER = {"pham_nhan": 1, "luyen_khi": 1, "truc_co": 2, "kim_dan": 3, "nguyen_anh": 4,
-              "hoa_than": 4, "luyen_hu": 4, "hop_the": 4, "dai_thua": 4}
 
 
 def reset_daily(user: User, today: str) -> None:
@@ -24,11 +18,6 @@ def reset_daily(user: User, today: str) -> None:
         user.daily_reset_date = today
         user.daily_new_seeds_count = 0
         user.daily_free_rolls_used = 0
-
-
-async def player_tier(db: AsyncSession, user_id: int) -> int:
-    ch = await db.get(Character, user_id)
-    return REALM_TIER.get(ch.realm, 1) if ch else 1
 
 
 def banner_info(user: User | None = None) -> list[dict]:
@@ -63,24 +52,19 @@ async def roll(db: AsyncSession, user: User, banner_id: str, count: int, free: b
     if free and count != 1:
         raise GachaError("bad_count", "Lượt miễn phí chỉ quay 1 lần.")
     banner = Banner.load(banner_id)
-    if banner_id == "seeds":   # the Chuột (stage 8): a little more Rare, taken from Common
-        from . import pets
-        extra = await pets.skill_value(db, user.id, "seed_rare")
-        if extra:
-            shift = min(extra, banner.rates["common"])
-            banner.rates = {**banner.rates, "common": banner.rates["common"] - shift,
-                            "rare": banner.rates["rare"] + shift}
 
     now = clock.now()
     reset_daily(user, clock.local_date(now))
     if bcfg.get("counts_toward_daily_limit"):
         left = cfg["daily_roll_limit"] - user.daily_new_seeds_count
         if left <= 0:
-            raise GachaError("daily_limit", "Hạt giống cần nghỉ ngơi, mai quay lại nhé.")
+            raise GachaError("daily_limit", "Hôm nay đã quay đủ lượt, mai quay lại nhé.")
         if count > left:
-            raise GachaError("daily_limit", f"Hôm nay chỉ còn {left} lượt hạt mới.")
-    if free and banner_id != "seeds":
-        raise GachaError("no_free_roll", "Lượt quay miễn phí hằng ngày chỉ dành cho Hạt Chữ.")
+            raise GachaError("daily_limit", f"Hôm nay chỉ còn {left} lượt quay.")
+    free_banner = cfg["free_roll_banner"]
+    if free and banner_id != free_banner:
+        raise GachaError("no_free_roll",
+                         f"Lượt quay miễn phí hằng ngày chỉ dành cho quầy {cfg['banners'][free_banner]['name_vi']}.")
     if free:
         if user.daily_free_rolls_used >= cfg["daily_free_rolls"]:
             raise GachaError("no_free_roll", "Hôm nay đã dùng lượt quay miễn phí rồi.")
@@ -103,9 +87,7 @@ async def roll(db: AsyncSession, user: User, banner_id: str, count: int, free: b
     pity_all[banner_id] = new_state
     user.pity = pity_all  # reassign so the JSON column is marked dirty
 
-    if banner_id == "seeds":
-        rewards = await _resolve_seeds(db, user, rarities, rng, now)
-    elif banner_id == "bees":
+    if banner_id == "bees":
         rewards = await _resolve_eggs(db, user, rarities)
     elif banner_id == "pets":
         from . import pets
@@ -119,33 +101,6 @@ async def roll(db: AsyncSession, user: User, banner_id: str, count: int, free: b
     return {"banner": banner_id, "results": rewards, "pity": new_state, "spirit_stones": stones,
             "immortal_jade": jade,
             "daily_rolls_left": cfg["daily_roll_limit"] - user.daily_new_seeds_count}
-
-
-async def _resolve_seeds(db: AsyncSession, user: User, rarities: list[str], rng: random.Random,
-                         now) -> list[dict]:
-    b = bank()
-    tier = await player_tier(db, user.id)
-    owned = set((await db.execute(select(Collection.word_id).where(Collection.user_id == user.id)))
-                .scalars().all())
-    out = []
-    for r in rarities:
-        pool = b.gacha_pool(tier, r) or b.gacha_pool(9, r)
-        if not pool:
-            raise RuntimeError(f"empty seed pool for rarity {r}")
-        new = [w for w in pool if w.id not in owned]
-        duplicate = not new
-        w = rng.choice(new or pool)
-        seed = Seed(user_id=user.id, word_id=w.id, duplicate=duplicate, source="gacha", obtained_at=now)
-        db.add(seed)
-        if not duplicate:
-            owned.add(w.id)
-            db.add(Collection(user_id=user.id, word_id=w.id, first_seen_at=now))
-        await db.flush()
-        out.append({"seed_id": seed.id, "rarity": r, "duplicate": duplicate,
-                    # the seed is a mystery until planted; only the rarity glow and the
-                    # character are shown (the intro card teaches it)
-                    "word": {"id": w.id, "hanzi": w.hanzi}})
-    return out
 
 
 async def _resolve_eggs(db: AsyncSession, user: User, rarities: list[str]) -> list[dict]:

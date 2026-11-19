@@ -78,9 +78,6 @@ class PetScene(Scene):
                 ui.image(v2, px + 30, y + 88, zoom=2, anchor="midbottom")
             else:
                 ui.image(sprites.pet(p["pet_type"], int(ui.time * 4) % 2), px + 30, y + 62, zoom=3.5, anchor="center")
-            if not art2.on():        # the old game's Chinese name: not on the v2 (math game) screen
-                ui.text(p["hanzi"], px + 88, y + 52, 22, "#2B2B2B", kind="han", anchor="center")
-            ui.text(p["pinyin"], px + 88, y + 72, 9, "#5A5A5A", kind="han", anchor="center")
             ui.text(f"{p['name_vi']} · {p['zodiac_vi']}", px + 120, y + 44, 9, col)
             ui.text(p["rarity_vi"], px + 120, y + 56, 7, col)
             ui.text(T.PETS_LEVEL.format(l=p["level"], m=p["max_level"]), px + 120, y + 66, 7, "#8E877A")
@@ -130,9 +127,7 @@ class PetBookScene(Scene):
                 ui.image(img, cx + 30, cy + 22, zoom=2.5, anchor="center")
             ui.text(b["zodiac_vi"], cx + 30, cy + 44, 7, "#8E877A", anchor="center")
             if b["found"]:
-                ui.text(b["pinyin"] if art2.on() else f"{b['hanzi']} {b['pinyin']}", cx + 30, cy + 56, 9, "#2B2B2B",
-                        kind="han", anchor="center")
-                ui.text(b["name_vi"], cx + 30, cy + 70, 8, col, anchor="center")
+                ui.text(b["name_vi"], cx + 30, cy + 60, 9, col, anchor="center")
                 if ui.hover(cx, cy, 60, 88):
                     ui.set_tooltip(b["skill_vi"])
             else:

@@ -16,7 +16,7 @@ async def with_guards(client, w, username, display, kinds=("muc", "hoang_kim"), 
         ch = await db.get(Character, uid)
         ch.realm, ch.realm_stage = realm, 1
         db.add(Hive(user_id=uid, layout={}, level=1, decorations=[], honey=0.0, wax=0.0, cells=10,
-                    honey_checked_at=clock.now(), pollen_checked_at=clock.now()))
+                    honey_checked_at=clock.now()))
         for i, k in enumerate(kinds):
             db.add(Bee(user_id=uid, bee_type=k, level=level, xp=0, hive_slot=beesys.cell_order()[i], role="guard",
                        bond=0, obtained_at=clock.now()))

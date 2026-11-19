@@ -165,20 +165,6 @@ def sim_towers(views: list[dict]) -> dict[str, dict]:
             for v in views if v["available"]}
 
 
-def _client_params(params: dict) -> dict:
-    """The params of a run as the client gets them. A run saved before the tower cards got
-    their own key names (it lives at most anti_cheat.run_hours) is shown with the new ones;
-    the simulation reads neither."""
-    defs = params.get("plants") or {}
-    if all("label" in d for d in defs.values()):
-        return params
-    old = ("hanzi", "pinyin", "rarity")
-    return {**params, "plants": {k: {**{f: v for f, v in d.items() if f not in old},
-                                     "label": d.get("label", d.get("hanzi", k)),
-                                     "name_vi": d.get("name_vi", d.get("pinyin", k))}
-                                 for k, d in defs.items()}}
-
-
 def build_params(level: dict, defs: dict[str, dict], seed: int) -> dict:
     """Everything td_sim needs, sent to the client as is. Monsters and the two safety numbers
     of the simulation are in balance/td.json; the rest is math/td.json."""
@@ -256,7 +242,7 @@ async def view(db: AsyncSession, user: User) -> dict:
 
 async def run_view(db: AsyncSession, user: User, row: TdRun) -> dict:
     lv = levels()[row.level_id]
-    return {"run_id": row.id, "level_id": row.level_id, "params": _client_params(row.params), "step_ms": td_sim.STEP_MS,
+    return {"run_id": row.id, "level_id": row.level_id, "params": row.params, "step_ms": td_sim.STEP_MS,
             "max_speed": td.cfg()["anti_cheat"]["max_speed"], "name_vi": lv["name_vi"],
             "monsters": [td.monster_card(k) for k in td.monster_kinds(lv)],
             "towers": await tower_views(db, user.id)}

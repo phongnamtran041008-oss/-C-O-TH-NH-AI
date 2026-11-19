@@ -24,8 +24,9 @@ from websockets.asyncio.client import connect
 
 PROTOCOL_VERSION = 3
 LOOK = {"hair_color": "#2B2B2B", "hair_style": "ngan", "body": "nam"}
-LINES = ["Chào mọi người!", "Ai đi Rừng Mực Loang không?", "Hôm nay ta học được chữ 水.", "Trà của Trúc Lão ngon thật.",
-         "Kênh này đông vui ghê.", "Có ai biết chữ 好 ghép từ gì không?", "Đi dạo một vòng đây.", "Cây của ta sắp chín rồi!"]
+LINES = ["Chào mọi người!", "Ai đi Rừng Mực Loang không?", "Hôm nay ta giải được bài khó.", "Trà của Trúc Lão ngon thật.",
+         "Kênh này đông vui ghê.", "Có ai biết cách giải hệ phương trình không?", "Đi dạo một vòng đây.",
+         "Ta sắp đột phá rồi!"]
 
 
 def ws_url(http: str) -> str:

@@ -33,7 +33,6 @@ def test_everything_the_shops_sell_is_bought_back_for_much_less():
 def test_brewing_is_never_worth_more_than_its_ingredients_at_village_prices():
     """Even ingredients that only come from playing: a pill sells for less than what went in."""
     sell = es._stack_sell_prices()
-    garden = balance.garden()
     alc = balance.load("alchemy")
     extra = max(f["extra_chance"] for f in alc["furnace"])
     fish = catalog.fish()
@@ -42,8 +41,6 @@ def test_brewing_is_never_worth_more_than_its_ingredients_at_village_prices():
         for ing in r["ingredients"]:
             if ing["kind"] == "item":
                 value_in += ing["qty"] * sell.get(ing["item"], 0)
-            elif ing["kind"] == "fruit":
-                value_in += ing["qty"] * garden["fruit_sell_price"][ing["rarity"]]
             else:
                 value_in += ing["qty"] * min(f["sell_price"] for f in fish.values() if f["rarity"] == ing["rarity"])
         value_out = (max(r["yield"].values()) + extra) * catalog.pills()[rid]["sell_price"]
@@ -55,7 +52,6 @@ def test_gacha_never_pays_back_on_average():
     pets = catalog.pets()
     ev = sum(g["pets"]["rates"][r] * pets["dupe_stones"][r] for r in pets["dupe_stones"])
     assert ev < g["pets"]["price"]["spirit_stones"] / 2
-    assert balance.gacha()["duplicate_seed_sell_price"] < g["seeds"]["price"]["spirit_stones"]
 
 
 def test_thirty_days_of_three_kinds_of_player(capsys):
@@ -66,16 +62,16 @@ def test_thirty_days_of_three_kinds_of_player(capsys):
         assert all(f["stones"] >= 0 for f in sim.flow)
         tin, tout = sum(sim.totals_in.values()), sum(sim.totals_out.values())
         assert tout / tin >= 0.6, sim.p.id                 # the sinks take most of what comes in
-    casual, grinder = sims["thong_tha"], sims["cay_cuoc"]
+    grinder = sims["cay_cuoc"]
     per_min = {k: sum(s.totals_in.values()) / (30 * s.p.minutes) for k, s in sims.items()}
-    # more hours never earn faster per minute, and the garden (the review schedule) barely grows with hours
+    # more hours never earn faster per minute
     assert per_min["cay_cuoc"] <= per_min["thong_tha"] * 1.1
-    assert grinder.totals_in["ôn vườn"] <= 3 * casual.totals_in["ôn vườn"]
+    assert not any("vườn" in k or "quả chữ" in k for k in grinder.totals_in)   # the garden is gone
 
 
 def test_money_does_not_breed_money():
     """A player who starts with a fortune buys every upgrade at once, yet a day still earns a
-    bounded amount: plots, hive cells and hive levels stop at their maximum, and nothing pays
+    bounded amount: hive cells and hive levels stop at their maximum, and nothing pays
     interest on a balance."""
     p = next(x for x in es.PROFILES if x.id == "cay_cuoc")
     normal = es.simulate(p, 30)
@@ -85,7 +81,6 @@ def test_money_does_not_breed_money():
     assert max(late) - min(late) <= 0.25 * max(late)       # flat once everything is bought
 
 
-@pytest.mark.parametrize("item_id", [s["item"] for s in balance.load("shop")["stock"]
-                                     if s["item"] != balance.load("shop")["seed_item"]])
+@pytest.mark.parametrize("item_id", [s["item"] for s in balance.load("shop")["stock"]])
 def test_shop_stock_exists(item_id):
     assert catalog.stack_item(item_id) is not None

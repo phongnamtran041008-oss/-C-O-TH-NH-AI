@@ -3,17 +3,26 @@ is worn at a time; it follows its owner (in the abode and out in the world, wher
 see it too), gives a small combat bonus and one passive skill. Skills only change rewards
 and timings around a question, never the question itself.
 
-The skills are read where they act (garden, gacha, fishing, hive, combat, Thủ Vườn) through
-`skill_value(db, user_id, type)`."""
+The skills are read where they act through `skill_value(db, user_id, type)`:
+  pet_rare (Chuột)          — resolve_gacha below, the Linh Thú banner;
+  dungeon_stones (Trâu)     — math_dungeon._grant, Linh Thạch of rooms and chest;
+  tribulation_guard (Hổ)    — cultivation.tribulation_handler, Tu Vi lost on a failed Thiên Kiếp;
+  fish_luck (Mèo)           — fishing;
+  streak_double (Rồng), xp_meditate (Gà) — on_math_answer below, called by math_combat.record;
+  mac_kich (Rắn), kill_stones (Ngựa), drop (Chó) — realtime combat;
+  honey (Dê)                — bees.collect;
+  td_qi (Khỉ)               — math_td;
+  sell_stones (Lợn)         — items.sell, stack items sold to the village."""
 from __future__ import annotations
 
+import math
 import random
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .. import clock
-from ..models import CodexEntry, Pet, User
+from ..models import CodexEntry, Pet, QuizSession, User
 from . import catalog, inventory
 
 RARITY_VI = {"common": "Thường", "rare": "Hiếm", "epic": "Quý", "legendary": "Huyền thoại"}
@@ -65,10 +74,47 @@ async def skill_value(db: AsyncSession, user_id: int, kind: str) -> float:
     return float(sk.get("value", sk.get("every", 0)))
 
 
+def _answer_xp(user: User, s: QuizSession) -> int:
+    """The Tu Vi quiz.answer pays for this right answer (base rule x Tụ Linh Đan)."""
+    from ..learning import quiz
+    from . import buffs
+    return int(round(quiz.base_xp(s) * buffs.xp_mult(user, clock.now())))
+
+
+async def on_math_answer(db: AsyncSession, user: User, s: QuizSession, correct: bool) -> dict:
+    """Rồng (streak_double) and Gà (xp_meditate): Tu Vi on top of what the answer itself pays.
+    Called by math_combat.record, the learning log of every math question asked outside the
+    Đạo Thụ (meditation, Thiên Kiếp, monsters, fishing, Bí Cảnh, Thủ Vườn...). Returns {} when
+    the worn pet does nothing here, else {"pet_xp", "pet_skill"}."""
+    sk = await skill(db, user.id)
+    if not sk:
+        return {}
+    kind = sk.get("type")
+    if kind == "streak_double":
+        every = max(1, int(sk.get("every", 5)))
+        flags = dict(user.flags or {})
+        n = int(flags.get("pet_streak", 0)) + 1 if correct else 0
+        bonus = _answer_xp(user, s) if correct and n >= every else 0   # the same again: double
+        flags["pet_streak"] = 0 if bonus > 0 else n     # an answer that pays no Tu Vi keeps the streak
+        user.flags = flags
+    elif kind == "xp_meditate" and correct:
+        from .cultivation import MEDITATE_CONTEXT
+        if s.context != MEDITATE_CONTEXT:
+            return {}
+        bonus = math.ceil(_answer_xp(user, s) * float(sk.get("value", 0)))
+    else:
+        return {}
+    if bonus <= 0:
+        return {}
+    from . import cultivation
+    await cultivation.add_xp(db, user.id, bonus, f"pet_{kind}")
+    return {"pet_xp": bonus, "pet_skill": kind}
+
+
 def view(p: Pet) -> dict:
     sp = species()[p.pet_type]
     return {"id": p.id, "pet_type": p.pet_type, "name_vi": sp["name_vi"], "zodiac_vi": sp["zodiac_vi"],
-            "hanzi": sp["hanzi"], "pinyin": sp["pinyin"], "rarity": sp["rarity"],
+            "rarity": sp["rarity"],
             "rarity_vi": RARITY_VI.get(sp["rarity"], sp["rarity"]), "level": p.level, "max_level": cfg()["max_level"],
             "equipped": bool(p.equipped), "skill_vi": sp["skill_vi"], "stats": stats_of(p.pet_type, p.level),
             "look": sp["look"]}
@@ -86,7 +132,7 @@ async def overview(db: AsyncSession, user: User) -> dict:
     for pid, sp in species().items():
         if pid in have:
             book.append({"id": pid, "found": True, "name_vi": sp["name_vi"], "zodiac_vi": sp["zodiac_vi"],
-                         "hanzi": sp["hanzi"], "pinyin": sp["pinyin"], "rarity": sp["rarity"],
+                         "rarity": sp["rarity"],
                          "skill_vi": sp["skill_vi"], "look": sp["look"]})
         else:
             book.append({"id": pid, "found": False, "zodiac_vi": sp["zodiac_vi"], "rarity": sp["rarity"],
@@ -126,6 +172,16 @@ async def equip(db: AsyncSession, user: User, pet_id: int | None) -> dict:
     return await overview(db, user)
 
 
+def rare_upgrade_chance(extra: float) -> float:
+    """The Chuột moves `extra` of the Linh Thú banner's probability from Common to Rare:
+    a rolled Common becomes Rare with chance extra / P(Common)."""
+    if extra <= 0:
+        return 0.0
+    from .. import balance
+    common = float(balance.gacha()["banners"]["pets"]["rates"]["common"])
+    return min(1.0, extra / common) if common > 0 else 0.0
+
+
 async def resolve_gacha(db: AsyncSession, user: User, rarities: list[str], rng: random.Random) -> list[dict]:
     """A rolled rarity becomes one pet of that rarity. A new species joins the Linh Thú Phổ;
     a species already owned gains a level, and past the top level turns into Linh Thạch."""
@@ -133,12 +189,15 @@ async def resolve_gacha(db: AsyncSession, user: User, rarities: list[str], rng: 
     pool: dict[str, list[str]] = {}
     for pid, sp in species().items():
         pool.setdefault(sp["rarity"], []).append(pid)
+    lucky = rare_upgrade_chance(await skill_value(db, user.id, "pet_rare"))
     out = []
     for r in rarities:
+        if r == "common" and lucky and rng.random() < lucky:   # the Chuột: Common -> Rare
+            r = "rare"
         pid = rng.choice(pool[r])
         sp = species()[pid]
         row = (await db.execute(select(Pet).where(Pet.user_id == user.id, Pet.pet_type == pid))).scalars().first()
-        res = {"rarity": r, "pet_type": pid, "name_vi": sp["name_vi"], "hanzi": sp["hanzi"], "pinyin": sp["pinyin"],
+        res = {"rarity": r, "pet_type": pid, "name_vi": sp["name_vi"],
                "zodiac_vi": sp["zodiac_vi"], "look": sp["look"]}
         if row is None:
             row = Pet(user_id=user.id, pet_type=pid, level=1, equipped=False)

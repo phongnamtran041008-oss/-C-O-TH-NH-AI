@@ -67,42 +67,14 @@ STONES = "Linh Thạch"
 ABODE = "Động Phủ"
 
 HUD_BAG = "Túi đồ"
-HUD_CRAFT = "Ghép câu"
-HUD_BOOK = "Sổ phát hiện"
+HUD_BOOK = "Các phổ"
 HUD_GACHA = "Thiên Cơ"
 HUD_MENU = "Cài đặt"
 HUD_FRIENDS = "Bạn bè"
 PRESS_E = "[E] {action}"
-ACTIONS = {"gacha": "Thiên Cơ Đài", "discoveries": "Bia Phát Hiện", "craft": "Bàn Ghép Câu",
-           "meditate": "Bàn đả tọa", "exit": "Xuống Trúc Lâm Thôn", "talk": "Nói chuyện", "plot": "Chăm cây",
-           "hive": "Linh Phong Sào", "alchemy": "Đan Lô (luyện đan)"}
+ACTIONS = {"gacha": "Thiên Cơ Đài", "meditate": "Bàn đả tọa", "exit": "Xuống Trúc Lâm Thôn",
+           "talk": "Nói chuyện", "hive": "Linh Phong Sào", "alchemy": "Đan Lô (luyện đan)"}
 
-PLOT_EMPTY = "Ô đất trống"
-PLOT_LOCKED = "Đất hoang"
-PLOT_UNLOCK = "Khai hoang ({cost} Linh Thạch)"
-PLOT_UNLOCK_FAR = "Chỉ khai hoang được ô cạnh ô đã có."
-PLANT = "Gieo hạt"
-NO_SEEDS = "Túi không còn hạt nào. Ghé Thiên Cơ Đài để quay hạt mới."
-VIEW_CARD = "Xem thẻ chữ"
-REVIEW = "Ôn tập"
-HARVEST = "Thu hoạch"
-DUE_NOW = "Đến giờ ôn rồi!"
-DUE_IN = "Ôn sau {t}"
-WITHER = "Sương mực {p}%"
-NEEDS_REVIEW = "Hay trả lời sai, nên ôn lại"
-AURA = {"water": "Được nước tưới mát (ôn sớm hơn)", "fire": "Được lửa sưởi ấm (lớn nhanh hơn)"}
-PICK_SEED = "Chọn hạt để gieo"
-DUPLICATE = "Trùng"
-STAGES = ["Hạt vừa gieo", "Nảy mầm", "Cây non", "Ra hoa", "Kết trái", "Chín"]
-
-INTRO_TITLE = "Chữ mới"
-INTRO_REMEMBER = "Đã nhớ"
-INTRO_LISTEN = "Nghe"
-EXAMPLE = "Ví dụ"
-UNREVIEWED = "(nghĩa chưa được duyệt)"
-STORY = "Tích xưa"
-MEASURE = "Lượng từ"
-COMPONENTS = "Cấu tạo"
 
 QUIZ_TIME = "Thời gian"
 QUIZ_SUBMIT = "Trả lời"
@@ -117,43 +89,16 @@ QUIZ_TYPE_HINT = "Gõ v thay cho ü, bấm Enter để trả lời"
 REWARD = "+{n} Linh Thạch"
 STAGE_UP = "Cây lên giai đoạn: {s}"
 
-GACHA_TITLE = "Thiên Cơ Các · Hạt Chữ"
 GACHA_ROLL1 = "Quay 1 ({p})"
 GACHA_ROLL10 = "Quay 10 ({p})"
 GACHA_FREE = "Quay miễn phí"
-GACHA_LEFT = "Hôm nay còn {n}/15 lượt hạt"
-GACHA_RATES = "Tỉ lệ: Thường 70% · Hiếm 22% · Sử thi 7% · Huyền thoại 1%"
-GACHA_PITY = "Bảo hiểm: lượt thứ 40 chắc chắn Sử thi trở lên, lượt thứ 90 chắc chắn Huyền thoại."
-GACHA_PITY_NOW = "Đã quay {e}/40 lượt chưa có Sử thi, {l}/90 lượt chưa có Huyền thoại"
-GACHA_EFFECTIVE = "Tỉ lệ thực tế khi tính bảo hiểm: Huyền thoại ≈ {l}%, Sử thi trở lên ≈ {e}%"
-GACHA_TAP = "Bấm để mở hạt"
-GACHA_NEW = "Mới!"
 
 BAG_TITLE = "Túi đồ"
-BAG_SEEDS = "Hạt giống"
-BAG_FRUITS = "Quả chữ"
-BAG_WORDS = "Sổ chữ"
-SELL = "Bán"
-SELL_ALL = "Bán hết"
-CUTTING = "Giâm cành (60)"
-CUTTING_TIP = "Mua thêm một hạt của chữ này để trồng lại hoặc trồng nhiều cây (林 cần hai cây 木)."
-MASTERY = "Thông thạo {m}%"
 EMPTY_LIST = "Chưa có gì ở đây."
 
 CRAFT_TITLE = "Bàn Ghép Câu"
-CRAFT_PICK = "Chọn một câu để ghép"
-CRAFT_NONE = ("Chưa đủ quả chữ để ghép câu nào. Thu hoạch thêm cây, rồi quay lại nhé. "
-              "Mỗi câu cần đủ quả của mọi từ trong câu.")
-CRAFT_GO = "Ghép"
-CRAFT_REWARD = "Thưởng {n} Linh Thạch"
-CRAFT_HINT = "Bấm vào quả để đặt vào ô, bấm vào ô để lấy ra."
 CRAFT_DONE = "Ghép thành công!"
 
-BOOK_TITLE = "Sổ Phát Hiện"
-BOOK_HINT = "Đặt đúng những cây cạnh nhau trong vườn để phát hiện chữ ẩn."
-BOOK_FUN = "ghép vui"
-BOOK_TRUE = "đúng cấu tạo chữ"
-DISCOVERY_TITLE = "Phát hiện mới!"
 
 SETTINGS_TITLE = "Cài đặt"
 SCALE = "Phóng to"
@@ -174,35 +119,17 @@ CREDITS_TEXT = (
 
 # ---------------------------------------------------------------- Trúc Lão
 MASTER = "Trúc Lão"
-TUTORIAL = [
-    ["Ồ, đệ tử mới đây rồi! Ta là Trúc Lão, ẩn sĩ thư pháp của Trúc Lâm.",
-     "Thiên địa vận hành nhờ Chữ Đạo: vạn vật có tên thì có linh khí.",
-     "Mặc Quái đang nuốt chữ, nên con phải học chữ mà tu luyện. Học một chữ là thu một tia linh khí!",
-     "Mảnh đất này từ nay là động phủ của con. Ta tặng con hạt giống chữ đầu tiên: 水 (nước)."],
-    ["Đi tới vườn (phím WASD hoặc mũi tên), đứng lên một ô đất rồi bấm E, hoặc bấm chuột vào ô đó để gieo hạt."],
-    ["Hạt đã nằm trong đất. Bấm vào cây để xem thẻ chữ: chữ to, cách đọc, nghĩa. Nhớ rồi thì bấm \"Đã nhớ\"."],
-    ["Cây nảy mầm rồi! Chữ cần thời gian để ngấm: khi cây đến giờ ôn, nó sẽ nhấp nháy.",
-     "Trả lời đúng thì cây lớn. Để lâu không ôn, sương mực sẽ phủ lên cây đấy."],
-    ["Giỏi lắm! Thiên Cơ Đài bên phải là nơi quay hạt mới, mỗi ngày con có một lượt miễn phí.",
-     "Bia đá cạnh vườn ghi lại các phát hiện, bàn gỗ cạnh nhà là nơi ghép quả chữ thành câu. Ta đi pha trà đây!"],
-]
 MASTER_IDLE = ["Trà nguội rồi... con có thấy cái chén của ta đâu không?",
-               "Chữ 好 gồm chữ 女 và chữ 子. Ta nói thế thôi, con đừng trồng thử nhé... mà thôi, cứ thử đi.",
-               "Ôn đúng lúc quan trọng hơn ôn nhiều. Cây cũng thế, người cũng thế.",
-               "Hồi trẻ ta cũng muốn giữ hết chữ cho riêng mình... à mà thôi, chuyện cũ rồi.",
-               "Nước đặt cạnh cây thì cây mau đến giờ ôn. Lửa đặt cạnh gỗ thì... con tự hiểu."]
+               "Ôn đúng lúc quan trọng hơn ôn nhiều. Tu luyện cũng thế, người cũng thế.",
+               "Ngồi bàn đả tọa mà giải bài, linh khí tự khắc tụ về.",
+               "Hồi trẻ ta cũng muốn giữ hết bí kíp cho riêng mình... à mà thôi, chuyện cũ rồi.",
+               "Sai một bài thì nhớ lâu một đời. Đừng sợ sai, chỉ sợ không thử."]
 QUIP_CORRECT = ["Hay lắm! Linh khí dâng lên rồi kìa.", "Đúng rồi, chữ này ngấm vào xương rồi đấy.",
                 "Giỏi! Ta già rồi mà còn chưa nhanh bằng con.", "Chuẩn! Mặc Quái vừa lùi lại ba bước.",
                 "Đúng! Thưởng con một tách trà... à không, Linh Thạch thì hơn."]
 QUIP_WRONG = ["Không sao, sai một lần thì nhớ lâu một đời.", "Hụt rồi! Năm phút nữa thử lại nhé.",
               "Chữ này hơi khó tính, phải dỗ dành nó thêm.", "Mặc Quái cười khẩy kìa. Lần sau cho nó biết tay!",
               "Ta năm xưa cũng sai câu này... chắc là vậy."]
-CRAFT_WRONG = ["Câu này đọc lên nghe như ta lúc chưa uống trà: lộn xộn quá!",
-               "Gần đúng rồi, nhưng chữ ở ô sáng đỏ đang lạc chỗ.",
-               "Người Trung Quốc mà nghe câu này chắc phải nghĩ một lúc lâu.",
-               "Đúng từ rồi đấy, chỉ là sắp xếp hơi... sáng tạo."]
-DISCOVERY_LINE = "Con tự tìm ra được cơ à? Ta không nói đâu nhé!"
-FUN_COMBO_NOTE = "Ghép vui: cách nhớ cho dễ, không phải nguồn gốc thật của chữ."
 
 
 # ---------------------------------------------------------------- stage 3: the shared world
@@ -233,7 +160,7 @@ COMING = {
 MASTER_VILLAGE = ["Ồ, con xuống làng rồi à? Trúc Lâm Thôn đông vui lắm, đạo hữu khắp nơi kéo về.",
                   "Phía đông là Rừng Mực Loang. Mặc Quái ở đó chưa dám làm gì ai, nhưng đừng đi một mình lúc tối nhé.",
                   "Ra cổng Tây là Hồ Nghiên Mực. Lão Ngư Ông ở đó câu cá từ hồi ta còn trẻ.",
-                  "Còn vườn thì đừng bỏ bê. Chữ không ôn là chữ bay mất!"]
+                  "Về động phủ thì nhớ ngồi bàn đả tọa. Bài không ôn là bài bay mất!"]
 GUIDE_NAME = "Tiểu Lan"
 GUIDE_LINES = ["Chào đạo hữu! Ta là Tiểu Lan, chuyên chỉ đường cho người mới.",
                "Bấm Enter để chat. Thế giới là nói với mọi người, Khu vực thì chỉ người trong kênh này nghe.",
@@ -241,12 +168,12 @@ GUIDE_LINES = ["Chào đạo hữu! Ta là Tiểu Lan, chuyên chỉ đường c
                "Cổng phía đông dẫn tới Rừng Mực Loang, cổng phía tây ra Hồ Nghiên Mực. Đường phía nam đưa con về động phủ.",
                "Kết bạn rồi thì có thể ghé động phủ của nhau và tưới giúp cây: cả hai đều được Linh Thạch."]
 LIBRARIAN_NAME = "Thủ Thư"
-LIBRARIAN_LINES = ["Chào mừng con tới Tàng Thư Các. Mọi phổ của con đều chép ở đây: Bách Thảo Phổ, Yêu Quái Phổ, "
-                   "Ong Phổ, Ngư Phổ và Sổ Phát Hiện.",
-                   "Phổ nào chép đủ một phần tư, một nửa, ba phần tư hay trọn vẹn đều có quà. Muốn tìm chữ thì gõ chữ Hán, "
-                   "pinyin hay nghĩa tiếng Việt vào ô tìm kiếm."]
-LIBRARIAN_IDLE = ["Sách quý phải giữ gìn, chữ quý phải ôn hoài.", "Sổ Lỗi ghi những chữ con hay nhầm. Luyện vài câu đi.",
-                  "Bách Thảo Phổ còn nhiều trang trống lắm. Ra Thiên Cơ Các gieo thêm hạt nhé."]
+LIBRARIAN_LINES = ["Chào mừng con tới Tàng Thư Các. Ở đây cất kinh thư toán của mọi tầng Đạo Thụ: công thức, "
+                   "lời giải mẫu và những chỗ người tu hay vấp.",
+                   "Gặp bài nào khó thì tới đây đọc lại kinh thư của tầng ấy. Các phổ của con và kệ đan phương cũng ở đây."]
+LIBRARIAN_IDLE = ["Kinh thư không chạy đi đâu, chỉ sợ người đọc vội.",
+                  "Đọc một trang kinh thư rồi hẵng luyện, công lực tăng nhanh hơn.",
+                  "Một công thức hiểu tận gốc hơn mười công thức học vẹt."]
 SIGN_READ = "Biển chỉ đường"
 
 CHAT_TABS = {"all": "Tất cả", "world": "Thế giới", "zone": "Khu vực", "party": "Tổ đội", "friend": "Bạn bè"}
@@ -269,11 +196,9 @@ FRIEND_NOW = "{name} và con đã là bạn bè!"
 FRIEND_ONLINE = "{name} vừa lên mạng"
 FRIEND_LEFT = "{name} vừa rời mạng"
 FRIEND_REQUEST = "{name} muốn kết bạn (mở Bạn bè để đồng ý)"
-FRIEND_HELPED = "{name} vừa tưới giúp vườn của con: +{n} Linh Thạch"
 ONLINE_IN = "Đang ở {zone}"
 OFFLINE_LABEL = "Ngoại tuyến"
 MSG = "Nhắn"
-VISIT = "Thăm"
 REMOVE = "Xóa"
 ACCEPT = "Đồng ý"
 DECLINE = "Từ chối"
@@ -287,20 +212,8 @@ REPORT_DONE = "Đã gửi báo cáo, quản trị viên sẽ xem xét. Cảm ơn
 NO_FRIENDS = "Chưa có đạo hữu nào. Gõ đạo hiệu để kết bạn, hoặc bấm vào người chơi khác trong làng."
 NO_REQUESTS = "Không có lời mời nào."
 NO_BLOCKED = "Chưa chặn ai."
-HELPS_LEFT = "Hôm nay còn {n} lượt tưới giúp"
 PLAYER_REALM = "Cảnh giới: {realm}"
 
-VISIT_TITLE = "Động phủ của {name}"
-VISIT_HINT = "Bấm vào cây có chữ con đã học để tưới giúp: đúng thì cả hai được +{n} Linh Thạch."
-VISIT_BACK = "Về"
-HELP = "Tưới giúp"
-HELP_TIP_OK = "Bấm để tưới giúp"
-HELP_TIP_UNKNOWN = "Con chưa học chữ này nên chưa tưới giúp được"
-HELP_TIP_YOUNG = "Hạt mới gieo, chủ vườn chưa xem thẻ chữ"
-HELP_DONE = "Tưới giúp thành công! +{n} Linh Thạch cho cả hai."
-HELP_NONE_LEFT = "Hôm nay con đã tưới giúp đủ lượt rồi."
-VISIT_MASTER = ["Ta đang trông vườn giúp chủ nhà. Con cứ tự nhiên ngắm, chỉ đừng hái trộm nhé!"]
-VISIT_OWNER_ITEM = "Đồ của chủ nhà, đừng nghịch nhé."
 
 KICKED_ELSEWHERE = "Tài khoản của con vừa đăng nhập ở máy khác, nên máy này đã thoát ra."
 KICKED = "Máy chủ đã ngắt kết nối: {msg}"
@@ -367,7 +280,6 @@ QUEST_PROGRESS = "{n}/{c}"
 QUESTS_NONE = "Đã xong mọi nhiệm vụ chính hiện có. Sắp có thêm!"
 
 MONSTER_BOOK = "Yêu Quái Phổ"
-DISCOVERY_BOOK = "Sổ Phát Hiện"
 MB_KILLS = "Đã hạ: {n}"
 MB_MISTAKE = "Hay sai: {m}"
 MB_WEAK = "Điểm yếu: {w}"
@@ -418,32 +330,27 @@ HIVE_NO_BEES = "Tổ còn trống. Ấp một quả trứng ong để bắt đ�
 HIVE_EGGS = "Trứng ong"
 HIVE_HATCH = "Ấp"
 HIVE_NEW_SPECIES = "Loài mới! Đã ghi vào Ong Phổ."
-HIVE_HATCHED = "{name} {hanzi} vừa nở!"
+HIVE_HATCHED = "{name} vừa nở!"
 HIVE_DECOR = "Trang trí"
 HIVE_GUARDS = "Hộ vệ {n}/{mx}"
-HIVE_POLLINATORS = "Thụ phấn {n}/{mx}"
 HIVE_INTRO = ["Linh Phong Sào đây! Ong linh nở từ trứng, mỗi con một ô trong tổ.",
-              "Để ong ở tổ thì chúng làm Linh Mật. Cho chúng Thụ phấn thì chúng bay ra vườn, giúp cây đang ra hoa "
-              "cho thêm quả. Nhưng cây chỉ lớn khi con trả lời đúng, ong không học thay con được đâu!",
+              "Để ong ở tổ thì chúng làm Linh Mật và Sáp Ong. Tổ đầy mật thì bấm Thu mật mà lấy về túi.",
               "Từ Luyện Khí, vài con có thể làm Hộ vệ, bay theo con ra ngoài và đánh những con quái đã bị con phá "
               "Mặc Thuẫn. Cho ăn đúng món chúng thích thì chúng quý con hơn."]
-BEE_ROLE = {"hive": "Ở tổ", "pollinate": "Thụ phấn", "guard": "Hộ vệ"}
+BEE_ROLE = {"hive": "Ở tổ", "guard": "Hộ vệ"}
 BEE_ROLE_TIP = {"hive": "Làm Linh Mật và Sáp Ong trong tổ",
-                "pollinate": "Bay ra vườn, thụ phấn cho cây từ giai đoạn Ra hoa",
                 "guard": "Bay theo con ra thế giới, đánh quái đã mất Mặc Thuẫn"}
 BEE_LEVEL = "Cấp {lv}"
 BEE_XP = "Kinh nghiệm {x}/{n}"
 BEE_XP_MAX = "Cấp tối đa"
 BEE_BOND = "Thân thiết {b}/{mx}"
-BEE_STATS = "Mật {h}/giờ · Phấn {p}%/giờ · Sinh Lực {hp} · Công {atk}"
+BEE_STATS = "Mật {h}/giờ · Sinh Lực {hp} · Công {atk}"
 BEE_RESONANCE = "Đồng hệ cộng hưởng +{p}%"
-BEE_WORD = "Chữ {hz} ({py}): {vi} · thông thạo {m}%"
-BEE_WORD_TIP = "Con càng thuộc chữ này, con ong càng mạnh (tối đa +10%)."
 BEE_FAV = "Món thích: {f}"
 BEE_FAV_HINT = "Món thích: ??? — {h}"
 BEE_FEED = "Cho ăn"
 BEE_FEED_TITLE = "Cho {name} ăn gì?"
-BEE_NO_FOOD = "Chưa có gì cho ong ăn. Thu Linh Mật ở tổ, hoặc thu hoạch quả chữ trong vườn."
+BEE_NO_FOOD = "Chưa có gì cho ong ăn. Thu Linh Mật ở tổ, câu cá, hoặc mua dược thảo ở Sạp Tạp Hóa."
 BEE_FED = "+{xp} kinh nghiệm"
 BEE_FED_FAV = "Món nó thích! +{xp} kinh nghiệm, thân thiết +{b}"
 BEE_FAV_FOUND = "Phát hiện món {name} thích: {food}"
@@ -451,8 +358,6 @@ BEE_LEVEL_UP = "{name} lên cấp {lv}!"
 BEE_RELEASE = "Thả ong"
 BEE_RELEASE_CONFIRM = "Thả {name} (cấp {lv}) về rừng? Con nhận lại {wax} Sáp Ong. Không thể hoàn tác."
 BEE_RELEASED = "Đã thả ong về rừng: +{w} Sáp Ong"
-BEE_REAL_WORD = "{hz} là một từ có thật"
-BEE_GAME_NAME = "(tên sáng tác)"
 BEE_DOWN = "{name} bị thương, bay về tổ nghỉ 60 giây"
 BEE_STUN = "choáng"
 BEE_HUD_TIP = "{name} · Sinh Lực {hp}/{mx}"
@@ -463,16 +368,12 @@ BEE_BOOK_FOUND = "Đã phát hiện {f}/{t} loài"
 BEE_BOOK_MILESTONE = "Mốc {n} loài: {r}"
 BEE_BOOK_HATCHED = "Đã nở: {n} · Cấp cao nhất: {lv} · Đang nuôi: {o}"
 BEE_BOOK_UNKNOWN = "Chưa phát hiện"
-BEE_BOOK_STATS = "Gốc: mật {h}/giờ · phấn {p}%/giờ · Sinh Lực {hp} · Công {atk}"
+BEE_BOOK_STATS = "Gốc: mật {h}/giờ · Sinh Lực {hp} · Công {atk}"
 BEE_MILESTONE_GOT = "Mốc Ong Phổ {n} loài: nhận {r}"
 
-POLLEN = "Phấn hoa {p}%"
-POLLINATED = "Đã thụ phấn: thu hoạch 5 quả, có thể ra Linh Quả"
-POLLINATED_NOW = "Cây {hz} đã được thụ phấn!"
 SPIRIT_FRUIT = "Được 1 Linh Quả!"
 STARTER_EGG_HINT = "Trúc Lão để lại một quả Trứng Ong trong túi con. Bấm H để mở Linh Phong Sào."
 
-GACHA_TAB_SEEDS = "Hạt Chữ"
 GACHA_TAB_BEES = "Trứng Ong"
 GACHA_BEES_TITLE = "Thiên Cơ Các · Trứng Ong"
 GACHA_BEE_RATES = "Tỉ lệ: Phàm 60% · Linh 27% · Huyền 9% · Địa 3% · Thiên 1%"
@@ -604,65 +505,33 @@ TD_RESULT_RETRY = "Chơi lại"
 TD_RESULT_MAP = "Về bản đồ ải"
 TD_ROLE_COLORS = {"hoa": "#E07A3F", "thuy": "#4A90C8", "moc": "#6A994E", "son": "#9C7B4E", "kim": "#C99A3A",
                   "quang": "#E9C46A", "sinh_khi": "#8DB360", "ho_tro": "#E89AB0", "thanh_ngu": "#8E5AC8"}
-WORD_RARITY_COLORS = {"common": "#7D7468", "rare": "#4A7CC8", "epic": "#8E5AC8", "legendary": "#C99A3A"}
 
-# ---------------------------------------------------------------- Tàng Thư Các
-LIBRARY_TITLE = "Tàng Thư Các"
-LIBRARY_HINT = "Mọi phổ của con. Mỗi mốc 25/50/75/100% có quà."
+# ---------------------------------------------------------------- Tàng Thư Các: kệ các phổ
+BOOKS_TITLE = "Tàng Thư Các · Kệ Phổ"
+BOOKS_HINT = "Các phổ của con. Mỗi mốc 25/50/75/100% có quà."
+BOOKS_SCROLLS = "Kinh thư toán"
 LIBRARY_OPEN = "Mở"
-LIBRARY_CLAIM = "Nhận"
 LIBRARY_CLAIMED = "Đã nhận"
 LIBRARY_BOOK_ROW = "{f}/{t} · {p}%"
 LIBRARY_GOT = "Nhận thưởng mốc {p}% {book}: {r}"
-LIBRARY_TITLES = "Danh hiệu: {t}"
-LIBRARY_FRAMES = "Khung: {t}"
-LIBRARY_SEARCH = "Tìm chữ Hán, pinyin hoặc nghĩa..."
-LIBRARY_SEARCH_NONE = "Không thấy trong những gì con đã phát hiện."
-LIBRARY_SEARCH_MORE = "...và {n} kết quả nữa"
-LIBRARY_MISTAKES = "Sổ Lỗi"
 LIBRARY_NONE = "Không"
 LIBRARY_TITLE_PICK = "Danh hiệu:"
 LIBRARY_FRAME_PICK = "Khung:"
-LIBRARY_SHOP = "Kệ sách"
-LIBRARY_SHOP_TITLE = "Tàng Thư Các · Kệ sách"
-LIBRARY_SHOP_TAB_MANUALS = "Bí kíp"
-LIBRARY_SHOP_TAB_RECIPES = "Đan phương"
+LIBRARY_SHOP = "Đan phương"
+LIBRARY_SHOP_TITLE = "Tàng Thư Các · Kệ đan phương"
 LIBRARY_SHOP_HINT_RECIPES = ("Đan phương giữ trong túi là luyện được mãi ở Đan Lô (động phủ) hoặc lò của Đan Sư. "
                              "Mỗi loại chỉ cần mua một lần.")
 LIBRARY_SHOP_OWNED = "Đã có"
-LIBRARY_SHOP_HINT = "Bí kíp dạy Pháp Chữ (cần thuộc chữ đó từ 50%). Muốn mua phải đứng cạnh Thủ Thư ở Trúc Lâm Thôn."
 LIBRARY_SHOP_FAR = "Thủ Thư đang ở Tàng Thư Các trong làng. Tới gặp bà ấy để mua."
 LIBRARY_SHOP_BUY = "Mua ({p} LT)"
-LIBRARY_SHOP_HAVE = "Đang có {n}"
-LIBRARY_SHOP_LEARNED = "Đã học"
-LIBRARY_BOUGHT = "Đã mua {name}. Mở Túi đồ → Vật phẩm để học."
+LIBRARY_BOUGHT = "Đã mua {name}. Đan phương nằm trong Túi đồ."
 TREASURE_TITLE = "Tàng Thư Các · Bảo Vật Phổ"
 TREASURE_FOUND = "Đã có {f}/{t} bảo vật"
 TREASURE_UNKNOWN = "Chưa từng có"
-FRAME_COLORS = {"khung_truc": "#6A994E", "khung_muc": "#2B2B2B", "khung_song": "#4A90C8", "khung_vang": "#E9C46A",
-                "khung_giap": "#BC4749"}
-LIBRARY_KEY = "[L] Tàng Thư Các"
-BOOK_TO_LIBRARY = "Tàng Thư Các"
-HERB_BOOK = "Bách Thảo Phổ"
-HERB_BOOK_TITLE = "Tàng Thư Các · Bách Thảo Phổ"
-HERB_FOUND = "Đã có {f}/{t} cây"
-HERB_HIDDEN = "Cây ẩn"
-HERB_UNKNOWN = "Chưa có"
-HERB_STAGES = "5 giai đoạn"
-HERB_ROLE = "Vai trò: {r}"
-HERB_EXAMPLE = "Ví dụ: {zh}"
-HERB_PARTS = "Cấu tạo: {p}"
-HERB_MASTERY = "Độ thuộc {m}% · đúng {c} · sai {w}"
-HERB_PAGE = "Trang {n}/{t}"
-HERB_LISTEN = "Nghe"
-MISTAKES_TITLE = "Tàng Thư Các · Sổ Lỗi"
-MISTAKES_HINT = "Những chữ con hay trả lời sai nhất. Bấm Luyện để làm một câu về chữ đó."
-MISTAKES_ROW = "sai {w} · đúng {c} · {a}% đúng"
-MISTAKES_EMPTY = "Chưa có chữ nào bị sai. Giỏi lắm!"
-MISTAKES_PRACTICE = "Luyện"
+FRAME_COLORS = {"khung_muc": "#2B2B2B", "khung_song": "#4A90C8", "khung_vang": "#E9C46A", "khung_giap": "#BC4749"}
 
 
-# ---------------------------------------------------------------- stage 8: luyện đan, khắc văn, Linh Thú, kinh tế
+# ---------------------------------------------------------------- stage 8: luyện đan, Linh Thú, kinh tế
 HUD_PETS = "Linh Thú"
 ALCHEMIST_NAME = "Đan Sư"
 ALCHEMIST_LINES = ["Lại đây, lại đây! Lò của lão vừa đỏ lửa.",
@@ -693,32 +562,15 @@ ALCHEMY_BUFFS = "Đang có: {b}"
 FIRE_TITLE = "Canh lửa · {name}"
 FIRE_HINT = "Bấm Space (hoặc chuột) khi kim vào vùng văn hỏa. Giữa vùng sáng là đẹp nhất."
 FIRE_PRESS = "Lần {n}/{t}"
-FIRE_TYPE = "Gõ pinyin của chữ này (vd ma1 hoặc mā), Enter để nộp"
-FIRE_LEARN = "Chữ mới: {c} đọc là {p} (Hán-Việt: {hv})"
 FIRE_NEXT = "Tiếp"
 FIRE_HITS = {"perfect": "Văn hỏa tuyệt hảo!", "good": "Văn hỏa", "miss": "Lửa lệch rồi"}
 FIRE_SENDING = "Mở nắp lò..."
 FIRE_RESULT = "{q}: {n} viên {name}"
 FIRE_RESULT_NONE = "Phế đan... nguyên liệu cháy thành tro."
 FIRE_EXTRA = "Lò tốt cho thêm 1 viên!"
-FIRE_PINYIN_RIGHT = "{c} {p}: đúng"
-FIRE_PINYIN_WRONG = "{c} đọc là {p}"
 FIRE_DONE = "Xong"
 FIRE_AGAIN = "Luyện mẻ nữa"
 BUFF_TAKEN = "{name}: còn {m} phút"
-INSCRIBE_BUTTON = "Khắc"
-INSCRIBE_TITLE = "Khắc Văn · {name}"
-INSCRIBE_HINT = "Khắc một chữ đã thuộc từ {m}% lên món đồ: trả lời đúng liền {q} câu về chữ đó. Sai một câu là hỏng, phí không hoàn."
-INSCRIBE_SLOTS = "Ô khắc: {u}/{s}"
-INSCRIBE_FEE = "Phí mỗi lần khắc: {f}"
-INSCRIBE_GO = "Khắc chữ"
-INSCRIBE_ERASE = "Mài ({p} LT)"
-INSCRIBE_LOW = "thuộc {m}%"
-INSCRIBE_DONE = "Đã khắc {c} lên {name}: +{v} {s}"
-INSCRIBE_FAIL = "Nét khắc trượt... Thuộc chữ hơn rồi thử lại nhé."
-INSCRIBE_ERASED = "Đã mài chữ {c}."
-INSCRIBE_NONE = "Chưa có chữ nào thuộc từ {m}%. Ôn trong vườn thêm nhé."
-INSCRIBE_STEP = "Khắc Văn: câu {n}/{t}"
 SHOP_TITLE = "Sạp Tạp Hóa · Bà Chủ Sạp"
 SHOP_NAME = "Bà Chủ Sạp"
 SHOP_LINES = ["Mua gì cứ chọn, sạp có đan dược, dược thảo, Mực Tinh, mồi câu, cả hạt giống thường.",
@@ -769,8 +621,6 @@ GIFT_GIVE = "Tặng {n}"
 GIFT_SENT = "Đã tặng {name} ×{n}"
 GIFT_GOT = "{name} tặng con {item} ×{n}"
 GIFT_NONE = "Không có gì tặng được."
-PET_BONUS_TRAU = "Trâu cần cù: +{n} Linh Thạch"
-PET_BONUS_RONG = "Long khí! Câu thứ {s} liền mạch: gấp đôi Linh Thạch"
 
 # ---- stage 9: tổ đội and bí cảnh
 PARTY_TITLE = "Tổ đội"

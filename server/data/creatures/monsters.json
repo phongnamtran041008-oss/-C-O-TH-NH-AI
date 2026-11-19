@@ -58,14 +58,6 @@
         "chance": 0.08
       },
       {
-        "item": "bi_kip_thuy",
-        "chance": 0.03,
-        "qty": [
-          1,
-          1
-        ]
-      },
-      {
         "item": "truc_diep_thao",
         "chance": 0.3,
         "qty": [
@@ -130,14 +122,6 @@
           "nhan_dong"
         ],
         "chance": 0.08
-      },
-      {
-        "item": "bi_kip_hoa",
-        "chance": 0.03,
-        "qty": [
-          1,
-          1
-        ]
       },
       {
         "item": "truc_diep_thao",
@@ -224,14 +208,6 @@
         ],
         "chance": 0.35,
         "min_rarity": "linh"
-      },
-      {
-        "item": "bi_kip_son",
-        "chance": 0.05,
-        "qty": [
-          1,
-          1
-        ]
       },
       {
         "item": "mac_linh_chi",

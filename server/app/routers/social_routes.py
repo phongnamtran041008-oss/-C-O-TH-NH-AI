@@ -20,11 +20,6 @@ class UserIn(BaseModel):
     user_id: int
 
 
-class HelpIn(BaseModel):
-    friend_id: int
-    plot_id: int
-
-
 class ReportIn(BaseModel):
     user_id: int
     message: str = Field(default="", max_length=1000)
@@ -64,19 +59,6 @@ async def friend_decline(body: UserIn, user: User = Depends(write_user), db: Asy
 @router.post("/friends/remove")
 async def friend_remove(body: UserIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
     return await _run(db, social.remove(db, user, body.user_id))
-
-
-@router.get("/friends/{friend_id}/garden")
-async def friend_garden(friend_id: int, user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
-    try:
-        return await social.visit(db, user, friend_id)
-    except social.SocialError as e:
-        raise api_error(e.status, e.code, e.message_vi)
-
-
-@router.post("/friends/help")
-async def friend_help(body: HelpIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
-    return await _run(db, social.start_help(db, user, body.friend_id, body.plot_id))
 
 
 @router.get("/blocks")

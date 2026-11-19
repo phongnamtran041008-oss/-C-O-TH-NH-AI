@@ -1,5 +1,5 @@
 {
- "_comment": "Quest chains (spec 7.4). Steps unlock one after another; objective types: talk (npc), kill (monster type), meditate, realm (reach a realm), hatch / feed / pollinate (plants fully pollinated) / guard (set a guard bee) / bee_species (new Ong Phổ entries) / fish (fish landed) / fish_species (new Ngư Phổ entries). Stage 8 adds brew (pills made), inscribe (characters carved), review (right garden reviews), answer (right answers anywhere) and td_win; target \"*\" means any. daily: each day (UTC+7) every player gets the `always` tasks plus `count` more picked from the pool; claiming all of them gives all_done_bonus once.",
+ "_comment": "Quest chains (spec 7.4). Steps unlock one after another; objective types: talk (npc), kill (monster type), meditate, realm (reach a realm), hatch / feed / collect_honey (honey collected from the hive) / guard (set a guard bee) / bee_species (new Ong Phổ entries) / fish (fish landed) / fish_species (new Ngư Phổ entries). Stage 8 adds brew (pills made), answer (right answers anywhere) and td_win; target \"*\" means any. daily: each day (UTC+7) every player gets the `always` tasks plus `count` more picked from the pool; claiming all of them gives all_done_bonus once.",
  "chains": {
   "nhap_mon": {
    "title_vi": "Nhập Môn",
@@ -43,8 +43,8 @@
         "qty": 3
        },
        {
-        "item": "bi_kip_thuy",
-        "qty": 1
+        "item": "hoi_khi_dan",
+        "qty": 2
        }
       ]
      }
@@ -64,7 +64,7 @@
       "xp": 60,
       "items": [
        {
-        "item": "bi_kip_hoa",
+        "item": "khang_muc_dan",
         "qty": 1
        }
       ]
@@ -84,7 +84,7 @@
       "xp": 80,
       "items": [
        {
-        "item": "bi_kip_moc",
+        "item": "tu_linh_dan",
         "qty": 1
        }
       ]
@@ -108,7 +108,7 @@
         "qty": 1
        },
        {
-        "item": "bi_kip_son",
+        "item": "ngo_tinh_dan",
         "qty": 1
        }
       ]
@@ -158,7 +158,7 @@
      "id": "lp2_cho_an",
      "title_vi": "Bữa ăn đầu tiên",
      "giver": "truc_lao",
-     "desc_vi": "Ong con đói rồi. Cho nó ăn Linh Mật hoặc một quả chữ. Đoán đúng món nó thích thì nó quý con hơn.",
+     "desc_vi": "Ong con đói rồi. Cho nó ăn Linh Mật, cá hay dược thảo. Đoán đúng món nó thích thì nó quý con hơn.",
      "objective": {
       "type": "feed",
       "target": "",
@@ -171,11 +171,11 @@
     },
     {
      "id": "lp3_thu_phan",
-     "title_vi": "Hoa cần ong",
+     "title_vi": "Mật đầu mùa",
      "giver": "truc_lao",
-     "desc_vi": "Giao cho ong việc Thụ phấn. Ong chỉ bay tới cây đã Ra hoa (ôn đúng đến giai đoạn 3). Thụ phấn đầy một cây.",
+     "desc_vi": "Để ong ở tổ (vai trò Ở tổ) làm Linh Mật. Khi tổ đã có mật, bấm Thu mật để lấy mật về túi.",
      "objective": {
-      "type": "pollinate",
+      "type": "collect_honey",
       "target": "",
       "count": 1
      },
@@ -352,12 +352,12 @@
     },
     {
      "id": "dd3_khac_van",
-     "title_vi": "Chữ trên binh khí",
+     "title_vi": "Đan hồi khí",
      "giver": "alchemist",
-     "desc_vi": "Ở Lò Rèn, khắc một chữ con đã thuộc (từ 70%) lên một món trang bị: trả lời đúng liền 3 câu về chữ đó.",
+     "desc_vi": "Đan phương Hồi Khí Đan đã trong túi con. Luyện một mẻ Hồi Khí Đan (Mực Tinh, Gỗ Linh Mộc, Trúc Diệp Thảo): lửa nhanh hơn một chút, canh cho khéo.",
      "objective": {
-      "type": "inscribe",
-      "target": "*",
+      "type": "brew",
+      "target": "hoi_khi_dan",
       "count": 1
      },
      "rewards": {
@@ -411,8 +411,8 @@
   "pool": [
    {
     "id": "d_answer",
-    "title_vi": "Ôn 15 chữ",
-    "desc_vi": "Trả lời đúng 15 câu, ở đâu cũng được: vườn, đả tọa, đánh quái, câu cá, Sổ Lỗi...",
+    "title_vi": "Giải 15 câu",
+    "desc_vi": "Trả lời đúng 15 câu, ở đâu cũng được: đả tọa, đánh quái, câu cá, Thủ Thành...",
     "objective": {
      "type": "answer",
      "target": "*",
@@ -421,19 +421,6 @@
     "rewards": {
      "spirit_stones": 40,
      "xp": 20
-    }
-   },
-   {
-    "id": "d_garden",
-    "title_vi": "Chăm vườn",
-    "desc_vi": "Ôn đúng 4 lần trong vườn chữ.",
-    "objective": {
-     "type": "review",
-     "target": "*",
-     "count": 4
-    },
-    "rewards": {
-     "spirit_stones": 40
     }
    },
    {
@@ -464,19 +451,6 @@
     }
    },
    {
-    "id": "d_pollinate",
-    "title_vi": "Thụ phấn",
-    "desc_vi": "Để ong thụ phấn đầy 2 cây trong vườn.",
-    "objective": {
-     "type": "pollinate",
-     "target": "*",
-     "count": 2
-    },
-    "rewards": {
-     "spirit_stones": 50
-    }
-   },
-   {
     "id": "d_brew",
     "title_vi": "Luyện đan",
     "desc_vi": "Luyện thành 2 mẻ đan (phế đan không tính).",
@@ -497,8 +471,8 @@
    },
    {
     "id": "d_td",
-    "title_vi": "Giữ vườn",
-    "desc_vi": "Thắng 2 ải Thủ Vườn.",
+    "title_vi": "Giữ thành",
+    "desc_vi": "Thắng 2 ải Thủ Thành.",
     "objective": {
      "type": "td_win",
      "target": "*",

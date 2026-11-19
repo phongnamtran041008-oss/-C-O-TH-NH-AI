@@ -27,10 +27,6 @@ MEDITATE_CONTEXT = "math_meditate"
 TRIBULATION_CONTEXT = "math_tribulation"
 
 STAGE_LABELS = ["sơ kỳ", "trung kỳ", "hậu kỳ"]
-# The old word game's vocabulary tier for each realm, still read by modes of later purge waves
-# (fishing, classic Thủ Vườn); meditation and Thiên Kiếp no longer use it.
-REALM_TIER = {"pham_nhan": 1, "luyen_khi": 1, "truc_co": 2, "kim_dan": 3, "nguyen_anh": 4,
-              "hoa_than": 4, "luyen_hu": 4, "hop_the": 4, "dai_thua": 4}
 
 
 class CultivationError(Exception):
@@ -97,19 +93,12 @@ def level_index(realm: str, stage: int) -> int:
     return n
 
 
-def tier_of(realm: str) -> int:
-    return REALM_TIER.get(realm, 1)
-
-
 # ------------------------------------------------------------------ stats
 def instance_stats(e: EquipmentInstance) -> dict:
     eq = catalog.equipment()
     item = eq["items"].get(e.item_id, {})
     mult = eq["rarities"][e.rarity]["mult"] * (1 + eq["enhance"]["stat_bonus_per_level"] * e.enhance_level)
-    out = {k: int(round(v * mult)) for k, v in item.get("stats", {}).items()}
-    for ins in e.inscriptions or []:      # Khắc Văn (stage 8): each carved character adds its stat
-        out[ins["stat"]] = out.get(ins["stat"], 0) + int(ins["value"])
-    return out
+    return {k: int(round(v * mult)) for k, v in item.get("stats", {}).items()}
 
 
 def stats_for(realm: str, stage: int, equipped: list[EquipmentInstance], extra: dict | None = None) -> dict:
@@ -203,7 +192,7 @@ async def lose_xp_pct(db: AsyncSession, user_id: int, pct: float) -> int:
     return loss
 
 
-def view(ch: Character, stats: dict, skills: list[dict], pills: dict[str, int], now: dt.datetime) -> dict:
+def view(ch: Character, stats: dict, pills: dict[str, int], now: dt.datetime) -> dict:
     need = xp_needed(ch.realm, ch.realm_stage)
     nxt = next_step(ch.realm, ch.realm_stage)
     pill = nxt[2] if nxt else None
@@ -215,7 +204,7 @@ def view(ch: Character, stats: dict, skills: list[dict], pills: dict[str, int], 
             "pill_name": catalog.item_name(pill) if pill else None, "has_pill": pills.get(pill, 0) > 0 if pill else False,
             "can_tribulation": bool(pill and full and pills.get(pill, 0) > 0 and retry is None),
             "tribulation_ready_in": int((retry - now).total_seconds()) + 1 if retry else 0,
-            "stats": stats, "skills": skills}
+            "stats": stats}
 
 
 # ------------------------------------------------------------------ đả tọa
@@ -393,7 +382,9 @@ async def tribulation_handler(db: AsyncSession, user: User, s: QuizSession, corr
         from . import quests
         await quests.on_event(db, user.id, "realm", ch.realm)
     else:
-        lost = await lose_xp_pct(db, user.id, t["fail_xp_loss_pct"])
+        from . import pets   # Hổ (stage 8): a failed Thiên Kiếp costs less Tu Vi
+        keep = 1 - await pets.skill_value(db, user.id, "tribulation_guard")
+        lost = await lose_xp_pct(db, user.id, t["fail_xp_loss_pct"] * keep)
         ch.tribulation_retry_at = now + _scaled(t["retry_wait_seconds"])
         result.update({"xp_lost": lost, "retry_in": int(_scaled(t["retry_wait_seconds"]).total_seconds())})
     out["tribulation"] = result

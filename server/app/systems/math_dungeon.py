@@ -499,6 +499,8 @@ async def _grant(db: AsyncSession, user_id: int, run: MathDungeonRun, reward: di
     if not run.rewarded:
         return {"stones": 0, "items": [], "withheld": True}
     ref = f"{run.id}|{what}"
+    from . import pets   # Trâu (stage 8): more Linh Thạch from rooms and chest
+    reward = {**reward, "stones": int(round(int(reward["stones"]) * (1 + await pets.skill_value(db, user_id, "dungeon_stones"))))}
     if reward["stones"]:
         await inventory.change_currency(db, user_id, "spirit_stones", int(reward["stones"]), REASON, ref)
         run.stones_gained += int(reward["stones"])

@@ -511,12 +511,6 @@ def test_the_tower_cards_carry_a_label_and_a_name():
     t = math_td.towers()["tap_hop"]
     assert defs["tap_hop"] == {"role": t["role"], "label": t["label"], "name_vi": t["name_vi"],
                                "power": float(t["power"])}
-    # a run saved with the old key names is shown to the client with the new ones
-    old = {**sim_params(), "plants": {"tap_hop": {"role": "hoa", "hanzi": "{}", "pinyin": "Tháp Tập Hợp",
-                                                  "power": 1.0, "rarity": "common"}}}
-    assert math_td._client_params(old)["plants"] == {"tap_hop": {"role": "hoa", "label": "{}",
-                                                                 "name_vi": "Tháp Tập Hợp", "power": 1.0}}
-    assert math_td._client_params(sim_params()) == sim_params()
 
 
 @pytest.mark.parametrize("seed", [1, 7, 12345])
