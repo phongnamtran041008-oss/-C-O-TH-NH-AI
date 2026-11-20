@@ -1,0 +1,19 @@
+{
+ "id": "hoa_cau_no",
+ "name_vi": "Hỏa Cầu Thuật - hỏa cầu nổ",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 64
+ },
+ "sheet": "hoa_cau_no.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 16,
+ "loop": false,
+ "blend": "alpha",
+ "ground": false
+}

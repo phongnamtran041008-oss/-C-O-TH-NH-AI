@@ -863,6 +863,500 @@ def pha_me_kiem():
     return fx
 
 
+# ============================================================================ fire helpers
+def blob(mb, cx, cy, r, rng, n=18, amp=0.18, phase=0.0, kx=1.0, soft=False):
+    """a noisy round flame body (star-shaped fan)."""
+    pts = []
+    ph = [rng.uniform(0, TAU) for _ in range(3)]
+    for k in range(n):
+        a = TAU * k / n
+        rr = r * (1 + amp * (0.6 * math.sin(3 * a + ph[0] + phase) + 0.4 * math.sin(5 * a + ph[1] - phase)))
+        pts.append((cx + rr * math.cos(a) * kx, cy + rr * math.sin(a)))
+    return mb.fan(cx, cy, pts, 1.0, 0.0 if soft else 1.0)
+
+
+def tongue(mb, base, ang, h, w, sway):
+    return flame_tongue(mb, base, ang, h, w, sway)
+
+
+# ============================================================================ 5. Hỏa Long Thuật
+HEAD = [(0, 10), (8, 14), (16, 15), (24, 12), (32, 9), (40, 8), (43, 5), (42, 2), (34, 1), (24, 1), (16, -1),
+        (26, -4), (36, -6), (38, -9), (28, -12), (16, -13), (6, -12), (0, -9)]
+HEAD_LIT = [(2, 9), (9, 12), (16, 13), (24, 10), (32, 7), (39, 6), (40, 4), (30, 5), (20, 6), (10, 6), (3, 5)]
+
+
+@reg("hoa_long")
+def hoa_long():
+    fx = CFx("hoa_long", px=128, frames=6, fps=12, loop=True, halo=0.6, name_vi="Hỏa Long Thuật - hỏa long",
+             where="a dragon of fire surging right (projectile, loop); pivot = frame centre (the dragon's chest)")
+    HX = 6                                    # where the head joins the neck
+    halo = fx.mat("halo", FLAME[1], 0, grad=dict(src="attr", pow=1.3), opacity=0.5)
+    outl = fx.mat("outline", FLAME[0], 1)
+    body = fx.mat("body", FLAME[1], 2)
+    belly = fx.mat("belly", FLAME[2], 2.6)
+    spine = fx.mat("spine", FLAME[3], 3)
+    scal = fx.mat("scales", FLAME[0], 3.2)
+    fin = fx.mat("fin", FLAME[2], 1.6)
+    fino = fx.mat("fino", FLAME[1], 1.5)
+    head_o = fx.mat("head_o", FLAME[0], 4)
+    head = fx.mat("head", FLAME[1], 4.5)
+    head_l = fx.mat("head_l", FLAME[2], 5)
+    horn = fx.mat("horn", FLAME[2], 4.2)
+    eye = fx.mat("eye", FLAME[3], 6)
+    teeth = fx.mat("teeth", FLAME[3], 5.5)
+    whisk = fx.mat("whisker", FLAME[2], 5.2)
+    breath = fx.mat("breath", FLAME[2], 3.5)
+    breathc = fx.mat("breathc", FLAME[3], 3.8)
+    mane = fx.mat("mane", FLAME[1], 3.9)
+    manec = fx.mat("manec", FLAME[2], 4.0)
+
+    def hy(t):
+        return 4 + 1.6 * math.sin(TAU * t)
+
+    def spinept(t, s):
+        x = HX + 2 - 56 * s
+        env = sat(s / 0.25) ** 1.2
+        y = hy(t) * (1 - s) - 2 * s + 9 * env * math.sin(TAU * (s * 1.15) - TAU * t + 0.6)
+        return x, y
+
+    def width(s):
+        return 20 * (1 - s) ** 0.75 + 1.5
+
+    def body_mb(t, i, k=1.0, dy=0.0, soft=False, n=30):
+        pts = [spinept(t, q / n) for q in range(n + 1)]
+        pts = [(x, y + dy * width(q / n) / 20) for q, (x, y) in enumerate(pts)]
+        return MB().strip(pts, [width(q / n) * k + 0.3 for q in range(n + 1)], soft=soft)
+    fx.pf("halo", halo, lambda t, i: body_mb(t, i, 1.6, soft=True))
+    fx.pf("outline", outl, lambda t, i: body_mb(t, i, 1.0).merge(body_mb(t, i, 1.0)))
+    fx.pf("body", body, lambda t, i: body_mb(t, i, 0.78))
+    fx.pf("belly", belly, lambda t, i: body_mb(t, i, 0.36, dy=-3.2))
+    fx.pf("spine", spine, lambda t, i: body_mb(t, i, 0.1, dy=-3.0))
+
+    def scales(t, i):
+        mb = MB()
+        for q in range(3, 22, 2):
+            s = q / 30
+            x, y = spinept(t, s)
+            x2, y2 = spinept(t, s + 0.02)
+            ang = math.atan2(y2 - y, x2 - x)
+            w = width(s) * 0.32
+            nx, ny = -math.sin(ang), math.cos(ang)
+            # a chevron pointing towards the head
+            a = (x + nx * w - math.cos(ang) * 2.5, y + ny * w - math.sin(ang) * 2.5)
+            c = (x + nx * 0.2 * w, y + ny * 0.2 * w)
+            mb.strip([a, (x - math.cos(ang) * 0.8, y - math.sin(ang) * 0.8), c], [0.9, 1.1, 0.7])
+        return mb
+    fx.pf("scales", scal, scales)
+
+    def fins(t, i, inner):
+        r = random.Random(40 + i)
+        mb = MB()
+        for q in range(2, 28, 3):
+            s = q / 30
+            x, y = spinept(t, s)
+            x2, y2 = spinept(t, s - 0.02)
+            ang = math.atan2(y2 - y, x2 - x)          # towards the head
+            nx, ny = -math.sin(ang), math.cos(ang)
+            if ny < 0:
+                nx, ny = -nx, -ny
+            w = width(s)
+            base = (x + nx * w * 0.4, y + ny * w * 0.4)
+            h = (8 + 9 * (1 - s)) * (0.85 + 0.25 * math.sin(TAU * t * 2 + q)) * (0.55 if inner else 1.0)
+            back = ang + PI                           # tongues stream back (towards the tail) and up
+            a = math.atan2(ny * 0.9 + math.sin(back) * 0.6, nx * 0.9 + math.cos(back) * 0.6)
+            tongue(mb, base, a, h, (6 + 4 * (1 - s)) * (0.5 if inner else 1.0), r.uniform(-2, 2))
+        # the tail ends in a fan of fire
+        x, y = spinept(t, 1.0)
+        for k in range(3):
+            tongue(mb, (x + 2, y), PI + (k - 1) * 0.45 + 0.15 * math.sin(TAU * t + k), (11 - 2 * abs(k - 1)) * (0.6 if inner else 1),
+                   5 * (0.5 if inner else 1), 1.5)
+        return mb
+    fx.pf("fino", fino, lambda t, i: fins(t, i, False))
+    fx.pf("fin", fin, lambda t, i: fins(t, i, True))
+
+    # the head
+    def head_at(t, pts):
+        return [(HX + x, hy(t) + y) for x, y in pts]
+    fx.pf("head_o", head_o, lambda t, i: MB().poly(offset_poly(head_at(t, HEAD), 1.6)))
+    fx.pf("head", head, lambda t, i: MB().poly(head_at(t, HEAD)))
+    fx.pf("head_l", head_l, lambda t, i: MB().poly(head_at(t, HEAD_LIT)))
+
+    def horns(t, i):
+        mb = MB()
+        y0 = hy(t)
+        for (p0, p1, p2, p3, w0) in (((14, 13), (6, 22), (-6, 27), (-18, 27), 4.6), ((6, 12), (0, 17), (-8, 20), (-14, 19), 3.2)):
+            pts = bezier(*[(HX + x, y0 + y) for x, y in (p0, p1, p2, p3)], n=10)
+            curve_strip(mb, pts, w0, 0.6)
+        # brow spike
+        mb.poly([(HX + 20, y0 + 13), (HX + 28, y0 + 11), (HX + 15, y0 + 19)])
+        return mb
+    fx.pf("horn", horn, horns)
+    fx.pf("eye", eye, lambda t, i: MB().diamond(HX + 26, hy(t) + 8.5, 6, 2.6, -0.15))
+
+    def teeth_(t, i):
+        mb = MB()
+        y0 = hy(t)
+        for x in (27, 33, 38):
+            mb.poly([(HX + x - 1.5, y0 + 1.2), (HX + x + 1.5, y0 + 1.2), (HX + x, y0 - 2)])
+        for x in (28, 34):
+            mb.poly([(HX + x - 1.5, y0 - 4.6 - (x - 28) * 0.2), (HX + x + 1.5, y0 - 4.8 - (x - 28) * 0.2), (HX + x, y0 - 1.6)])
+        return mb
+    fx.pf("teeth", teeth, teeth_)
+
+    def whiskers(t, i):
+        mb = MB()
+        y0 = hy(t)
+        sw = 2.5 * math.sin(TAU * t + 1)
+        for (p0, p1, p2, p3) in (((40, 3), (30, -6), (14, -14 + sw), (-4, -18 + sw)),
+                                 ((36, -8), (26, -16), (10, -22 - sw), (-2, -22 - sw))):
+            pts = bezier(*[(HX + x, y0 + y) for x, y in (p0, p1, p2, p3)], n=12)
+            curve_strip(mb, pts, 1.6, 0.5)
+        return mb
+    fx.pf("whisker", whisk, whiskers)
+
+    def manes(t, i, inner):
+        r = random.Random(60 + i)
+        mb = MB()
+        y0 = hy(t)
+        for k in range(5):
+            base = (HX + 2 + k * 2.5, y0 + 6 + k * 1.6 - (k > 2) * 2)
+            a = D(150 - k * 8) + 0.12 * math.sin(TAU * t + k)
+            h = (17 + 4 * math.sin(TAU * t * 2 + k * 1.3) - k) * (0.6 if inner else 1.0)
+            tongue(mb, base, a, h, 7 * (0.55 if inner else 1.0), r.uniform(-2.5, 2.5))
+        return mb
+    fx.pf("mane", mane, lambda t, i: manes(t, i, False))
+    fx.pf("manec", manec, lambda t, i: manes(t, i, True))
+
+    def breath_(t, i, inner):
+        mb = MB()
+        y0 = hy(t)
+        for k in range(2):
+            h = (9 + 3 * math.sin(TAU * t * 2 + k * 2)) * (0.6 if inner else 1.0)
+            tongue(mb, (HX + 32, y0 - 2.0 - k * 1.5), -0.08 - 0.2 * k, h + 6, 5 * (0.55 if inner else 1.0), 1.2)
+        return mb
+    fx.pf("breath", breath, lambda t, i: breath_(t, i, False))
+    fx.pf("breathc", breathc, lambda t, i: breath_(t, i, True))
+    # embers shed by the body
+    em = fx.mat("ember", FLAME[3], 6)
+    for k in range(8):
+        ph = k / 8
+        s0 = 0.15 + 0.1 * (k % 7)
+
+        def fn(t, i, ph=ph, s0=s0, k=k):
+            q = (t + ph) % 1.0
+            x, y = spinept(0.0, s0)
+            return (x - 18 * q, y + (6 + 10 * q) * (1 if k % 2 else -0.6), (1 - q) ** 0.6 * 1.1, D(45))
+        fx.particle("em%d" % k, em, MB().diamond(0, 0, 2.6, 2.6), fn)
+    return fx
+
+
+@reg("hoa_long_vet")
+def hoa_long_vet():
+    fx = CFx("hoa_long_vet", px=96, pivot=(48, 60), frames=6, fps=10, loop=True, ground=True, halo=0.6,
+             name_vi="Hỏa Long Thuật - vết lửa",
+             where="burning trail left on the ground by the fire dragon (loop, under the characters); "
+                   "pivot = the trail centre on the ground; long axis horizontal (rotate to the path)")
+    scorch = fx.mat("scorch", FLAME[0], 0, grad=dict(src="attr", pow=1.0), opacity=0.8)
+    lava = fx.mat("lava", FLAME[2], 1)
+    lavac = fx.mat("lavac", FLAME[3], 1.5)
+    fo = fx.mat("fo", FLAME[1], 2)
+    fm_ = fx.mat("fm", FLAME[2], 2.5)
+    fc = fx.mat("fc", FLAME[3], 3)
+    fx.still(MB().disc(0, 0, 42, 32, 1.0, 0.0, 0.2), "scorch", scorch)
+    r0 = random.Random(9)
+    lv = [(-36 + 72 * k / 12, r0.uniform(-2, 2) if 0 < k < 12 else 0) for k in range(13)]
+    fx.still(MB().strip(lv, [0.6] + [2.6] * 11 + [0.6]), "lava", lava)
+    fx.still(MB().strip(lv, [0.3] + [0.9] * 11 + [0.3]), "lavac", lavac)
+    pos = [(-30, 1, 10), (-21, -2, 15), (-12, 2, 19), (-3, -1, 24), (7, 2, 21), (16, -2, 17), (25, 1, 13), (33, 0, 9)]
+
+    def flames(t, i, kh, kw):
+        mb = MB()
+        r = random.Random(i * 5 + 1)
+        for k, (x, y, h) in enumerate(pos):
+            hh = h * (0.75 + 0.3 * math.sin(TAU * (t * (1 + k % 2) + k * 0.37))) * kh
+            tongue(mb, (x, y), PI / 2 + 0.12 * math.sin(TAU * t + k), hh, 8.5 * kw, r.uniform(-2.5, 2.5))
+        return mb
+    fx.pf("fo", fo, lambda t, i: flames(t, i, 1.0, 1.0))
+    fx.pf("fm", fm_, lambda t, i: flames(t, i, 0.65, 0.6))
+    fx.pf("fc", fc, lambda t, i: flames(t, i, 0.32, 0.3))
+    em = fx.mat("ember", FLAME[3], 4)
+    for k in range(6):
+        x0 = -30 + 12 * k
+
+        def fn(t, i, x0=x0, k=k):
+            q = (t + k / 6) % 1.0
+            return (x0 + 3 * math.sin(TAU * q), 14 + 24 * q, (1 - q) ** 0.6, D(45))
+        fx.particle("em%d" % k, em, MB().diamond(0, 0, 2.4, 2.4), fn)
+    return fx
+
+
+# ============================================================================ hero: Hỏa Cầu
+@reg("hoa_cau_lon")
+def hoa_cau_lon():
+    fx = CFx("hoa_cau_lon", px=96, frames=4, fps=14, loop=True, halo=0.6, name_vi="Hỏa Cầu Thuật - đại hỏa cầu",
+             where="a big fireball with a roaring tail flying right (projectile, loop); pivot = frame centre")
+    BX = 16
+    halo = fx.mat("halo", FLAME[1], 0, grad=dict(src="attr", pow=1.2), opacity=0.5)
+    to = fx.mat("tail_o", FLAME[1], 1)
+    ti = fx.mat("tail_i", FLAME[2], 1.5)
+    outer = fx.mat("outer", FLAME[1], 2)
+    mid = fx.mat("mid", FLAME[2], 2.5)
+    core = fx.mat("core", FLAME[3], 3)
+    bow = fx.mat("bow", FLAME[2], 3.5)
+
+    def tail(t, i, k):
+        mb = MB()
+        r = random.Random(i + 3)
+        for j in range(7):
+            yy = (j - 3) * 3.2
+            L = (36 + 18 * (1 - abs(j - 3) / 3) + 5 * math.sin(TAU * t + j * 1.9)) * k
+            ang = PI + yy * 0.022 + 0.06 * math.sin(TAU * t * 2 + j)
+            tongue(mb, (BX - 4, yy * 0.9), ang, L, (12 - abs(j - 3) * 1.5) * k, r.uniform(-4, 4) * k)
+        return mb
+    fx.pf("halo", halo, lambda t, i: blob(MB(), BX, 0, 22, random.Random(i), amp=0.1, phase=TAU * t, soft=True))
+    fx.pf("tail_o", to, lambda t, i: tail(t, i, 1.0))
+    fx.pf("tail_i", ti, lambda t, i: tail(t, i, 0.55))
+    fx.pf("outer", outer, lambda t, i: blob(MB(), BX, 0, 15, random.Random(10 + i), amp=0.15, phase=TAU * t))
+    fx.pf("mid", mid, lambda t, i: blob(MB(), BX + 1.5, 0.5, 10.5, random.Random(20 + i), amp=0.12, phase=TAU * t))
+    fx.pf("core", core, lambda t, i: blob(MB(), BX + 3, 1, 5.5, random.Random(30 + i), amp=0.1))
+
+    def bow_(t, i):
+        mb = MB()
+        pts = ellipse_pts(BX - 4, 0, 21, 18, 14, -D(50), D(50))
+        mb.strip(pts, [0.3 + 1.0 * math.sin(PI * q / 14) for q in range(15)])
+        return mb
+    fx.pf("bow", bow, bow_)
+    em = fx.mat("ember", FLAME[3], 4)
+    for k in range(6):
+        yy = [-9, 6, -3, 10, 2, -12][k]
+
+        def fn(t, i, yy=yy, k=k):
+            q = (t + k / 6) % 1.0
+            return (BX - 14 - 30 * q, yy + 3 * math.sin(TAU * q + k), (1 - q) ** 0.5 * 1.2, D(45))
+        fx.particle("em%d" % k, em, MB().diamond(0, 0, 2.6, 2.6), fn)
+    return fx
+
+
+@reg("hoa_cau_no")
+def hoa_cau_no():
+    fx = CFx("hoa_cau_no", px=128, frames=8, fps=16, halo=0.6, name_vi="Hỏa Cầu Thuật - hỏa cầu nổ",
+             where="the big fireball's explosion (one-shot); pivot = the impact point")
+    RB = [12, 28, 38, 42, 40, 34, 0, 0]
+    HEAT = [1.0, 1.0, 0.85, 0.6, 0.35, 0.0, 0, 0]
+    halo = fx.mat("halo", FLAME[1], 0, grad=dict(src="attr", pow=1.1), opacity=0.5)
+    outer = fx.mat("outer", FLAME[1], 2)
+    mid = fx.mat("mid", FLAME[2], 2.5)
+    core = fx.mat("core", FLAME[3], 3)
+    ringm = fx.mat("ring", FLAME[2], 1)
+    tongm = fx.mat("tongue", FLAME[1], 1.8)
+    smoke = fx.mat("smoke", "#5e636f", 0.5, grad=dict(src="attr", pow=0.8), opacity=0.55)
+    smoke2 = fx.mat("smoke2", "#888e98", 0.6, grad=dict(src="attr", pow=1.0), opacity=0.45)
+
+    def ball(t, i, layer):
+        R = RB[i]
+        if R <= 0:
+            return None
+        r = random.Random(i * 7 + len(layer))
+        h = HEAT[i]
+        if layer == "halo":
+            return blob(MB(), 0, 0, R * 1.25, r, amp=0.1, soft=True)
+        if layer == "outer":
+            if i >= 4:                               # the ball breaks into billows
+                mb = MB()
+                for k in range(7):
+                    a = TAU * k / 7 + i
+                    blob(mb, R * 0.62 * math.cos(a), R * 0.62 * math.sin(a) + 3 * (i - 3), R * 0.38, r, 12, 0.2)
+                return mb
+            return blob(MB(), 0, 0, R, r, 22, 0.16)
+        if h <= 0:
+            return None
+        if layer == "mid":
+            return blob(MB(), 0, 0, R * 0.68 * h ** 0.5, r, 18, 0.15)
+        return blob(MB(), 0, 0, R * 0.38 * h, r, 14, 0.12)
+    for lay, fm in (("halo", halo), ("outer", outer), ("mid", mid), ("core", core)):
+        fx.pf(lay, fm, (lambda ly: (lambda t, i: ball(t, i, ly)))(lay))
+
+    def ring(t, i):
+        if not 1 <= i <= 4:
+            return None
+        rr = [0, 36, 50, 56, 59][i]
+        return ring_e(MB(), 0, 0, rr, rr * 0.92, [0, 3.2, 2.2, 1.4, 0.8][i])
+    fx.pf("ring", ringm, ring)
+
+    def tongues(t, i):
+        if not 1 <= i <= 4:
+            return None
+        r = random.Random(80 + i)
+        mb = MB()
+        R = RB[i]
+        for k in range(11):
+            a = TAU * k / 11 + r.uniform(-0.2, 0.2)
+            L = R * (0.5 - 0.06 * i) + r.uniform(4, 9)
+            tongue(mb, (R * 0.75 * math.cos(a), R * 0.75 * math.sin(a)), a, L, 9 - i, r.uniform(-2, 2))
+        return mb
+    fx.pf("tongue", tongm, tongues)
+
+    def smk(t, i, k2):
+        if i < 4:
+            return None
+        r = random.Random(3)
+        mb = MB()
+        q = (i - 4) / 3
+        for k in range(9):
+            a = TAU * k / 9 + 0.4
+            d = 16 + 12 * q + 6 * (k % 2)
+            rad = (10 + 3 * q) * (1 - 0.3 * q) * k2
+            blob(mb, d * math.cos(a), d * math.sin(a) * 0.75 + 16 * q + 4, rad, r, 12, 0.2, soft=True)
+        return mb
+    fx.pf("smoke", smoke, lambda t, i: smk(t, i, 1.0))
+    fx.pf("smoke2", smoke2, lambda t, i: smk(t, i, 0.55))
+    em = fx.mat("ember", FLAME[3], 5)
+    em2 = fx.mat("ember2", FLAME[2], 4.8)
+    rng = fx.rng
+    for k in range(16):
+        a = TAU * k / 16 + rng.uniform(-0.2, 0.2)
+        v = rng.uniform(34, 52)
+
+        def fn(t, i, a=a, v=v):
+            q = ramp_up(t, 0.1, 1.0)
+            if q <= 0 or q >= 0.98:
+                return None
+            d = 10 + v * ease_out(q)
+            return (d * math.cos(a), d * math.sin(a) - 10 * q * q, (1 - q) ** 0.4 * 1.2, a)
+        fx.particle("em%d" % k, em if k % 2 else em2, MB().diamond(0, 0, 4, 1.6), fn)
+    return fx
+
+
+# ============================================================================ 3. Băng Phong Thuật
+ICE_RAMPS = ("ice", "blue", "steel", "bone", "spirit", "thunder")
+OUTL_ICE = "#243a6a"
+
+
+def spike_layers(fx, prefix, z0, body=ICE[1], facet=ICE[2], hi=ICE[3], outl=OUTL_ICE):
+    return dict(o=fx.mat(prefix + "o", outl, z0), b=fx.mat(prefix + "b", body, z0 + 0.3),
+                f=fx.mat(prefix + "f", facet, z0 + 0.6), h=fx.mat(prefix + "h", hi, z0 + 0.9))
+
+
+def spike_meshes(h, w, lean):
+    """one crystal spike standing on the origin: outline, body, lit facet, highlight edge."""
+    body = [(-w / 2, 0), (w / 2, 0), (w * 0.08 + lean, h), (-w * 0.08 + lean, h)]
+    if w < 7:
+        body = [(-w / 2, 0), (w / 2, 0), (lean, h)]
+    facet = [(-w / 2 + w * 0.12, h * 0.03), (-w * 0.05, h * 0.03), (lean - w * 0.04, h * 0.93)]
+    hil = [(-w / 2 + w * 0.12, h * 0.05), (lean - w * 0.04, h * 0.95)]
+    return dict(o=MB().poly(offset_poly(body, 1.4)), b=MB().poly(body), f=MB().poly(facet),
+                h=MB().strip(hil, [1.0, 0.6]))
+
+
+@reg("bang_phong")
+def bang_phong():
+    fx = CFx("bang_phong", px=96, pivot=(48, 76), frames=8, fps=14, halo=0.0, ramps=ICE_RAMPS,
+             name_vi="Băng Phong Thuật - băng thứ",
+             where="ice spikes bursting from the ground in a patch, then shattering (one-shot); "
+                   "pivot = the patch centre on the ground")
+    patch = fx.mat("patch", ICE[3], 0, grad=dict(src="attr", pow=0.6), opacity=0.6)
+    rim = fx.mat("rim", ICE[3], 0.3)
+    L = spike_layers(fx, "s", 1)
+    # x, depth (y on the ground, + = back), height, width, lean
+    SP = [(-6, 6, 42, 12, -2), (10, 5, 34, 11, 4), (-21, 4, 27, 10, -6), (24, 2, 23, 9, 7), (-31, -2, 15, 7, -6),
+          (1, -3, 31, 11, 1), (17, -5, 21, 9, 5), (-14, -6, 23, 9, -4), (31, -7, 13, 7, 5)]
+    order = sorted(range(len(SP)), key=lambda k: abs(SP[k][0]))
+    GROW = [0.0] * len(SP)
+    for n, k in enumerate(order):
+        GROW[k] = 0.0 + 0.045 * n
+
+    def pt(t, i):
+        g = ease_out(ramp_up(t, 0.0, 0.25))
+        return dict(s=0.4 + 0.6 * g) if i < 7 else dict(s=1.05)
+    fx.still(MB().disc(0, 0, 36, 28, 0.9, 0.0, KY * 0.55), "patch", patch,
+             lambda t, i: dict(s=0.4 + 0.6 * ease_out(ramp_up(t, 0.0, 0.25))) if i < 7 else None)
+    fx.still(ring_e(MB(), 0, 0, 34, 34 * KY * 0.55, 1.0), "rim", rim,
+             lambda t, i: dict(s=0.4 + 0.6 * ease_out(ramp_up(t, 0.0, 0.25))) if i < 7 else None)
+    for k, (x, y, h, w, lean) in enumerate(SP):
+        ms = spike_meshes(h, w, lean)
+        rank = 10 - y                                  # nearer (lower y) = drawn later
+
+        def fn(t, i, k=k, x=x, y=y, rank=rank):
+            q = ramp_up(t, GROW[k], GROW[k] + 0.2)
+            if q <= 0 or i >= 7:
+                return None
+            sy = ease_out(q) * (1 + 0.14 * bump(q, 0.55, 1.01))
+            if i == 6:
+                sy *= 0.92
+            return dict(x=x, y=y * 1.0, sx=0.75 + 0.25 * ease_out(q), sy=max(sy, 0.05), dz=rank * 0.5)
+        for lay in ("o", "b", "f", "h"):
+            fx.still(ms[lay], "sp%d%s" % (k, lay), L[lay], fn)
+    # cracks over the spikes just before they shatter, then the shards
+    cr = fx.mat("crack", ICE[3], 9)
+
+    def cracks(t, i):
+        if i != 6:
+            return None
+        mb = MB()
+        r = random.Random(4)
+        for (x, y, h, w, lean) in SP:
+            if h < 20:
+                continue
+            p0 = (x + lean * 0.3, y + h * 0.3)
+            p1 = (x + lean * 0.7 + r.uniform(-2, 2), y + h * 0.75)
+            mb.strip(jag(p0, p1, r, 3, 1.5), [0.8] * 4)
+        return mb
+    fx.pf("crack", cr, cracks)
+    sh = spike_layers(fx, "sh", 8)
+    rng = fx.rng
+    for k in range(14):
+        x0, y0 = rng.uniform(-28, 28), rng.uniform(6, 30)
+        vx, vy = x0 * rng.uniform(0.3, 0.6), rng.uniform(4, 12)
+
+        def fn(t, i, x0=x0, y0=y0, vx=vx, vy=vy, k=k):
+            if i < 6:
+                return None
+            q = (i - 5) / 2.0
+            return (x0 + vx * q, y0 + vy * q - 16 * q * q, 1.0 - 0.25 * q, k * 0.7 + q)
+        m = MB().poly([(-3, -1.2), (2.6, -1.6), (3.4, 1.0), (-1, 2.0)])
+        fx.particle("shd%d" % k, sh["b"] if k % 3 else sh["h"], m, fn)
+    return fx
+
+
+@reg("bang_ket")
+def bang_ket():
+    fx = CFx("bang_ket", px=64, pivot=(32, 56), frames=4, fps=6, loop=True, halo=0.0, ramps=ICE_RAMPS,
+             name_vi="Băng Phong Thuật - đóng băng",
+             where="frost crystals clinging to a frozen monster (loop, drawn over the monster); pivot = the monster's "
+                   "feet; made for a 48 px monster, scale by monster frame / 48")
+    shell = fx.mat("shell", ICE[1], 0, opacity=0.3)
+    rim = fx.mat("rim", ICE[3], 0.5, opacity=0.75)
+    facet = fx.mat("facet", ICE[3], 0.6, opacity=0.5)
+    L = spike_layers(fx, "c", 2)
+    HULL = [(-21, 0), (21, 0), (24, 14), (17, 33), (0, 40), (-17, 33), (-24, 14)]
+    fx.still(MB().poly(HULL), "shell", shell)
+    rimpts = HULL + [HULL[0]]
+    fx.still(MB().strip(rimpts, [1.0] * len(rimpts)), "rim", rim)
+    fm = MB()
+    for a, b in (((0, 40), (4, 20)), ((4, 20), (21, 0)), ((4, 20), (-24, 14)), ((17, 33), (4, 20))):
+        fm.strip([a, b], [0.8, 0.8])
+    fx.still(fm, "facet", facet)
+    # crystal clusters on the feet and the flanks
+    CL = [(-18, 2, 13, 7, -4), (-11, -1, 9, 6, -2), (-4, -2, 6, 5, 0), (6, -2, 8, 5, 2), (13, -1, 12, 7, 3),
+          (19, 3, 16, 7, 4), (-22, 12, 10, 5, -4), (22, 16, 9, 5, 4)]
+    for k, (x, y, h, w, lean) in enumerate(CL):
+        ms = spike_meshes(h, w, lean)
+        for lay in ("o", "b", "f", "h"):
+            fx.still(ms[lay], "c%d%s" % (k, lay), L[lay], lambda t, i, x=x, y=y, k=k: dict(x=x, y=y, dz=-y * 0.5))
+    gl = fx.mat("glint", ICE[3], 8)
+    G = [(-14, 30), (12, 24), (-6, 12), (19, 8)]
+    fx.still(star4(MB(), 0, 0, 5, 0.15), "glint", gl, lambda t, i: dict(x=G[i][0], y=G[i][1], rot=0.0))
+    sn = fx.mat("snow", ICE[3], 7)
+    for k in range(5):
+        x0 = -20 + 10 * k
+
+        def fn(t, i, x0=x0, k=k):
+            q = (t + k / 5) % 1.0
+            return (x0 + 2 * math.sin(TAU * q + k), 42 - 30 * q, 1.0 if q < 0.85 else 0.0, 0.0)
+        fx.particle("sn%d" % k, sn, MB().diamond(0, 0, 2.0, 2.0), fn)
+    return fx
+
+
 def all_ids():
     return list(REG)
 

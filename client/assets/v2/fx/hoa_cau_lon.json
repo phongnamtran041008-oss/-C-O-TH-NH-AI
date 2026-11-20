@@ -1,0 +1,19 @@
+{
+ "id": "hoa_cau_lon",
+ "name_vi": "Hỏa Cầu Thuật - đại hỏa cầu",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 48
+ },
+ "sheet": "hoa_cau_lon.png",
+ "cols": 4,
+ "frames": 4,
+ "fps": 14,
+ "loop": true,
+ "blend": "alpha",
+ "ground": false
+}

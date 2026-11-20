@@ -1,0 +1,19 @@
+{
+ "id": "hoa_long",
+ "name_vi": "Hỏa Long Thuật - hỏa long",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 64
+ },
+ "sheet": "hoa_long.png",
+ "cols": 6,
+ "frames": 6,
+ "fps": 12,
+ "loop": true,
+ "blend": "alpha",
+ "ground": false
+}

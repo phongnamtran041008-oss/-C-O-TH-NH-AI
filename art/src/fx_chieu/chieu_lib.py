@@ -88,8 +88,19 @@ class CFx(Fx):
         return d
 
     def anim(self, ob, fn):
-        """fn(t, i) -> dict(x, y [px from pivot], s, sx, sy, rot, op, head, tail, show) or None (hidden)."""
-        return self.track(ob, lambda t, i: self._conv(fn(t, i)))
+        """fn(t, i) -> dict(x, y [px from pivot], s, sx, sy, rot, op, head, tail, show, dz) or None (hidden).
+        dz = extra depth for this object (bigger = nearer the camera), on top of its material's z order: used to
+        sort whole objects (each spike / rock) front to back."""
+        z0 = self.state[ob.name]["fm"].z
+
+        def f(t, i):
+            d = fn(t, i)
+            if d is not None and "dz" in d:
+                d = dict(d)
+                dz = d.pop("dz")
+                d["z"] = z0 + (dz * 0.004 if self.view != "front" else -dz * 0.3)
+            return self._conv(d)
+        return self.track(ob, f)
 
     def still(self, mb, name, fm, fn=None):
         ob = self.obj(mb, name, fm)
@@ -232,9 +243,9 @@ def offset_poly(pts, d):
         nx, ny = nx / L, ny / L
         dot = max(0.35, nx * n1[0] + ny * n1[1])
         out.append((x1 + nx * d / dot, y1 + ny * d / dot))
-    # orientation: if area is negative the normals point inwards -> flip
+    # (e_y, -e_x) points outwards for a counter-clockwise polygon (positive area); clockwise -> flip
     area = sum(pts[i - 1][0] * pts[i][1] - pts[i][0] * pts[i - 1][1] for i in range(n))
-    if area > 0:
+    if area < 0:
         out = [(2 * pts[i][0] - out[i][0], 2 * pts[i][1] - out[i][1]) for i in range(n)]
     return out
 
