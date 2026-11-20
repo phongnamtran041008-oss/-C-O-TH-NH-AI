@@ -189,6 +189,12 @@ def analyse() -> dict:
     dead_gens = [g for g in math_items.generators().values() if g.skill in cut]
     out["dead_items"], out["dead_gens"] = dead_items, dead_gens
     out["cut_by_floor"] = Counter((skill_subject()[s], floors[s]) for s in cut)
+    # the owner's rule is "no proofs" (tree.json rules.no_proof_items): hand-written items on a path the
+    # player really walks whose question asks for a proof
+    main_skills = {s for n in t.nodes.values() if n.main for s in n.skills} - cut
+    out["proof_items"] = sorted((i for i in math_items.bank().values()
+                                 if i.skill in main_skills and "chứng minh" in i.prompt_vi.lower()),
+                                key=lambda i: i.id)
     out["no_templates_main"] = [(n, s) for r in rows for n in [r["node"]] if n.main for s in r["unasked"]]
     out["no_templates_opt"] = [(r["node"], s) for r in rows if not r["node"].main for s in r["unasked"]]
 
@@ -205,7 +211,7 @@ def analyse() -> dict:
         for r in n.requires:
             q = t.nodes[r]
             if n.skills and q.skills and sub[n.skills[0]] == sub[q.skills[0]]:
-                if max(floors[s] for s in q.skills) > min(floors[s] for s in n.skills):
+                if max(floors[s] for s in q.skills) > max(floors[s] for s in n.skills):
                     prob.append(f"{n.id}: needs {r}, but {r} has floors "
                                 f"{sorted({floors[s] for s in q.skills})} and {n.id} "
                                 f"{sorted({floors[s] for s in n.skills})} (floor order inverted)")
@@ -295,6 +301,10 @@ def headline(a: dict | None = None) -> dict:
         "cut_items": len(a["dead_items"]),
         "cut_generators": len(a["dead_gens"]),
         "main_skills_without_template": len(a["no_templates_main"]),
+        "proof_questions_on_main_path": len(a["proof_items"]),
+        "nodes_isolated_luyen_khi": len(a["isolated"]),
+        "nodes_flag_wrong_luyen_khi": sum(1 for r in a["rows"] if r["node"].realm == "luyen_khi" and r["node"].main
+                                          and (r["node"].content == "co") != (r["real"] == "co")),
         "prerequisite_problems": len(a["prereq_problems"]),
         "hand_items": len(math_items.bank()),
         "generators": len(math_items.generators()),
@@ -403,14 +413,13 @@ def render(a: dict) -> str:
                   f"{r}: {sum(1 for n in t.nodes.values() if n.realm == r)}" for r in t.realm_order if r != "luyen_khi")
               + " (tất cả `chua_co`: là thiết kế, chưa nối vào game).", ""]
     stale = [(r["node"], r["real"]) for r in a["rows"]
-             if r["node"].realm == "luyen_khi" and r["node"].main and r["node"].content != r["real"]
-             and not (r["node"].content == "dang_viet" and r["real"] == "co")]
-    stale_dv = [r["node"] for r in a["rows"] if r["node"].realm == "luyen_khi" and r["node"].content == "dang_viet"
-                and r["real"] == "co"]
-    lines += [f"- Cờ `content` = `dang_viet` nhưng nút đã có đủ câu hỏi: {len(stale_dv)} nút "
-              "(cờ này chỉ để hiển thị 'đang viết'; xem phần khuyến nghị).",
-              "- Cờ `content` lệch với thực tế theo hướng ngược lại: "
-              + (", ".join(f"`{n.id}` ({n.content}→{real})" for n, real in stale) if stale else "không có."), ""]
+             if r["node"].realm == "luyen_khi" and r["node"].main and (r["node"].content == "co") != (r["real"] == "co")]
+    lines += ["- Nút chính Luyện Khí có cờ `content` không khớp thực tế (có câu hỏi hay bài tập mà không phải `co`, "
+              "hoặc `co` mà trống): "
+              + (", ".join(f"`{n.id}` ({n.content}, thật: {real})" for n, real in stale) if stale else "không có."),
+              f"- Câu hỏi bắt chứng minh trên đường chính (luật của tree.json là không hỏi chứng minh): "
+              f"{len(a['proof_items'])} câu viết tay"
+              + (": " + ", ".join(f"`{i.id}`" for i in a["proof_items"]) if a["proof_items"] else "") + ".", ""]
 
     # ---- prerequisites
     lines += ["## 6. Điều kiện tiên quyết", ""]

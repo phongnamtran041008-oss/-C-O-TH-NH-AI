@@ -14,6 +14,13 @@
     {"id": "xs_gx_tin_cay_ty_le_nguoc", "skill": "xs_t8_tin_cay_ty_le", "tier": 5, "type": "numeric", "reviewed": false},
     {"id": "xs_gx_co_mau_xau_nhat", "skill": "xs_t8_co_mau", "tier": 5, "type": "numeric", "reviewed": false},
     {"id": "xs_gx_chebyshev_tim_n", "skill": "xs_t8_luat_so_lon", "tier": 5, "type": "numeric", "reviewed": false},
-    {"id": "xs_gx_clt_nguong", "skill": "xs_t8_gioi_han_trung_tam", "tier": 5, "type": "numeric", "reviewed": false}
+    {"id": "xs_gx_clt_nguong", "skill": "xs_t8_gioi_han_trung_tam", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_khong_gian_mau_cach_lay", "skill": "xs_t2_hoan_lai", "tier": 1, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_chuoi_khong_hoan", "skill": "xs_t3_cong_thuc_nhan", "tier": 3, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_bayes_thu_rac", "skill": "xs_t4_bayes", "tier": 2, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_bayes_phat_hien", "skill": "xs_t4_bayes_ung_dung", "tier": 2, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_toan_phan_ba_nhanh", "skill": "xs_t4_he_day_du", "tier": 3, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_so_do_cay_hai_tang", "skill": "xs_t4_so_do_cay", "tier": 3, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_ky_vong_tuyen_tinh", "skill": "xs_t6_ky_vong", "tier": 4, "type": "numeric", "reviewed": false}
   ]
 }

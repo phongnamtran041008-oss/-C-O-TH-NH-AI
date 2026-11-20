@@ -205,6 +205,39 @@ def test_a_stage_without_programming_is_caught(raw, skills, problems):
     assert any("no programming" in e for e in check(bad, skills, problems))
 
 
+def test_a_content_flag_that_lies_is_caught(raw, skills, problems):
+    """Curriculum review: 38 nodes of Luyện Khí said 'dang_viet' while their questions were long written,
+    and nothing noticed. The flag now has to agree with the bank in both directions."""
+    asked = mt.skills_with_questions()
+    assert mt.validate_tree(raw, skills, problems, asked) == []
+    bad = copy.deepcopy(raw)
+    node(bad, "ds_nhan_ma_tran")["content"] = "dang_viet"           # it has questions
+    errs = mt.validate_tree(bad, skills, problems, asked)
+    assert any("ds_nhan_ma_tran" in e and "must be 'co'" in e for e in errs)
+    bad = copy.deepcopy(raw)
+    later = next(n for n in bad["nodes"] if n["realm"] == "truc_co" and not n["skills"] and not n.get("problems"))
+    later["content"] = "co"                                          # it has nothing
+    errs = mt.validate_tree(bad, skills, problems, asked)
+    assert any(later["id"] in e and "content is 'co'" in e for e in errs)
+
+
+def test_every_node_with_questions_or_exercises_says_so():
+    """No node of Luyện Khí is still flagged as being written, and none claims content it does not have."""
+    t = mt.tree()
+    asked, cut = mt.skills_with_questions(), t.cut_skills()
+    for n in t.nodes.values():
+        real = bool(n.problems) or any(s in asked and s not in cut for s in n.skills)
+        assert (n.content == "co") == real, n.id
+    assert not [n.id for n in t.nodes.values() if n.realm == "luyen_khi" and n.content != "co"]
+
+
+def test_an_exercise_listed_by_two_nodes_is_caught(raw, skills, problems):
+    bad = copy.deepcopy(raw)
+    first = node(bad, "lt_python_co_ban")["problems"][0]
+    node(bad, "lt_cau_truc_du_lieu")["problems"].append(first)
+    assert any(first in e and "more than one node" in e for e in check(bad, skills, problems))
+
+
 # ------------------------------------------------------------------ the world plan
 def test_questions_only_come_when_a_monster_lands_a_blow(plan):
     combat = plan["combat"]

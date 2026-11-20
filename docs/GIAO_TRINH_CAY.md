@@ -40,8 +40,8 @@ Trong 215 vi kỹ năng của bốn bí cảnh: **159 chính đạo**, 45 bàng 
 
 | Nút | Loại | Nhánh | Học gì | Cần xong trước | Ôn lại | Câu hỏi |
 |---|---|---|---|---|---|---|
-| **Tích vô hướng và nhân ma trận** | Toán | Đại Số Tuyến Tính | Tích vô hướng: một hàng nhân một cột, Điều kiện kích thước để nhân, Nhân hai ma trận, AB != BA, Tính chất của phép nhân ma trận, Ma trận đơn vị và lũy thừa ma trận | Vectơ và ma trận | Vectơ và ma trận | đang viết |
-| **Đạo hàm và quy tắc dây chuyền** | Toán | Giải Tích | Đạo hàm theo định nghĩa, Quy tắc tính đạo hàm, Quy tắc dây chuyền, Vi phân và đạo hàm cấp cao | Giới hạn và liên tục | Hàm số, hàm hợp, mũ và logarit, Giới hạn và liên tục | đang viết |
+| **Tích vô hướng và nhân ma trận** | Toán | Đại Số Tuyến Tính | Tích vô hướng: một hàng nhân một cột, Điều kiện kích thước để nhân, Nhân hai ma trận, AB != BA, Tính chất của phép nhân ma trận, Ma trận đơn vị và lũy thừa ma trận | Vectơ và ma trận | Vectơ và ma trận | đã có câu hỏi |
+| **Đạo hàm và quy tắc dây chuyền** | Toán | Giải Tích | Đạo hàm theo định nghĩa, Quy tắc tính đạo hàm, Quy tắc dây chuyền, Vi phân và đạo hàm cấp cao | Giới hạn và liên tục | Hàm số, hàm hợp, mũ và logarit, Giới hạn và liên tục | đã có câu hỏi |
 | **Hàm, đệ quy và chia nhỏ bài toán** | Lập trình | Lập Trình | Hàm gọi hàm, Đệ quy và điều kiện dừng, Giai thừa, Fibonacci, tháp số, Sinh hoán vị bằng quay lui | Python nhập môn, Logic mệnh đề và quy tắc đếm | Logic mệnh đề và quy tắc đếm | đã có câu hỏi |
 | **Vectơ và ma trận bằng code** | Lập trình | Lập Trình | Vectơ là list, Tích vô hướng, độ dài, Ma trận là list của list, Chuyển vị | Danh sách, tập hợp và từ điển, Vectơ và ma trận | Vectơ và ma trận | đã có câu hỏi |
 | **Liệt kê và quay lui** | Toán | Thuật Toán và Tối Ưu | Thứ tự từ điển, Phương pháp sinh, Thuật toán quay lui | Logic mệnh đề và quy tắc đếm | Logic mệnh đề và quy tắc đếm | đã có câu hỏi |
@@ -52,72 +52,72 @@ Trong 215 vi kỹ năng của bốn bí cảnh: **159 chính đạo**, 45 bàng 
 
 | Nút | Loại | Nhánh | Học gì | Cần xong trước | Ôn lại | Câu hỏi |
 |---|---|---|---|---|---|---|
-| **Hệ phương trình và khử Gauss** | Toán | Đại Số Tuyến Tính | Viết hệ dưới dạng Ax = b, Ba phép biến đổi sơ cấp trên hàng, Khử Gauss về dạng bậc thang, Thế ngược tìm nghiệm, Biện luận số nghiệm, Hệ thuần nhất Ax = 0 | Tích vô hướng và nhân ma trận | Tích vô hướng và nhân ma trận | đang viết |
-| **Đơn điệu, cực trị, lồi lõm** | Toán | Giải Tích | Tính đơn điệu, Cực trị, Giá trị lớn nhất và nhỏ nhất trên đoạn, Lồi, lõm và điểm uốn | Đạo hàm và quy tắc dây chuyền | Đạo hàm và quy tắc dây chuyền | đang viết |
+| **Hệ phương trình và khử Gauss** | Toán | Đại Số Tuyến Tính | Viết hệ dưới dạng Ax = b, Ba phép biến đổi sơ cấp trên hàng, Khử Gauss về dạng bậc thang, Thế ngược tìm nghiệm, Biện luận số nghiệm, Hệ thuần nhất Ax = 0 | Tích vô hướng và nhân ma trận | Tích vô hướng và nhân ma trận | đã có câu hỏi |
+| **Đơn điệu, cực trị, lồi lõm** | Toán | Giải Tích | Tính đơn điệu, Cực trị, Giá trị lớn nhất và nhỏ nhất trên đoạn, Lồi, lõm và điểm uốn | Đạo hàm và quy tắc dây chuyền | Đạo hàm và quy tắc dây chuyền | đã có câu hỏi |
 | **Nhân ma trận và khử Gauss bằng code** | Lập trình | Lập Trình | Nhân hai ma trận, Kiểm tra kích thước, Khử Gauss, Giải hệ bằng thế ngược | Vectơ và ma trận bằng code, Hệ phương trình và khử Gauss | Tích vô hướng và nhân ma trận, Hệ phương trình và khử Gauss | đã có câu hỏi |
 | **Mô phỏng xác suất** | Lập trình | Lập Trình | random và hạt giống, Ước lượng xác suất bằng tần suất, Mô phỏng bài toán rút bi, gieo xúc xắc, Kiểm lại công thức xác suất có điều kiện | Danh sách, tập hợp và từ điển, Xác suất có điều kiện và độc lập | Xác suất, Xác suất có điều kiện và độc lập | đã có câu hỏi |
-| **NumPy: mảng và vector hoá** | Lập trình | Lập Trình | ndarray, shape, Cắt lát và chỉ số, Broadcasting, Phép @ và các hàm tổng hợp theo trục | Vectơ và ma trận bằng code, Tích vô hướng và nhân ma trận | Tích vô hướng và nhân ma trận, Vectơ và ma trận | chưa có |
-| **Đồ thị và cách biểu diễn** | Toán | Thuật Toán và Tối Ưu | Đỉnh, cạnh và các loại đồ thị, Bậc của đỉnh và định lý bắt tay, Đường đi, chu trình và liên thông, Ma trận kề, Danh sách kề và danh sách cạnh | Logic mệnh đề và quy tắc đếm, Vectơ và ma trận | Logic mệnh đề và quy tắc đếm, Vectơ và ma trận | đang viết |
-| **Duyệt, tham lam và ký hiệu O lớn** | Toán | Thuật Toán và Tối Ưu | Phát biểu bài toán tối ưu tổ hợp, Duyệt toàn bộ, Thuật toán tham lam, Ký hiệu O lớn | Đếm và hệ thức truy hồi, Liệt kê và quay lui | Đếm và hệ thức truy hồi, Liệt kê và quay lui | đang viết |
-| **Xác suất đầy đủ và Bayes** | Toán | Xác Suất và Thống Kê | Hệ đầy đủ các sự kiện, Sơ đồ cây cho phép thử nhiều giai đoạn, Công thức xác suất đầy đủ, Công thức Bayes, Bayes trong xét nghiệm và phân loại | Xác suất có điều kiện và độc lập | Xác suất có điều kiện và độc lập | đang viết |
+| **Tư duy NumPy: mảng và vector hoá** | Lập trình | Lập Trình | ndarray, shape, Cắt lát và chỉ số, Broadcasting, Phép @ và các hàm tổng hợp theo trục | Vectơ và ma trận bằng code, Tích vô hướng và nhân ma trận | Tích vô hướng và nhân ma trận, Vectơ và ma trận | đã có câu hỏi |
+| **Đồ thị và cách biểu diễn** | Toán | Thuật Toán và Tối Ưu | Đỉnh, cạnh và các loại đồ thị, Bậc của đỉnh và định lý bắt tay, Đường đi, chu trình và liên thông, Ma trận kề, Danh sách kề và danh sách cạnh | Logic mệnh đề và quy tắc đếm, Vectơ và ma trận | Logic mệnh đề và quy tắc đếm, Vectơ và ma trận | đã có câu hỏi |
+| **Duyệt, tham lam và ký hiệu O lớn** | Toán | Thuật Toán và Tối Ưu | Phát biểu bài toán tối ưu tổ hợp, Duyệt toàn bộ, Thuật toán tham lam, Ký hiệu O lớn | Đếm và hệ thức truy hồi, Liệt kê và quay lui | Đếm và hệ thức truy hồi, Liệt kê và quay lui | đã có câu hỏi |
+| **Xác suất đầy đủ và Bayes** | Toán | Xác Suất và Thống Kê | Hệ đầy đủ các sự kiện, Sơ đồ cây cho phép thử nhiều giai đoạn, Công thức xác suất đầy đủ, Công thức Bayes, Bayes trong xét nghiệm và phân loại | Xác suất có điều kiện và độc lập | Xác suất có điều kiện và độc lập | đã có câu hỏi |
 
 ### Luyện Khí tầng 5 — mở khoá: Bày pháp trận
 
 | Nút | Loại | Nhánh | Học gì | Cần xong trước | Ôn lại | Câu hỏi |
 |---|---|---|---|---|---|---|
-| **Định thức, hạng và nghịch đảo** | Toán | Đại Số Tuyến Tính | Định thức cấp 2 và cấp 3, Khai triển theo hàng hoặc cột, Tính chất của định thức, Hạng của ma trận, Ma trận nghịch đảo | Hệ phương trình và khử Gauss | Hệ phương trình và khử Gauss, Tích vô hướng và nhân ma trận | đang viết |
-| **Khai triển Taylor** | Toán | Giải Tích | Khai triển Taylor, Khai triển Maclaurin của các hàm cơ bản | Đạo hàm và quy tắc dây chuyền | Đạo hàm và quy tắc dây chuyền, Hàm số, hàm hợp, mũ và logarit | đang viết |
-| **Tích phân** | Toán | Giải Tích | Nguyên hàm và bảng nguyên hàm, Phương pháp đổi biến, Tích phân từng phần, Tích phân xác định và công thức Newton-Leibniz, Tích phân với cận biến thiên | Đạo hàm và quy tắc dây chuyền | Đạo hàm và quy tắc dây chuyền | đang viết |
+| **Định thức, hạng và nghịch đảo** | Toán | Đại Số Tuyến Tính | Định thức cấp 2 và cấp 3, Khai triển theo hàng hoặc cột, Tính chất của định thức, Hạng của ma trận, Ma trận nghịch đảo | Hệ phương trình và khử Gauss | Hệ phương trình và khử Gauss, Tích vô hướng và nhân ma trận | đã có câu hỏi |
+| **Khai triển Taylor** | Toán | Giải Tích | Khai triển Taylor, Khai triển Maclaurin của các hàm cơ bản | Đạo hàm và quy tắc dây chuyền | Đạo hàm và quy tắc dây chuyền, Hàm số, hàm hợp, mũ và logarit | đã có câu hỏi |
+| **Tích phân** | Toán | Giải Tích | Nguyên hàm và bảng nguyên hàm, Phương pháp đổi biến, Tích phân từng phần, Tích phân xác định và công thức Newton-Leibniz, Tích phân với cận biến thiên | Đạo hàm và quy tắc dây chuyền | Đạo hàm và quy tắc dây chuyền | đã có câu hỏi |
 | **Đạo hàm số và hạ gradient một biến** | Lập trình | Lập Trình | Đạo hàm bằng sai phân, So với đạo hàm tính tay, Vòng lặp hạ gradient, Tốc độ học quá lớn và quá nhỏ | Danh sách, tập hợp và từ điển, Đơn điệu, cực trị, lồi lõm | Đạo hàm và quy tắc dây chuyền, Đơn điệu, cực trị, lồi lõm | đã có câu hỏi |
 | **Đo độ phức tạp, tìm kiếm và sắp xếp** | Lập trình | Lập Trình | Đếm phép toán, Tìm kiếm tuyến tính và nhị phân, Sắp xếp, So thời gian chạy khi n tăng | Hàm, đệ quy và chia nhỏ bài toán, Duyệt, tham lam và ký hiệu O lớn | Duyệt, tham lam và ký hiệu O lớn, Đếm và hệ thức truy hồi | đã có câu hỏi |
-| **Tìm kiếm theo chiều rộng và chiều sâu** | Toán | Thuật Toán và Tối Ưu | Tìm kiếm theo chiều rộng, Tìm kiếm theo chiều sâu, Ứng dụng của tìm kiếm | Đồ thị và cách biểu diễn, Liệt kê và quay lui | Đồ thị và cách biểu diễn, Liệt kê và quay lui | đang viết |
+| **Tìm kiếm theo chiều rộng và chiều sâu** | Toán | Thuật Toán và Tối Ưu | Tìm kiếm theo chiều rộng, Tìm kiếm theo chiều sâu, Ứng dụng của tìm kiếm | Đồ thị và cách biểu diễn, Liệt kê và quay lui | Đồ thị và cách biểu diễn, Liệt kê và quay lui | đã có câu hỏi |
 | **Khớp đường thẳng bằng hạ gradient** | Thực chiến AI | Thực Chiến AI | Sai số bình phương, Đạo hàm của mất mát theo hai tham số, Vòng huấn luyện, Vẽ mất mát giảm dần | Đạo hàm số và hạ gradient một biến | Đạo hàm và quy tắc dây chuyền, Đơn điệu, cực trị, lồi lõm, Đạo hàm số và hạ gradient một biến | đã có câu hỏi |
 | **Lọc thư rác bằng Bayes** | Thực chiến AI | Thực Chiến AI | Đếm từ theo nhãn, Xác suất có điều kiện của từng từ, Áp dụng Bayes, Vì sao gọi là 'ngây thơ' | Xác suất đầy đủ và Bayes, Danh sách, tập hợp và từ điển | Xác suất đầy đủ và Bayes, Xác suất có điều kiện và độc lập, Danh sách, tập hợp và từ điển | đã có câu hỏi |
-| **Biến ngẫu nhiên rời rạc** | Toán | Xác Suất và Thống Kê | Biến ngẫu nhiên rời rạc và liên tục, Bảng phân phối xác suất, Hàm phân phối F(x) | Xác suất có điều kiện và độc lập | Xác suất có điều kiện và độc lập, Xác suất | đang viết |
+| **Biến ngẫu nhiên rời rạc** | Toán | Xác Suất và Thống Kê | Biến ngẫu nhiên rời rạc và liên tục, Bảng phân phối xác suất, Hàm phân phối F(x) | Xác suất có điều kiện và độc lập | Xác suất có điều kiện và độc lập, Xác suất | đã có câu hỏi |
 
 ### Luyện Khí tầng 6 — mở khoá: Đạp Kiếm Lướt
 
 | Nút | Loại | Nhánh | Học gì | Cần xong trước | Ôn lại | Câu hỏi |
 |---|---|---|---|---|---|---|
-| **Không gian vectơ: bao tuyến tính, cơ sở, số chiều** | Toán | Đại Số Tuyến Tính | Không gian vectơ và các tiên đề, Không gian con, Tổ hợp tuyến tính và bao tuyến tính, Độc lập và phụ thuộc tuyến tính, Cơ sở và số chiều, Tọa độ và ma trận chuyển cơ sở | Định thức, hạng và nghịch đảo | Hệ phương trình và khử Gauss, Định thức, hạng và nghịch đảo | đang viết |
-| **Hàm nhiều biến và đạo hàm riêng** | Toán | Giải Tích | Miền xác định, giới hạn và liên tục, Đạo hàm riêng, Vi phân toàn phần, hàm ẩn và công thức Taylor | Đạo hàm và quy tắc dây chuyền, Khai triển Taylor, Vectơ và ma trận | Đạo hàm và quy tắc dây chuyền, Khai triển Taylor, Vectơ và ma trận | đang viết |
-| **Diện tích và tích phân cận vô hạn** | Toán | Giải Tích | Diện tích hình phẳng, Tích phân suy rộng cận vô hạn | Tích phân, Giới hạn và liên tục | Tích phân, Giới hạn và liên tục | đang viết |
+| **Không gian vectơ: bao tuyến tính, cơ sở, số chiều** | Toán | Đại Số Tuyến Tính | Không gian vectơ và các tiên đề, Không gian con, Tổ hợp tuyến tính và bao tuyến tính, Độc lập và phụ thuộc tuyến tính, Cơ sở và số chiều, Tọa độ và ma trận chuyển cơ sở | Định thức, hạng và nghịch đảo | Hệ phương trình và khử Gauss, Định thức, hạng và nghịch đảo | đã có câu hỏi |
+| **Hàm nhiều biến và đạo hàm riêng** | Toán | Giải Tích | Miền xác định, giới hạn và liên tục, Đạo hàm riêng, Vi phân toàn phần, hàm ẩn và công thức Taylor | Đạo hàm và quy tắc dây chuyền, Khai triển Taylor, Vectơ và ma trận | Đạo hàm và quy tắc dây chuyền, Khai triển Taylor, Vectơ và ma trận | đã có câu hỏi |
+| **Diện tích và tích phân cận vô hạn** | Toán | Giải Tích | Diện tích hình phẳng, Tích phân suy rộng cận vô hạn | Tích phân, Giới hạn và liên tục | Tích phân, Giới hạn và liên tục | đã có câu hỏi |
 | **Đồ thị bằng code** | Lập trình | Lập Trình | Danh sách kề bằng dict, BFS bằng hàng đợi, DFS bằng đệ quy, Đường đi ngắn nhất | Đo độ phức tạp, tìm kiếm và sắp xếp, Tìm kiếm theo chiều rộng và chiều sâu | Tìm kiếm theo chiều rộng và chiều sâu, Đồ thị và cách biểu diễn | đã có câu hỏi |
-| **Cây và đường đi ngắn nhất** | Toán | Thuật Toán và Tối Ưu | Cây và tính chất của cây, Đường đi ngắn nhất | Tìm kiếm theo chiều rộng và chiều sâu, Duyệt, tham lam và ký hiệu O lớn | Tìm kiếm theo chiều rộng và chiều sâu, Duyệt, tham lam và ký hiệu O lớn | đang viết |
-| **Biến ngẫu nhiên liên tục và hàm mật độ** | Toán | Xác Suất và Thống Kê | Hàm mật độ xác suất, Xác suất rơi vào một khoảng | Biến ngẫu nhiên rời rạc, Tích phân | Biến ngẫu nhiên rời rạc, Tích phân | đang viết |
+| **Cây và đường đi ngắn nhất** | Toán | Thuật Toán và Tối Ưu | Cây và tính chất của cây, Đường đi ngắn nhất | Tìm kiếm theo chiều rộng và chiều sâu, Duyệt, tham lam và ký hiệu O lớn | Tìm kiếm theo chiều rộng và chiều sâu, Duyệt, tham lam và ký hiệu O lớn | đã có câu hỏi |
+| **Biến ngẫu nhiên liên tục và hàm mật độ** | Toán | Xác Suất và Thống Kê | Hàm mật độ xác suất, Xác suất rơi vào một khoảng | Biến ngẫu nhiên rời rạc, Tích phân | Biến ngẫu nhiên rời rạc, Tích phân | đã có câu hỏi |
 
 ### Luyện Khí tầng 7
 
 | Nút | Loại | Nhánh | Học gì | Cần xong trước | Ôn lại | Câu hỏi |
 |---|---|---|---|---|---|---|
-| **Ánh xạ tuyến tính và đổi cơ sở** | Toán | Đại Số Tuyến Tính | Ánh xạ tuyến tính, Nhân Ker f và ảnh Im f, Định lý số chiều, Ma trận của ánh xạ tuyến tính, Hợp ánh xạ và tích ma trận, Đổi cơ sở và ma trận đồng dạng | Không gian vectơ: bao tuyến tính, cơ sở, số chiều, Tập hợp và ánh xạ | Tập hợp và ánh xạ, Tích vô hướng và nhân ma trận, Không gian vectơ: bao tuyến tính, cơ sở, số chiều | đang viết |
-| **Trực giao và phép chiếu** | Toán | Đại Số Tuyến Tính | Không gian Euclide và trực giao hóa, Phép chiếu trực giao | Không gian vectơ: bao tuyến tính, cơ sở, số chiều | Tích vô hướng và nhân ma trận, Không gian vectơ: bao tuyến tính, cơ sở, số chiều | đang viết |
-| **Gradient, Jacobian và lan truyền ngược** | Toán | Giải Tích | Cực trị của hàm hai biến, Cực trị có điều kiện, Gradient, Jacobian và lan truyền ngược | Hàm nhiều biến và đạo hàm riêng, Đơn điệu, cực trị, lồi lõm, Tích vô hướng và nhân ma trận | Hàm nhiều biến và đạo hàm riêng, Đơn điệu, cực trị, lồi lõm, Tích vô hướng và nhân ma trận | đang viết |
-| **Bài toán tối ưu, tập lồi và hàm lồi** | Toán | Thuật Toán và Tối Ưu | Phát biểu bài toán tối ưu, Tập lồi, Hàm lồi, Điều kiện tối ưu không ràng buộc, Bài toán tối ưu lồi | Duyệt, tham lam và ký hiệu O lớn, Đơn điệu, cực trị, lồi lõm, Hàm nhiều biến và đạo hàm riêng | Duyệt, tham lam và ký hiệu O lớn, Đơn điệu, cực trị, lồi lõm, Hàm nhiều biến và đạo hàm riêng | đang viết |
-| **Bình phương tối thiểu bằng phương trình chuẩn** | Thực chiến AI | Thực Chiến AI | Viết bài toán dưới dạng Ax gần bằng b, Phương trình chuẩn, Giải bằng NumPy, So với kết quả hạ gradient | Trực giao và phép chiếu, NumPy: mảng và vector hoá, Nhân ma trận và khử Gauss bằng code, Khớp đường thẳng bằng hạ gradient | Trực giao và phép chiếu, Hệ phương trình và khử Gauss, NumPy: mảng và vector hoá | đã có câu hỏi |
-| **Kỳ vọng, phương sai và các phân phối quen thuộc** | Toán | Xác Suất và Thống Kê | Kỳ vọng, Phương sai và độ lệch chuẩn, Phân phối nhị thức và Poisson, Phân phối đều và phân phối mũ, Phân phối chuẩn | Biến ngẫu nhiên liên tục và hàm mật độ, Diện tích và tích phân cận vô hạn | Biến ngẫu nhiên liên tục và hàm mật độ, Biến ngẫu nhiên rời rạc, Diện tích và tích phân cận vô hạn | đang viết |
+| **Ánh xạ tuyến tính và đổi cơ sở** | Toán | Đại Số Tuyến Tính | Ánh xạ tuyến tính, Nhân Ker f và ảnh Im f, Định lý số chiều, Ma trận của ánh xạ tuyến tính, Hợp ánh xạ và tích ma trận, Đổi cơ sở và ma trận đồng dạng | Không gian vectơ: bao tuyến tính, cơ sở, số chiều, Tập hợp và ánh xạ | Tập hợp và ánh xạ, Tích vô hướng và nhân ma trận, Không gian vectơ: bao tuyến tính, cơ sở, số chiều | đã có câu hỏi |
+| **Trực giao và phép chiếu** | Toán | Đại Số Tuyến Tính | Không gian Euclide và trực giao hóa, Phép chiếu trực giao | Không gian vectơ: bao tuyến tính, cơ sở, số chiều | Tích vô hướng và nhân ma trận, Không gian vectơ: bao tuyến tính, cơ sở, số chiều | đã có câu hỏi |
+| **Gradient, Jacobian và lan truyền ngược** | Toán | Giải Tích | Cực trị của hàm hai biến, Cực trị có điều kiện, Gradient, Jacobian và lan truyền ngược | Hàm nhiều biến và đạo hàm riêng, Đơn điệu, cực trị, lồi lõm, Tích vô hướng và nhân ma trận | Hàm nhiều biến và đạo hàm riêng, Đơn điệu, cực trị, lồi lõm, Tích vô hướng và nhân ma trận | đã có câu hỏi |
+| **Bài toán tối ưu, tập lồi và hàm lồi** | Toán | Thuật Toán và Tối Ưu | Phát biểu bài toán tối ưu, Tập lồi, Hàm lồi, Điều kiện tối ưu không ràng buộc, Bài toán tối ưu lồi | Duyệt, tham lam và ký hiệu O lớn, Đơn điệu, cực trị, lồi lõm, Hàm nhiều biến và đạo hàm riêng | Duyệt, tham lam và ký hiệu O lớn, Đơn điệu, cực trị, lồi lõm, Hàm nhiều biến và đạo hàm riêng | đã có câu hỏi |
+| **Bình phương tối thiểu bằng phương trình chuẩn** | Thực chiến AI | Thực Chiến AI | Viết bài toán dưới dạng Ax gần bằng b, Phương trình chuẩn, Giải bằng NumPy, So với kết quả hạ gradient | Trực giao và phép chiếu, Tư duy NumPy: mảng và vector hoá, Nhân ma trận và khử Gauss bằng code, Khớp đường thẳng bằng hạ gradient | Trực giao và phép chiếu, Hệ phương trình và khử Gauss, Tư duy NumPy: mảng và vector hoá | đã có câu hỏi |
+| **Kỳ vọng, phương sai và các phân phối quen thuộc** | Toán | Xác Suất và Thống Kê | Kỳ vọng, Phương sai và độ lệch chuẩn, Phân phối nhị thức và Poisson, Phân phối đều và phân phối mũ, Phân phối chuẩn | Biến ngẫu nhiên liên tục và hàm mật độ, Diện tích và tích phân cận vô hạn | Biến ngẫu nhiên liên tục và hàm mật độ, Biến ngẫu nhiên rời rạc, Diện tích và tích phân cận vô hạn | đã có câu hỏi |
 
 ### Luyện Khí tầng 8 — mở khoá: Cưỡi linh thú
 
 | Nút | Loại | Nhánh | Học gì | Cần xong trước | Ôn lại | Câu hỏi |
 |---|---|---|---|---|---|---|
-| **Giá trị riêng và chéo hoá** | Toán | Đại Số Tuyến Tính | Giá trị riêng và vectơ riêng, Chéo hóa ma trận | Ánh xạ tuyến tính và đổi cơ sở | Định thức, hạng và nghịch đảo, Ánh xạ tuyến tính và đổi cơ sở | đang viết |
-| **Hạ gradient và nhân tử Lagrange** | Toán | Thuật Toán và Tối Ưu | Hạ gradient và hàm mất mát, Nhân tử Lagrange và điều kiện KKT | Bài toán tối ưu, tập lồi và hàm lồi, Gradient, Jacobian và lan truyền ngược | Bài toán tối ưu, tập lồi và hàm lồi, Gradient, Jacobian và lan truyền ngược | đang viết |
-| **Mạng nơ-ron hai lớp tự viết** | Thực chiến AI | Thực Chiến AI | Lan truyền xuôi là nhân ma trận, Gradient của từng lớp bằng quy tắc dây chuyền, Kiểm gradient bằng sai phân, Huấn luyện trên bài XOR | Gradient, Jacobian và lan truyền ngược, Hạ gradient và nhân tử Lagrange, NumPy: mảng và vector hoá | Gradient, Jacobian và lan truyền ngược, Tích vô hướng và nhân ma trận, Hạ gradient và nhân tử Lagrange | đã có câu hỏi |
-| **Mẫu, ước lượng và hợp lý cực đại** | Toán | Xác Suất và Thống Kê | Tổng thể và mẫu ngẫu nhiên, Trung bình mẫu và phương sai mẫu, Phân phối của trung bình mẫu, Ước lượng điểm không chệch, Ước lượng hợp lý cực đại | Kỳ vọng, phương sai và các phân phối quen thuộc, Đơn điệu, cực trị, lồi lõm | Kỳ vọng, phương sai và các phân phối quen thuộc, Đơn điệu, cực trị, lồi lõm | đang viết |
+| **Giá trị riêng và chéo hoá** | Toán | Đại Số Tuyến Tính | Giá trị riêng và vectơ riêng, Chéo hóa ma trận | Ánh xạ tuyến tính và đổi cơ sở | Định thức, hạng và nghịch đảo, Ánh xạ tuyến tính và đổi cơ sở | đã có câu hỏi |
+| **Hạ gradient và nhân tử Lagrange** | Toán | Thuật Toán và Tối Ưu | Hạ gradient và hàm mất mát, Nhân tử Lagrange và điều kiện KKT | Bài toán tối ưu, tập lồi và hàm lồi, Gradient, Jacobian và lan truyền ngược | Bài toán tối ưu, tập lồi và hàm lồi, Gradient, Jacobian và lan truyền ngược | đã có câu hỏi |
+| **Mạng nơ-ron hai lớp tự viết** | Thực chiến AI | Thực Chiến AI | Lan truyền xuôi là nhân ma trận, Gradient của từng lớp bằng quy tắc dây chuyền, Kiểm gradient bằng sai phân, Huấn luyện trên bài XOR | Gradient, Jacobian và lan truyền ngược, Hạ gradient và nhân tử Lagrange, Tư duy NumPy: mảng và vector hoá | Gradient, Jacobian và lan truyền ngược, Tích vô hướng và nhân ma trận, Hạ gradient và nhân tử Lagrange | đã có câu hỏi |
+| **Mẫu, ước lượng và hợp lý cực đại** | Toán | Xác Suất và Thống Kê | Tổng thể và mẫu ngẫu nhiên, Trung bình mẫu và phương sai mẫu, Phân phối của trung bình mẫu, Ước lượng điểm không chệch, Ước lượng hợp lý cực đại | Kỳ vọng, phương sai và các phân phối quen thuộc, Đơn điệu, cực trị, lồi lõm | Kỳ vọng, phương sai và các phân phối quen thuộc, Đơn điệu, cực trị, lồi lõm | đã có câu hỏi |
 | **Hiệp phương sai, tương quan và hồi quy** | Toán | Xác Suất và Thống Kê | Vectơ ngẫu nhiên hai chiều, Hiệp phương sai và hệ số tương quan, Hồi quy tuyến tính đơn | Mẫu, ước lượng và hợp lý cực đại, Tích vô hướng và nhân ma trận | Kỳ vọng, phương sai và các phân phối quen thuộc, Xác suất có điều kiện và độc lập, Tích vô hướng và nhân ma trận | đã có câu hỏi |
 
 ### Luyện Khí tầng 9
 
 | Nút | Loại | Nhánh | Học gì | Cần xong trước | Ôn lại | Câu hỏi |
 |---|---|---|---|---|---|---|
-| **Dạng toàn phương, PCA và SVD** | Toán | Đại Số Tuyến Tính | Dạng toàn phương, Làm quen PCA và SVD | Giá trị riêng và chéo hoá, Trực giao và phép chiếu | Giá trị riêng và chéo hoá, Trực giao và phép chiếu | đang viết |
+| **Dạng toàn phương, PCA và SVD** | Toán | Đại Số Tuyến Tính | Dạng toàn phương, Làm quen PCA và SVD | Giá trị riêng và chéo hoá, Trực giao và phép chiếu | Giá trị riêng và chéo hoá, Trực giao và phép chiếu | đã có câu hỏi |
 | **Thiên kiếp Luyện Khí: nhận dạng chữ số viết tay** | Dự án | Thực Chiến AI | Dữ liệu ảnh là ma trận, Nén bằng PCA, Huấn luyện mạng nơ-ron tự viết, Đo độ chính xác kèm khoảng tin cậy | Mạng nơ-ron hai lớp tự viết, Hồi quy logistic, PCA: nén dữ liệu, Thí nghiệm A/B: mô hình nào thật sự tốt hơn, Bình phương tối thiểu bằng phương trình chuẩn, Lọc thư rác bằng Bayes, Mô hình đầu tiên: k láng giềng gần nhất, Đồ thị bằng code, Cây và đường đi ngắn nhất | Mạng nơ-ron hai lớp tự viết, PCA: nén dữ liệu, Thí nghiệm A/B: mô hình nào thật sự tốt hơn | đã có câu hỏi |
 | **Thí nghiệm A/B: mô hình nào thật sự tốt hơn** | Thực chiến AI | Thực Chiến AI | So hai tỉ lệ đúng, Khoảng tin cậy của hiệu, Mô phỏng để thấy sai lầm loại một, Cần bao nhiêu mẫu | Kiểm định giả thuyết, Mô phỏng xác suất | Kiểm định giả thuyết, Khoảng tin cậy và định lý giới hạn trung tâm, Mô phỏng xác suất | đã có câu hỏi |
-| **Hồi quy logistic** | Thực chiến AI | Thực Chiến AI | Sigmoid và xác suất, Mất mát log, Gradient của mất mát, Ngưỡng quyết định | Mẫu, ước lượng và hợp lý cực đại, Hạ gradient và nhân tử Lagrange, NumPy: mảng và vector hoá | Mẫu, ước lượng và hợp lý cực đại, Hàm số, hàm hợp, mũ và logarit, Hạ gradient và nhân tử Lagrange | đã có câu hỏi |
-| **PCA: nén dữ liệu** | Thực chiến AI | Thực Chiến AI | Ma trận hiệp phương sai, Vectơ riêng lớn nhất, Chiếu dữ liệu xuống ít chiều, Giữ lại bao nhiêu phần trăm thông tin | Dạng toàn phương, PCA và SVD, Hiệp phương sai, tương quan và hồi quy, NumPy: mảng và vector hoá | Dạng toàn phương, PCA và SVD, Giá trị riêng và chéo hoá, Hiệp phương sai, tương quan và hồi quy | đã có câu hỏi |
-| **Kiểm định giả thuyết** | Toán | Xác Suất và Thống Kê | Giả thuyết, mức ý nghĩa và hai loại sai lầm, Kiểm định trung bình một tổng thể, Kiểm định tỷ lệ một tổng thể, So sánh hai trung bình, So sánh hai tỷ lệ | Khoảng tin cậy và định lý giới hạn trung tâm | Khoảng tin cậy và định lý giới hạn trung tâm | đang viết |
-| **Khoảng tin cậy và định lý giới hạn trung tâm** | Toán | Xác Suất và Thống Kê | Khoảng tin cậy cho trung bình, Khoảng tin cậy cho tỷ lệ, Chọn cỡ mẫu theo độ chính xác, Luật số lớn, Định lý giới hạn trung tâm | Mẫu, ước lượng và hợp lý cực đại | Mẫu, ước lượng và hợp lý cực đại, Xác suất | đang viết |
+| **Hồi quy logistic** | Thực chiến AI | Thực Chiến AI | Sigmoid và xác suất, Mất mát log, Gradient của mất mát, Ngưỡng quyết định | Mẫu, ước lượng và hợp lý cực đại, Hạ gradient và nhân tử Lagrange, Tư duy NumPy: mảng và vector hoá | Mẫu, ước lượng và hợp lý cực đại, Hàm số, hàm hợp, mũ và logarit, Hạ gradient và nhân tử Lagrange | đã có câu hỏi |
+| **PCA: nén dữ liệu** | Thực chiến AI | Thực Chiến AI | Ma trận hiệp phương sai, Vectơ riêng lớn nhất, Chiếu dữ liệu xuống ít chiều, Giữ lại bao nhiêu phần trăm thông tin | Dạng toàn phương, PCA và SVD, Hiệp phương sai, tương quan và hồi quy, Tư duy NumPy: mảng và vector hoá | Dạng toàn phương, PCA và SVD, Giá trị riêng và chéo hoá, Hiệp phương sai, tương quan và hồi quy | đã có câu hỏi |
+| **Kiểm định giả thuyết** | Toán | Xác Suất và Thống Kê | Giả thuyết, mức ý nghĩa và hai loại sai lầm, Kiểm định trung bình một tổng thể, Kiểm định tỷ lệ một tổng thể, So sánh hai trung bình, So sánh hai tỷ lệ | Khoảng tin cậy và định lý giới hạn trung tâm | Khoảng tin cậy và định lý giới hạn trung tâm | đã có câu hỏi |
+| **Khoảng tin cậy và định lý giới hạn trung tâm** | Toán | Xác Suất và Thống Kê | Khoảng tin cậy cho trung bình, Khoảng tin cậy cho tỷ lệ, Chọn cỡ mẫu theo độ chính xác, Luật số lớn, Định lý giới hạn trung tâm | Mẫu, ước lượng và hợp lý cực đại | Mẫu, ước lượng và hợp lý cực đại, Xác suất | đã có câu hỏi |
 
 **Vì sao cần từng nút (Luyện Khí):**
 
@@ -142,7 +142,7 @@ Trong 215 vi kỹ năng của bốn bí cảnh: **159 chính đạo**, 45 bàng 
 - *Đơn điệu, cực trị, lồi lõm* — Huấn luyện mô hình là đi tìm cực tiểu. Lồi hay không lồi quyết định bài toán dễ hay khó.
 - *Nhân ma trận và khử Gauss bằng code* — Ba vòng lặp lồng nhau của phép nhân ma trận là đoạn code đáng tự viết nhất của người học AI.
 - *Mô phỏng xác suất* — Không chắc công thức của mình đúng? Gieo một triệu lần rồi đếm. Đây là cách người làm nghề tự kiểm tra.
-- *NumPy: mảng và vector hoá* — Từ đây trở đi không viết vòng lặp cho phép toán ma trận nữa. Mọi thư viện học sâu đều theo cách nghĩ của NumPy.
+- *Tư duy NumPy: mảng và vector hoá* — Mọi thư viện học sâu đều theo cách nghĩ của NumPy: một dòng cho cả bảng số liệu thay vì vòng lặp. Game chạy bằng Python thuần và không cài NumPy, nên ở đây bạn tự viết bằng danh sách đúng những việc NumPy làm giùm: hình dạng, phát sóng, tổng theo trục, X @ w + b, X.T @ X. Hiểu ý rồi, đến ngày dùng thư viện thật sẽ thấy nó chỉ là bản chạy nhanh của chính đoạn code này.
 - *Đồ thị và cách biểu diễn* — Mạng nơ-ron là một đồ thị tính toán; mạng xã hội, bản đồ, phân tử đều là đồ thị. Ma trận kề nối đồ thị với đại số tuyến tính.
 - *Duyệt, tham lam và ký hiệu O lớn* — Biết một cách làm sẽ chạy trong một giây hay một năm trước khi viết nó.
 - *Xác suất đầy đủ và Bayes* — Cập nhật niềm tin khi có bằng chứng mới. Sai lầm bỏ quên tỉ lệ nền là lỗi kinh điển khi đọc kết quả mô hình.
@@ -188,7 +188,7 @@ Vừa độ kiếp lên Trúc Cơ là mở khoá: **Ngự Kiếm Phi Hành**.
 
 | Nút | Loại | Nhánh | Học gì | Cần xong trước | Ôn lại | Câu hỏi |
 |---|---|---|---|---|---|---|
-| **Dữ liệu bảng và trực quan hoá** | Lập trình | Lập Trình | pandas, Làm sạch dữ liệu thiếu và sai, Vẽ phân phối và tương quan, Đặt câu hỏi cho dữ liệu | Thiên kiếp Luyện Khí: nhận dạng chữ số viết tay | NumPy: mảng và vector hoá, Kỳ vọng, phương sai và các phân phối quen thuộc | chưa có |
+| **Dữ liệu bảng và trực quan hoá** | Lập trình | Lập Trình | pandas, Làm sạch dữ liệu thiếu và sai, Vẽ phân phối và tương quan, Đặt câu hỏi cho dữ liệu | Thiên kiếp Luyện Khí: nhận dạng chữ số viết tay | Tư duy NumPy: mảng và vector hoá, Kỳ vọng, phương sai và các phân phối quen thuộc | chưa có |
 | **Python cho dự án thật** | Lập trình | Lập Trình | Lớp và đối tượng, Module và gói, Xử lý lỗi, Viết test | Thiên kiếp Luyện Khí: nhận dạng chữ số viết tay | Hàm, đệ quy và chia nhỏ bài toán | chưa có |
 | **Học có giám sát: tập huấn luyện, kiểm định, kiểm tra** | Học máy | Học Máy | Bài toán học từ ví dụ, Chia train / validation / test, Quá khớp và chưa khớp, Rò rỉ dữ liệu | Thiên kiếp Luyện Khí: nhận dạng chữ số viết tay | Mô hình đầu tiên: k láng giềng gần nhất, Khoảng tin cậy và định lý giới hạn trung tâm | chưa có |
 
@@ -243,7 +243,7 @@ Vừa độ kiếp lên Nguyên Anh là mở khoá: **Nguyên Anh Xuất Khiếu
 | Nút | Loại | Nhánh | Học gì | Cần xong trước | Ôn lại | Câu hỏi |
 |---|---|---|---|---|---|---|
 | **Tự viết autograd** | Học sâu | Học Sâu | Đồ thị tính toán, Lan truyền ngược tổng quát, Mạng nhiều lớp, Kiểm gradient | Thiên kiếp Kết Đan: một cuộc thi dữ liệu | Mạng nơ-ron hai lớp tự viết, Tìm kiếm theo chiều rộng và chiều sâu, Gradient, Jacobian và lan truyền ngược | chưa có |
-| **PyTorch** | Học sâu | Học Sâu | Tensor, Module và tham số, Dataset và DataLoader, Vòng huấn luyện chuẩn | Tự viết autograd | NumPy: mảng và vector hoá, Python cho dự án thật | chưa có |
+| **PyTorch** | Học sâu | Học Sâu | Tensor, Module và tham số, Dataset và DataLoader, Vòng huấn luyện chuẩn | Tự viết autograd | Tư duy NumPy: mảng và vector hoá, Python cho dự án thật | chưa có |
 
 ### Nguyên Anh tầng 2
 
@@ -469,12 +469,12 @@ Bị loại khỏi lộ trình: nội dung hệ tài năng, thiên về chứng 
 - **Cung** (Thực Chiến AI): Nhắm vào đích và chỉnh dần cho trúng: đó chính là huấn luyện một mô hình.
 - **Trượng** (Học Máy): Pháp trượng của người điều khiển mô hình, từ Trúc Cơ.
 - **Phiến** (Học Sâu): Quạt nhiều nan xếp lớp như mạng nhiều tầng, từ Nguyên Anh.
-- **Kích** (Đại Số Tuyến Tính) *(chờ hình vẽ)*: Cán dài cộng lưỡi sắc, mỗi phần một hệ số: kích là tổ hợp tuyến tính, binh khí của Đại Số Tuyến Tính.
-- **Roi** (Giải Tích) *(chờ hình vẽ)*: Sợi roi quất ra vẽ một đường cong liền mạch: binh khí của Giải Tích.
-- **Ám Khí** (Xác Suất và Thống Kê) *(chờ hình vẽ)*: Phi đao ném ra, trúng hay trật là một phép thử ngẫu nhiên: binh khí của Xác Suất.
-- **Luân** (Thuật Toán và Tối Ưu) *(chờ hình vẽ)*: Vòng luân bay ra rồi quay về tay như một vòng lặp: binh khí của Thuật Toán.
-- **Phủ** (Lập Trình) *(chờ hình vẽ)*: Một nhát búa rìu bổ đôi khúc gỗ lớn: chia để trị, cách người lập trình xẻ một bài toán.
-- **Cầm** (Thực Chiến AI) *(chờ hình vẽ)*: Đàn lên dây từng sợi cho đúng âm, như tinh chỉnh một mô hình: binh khí của Thực Chiến AI.
+- **Kích** (Đại Số Tuyến Tính): Cán dài cộng lưỡi sắc, mỗi phần một hệ số: kích là tổ hợp tuyến tính, binh khí của Đại Số Tuyến Tính.
+- **Roi** (Giải Tích): Sợi roi quất ra vẽ một đường cong liền mạch: binh khí của Giải Tích.
+- **Ám Khí** (Xác Suất và Thống Kê): Phi đao ném ra, trúng hay trật là một phép thử ngẫu nhiên: binh khí của Xác Suất.
+- **Luân** (Thuật Toán và Tối Ưu): Vòng luân bay ra rồi quay về tay như một vòng lặp: binh khí của Thuật Toán.
+- **Phủ** (Lập Trình): Một nhát búa rìu bổ đôi khúc gỗ lớn: chia để trị, cách người lập trình xẻ một bài toán.
+- **Cầm** (Thực Chiến AI): Đàn lên dây từng sợi cho đúng âm, như tinh chỉnh một mô hình: binh khí của Thực Chiến AI.
 
 Phẩm của binh khí, thấp đến cao: Hạ phẩm, Trung phẩm, Thượng phẩm, Cực phẩm, Tuyệt phẩm.
 
@@ -499,7 +499,7 @@ Phẩm của binh khí, thấp đến cao: Hạ phẩm, Trung phẩm, Thượng 
 | Mộc Thương | Thượng phẩm | Mê Đồ Lâm: Trong hốc cây mẹ, do Mộc Yêu canh. | Luyện Khí tầng 7 | Bài toán tối ưu, tập lồi và hàm lồi |
 | Thiết Thương | Hạ phẩm | Mê Đồ Lâm: Dưới đáy thung lũng thấp nhất của rừng: điểm cực tiểu. | Luyện Khí tầng 9 | Hạ gradient và nhân tử Lagrange |
 | Mộc Chùy | Hạ phẩm | Thiên Công Phường: Trên đe của lò rèn nguội. | Luyện Khí tầng 1 | Python nhập môn |
-| Mộc Chùy | Trung phẩm | Thiên Công Phường: Trong xưởng bánh răng, sau cơ quan cửa. | Luyện Khí tầng 4 | NumPy: mảng và vector hoá, Nhân ma trận và khử Gauss bằng code |
+| Mộc Chùy | Trung phẩm | Thiên Công Phường: Trong xưởng bánh răng, sau cơ quan cửa. | Luyện Khí tầng 4 | Tư duy NumPy: mảng và vector hoá, Nhân ma trận và khử Gauss bằng code |
 | Mộc Chùy | Thượng phẩm | Thiên Công Phường: Trong tay Cơ Quan Nhân đầu đàn. | Luyện Khí tầng 6 | Đồ thị bằng code |
 | Thiết Chùy | Hạ phẩm | Thiên Công Phường: Trong lò lớn, chỉ mở khi đốt lại được lò. | Luyện Khí tầng 9 | Đồ thị bằng code, Mạng nơ-ron hai lớp tự viết |
 | Mộc Cung | Hạ phẩm | Linh Xạ Nguyên: Trên giá cung ở trường bắn. | Luyện Khí tầng 3 | Mô hình đầu tiên: k láng giềng gần nhất |

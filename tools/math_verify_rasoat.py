@@ -264,6 +264,24 @@ def _xs_clt(p: dict) -> list[Fraction]:
     return [_frac(p["n"] * p["mu"] + _r(p["z"]) * p["sigma"] * sp.sqrt(p["n"]))]
 
 
+def _bayes(prior, hit, false_alarm) -> list[Fraction]:
+    """P(cause | sign) by counting a population: N people, `prior` of them with the cause, ..."""
+    n = sp.ilcm(prior.q, hit.q, false_alarm.q, (1 - prior).q) ** 2 * 10
+    with_cause = prior * n
+    sign_with = with_cause * hit
+    sign_without = (n - with_cause) * false_alarm
+    return [_frac(sign_with / (sign_with + sign_without))]
+
+
+def _xs_chuoi(p: dict) -> list[Fraction]:
+    """List every ordered draw of three labelled balls and count those with the wanted colours."""
+    balls = ["D"] * p["red"] + ["X"] * p["blue"]
+    seq = tuple(p["order"])
+    draws = list(itertools.permutations(range(len(balls)), 3))
+    good = sum(1 for d in draws if tuple(balls[i] for i in d) == seq)
+    return [Fraction(good, len(draws))]
+
+
 EXPECTED = {
     # ---- Đại Số Tuyến Tính
     "dstt_gx_tvh_tim_m": lambda p: [_frac(sp.solve(Symbol("m") * p["c"] + p["a"] * p["d"] + p["b"] * p["e"] - p["k"],
@@ -305,4 +323,18 @@ EXPECTED = {
     "xs_gx_co_mau_xau_nhat": _xs_co_mau,
     "xs_gx_chebyshev_tim_n": _xs_chebyshev,
     "xs_gx_clt_nguong": _xs_clt,
+    "xs_gx_khong_gian_mau_cach_lay": lambda p: [Fraction(len({
+        "hoan_lai": list(itertools.product(range(p["n"]), repeat=p["k"])),
+        "khong_hoan_lai": list(itertools.permutations(range(p["n"]), p["k"])),
+        "dong_thoi": list(itertools.combinations(range(p["n"]), p["k"]))}[p["way"]]))],
+    "xs_gx_chuoi_khong_hoan": _xs_chuoi,
+    "xs_gx_bayes_thu_rac": lambda p: _bayes(_r(p["spam"]), _r(p["in_spam"]), _r(p["in_ham"])),
+    "xs_gx_bayes_phat_hien": lambda p: _bayes(_r(p["rate"]), _r(p["sens"]), _r(p["false_alarm"])),
+    "xs_gx_toan_phan_ba_nhanh": lambda p: [_frac(sum(_r(s) * _r(r) for s, r in zip(p["shares"], p["rates"])))],
+    "xs_gx_so_do_cay_hai_tang": lambda p: [_frac(_r(p["pa"]) * _r(p["pb_a"]) + (1 - _r(p["pa"])) * _r(p["pb_na"]))],
+    "xs_gx_ky_vong_tuyen_tinh": lambda p: [_frac(p["a"] * sum(Rational(v) * _r(q) for v, q in zip(p["values"], p["ps"]))
+                                                  + p["b"])],
+    # ---- more Đại Số Tuyến Tính
+    "dstt_gx_chuyen_vi_tich": lambda p: [_frac((Matrix(p["b"]).T * Matrix(p["a"]).T)[p["i"] - 1, p["j"] - 1])],
+    "dstt_gx_hang_ma_tran": lambda p: [Fraction(Matrix(p["m"]).rank())],
 }

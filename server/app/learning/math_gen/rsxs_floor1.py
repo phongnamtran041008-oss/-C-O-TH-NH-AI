@@ -294,3 +294,155 @@ def clt_nguong(rng: random.Random) -> Draw:
                      f"P(S > t) = {tail} nghĩa là P(0 < Z < (t - {n * mu})/{sigma * root}) = 0.5 - {tail} = {phi}, "
                      f"nên (t - {n * mu})/{sigma * root} = {dec(z)}.",
                      f"t = {n * mu} + {dec(z)} . {sigma * root} = {dec(t)}."])
+
+
+# ------------------------------------------------------------------ more cells found thin (floors 2-6)
+@generator("xs_gx_khong_gian_mau_cach_lay")
+def khong_gian_mau_cach_lay(rng: random.Random) -> Draw:
+    """Tier 1: the size of the sample space for drawing k of n numbered tickets, by the way of drawing."""
+    n = rng.randint(5, 12)
+    k = rng.randint(2, 3)
+    way = rng.choice(["hoan_lai", "khong_hoan_lai", "dong_thoi"])
+    if way == "hoan_lai":
+        size = n ** k
+        how = f"lần lượt {k} phiếu có hoàn lại (rút xong trả phiếu vào hộp), ghi số theo thứ tự rút"
+        step = f"Mỗi lần rút có {n} khả năng và các lần độc lập: {n}^{k} = {size}."
+    elif way == "khong_hoan_lai":
+        size = math.perm(n, k)
+        how = f"lần lượt {k} phiếu không hoàn lại, ghi số theo thứ tự rút"
+        step = f"Lần đầu {n} khả năng, các lần sau mỗi lần ít đi một: {' . '.join(str(n - i) for i in range(k))} = {size}."
+    else:
+        size = math.comb(n, k)
+        how = f"đồng thời {k} phiếu (không phân biệt thứ tự)"
+        step = f"Số cách chọn {k} trong {n}: C({n}, {k}) = {size}."
+    return Draw(
+        params={"n": n, "k": k, "way": way},
+        prompt_vi=f"Một hộp có {n} phiếu đánh số từ 1 đến {n}. Rút {how}. Không gian mẫu có bao nhiêu kết quả?",
+        answer=str(size),
+        solution_vi=["Xem rút kiểu nào: có hoàn lại, không hoàn lại hay đồng thời; mỗi kiểu có một cách đếm.", step])
+
+
+@generator("xs_gx_chuoi_khong_hoan")
+def chuoi_khong_hoan(rng: random.Random) -> Draw:
+    """Tier 3: the multiplication rule for three draws without replacement, in one given colour order."""
+    red, blue = rng.randint(3, 7), rng.randint(3, 7)
+    total = red + blue
+    order = [rng.choice("DX") for _ in range(3)]
+    left = {"D": red, "X": blue}
+    p, texts = Fraction(1), []
+    name = {"D": "đỏ", "X": "xanh"}
+    used = total
+    for c in order:
+        texts.append(f"{left[c]}/{used}")
+        p *= Fraction(left[c], used)
+        left[c] -= 1
+        used -= 1
+    seq = ", ".join(name[c] for c in order)
+    return Draw(
+        params={"red": red, "blue": blue, "order": "".join(order)},
+        prompt_vi=f"Một hộp có {red} bi đỏ và {blue} bi xanh. Lấy lần lượt 3 bi không hoàn lại. Tính xác suất được lần "
+                  f"lượt các bi {seq}. Nhập số nguyên hoặc phân số tối giản.",
+        answer=num(p),
+        solution_vi=["Công thức nhân: P(ABC) = P(A) P(B|A) P(C|AB); sau mỗi lần lấy, hộp ít đi một bi.",
+                     "Các nhân tử: " + " . ".join(texts) + ".",
+                     f"Tích = {num(p)}."])
+
+
+@generator("xs_gx_bayes_thu_rac")
+def bayes_thu_rac(rng: random.Random) -> Draw:
+    """Tier 2: Bayes with a spam filter: P(spam | the word appears)."""
+    spam = rng.choice([Fraction(1, 5), Fraction(3, 10), Fraction(2, 5), Fraction(1, 2), Fraction(1, 10)])
+    in_spam = rng.choice([Fraction(1, 2), Fraction(3, 5), Fraction(7, 10), Fraction(4, 5), Fraction(9, 10)])
+    in_ham = rng.choice([Fraction(1, 10), Fraction(1, 20), Fraction(1, 5), Fraction(1, 25)])
+    both = spam * in_spam
+    other = (1 - spam) * in_ham
+    p = both / (both + other)
+    return Draw(
+        params={"spam": num(spam), "in_spam": num(in_spam), "in_ham": num(in_ham)},
+        prompt_vi=f"{num(spam)} số thư nhận được là thư rác. Từ \"trúng thưởng\" xuất hiện trong {num(in_spam)} số thư rác "
+                  f"và trong {num(in_ham)} số thư thường. Một thư có từ đó. Tính xác suất nó là thư rác. Nhập số nguyên "
+                  f"hoặc phân số tối giản.",
+        answer=num(p),
+        solution_vi=[f"P(rác và có từ) = {num(spam)} . {num(in_spam)} = {num(both)}.",
+                     f"P(thường và có từ) = {num(1 - spam)} . {num(in_ham)} = {num(other)}.",
+                     f"Bayes: P(rác | có từ) = ({num(both)})/(({num(both)}) + ({num(other)})) = {num(p)}."])
+
+
+@generator("xs_gx_bayes_phat_hien")
+def bayes_phat_hien(rng: random.Random) -> Draw:
+    """Tier 2: Bayes for a detector (rare event, sensitivity, false alarm rate)."""
+    rate = rng.choice([Fraction(1, 100), Fraction(1, 50), Fraction(1, 20), Fraction(1, 10)])
+    sens = rng.choice([Fraction(9, 10), Fraction(19, 20), Fraction(4, 5), Fraction(99, 100)])
+    false_alarm = rng.choice([Fraction(1, 20), Fraction(1, 10), Fraction(1, 50), Fraction(1, 25)])
+    hit = rate * sens
+    miss = (1 - rate) * false_alarm
+    p = hit / (hit + miss)
+    return Draw(
+        params={"rate": num(rate), "sens": num(sens), "false_alarm": num(false_alarm)},
+        prompt_vi=f"Một bộ phát hiện gian lận báo động đúng với {num(sens)} số vụ gian lận thật và báo nhầm với "
+                  f"{num(false_alarm)} số giao dịch bình thường. Chỉ {num(rate)} số giao dịch là gian lận. Một giao dịch "
+                  f"bị báo động. Xác suất nó thật sự gian lận là bao nhiêu? Nhập số nguyên hoặc phân số tối giản.",
+        answer=num(p),
+        solution_vi=[f"P(gian lận và báo động) = {num(rate)} . {num(sens)} = {num(hit)}.",
+                     f"P(bình thường và báo động) = {num(1 - rate)} . {num(false_alarm)} = {num(miss)}.",
+                     f"Bayes: P(gian lận | báo động) = ({num(hit)})/(({num(hit)}) + ({num(miss)})) = {num(p)}. "
+                     "Con số này khác độ nhạy: một báo động chưa chắc là gian lận thật, vì có cả báo nhầm."])
+
+
+@generator("xs_gx_toan_phan_ba_nhanh")
+def toan_phan_ba_nhanh(rng: random.Random) -> Draw:
+    """Tier 3: total probability over a complete system of three groups."""
+    a = rng.choice([Fraction(1, 5), Fraction(1, 4), Fraction(3, 10), Fraction(1, 2)])
+    b = rng.choice([Fraction(1, 5), Fraction(1, 4), Fraction(3, 10)])
+    c = 1 - a - b
+    rates = [rng.choice([Fraction(1, 20), Fraction(1, 10), Fraction(1, 5), Fraction(3, 100), Fraction(2, 25)])
+             for _ in range(3)]
+    total = a * rates[0] + b * rates[1] + c * rates[2]
+    return Draw(
+        params={"shares": [num(a), num(b), num(c)], "rates": [num(r) for r in rates]},
+        prompt_vi=f"Ba mô hình A, B, C xử lý lần lượt {num(a)}, {num(b)} và {num(c)} số yêu cầu; tỷ lệ trả lời sai của chúng "
+                  f"là {num(rates[0])}, {num(rates[1])} và {num(rates[2])}. Một yêu cầu bất kỳ bị trả lời sai với xác "
+                  f"suất bao nhiêu? Nhập số nguyên hoặc phân số tối giản.",
+        answer=num(total),
+        solution_vi=["A, B, C xử lý mọi yêu cầu và không yêu cầu nào qua hai mô hình: chúng lập một hệ đầy đủ.",
+                     "Công thức xác suất toàn phần: P(sai) = P(A) P(sai|A) + P(B) P(sai|B) + P(C) P(sai|C).",
+                     f"= {num(a)} . {num(rates[0])} + {num(b)} . {num(rates[1])} + {num(c)} . {num(rates[2])} = {num(total)}."])
+
+
+@generator("xs_gx_so_do_cay_hai_tang")
+def so_do_cay_hai_tang(rng: random.Random) -> Draw:
+    """Tier 3: a two-stage tree: P(B) = P(A) P(B|A) + P(not A) P(B|not A)."""
+    pa = rng.choice([Fraction(1, 3), Fraction(2, 3), Fraction(3, 5), Fraction(2, 5), Fraction(1, 4), Fraction(3, 4)])
+    pb_a = rng.choice([Fraction(1, 2), Fraction(2, 3), Fraction(3, 4), Fraction(4, 5), Fraction(1, 5)])
+    pb_na = rng.choice([Fraction(1, 6), Fraction(1, 4), Fraction(1, 3), Fraction(2, 5), Fraction(1, 10)])
+    path = pa * pb_a
+    both = path + (1 - pa) * pb_na
+    return Draw(
+        params={"pa": num(pa), "pb_a": num(pb_a), "pb_na": num(pb_na)},
+        prompt_vi=f"Một đệ tử đi vào hang theo lối trái với xác suất {num(pa)}, nếu không thì đi lối phải. Đi lối trái, "
+                  f"gặp yêu thú với xác suất {num(pb_a)}; đi lối phải, gặp yêu thú với xác suất {num(pb_na)}. Vẽ sơ đồ "
+                  f"cây và tính xác suất đệ tử gặp yêu thú. Nhập số nguyên hoặc phân số tối giản.",
+        answer=num(both),
+        solution_vi=[f"Nhánh trái rồi gặp: {num(pa)} . {num(pb_a)} = {num(path)}.",
+                     f"Nhánh phải rồi gặp: {num(1 - pa)} . {num(pb_na)} = {num((1 - pa) * pb_na)}.",
+                     f"Hai đường đi này xung khắc, cộng lại: {num(both)}."])
+
+
+@generator("xs_gx_ky_vong_tuyen_tinh")
+def ky_vong_tuyen_tinh(rng: random.Random) -> Draw:
+    """Tier 4: E(aX + b) from a four-value table (probabilities in twentieths)."""
+    values = sorted(rng.sample(range(-3, 9), 4))
+    cuts = sorted(rng.sample(range(1, 20), 3))
+    ps = [Fraction(hi - lo, 20) for lo, hi in zip([0] + cuts, cuts + [20])]
+    a, b = nonzero(rng, -3, 4), rng.randint(-5, 5)
+    ex = sum(v * p for v, p in zip(values, ps))
+    ans = a * ex + b
+    return Draw(
+        params={"values": values, "ps": [num(p) for p in ps], "a": a, "b": b},
+        prompt_vi=f"Biến ngẫu nhiên X nhận các giá trị {', '.join(map(str, values))} với xác suất lần lượt "
+                  f"{', '.join(num(p) for p in ps)}. Tính E({a}X {'+' if b >= 0 else '-'} {abs(b)}). Nhập số nguyên "
+                  f"hoặc phân số tối giản.",
+        answer=num(ans),
+        solution_vi=["E(X) = tổng của (giá trị . xác suất) = "
+                     + " + ".join(f"{paren(v)} . {num(p)}" for v, p in zip(values, ps)) + f" = {num(ex)}.",
+                     f"Tính chất E(aX + b) = a E(X) + b: {a} . {paren(ex)} + {paren(b)} = {num(ans)}."])

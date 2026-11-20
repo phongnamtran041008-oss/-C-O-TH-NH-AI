@@ -20,6 +20,17 @@ def _flat(m) -> list:
     return [v for row in m for v in row]
 
 
+def _lin(coeffs: list[int], names: str) -> str:
+    """A linear form the usual way: [-1, 2] with 'xy' -> -x + 2y; zero terms are left out."""
+    parts: list[str] = []
+    for c, name in zip(coeffs, names):
+        if c == 0:
+            continue
+        body = name if abs(c) == 1 else f"{abs(c)}{name}"
+        parts.append(("-" if c < 0 else "") + body if not parts else ("- " if c < 0 else "+ ") + body)
+    return " ".join(parts) if parts else "0"
+
+
 def _det2(m) -> int:
     return m[0][0] * m[1][1] - m[0][1] * m[1][0]
 
@@ -98,13 +109,13 @@ def con_khong_gian(rng: random.Random) -> Draw:
     a, b = nonzero(rng, -4, 4), nonzero(rng, -4, 4)
     c = nonzero(rng, -5, 5)
     if kind == "line":
-        text = f"{a}x + {b}y = 0".replace("+ -", "- ")
+        text = f"{_lin([a, b], 'xy')} = 0"
         space, ok = "R^2", True
         why = ["Có (0, 0): 0a + 0b = 0, nên W không rỗng.",
                "Cộng hai nghiệm của một phương trình thuần nhất vẫn là nghiệm, nhân một nghiệm với số thực cũng vậy.",
                "Vậy W đóng với phép cộng và nhân vô hướng: W là không gian con."]
     elif kind == "shifted":
-        text, space, ok = f"{a}x + {b}y = {c}".replace("+ -", "- "), "R^2", False
+        text, space, ok = f"{_lin([a, b], 'xy')} = {c}", "R^2", False
         why = [f"Thử vectơ không: {a} . 0 + {b} . 0 = 0, khác {c}.",
                "Vectơ không không thuộc W, nên W không thể là không gian con (hoặc: tổng hai phần tử của W "
                f"cho vế trái bằng 2 . {c}, không phải {c})."]
@@ -117,7 +128,7 @@ def con_khong_gian(rng: random.Random) -> Draw:
         why = ["(1, 0) thuộc W vì x = 1 >= 0.", "Nhân với -1 được (-1, 0), có x = -1 < 0, không thuộc W.",
                "W không đóng với phép nhân vô hướng nên không là không gian con."]
     elif kind == "plane3":
-        text, space, ok = f"{a}x + {b}y - {abs(c)}z = 0".replace("- -", "+ ").replace("+ -", "- "), "R^3", True
+        text, space, ok = f"{_lin([a, b, -abs(c)], 'xyz')} = 0", "R^3", True
         why = ["Một mặt phẳng đi qua gốc tọa độ: có vectơ không.",
                "Cộng hai nghiệm, hoặc nhân một nghiệm với số thực, vẫn thỏa phương trình thuần nhất.",
                "Vậy W là không gian con của R^3."]
@@ -153,8 +164,8 @@ def thuoc_bao_tuyen_tinh(rng: random.Random) -> Draw:
                   f"span{{u, v}} (bao tuyến tính của u và v).",
         answer=str(m),
         solution_vi=["w thuộc span{u, v} khi w = s u + t v với hai số thực s, t.",
-                     f"Tọa độ thứ nhất và thứ ba: {u[0]}s + {paren(v[0])}t = {w[0]} và "
-                     f"{u[2]}s + {paren(v[2])}t = {w[2]}.".replace("+ -", "- "),
+                     f"Tọa độ thứ nhất và thứ ba: {_lin([u[0], v[0]], 'st')} = {w[0]} và "
+                     f"{_lin([u[2], v[2]], 'st')} = {w[2]}.",
                      f"Giải hệ này được s = {s}, t = {t}.",
                      f"Tọa độ thứ hai: m = {u[1]} . {paren(s)} + {paren(v[1])} . {paren(t)} = {m}."])
 
@@ -182,8 +193,8 @@ def toa_do_doi_co_so(rng: random.Random) -> Draw:
                   f"Tìm tọa độ [x]_B' của x trong B'. Nhập hai số, cách nhau bằng dấu phẩy.",
         answer=nums([r, s]),
         solution_vi=[f"Đổi về tọa độ chính tắc: x = {p} b1 + {paren(q)} b2 = {vec_text(x)}.",
-                     f"Cần r, s với r c1 + s c2 = x, tức hệ {c1[0]}r + {paren(c2[0])}s = {x[0]} và "
-                     f"{c1[1]}r + {paren(c2[1])}s = {x[1]}.".replace("+ -", "- "),
+                     f"Cần r, s với r c1 + s c2 = x, tức hệ {_lin([c1[0], c2[0]], 'rs')} = {x[0]} và "
+                     f"{_lin([c1[1], c2[1]], 'rs')} = {x[1]}.",
                      f"Định thức của hệ là {d} (khác 0, nên B' là cơ sở). Giải được r = {num(r)}, s = {num(s)}.",
                      f"Vậy [x]_B' = ({num(r)}, {num(s)})."])
 
@@ -279,3 +290,38 @@ def so_chieu_nhan(rng: random.Random) -> Draw:
         prompt_vi=q,
         answer=str(ans),
         solution_vi=["Định lý số chiều: dim Ker f + dim Im f = số chiều của không gian nguồn.", steps])
+
+
+# ------------------------------------------------------------------ more cells found thin (floors 4-6)
+@generator("dstt_gx_chuyen_vi_tich")
+def chuyen_vi_tich(rng: random.Random) -> Draw:
+    """Tier 2: one entry of (AB)^T, using (AB)^T = B^T A^T."""
+    a, b = matrix(rng, 2, 2, -3, 4), matrix(rng, 2, 2, -3, 4)
+    ab = _mul(a, b)
+    i, j = rng.randint(1, 2), rng.randint(1, 2)
+    value = ab[j - 1][i - 1]                      # (AB)^T [i][j] = (AB)[j][i]
+    return Draw(
+        params={"a": a, "b": b, "i": i, "j": j},
+        prompt_vi=f"Cho hai ma trận A và B như hình. Tính phần tử ở hàng {i}, cột {j} của (AB)^T.",
+        answer=str(value),
+        solution_vi=["Chuyển vị đổi chỗ hàng và cột: phần tử hàng i cột j của (AB)^T là phần tử hàng j cột i của AB.",
+                     f"AB = {nums(_flat(ab))} (theo từng hàng); lấy phần tử hàng {j}, cột {i}.",
+                     f"Kết quả: {value}. (Cũng có thể dùng (AB)^T = B^T A^T.)"],
+        matrices={"A": a, "B": b})
+
+
+@generator("dstt_gx_hang_ma_tran")
+def hang_ma_tran(rng: random.Random) -> Draw:
+    """Tier 4: the rank of a matrix built from fewer independent rows than it shows."""
+    rows, cols = rng.choice([(3, 3), (3, 4), (4, 3), (4, 4)])
+    rank = rng.randint(1, min(rows, cols) - (1 if rows == cols else 0))
+    m = _low_rank(rng, rows, cols, rank)
+    return Draw(
+        params={"m": m, "rank": rank},
+        prompt_vi=f"Tìm hạng của ma trận A cỡ {rows} x {cols} như hình.",
+        answer=str(rank),
+        solution_vi=["Dùng biến đổi sơ cấp trên hàng đưa A về dạng bậc thang; hạng là số hàng khác không còn lại.",
+                     f"Sau khi khử, có {rank} hàng khác không và {rows - rank} hàng trở thành hàng không "
+                     f"(các hàng đó là tổ hợp tuyến tính của những hàng khác).",
+                     f"Vậy rank A = {rank}."],
+        matrices={"A": m})

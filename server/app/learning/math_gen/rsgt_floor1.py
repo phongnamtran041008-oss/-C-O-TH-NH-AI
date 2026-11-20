@@ -47,9 +47,9 @@ def nguyen_ham_hai_lan(rng: random.Random) -> Draw:
         answer=num(f2),
         solution_vi=[f"Nguyên hàm một lần: f'(x) = ({num(Fraction(a, 2))})x^2 + ({b})x + C1.",
                      f"f'(1) = {num(Fraction(a, 2) + b)} + C1 = {c}, nên C1 = {num(c1)}.",
-                     f"Nguyên hàm lần hai: f(x) = {num(Fraction(a, 6))}x^3 + {paren(Fraction(b, 2))}x^2 + {paren(c1)}x + C2, "
+                     f"Nguyên hàm lần hai: f(x) = ({num(Fraction(a, 6))})x^3 + ({num(Fraction(b, 2))})x^2 + ({num(c1)})x + C2, "
                      f"và f(0) = C2 = {d}.",
-                     f"f(2) = {num(Fraction(a, 6) * 8)} + {num(Fraction(b, 2) * 4)} + {num(c1 * 2)} + {d} = {num(f2)}."])
+                     f"f(2) = {paren(Fraction(a, 6) * 8)} + {paren(Fraction(b, 2) * 4)} + {paren(c1 * 2)} + {paren(d)} = {num(f2)}."])
 
 
 @generator("gt_gx_doi_bien_phan_thuc")

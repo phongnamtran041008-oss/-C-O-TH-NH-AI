@@ -10,23 +10,26 @@ Một **ô** là một vi kỹ năng ở một bậc mà tầng của nó có th
 |---|---|
 | nodes | 120 |
 | nodes_luyen_khi_main | 58 |
-| nodes_content_co | 37 |
-| nodes_content_dang_viet | 38 |
-| nodes_content_chua_co | 45 |
-| luyen_khi_main_nodes_without_questions_or_exercises | 1 |
+| nodes_content_co | 76 |
+| nodes_content_dang_viet | 0 |
+| nodes_content_chua_co | 44 |
+| luyen_khi_main_nodes_without_questions_or_exercises | 0 |
 | skills_total | 215 |
 | skills_cut | 11 |
 | cells_main | 296 |
-| cells_thin | 72 |
+| cells_thin | 31 |
 | cells_holes | 0 |
 | cells_optional_thin | 8 |
 | cut_items | 109 |
 | cut_generators | 17 |
 | main_skills_without_template | 0 |
-| prerequisite_problems | 1 |
+| proof_questions_on_main_path | 18 |
+| nodes_isolated_luyen_khi | 7 |
+| nodes_flag_wrong_luyen_khi | 0 |
+| prerequisite_problems | 0 |
 | hand_items | 1466 |
-| generators | 351 |
-| exercises | 71 |
+| generators | 392 |
+| exercises | 76 |
 
 ## 2. Từng nhánh, từng nút
 
@@ -38,15 +41,15 @@ Cột `Tầng` là tầng của Luyện Khí (— = nút phụ). `Thật` là n�
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `ds_ngon_ngu` | LK | 1 | chính | toan | co | co | — | 6 (6 có câu) | 1 | 6 | có | monsters×3, world_plan.weapons_placed×1 |
 | `ds_vecto_ma_tran` | LK | 2 | chính | toan | co | co | `ds_ngon_ngu` | 6 (6 có câu) | 3 | 6 | có | chiêu×1, monsters×5, world_plan.lands×1 |
-| `ds_nhan_ma_tran` | LK | 3 | chính | toan | dang_viet | co | `ds_vecto_ma_tran` | 6 (6 có câu) | 4 | 6 | có | monsters×6 |
-| `ds_he_gauss` | LK | 4 | chính | toan | dang_viet | co | `ds_nhan_ma_tran` | 6 (6 có câu) | 5 | 6 | có | monsters×5, world_plan.weapons_placed×1 |
-| `ds_dinh_thuc_nghich_dao` | LK | 5 | chính | toan | dang_viet | co | `ds_he_gauss` | 5 (5 có câu) | 6 | 5 | có | monsters×3 |
-| `ds_khong_gian` | LK | 6 | chính | toan | dang_viet | co | `ds_dinh_thuc_nghich_dao` | 6 (6 có câu) | 7 | 6 | có | monsters×3 |
-| `ds_anh_xa_tuyen_tinh` | LK | 7 | chính | toan | dang_viet | co | `ds_khong_gian`, `ds_ngon_ngu` | 6 (6 có câu) | 8 | 6 | có | monsters×3, world_plan.weapons_placed×1 |
-| `ds_truc_giao_chieu` | LK | 7 | chính | toan | dang_viet | co | `ds_khong_gian` | 2 (2 có câu) | 9 | 2 | có | monsters×4, world_plan.weapons_placed×1 |
-| `ds_tri_rieng` | LK | 8 | chính | toan | dang_viet | co | `ds_anh_xa_tuyen_tinh` | 2 (2 có câu) | 9 | 2 | có | monsters×5 |
-| `ds_pca_svd` | LK | 9 | chính | toan | dang_viet | co | `ds_tri_rieng`, `ds_truc_giao_chieu` | 2 (2 có câu) | 9 | 2 | có | monsters×4, world_plan.weapons_placed×1 |
-| `ds_cramer` | LK | — | phụ | toan | dang_viet | co | `ds_dinh_thuc_nghich_dao` | 1 (1 có câu) | 6 | 1 | có | — |
+| `ds_nhan_ma_tran` | LK | 3 | chính | toan | co | co | `ds_vecto_ma_tran` | 6 (6 có câu) | 4 | 6 | có | monsters×6 |
+| `ds_he_gauss` | LK | 4 | chính | toan | co | co | `ds_nhan_ma_tran` | 6 (6 có câu) | 5 | 6 | có | monsters×5, world_plan.weapons_placed×1 |
+| `ds_dinh_thuc_nghich_dao` | LK | 5 | chính | toan | co | co | `ds_he_gauss` | 5 (5 có câu) | 6 | 5 | có | monsters×3 |
+| `ds_khong_gian` | LK | 6 | chính | toan | co | co | `ds_dinh_thuc_nghich_dao` | 6 (6 có câu) | 7 | 6 | có | monsters×3 |
+| `ds_anh_xa_tuyen_tinh` | LK | 7 | chính | toan | co | co | `ds_khong_gian`, `ds_ngon_ngu` | 6 (6 có câu) | 8 | 6 | có | monsters×3, world_plan.weapons_placed×1 |
+| `ds_truc_giao_chieu` | LK | 7 | chính | toan | co | co | `ds_khong_gian` | 2 (2 có câu) | 9 | 2 | có | monsters×4, world_plan.weapons_placed×1 |
+| `ds_tri_rieng` | LK | 8 | chính | toan | co | co | `ds_anh_xa_tuyen_tinh` | 2 (2 có câu) | 9 | 2 | có | monsters×5 |
+| `ds_pca_svd` | LK | 9 | chính | toan | co | co | `ds_tri_rieng`, `ds_truc_giao_chieu` | 2 (2 có câu) | 9 | 2 | có | monsters×4, world_plan.weapons_placed×1 |
+| `ds_cramer` | LK | — | phụ | toan | co | co | `ds_dinh_thuc_nghich_dao` | 1 (1 có câu) | 6 | 1 | có | — |
 | `ds_so_phuc` | LK | — | phụ | toan | co | co | — | 6 (6 có câu) | 2 | 6 | có | — |
 
 ### gt: Giải Tích
@@ -55,19 +58,19 @@ Cột `Tầng` là tầng của Luyện Khí (— = nút phụ). `Thật` là n�
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `gt_ham_so` | LK | 1 | chính | toan | co | co | — | 4 (4 có câu) | 1 | 4 | có | monsters×4, world_plan.weapons_placed×1 |
 | `gt_gioi_han` | LK | 2 | chính | toan | co | co | `gt_ham_so` | 5 (5 có câu) | 2,3 | 5 | có | chiêu×1, monsters×3 |
-| `gt_dao_ham` | LK | 3 | chính | toan | dang_viet | co | `gt_gioi_han` | 4 (4 có câu) | 4 | 4 | có | monsters×7 |
-| `gt_cuc_tri` | LK | 4 | chính | toan | dang_viet | co | `gt_dao_ham` | 4 (4 có câu) | 6 | 4 | có | monsters×7, world_plan.weapons_placed×1 |
-| `gt_taylor` | LK | 5 | chính | toan | dang_viet | co | `gt_dao_ham` | 2 (2 có câu) | 5 | 2 | có | monsters×3 |
-| `gt_tich_phan` | LK | 5 | chính | toan | dang_viet | co | `gt_dao_ham` | 5 (5 có câu) | 7 | 5 | có | monsters×3 |
-| `gt_nhieu_bien` | LK | 6 | chính | toan | dang_viet | co | `gt_dao_ham`, `gt_taylor`, `ds_vecto_ma_tran` | 3 (3 có câu) | 9 | 3 | có | monsters×2 |
-| `gt_tich_phan_ung_dung` | LK | 6 | chính | toan | dang_viet | co | `gt_tich_phan`, `gt_gioi_han` | 2 (2 có câu) | 8 | 2 | có | monsters×3, world_plan.weapons_placed×1 |
-| `gt_gradient` | LK | 7 | chính | toan | dang_viet | co | `gt_nhieu_bien`, `gt_cuc_tri`, `ds_nhan_ma_tran` | 3 (3 có câu) | 9 | 3 | có | monsters×6, world_plan.weapons_placed×2 |
+| `gt_dao_ham` | LK | 3 | chính | toan | co | co | `gt_gioi_han` | 4 (4 có câu) | 4 | 4 | có | monsters×7 |
+| `gt_cuc_tri` | LK | 4 | chính | toan | co | co | `gt_dao_ham` | 4 (4 có câu) | 6 | 4 | có | monsters×7, world_plan.weapons_placed×1 |
+| `gt_taylor` | LK | 5 | chính | toan | co | co | `gt_dao_ham` | 2 (2 có câu) | 5 | 2 | có | monsters×3 |
+| `gt_tich_phan` | LK | 5 | chính | toan | co | co | `gt_dao_ham` | 5 (5 có câu) | 7 | 5 | có | monsters×3 |
+| `gt_nhieu_bien` | LK | 6 | chính | toan | co | co | `gt_dao_ham`, `gt_taylor`, `ds_vecto_ma_tran` | 3 (3 có câu) | 9 | 3 | có | monsters×2 |
+| `gt_tich_phan_ung_dung` | LK | 6 | chính | toan | co | co | `gt_tich_phan`, `gt_gioi_han` | 2 (2 có câu) | 8 | 2 | có | monsters×3, world_plan.weapons_placed×1 |
+| `gt_gradient` | LK | 7 | chính | toan | co | co | `gt_nhieu_bien`, `gt_cuc_tri`, `ds_nhan_ma_tran` | 3 (3 có câu) | 9 | 3 | có | monsters×6, world_plan.weapons_placed×2 |
 | `gt_gioi_han_nang_cao` | LK | — | phụ | toan | co | co | `gt_gioi_han` | 5 (5 có câu) | 2,3 | 5 | có | — |
-| `gt_ham_nguoc_tham_so` | LK | — | phụ | toan | dang_viet | co | `gt_dao_ham` | 1 (1 có câu) | 4 | 1 | có | — |
-| `gt_hinh_hoc_tich_phan` | LK | — | phụ | toan | dang_viet | co | `gt_tich_phan_ung_dung`, `gt_ham_nguoc_tham_so`, `gt_gioi_han_nang_cao` | 4 (4 có câu) | 8 | 4 | có | — |
-| `gt_khao_sat` | LK | — | phụ | toan | dang_viet | co | `gt_cuc_tri`, `gt_gioi_han_nang_cao` | 2 (2 có câu) | 6 | 2 | có | — |
-| `gt_lhospital` | LK | — | phụ | toan | dang_viet | co | `gt_dao_ham`, `gt_gioi_han_nang_cao`, `gt_taylor` | 3 (3 có câu) | 5 | 3 | có | — |
-| `gt_tich_phan_ky_thuat` | LK | — | phụ | toan | dang_viet | co | `gt_tich_phan` | 1 (1 có câu) | 7 | 1 | có | — |
+| `gt_ham_nguoc_tham_so` | LK | — | phụ | toan | co | co | `gt_dao_ham` | 1 (1 có câu) | 4 | 1 | có | — |
+| `gt_hinh_hoc_tich_phan` | LK | — | phụ | toan | co | co | `gt_tich_phan_ung_dung`, `gt_ham_nguoc_tham_so`, `gt_gioi_han_nang_cao` | 4 (4 có câu) | 8 | 4 | có | — |
+| `gt_khao_sat` | LK | — | phụ | toan | co | co | `gt_cuc_tri`, `gt_gioi_han_nang_cao` | 2 (2 có câu) | 6 | 2 | có | — |
+| `gt_lhospital` | LK | — | phụ | toan | co | co | `gt_dao_ham`, `gt_gioi_han_nang_cao`, `gt_taylor` | 3 (3 có câu) | 5 | 3 | có | — |
+| `gt_tich_phan_ky_thuat` | LK | — | phụ | toan | co | co | `gt_tich_phan` | 1 (1 có câu) | 7 | 1 | có | — |
 | `gt_tinh_chat_ham` | LK | — | phụ | toan | co | co | `gt_ham_so` | 1 (1 có câu) | 1 | 1 | có | — |
 
 ### xs: Xác Suất và Thống Kê
@@ -77,14 +80,14 @@ Cột `Tầng` là tầng của Luyện Khí (— = nút phụ). `Thật` là n�
 | `xs_dem_su_kien` | LK | 1 | chính | toan | co | co | — | 5 (5 có câu) | 1 | 5 | có | monsters×2, world_plan.weapons_placed×1 |
 | `xs_xac_suat` | LK | 2 | chính | toan | co | co | `xs_dem_su_kien` | 5 (5 có câu) | 2 | 5 | có | monsters×4 |
 | `xs_dieu_kien` | LK | 3 | chính | toan | co | co | `xs_xac_suat` | 5 (5 có câu) | 3 | 5 | có | chiêu×1, monsters×6 |
-| `xs_bayes` | LK | 4 | chính | toan | dang_viet | co | `xs_dieu_kien` | 5 (5 có câu) | 4 | 5 | có | monsters×5, world_plan.weapons_placed×1 |
-| `xs_bnn_roi_rac` | LK | 5 | chính | toan | dang_viet | co | `xs_dieu_kien` | 3 (3 có câu) | 5 | 3 | có | monsters×3 |
-| `xs_bnn_lien_tuc` | LK | 6 | chính | toan | dang_viet | co | `xs_bnn_roi_rac`, `gt_tich_phan` | 2 (2 có câu) | 5 | 2 | có | monsters×4 |
-| `xs_ky_vong_phan_phoi` | LK | 7 | chính | toan | dang_viet | co | `xs_bnn_lien_tuc`, `gt_tich_phan_ung_dung` | 5 (5 có câu) | 6 | 5 | có | monsters×3, world_plan.weapons_placed×1 |
-| `xs_mau_uoc_luong` | LK | 8 | chính | toan | dang_viet | co | `xs_ky_vong_phan_phoi`, `gt_cuc_tri` | 5 (5 có câu) | 7 | 5 | có | monsters×3 |
+| `xs_bayes` | LK | 4 | chính | toan | co | co | `xs_dieu_kien` | 5 (5 có câu) | 4 | 5 | có | monsters×5, world_plan.weapons_placed×1 |
+| `xs_bnn_roi_rac` | LK | 5 | chính | toan | co | co | `xs_dieu_kien` | 3 (3 có câu) | 5 | 3 | có | monsters×3 |
+| `xs_bnn_lien_tuc` | LK | 6 | chính | toan | co | co | `xs_bnn_roi_rac`, `gt_tich_phan` | 2 (2 có câu) | 5 | 2 | có | monsters×4 |
+| `xs_ky_vong_phan_phoi` | LK | 7 | chính | toan | co | co | `xs_bnn_lien_tuc`, `gt_tich_phan_ung_dung` | 5 (5 có câu) | 6 | 5 | có | monsters×3, world_plan.weapons_placed×1 |
+| `xs_mau_uoc_luong` | LK | 8 | chính | toan | co | co | `xs_ky_vong_phan_phoi`, `gt_cuc_tri` | 5 (5 có câu) | 7 | 5 | có | monsters×3 |
 | `xs_tuong_quan_hoi_quy` | LK | 8 | chính | toan | co | co | `xs_mau_uoc_luong`, `ds_nhan_ma_tran` | 3 (3 có câu) | 10 | 3 | có | monsters×3 |
-| `xs_kiem_dinh` | LK | 9 | chính | toan | dang_viet | co | `xs_tin_cay` | 5 (5 có câu) | 9 | 5 | có | monsters×4, world_plan.weapons_placed×1 |
-| `xs_tin_cay` | LK | 9 | chính | toan | dang_viet | co | `xs_mau_uoc_luong` | 5 (5 có câu) | 8 | 5 | có | monsters×4 |
+| `xs_kiem_dinh` | LK | 9 | chính | toan | co | co | `xs_tin_cay` | 5 (5 có câu) | 9 | 5 | có | monsters×4, world_plan.weapons_placed×1 |
+| `xs_tin_cay` | LK | 9 | chính | toan | co | co | `xs_mau_uoc_luong` | 5 (5 có câu) | 8 | 5 | có | monsters×4 |
 | `xs_ham_bnn` | LK | — | phụ | toan | co | co | `xs_ky_vong_phan_phoi` | 1 (1 có câu) | 10 | 1 | có | — |
 
 ### tr: Thuật Toán và Tối Ưu
@@ -94,18 +97,18 @@ Cột `Tầng` là tầng của Luyện Khí (— = nút phụ). `Thật` là n�
 | `tr_logic_dem` | LK | 1 | chính | toan | co | co | — | 4 (4 có câu) | 1 | 4 | có | monsters×4, world_plan.weapons_placed×1 |
 | `tr_dem` | LK | 2 | chính | toan | co | co | `tr_logic_dem`, `xs_dem_su_kien` | 4 (4 có câu) | 2 | 4 | có | monsters×4 |
 | `tr_liet_ke_quay_lui` | LK | 3 | chính | toan | co | co | `tr_logic_dem` | 3 (3 có câu) | 3 | 3 | có | chiêu×1, monsters×3 |
-| `tr_do_thi` | LK | 4 | chính | toan | dang_viet | co | `tr_logic_dem`, `ds_vecto_ma_tran` | 5 (5 có câu) | 5 | 5 | có | monsters×4, world_plan.weapons_placed×1 |
-| `tr_thuat_toan` | LK | 4 | chính | toan | dang_viet | co | `tr_dem`, `tr_liet_ke_quay_lui` | 4 (4 có câu) | 4 | 4 | có | monsters×4, world_plan.weapons_placed×1 |
-| `tr_tim_kiem` | LK | 5 | chính | toan | dang_viet | co | `tr_do_thi`, `tr_liet_ke_quay_lui` | 3 (3 có câu) | 6 | 3 | có | monsters×6 |
-| `tr_cay_duong_di` | LK | 6 | chính | toan | dang_viet | co | `tr_tim_kiem`, `tr_thuat_toan` | 2 (2 có câu) | 7 | 2 | có | monsters×3 |
-| `tr_toi_uu_loi` | LK | 7 | chính | toan | dang_viet | co | `tr_thuat_toan`, `gt_cuc_tri`, `gt_nhieu_bien` | 5 (5 có câu) | 8 | 5 | có | monsters×3, world_plan.weapons_placed×1 |
-| `tr_gradient_descent` | LK | 8 | chính | toan | dang_viet | co | `tr_toi_uu_loi`, `gt_gradient` | 2 (2 có câu) | 9 | 2 | có | monsters×5, world_plan.weapons_placed×1 |
-| `tr_cay_khung_luong` | LK | — | phụ | toan | dang_viet | co | `tr_cay_duong_di` | 3 (3 có câu) | 7 | 3 | có | — |
+| `tr_do_thi` | LK | 4 | chính | toan | co | co | `tr_logic_dem`, `ds_vecto_ma_tran` | 5 (5 có câu) | 5 | 5 | có | monsters×4, world_plan.weapons_placed×1 |
+| `tr_thuat_toan` | LK | 4 | chính | toan | co | co | `tr_dem`, `tr_liet_ke_quay_lui` | 4 (4 có câu) | 4 | 4 | có | monsters×4, world_plan.weapons_placed×1 |
+| `tr_tim_kiem` | LK | 5 | chính | toan | co | co | `tr_do_thi`, `tr_liet_ke_quay_lui` | 3 (3 có câu) | 6 | 3 | có | monsters×6 |
+| `tr_cay_duong_di` | LK | 6 | chính | toan | co | co | `tr_tim_kiem`, `tr_thuat_toan` | 2 (2 có câu) | 7 | 2 | có | monsters×3 |
+| `tr_toi_uu_loi` | LK | 7 | chính | toan | co | co | `tr_thuat_toan`, `gt_cuc_tri`, `gt_nhieu_bien` | 5 (5 có câu) | 8 | 5 | có | monsters×3, world_plan.weapons_placed×1 |
+| `tr_gradient_descent` | LK | 8 | chính | toan | co | co | `tr_toi_uu_loi`, `gt_gradient` | 2 (2 có câu) | 9 | 2 | có | monsters×5, world_plan.weapons_placed×1 |
+| `tr_cay_khung_luong` | LK | — | phụ | toan | co | co | `tr_cay_duong_di` | 3 (3 có câu) | 7 | 3 | có | — |
 | `tr_dem_nang_cao` | LK | — | phụ | toan | co | co | `tr_dem` | 2 (2 có câu) | 2 | 2 | có | — |
-| `tr_euler_hamilton` | LK | — | phụ | toan | dang_viet | co | `tr_tim_kiem` | 2 (2 có câu) | 6 | 2 | có | — |
-| `tr_nhanh_can` | LK | — | phụ | toan | dang_viet | co | `tr_thuat_toan` | 1 (1 có câu) | 4 | 1 | có | — |
+| `tr_euler_hamilton` | LK | — | phụ | toan | co | co | `tr_tim_kiem` | 2 (2 có câu) | 6 | 2 | có | — |
+| `tr_nhanh_can` | LK | — | phụ | toan | co | co | `tr_thuat_toan` | 1 (1 có câu) | 4 | 1 | có | — |
 | `tr_phuong_phap_tinh` | LK | — | phụ | toan | co | co | `tr_toi_uu_loi` | 4 (4 có câu) | 10 | 4 | có | — |
-| `tr_quy_hoach_tuyen_tinh` | LK | — | phụ | toan | dang_viet | co | `tr_toi_uu_loi` | 4 (4 có câu) | 9 | 4 | có | — |
+| `tr_quy_hoach_tuyen_tinh` | LK | — | phụ | toan | co | co | `tr_toi_uu_loi` | 4 (4 có câu) | 9 | 4 | có | — |
 | `tr_quy_nap` | LK | — | phụ | toan | co | co | `tr_logic_dem` | 1 (1 có câu) | 1 | 1 | có | — |
 | `tr_ton_tai` | LK | — | phụ | toan | co | co | `tr_dem`, `tr_liet_ke_quay_lui` | 3 (3 có câu) | 3 | 3 | có | — |
 
@@ -119,7 +122,7 @@ Cột `Tầng` là tầng của Luyện Khí (— = nút phụ). `Thật` là n�
 | `lt_vecto_bang_code` | LK | 3 | chính | code | co | co | `lt_cau_truc_du_lieu`, `ds_vecto_ma_tran` | 5 bài | — | — | có | — |
 | `lt_ma_tran_gauss` | LK | 4 | chính | code | co | co | `lt_vecto_bang_code`, `ds_he_gauss` | 5 bài | — | — | có | chiêu×1, world_plan.weapons_placed×1 |
 | `lt_mo_phong_xac_suat` | LK | 4 | chính | code | co | co | `lt_cau_truc_du_lieu`, `xs_dieu_kien` | 5 bài | — | — | có | — |
-| `lt_numpy` | LK | 4 | chính | code | chua_co | chua_co | `lt_vecto_bang_code`, `ds_nhan_ma_tran` | 0 bài | — | — | có | world_plan.weapons_placed×1 |
+| `lt_numpy` | LK | 4 | chính | code | co | co | `lt_vecto_bang_code`, `ds_nhan_ma_tran` | 5 bài | — | — | có | world_plan.weapons_placed×1 |
 | `lt_dao_ham_so` | LK | 5 | chính | code | co | co | `lt_cau_truc_du_lieu`, `gt_cuc_tri` | 4 bài | — | — | có | chiêu×1 |
 | `lt_do_phuc_tap` | LK | 5 | chính | code | co | co | `lt_ham_de_quy`, `tr_thuat_toan` | 5 bài | — | — | có | — |
 | `lt_do_thi` | LK | 6 | chính | code | co | co | `lt_do_phuc_tap`, `tr_tim_kiem` | 5 bài | — | — | có | chiêu×2, world_plan.weapons_placed×2 |
@@ -228,11 +231,11 @@ Mỗi ô ghi `viết tay/bộ sinh→sức chứa`. Ô mỏng đánh dấu `!`. 
 | `dstt_t3_chuyen_vi` | `ds_vecto_ma_tran` | 3 |  | 3/1→43 | 3/1→43 |  |  |
 | `dstt_t3_vet` | `ds_vecto_ma_tran` | 3 |  | 2/1→42 | 4/1→44 |  |  |
 | `dstt_t3_ma_tran_dac_biet` | `ds_vecto_ma_tran` | 3 |  | 3/1→43 | 4/1→44 |  |  |
-| `dstt_t4_tich_vo_huong` | `ds_nhan_ma_tran` | 4 |  | 4/1→44 | 2/0→2! |  |  |
+| `dstt_t4_tich_vo_huong` | `ds_nhan_ma_tran` | 4 |  | 4/1→44 | 2/1→42 |  |  |
 | `dstt_t4_dieu_kien_kich_thuoc` | `ds_nhan_ma_tran` | 4 |  | 3/1→40 | 4/1→43 |  |  |
 | `dstt_t4_nhan_ma_tran` | `ds_nhan_ma_tran` | 4 |  | 4/1→44 | 3/1→43 |  |  |
-| `dstt_t4_khong_giao_hoan` | `ds_nhan_ma_tran` | 4 |  | 2/0→2! | 4/1→44 |  |  |
-| `dstt_t4_tinh_chat_nhan` | `ds_nhan_ma_tran` | 4 |  | 3/0→3! | 3/1→43 |  |  |
+| `dstt_t4_khong_giao_hoan` | `ds_nhan_ma_tran` | 4 |  | 2/1→42 | 4/1→44 |  |  |
+| `dstt_t4_tinh_chat_nhan` | `ds_nhan_ma_tran` | 4 |  | 3/1→43 | 3/1→43 |  |  |
 | `dstt_t4_luy_thua` | `ds_nhan_ma_tran` | 4 |  | 2/1→42 | 4/1→41 |  |  |
 | `dstt_t5_dang_ma_tran` | `ds_he_gauss` | 5 |  |  | 3/1→43 | 3/0→3! |  |
 | `dstt_t5_bien_doi_hang` | `ds_he_gauss` | 5 |  |  | 3/1→43 | 4/0→4! |  |
@@ -243,21 +246,21 @@ Mỗi ô ghi `viết tay/bộ sinh→sức chứa`. Ô mỏng đánh dấu `!`. 
 | `dstt_t6_dinh_thuc_cap_2_3` | `ds_dinh_thuc_nghich_dao` | 6 |  |  | 4/1→44 | 1/1→41 |  |
 | `dstt_t6_khai_trien` | `ds_dinh_thuc_nghich_dao` | 6 |  |  | 3/1→43 | 3/1→43 |  |
 | `dstt_t6_tinh_chat_dinh_thuc` | `ds_dinh_thuc_nghich_dao` | 6 |  |  | 2/1→42 | 5/0→5! |  |
-| `dstt_t6_hang` | `ds_dinh_thuc_nghich_dao` | 6 |  |  | 2/1→42 | 3/0→3! |  |
+| `dstt_t6_hang` | `ds_dinh_thuc_nghich_dao` | 6 |  |  | 2/1→42 | 3/1→43 |  |
 | `dstt_t6_nghich_dao` | `ds_dinh_thuc_nghich_dao` | 6 |  |  | 3/1→43 | 4/1→44 |  |
 | `dstt_t6_giai_he_nghich_dao` | `ds_cramer` | 6 |  |  | 3/1→43 | 3/1→43 |  |
-| `dstt_t7_khong_gian_vecto` | `ds_khong_gian` | 7 |  |  |  | 3/0→3! | 2/0→2! |
+| `dstt_t7_khong_gian_vecto` | `ds_khong_gian` | 7 |  |  |  | 3/0→3! | 2/1→42 |
 | `dstt_t7_khong_gian_con` | `ds_khong_gian` | 7 |  |  |  | 4/0→4! | 3/0→3! |
-| `dstt_t7_to_hop_tuyen_tinh` | `ds_khong_gian` | 7 |  |  |  | 2/1→42 | 2/0→2! |
+| `dstt_t7_to_hop_tuyen_tinh` | `ds_khong_gian` | 7 |  |  |  | 2/1→42 | 2/1→42 |
 | `dstt_t7_doc_lap_tuyen_tinh` | `ds_khong_gian` | 7 |  |  |  | 2/1→42 | 3/0→3! |
 | `dstt_t7_co_so_so_chieu` | `ds_khong_gian` | 7 |  |  |  | 4/1→44 | 3/0→3! |
-| `dstt_t7_toa_do` | `ds_khong_gian` | 7 |  |  |  | 2/1→42 | 2/0→2! |
+| `dstt_t7_toa_do` | `ds_khong_gian` | 7 |  |  |  | 2/1→42 | 2/1→42 |
 | `dstt_t8_anh_xa_tuyen_tinh` | `ds_anh_xa_tuyen_tinh` | 8 |  |  |  | 3/1→43 | 3/0→3! |
-| `dstt_t8_nhan_va_anh` | `ds_anh_xa_tuyen_tinh` | 8 |  |  |  | 4/0→4! | 3/0→3! |
-| `dstt_t8_dinh_ly_so_chieu` | `ds_anh_xa_tuyen_tinh` | 8 |  |  |  | 3/1→43 | 3/0→3! |
+| `dstt_t8_nhan_va_anh` | `ds_anh_xa_tuyen_tinh` | 8 |  |  |  | 4/0→4! | 3/1→43 |
+| `dstt_t8_dinh_ly_so_chieu` | `ds_anh_xa_tuyen_tinh` | 8 |  |  |  | 3/1→43 | 3/1→34 |
 | `dstt_t8_ma_tran_anh_xa` | `ds_anh_xa_tuyen_tinh` | 8 |  |  |  | 2/1→42 | 3/0→3! |
-| `dstt_t8_hop_anh_xa` | `ds_anh_xa_tuyen_tinh` | 8 |  |  |  | 3/1→43 | 2/0→2! |
-| `dstt_t8_doi_co_so` | `ds_anh_xa_tuyen_tinh` | 8 |  |  |  | 2/1→42 | 2/0→2! |
+| `dstt_t8_hop_anh_xa` | `ds_anh_xa_tuyen_tinh` | 8 |  |  |  | 3/1→43 | 2/1→42 |
+| `dstt_t8_doi_co_so` | `ds_anh_xa_tuyen_tinh` | 8 |  |  |  | 2/1→42 | 2/1→42 |
 | `dstt_t9_tri_rieng` | `ds_tri_rieng` | 9 |  |  |  |  | 6/1→46 |
 | `dstt_t9_cheo_hoa` | `ds_tri_rieng` | 9 |  |  |  |  | 5/2→82 |
 | `dstt_t9_khong_gian_euclide` | `ds_truc_giao_chieu` | 9 |  |  |  |  | 5/1→45 |
@@ -305,16 +308,16 @@ Mỗi ô ghi `viết tay/bộ sinh→sức chứa`. Ô mỏng đánh dấu `!`. 
 | `gt_t6_loi_lom` | `gt_cuc_tri` | 6 |  |  | 4/1→44 | 4/1→40 |  |
 | `gt_t6_tiem_can` | `gt_khao_sat` | 6 |  |  | 4/2→84 | 3/0→3! |  |
 | `gt_t6_khao_sat` | `gt_khao_sat` | 6 |  |  | 4/0→4! | 4/1→35 |  |
-| `gt_t7_nguyen_ham` | `gt_tich_phan` | 7 |  |  |  | 3/1→43 | 2/0→2! |
-| `gt_t7_doi_bien` | `gt_tich_phan` | 7 |  |  |  | 3/1→32 | 2/0→2! |
+| `gt_t7_nguyen_ham` | `gt_tich_phan` | 7 |  |  |  | 3/1→43 | 2/1→42 |
+| `gt_t7_doi_bien` | `gt_tich_phan` | 7 |  |  |  | 3/1→32 | 2/1→29 |
 | `gt_t7_tung_phan` | `gt_tich_phan` | 7 |  |  |  | 3/1→35 | 3/0→3! |
 | `gt_t7_ham_huu_ty` | `gt_tich_phan_ky_thuat` | 7 |  |  |  | 6/1→44 | 2/0→2! |
 | `gt_t7_newton_leibniz` | `gt_tich_phan` | 7 |  |  |  | 4/1→28 | 3/0→3! |
-| `gt_t7_can_bien_thien` | `gt_tich_phan` | 7 |  |  |  | 5/1→44 | 2/0→2! |
+| `gt_t7_can_bien_thien` | `gt_tich_phan` | 7 |  |  |  | 5/1→44 | 2/1→41 |
 | `gt_t8_dien_tich` | `gt_tich_phan_ung_dung` | 8 |  |  |  | 3/1→39 | 3/0→3! |
 | `gt_t8_the_tich` | `gt_hinh_hoc_tich_phan` | 8 |  |  |  | 5/1→26 | 2/0→2! |
 | `gt_t8_do_dai_cung` | `gt_hinh_hoc_tich_phan` | 8 |  |  |  | 4/1→19 | 2/0→2! |
-| `gt_t8_suy_rong_loai_1` | `gt_tich_phan_ung_dung` | 8 |  |  |  | 4/1→31 | 2/0→2! |
+| `gt_t8_suy_rong_loai_1` | `gt_tich_phan_ung_dung` | 8 |  |  |  | 4/1→31 | 2/1→36 |
 | `gt_t8_suy_rong_loai_2` | `gt_hinh_hoc_tich_phan` | 8 |  |  |  | 3/1→29 | 2/0→2! |
 | `gt_t8_tieu_chuan_hoi_tu` | `gt_hinh_hoc_tich_phan` | 8 |  |  |  | 3/1→15 | 4/0→4! |
 | `gt_t9_gioi_han_lien_tuc` | `gt_nhieu_bien` | 9 |  |  |  |  | 5/0→5! |
@@ -339,40 +342,40 @@ Mỗi ô ghi `viết tay/bộ sinh→sức chứa`. Ô mỏng đánh dấu `!`. 
 | `xs_t1_hoan_vi_chinh_hop` | `xs_dem_su_kien` | 1 | 3/1→13 | 4/1→27 |  |  |  |
 | `xs_t1_to_hop` | `xs_dem_su_kien` | 1 | 4/1→27 | 3/2→70 |  |  |  |
 | `xs_t2_co_dien` | `xs_xac_suat` | 2 | 4/1→26 | 4/1→25 |  |  |  |
-| `xs_t2_co_dien_to_hop` | `xs_xac_suat` | 2 | 3/0→3! | 4/2→51 |  |  |  |
-| `xs_t2_hoan_lai` | `xs_xac_suat` | 2 | 4/0→4! | 4/1→39 |  |  |  |
-| `xs_t2_tinh_chat` | `xs_xac_suat` | 2 | 3/0→3! | 4/1→15 |  |  |  |
+| `xs_t2_co_dien_to_hop` | `xs_xac_suat` | 2 | 3/1→37 | 4/2→51 |  |  |  |
+| `xs_t2_hoan_lai` | `xs_xac_suat` | 2 | 4/1→34 | 4/1→39 |  |  |  |
+| `xs_t2_tinh_chat` | `xs_xac_suat` | 2 | 3/1→22 | 4/1→15 |  |  |  |
 | `xs_t2_thong_ke` | `xs_xac_suat` | 2 | 3/1→43 | 4/1→44 |  |  |  |
 | `xs_t3_cong_thuc_cong` | `xs_dieu_kien` | 3 |  | 4/1→42 | 4/1→44 |  |  |
 | `xs_t3_dieu_kien` | `xs_dieu_kien` | 3 |  | 4/1→44 | 4/1→27 |  |  |
-| `xs_t3_cong_thuc_nhan` | `xs_dieu_kien` | 3 |  | 4/1→37 | 3/0→3! |  |  |
+| `xs_t3_cong_thuc_nhan` | `xs_dieu_kien` | 3 |  | 4/1→37 | 3/1→39 |  |  |
 | `xs_t3_doc_lap` | `xs_dieu_kien` | 3 |  | 5/1→44 | 3/1→24 |  |  |
 | `xs_t3_bernoulli` | `xs_dieu_kien` | 3 |  | 4/1→39 | 4/1→36 |  |  |
-| `xs_t4_he_day_du` | `xs_bayes` | 4 |  | 4/1→43 | 4/0→4! |  |  |
-| `xs_t4_so_do_cay` | `xs_bayes` | 4 |  | 4/1→44 | 4/0→4! |  |  |
+| `xs_t4_he_day_du` | `xs_bayes` | 4 |  | 4/1→43 | 4/1→43 |  |  |
+| `xs_t4_so_do_cay` | `xs_bayes` | 4 |  | 4/1→44 | 4/1→40 |  |  |
 | `xs_t4_day_du` | `xs_bayes` | 4 |  | 4/1→44 | 4/1→43 |  |  |
-| `xs_t4_bayes` | `xs_bayes` | 4 |  | 4/0→4! | 4/1→44 |  |  |
-| `xs_t4_bayes_ung_dung` | `xs_bayes` | 4 |  | 4/0→4! | 4/1→40 |  |  |
+| `xs_t4_bayes` | `xs_bayes` | 4 |  | 4/1→36 | 4/1→44 |  |  |
+| `xs_t4_bayes_ung_dung` | `xs_bayes` | 4 |  | 4/1→34 | 4/1→40 |  |  |
 | `xs_t5_bien_ngau_nhien` | `xs_bnn_roi_rac` | 5 |  |  | 4/0→4! | 3/0→3! |  |
 | `xs_t5_bang_phan_phoi` | `xs_bnn_roi_rac` | 5 |  |  | 4/2→79 | 4/0→4! |  |
 | `xs_t5_ham_phan_phoi` | `xs_bnn_roi_rac` | 5 |  |  | 4/1→44 | 3/0→3! |  |
 | `xs_t5_mat_do` | `xs_bnn_lien_tuc` | 5 |  |  | 4/2→43 | 4/0→4! |  |
 | `xs_t5_xac_suat_khoang` | `xs_bnn_lien_tuc` | 5 |  |  | 4/0→4! | 4/1→39 |  |
-| `xs_t6_ky_vong` | `xs_ky_vong_phan_phoi` | 6 |  |  | 4/1→44 | 4/0→4! |  |
+| `xs_t6_ky_vong` | `xs_ky_vong_phan_phoi` | 6 |  |  | 4/1→44 | 4/1→44 |  |
 | `xs_t6_phuong_sai` | `xs_ky_vong_phan_phoi` | 6 |  |  | 4/1→44 | 4/1→44 |  |
 | `xs_t6_nhi_thuc_poisson` | `xs_ky_vong_phan_phoi` | 6 |  |  | 4/1→43 | 4/1→33 |  |
 | `xs_t6_deu_mu` | `xs_ky_vong_phan_phoi` | 6 |  |  | 4/1→44 | 4/0→4! |  |
 | `xs_t6_chuan` | `xs_ky_vong_phan_phoi` | 6 |  |  | 4/0→4! | 4/1→43 |  |
-| `xs_t7_tong_the_mau` | `xs_mau_uoc_luong` | 7 |  |  |  | 4/0→4! | 2/0→2! |
-| `xs_t7_dac_trung_mau` | `xs_mau_uoc_luong` | 7 |  |  |  | 4/2→84 | 2/0→2! |
-| `xs_t7_phan_phoi_mau` | `xs_mau_uoc_luong` | 7 |  |  |  | 4/1→44 | 2/0→2! |
-| `xs_t7_uoc_luong_diem` | `xs_mau_uoc_luong` | 7 |  |  |  | 4/1→43 | 2/0→2! |
-| `xs_t7_hop_ly_cuc_dai` | `xs_mau_uoc_luong` | 7 |  |  |  | 4/1→44 | 2/0→2! |
-| `xs_t8_tin_cay_trung_binh` | `xs_tin_cay` | 8 |  |  |  | 3/2→83 | 2/0→2! |
-| `xs_t8_tin_cay_ty_le` | `xs_tin_cay` | 8 |  |  |  | 4/1→36 | 2/0→2! |
-| `xs_t8_co_mau` | `xs_tin_cay` | 8 |  |  |  | 4/1→41 | 2/0→2! |
-| `xs_t8_luat_so_lon` | `xs_tin_cay` | 8 |  |  |  | 4/1→42 | 2/0→2! |
-| `xs_t8_gioi_han_trung_tam` | `xs_tin_cay` | 8 |  |  |  | 4/1→44 | 2/0→2! |
+| `xs_t7_tong_the_mau` | `xs_mau_uoc_luong` | 7 |  |  |  | 4/0→4! | 2/1→42 |
+| `xs_t7_dac_trung_mau` | `xs_mau_uoc_luong` | 7 |  |  |  | 4/2→84 | 2/1→42 |
+| `xs_t7_phan_phoi_mau` | `xs_mau_uoc_luong` | 7 |  |  |  | 4/1→44 | 2/1→36 |
+| `xs_t7_uoc_luong_diem` | `xs_mau_uoc_luong` | 7 |  |  |  | 4/1→43 | 2/1→38 |
+| `xs_t7_hop_ly_cuc_dai` | `xs_mau_uoc_luong` | 7 |  |  |  | 4/1→44 | 2/1→42 |
+| `xs_t8_tin_cay_trung_binh` | `xs_tin_cay` | 8 |  |  |  | 3/2→83 | 2/1→42 |
+| `xs_t8_tin_cay_ty_le` | `xs_tin_cay` | 8 |  |  |  | 4/1→36 | 2/1→34 |
+| `xs_t8_co_mau` | `xs_tin_cay` | 8 |  |  |  | 4/1→41 | 2/1→17 |
+| `xs_t8_luat_so_lon` | `xs_tin_cay` | 8 |  |  |  | 4/1→42 | 2/1→39 |
+| `xs_t8_gioi_han_trung_tam` | `xs_tin_cay` | 8 |  |  |  | 4/1→44 | 2/1→42 |
 | `xs_t9_gia_thuyet` | `xs_kiem_dinh` | 9 |  |  |  |  | 6/1→46 |
 | `xs_t9_kiem_dinh_trung_binh` | `xs_kiem_dinh` | 9 |  |  |  |  | 6/2→86 |
 | `xs_t9_kiem_dinh_ty_le` | `xs_kiem_dinh` | 9 |  |  |  |  | 6/1→40 |
@@ -401,7 +404,7 @@ Mỗi ô ghi `viết tay/bộ sinh→sức chứa`. Ô mỏng đánh dấu `!`. 
 | `tr_t2_truy_hoi` | `tr_dem` | 2 | 4/1→43 | 3/1→20 |  |  |  |
 | `tr_t3_dirichlet` | `tr_ton_tai` | 3 |  | 3/2→75 | 3/1→18 |  |  |
 | `tr_t3_bat_bien` | `tr_ton_tai` | 3 |  | 3/1→34 | 3/1→35 |  |  |
-| `tr_t3_tu_dien` | `tr_liet_ke_quay_lui` | 3 |  | 3/1→43 | 2/0→2! |  |  |
+| `tr_t3_tu_dien` | `tr_liet_ke_quay_lui` | 3 |  | 3/1→43 | 2/1→33 |  |  |
 | `tr_t3_sinh_ke_tiep` | `tr_liet_ke_quay_lui` | 3 |  | 3/2→76 | 3/1→39 |  |  |
 | `tr_t3_thu_hang` | `tr_ton_tai` | 3 |  | 3/1→38 | 3/2→77 |  |  |
 | `tr_t3_quay_lui` | `tr_liet_ke_quay_lui` | 3 |  | 3/1→23 | 3/1→33 |  |  |
@@ -412,22 +415,22 @@ Mỗi ô ghi `viết tay/bộ sinh→sức chứa`. Ô mỏng đánh dấu `!`. 
 | `tr_t4_ky_hieu_o` | `tr_thuat_toan` | 4 |  | 3/1→38 | 4/1→43 |  |  |
 | `tr_t5_khai_niem` | `tr_do_thi` | 5 |  |  | 4/1→36 | 2/1→42 |  |
 | `tr_t5_bac` | `tr_do_thi` | 5 |  |  | 3/1→43 | 3/1→38 |  |
-| `tr_t5_duong_di_lien_thong` | `tr_do_thi` | 5 |  |  | 4/1→44 | 2/0→2! |  |
+| `tr_t5_duong_di_lien_thong` | `tr_do_thi` | 5 |  |  | 4/1→44 | 2/1→42 |  |
 | `tr_t5_ma_tran_ke` | `tr_do_thi` | 5 |  |  | 2/2→72 | 2/1→41 |  |
-| `tr_t5_danh_sach_ke` | `tr_do_thi` | 5 |  |  | 3/1→43 | 2/0→2! |  |
-| `tr_t6_bfs` | `tr_tim_kiem` | 6 |  |  | 3/2→83 | 2/0→2! |  |
-| `tr_t6_dfs` | `tr_tim_kiem` | 6 |  |  | 3/1→43 | 2/0→2! |  |
+| `tr_t5_danh_sach_ke` | `tr_do_thi` | 5 |  |  | 3/1→43 | 2/1→42 |  |
+| `tr_t6_bfs` | `tr_tim_kiem` | 6 |  |  | 3/2→83 | 2/1→42 |  |
+| `tr_t6_dfs` | `tr_tim_kiem` | 6 |  |  | 3/1→43 | 2/1→42 |  |
 | `tr_t6_ung_dung_tim_kiem` | `tr_tim_kiem` | 6 |  |  | 3/1→43 | 1/1→41 |  |
 | `tr_t6_euler` | `tr_euler_hamilton` | 6 |  |  | 4/1→44 | 2/1→42 |  |
 | `tr_t6_hamilton` | `tr_euler_hamilton` | 6 |  |  | 3/1→11 | 2/1→38 |  |
-| `tr_t7_cay` | `tr_cay_duong_di` | 7 |  |  |  | 3/1→41 | 2/0→2! |
+| `tr_t7_cay` | `tr_cay_duong_di` | 7 |  |  |  | 3/1→41 | 2/1→37 |
 | `tr_t7_cay_khung` | `tr_cay_khung_luong` | 7 |  |  |  | 3/1→43 | 2/1→33 |
 | `tr_t7_kruskal_prim` | `tr_cay_khung_luong` | 7 |  |  |  | 3/1→43 | 3/2→83 |
 | `tr_t7_dijkstra` | `tr_cay_duong_di` | 7 |  |  |  | 3/1→43 | 2/1→42 |
 | `tr_t7_luong` | `tr_cay_khung_luong` | 7 |  |  |  | 2/1→42 | 2/1→42 |
 | `tr_t8_bai_toan_toi_uu` | `tr_toi_uu_loi` | 8 |  |  |  | 3/1→41 | 2/1→19 |
 | `tr_t8_tap_loi` | `tr_toi_uu_loi` | 8 |  |  |  | 3/1→41 | 2/1→42 |
-| `tr_t8_ham_loi` | `tr_toi_uu_loi` | 8 |  |  |  | 3/2→83 | 2/0→2! |
+| `tr_t8_ham_loi` | `tr_toi_uu_loi` | 8 |  |  |  | 3/2→83 | 2/1→41 |
 | `tr_t8_dieu_kien_toi_uu` | `tr_toi_uu_loi` | 8 |  |  |  | 3/1→43 | 2/1→42 |
 | `tr_t8_bai_toan_loi` | `tr_toi_uu_loi` | 8 |  |  |  | 3/1→43 | 2/1→42 |
 | `tr_t9_mo_hinh_qhtt` | `tr_quy_hoach_tuyen_tinh` | 9 |  |  |  |  | 4/1→44 |
@@ -443,45 +446,12 @@ Mỗi ô ghi `viết tay/bộ sinh→sức chứa`. Ô mỏng đánh dấu `!`. 
 
 ## 4. Các ô mỏng nhất (nút chính)
 
-72 ô có sức chứa dưới 10, xếp từ mỏng nhất. `Thứ tự` = tầng của nút.
+31 ô có sức chứa dưới 10, xếp từ mỏng nhất. `Thứ tự` = tầng của nút.
 
 | Vi kỹ năng | Bậc | Viết tay | Bộ sinh | Sức chứa | Nút | Tầng nút |
 |---|---|---|---|---|---|---|
-| `dstt_t4_khong_giao_hoan` | 2 | 2 | 0 | 2 | `ds_nhan_ma_tran` | 3 |
-| `dstt_t4_tich_vo_huong` | 3 | 2 | 0 | 2 | `ds_nhan_ma_tran` | 3 |
-| `tr_t3_tu_dien` | 3 | 2 | 0 | 2 | `tr_liet_ke_quay_lui` | 3 |
-| `tr_t5_danh_sach_ke` | 4 | 2 | 0 | 2 | `tr_do_thi` | 4 |
-| `tr_t5_duong_di_lien_thong` | 4 | 2 | 0 | 2 | `tr_do_thi` | 4 |
-| `gt_t7_can_bien_thien` | 5 | 2 | 0 | 2 | `gt_tich_phan` | 5 |
-| `gt_t7_doi_bien` | 5 | 2 | 0 | 2 | `gt_tich_phan` | 5 |
-| `gt_t7_nguyen_ham` | 5 | 2 | 0 | 2 | `gt_tich_phan` | 5 |
-| `tr_t6_bfs` | 4 | 2 | 0 | 2 | `tr_tim_kiem` | 5 |
-| `tr_t6_dfs` | 4 | 2 | 0 | 2 | `tr_tim_kiem` | 5 |
-| `dstt_t7_khong_gian_vecto` | 5 | 2 | 0 | 2 | `ds_khong_gian` | 6 |
-| `dstt_t7_to_hop_tuyen_tinh` | 5 | 2 | 0 | 2 | `ds_khong_gian` | 6 |
-| `dstt_t7_toa_do` | 5 | 2 | 0 | 2 | `ds_khong_gian` | 6 |
-| `gt_t8_suy_rong_loai_1` | 5 | 2 | 0 | 2 | `gt_tich_phan_ung_dung` | 6 |
-| `tr_t7_cay` | 5 | 2 | 0 | 2 | `tr_cay_duong_di` | 6 |
-| `dstt_t8_doi_co_so` | 5 | 2 | 0 | 2 | `ds_anh_xa_tuyen_tinh` | 7 |
-| `dstt_t8_hop_anh_xa` | 5 | 2 | 0 | 2 | `ds_anh_xa_tuyen_tinh` | 7 |
-| `tr_t8_ham_loi` | 5 | 2 | 0 | 2 | `tr_toi_uu_loi` | 7 |
-| `xs_t7_dac_trung_mau` | 5 | 2 | 0 | 2 | `xs_mau_uoc_luong` | 8 |
-| `xs_t7_hop_ly_cuc_dai` | 5 | 2 | 0 | 2 | `xs_mau_uoc_luong` | 8 |
-| `xs_t7_phan_phoi_mau` | 5 | 2 | 0 | 2 | `xs_mau_uoc_luong` | 8 |
-| `xs_t7_tong_the_mau` | 5 | 2 | 0 | 2 | `xs_mau_uoc_luong` | 8 |
-| `xs_t7_uoc_luong_diem` | 5 | 2 | 0 | 2 | `xs_mau_uoc_luong` | 8 |
-| `xs_t8_co_mau` | 5 | 2 | 0 | 2 | `xs_tin_cay` | 9 |
-| `xs_t8_gioi_han_trung_tam` | 5 | 2 | 0 | 2 | `xs_tin_cay` | 9 |
-| `xs_t8_luat_so_lon` | 5 | 2 | 0 | 2 | `xs_tin_cay` | 9 |
-| `xs_t8_tin_cay_trung_binh` | 5 | 2 | 0 | 2 | `xs_tin_cay` | 9 |
-| `xs_t8_tin_cay_ty_le` | 5 | 2 | 0 | 2 | `xs_tin_cay` | 9 |
-| `xs_t2_co_dien_to_hop` | 1 | 3 | 0 | 3 | `xs_xac_suat` | 2 |
-| `xs_t2_tinh_chat` | 1 | 3 | 0 | 3 | `xs_xac_suat` | 2 |
-| `dstt_t4_tinh_chat_nhan` | 2 | 3 | 0 | 3 | `ds_nhan_ma_tran` | 3 |
-| `xs_t3_cong_thuc_nhan` | 3 | 3 | 0 | 3 | `xs_dieu_kien` | 3 |
 | `dstt_t5_dang_ma_tran` | 4 | 3 | 0 | 3 | `ds_he_gauss` | 4 |
 | `tr_t4_phat_bieu` | 2 | 3 | 0 | 3 | `tr_thuat_toan` | 4 |
-| `dstt_t6_hang` | 4 | 3 | 0 | 3 | `ds_dinh_thuc_nghich_dao` | 5 |
 | `gt_t7_newton_leibniz` | 5 | 3 | 0 | 3 | `gt_tich_phan` | 5 |
 | `gt_t7_tung_phan` | 5 | 3 | 0 | 3 | `gt_tich_phan` | 5 |
 | `xs_t5_bien_ngau_nhien` | 4 | 3 | 0 | 3 | `xs_bnn_roi_rac` | 5 |
@@ -492,19 +462,12 @@ Mỗi ô ghi `viết tay/bộ sinh→sức chứa`. Ô mỏng đánh dấu `!`. 
 | `dstt_t7_khong_gian_vecto` | 4 | 3 | 0 | 3 | `ds_khong_gian` | 6 |
 | `gt_t8_dien_tich` | 5 | 3 | 0 | 3 | `gt_tich_phan_ung_dung` | 6 |
 | `dstt_t8_anh_xa_tuyen_tinh` | 5 | 3 | 0 | 3 | `ds_anh_xa_tuyen_tinh` | 7 |
-| `dstt_t8_dinh_ly_so_chieu` | 5 | 3 | 0 | 3 | `ds_anh_xa_tuyen_tinh` | 7 |
 | `dstt_t8_ma_tran_anh_xa` | 5 | 3 | 0 | 3 | `ds_anh_xa_tuyen_tinh` | 7 |
-| `dstt_t8_nhan_va_anh` | 5 | 3 | 0 | 3 | `ds_anh_xa_tuyen_tinh` | 7 |
 | `xs_t1_khong_gian_mau` | 2 | 4 | 0 | 4 | `xs_dem_su_kien` | 1 |
 | `xs_t1_quan_he_su_kien` | 2 | 4 | 0 | 4 | `xs_dem_su_kien` | 1 |
-| `xs_t2_hoan_lai` | 1 | 4 | 0 | 4 | `xs_xac_suat` | 2 |
 | `dstt_t5_bac_thang` | 3 | 4 | 0 | 4 | `ds_he_gauss` | 4 |
 | `dstt_t5_bac_thang` | 4 | 4 | 0 | 4 | `ds_he_gauss` | 4 |
 | `dstt_t5_bien_doi_hang` | 4 | 4 | 0 | 4 | `ds_he_gauss` | 4 |
-| `xs_t4_bayes` | 2 | 4 | 0 | 4 | `xs_bayes` | 4 |
-| `xs_t4_bayes_ung_dung` | 2 | 4 | 0 | 4 | `xs_bayes` | 4 |
-| `xs_t4_he_day_du` | 3 | 4 | 0 | 4 | `xs_bayes` | 4 |
-| `xs_t4_so_do_cay` | 3 | 4 | 0 | 4 | `xs_bayes` | 4 |
 | `xs_t5_bang_phan_phoi` | 4 | 4 | 0 | 4 | `xs_bnn_roi_rac` | 5 |
 | `xs_t5_bien_ngau_nhien` | 3 | 4 | 0 | 4 | `xs_bnn_roi_rac` | 5 |
 | `dstt_t7_khong_gian_con` | 4 | 4 | 0 | 4 | `ds_khong_gian` | 6 |
@@ -513,7 +476,6 @@ Mỗi ô ghi `viết tay/bộ sinh→sức chứa`. Ô mỏng đánh dấu `!`. 
 | `dstt_t8_nhan_va_anh` | 4 | 4 | 0 | 4 | `ds_anh_xa_tuyen_tinh` | 7 |
 | `xs_t6_chuan` | 3 | 4 | 0 | 4 | `xs_ky_vong_phan_phoi` | 7 |
 | `xs_t6_deu_mu` | 4 | 4 | 0 | 4 | `xs_ky_vong_phan_phoi` | 7 |
-| `xs_t6_ky_vong` | 4 | 4 | 0 | 4 | `xs_ky_vong_phan_phoi` | 7 |
 | `xs_t7_tong_the_mau` | 4 | 4 | 0 | 4 | `xs_mau_uoc_luong` | 8 |
 | `dstt_t9_pca_svd` | 5 | 4 | 0 | 4 | `ds_pca_svd` | 9 |
 | `dstt_t6_tinh_chat_dinh_thuc` | 4 | 5 | 0 | 5 | `ds_dinh_thuc_nghich_dao` | 5 |
@@ -529,15 +491,15 @@ Mỗi ô ghi `viết tay/bộ sinh→sức chứa`. Ô mỏng đánh dấu `!`. 
 - Vi kỹ năng của nút chính chưa có câu nào: 0.
 - Vi kỹ năng của nút phụ chưa có câu nào: 0.
 
-- Nút chính Luyện Khí không có câu hỏi lẫn bài tập (tính là 'đang biên soạn', coi như xong): `lt_numpy`
+- Nút chính Luyện Khí không có câu hỏi lẫn bài tập (tính là 'đang biên soạn', coi như xong): không có.
 - Nút các cảnh sau Luyện Khí: truc_co: 9, ket_dan: 7, nguyen_anh: 6, hoa_than: 6, luyen_hu: 6, hop_the: 6, dai_thua: 4 (tất cả `chua_co`: là thiết kế, chưa nối vào game).
 
-- Cờ `content` = `dang_viet` nhưng nút đã có đủ câu hỏi: 38 nút (cờ này chỉ để hiển thị 'đang viết'; xem phần khuyến nghị).
-- Cờ `content` lệch với thực tế theo hướng ngược lại: không có.
+- Nút chính Luyện Khí có cờ `content` không khớp thực tế (có câu hỏi hay bài tập mà không phải `co`, hoặc `co` mà trống): không có.
+- Câu hỏi bắt chứng minh trên đường chính (luật của tree.json là không hỏi chứng minh): 18 câu viết tay: `dstt_t7_dltt_04`, `dstt_t7_kgc_06`, `dstt_t7_kgv_04`, `dstt_t7_kgv_05`, `dstt_t8_dlsc_06`, `dstt_t8_nva_06`, `dstt_t9_kge_05`, `dstt_t9_tr_05`, `gt_t6_dd_06`, `gt_t7_db_04`, `gt_t7_ng_04`, `gt_t7_nl_06`, `tr_t5_dd_05`, `tr_t7_cay_04`, `tr_t8_tl_04`, `xs_t7_dt_06`, `xs_t7_ud_05`, `xs_t8_sl_06`.
 
 ## 6. Điều kiện tiên quyết
 
-- gt_gioi_han_nang_cao: needs gt_gioi_han, but gt_gioi_han has floors [2, 3] and gt_gioi_han_nang_cao [2, 3] (floor order inverted)
+Không có vấn đề: không vòng, không nút nào cần nút ở tầng sau, không nút chính cần nút phụ, thứ tự tầng toán trong một môn khớp thứ tự nút.
 
 ## 7. Khối lượng từng tầng (Luyện Khí, nút chính, không tính vi kỹ năng bị cắt)
 
@@ -548,7 +510,7 @@ Mỗi ô: `số nút / số vi kỹ năng / số bài tập`.
 | 1 | 1/6/0 | 1/4/0 | 1/5/0 | 1/4/0 | 1/0/5 | — | 5/19/5 |
 | 2 | 1/6/0 | 1/5/0 | 1/5/0 | 1/4/0 | 1/0/5 | — | 5/20/5 |
 | 3 | 1/6/0 | 1/4/0 | 1/5/0 | 1/3/0 | 2/0/10 | 1/0/3 | 7/18/13 |
-| 4 | 1/6/0 | 1/4/0 | 1/5/0 | 2/9/0 | 3/0/10 | — | 8/24/10 |
+| 4 | 1/6/0 | 1/4/0 | 1/5/0 | 2/9/0 | 3/0/15 | — | 8/24/15 |
 | 5 | 1/5/0 | 2/7/0 | 1/3/0 | 1/3/0 | 2/0/9 | 2/0/6 | 9/18/15 |
 | 6 | 1/6/0 | 2/5/0 | 1/2/0 | 1/2/0 | 1/0/5 | — | 6/15/5 |
 | 7 | 2/8/0 | 1/3/0 | 1/5/0 | 1/5/0 | — | 1/0/3 | 6/21/3 |

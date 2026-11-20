@@ -11,6 +11,8 @@
     {"id": "dstt_gx_doi_co_so_ma_tran", "skill": "dstt_t8_doi_co_so", "tier": 5, "type": "numeric", "reviewed": false},
     {"id": "dstt_gx_hop_anh_xa_gia_tri", "skill": "dstt_t8_hop_anh_xa", "tier": 5, "type": "numeric", "reviewed": false},
     {"id": "dstt_gx_nhan_va_anh", "skill": "dstt_t8_nhan_va_anh", "tier": 5, "type": "numeric", "reviewed": false},
-    {"id": "dstt_gx_so_chieu_nhan", "skill": "dstt_t8_dinh_ly_so_chieu", "tier": 5, "type": "numeric", "reviewed": false}
+    {"id": "dstt_gx_so_chieu_nhan", "skill": "dstt_t8_dinh_ly_so_chieu", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "dstt_gx_chuyen_vi_tich", "skill": "dstt_t4_tinh_chat_nhan", "tier": 2, "type": "numeric", "reviewed": false},
+    {"id": "dstt_gx_hang_ma_tran", "skill": "dstt_t6_hang", "tier": 4, "type": "numeric", "reviewed": false}
   ]
 }

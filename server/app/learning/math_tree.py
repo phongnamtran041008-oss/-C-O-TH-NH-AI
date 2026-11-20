@@ -31,6 +31,8 @@ What `validate()` guarantees, because a wrong tree would teach things in the wro
   `waiver` drops it by name, and a main-path skill never leans on an optional one;
 * `reinforces` only names ancestors (you cannot review what you have not learned);
 * every main-path node of a realm leads to that realm's project (`du_an`), so nothing dangles;
+* a node's `content` flag tells the truth: 'co' exactly when one of its micro-skills (not cut) has a
+  question or it lists an exercise, and an exercise is listed by one node only;
 * the world plan only names real nodes, lands, weapons and unlocks, and never asks for a
   node that belongs to a later stage than the one it says it needs.
 """
@@ -743,7 +745,40 @@ def _dupes(items: Iterable[str]) -> list[str]:
     return out
 
 
-def validate_tree(raw: dict, skills: dict[str, tuple[str, ...]], problems: set[str]) -> list[str]:
+def skills_with_questions(math_dir: Path = MATH_DIR) -> set[str]:
+    """Every micro-skill that has at least one question template (hand-written or generator), cut or not."""
+    from . import math_items
+    out: set[str] = set()
+    for entry in math_path.load_index(math_dir).get("subjects", []):
+        if not entry.get("file"):
+            continue
+        raw = math_items.read_items(entry["id"], math_dir)
+        if raw:
+            out.update(i["skill"] for i in raw.get("items", []))
+            out.update(g["skill"] for g in raw.get("generators", []))
+    return out
+
+
+def _content_problems(t: Tree, raw: dict, asked: set[str]) -> list[str]:
+    """`content` says whether a node has something to learn from: 'co' means at least one of its
+    micro-skills (not cut) has a question or it lists an exercise. The flag may not lie either way:
+    a node flagged 'co' with nothing in it hides a hole, and a node with questions flagged
+    'dang_viet' or 'chua_co' is shown as empty and cannot unlock a chiêu (math_skills.py)."""
+    cut = set(raw.get("cut", {}).get("skills", []))
+    errs = []
+    for n in t.nodes.values():
+        real = bool(n.problems) or any(s in asked and s not in cut for s in n.skills)
+        if n.content == "co" and not real:
+            errs.append(f"{n.id}: content is 'co' but none of its micro-skills has a question and it lists no exercise")
+        elif real and n.content != "co":
+            errs.append(f"{n.id}: it has questions or exercises, so content must be 'co' (it says {n.content!r})")
+    return errs
+
+
+def validate_tree(raw: dict, skills: dict[str, tuple[str, ...]], problems: set[str],
+                  asked: set[str] | None = None) -> list[str]:
+    """`asked` = the micro-skills that have question templates (skills_with_questions); when given,
+    the `content` flags are checked against it."""
     errs: list[str] = []
     realms = raw.get("realms", [])
     realm_ids = [r.get("id") for r in realms]
@@ -779,6 +814,10 @@ def validate_tree(raw: dict, skills: dict[str, tuple[str, ...]], problems: set[s
         for p in n.get("problems", []):
             if p not in problems:
                 errs.append(f"{nid}: unknown programming exercise {p!r}")
+    listed = [p for n in node_list for p in n.get("problems", [])]
+    for p in _dupes(listed):
+        errs.append(f"programming exercise {p!r} is listed by more than one node (it would have to be solved once "
+                    f"for each, and no node could own it)")
     if errs:
         return errs                     # the structural checks below need well-formed nodes
 
@@ -880,6 +919,8 @@ def validate_tree(raw: dict, skills: dict[str, tuple[str, ...]], problems: set[s
     for b in raw.get("branches", []):
         if b["id"] not in raw.get("sources", {}):
             errs.append(f"sources: branch {b['id']} has no suggested reading")
+    if asked is not None:
+        errs += _content_problems(t, raw, asked)
     return errs
 
 
@@ -1034,7 +1075,7 @@ def validate_all(math_dir: Path = MATH_DIR) -> list[str]:
         plan = _read(WORLD_FILE, math_dir)
     except (OSError, ValueError) as e:
         return [f"cannot read the tree: {e}"]
-    errs = validate_tree(raw, subject_skills(math_dir), problem_ids(math_dir))
+    errs = validate_tree(raw, subject_skills(math_dir), problem_ids(math_dir), skills_with_questions(math_dir))
     if errs:
         return errs
     return validate_world(plan, build(raw), math_dir)
