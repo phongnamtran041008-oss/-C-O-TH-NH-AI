@@ -77,9 +77,52 @@ Needs `art/blender/chars/rig_base.blend` (git-ignored; built by the character ba
 * Wiring: `weapons.<type> = {layer: <type>_1, clip}` (kich/roi/phu `slash`, am_khi/luan `shoot`, cam `cast`) and
   `item_icons.by_weapon_type.<type> = "weapons_c"`.
 * **Thrown weapons:** in `shoot`, `am_khi` and `luan` are **out of the hand on frames 3 (the strike, `events.hit`) and 4**, flying
-  forward (≈0.26 / 0.5 m for the darts, ≈0.3 / 0.55 m for the chakram, which also spins), and back in the hand on frame 5. If the game
+  forward of the right hand, which `shoot` (the bow clip) has drawn back to the chest (≈0.42 / 0.62 m for the darts, ≈0.45 / 0.62 m for the chakram, which also spins), and back in the hand on frame 5. If the game
   draws its own projectile, start it from frame 4's position or hide the layer's frames 3–4.
 * The whip reaches ≈0.8 m forward of the hand on slash frames 3–4 (the layer is shrunk a little by the fit pass where it would leave the frame).
 * The zither is held in front of the chest only in `cast`; on the back in every other clip (including `die`).
 
 ## Look-fix log
+
+Judged at 3× (contact sheets) and 5× (`zoom.py`) next to `art/reference/vu_khi/vu_khi_8_loai_10_bac.webp`,
+`art/preview/weapons_a.png`, `weapons_b.png` and `weapon_layers*.png`.
+
+1. **Icons, first render.** Wrong: the kích's crescent was invisible (a band hugging the shaft, same colour as the point), so it
+   read as a spear; the whip was noisy squiggles; the ám khí a blob; the zither a plank / scroll with no strings.
+   Causes found: (a) `kit.render_icons` draws every descendant of the object given, so passing the root drew all
+   three whip poses (and both dart poses) on top of each other — now only the default pose's meshes are passed;
+   (b) the crescent's edge arc was nearly parallel to its back — rebuilt as two circles meeting at the horn tips (a true
+   crescent moon, horns pointing away from the shaft), much bigger (R 0.21–0.29 m), standing off the shaft on two bars,
+   shaft shortened 0.16 m; (c) dart blades were twice as wide as meant (half-width parameter) and converged on one point —
+   slimmer blades, bases spread across the fist; (d) zither strings were 0.4 px wide and, with priority, painted the whole
+   board — 3–4 strings on a 0.26 m board, darker boards, one bridge per string in a slanting row, a side tassel, and the
+   icon laid flat (strings at 72° or 45° became stair-step lattices; level they are clean lines).
+2. **Icons, second render.** Wrong: grades 5–8 of the darts and the whip still merged into feathery fans — the 1 px glow
+   halo of each emissive blade filled the 1–2 px gaps between them (they read as a fan, i.e. the wrong weapon). Added halo-free
+   twins of the glow materials (`*_n`, `kit_halo = 0`) for parts that sit close together; fewer, wider-spaced darts on
+   glowing grades. Also: the double-bit axe read as a hammer (white rectangles) — narrower neck, taller bits, darker iron
+   body so the bright edge reads; the ice zither was one white bar (emissive board) — frost-blue board.
+3. **Layers, first composites** (representatives, Luyện Khí). Whip, axe, chakram and darts read; the zither in `cast` sat at
+   hip level like a low table and was hidden on the back when facing down — raised to the chest, back carry turned
+   diagonally so both ends show. QC: the zither's `die` frames touched the bottom edge (still strapped on as the body falls)
+   — it now slips off and lies beside the body; roi_1's lash was entirely behind the body facing up on the strike — the lash
+   now leaves at a slight outward angle.
+4. **Layers, all 48** (`weapon_layers_c_all.png`, `_dai_thua.png`). Wrong: the thrown darts / chakram appeared over the
+   torso on the strike frame — `shoot` is the bow clip, the right hand is drawn back to the chest when it releases. Flight
+   offsets increased (they are counted from the chest). Grade-8 whip coil was cluttered by star specks — specks kept only on
+   the swung / lashed chain.
+
+### Still below the reference (honest list)
+
+* **Kích icons**: at 26 px for a 1.6 m weapon the head is ~7 px; the crescents read as a cross / "(|)" shape, clearly not
+  a spear, but nowhere near the crisp halberd heads the reference can afford. In the hand (2× the scale) they read well.
+* **Zither icon** reads as a stringed board seen flat (strings, bridges, tassels) but is a thin 8 px strip; the
+  reference has no zither to compare with. In `cast` it is a board with strings in front of the chest — it reads as an
+  instrument being played, but small.
+* **Thrown weapons on the strike frame** still overlap the chest (frame 4 is clearly in flight); pushing them further makes
+  the fit pass shrink them.
+* **Whip icon** is a loop with a handle — readable, but the grade-8 one is busy; the nine-section links read as beads at 26 px.
+* The luân grade 1–3 icons are plain rings: a chakram without blades reads as a ring (deliberately crude at grade 1; grade 2
+  teeth and grade 3 blades are only 1–2 px).
+* On the winged realms (Luyện Hư, Hợp Thể, Đại Thừa) the back carry (zither, darts, chakram) is largely hidden by the wings,
+  same as the existing types.
