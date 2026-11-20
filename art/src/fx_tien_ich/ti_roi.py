@@ -17,7 +17,7 @@ C = {  # body (glow edge), mid, core -> all are glow-ramp colours; the palette s
     "pham": dict(vi="Phàm", body="#8a8f9c", mid="#b8bdc3", core="#e8ecf0"),
     "linh": dict(vi="Linh", body="#22b05a", mid="#7aec9a", core="#e4ffe8"),
     "huyen": dict(vi="Huyền", body="#6aa8e8", mid="#b0dcff", core="#f2fbff"),
-    "dia": dict(vi="Địa", body="#8456be", mid="#a878dc", core="#e4d0fa"),   # clearly purple; alpha sheets (additive washes to lavender on grass)
+    "dia": dict(vi="Địa", body="#8a3ce0", mid="#c88cff", core="#f6e6ff"),   # clearly purple; alpha sheets (additive washes to lavender on grass)
     "thien": dict(vi="Thiên", body="#e8b02a", mid="#ffe27a", core="#fffbe4"),
 }
 HEIGHT = dict(pham=0.9, linh=1.4, huyen=1.85, dia=2.25, thien=2.6)
@@ -43,14 +43,14 @@ def make_cot(r):
              where="soft column of light standing on a dropped weapon of grade %s (pivot = base of the column)" % c["vi"])
     rng = fx.rng
     H, W = HEIGHT[r], WIDTH[r]
-    body = fx.mat("body", c["body"], grad=dict(src="attr", pow=0.55 if r == "dia" else 1.0, cpow=2.2), core=c["mid"])
-    core = fx.mat("core", c["core"], grad=dict(src="attr", pow=0.6))
+    body = fx.mat("body", c["body"], grad=dict(src="attr", pow=0.5 if r == "dia" else 1.0, cpow=2.2), core=("#8a3ce0" if r == "dia" else c["mid"]))
+    core = fx.mat("core", c["core"], grad=dict(src="attr", pow=0.12 if r == "dia" else 0.6))
     solid = fx.mat("solid", c["core"])
     midm = fx.mat("mid", c["mid"], grad=dict(src="attr", pow=0.7))
-    bloom = fx.mat("bloom", c["mid"] if r == "dia" else c["body"], grad=dict(src="attr", pow=0.6 if r == "dia" else 1.3))
+    bloom = fx.mat("bloom", c["body"], grad=dict(src="attr", pow=0.6 if r == "dia" else 1.3))
     pulse = lambda t, ph=0.0: 0.5 + 0.5 * math.sin(TAU * t + ph)
-    KB = dict(dia=0.85, thien=0.6).get(r, 1.0)      # ground bloom brightness
-    KC = 0.85                   # column alpha (dia is an alpha sheet)
+    KB = dict(dia=0.7, thien=0.6).get(r, 1.0)      # ground bloom brightness
+    KC = 0.8                   # column alpha (dia is an alpha sheet)
 
     if r == "pham":
         # a faint haze and two twinkling glints: a shimmer, no pillar
@@ -70,15 +70,19 @@ def make_cot(r):
     # the column: wide soft body + thin bright core
     cb = column(W, H, taper=0.5, p=0.85, base=0.35).build(fx, "col", body)
     fx.track(cb, lambda t, i: dict(sx=1.0 + 0.06 * math.sin(TAU * t + 0.5), op=(0.8 + 0.2 * math.sin(TAU * t + 1.0)) * KC))
+    if r == "dia":      # a luminous light-violet inner column (alpha sheets can carry bright pixels)
+        lm = fx.mat("light", "#c88cff", grad=dict(src="attr", pow=0.45))
+        lc = column(W * 0.46, H * 0.92, taper=0.65, p=0.7, base=0.5, y0=0.3).build(fx, "light", lm)
+        fx.track(lc, lambda t, i: dict(sx=1.0 + 0.05 * math.sin(TAU * t + 2.0), op=0.8 + 0.1 * math.sin(TAU * t)))
     if r != "linh":
         cc = column(W * (0.16 if r == "dia" else 0.26), H * 0.86 - 0.85, taper=0.7, p=1.0, y0=0.85).build(fx, "core", core)
-        fx.track(cc, lambda t, i: dict(op=0.75 + 0.25 * math.sin(TAU * t)))
+        fx.track(cc, lambda t, i: dict(op=1.0 if r == "dia" else 0.75 + 0.25 * math.sin(TAU * t)))
     else:
         cc = column(W * 0.22, 0.45, taper=0.7, p=1.0, y0=0.8).build(fx, "core", core)
         fx.track(cc, lambda t, i: dict(op=0.7 + 0.2 * math.sin(TAU * t)))
 
     kind = dict(linh="disc", huyen="diamond", dia="star", thien="star")[r]
-    n = dict(linh=3, huyen=4, dia=6, thien=8)[r]
+    n = dict(linh=3, huyen=4, dia=9, thien=8)[r]
     for j in range(n):
         x0 = (j / max(n - 1, 1) - 0.5) * W * 0.9 + rng.uniform(-0.05, 0.05)
         k = kind if not (r == "thien" and j % 3 == 0) else "star8"
@@ -90,13 +94,13 @@ def make_cot(r):
 
     if r in ("dia", "thien"):
         # two long blades crossing behind the column (a wing-like V)
-        bm = fx.mat("blade", c["body"], grad=dict(src="attr", pow=0.4 if r == "dia" else 0.8), core=c["mid"])
+        bm = fx.mat("blade", c["body"], grad=dict(src="attr", pow=0.4 if r == "dia" else 0.8), core=("#8a3ce0" if r == "dia" else c["mid"]))
         for sgn in (-1, 1):
             L = 1.7 if r == "dia" else 2.1
             mb = MB().strip([(0.42, 0.0), (0.42 + 0.45 * L * math.sin(0.34), 0.45 * L), (0.42 + L * math.sin(0.34), L * 0.97)], [0.17, 0.11, 0.02] if r == "dia" else [0.15, 0.1, 0.02], soft=True)
             mb.xform(sx=sgn)
             o = mb.build(fx, "blade%d" % sgn, bm)
-            fx.track(o, lambda t, i: dict(sy=1.0 + 0.05 * math.sin(TAU * t), op=(0.8 if r == "dia" else 0.38) + 0.12 * math.sin(TAU * t + 2.0)))
+            fx.track(o, lambda t, i: dict(sy=1.0 + 0.05 * math.sin(TAU * t), op=(0.7 if r == "dia" else 0.38) + 0.12 * math.sin(TAU * t + 2.0)))
 
     if r == "thien":
         # slow orbiting halo above the column's waist, crown star on top, flat star burst on the ground
@@ -135,11 +139,11 @@ def make_vong(r):
     body = fx.mat("body", c["body"], grad=dict(src="attr", pow=1.0), opacity=0.9)
     mid = fx.mat("mid", c["mid"])
     core = fx.mat("core", c["core"])
-    glow = fx.mat("glow", c["mid"] if r == "dia" else c["body"], grad=dict(src="attr", pow=0.7 if r == "dia" else 1.4), opacity={"pham": 0.2, "linh": 0.35, "huyen": 0.45, "dia": 0.5, "thien": 0.55}[r])
+    glow = fx.mat("glow", c["body"], grad=dict(src="attr", pow=0.7 if r == "dia" else 1.4), opacity={"pham": 0.2, "linh": 0.35, "huyen": 0.45, "dia": 0.5, "thien": 0.55}[r])
     pulse = lambda t, ph=0.0: math.sin(TAU * t + ph)
 
     gd = glow_disc(R * 0.98, 36).build(fx, "glow", glow)
-    GO = dict(dia=0.7, thien=0.55).get(r, 0.9)
+    GO = dict(dia=0.45, thien=0.55).get(r, 0.9)
     fx.track(gd, lambda t, i: dict(s=1.0 + 0.05 * pulse(t), op=GO * (0.9 + 0.1 * pulse(t, 1.0))))
 
     def spin(ob, sym, rev=1.0, **kw):
@@ -160,11 +164,11 @@ def make_vong(r):
         spin(mb.build(fx, "ticks", core), 4)
         return fx
     if r == "dia":
-        spin(MB().ring(0, 0, R * 0.7, 0.045, seg=40).build(fx, "inner", body), 1, rev=-1.0)
+        spin(MB().ring(0, 0, R * 0.7, 0.05, seg=40).build(fx, "inner", mid), 1, rev=-1.0)
         mb = MB()
         for k in range(6):
             a = TAU * k / 6
-            mb.diamond(R * math.cos(a), R * math.sin(a), 0.34, 0.2, a)
+            mb.star(R * math.cos(a), R * math.sin(a), 4, 0.2, 0.05, a + PI / 4)
         spin(mb.build(fx, "nodes", core), 6)
         return fx
     # thien
