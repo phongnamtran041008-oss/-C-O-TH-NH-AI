@@ -98,13 +98,13 @@ def run_library_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.click("math_library")
         drv.wait(lambda: drv.top_is("LibraryListScene") and top(drv).data is not None, 10, "the library")
         listed = top(drv).data["subjects"]
-        # four subjects, each written to floor 9, one tab each; the list opens on the hub's subject
+        # four subjects, each written to floor 9 plus the hidden floor 10, one tab each; the list opens on the hub's subject
         assert [s["id"] for s in listed] == ["dai_so_tuyen_tinh", "giai_tich", "xac_suat_thong_ke", "toi_uu_roi_rac"]
         assert top(drv).tab == 0
         for s in listed:
-            assert [d["floor"] for d in s["documents"]] == list(range(1, 10)), s["id"]
+            assert [d["floor"] for d in s["documents"]] == list(range(1, 11)), s["id"]
             assert all(len(d["sections"]) == len(d["skills"]) for d in s["documents"])
-        assert all(len(d["sections"]) == 6 for d in listed[0]["documents"])
+        assert all(len(d["sections"]) == 6 for d in listed[0]["documents"] if d["floor"] <= 9)
         drv.shot("library_list")
 
         # ---- read every document of every subject from the first line to the last
@@ -112,7 +112,7 @@ def run_library_flow(workdir: Path, shots: Path | None = None) -> None:
         for s in listed:
             drv.click(f"lib_tab_{s['id']}")
             assert top(drv).tab == listed.index(s)
-            for d in s["documents"]:            # nine documents do not fit the panel: the list scrolls
+            for d in s["documents"]:            # ten documents do not fit the panel: the list scrolls
                 scroll_to(drv, f"lib_open_{d['id']}")
             if s is listed[1]:
                 drv.shot("library_list_second_subject")
