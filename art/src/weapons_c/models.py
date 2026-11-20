@@ -386,7 +386,7 @@ def roi_body(w, g, pose):
     if g in (2, 3, 4, 5):    # tassel behind the dart
         tassel_dir(w, {2: "red", 3: "jade", 4: "red", 5: "violet"}[g], at(tip_t - 0.02)[0],
                    (-d[0], -d[1]), 3, 0.06, side=True)
-    if g == 8:
+    if g == 8 and pose != "coil":   # star specks along the swung / lashed chain (clutter on the small coil)
         for t in (0.2, 0.45, 0.7):
             p, _ = at(t)
             w.box("star", (p[0] + 0.03, -0.03, p[1] + 0.02), (0.03, 0.024, 0.03), bevel=0)

@@ -271,7 +271,8 @@ TABLE["roi"] = melee_table(
 
 # hidden darts: a fan held up between the fingers; shoot = drawn back past the ear, the fan
 # leaves the hand on the strike (pose "fly": blades side by side, flying forward), farther on
-# frame 4, a fresh fan in the hand on frame 5
+# frame 4, a fresh fan in the hand on frame 5 (shoot is the bow clip: on the strike the right
+# hand is back at the chest, so the flight offsets are counted from there)
 DART_FACE = (-0.8, -0.6, 0.0)
 DART_CARRY = A((-0.4, -0.3, 0.85), face=DART_FACE, pose="hand")
 DART_BACK = A((0.0, 0.0, 1.0), at="back", off=(-0.2, 0.05, -0.2), face=(-1, 0, 0), pose="hand")
@@ -281,8 +282,8 @@ TABLE["am_khi"] = {
     "shoot": [DART_CARRY,
               A((-0.45, 0.55, 0.7), face=DART_FACE, pose="hand"),
               A((-0.35, 0.3, 0.88), face=DART_FACE, pose="hand"),
-              A((0.0, -1.0, 0.04), xdir=(0, 0, 1), off=(0.0, -0.26, 0.04), pose="fly"),
-              A((0.0, -1.0, 0.0), xdir=(0, 0, 1), off=(0.0, -0.5, 0.06), pose="fly"),
+              A((0.0, -1.0, 0.04), xdir=(0, 0, 1), off=(0.0, -0.42, 0.04), pose="fly"),
+              A((0.0, -1.0, 0.0), xdir=(0, 0, 1), off=(0.0, -0.62, 0.06), pose="fly"),
               DART_CARRY],
     "die": lying(DART_CARRY), "fly": DART_BACK, "meditate": DART_BACK}
 
@@ -296,8 +297,8 @@ TABLE["luan"] = {
     "shoot": [LUAN_CARRY,
               A((-0.5, 0.6, 0.6), face=F45),
               A((-0.4, 0.3, 0.86), face=F45),
-              A((0.0, 0.0, 1.0), face=F45, off=(0.0, -0.3, 0.06), grip=0.17, rot=(0, 50, 0)),
-              A((0.0, 0.0, 1.0), face=F45, off=(0.0, -0.55, 0.1), grip=0.17, rot=(0, 115, 0)),
+              A((0.0, 0.0, 1.0), face=F45, off=(0.0, -0.45, 0.06), grip=0.17, rot=(0, 50, 0)),
+              A((0.0, 0.0, 1.0), face=F45, off=(0.0, -0.62, 0.1), grip=0.17, rot=(0, 115, 0)),
               LUAN_CARRY],
     "die": lying(LUAN_CARRY), "fly": LUAN_BACK, "meditate": LUAN_BACK}
 
