@@ -1439,3 +1439,28 @@ Chủ dự án: binh khí rơi từ quái phải phát sáng nhẹ, mỗi phẩm
   Hình vào thì chỉ đổi `status` (test `test_flipping_the_status_is_the_only_change_needed`). Riêng client:
   `client/scenes/world.py` `PLAN_WEAPON_RANGE` / `PLAN_WEAPON_LOOK` (ngắm tự động, hình vẽ bằng code khi tắt v2) do
   người làm hiệu ứng giữ, cần thêm sáu dòng; thiếu thì loại ấy ngắm với tầm mặc định.
+
+## Bách thú: mười ba quái và sáu linh thú (2026-11-20)
+
+- **Quái mới mỗi vùng một thường một tinh anh** (Lôi Kiếp Đài: hai Lôi Linh): Thiết Giáp Thú, Vong Hồn Kiếm Sĩ, Vân
+  Điệp, Lôi Ưng, U Minh Đăng, Huyết Ngạc, Hoa Yêu, Bạch Viên, Cơ Quan Thú, Lò Linh, Thảo Nhân, Xích Diễm Mã, Lôi
+  Linh (`server/data/math/monsters.json`, thêm trước `loi_long`, không sửa dòng cũ). Mỗi con hỏi ít nhất một nút
+  mà quái cùng vùng cùng bậc chưa hỏi. Số và đồ rơi theo quái cũ cùng bậc; chỉ dùng nguyên liệu đã có bậc trong
+  `loot_tiers.json`, không thêm vật phẩm mới. Thêm 4-5 con mỗi vùng (vùng đông nhất, Kiếm Trủng Sơn, từ 36 lên 40).
+- **Nhịp đòn của tinh anh**: `attack_shape` nay nhận một danh sách hình dùng lần lượt (một chuỗi vẫn là một hình
+  cố định). `math_tree` kiểm từng hình là hình của `telegraph_shapes`.
+- **Lôi Linh** không chủ động, Công 6, ở hai mép Lôi Kiếp Đài cách vùng Lôi Long hơn tầm nhìn của nó (96 px).
+- **Hình tạm**: quái mới mượn bộ hình gần nhất có sẵn trong `wiring.json` `monsters`; con bay mượn hình đang ở
+  `monster_float`. Khi hình thật về, đổi dòng của nó thành `<id>` (tinh anh: `<id>_di` nếu có) và thêm id ấy vào
+  `monster_float` cho bốn con bay.
+- **Sáu linh thú, sáu quà mới, chờ hình**: Ngọc Thố (`heal_on_right` 5% sinh lực mỗi Phản Đòn), Tầm Bảo Thử
+  (`stone_bonus` +20% linh thạch), Bích Nhãn Kim Thiềm (`drop_luck` tỉ lệ rơi ×1,15, cổng tu vi vẫn chặn), Bạch Hổ
+  Con (`atk_bonus` Công +8%), Cửu Vĩ Hồ (`xp_bonus` +10% tu vi câu toán đúng ngoài Đạo Thụ), Kim Sí Điểu
+  (`glide_range` lướt xa +40%, tức 112 px). Quà nhỏ: `math_tree` đòi `0 < value <= 0,5`. Mỗi vùng một con mới;
+  hiện từ tầng 3, 4, 5, 6, 8, 9; Kim Sí Điểu cần Đạp Kiếm Lướt (mỏm đá trong mây cạnh Đao, ô 21,3). `status` mới
+  `cho_hinh` cho linh thú, nghĩa như của binh khí: kiểm đủ như con đã dựng, không có trong game, quà đọc ra 0,
+  `check_all` bỏ qua hình. Hình vào thì chỉ đổi `status` (`server/tests/test_bestiary.py`). Một chỗ đứng không được
+  trùng chỗ binh khí hay linh thú khác (`math_tree` kiểm).
+- **Chỗ tác dụng của quà**, mỗi chỗ một lời gọi: `combat.parry_heal` trong `_parry`, `beasts.loot_gift` cuối
+  `combat._loot_bonus`, `beasts.stat_gift` trong `cultivation.current_stats` (sau `stats_for`), nhánh `xp_bonus`
+  trong `pets.on_math_answer`, `abilities.glide_max_px` cho lướt và cho số gửi client.

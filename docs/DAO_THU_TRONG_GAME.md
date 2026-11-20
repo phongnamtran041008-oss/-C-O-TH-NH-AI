@@ -183,6 +183,44 @@ Con (Vân Hải Thiên Đảo, Trúc Cơ) chờ vùng đất của nó. "Tu vi" 
   được (hoặc nếu cần Đạp Kiếm Lướt thì đi bộ không tới mà một lần lướt tới được), số đánh và quà hợp lệ; số của
   pháp trận, lướt, cưỡi đủ và hợp lý; hai chỗ binh khí cần Đạp Kiếm Lướt thật sự lướt tới được.
 
+## Bách thú: mười ba quái mới và sáu linh thú chờ hình (2026-11-20)
+
+Mỗi vùng Luyện Khí có thêm một quái thường và một tinh anh (Lôi Kiếp Đài: hai Lôi Linh). Mỗi con đứng cho vài nút
+mà quái cùng vùng, cùng bậc chưa hỏi (`server/tests/test_bestiary.py` kiểm). Đồ rơi chỉ là nguyên liệu đã có
+bậc trong `loot_tiers.json`. Tinh anh mới có nhịp đòn riêng: `attack_shape` là một danh sách hình, dùng lần lượt.
+
+| Vùng | Quái mới (bậc, số con) | Nút | Nhịp đòn |
+|---|---|---|---|
+| Kiếm Trủng Sơn | Thiết Giáp Thú (thường, 3) | Nhân ma trận, Định thức, Ánh xạ tuyến tính | tròn |
+| Kiếm Trủng Sơn | Vong Hồn Kiếm Sĩ (tinh anh, 1) | Không gian vectơ, Trực giao, Trị riêng, PCA | thẳng, thẳng, quạt |
+| Lưu Vân Cốc | Vân Điệp (thường, 4, bay) | Giới hạn, Đạo hàm, Taylor | tròn |
+| Lưu Vân Cốc | Lôi Ưng (tinh anh, 1, bay) | Cực trị, Tích phân, Diện tích, Gradient | thẳng, thẳng, tròn |
+| Vạn Tượng Trạch | U Minh Đăng (thường, 3, bay) | Điều kiện, Biến ngẫu nhiên rời rạc và liên tục | tròn |
+| Vạn Tượng Trạch | Huyết Ngạc (tinh anh, 1) | Bayes, Biến liên tục, Kỳ vọng, Kiểm định | quạt, quạt, thẳng |
+| Mê Đồ Lâm | Hoa Yêu (thường, 3, chủ động trong 40 px) | Đếm và truy hồi, Quay lui, Tìm kiếm | tròn |
+| Mê Đồ Lâm | Bạch Viên (tinh anh, 1) | Đồ thị, Tìm kiếm, Đường đi ngắn nhất, Tối ưu lồi | tròn, tròn, quạt |
+| Thiên Công Phường | Cơ Quan Thú (thường, 3) | Logic, Thuật toán, Tìm kiếm | tròn |
+| Thiên Công Phường | Lò Linh (tinh anh, 1) | Khử Gauss, Xác suất, Điều kiện, Đạo hàm, Cực trị | tròn, quạt |
+| Linh Xạ Nguyên | Thảo Nhân (thường, 3) | Vectơ, Nhân ma trận, Hàm số, Bayes | tròn |
+| Linh Xạ Nguyên | Xích Diễm Mã (tinh anh, 1) | Đạo hàm, Cực trị, Gradient, Hạ gradient | thẳng, thẳng, tròn |
+| Lôi Kiếp Đài | Lôi Linh (thường, 2, bay) | Trị riêng, Gradient, Khoảng tin cậy, Hạ gradient | tròn |
+
+Lôi Linh không tự gây sự (không chủ động), đánh nhẹ (6 Công) và lượn ở hai mép đài, ngoài tầm Lôi Long thấy
+người (96 px tính từ mép vùng của nó), nên đánh trùm vẫn công bằng; hạ chúng trước là một cách lấy linh lực.
+
+Sáu linh thú mới, mỗi con một quà mới, đều `"status": "cho_hinh"` (chờ hình, như kỳ binh): kế hoạch kiểm đủ
+(chỗ đứng, số đánh, quà) nhưng chúng chưa có trong game. Có hình `client/assets/v2/beasts/<id>` và dòng
+`spirit_beasts` trong `wiring.json` thì đổi `cho_hinh` thành `co` là đủ.
+
+| Linh thú | Vùng đất, chỗ (ô) | Hiện từ | Phản Đòn để thu | Quà khi đeo |
+|---|---|---|---|---|
+| Ngọc Thố | Linh Xạ Nguyên, bờ nam (30, 33) | Tầng 3 | 3 | Mỗi Phản Đòn hồi 5% sinh lực (`heal_on_right`) |
+| Tầm Bảo Thử | Thiên Công Phường, kho phế liệu (14, 29) | Tầng 4 | 3 | Thêm 20% linh thạch khi hạ quái (`stone_bonus`) |
+| Bích Nhãn Kim Thiềm | Vạn Tượng Trạch, đá rêu đông bắc (48, 4) | Tầng 5 | 4 | Tỉ lệ rơi đồ nhân 1,15; đồ chưa đủ tu vi vẫn khoá (`drop_luck`) |
+| Bạch Hổ Con | Kiếm Trủng Sơn, sườn đông (53, 12) | Tầng 6 | 4 | Công tăng 8% (`atk_bonus`) |
+| Cửu Vĩ Hồ | Mê Đồ Lâm, góc đông nam (56, 36) | Tầng 8 | 5 | Thêm 10% tu vi cho câu toán đúng ngoài Đạo Thụ (`xp_bonus`) |
+| Kim Sí Điểu | Lưu Vân Cốc, mỏm đá trong mây (21, 3) | Tầng 9 và Đạp Kiếm Lướt | 5 | Đạp Kiếm Lướt xa thêm 40% (`glide_range`) |
+
 
 ## Tôi tự quyết — bạn đổi được
 

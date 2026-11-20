@@ -452,13 +452,13 @@ Bị loại khỏi lộ trình: nội dung hệ tài năng, thiên về chứng 
 | Vùng đất | Nhánh giáo trình | Binh khí | Kỳ binh (chỉ rơi từ tinh anh, trùm) | Mô tả |
 |---|---|---|---|---|
 | **Trúc Lâm Thôn** | — | — | — | Thôn tre: nơi bắt đầu, có Tàng Thư Các, lò rèn và động phủ. |
-| **Kiếm Trủng Sơn** | Đại Số Tuyến Tính | Kiếm | Kích | Núi mộ kiếm: kiếm gãy cắm đầy sườn đá. Quái: Kiếm Linh, Thạch Khôi; tinh anh: Ma Trận Thú. |
-| **Lưu Vân Cốc** | Giải Tích | Đao | Roi | Thung lũng mây trôi: suối uốn lượn, gió không ngừng. Quái: Vân Xà; tinh anh: Phong Lang. |
-| **Vạn Tượng Trạch** | Xác Suất và Thống Kê | Hồ Lô | Ám Khí | Đầm vạn tượng: sương mù, mỗi bước một điều chưa chắc. Quái: Đầu Tử Oa; tinh anh: Hồ Lô Tinh. |
-| **Mê Đồ Lâm** | Thuật Toán và Tối Ưu | Thương | Luân | Rừng mê cung: lối đi chằng chịt như một đồ thị. Quái: Tri Chu Tinh; tinh anh: Mộc Yêu. |
-| **Thiên Công Phường** | Lập Trình | Chùy | Phủ | Phường thợ bỏ hoang: lò rèn, bánh răng và những cơ quan nhân còn chạy. Quái: Cơ Quan Nhân; tinh anh: Cơ Quan Nhân Đầu Đàn. |
-| **Linh Xạ Nguyên** | Thực Chiến AI | Cung | Cầm | Thảo nguyên bia bắn: nơi luyện Thực Chiến AI. Quái: Tâm Ma của chính mình; tinh anh: Tâm Ma Chấp Niệm. |
-| **Lôi Kiếp Đài** | — | — | — | Đài độ kiếp: nơi đối mặt Thiên Kiếp Lôi Long để lên Trúc Cơ. |
+| **Kiếm Trủng Sơn** | Đại Số Tuyến Tính | Kiếm | Kích | Núi mộ kiếm: kiếm gãy cắm đầy sườn đá. Quái: Kiếm Linh, Thạch Khôi, Thiết Giáp Thú; tinh anh: Ma Trận Thú, Vong Hồn Kiếm Sĩ. |
+| **Lưu Vân Cốc** | Giải Tích | Đao | Roi | Thung lũng mây trôi: suối uốn lượn, gió không ngừng. Quái: Vân Xà, Vân Điệp; tinh anh: Phong Lang, Lôi Ưng. |
+| **Vạn Tượng Trạch** | Xác Suất và Thống Kê | Hồ Lô | Ám Khí | Đầm vạn tượng: sương mù, mỗi bước một điều chưa chắc. Quái: Đầu Tử Oa, U Minh Đăng; tinh anh: Hồ Lô Tinh, Huyết Ngạc. |
+| **Mê Đồ Lâm** | Thuật Toán và Tối Ưu | Thương | Luân | Rừng mê cung: lối đi chằng chịt như một đồ thị. Quái: Tri Chu Tinh, Hoa Yêu; tinh anh: Mộc Yêu, Bạch Viên. |
+| **Thiên Công Phường** | Lập Trình | Chùy | Phủ | Phường thợ bỏ hoang: lò rèn, bánh răng và những cơ quan nhân còn chạy. Quái: Cơ Quan Nhân, Cơ Quan Thú; tinh anh: Cơ Quan Nhân Đầu Đàn, Lò Linh. |
+| **Linh Xạ Nguyên** | Thực Chiến AI | Cung | Cầm | Thảo nguyên bia bắn: nơi luyện Thực Chiến AI. Quái: Tâm Ma của chính mình, Thảo Nhân; tinh anh: Tâm Ma Chấp Niệm, Xích Diễm Mã. |
+| **Lôi Kiếp Đài** | — | — | — | Đài độ kiếp: nơi đối mặt Thiên Kiếp Lôi Long để lên Trúc Cơ. Hai Lôi Linh lượn ở hai mép đài, không tự gây sự. |
 | **Vân Hải Thiên Đảo** | Học Máy | Trượng | — | Quần đảo trên biển mây: chỉ tới được bằng ngự kiếm phi hành. |
 
 - **Kiếm** (Đại Số Tuyến Tính): Vectơ là mũi tên thẳng: kiếm là binh khí của Đại Số Tuyến Tính.
@@ -521,4 +521,10 @@ Thu phục linh thú cũng theo luật đánh mới: không có câu hỏi riên
 | **Bạch Hạc** | Lưu Vân Cốc: Đậu trên mỏm đá cao. | Luyện Khí tầng 5 | 4 lần | Né đòn hồi nhanh hơn. |
 | **Hỏa Tước** | Kiếm Trủng Sơn: Tổ trên vách núi, phải Đạp Kiếm Lướt mới tới. | Luyện Khí tầng 6 | 4 lần | Đòn phản thêm sát thương hoả. |
 | **Tiểu Long** | Thiên Công Phường: Cuộn trong lò lớn của phường. | Luyện Khí tầng 8 | 5 lần | Cưỡi được: chạy nhanh trên mặt đất. |
+| **Ngọc Thố** | Linh Xạ Nguyên: Gặm cỏ trăng ở bờ nam thảo nguyên, giữa hai dãy bia bắn. | Luyện Khí tầng 3 | 3 lần | Mỗi lần Phản Đòn hồi 5% sinh lực. |
+| **Tầm Bảo Thử** | Thiên Công Phường: Làm ổ trong kho phế liệu có tường vây phía tây nam, giữa đống bánh răng. | Luyện Khí tầng 4 | 3 lần | Hạ quái được thêm 20% linh thạch. |
+| **Bích Nhãn Kim Thiềm** | Vạn Tượng Trạch: Ngồi trên tảng đá rêu ở góc đông bắc đầm, miệng ngậm một đồng tiền vàng. | Luyện Khí tầng 5 | 4 lần | Quái dễ rơi đồ hơn (tỉ lệ rơi nhân 1,15); đồ chưa đủ tu vi vẫn khoá. |
+| **Bạch Hổ Con** | Kiếm Trủng Sơn: Lang thang trên sườn đông của núi, nơi gió kim khí thổi mạnh nhất. | Luyện Khí tầng 6 | 4 lần | Công tăng 8%. |
+| **Cửu Vĩ Hồ** | Mê Đồ Lâm: Nằm dưới gốc cổ thụ ở góc đông nam rừng, chỉ hiện với người đã đi gần hết Luyện Khí. | Luyện Khí tầng 8 | 5 lần | Trả lời đúng câu toán ngoài Đạo Thụ được thêm 10% tu vi. |
+| **Kim Sí Điểu** | Lưu Vân Cốc: Đậu trên mỏm đá giữa mây trên đầu thác, cạnh thanh Đao; phải Đạp Kiếm Lướt mới tới. | Luyện Khí tầng 9 | 5 lần | Đạp Kiếm Lướt bay xa thêm 40%. |
 | **Kỳ Lân Con** | Vân Hải Thiên Đảo: Trên đảo mây xa nhất. | Trúc Cơ tầng 1 | 6 lần | Mỗi ngày tặng một lần trả lời lại câu vừa sai. |

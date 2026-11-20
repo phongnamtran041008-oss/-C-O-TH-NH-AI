@@ -206,7 +206,9 @@ Phần `beasts`, `beast_taming` và các thần thông trong `unlocks` của `wo
   hoang. `fx` thêm: `tame` (`id` = linh thú, `by` = người, `n`/`need` = đã đếm / cần, `ok` = 1 khi nó chịu phục),
   `seal` (đã phong ấn), `fire` (đòn phản của người đeo Hỏa Tước). Kết quả của câu trả lời (`combat` trong
   `POST /quiz/answer`) có `tame` = `{beast, name_vi, n, need, yielded}` khi đòn là của linh thú, `fire`, và
-  `guarded` (đeo Huyền Quy, trả lời sai). Phong ấn bằng REST `POST /beasts/seal` (`docs/API.md`).
+  `guarded` (đeo Huyền Quy, trả lời sai), và `healed` (Phản Đòn: số sinh lực Ngọc Thố vừa hồi, 0 khi không đeo;
+  kèm `fx` `heal` như mọi lần hồi máu). `dap_kiem_luot.max_px` là tầm lướt *của người ấy* (xa hơn khi đeo Kim Sí
+  Điểu, quà `glide_range`); server kiểm lướt bằng đúng số ấy. Phong ấn bằng REST `POST /beasts/seal` (`docs/API.md`).
 - `glide`, `ride` đi trong dòng `in` như `dodge`: client gửi hết bước đang gom, rồi gói có `s` = số kế tiếp, và tự
   đoán trước (lướt: đặt mình ở chỗ đáp; cưỡi: đi bằng tốc độ `74 × mult` từ bước ấy). Chỗ đáp do client chọn
   bằng đúng hàm của server (`realtime/glide.py`, bản chép `client/engine/glide.py`); khi tới số `s`, server kiểm lại
