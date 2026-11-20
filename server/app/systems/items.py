@@ -51,11 +51,15 @@ def equipment_view(e: EquipmentInstance) -> dict:
         nxt = {"success_pct": enh["success_pct"][lvl], "stones": enh["cost_stones"][lvl],
                "material": enh["material"], "material_name": catalog.item_name(enh["material"]),
                "material_qty": enh["material_qty"][lvl]}
-    return {"id": e.id, "item_id": e.item_id, "name_vi": item.get("name_vi", e.item_id), "slot": item.get("slot"),
-            "slot_vi": eq["slots"].get(item.get("slot"), ""), "kind": item.get("kind"),
-            "rarity": e.rarity, "rarity_vi": rar["name_vi"], "color": rar["color"], "enhance": lvl,
-            "stats": cultivation.instance_stats(e), "equipped": e.equipped_slot, "desc_vi": item.get("desc_vi", ""),
-            "next_enhance": nxt, "sell_price": sell_price(e)}
+    out = {"id": e.id, "item_id": e.item_id, "name_vi": item.get("name_vi", e.item_id), "slot": item.get("slot"),
+           "slot_vi": eq["slots"].get(item.get("slot"), ""), "kind": item.get("kind"),
+           "rarity": e.rarity, "rarity_vi": rar["name_vi"], "color": rar["color"], "enhance": lvl,
+           "stats": cultivation.instance_stats(e), "equipped": e.equipped_slot, "desc_vi": item.get("desc_vi", ""),
+           "next_enhance": nxt, "sell_price": sell_price(e)}
+    if item.get("weapon_type"):          # a weapon of Thiên Địa Đồ: type, grade, quality, effect
+        from . import weapons
+        out["weapon"] = weapons.instance_extra(e)
+    return out
 
 
 def sell_price(e: EquipmentInstance) -> int:

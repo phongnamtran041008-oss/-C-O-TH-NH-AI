@@ -97,7 +97,9 @@ def level_index(realm: str, stage: int) -> int:
 def instance_stats(e: EquipmentInstance) -> dict:
     eq = catalog.equipment()
     item = eq["items"].get(e.item_id, {})
-    mult = eq["rarities"][e.rarity]["mult"] * (1 + eq["enhance"]["stat_bonus_per_level"] * e.enhance_level)
+    # a weapon of Thiên Địa Đồ carries its quality's own power (world_plan.json), by rarity
+    base = item.get("power_by_rarity", {}).get(e.rarity) or eq["rarities"][e.rarity]["mult"]
+    mult = base * (1 + eq["enhance"]["stat_bonus_per_level"] * e.enhance_level)
     return {k: int(round(v * mult)) for k, v in item.get("stats", {}).items()}
 
 

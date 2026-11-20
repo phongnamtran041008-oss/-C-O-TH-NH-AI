@@ -2,7 +2,7 @@
  "_comment": "Thiên Địa Đồ: tu vi mở khoá cái gì, vùng đất nào có vũ khí gì, linh thú ở đâu, và luật đánh quái mới. Đi cùng tree.json (cây giáo trình): mọi 'nodes' ở đây là nút của cây ấy, nên yêu cầu của một món vũ khí luôn là một phần giáo trình đã học xong. 'wired': false nghĩa là game chưa chạy theo file này; nó là bản thiết kế đã được kiểm (server/app/learning/math_tree.py), chờ duyệt rồi mới nối vào game. 'wired_sections' liệt kê các phần đã nối vào game dù 'wired' còn false: 'combat' (luật đánh quái mới) chạy ở mọi vùng hoang, còn vùng đất, vũ khí và linh thú chờ đợt sau. 'status' của từng mục: 'co' = game đã có, 'chua_co' = chưa làm. Tầng 0 của một cảnh giới là lúc vừa độ kiếp lên cảnh giới ấy, chưa xong tầng 1.",
  "version": 1,
  "wired": false,
- "wired_sections": ["combat"],
+ "wired_sections": ["combat", "weapons"],
  "combat": {
   "_comment": "Luật mới theo yêu cầu: chỉ phải trả lời câu hỏi khi bị quái đánh trúng. Đã nối vào game (wired_sections) ở mọi vùng hoang; bí cảnh, hầm ngục, thủ thành và cơ duyên giữ luật cũ. Game đọc mọi con số ở đây (server/app/realtime/combat.py): 'telegraph' là hình vùng đánh theo bậc quái (con quái lần lượt dùng từng hình trong danh sách), 'question_wait_seconds' là lúc người bị đánh trúng được giữ yên trong khi máy chủ soạn câu, 'shielded_ranks' là bậc quái mang Mặc Thuẫn ngoài vùng hoang.",
   "question_rule": "on_hit",
@@ -30,29 +30,36 @@
   "shielded_ranks": ["elite", "boss"]
  },
  "grades": [
-  {"grade": 1, "realm": "luyen_khi", "prefix_vi": "Mộc"},
-  {"grade": 2, "realm": "truc_co", "prefix_vi": "Thiết"},
-  {"grade": 3, "realm": "ket_dan", "prefix_vi": "Bích Ngọc"},
-  {"grade": 4, "realm": "nguyen_anh", "prefix_vi": "Kim Lam"},
-  {"grade": 5, "realm": "hoa_than", "prefix_vi": "Linh Quang"},
-  {"grade": 6, "realm": "luyen_hu", "prefix_vi": "Hỏa Diệm"},
-  {"grade": 7, "realm": "hop_the", "prefix_vi": "Băng Dực"},
-  {"grade": 8, "realm": "dai_thua", "prefix_vi": "Tinh Không"}
+  {"grade": 1, "realm": "luyen_khi", "prefix_vi": "Mộc", "atk": 10},
+  {"grade": 2, "realm": "truc_co", "prefix_vi": "Thiết", "atk": 24},
+  {"grade": 3, "realm": "ket_dan", "prefix_vi": "Bích Ngọc", "atk": 50},
+  {"grade": 4, "realm": "nguyen_anh", "prefix_vi": "Kim Lam", "atk": 95},
+  {"grade": 5, "realm": "hoa_than", "prefix_vi": "Linh Quang", "atk": 170},
+  {"grade": 6, "realm": "luyen_hu", "prefix_vi": "Hỏa Diệm", "atk": 290},
+  {"grade": 7, "realm": "hop_the", "prefix_vi": "Băng Dực", "atk": 470},
+  {"grade": 8, "realm": "dai_thua", "prefix_vi": "Tinh Không", "atk": 740}
  ],
  "qualities": [
-  {"id": "ha", "name_vi": "Hạ phẩm", "power": 1.0},
-  {"id": "trung", "name_vi": "Trung phẩm", "power": 1.35},
-  {"id": "thuong", "name_vi": "Thượng phẩm", "power": 1.8}
+  {"id": "ha", "name_vi": "Hạ phẩm", "power": 1.0, "rarity": "pham"},
+  {"id": "trung", "name_vi": "Trung phẩm", "power": 1.35, "rarity": "linh"},
+  {"id": "thuong", "name_vi": "Thượng phẩm", "power": 1.8, "rarity": "huyen"}
  ],
+ "weapons": {
+  "_comment": "Đã nối vào game (wired_sections 'weapons', server/app/systems/weapons.py). Một binh khí là '<weapon_types.id>_<grade>' (kiem_1 = Mộc Kiếm); id của một chỗ đặt trong weapons_placed là '<weapon>_<quality>' (kiem_1_ha). Nhặt rồi nó là một món trang bị như mọi món khác (ô Vũ khí): 'atk' của bậc nhân 'power' của phẩm là Công của nó, 'rarity' của phẩm là độ hiếm nó mang trong túi đồ. 'range', 'cooldown', 'mult' của loại là cách đánh thường, 'clip' là động tác. Phản Đòn: câu hỏi thuộc đúng nhánh của binh khí thì đòn phản mạnh thêm 'own_branch_parry_bonus'; binh khí của nhánh không có môn toán riêng (Lập Trình, Thực Chiến, Học Máy, Học Sâu: chúng dùng mọi nhánh toán) thì mạnh thêm 'any_branch_parry_bonus' với mọi câu. Nhặt cần mở 'claim_unlock'; nâng phẩm ở lò rèn cần mở 'upgrade_unlock' (công thức trong crafting.json, mục upgrades).",
+  "own_branch_parry_bonus": 0.5,
+  "any_branch_parry_bonus": 0.15,
+  "claim_unlock": "nhat_vu_khi",
+  "upgrade_unlock": "nang_pham"
+ },
  "weapon_types": [
-  {"id": "kiem", "name_vi": "Kiếm", "branch": "ds", "land": "kiem_trung_son", "clip": "slash", "why_vi": "Vectơ là mũi tên thẳng: kiếm là binh khí của Đại Số Tuyến Tính."},
-  {"id": "dao", "name_vi": "Đao", "branch": "gt", "land": "luu_van_coc", "clip": "slash", "why_vi": "Lưỡi đao là một đường cong: binh khí của Giải Tích."},
-  {"id": "ho_lo", "name_vi": "Hồ Lô", "branch": "xs", "land": "van_tuong_trach", "clip": "cast", "why_vi": "Rút bi từ trong bình: binh khí của Xác Suất."},
-  {"id": "thuong", "name_vi": "Thương", "branch": "tr", "land": "me_do_lam", "clip": "slash", "why_vi": "Đi thẳng tới đích theo đường ngắn nhất: binh khí của Thuật Toán và Tối Ưu."},
-  {"id": "chuy", "name_vi": "Chùy", "branch": "lt", "land": "thien_cong_phuong", "clip": "slash", "why_vi": "Búa của thợ rèn: lập trình là tự tay rèn ra công cụ."},
-  {"id": "cung", "name_vi": "Cung", "branch": "ud", "land": "linh_xa_nguyen", "clip": "shoot", "why_vi": "Nhắm vào đích và chỉnh dần cho trúng: đó chính là huấn luyện một mô hình."},
-  {"id": "truong", "name_vi": "Trượng", "branch": "ml", "land": "van_hai_thien_dao", "clip": "cast", "why_vi": "Pháp trượng của người điều khiển mô hình, từ Trúc Cơ."},
-  {"id": "phien", "name_vi": "Phiến", "branch": "dl", "land": null, "clip": "cast", "why_vi": "Quạt nhiều nan xếp lớp như mạng nhiều tầng, từ Nguyên Anh."}
+  {"id": "kiem", "name_vi": "Kiếm", "branch": "ds", "land": "kiem_trung_son", "clip": "slash", "range": 26, "cooldown": 0.5, "mult": 1.0, "why_vi": "Vectơ là mũi tên thẳng: kiếm là binh khí của Đại Số Tuyến Tính."},
+  {"id": "dao", "name_vi": "Đao", "branch": "gt", "land": "luu_van_coc", "clip": "slash", "range": 28, "cooldown": 0.6, "mult": 1.1, "why_vi": "Lưỡi đao là một đường cong: binh khí của Giải Tích."},
+  {"id": "ho_lo", "name_vi": "Hồ Lô", "branch": "xs", "land": "van_tuong_trach", "clip": "cast", "range": 40, "cooldown": 0.7, "mult": 1.0, "why_vi": "Rút bi từ trong bình: binh khí của Xác Suất."},
+  {"id": "thuong", "name_vi": "Thương", "branch": "tr", "land": "me_do_lam", "clip": "slash", "range": 38, "cooldown": 0.7, "mult": 1.1, "why_vi": "Đi thẳng tới đích theo đường ngắn nhất: binh khí của Thuật Toán và Tối Ưu."},
+  {"id": "chuy", "name_vi": "Chùy", "branch": "lt", "land": "thien_cong_phuong", "clip": "slash", "range": 24, "cooldown": 0.9, "mult": 1.3, "why_vi": "Búa của thợ rèn: lập trình là tự tay rèn ra công cụ."},
+  {"id": "cung", "name_vi": "Cung", "branch": "ud", "land": "linh_xa_nguyen", "clip": "shoot", "range": 60, "cooldown": 0.8, "mult": 1.0, "why_vi": "Nhắm vào đích và chỉnh dần cho trúng: đó chính là huấn luyện một mô hình."},
+  {"id": "truong", "name_vi": "Trượng", "branch": "ml", "land": "van_hai_thien_dao", "clip": "cast", "range": 46, "cooldown": 0.9, "mult": 1.25, "why_vi": "Pháp trượng của người điều khiển mô hình, từ Trúc Cơ."},
+  {"id": "phien", "name_vi": "Phiến", "branch": "dl", "land": null, "clip": "cast", "range": 32, "cooldown": 0.6, "mult": 0.9, "why_vi": "Quạt nhiều nan xếp lớp như mạng nhiều tầng, từ Nguyên Anh."}
  ],
  "lands": [
   {"id": "truc_lam_thon", "name_vi": "Trúc Lâm Thôn", "kind": "hub", "realm": "luyen_khi", "branch": null, "map": "truc_lam_thon", "opens": {"stage": 0, "nodes": []}, "status": "co",
@@ -120,9 +127,9 @@
  "beast_taming_vi": "Thu phục linh thú cũng theo luật đánh mới: không có câu hỏi riêng. Để linh thú đánh trúng rồi Phản Đòn đủ số lần là nó chịu phục; sau đó dùng Phong Ấn Phù để thu.",
  "unlocks": [
   {"id": "ne_don", "name_vi": "Né Đòn", "realm": "luyen_khi", "stage": 1, "status": "co", "desc_vi": "Lướt nhanh ra khỏi vùng đánh của quái."},
-  {"id": "nhat_vu_khi", "name_vi": "Nhặt binh khí", "realm": "luyen_khi", "stage": 1, "status": "chua_co", "desc_vi": "Nhặt và dùng vũ khí nằm rải rác ở các vùng đất, nếu đủ yêu cầu."},
+  {"id": "nhat_vu_khi", "name_vi": "Nhặt binh khí", "realm": "luyen_khi", "stage": 1, "status": "co", "desc_vi": "Nhặt và dùng vũ khí nằm rải rác ở các vùng đất, nếu đủ yêu cầu."},
   {"id": "thu_phuc_linh_thu", "name_vi": "Thu phục linh thú", "realm": "luyen_khi", "stage": 3, "status": "chua_co", "desc_vi": "Dùng Phong Ấn Phù để thu linh thú đã chịu phục."},
-  {"id": "nang_pham", "name_vi": "Rèn nâng phẩm", "realm": "luyen_khi", "stage": 4, "status": "chua_co", "desc_vi": "Lò rèn nâng vũ khí từ hạ phẩm lên trung phẩm."},
+  {"id": "nang_pham", "name_vi": "Rèn nâng phẩm", "realm": "luyen_khi", "stage": 4, "status": "co", "desc_vi": "Lò rèn nâng vũ khí từ hạ phẩm lên trung phẩm."},
   {"id": "phap_tran", "name_vi": "Bày pháp trận", "realm": "luyen_khi", "stage": 5, "status": "chua_co", "desc_vi": "Đặt một pháp trận trên mặt đất: quái trong trận ra đòn chậm lại, dễ né và dễ Phản Đòn hơn."},
   {"id": "dap_kiem_luot", "name_vi": "Đạp Kiếm Lướt", "realm": "luyen_khi", "stage": 6, "status": "chua_co", "desc_vi": "Đứng trên kiếm lướt một quãng ngắn qua vực và mặt nước: tới được các vùng cao."},
   {"id": "cuoi_linh_thu", "name_vi": "Cưỡi linh thú", "realm": "luyen_khi", "stage": 8, "status": "chua_co", "desc_vi": "Cưỡi linh thú đã thu phục để đi nhanh."},
