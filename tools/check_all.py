@@ -546,6 +546,48 @@ def check_weapons() -> list[str]:
     return out
 
 
+BEAST_CLIPS = ("idle", "walk", "windup", "attack", "hit", "die", "happy")
+
+
+def check_beasts() -> list[str]:
+    """Linh thú and thần thông of Thiên Địa Đồ: the rules are checked with the world plan
+    (app/learning/math_tree.py); here the client art they are drawn with - every built beast has
+    its own v2 sheet wired in spirit_beasts with the clips its fight and its following play, the
+    flying sword of Đạp Kiếm Lướt has its fly clip, the formation and the seal their effects, and
+    the Phong Ấn Phù its icon."""
+    from app.learning import math_tree
+    plan = math_tree.world_plan()
+    v2 = ROOT / "client" / "assets" / "v2"
+    wiring = _json(v2 / "wiring.json")
+    out: list[str] = []
+    wired = wiring.get("spirit_beasts") or {}
+    for b in plan.get("beasts", []):
+        if b.get("status") != "co":
+            continue
+        sid = wired.get(b["id"])
+        path = v2 / "beasts" / f"{sid}.json"
+        if not isinstance(sid, str) or not path.exists() or not (v2 / "beasts" / f"{sid}.png").exists():
+            out.append(f"beast {b['id']}: no v2 sheet wired in wiring.json spirit_beasts")
+            continue
+        clips = set((_json(path).get("clips") or {}))
+        for clip in BEAST_CLIPS:
+            if clip not in clips:
+                out.append(f"beast {b['id']}: its sheet {sid} has no {clip!r} clip")
+    unlocks = {u["id"]: u for u in plan.get("unlocks", [])}
+    sword = ((unlocks.get("dap_kiem_luot") or {}).get("glide") or {}).get("sheet")
+    if not sword or "fly" not in ((_json(v2 / "weapons" / f"{sword}.json").get("clips") or {})
+                                  if (v2 / "weapons" / f"{sword}.json").exists() else {}):
+        out.append(f"dap_kiem_luot: the flying sword {sword!r} has no v2 sheet with a fly clip")
+    tran = ((unlocks.get("phap_tran") or {}).get("formation") or {}).get("fx")
+    for fid in (tran, "capture_seal", "burst_hoa"):
+        if not fid or not (v2 / "fx" / f"{fid}.json").exists():
+            out.append(f"thần thông: no v2 effect fx/{fid}")
+    talisman = (plan.get("beast_taming") or {}).get("talisman")
+    if talisman not in ((wiring.get("item_icons") or {}).get("by_id") or {}):
+        out.append(f"beast_taming: the talisman {talisman!r} has no icon in wiring.json item_icons.by_id")
+    return out
+
+
 MIN_CHIEU = 5                      # the M9 milestone: at least five chiêu from data
 # chiêu that may not be castable yet, and why (the only one allowed: contract M9 section 2). The
 # exception lasts only while NO question anywhere casts the chiêu: the day a Thiên kiếp of tier 4+
@@ -734,6 +776,8 @@ CHECKS = [
      check_math_crafting),
     ("binh khí: every placed weapon has requirements, an icon, an in-hand layer and a forge path",
      check_weapons),
+    ("linh thú và thần thông: every built beast, the flying sword, the formation and the talisman have their art",
+     check_beasts),
     ("chiêu thức: fields, question types, FX, animation, and a question that casts each one",
      check_chieu),
     ("bí cảnh toán: the math realm, its Trận Nhãn rooms and its boss can be played",

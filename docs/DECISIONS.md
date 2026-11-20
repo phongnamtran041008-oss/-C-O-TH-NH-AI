@@ -1087,6 +1087,19 @@ vùng đất, binh khí, linh thú chưa nối. Mọi con số đọc từ file 
   giữ) không chuyển gói `dodge` và `stats` tới màn thế giới, nên client tự kiểm mở khoá Né Đòn từ cảnh giới của
   nhân vật và tự tính hồi chiêu; máy chủ vẫn là bên quyết định.
 
+### 2026-11-20: linh thú và thần thông Luyện Khí (`wired_sections` thêm `beasts`, `abilities`)
+
+- **Một mô hình bạn đồng hành.** Linh thú thu phục là một dòng của bảng `pets` và một loài của `pets.species()`
+  (gộp từ `world_plan.json`), đeo một con một lúc như con giáp; Thiên Cơ Các không bao giờ quay ra nó, Linh Thú
+  Phổ vẫn là mười hai con giáp. Kỹ năng của nó là `gift` của kế hoạch, đọc ở chỗ nó tác dụng.
+- **Thu phục bằng Phản Đòn.** Linh thú là quái của vùng chỉ hiện với người đủ tầng Đạo Thụ; không chết; mỗi Phản
+  Đòn của một người được đếm, đủ `parries_to_tame` thì nó chịu phục người ấy 90 giây. Phong Ấn Phù bán ở Sạp Tạp
+  Hóa (nguồn không khoá theo luật rơi đồ); phong ấn cần thần thông tầng 3.
+- **Thần thông đi trong dòng di chuyển.** Đạp Kiếm Lướt và lên/xuống thú cưỡi xếp hàng dưới số thứ tự riêng như
+  Né Đòn, nên máy chủ quyết định đúng ở bước client đã đoán; chỗ đáp lướt kiểm bằng cùng một hàm hình học ở hai
+  bên (`realtime/glide.py`, bản chép ở client). Máy chủ là bên duy nhất áp tốc độ cưỡi.
+- Chi tiết và các lựa chọn đổi được: `docs/DAO_THU_TRONG_GAME.md`, phần "Linh thú và thần thông Luyện Khí".
+
 - **Một chỗ duy nhất để chọn câu hỏi.** `systems/math_ask.py` là nơi cả bốn chế độ lấy câu: bậc là của người
   chơi ở vi kỹ năng ấy và không bao giờ cao hơn, không hỏi tầng chưa tới, cửa sổ chống lặp là cả sổ trả lời,
   và câu trả lời ghi vào `math_answers` với `run_id = NULL` (`math_ask.record`) nên tính vào lộ trình như M7

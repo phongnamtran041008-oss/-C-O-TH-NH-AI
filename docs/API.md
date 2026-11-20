@@ -585,6 +585,22 @@ Khi đánh: loại binh khí quyết định đòn thường (`range`, `cooldown
 Trình, Cung - Thực Chiến, Trượng, Phiến) mạnh thêm `weapons.any_branch_parry_bonus` với mọi câu. Khối `combat` của
 Phản Đòn có thêm `"weapon_bonus": true|false`.
 
+### Linh thú của Thiên Địa Đồ
+
+Phần `beasts` và `beast_taming` của `world_plan.json` (`"wired_sections"` có `"beasts"`), luật ở
+`server/app/systems/beasts.py` (dữ liệu, phong ấn) và `server/app/realtime/beasts.py` (linh thú ngoài vùng đất).
+Thu rồi linh thú là một Linh Thú như con giáp: `GET /pets` liệt kê nó (`"tamed": true`, `skill_vi` = quà của nó),
+`POST /pets/equip` đeo nó; Linh Thú Phổ (`book`, `total`) vẫn chỉ là mười hai con giáp.
+
+| | Đường | Gửi | Trả về |
+|---|---|---|---|
+| GET | `/beasts` | — | `{beasts[], rule_vi, talisman{item, name_vi, have}, can_seal, tu_vi{realm, stage}}`. `beasts`: `{id, name_vi, land, land_vi, zone, where_vi, pos, requires, needs, parries_to_tame, gift, gift_vi, state, reason_vi}`; `state`: `locked` (chưa đủ tầng / thần thông, `reason_vi` nói thiếu gì), `open`, `tamed` |
+| POST | `/beasts/seal` | `{id}` (id của linh thú trong thế giới, ví dụ `b1_huyen_quy`) | dùng một Phong Ấn Phù lên linh thú đứng gần đã chịu phục mình: `{sealed, name_vi, pet, message_vi}` (`pet` như một mục của `/pets`). Lỗi (400): `not_here` (không thấy nó ở vùng này), `not_yielded` (chưa đủ Phản Đòn), `too_far`, `locked` (chưa mở Thu phục linh thú), `no_talisman`, `tamed`; `no_beast` (404) |
+| GET | `/beasts/sniff` | — | quà của Linh Hồ (đang đeo): binh khí còn nằm trong vùng này trong `radius_tiles` ô, gần nhất trước: `{radius_tiles, found[{id, kind: "weapon", name_vi, pos, distance_tiles, way_vi}]}`. Lỗi (400): `not_in_world`, `no_nose` (không đeo linh thú biết đánh hơi) |
+
+Phong Ấn Phù (`phong_an_phu`) bán ở Sạp Tạp Hóa (`GET /shop`). Thần thông (pháp trận, Đạp Kiếm Lướt, cưỡi) đi
+qua WebSocket: `docs/PROTOCOL.md`.
+
 ## M10 — Cơ duyên (sự kiện ngẫu nhiên sau câu đúng)
 
 Dữ liệu: `server/data/math/fortune.json` (`_comment` giải thích từng trường). Mã: `app/systems/math_fortune.py`.

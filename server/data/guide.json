@@ -307,7 +307,8 @@
       "step": {
         "title_vi": "Luyện Khí tầng {stage}",
         "desc_vi": "Xong mọi nút chính đạo của Đạo Thụ cho tới hết tầng {stage}. Nút đang biên soạn tính là xong.",
-        "how_vi": ["Mở Đạo Thụ (phím M), thẻ Nên học: luyện rồi vượt Thiên kiếp nhỏ của từng nút."],
+        "how_vi": ["Mở Đạo Thụ (phím M), thẻ Nên học: luyện rồi vượt Thiên kiếp nhỏ của từng nút.",
+                   "Tầng 3, 5, 6 và 8 mở thần thông mới: xem Cẩm nang, mục Thần thông và linh thú."],
         "goto": "math",
         "help": "dao_thu"
       },
@@ -460,6 +461,24 @@
       ]
     },
     {
+      "id": "than_thong",
+      "title_vi": "Thần thông và linh thú",
+      "lines_vi": [
+        "Đạo Thụ mở thần thông theo tầng Luyện Khí. Mỗi thần thông có một ô ở góc phải, trên hàng chiêu.",
+        "Tầng 3, Thu phục linh thú: mỗi vùng đất có một linh thú, chỉ hiện ra khi con đủ tầng.",
+        "Linh thú đánh như quái: để nó đánh trúng rồi Phản Đòn. Đủ số lần thì nó chịu phục.",
+        "Số Phản Đòn đã đếm hiện trên đầu linh thú và ở giữa phía trên màn hình.",
+        "Chịu phục rồi thì đứng gần bấm E, tốn một Phong Ấn Phù (bán ở Sạp Tạp Hóa). Nó thành Linh Thú của con.",
+        "Đeo nó ở bảng Linh Thú (phím O). Linh Hồ đánh hơi binh khí ở gần, Huyền Quy đỡ bớt đòn khi trả lời sai.",
+        "Bạch Hạc làm Né Đòn hồi nhanh hơn, Hỏa Tước thêm lửa vào đòn phản, Tiểu Long cho con cưỡi.",
+        "Tầng 5, Bày pháp trận (phím T): quái đứng trong trận ra đòn chậm lại, dễ né và dễ Phản Đòn hơn.",
+        "Tầng 6, Đạp Kiếm Lướt (phím G): lướt trên kiếm qua vực và mặt nước, theo hướng con đang đi.",
+        "Có binh khí nằm sau vực, trên thác: chỉ lướt mới tới. Hỏa Tước cũng làm tổ ở một nơi như thế.",
+        "Tầng 8, Cưỡi linh thú (phím R): đeo Tiểu Long rồi bấm R để cưỡi và đi nhanh hơn; bấm lại để xuống.",
+        "Trong bí cảnh không có linh thú và không dùng được thần thông."
+      ]
+    },
+    {
       "id": "lap_trinh",
       "title_vi": "Bài tập lập trình",
       "lines_vi": [
@@ -484,6 +503,7 @@
         "Đọc Tàng Thư: Trái, Phải đổi mục; PageUp, PageDown, Space hoặc mũi tên lên xuống để cuộn; Esc đóng.",
         "Trong Đạo Thụ: Trái, Phải đổi thẻ nhánh; lên, xuống hoặc lăn chuột để cuộn danh sách nút.",
         "Ngoài làng: Space đánh quái gần nhất, phím 1 đến 6 ra chiêu thức, Shift để Né Đòn.",
+        "Thần thông khi đã mở: T bày pháp trận, G Đạp Kiếm Lướt, R cưỡi linh thú, E để phong ấn linh thú.",
         "Muốn xuống Trúc Lâm Thôn: đi xuống phía nam Động Phủ tới cổng tre rồi bấm E."
       ]
     },
