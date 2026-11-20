@@ -189,8 +189,9 @@ async def test_the_placement_test_passes_the_whole_floors_it_skipped(client):
 async def test_a_vacant_node_counts_as_done_and_is_shown_as_being_written(client):
     h, uid = await make(client)
     st = await state(uid)
-    # NumPy is the one Lập Trình node of Luyện Khí left empty (whether players must install it is undecided)
-    assert st.status["lt_numpy"] == "vacant" and "lt_numpy" in st.done
+    # every node of Luyện Khí has content now; the Lập Trình node of Trúc Cơ is still empty
+    assert st.status["tc_python_nang_cao"] == "vacant" and "tc_python_nang_cao" in st.done
+    assert st.status["lt_numpy"] == "locked"                # it has exercises (curriculum review) and waits
     # the realm project got its exercises with Xạ Trường: no longer vacant, it waits for its prerequisites
     assert st.status["du_an_luyen_khi"] == "locked"
     # lt_cau_truc_du_lieu needs lt_python_co_ban (open, it has exercises) and ds_ngon_ngu: both hold it back
@@ -198,7 +199,7 @@ async def test_a_vacant_node_counts_as_done_and_is_shown_as_being_written(client
     assert st.status["lt_cau_truc_du_lieu"] == "locked"
     assert st.missing("lt_cau_truc_du_lieu") == ["lt_python_co_ban", "ds_ngon_ngu"]
     view = (await client.get("/math/tree", headers=h)).json()
-    node = next(n for n in view["nodes"] if n["id"] == "lt_numpy")
+    node = next(n for n in view["nodes"] if n["id"] == "tc_python_nang_cao")
     assert node["state"] == "vacant" and node["state_vi"] == "Đang biên soạn"
     assert node["parts"] == [] and node["problems"] == []
     node = next(n for n in view["nodes"] if n["id"] == "lt_python_co_ban")

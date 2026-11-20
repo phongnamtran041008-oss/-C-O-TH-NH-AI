@@ -27,7 +27,7 @@ NODE = "ds_ngon_ngu"
 NEXT_NODE = "ds_vecto_ma_tran"
 OTHER_BRANCH_NODE = "lt_cau_truc_du_lieu"          # Lập Trình: needs Python nhập môn and Tập hợp và ánh xạ
 TWO_FLOORS = "gt_gioi_han"
-VACANT = "lt_numpy"                              # the one Lập Trình node of Luyện Khí with nothing written
+VACANT = "tc_python_nang_cao"                    # a Lập Trình node with nothing written yet (Trúc Cơ; NumPy got content)
 
 
 def drawn_text(drv: Driver) -> list[str]:

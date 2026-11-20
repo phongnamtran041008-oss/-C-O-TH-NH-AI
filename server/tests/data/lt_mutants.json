@@ -596,5 +596,75 @@
    "name": "dùng số của lần trước (lệch một lần)",
    "code": "seed, N = map(int, input().split())\ns = seed\nd = [0] * 7\nfor _ in range(N):\n    d[(s >> 16) % 6 + 1] += 1\n    s = (s * 1103515245 + 12345) % 2147483648\nprint(*d[1:])\nprint(f'{d[6] / N:.6f}')\n"
   }
+ ],
+ "dstt_bt_np_hinh_dang_phat_song": [
+  {
+   "name": "luôn in max từng trục, không kiểm tra",
+   "code": "dong = open(0).read().split('\\n')\na = list(map(int, dong[0].split()))\nb = list(map(int, dong[1].split()))\nn = max(len(a), len(b))\na = [1] * (n - len(a)) + a\nb = [1] * (n - len(b)) + b\nprint(*[max(x, y) for x, y in zip(a, b)])\n"
+  },
+  {
+   "name": "chỉ chấp nhận hai hình dạng bằng nhau",
+   "code": "dong = open(0).read().split('\\n')\na = dong[0].split()\nb = dong[1].split()\nprint(' '.join(a) if a == b else 'KHONG')\n"
+  },
+  {
+   "name": "căn lề trái thay vì lề phải",
+   "code": "dong = open(0).read().split('\\n')\na = list(map(int, dong[0].split()))\nb = list(map(int, dong[1].split()))\nn = max(len(a), len(b))\na = a + [1] * (n - len(a))\nb = b + [1] * (n - len(b))\nok = all(x == y or x == 1 or y == 1 for x, y in zip(a, b))\nprint(' '.join(str(max(x, y)) for x, y in zip(a, b)) if ok else 'KHONG')\n"
+  }
+ ],
+ "dstt_bt_np_tong_theo_truc": [
+  {
+   "name": "đổi hai trục cho nhau",
+   "code": "d = list(map(int, open(0).read().split()))\nr, c, t = d[:3]\nA = [d[3+i*c:3+(i+1)*c] for i in range(r)]\nif t == 1:\n    print(*[sum(A[i][j] for i in range(r)) for j in range(c)])\nelse:\n    print(*[sum(h) for h in A])\n"
+  },
+  {
+   "name": "luôn cộng từng hàng",
+   "code": "d = list(map(int, open(0).read().split()))\nr, c, t = d[:3]\nA = [d[3+i*c:3+(i+1)*c] for i in range(r)]\nprint(*[sum(h) for h in A])\n"
+  },
+  {
+   "name": "chỉ in tổng toàn mảng",
+   "code": "d = list(map(int, open(0).read().split()))\nprint(sum(d[3:]))\n"
+  }
+ ],
+ "dstt_bt_np_cong_phat_song": [
+  {
+   "name": "chỉ cộng vào hàng đầu",
+   "code": "d = list(map(int, open(0).read().split()))\nr, c = d[:2]\nX = [d[2+i*c:2+(i+1)*c] for i in range(r)]\nb = d[2+r*c:2+r*c+c]\nfor i in range(r):\n    print(*[X[i][j] + (b[j] if i == 0 else 0) for j in range(c)])\n"
+  },
+  {
+   "name": "trừ thay vì cộng",
+   "code": "d = list(map(int, open(0).read().split()))\nr, c = d[:2]\nX = [d[2+i*c:2+(i+1)*c] for i in range(r)]\nb = d[2+r*c:2+r*c+c]\nfor i in range(r):\n    print(*[X[i][j] - b[j] for j in range(c)])\n"
+  },
+  {
+   "name": "cộng b[i] vào cả hàng i (nhầm trục)",
+   "code": "d = list(map(int, open(0).read().split()))\nr, c = d[:2]\nX = [d[2+i*c:2+(i+1)*c] for i in range(r)]\nb = d[2+r*c:2+r*c+c]\nfor i in range(r):\n    print(*[X[i][j] + b[i % c] for j in range(c)])\n"
+  }
+ ],
+ "dstt_bt_np_cham_diem": [
+  {
+   "name": "quên cộng b",
+   "code": "d = list(map(int, open(0).read().split()))\nn, k = d[:2]\nX = [d[2+i*k:2+(i+1)*k] for i in range(n)]\nw = d[2+n*k:2+n*k+k]\nprint(*[sum(h[j] * w[j] for j in range(k)) for h in X])\n"
+  },
+  {
+   "name": "cộng b vào từng tích riêng lẻ",
+   "code": "d = list(map(int, open(0).read().split()))\nn, k = d[:2]\nX = [d[2+i*k:2+(i+1)*k] for i in range(n)]\nw = d[2+n*k:2+n*k+k]\nb = d[2+n*k+k]\nprint(*[sum(h[j] * w[j] + b for j in range(k)) for h in X])\n"
+  },
+  {
+   "name": "đảo thứ tự w",
+   "code": "d = list(map(int, open(0).read().split()))\nn, k = d[:2]\nX = [d[2+i*k:2+(i+1)*k] for i in range(n)]\nw = d[2+n*k:2+n*k+k][::-1]\nb = d[2+n*k+k]\nprint(*[sum(h[j] * w[j] for j in range(k)) + b for h in X])\n"
+  }
+ ],
+ "dstt_bt_np_gram": [
+  {
+   "name": "tính X X^T (n x n) thay vì X^T X",
+   "code": "d = list(map(int, open(0).read().split()))\nn, k = d[:2]\nX = [d[2+i*k:2+(i+1)*k] for i in range(n)]\nfor a in range(n):\n    print(*[sum(X[a][t] * X[b][t] for t in range(k)) for b in range(n)])\n"
+  },
+  {
+   "name": "chỉ tính đường chéo",
+   "code": "d = list(map(int, open(0).read().split()))\nn, k = d[:2]\nX = [d[2+i*k:2+(i+1)*k] for i in range(n)]\nfor a in range(k):\n    print(*[sum(X[t][a] * X[t][b] for t in range(n)) if a == b else 0 for b in range(k)])\n"
+  },
+  {
+   "name": "quên bình phương ở đường chéo, chỉ cộng cột",
+   "code": "d = list(map(int, open(0).read().split()))\nn, k = d[:2]\nX = [d[2+i*k:2+(i+1)*k] for i in range(n)]\nfor a in range(k):\n    print(*[sum(X[t][a] + X[t][b] for t in range(n)) for b in range(k)])\n"
+  }
  ]
 }

@@ -1,0 +1,16 @@
+{
+  "_comment": "Bộ sinh câu thêm bởi đợt rà soát giáo trình (tools/audit_curriculum.py): các ô vi kỹ năng x bậc chỉ có hai ba câu viết tay và chưa có bộ sinh nào, nên người học gặp lại đúng câu cũ. Hàm sinh nằm ở server/app/learning/math_gen/rsdstt_floor1.py, đáp án được tools/math_verify_rasoat.py tính lại bằng sympy. Chưa ai duyệt (reviewed: false).",
+  "subject": "dai_so_tuyen_tinh",
+  "items": [],
+  "generators": [
+    {"id": "dstt_gx_ab_tru_ba", "skill": "dstt_t4_khong_giao_hoan", "tier": 2, "type": "numeric", "reviewed": false},
+    {"id": "dstt_gx_tvh_tim_m", "skill": "dstt_t4_tich_vo_huong", "tier": 3, "type": "numeric", "reviewed": false},
+    {"id": "dstt_gx_con_khong_gian", "skill": "dstt_t7_khong_gian_vecto", "tier": 5, "type": "true_false", "reviewed": false},
+    {"id": "dstt_gx_thuoc_bao_tuyen_tinh", "skill": "dstt_t7_to_hop_tuyen_tinh", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "dstt_gx_toa_do_doi_co_so", "skill": "dstt_t7_toa_do", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "dstt_gx_doi_co_so_ma_tran", "skill": "dstt_t8_doi_co_so", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "dstt_gx_hop_anh_xa_gia_tri", "skill": "dstt_t8_hop_anh_xa", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "dstt_gx_nhan_va_anh", "skill": "dstt_t8_nhan_va_anh", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "dstt_gx_so_chieu_nhan", "skill": "dstt_t8_dinh_ly_so_chieu", "tier": 5, "type": "numeric", "reviewed": false}
+  ]
+}
