@@ -135,6 +135,7 @@ def contact(group, ids, zoom=3):
 CELL_W, CELL_H = 240, 135              # what a 480x270 screen shows of the world at 2x zoom
 CX, CY = 46, 100                       # caster's feet in the cell
 MX, MY = 186, 100                      # monster's feet
+SHIFT = {"Kiem Vuc": 34}               # the domain is wide: move the caster in so the whole circle shows
 
 
 def char_frame(clip, k, face="right"):
@@ -184,7 +185,7 @@ def scenes():
     S.append(("Thanh Dang Trien", "moc", "phong_lang", "hit", [
         ("over", "thanh_dang", 6, MX, MY + 2, {}),
         ("over", "thanh_dang_troi", 1, MX, MY, {})]))
-    S.append(("Phong Nhan Thuat", "kim", "phong_lang", "hit", [
+    S.append(("Phong Nhan Thuat", "moc", "phong_lang", "hit", [
         ("over", "phong_nhan", 1, 110, CY - 34, dict(rot=8)),
         ("over", "phong_nhan", 2, 128, CY - 22, {}),
         ("over", "phong_nhan", 3, 116, CY - 10, dict(rot=-8)),
@@ -193,8 +194,8 @@ def scenes():
         ("over", "kim_chung_tru", 2, CX, CY, {}),
         ("over", "kim_chung_vang", 1, CX, CY, {})]))
     S.append(("Kiem Vuc", "kim", "phong_lang", "hit", [
-        ("under", "kiem_vuc", 3, CX + 10, CY, {}),
-        ("over", "kiem_vuc_xoay", 2, CX, CY, {})]))
+        ("under", "kiem_vuc", 3, CX + 34, CY, {}),
+        ("over", "kiem_vuc_xoay", 2, CX + 34, CY, {})]))
     S.append(("Hoi Xuan Thuat", "moc", "phong_lang", "idle", [
         ("over", "hoi_xuan", 4, CX, CY, {})]))
     S.append(("Hoa Cau (hero)", "hoa", "phong_lang", "hit", [
@@ -216,9 +217,10 @@ def cell(sc, chest):
     cmeta, _ = sheet("chars", "dao_si_luyen_khi")
     hit = cmeta.get("events", {}).get("cast", {}).get("hit", 3)
     body, _ = char_frame("cast", hit)
-    put(c, body, cmeta, CX, CY)
+    sh = SHIFT.get(title, 0)
+    put(c, body, cmeta, CX + sh, CY)
     if os.path.exists(os.path.join(V2, "fx", "tu_khi_%s.json" % el)) and title != "Kim Chung Trao":
-        blit_fx(c, "tu_khi_" + el, 2, chest[0] + 6, chest[1] - 2, scale=0.75)
+        blit_fx(c, "tu_khi_" + el, 2, chest[0] + 6 + sh, chest[1] - 2, scale=0.75)
     mf, mm = mon_frame(mid, mclip, 0)
     put(c, mf, mm, MX, MY)
     for when, id, k, x, y, kw in layers:

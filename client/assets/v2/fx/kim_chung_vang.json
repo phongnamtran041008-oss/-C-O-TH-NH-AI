@@ -1,0 +1,19 @@
+{
+ "id": "kim_chung_vang",
+ "name_vi": "Kim Chung Tráo - chuông rung",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 86
+ },
+ "sheet": "kim_chung_vang.png",
+ "cols": 6,
+ "frames": 6,
+ "fps": 18,
+ "loop": false,
+ "blend": "alpha",
+ "ground": false
+}

@@ -1,0 +1,19 @@
+{
+ "id": "thanh_dang",
+ "name_vi": "Thanh Đằng Triền - dây leo trồi lên",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 78
+ },
+ "sheet": "thanh_dang.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 12,
+ "loop": false,
+ "blend": "alpha",
+ "ground": false
+}

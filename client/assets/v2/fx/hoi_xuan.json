@@ -1,0 +1,19 @@
+{
+ "id": "hoi_xuan",
+ "name_vi": "Hồi Xuân Thuật",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 84
+ },
+ "sheet": "hoi_xuan.png",
+ "cols": 5,
+ "frames": 10,
+ "fps": 12,
+ "loop": false,
+ "blend": "alpha",
+ "ground": false
+}
