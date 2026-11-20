@@ -37,7 +37,6 @@ from pathlib import Path
 
 from sqlalchemy import event as sa_event
 from sqlalchemy import func, select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session as _SyncSession
 
@@ -373,15 +372,23 @@ def _keys(counter: str, ctx: dict) -> list[str]:
     return [k for k in keys if k in wanted]
 
 
-async def _row(db: AsyncSession, uid: int, key: str, create: bool = True) -> AchievementCounter | None:
+async def _insert_ignore(db: AsyncSession, model, **values) -> bool:
+    """INSERT ... ON CONFLICT DO NOTHING (SQLite and PostgreSQL): True when the row is new.
+    No savepoint: with pysqlite a SAVEPOINT that opens a transaction commits on release, which
+    would make a counter outlive a request that rolled back."""
+    if db.get_bind().dialect.name == "postgresql":
+        from sqlalchemy.dialects.postgresql import insert
+    else:
+        from sqlalchemy.dialects.sqlite import insert
+    res = await db.execute(insert(model).values(**values).on_conflict_do_nothing())
+    return res.rowcount == 1
+
+
+async def _row(db: AsyncSession, uid: int, key: str) -> AchievementCounter:
     row = await db.get(AchievementCounter, (uid, key))
-    if row is None and create:
-        row = AchievementCounter(user_id=uid, key=key, value=0)
-        try:
-            async with db.begin_nested():
-                db.add(row)
-        except IntegrityError:    # written by another request of the same player just now
-            row = await db.get(AchievementCounter, (uid, key))
+    if row is None:
+        await _insert_ignore(db, AchievementCounter, user_id=uid, key=key, value=0)
+        row = await db.get(AchievementCounter, (uid, key))
     return row
 
 
@@ -428,13 +435,7 @@ async def _apply(db: AsyncSession, uid: int, counter: str, n: int, ctx: dict, ou
         v = ctx.get(spec.of)
         if v in (None, ""):
             return
-        mk = f"{counter}#{v}"
-        if await db.get(AchievementCounter, (uid, mk)) is not None:
-            return
-        try:
-            async with db.begin_nested():
-                db.add(AchievementCounter(user_id=uid, key=mk, value=1))
-        except IntegrityError:
+        if not await _insert_ignore(db, AchievementCounter, user_id=uid, key=f"{counter}#{v}", value=1):
             return
         n = 1
     for k in keys:
@@ -449,12 +450,8 @@ async def _apply(db: AsyncSession, uid: int, counter: str, n: int, ctx: dict, ou
 async def _reach(db: AsyncSession, uid: int, a: dict, tier: int, out: list[dict], quiet: bool = False) -> None:
     row = await db.get(Achievement, (uid, a["id"]))
     if row is None:
-        row = Achievement(user_id=uid, ach_id=a["id"], tier=0, claimed=0, seen=0)
-        try:
-            async with db.begin_nested():
-                db.add(row)
-        except IntegrityError:
-            row = await db.get(Achievement, (uid, a["id"]))
+        await _insert_ignore(db, Achievement, user_id=uid, ach_id=a["id"], tier=0, claimed=0, seen=0)
+        row = await db.get(Achievement, (uid, a["id"]))
     if row.tier >= tier:
         return
     titles = [t for n in range(row.tier + 1, tier + 1) if (t := (a["tiers"][n - 1].get("reward") or {}).get("title"))]
@@ -487,16 +484,11 @@ async def on_event(db: AsyncSession, user_id: int, event: str, n: int = 1, **ctx
     out: list[dict] = []
     try:
         if event == "answer":
-            async with db.begin_nested():
-                steps = await _answer(db, user_id, ctx)
-                for counter, k, c in steps:
-                    await _apply(db, user_id, counter, k, c, out)
+            steps = await _answer(db, user_id, ctx)
         else:
             steps = [s for s in _expand_static(event, n, ctx) if _keys(s[0], s[2])]
-            if steps:
-                async with db.begin_nested():
-                    for counter, k, c in steps:
-                        await _apply(db, user_id, counter, k, c, out)
+        for counter, k, c in steps:
+            await _apply(db, user_id, counter, k, c, out)
     except Exception:
         log.exception("achievement event %s failed", event)
         return []
@@ -589,9 +581,7 @@ async def _mark(db: AsyncSession, uid: int, counter: str, values: set[str], dims
     if not values:
         return
     for v in values:
-        if await db.get(AchievementCounter, (uid, f"{counter}#{v}")) is None:
-            db.add(AchievementCounter(user_id=uid, key=f"{counter}#{v}", value=1))
-    await db.flush()
+        await _insert_ignore(db, AchievementCounter, user_id=uid, key=f"{counter}#{v}", value=1)
     seen = [k[len(counter) + 1:] for k in (await _counters(db, uid)) if k.startswith(counter + "#")]
     await _raise_to(db, uid, counter, len(seen), {})
     for v in seen:      # a distinct count filtered by its own value ('lands|land=x')

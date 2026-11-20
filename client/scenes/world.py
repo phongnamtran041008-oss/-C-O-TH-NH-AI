@@ -2648,7 +2648,8 @@ class WorldScene(Scene):
                                       ("hud_pets", T.HUD_PETS, pygame.K_o, g.open_pets),
                                       ("hud_linh_can", T.HUD_LINH_CAN, pygame.K_c, g.open_linh_can),
                                       ("hud_bag", T.HUD_BAG, pygame.K_TAB, g.open_bag),
-                                      ("hud_party", T.HUD_PARTY, pygame.K_y, g.open_party)]:
+                                      ("hud_party", T.HUD_PARTY, pygame.K_y, g.open_party),
+                                      ("hud_achievements", T.HUD_ACHIEVEMENTS, pygame.K_v, g.open_achievements)]:
             w = ui.text_size(lbl, 8)[0] + 10
             bx -= w + 3
             if ui.button(wid, bx, 252, w, 14, lbl, key=key if (top and not typing) else None, enabled=top):
