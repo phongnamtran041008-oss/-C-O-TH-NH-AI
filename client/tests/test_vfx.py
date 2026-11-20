@@ -464,3 +464,12 @@ def test_a_kill_number_is_restyled_and_numbers_scale():
         sizes[style] = surf.get_bounding_rect().w
     assert sizes["hit"] < sizes["crit"] < sizes["kill"] < sizes["parry"], sizes
     assert set(STYLES) >= {"hit", "crit", "kill", "parry", "dodge", "miss"}
+
+
+def test_uy_ap_spreads_on_a_breakthrough_and_on_a_parry_kill():
+    v = V.Vfx()
+    C.breakthrough(v, *SRC)
+    assert any(it.fid == "uy_ap" and it.layer == "ground" for it in v.live)
+    v = V.Vfx()
+    C.uy_ap(v, *SRC)
+    assert [it.fid for it in v.live] == ["uy_ap"]
