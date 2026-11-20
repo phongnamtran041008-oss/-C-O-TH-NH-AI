@@ -99,12 +99,15 @@ def test_every_mistake_monster_points_at_a_real_skill_and_section():
 
 
 def test_the_valley_spawns_only_mistake_monsters():
+    """The valley is Kiếm Trủng Sơn now (Thiên Địa Đồ): its mistakes, plus the creatures of
+    that land, which stand for Đại Số nodes (realtime/lands.py) - nothing from another branch."""
     from app.realtime import maps
     areas = maps.load(VALLEY).monster_areas
     assert areas, "Loạn Số Cốc has no monster area at all"
     for a in areas:
         info = catalog.monsters()[a.props["monster"]]
-        assert math_combat.is_mistake_monster(info), a.props["monster"]
+        assert math_combat.is_mistake_monster(info) or (
+            info.get("land") == "kiem_trung_son" and info.get("branch") == "ds"), a.props["monster"]
 
 
 # ------------------------------------------------------------------ the fight

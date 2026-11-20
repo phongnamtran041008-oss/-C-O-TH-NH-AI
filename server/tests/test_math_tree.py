@@ -263,12 +263,13 @@ def test_the_world_checker_bites(plan):
     assert any("question_rule" in e for e in mt.validate_world(bad, t))
 
 
-def test_only_the_combat_section_is_wired_for_now(plan):
-    """The owner's wave: the fight rule runs in the game, lands/weapons/beasts do not yet."""
+def test_the_combat_and_lands_sections_are_wired(plan):
+    """The owner's waves: the fight rule and the lands of Luyện Khí run in the game, weapons and
+    beasts do not yet."""
     assert plan["wired"] is False
-    assert plan["wired_sections"] == ["combat"]
-    assert mt.wired_sections(plan) == ("combat",)
-    assert mt.section_wired("combat", plan)
+    assert plan["wired_sections"] == ["combat", "lands"]
+    assert mt.wired_sections(plan) == ("combat", "lands")
+    assert mt.section_wired("combat", plan) and mt.section_wired("lands", plan)
     assert mt.wired_sections({"wired": False}) == ()
     assert mt.wired_sections({"wired": True}) == mt.WIREABLE_SECTIONS
     unlocks = {u["id"]: u for u in plan["unlocks"]}
@@ -277,7 +278,7 @@ def test_only_the_combat_section_is_wired_for_now(plan):
 
 
 @pytest.mark.parametrize("change, message", [
-    (lambda p: p.__setitem__("wired_sections", ["lands"]), "wired_sections"),
+    (lambda p: p.__setitem__("wired_sections", ["beasts"]), "wired_sections"),
     (lambda p: p.__setitem__("wired_sections", ["combat", "combat"]), "wired_sections"),
     (lambda p: p["combat"]["dodge"].pop("dash_px"), "dodge.dash_px"),
     (lambda p: p["combat"]["dodge"].__setitem__("invulnerable_seconds", 2), "shorter than cooldown"),
@@ -297,6 +298,61 @@ def test_a_wired_combat_section_is_checked_number_by_number(plan, change, messag
     bad = copy.deepcopy(plan)
     change(bad)
     assert any(message in e for e in mt.validate_world(bad, t)), mt.validate_world(bad, t)
+
+
+# ------------------------------------------------------------------ the lands (wired 2026-11-20)
+def test_every_land_of_luyen_khi_is_built_and_the_sky_land_waits(plan):
+    lands = {l["id"]: l for l in plan["lands"]}
+    built = [l for l in plan["lands"] if l["realm"] == "luyen_khi"]
+    assert len(built) == 8 and all(l["status"] == "co" and l["map"] for l in built)
+    assert lands["van_hai_thien_dao"]["status"] == "chua_co" and lands["van_hai_thien_dao"]["map"] is None
+    for p in plan["weapons_placed"]:
+        assert ("pos" in p) == (lands[p["land"]]["status"] == "co"), p
+
+
+@pytest.mark.parametrize("change, message", [
+    (lambda p: p["weapons_placed"][0].pop("pos"), "needs a pos"),
+    (lambda p: p["weapons_placed"][0].__setitem__("pos", [0, 0]), "not a walkable tile"),
+    (lambda p: p["weapons_placed"][0].__setitem__("pos", [500, 2]), "off the map"),
+    (lambda p: p["weapons_placed"][-1].__setitem__("pos", [3, 3]), "is not built"),
+    (lambda p: p["lands"][1].__setitem__("map", "khong_co"), "draws map"),
+    (lambda p: p["lands"][1].__setitem__("monsters", ["kiem_linh", "ma_gi_do"]), "does not exist"),
+    (lambda p: p["lands"][1].__setitem__("monsters", ["kiem_linh", "van_xa"]), "never spawns"),
+    (lambda p: p["lands"][-1].__setitem__("status", "co"), "built but has no map"),
+    (lambda p: next(l for l in p["lands"] if l["id"] == "luu_van_coc").__setitem__("status", "chua_co"),
+     "still says"),
+])
+def test_a_wired_lands_section_is_checked(plan, change, message):
+    t = mt.tree()
+    bad = copy.deepcopy(plan)
+    change(bad)
+    assert any(message in e for e in mt.validate_world(bad, t)), mt.validate_world(bad, t)
+
+
+def test_the_land_creatures_stand_for_nodes_of_their_own_branch(monkeypatch, plan):
+    """A Đại Số land's creature asks only Đại Số nodes; a Lập Trình creature only the math its
+    exercises reinforce; Lôi Long covers the four math branches."""
+    t = mt.tree()
+    assert mt.validate_world(plan, t) == []
+    real = mt._read
+
+    def patched(kind, change):
+        def fake(name, folder):
+            raw = real(name, folder)
+            if name == "monsters.json" and folder == mt.MATH_DIR:
+                raw = copy.deepcopy(raw)
+                change(raw[kind])
+            return raw
+        monkeypatch.setattr(mt, "_read", fake)
+        return mt.validate_world(plan, t)
+
+    assert any("not of its land's branch" in e for e in patched("kiem_linh", lambda m: m["nodes"].append("gt_ham_so")))
+    assert any("reinforced by no node of lt" in e
+               for e in patched("co_quan_nhan", lambda m: m["nodes"].append("xs_kiem_dinh")))
+    assert any("four math branches" in e
+               for e in patched("loi_long", lambda m: m.__setitem__("nodes", ["ds_ngon_ngu", "gt_ham_so"])))
+    assert any("not main-path nodes" in e
+               for e in patched("van_xa", lambda m: m["nodes"].append("tc_phan_loai")))
 
 
 def test_an_unwired_combat_section_is_only_a_design(plan):

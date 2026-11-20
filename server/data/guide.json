@@ -221,10 +221,11 @@
         {
           "id": "g_village",
           "title_vi": "Xuống Trúc Lâm Thôn",
-          "desc_vi": "Trúc Lâm Thôn là nơi các đạo hữu tụ họp; cổng đông ra Rừng Mực Loang, cổng tây ra Hồ Nghiên Mực.",
+          "desc_vi": "Trúc Lâm Thôn là nơi các đạo hữu tụ họp. Mỗi cổng làng dẫn ra một vùng đất, mỗi vùng luyện một nhánh toán.",
           "how_vi": [
             "Ở Động Phủ, đi xuống phía nam (phím S hoặc mũi tên xuống) tới cổng tre rồi bấm E.",
-            "Đường phía nam trong làng đưa con về lại Động Phủ."
+            "Đường phía nam trong làng đưa con về lại Động Phủ.",
+            "Có vùng đất chỉ mở khi Đạo Thụ đủ tầng: tới cổng sẽ biết còn thiếu gì."
           ],
           "check": {"type": "seen", "key": "village"},
           "help": "phim_tat",
@@ -262,7 +263,7 @@
           "desc_vi": "Chiêu thức là đòn mạnh, ngoài vùng hoang ra chiêu tự do. Ba chiêu đầu mở sẵn, học lên thì mở thêm.",
           "how_vi": [
             "Xong Luyện Khí tầng 1 trên Đạo Thụ là mở Ngũ Hành Trận và Hộ Thân Trận.",
-            "Thử chiêu ở Rừng Mực Loang (cổng đông của làng): lại gần Mặc Quái, bấm phím 1 đến 6."
+            "Thử chiêu ở Mê Đồ Lâm (cổng đông của làng): lại gần quái, bấm phím 1 đến 6."
           ],
           "check": {"type": "skills_unlocked", "count": 4},
           "help": "chieu_thuc",
@@ -446,7 +447,7 @@
       "id": "chieu_thuc",
       "title_vi": "Chiêu thức",
       "lines_vi": [
-        "Chiêu thức là đòn mạnh, dùng ngoài làng như ở Rừng Mực Loang (cổng đông). Bấm phím 1 đến 6.",
+        "Chiêu thức là đòn mạnh, dùng ngoài làng như ở Mê Đồ Lâm (cổng đông). Bấm phím 1 đến 6.",
         "Ngoài vùng hoang chiêu ra ngay, không phải trả lời gì; tốn Linh Lực và có thời gian hồi.",
         "Câu hỏi đến khi quái đánh trúng con. Đúng là Phản Đòn: không mất máu, quái choáng, con được Linh Lực.",
         "Phản Đòn liên tiếp làm chiêu mạnh dần. Sai hoặc hết giờ thì trúng đòn và chuỗi về 0.",

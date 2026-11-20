@@ -342,6 +342,8 @@ def check_mistake_monsters() -> list[str]:
     docs = math_library.documents()
     for kind, m in sorted(monsters.items()):
         where = f"monster {kind}"
+        if m.get("land") and not m.get("skill"):   # a creature of a land (Thiên Địa Đồ): learning/math_tree.py
+            continue
         try:
             subject = math_path.subject(m["subject"])
         except KeyError:
