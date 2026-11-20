@@ -266,15 +266,46 @@ def shield_ring(w: int, frame: int) -> pygame.Surface:
 _WEAPONS: dict = {}
 
 
+# Thiên Địa Đồ: the weapons of the plan come as "<type>_<grade>" (kiem_3). Their reach is the "range"
+# of world_plan.json weapon_types (the server decides every hit; this only aims the auto-target - a
+# client test checks the two agree), and with the v2 art off each type is drawn as the nearest
+# code-drawn weapon.
+PLAN_WEAPON_RANGE = {"kiem": 26, "dao": 28, "ho_lo": 40, "thuong": 38, "chuy": 24, "cung": 60,
+                     "truong": 46, "phien": 32}
+PLAN_WEAPON_LOOK = {"kiem": "sword", "dao": "sabre", "ho_lo": "gourd", "thuong": "spear", "chuy": "hammer",
+                    "cung": "bow", "truong": "staff", "phien": "fan"}
+
+
+def plan_weapon_type(kind: str | None) -> str | None:
+    """'kiem' for 'kiem_3'; None for an old weapon kind (brush, sword...) or nothing."""
+    if not kind:
+        return None
+    t, _, grade = kind.rpartition("_")
+    return t if grade.isdigit() and t in PLAN_WEAPON_RANGE else None
+
+
 def weapon_img(kind: str, facing: str, swing: float) -> pygame.Surface:
     """A small weapon drawn over the hand (spec 7.2: gear changes the look)."""
+    kind = PLAN_WEAPON_LOOK.get(plan_weapon_type(kind) or "", kind)
     key = (kind, facing, swing > 0.12)
     if key not in _WEAPONS:
         s = pygame.Surface((12, 12), pygame.SRCALPHA)
-        shaft = {"brush": "b", "sword": "t", "fan": "w", "staff": "V"}.get(kind, "b")
-        tip = {"brush": "K", "sword": "W", "fan": "r", "staff": "n"}.get(kind, "K")
-        length = {"brush": 8, "sword": 9, "fan": 5, "staff": 11}.get(kind, 8)
-        if kind == "fan":
+        shaft = {"brush": "b", "sword": "t", "fan": "w", "staff": "V", "sabre": "t", "spear": "b",
+                 "hammer": "b"}.get(kind, "b")
+        tip = {"brush": "K", "sword": "W", "fan": "r", "staff": "n", "sabre": "W", "spear": "W",
+               "hammer": "k"}.get(kind, "K")
+        length = {"brush": 8, "sword": 9, "fan": 5, "staff": 11, "sabre": 8, "spear": 11, "hammer": 7}.get(kind, 8)
+        if kind == "bow":
+            pygame.draw.arc(s, rgb("b"), (2, 0, 8, 12), -1.4, 1.4, 2)
+            pygame.draw.line(s, rgb("w"), (6, 1), (6, 11))
+        elif kind == "gourd":
+            pygame.draw.circle(s, rgb("o"), (6, 8), 3)
+            pygame.draw.circle(s, rgb("o"), (6, 3), 2)
+            pygame.draw.circle(s, rgb("k"), (6, 8), 3, 1)
+        elif kind == "hammer":
+            pygame.draw.line(s, rgb(shaft), (6, 11), (6, 11 - length), 2)
+            pygame.draw.rect(s, rgb(tip), (3, 11 - length - 2, 7, 4))
+        elif kind == "fan":
             pygame.draw.polygon(s, rgb("w"), [(6, 10), (1, 3), (11, 3)])
             pygame.draw.polygon(s, rgb("k"), [(6, 10), (1, 3), (11, 3)], 1)
             pygame.draw.line(s, rgb("r"), (2, 4), (10, 4))
@@ -1411,8 +1442,11 @@ class WorldScene(Scene):
 
     # ------------------------------------------------------------ fighting (stage 4)
     def weapon_range(self) -> float:
+        """How far the auto-target looks: the reach of the weapon in hand (bare hands: 22)."""
         kinds = {"brush": 40, "sword": 26, "fan": 32, "staff": 46}
-        return kinds.get((self.game.state.cult or {}).get("stats", {}).get("weapon"), 22)
+        w = (self.game.state.cult or {}).get("stats", {}).get("weapon")
+        t = plan_weapon_type(w)
+        return float(PLAN_WEAPON_RANGE[t]) if t else kinds.get(w, 22)
 
     def nearest_monster(self, max_d: float) -> Ent | None:
         p = self.player
