@@ -74,7 +74,7 @@ def crescent(s, zc, R, th, alpha=65.0, gap=0.02, x0=0.036, n=12, teeth=0):
 def kich(w, g):
     T = TH[g]
     sk = {1: "wood", 2: "wood_d", 3: "wood_d", 4: "iron_d", 5: "gold_dk", 6: "gold_dk", 7: "ice_w", 8: "purple"}[g]
-    base = 1.0
+    base = 0.84
     shaft(w, sk, -0.24, base + 0.04, 0.036)
     grip_block(w, g, 0.03)
     butt = {1: "wood_d", 2: "iron_d", 3: "bronze", 4: "gold", 5: "gold", 6: "gold_dk", 7: "gold", 8: "gold"}[g]
@@ -86,10 +86,10 @@ def kich(w, g):
     # socket collar
     sock = {1: "hemp", 2: "iron_d", 3: "bronze", 4: "gold", 5: "gold", 6: "gold_dk", 7: "gold", 8: "gold"}[g]
     w.cyl(sock, (0, 0, base + 0.02), 0.048, 0.04, 0.1, seg=8)
-    zc = base + 0.12
+    zc = base + 0.08
     # spear point
-    tip = {1: 1.42, 2: 1.45, 3: 1.46, 4: 1.5, 5: 1.52, 6: 1.52, 7: 1.52, 8: 1.56}[g]
-    hw = {1: 0.06, 2: 0.055, 3: 0.06, 4: 0.05, 5: 0.06, 6: 0.065, 7: 0.055, 8: 0.065}[g]
+    tip = base + {1: 0.38, 2: 0.42, 3: 0.44, 4: 0.48, 5: 0.5, 6: 0.5, 7: 0.5, 8: 0.54}[g]
+    hw = {1: 0.05, 2: 0.045, 3: 0.05, 4: 0.042, 5: 0.05, 6: 0.065, 7: 0.046, 8: 0.055}[g]
     if g == 6:      # wavy flame point
         pts = [(0.0, tip), (0.045, tip - 0.12), (0.02, tip - 0.15), (0.065, tip - 0.24), (0.035, tip - 0.27),
                (0.05, base + 0.2), (0.025, base + 0.07)]
@@ -107,13 +107,13 @@ def kich(w, g):
                                                     (0.01, tip - 0.1), (0.01, base + 0.14)], -0.022, -0.012, 0)
     # crescent side blades: one ("thanh long kich") up to grade 3, two ("phuong thien kich") from 4
     sides = (1,) if g <= 3 else (1, -1)
-    R = {1: 0.17, 2: 0.19, 3: 0.2, 4: 0.19, 5: 0.2, 6: 0.2, 7: 0.19, 8: 0.21}[g]
-    th = {1: 0.08, 2: 0.07, 3: 0.075, 4: 0.068, 5: 0.07, 6: 0.065, 7: 0.068, 8: 0.072}[g]
-    alpha = {1: 66, 2: 74, 3: 76, 4: 76, 5: 80, 6: 76, 7: 76, 8: 82}[g]
+    R = {1: 0.25, 2: 0.27, 3: 0.28, 4: 0.27, 5: 0.28, 6: 0.28, 7: 0.27, 8: 0.29}[g]
+    th = {1: 0.12, 2: 0.11, 3: 0.115, 4: 0.105, 5: 0.11, 6: 0.1, 7: 0.105, 8: 0.11}[g]
+    alpha = {1: 60, 2: 66, 3: 68, 4: 68, 5: 70, 6: 68, 7: 68, 8: 72}[g]
     for s in sides:
-        back, ed = crescent(s, zc, R, th, alpha, teeth=0.03 if g == 6 else 0)
+        back, ed = crescent(s, zc, R, th, alpha, gap=0.045, teeth=0.03 if g == 6 else 0)
         if g == 8:
-            b2, e2 = crescent(s, zc, R + 0.015, th + 0.025, alpha, gap=0.0)
+            b2, e2 = crescent(s, zc, R + 0.015, th + 0.025, alpha, gap=0.03)
             w.strip("violet", b2, [(x + s * 0.0, z) for x, z in e2], 0.008, 0.014)
         w.strip(blade, back, ed, -ty / 2, ty / 2)
         # bright cutting edge along the concave side
@@ -121,10 +121,10 @@ def kich(w, g):
         if g in (2, 4, 5, 7, 8):
             w.strip(edge if g != 8 else "gold_e", inner, ed, -ty / 2 - 0.004, -ty / 2 + 0.004)
         # two bars tie the crescent to the shaft
-        for dz in (-0.05, 0.05):
-            w.box(T["trim"] if g > 1 else "hemp", (s * 0.045, 0, zc + dz), (0.05, 0.03, 0.022), bevel=0.003)
+        for dz in (-0.06, 0.06):
+            w.box(T["trim"] if g > 1 else "hemp", (s * 0.06, 0, zc + dz), (0.06, 0.03, 0.026), bevel=0.003)
         if g == 1:   # hemp lashing over the stone
-            w.box("hemp", (s * 0.06, 0, zc), (0.05, 0.034, 0.05), bevel=0.004)
+            w.box("hemp", (s * 0.075, 0, zc), (0.05, 0.034, 0.05), bevel=0.004)
         if g == 7:
             wings(w, "ice_w", zc - 0.14, 3, 0.13, 0.045, rise0=-60, step=18, base_x=0.04, sides=(s,))
     if g == 1:
@@ -146,7 +146,7 @@ def kich(w, g):
         for s in (-1, 1):
             w.cyl("gold_dk", (s * 0.05, 0, base + 0.02), 0.022, 0.0, 0.09, rot=(0, s * 60, 0), seg=4)
     if g == 8:
-        stars(w, "star", [(-0.02, 1.3), (0.015, 1.4), (0.0, 1.22), (0.17, zc + 0.12), (-0.17, zc - 0.1)], -0.026, 0.015)
+        stars(w, "star", [(-0.02, base + 0.3), (0.015, base + 0.4), (0.0, base + 0.22), (0.17, zc + 0.12), (-0.17, zc - 0.1)], -0.026, 0.015)
 
 
 # ======================================================================= PHU (battle axe, ~0.95 m)
@@ -214,8 +214,8 @@ def phu(w, g):
         w.cyl("bronze", (0, 0, hc + 0.1), 0.04, 0.03, 0.04, seg=8)
     elif g == 4:  # double-bit steel, gold, teal gem
         for s in (1, -1):
-            out, ed = axe_blade(s, hc, 0.19, hc + 0.14, hc - 0.14, 0.045, neck=0.06)
-            w.poly(blade, out, -tb / 2, tb / 2, 0.006)
+            out, ed = axe_blade(s, hc, 0.19, hc + 0.19, hc - 0.19, 0.05, neck=0.045)
+            w.poly("iron", out, -tb / 2, tb / 2, 0.006)
             edge_band(w, edge, ed, s, 0.02, -tb / 2 - 0.004, tb / 2 + 0.004)
             w.box("gold", (s * 0.075, 0, hc), (0.03, tb + 0.012, 0.15), bevel=0.004)
         w.sph("teal", (0, -0.045, hc), 0.04, seg=6)
@@ -357,8 +357,8 @@ def roi_body(w, g, pose):
         tassel_dir(w, "hemp", p, d, 3, 0.07)
         return
     nseg = {2: 6, 3: 6, 4: 7, 5: 7, 6: 7, 7: 7, 8: 7}[g]
-    seg_key = {2: "iron", 3: "jade", 4: "steel", 5: "cyan", 6: "flame", 7: "ice", 8: "purple"}[g]
-    ring_key = {2: "iron_d", 3: "bronze", 4: "gold", 5: "gold", 6: "gold_dk", 7: "gold", 8: "gold_e"}[g]
+    seg_key = {2: "iron", 3: "jade", 4: "steel", 5: "cyan_n", 6: "flame_n", 7: "ice_n", 8: "purple"}[g]
+    ring_key = {2: "iron_d", 3: "bronze", 4: "gold", 5: "gold", 6: "gold_dk", 7: "gold", 8: "gold_e_n"}[g]
     r = {2: 0.028, 3: 0.03, 4: 0.03, 5: 0.03, 6: 0.032, 7: 0.03, 8: 0.032}[g]
     gapt = 0.012 / total
     for i in range(nseg):
@@ -366,11 +366,11 @@ def roi_body(w, g, pose):
         (a, _), (b, _) = at(t0), at(t1)
         rr = r * (1 - 0.15 * i / nseg)
         w.seg(seg_key, P(a, i), P(b, i), rr, rr, 8)
-        if g == 6:     # little flame licks on every other link
+        if g == 6 and pose == "lash":     # little flame licks on every other link
             if i % 2:
                 (m, d) = at((t0 + t1) / 2)
                 nx, nz = -d[1], d[0]
-                w.seg("flame_y", P(m, i), P((m[0] + nx * 0.05, m[1] + nz * 0.05), i), 0.016, 0.002, 4)
+                w.seg("flame_y", P(m, i), P((m[0] + nx * 0.035, m[1] + nz * 0.035), i), 0.01, 0.002, 4)
         p, _ = at(tip_t * (i + 1) / nseg)
         w.sph(ring_key, P(p, i), r * 1.2, seg=6)
     # the dart at the tip
@@ -378,7 +378,7 @@ def roi_body(w, g, pose):
     ang = math.degrees(math.atan2(d[0], d[1]))
     ln = {2: 0.08, 3: 0.09, 4: 0.1, 5: 0.1, 6: 0.11, 7: 0.1, 8: 0.11}[g]
     wd = {2: 0.03, 3: 0.034, 4: 0.04, 5: 0.036, 6: 0.04, 7: 0.036, 8: 0.042}[g]
-    tipk = {2: "steel", 3: "bronze", 4: "steel", 5: "cyan_hi", 6: "flame_y", 7: "ice_hi", 8: "gold_e"}[g]
+    tipk = {2: "steel", 3: "bronze", 4: "steel", 5: "cyan_hi_n", 6: "flame_y_n", 7: "ice_hi_n", 8: "gold_e_n"}[g]
     w.poly(tipk, leaf_pts(p, ang, ln, wd, widest=0.3, back=0.05), -0.012, 0.012, 0.003)
     if g == 7:
         for s in (-1, 1):
@@ -431,7 +431,7 @@ def dart(w, g, base, ang, flying=False):
     def p(t):
         return (base[0] + d[0] * t, base[1] + d[1] * t)
     T = TH[g]
-    bl = {1: "wood_l", 2: "iron", 3: "jade", 4: "steel", 5: "cyan", 6: "flame", 7: "ice", 8: "purple"}[g]
+    bl = {1: "wood_l", 2: "iron", 3: "jade", 4: "steel", 5: "cyan_n", 6: "flame_n", 7: "ice_n", 8: "purple"}[g]
     L = {1: 0.3, 2: 0.3, 3: 0.31, 4: 0.32, 5: 0.33, 6: 0.32, 7: 0.32, 8: 0.34}[g]
     if g == 1:   # sharpened bamboo dart, hemp fletching
         h0 = p(0.0)
@@ -458,32 +458,32 @@ def dart(w, g, base, ang, flying=False):
     # blade
     if g == 6:   # flame-shaped blade
         base_b = p(0.07)
-        w.poly(bl, leaf_pts(base_b, ang, L - 0.07, 0.034, widest=0.25), -0.012, 0.012, 0.003)
+        w.poly(bl, leaf_pts(base_b, ang, L - 0.07, 0.022, widest=0.25), -0.012, 0.012, 0.003)
         for s in (-1, 1):
-            w.poly("flame", leaf_pts(p(0.12), ang + s * 16, 0.12, 0.016), -0.01, 0.01, 0.002)
-        w.poly("flame_y", leaf_pts(p(0.1), ang, 0.12, 0.012), -0.02, -0.012, 0)
+            w.poly("flame_n", leaf_pts(p(0.1), ang + s * 14, 0.1, 0.01), -0.01, 0.01, 0.002)
+        w.poly("flame_y_n", leaf_pts(p(0.1), ang, 0.12, 0.012), -0.02, -0.012, 0)
     elif g == 5:  # glowing needle
-        w.poly(bl, leaf_pts(p(0.07), ang, L - 0.07, 0.02, widest=0.15), -0.01, 0.01, 0.002)
-        w.poly("cyan_hi", leaf_pts(p(0.09), ang, L - 0.13, 0.008, widest=0.15), -0.016, -0.008, 0)
+        w.poly(bl, leaf_pts(p(0.07), ang, L - 0.07, 0.014, widest=0.15), -0.01, 0.01, 0.002)
+        w.poly("cyan_hi_n", leaf_pts(p(0.09), ang, L - 0.13, 0.008, widest=0.15), -0.016, -0.008, 0)
         q = p(0.0)
         w.ico("violet", (q[0], -0.012, q[1]), 0.018)
     elif g == 7:  # ice shard with a pair of tiny wings at the tail
-        w.poly(bl, leaf_pts(p(0.07), ang, L - 0.07, 0.03, widest=0.5), -0.012, 0.012, 0.002)
-        w.poly("ice_hi", leaf_pts(p(0.1), ang, L - 0.15, 0.01, widest=0.5), -0.02, -0.012, 0)
+        w.poly(bl, leaf_pts(p(0.07), ang, L - 0.07, 0.02, widest=0.5), -0.012, 0.012, 0.002)
+        w.poly("ice_hi_n", leaf_pts(p(0.1), ang, L - 0.15, 0.01, widest=0.5), -0.02, -0.012, 0)
         for s in (-1, 1):
             w.poly("ice_w", leaf_pts(p(0.01), ang + 180 + s * 38, 0.08, 0.022), -0.01, 0.01, 0.002)
     elif g == 8:  # star blade
-        w.poly(bl, leaf_pts(p(0.07), ang, L - 0.07, 0.034, widest=0.4), -0.012, 0.012, 0.003)
-        w.poly("gold_e", leaf_pts(p(0.1), ang, L - 0.14, 0.01, widest=0.4), -0.02, -0.012, 0)
+        w.poly(bl, leaf_pts(p(0.07), ang, L - 0.07, 0.022, widest=0.4), -0.012, 0.012, 0.003)
+        w.poly("gold_e_n", leaf_pts(p(0.1), ang, L - 0.14, 0.01, widest=0.4), -0.02, -0.012, 0)
         q = p(0.0)
-        w.sph("star", (q[0], -0.012, q[1]), 0.02, seg=6)
+        w.sph("star_n", (q[0], -0.012, q[1]), 0.02, seg=6)
         q = p(L * 0.6)
-        w.box("star", (q[0] + 0.03, -0.02, q[1]), (0.028, 0.02, 0.028), bevel=0)
+        w.box("star_n", (q[0] + 0.03, -0.02, q[1]), (0.028, 0.02, 0.028), bevel=0)
     else:         # willow-leaf throwing knife
-        wd = {2: 0.036, 3: 0.04, 4: 0.04}[g]
+        wd = {2: 0.02, 3: 0.023, 4: 0.023}[g]
         w.poly(bl, leaf_pts(p(0.07), ang, L - 0.07, wd, widest=0.35), -0.012, 0.012, 0.003)
         if g >= 3:
-            w.poly(T["hi"] if g == 4 else "jade_d", leaf_pts(p(0.1), ang, L - 0.15, 0.009, widest=0.35),
+            w.poly("gold" if g == 4 else "jade_d", leaf_pts(p(0.1), ang, L - 0.15, 0.009, widest=0.35),
                    -0.02, -0.012, 0)
     # tails (cloth streamers) on the ring
     if g in (2, 4):
@@ -499,18 +499,19 @@ def dart(w, g, base, ang, flying=False):
 
 
 def am_khi(w, g):
-    n = {1: 3, 2: 3, 3: 4, 4: 5, 5: 5, 6: 5, 7: 5, 8: 5}[g]
-    spread = {1: 50, 2: 56, 3: 62, 4: 70, 5: 72, 6: 72, 7: 72, 8: 76}[g]
-    # in the hand: a fan between the fingers
+    n = {1: 3, 2: 3, 3: 4, 4: 4, 5: 4, 6: 4, 7: 4, 8: 5}[g]
+    step = {1: 22, 2: 22, 3: 19, 4: 21, 5: 24, 6: 24, 7: 24, 8: 20}[g]
+    # in the hand: a fan between the fingers (bases spread across the fist, tips fanned)
     w.pose = "hand"
     for k in range(n):
-        a = -spread / 2 + spread * k / max(1, n - 1)
+        off = k - (n - 1) / 2
+        a = off * step
         w.xf = geom.Matrix.Translation((0, (k % 2) * 0.012 - 0.006, 0))
-        dart(w, g, (math.sin(math.radians(a)) * 0.02, -0.02), a)
+        dart(w, g, (off * (0.035 if g < 5 else 0.045), -0.02 - abs(off) * 0.02), a)
     w.xf = geom.Matrix.Identity(4)
     if g >= 4:   # hub ornament where the blades cross
         hub = {4: "teal", 5: "violet", 6: "flame_y", 7: "cyan", 8: "star"}[g]
-        w.sph(hub, (0, -0.03, -0.01), 0.022, seg=6)
+        w.sph(hub, (0, -0.03, -0.05), 0.02, seg=6)
     # in flight: the blades spread side by side, pointing the same way
     w.pose = "fly"
     for k in range(n):
@@ -633,8 +634,8 @@ def zither_outline(g, L=0.4, Wd=0.085):
 
 def cam(w, g):
     T = TH[g]
-    L, Wd = 0.42, 0.11
-    body = {1: "wood", 2: "wood_d", 3: "jade", 4: "lacquer", 5: "purple_l", 6: "black", 7: "ice", 8: "purple"}[g]
+    L, Wd = 0.42, 0.13
+    body = {1: "wood_d", 2: "wood_d", 3: "jade", 4: "lacquer", 5: "purple_l", 6: "black", 7: "frost", 8: "purple"}[g]
     side = {1: "wood", 2: "lacq_d", 3: "jade_d", 4: "lacq_d", 5: "purple", 6: "black", 7: "ice_w", 8: "purple"}[g]
     th = 0.05
     out = zither_outline(g, L, Wd)
@@ -653,8 +654,11 @@ def cam(w, g):
     skey = {1: "hemp", 2: "string", 3: "string", 4: "string", 5: "cyan_hi", 6: "ember", 7: "ice_hi", 8: "gold_e"}[g]
     nstr = 3 if g == 1 else 4
     for i in range(nstr):
-        x = (i - (nstr - 1) / 2) * 0.05
+        x = (i - (nstr - 1) / 2) * 0.056
         w.box(skey, (x, -th / 2 - 0.016, -L * 0.15), (0.022, 0.008, L * 1.42), bevel=0)
+        # one movable bridge under each string, set in a slanting row (the zither's tell-tale)
+        zb = -L * 0.45 + i * 0.07
+        w.box(br, (x, -th / 2 - 0.012, zb), (0.03, 0.02, 0.03), bevel=0.003)
     # hui studs along the near edge (grade 2+)
     if g >= 2:
         hk = {2: "bone", 3: "jade_l", 4: "teal", 5: "violet", 6: "flame_y", 7: "cyan", 8: "star"}[g]
@@ -671,6 +675,10 @@ def cam(w, g):
     for s in (-1, 1):
         w.cyl(T["trim"], (s * 0.035, 0.01, -L - 0.01), 0.016, 0.016, 0.03, seg=6)
     tassel(w, tc, (0.0, 0.0, -L - 0.03), n=3, length=0.12 if g < 4 else 0.15)
+    # a second tassel hanging from the edge of the tail (it hangs down when the zither is held flat)
+    for k in range(2):
+        w.seg(tc, (Wd - 0.01, 0, -L * 0.8 - k * 0.03), (Wd + 0.1, 0, -L * 0.82 - k * 0.04), 0.009, 0.006, 5)
+    w.sph(tc, (Wd - 0.005, 0, -L * 0.81), 0.018, seg=6)
     if g == 3:
         w.sph("jade_d", (0, -th / 2 - 0.004, L * 0.82), 0.03, scale=(1, 0.4, 1), seg=8)
     elif g == 4:   # carved cloud head, gold disc, teal gem

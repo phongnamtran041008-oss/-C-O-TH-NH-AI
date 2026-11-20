@@ -18,12 +18,12 @@ ICON_DIR = "client/assets/v2/icons"
 
 # icon pose per type: angle = lean of +Z toward the upper right, spin = turn about its own axis
 POSE = {
-    "kich": dict(angle=45, spin=12),
+    "kich": dict(angle=45, spin=0),
     "roi": dict(angle=40, spin=0),
-    "am_khi": dict(angle=30, spin=0),
+    "am_khi": dict(angle=25, spin=0),
     "luan": dict(angle=20, spin=0),
     "phu": dict(angle=40, spin=10),
-    "cam": dict(angle=90, spin=0, tilt=-25),
+    "cam": dict(angle=90, spin=0),
 }
 
 
@@ -42,7 +42,7 @@ def main():
     for wid in only:
         root = models.make(wid)
         t = root["type"]
-        icons.append({"id": wid, "objects": [root] + geom.visible_children(root),
+        icons.append({"id": wid, "objects": geom.visible_children(root),
                       "name_vi": root["name_vi"], "grade": int(root["grade"]), **POSE[t]})
     kit.render_icons("weapons_c", icons, ICON_DIR, cols=8)
 

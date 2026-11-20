@@ -38,16 +38,22 @@ LIB = {
     "violet": ("a064ff", 0.0, 0.3, 2.5),
     "flame": ("ff5a19", 0.0, 0.3, 1.6), "flame_y": ("ffcd46", 0.0, 0.2, 3.0), "ember": ("ff3a10", 0.0, 0.3, 2.2),
     "ice": ("5cb4ff", 0.0, 0.25, 1.1), "ice_hi": ("f0fcff", 0.0, 0.2, 2.0),
-    "ice_w": ("e6f6ff", 0.2, 0.3, 0.0),
+    "ice_w": ("e6f6ff", 0.2, 0.3, 0.0), "frost": ("6aaee8", 0.0, 0.3, 0.0),
     "purple": ("34248a", 0.1, 0.4, 0.12), "purple_l": ("7a46c8", 0.1, 0.4, 0.3),
     "gold_e": ("ffc850", 0.0, 0.2, 2.6), "star": ("fff0c8", 0.0, 0.2, 5.0),
+    # the same glows without the 1 px halo: thin parts that sit close together (darts)
+    "cyan_n": ("5ad2ff", 0.0, 0.3, 1.5), "flame_n": ("ff5a19", 0.0, 0.3, 1.6), "ice_n": ("5cb4ff", 0.0, 0.25, 1.1),
+    "cyan_hi_n": ("d2faff", 0.0, 0.2, 3.0), "flame_y_n": ("ffcd46", 0.0, 0.2, 3.0), "ice_hi_n": ("f0fcff", 0.0, 0.2, 2.0),
+    "gold_e_n": ("ffc850", 0.0, 0.2, 2.6), "star_n": ("fff0c8", 0.0, 0.2, 5.0),
 }
+NO_HALO = {k for k in LIB if k.endswith("_n")}
 RAMP = {"wood": "wood", "wood_d": "wood", "wood_l": "wood", "hemp": "earth", "rope": "earth",
         "leather": "wood", "leather_l": "wood", "stone": "stone", "stone_l": "stone", "bone": "bone",
-        "lacquer": "red", "lacq_d": "red", "string": "paper", "black": "stone"}
-PRIO = {"teal": 3.0, "star": 3.0, "gold_e": 2.0, "violet": 2.0, "flame_y": 2.0, "cyan_hi": 2.0,
+        "lacquer": "red", "lacq_d": "red", "frost": "blue", "string": "paper", "black": "stone"}
+PRIO = {"teal": 3.0, "star": 3.0, "star_n": 3.0, "gold_e_n": 2.0, "gold_e": 2.0, "violet": 2.0, "flame_y": 2.0, "cyan_hi": 2.0,
         "string": 1.5}
-GLOW = {"purple": 0, "purple_l": 0, "star": "cosmic", "gold_e": "holy", "violet": "cosmic"}
+GLOW = {"purple": 0, "purple_l": 0, "star": "cosmic", "gold_e": "holy", "violet": "cosmic",
+        "star_n": "cosmic", "gold_e_n": "holy"}
 NO_METAL = {"string": 0}
 
 
@@ -79,6 +85,8 @@ def mat(key):
         m["kit_priority"] = PRIO[key]
     if key in GLOW:
         m["kit_glow"] = GLOW[key]
+    if key in NO_HALO:
+        m["kit_halo"] = 0
     if key in NO_METAL:
         m["kit_metal"] = NO_METAL[key]
     _mat_cache[key] = m
