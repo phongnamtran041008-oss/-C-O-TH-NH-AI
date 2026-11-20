@@ -1,0 +1,19 @@
+{
+ "id": "ngu_kiem",
+ "name_vi": "Ngự Kiếm Thuật - phi kiếm",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 48
+ },
+ "sheet": "ngu_kiem.png",
+ "cols": 4,
+ "frames": 4,
+ "fps": 14,
+ "loop": true,
+ "blend": "alpha",
+ "ground": false
+}

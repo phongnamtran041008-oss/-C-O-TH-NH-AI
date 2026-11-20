@@ -1,0 +1,19 @@
+{
+ "id": "thanh_dang_troi",
+ "name_vi": "Thanh Đằng Triền - dây leo trói",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 56
+ },
+ "sheet": "thanh_dang_troi.png",
+ "cols": 4,
+ "frames": 4,
+ "fps": 8,
+ "loop": true,
+ "blend": "alpha",
+ "ground": false
+}

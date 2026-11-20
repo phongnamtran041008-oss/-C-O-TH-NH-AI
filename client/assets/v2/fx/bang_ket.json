@@ -1,0 +1,19 @@
+{
+ "id": "bang_ket",
+ "name_vi": "Băng Phong Thuật - đóng băng",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 56
+ },
+ "sheet": "bang_ket.png",
+ "cols": 4,
+ "frames": 4,
+ "fps": 6,
+ "loop": true,
+ "blend": "alpha",
+ "ground": false
+}

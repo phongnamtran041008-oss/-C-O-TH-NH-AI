@@ -1,0 +1,19 @@
+{
+ "id": "kim_chung",
+ "name_vi": "Kim Chung Tráo - chuông vàng hiện",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 86
+ },
+ "sheet": "kim_chung.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 14,
+ "loop": false,
+ "blend": "alpha",
+ "ground": false
+}

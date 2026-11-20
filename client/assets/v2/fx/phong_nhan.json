@@ -1,0 +1,19 @@
+{
+ "id": "phong_nhan",
+ "name_vi": "Phong Nhận Thuật - phong nhận",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 32
+ },
+ "sheet": "phong_nhan.png",
+ "cols": 4,
+ "frames": 4,
+ "fps": 16,
+ "loop": true,
+ "blend": "alpha",
+ "ground": false
+}

@@ -1,0 +1,19 @@
+{
+ "id": "van_kiem_vong",
+ "name_vi": "Vạn Kiếm Quy Tông - kiếm ấn trên đất",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 64
+ },
+ "sheet": "van_kiem_vong.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 8,
+ "loop": true,
+ "blend": "alpha",
+ "ground": true
+}

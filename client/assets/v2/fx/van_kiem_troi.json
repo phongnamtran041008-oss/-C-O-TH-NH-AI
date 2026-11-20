@@ -1,0 +1,19 @@
+{
+ "id": "van_kiem_troi",
+ "name_vi": "Vạn Kiếm Quy Tông - kiếm trận trên trời",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 120
+ },
+ "sheet": "van_kiem_troi.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 14,
+ "loop": false,
+ "blend": "alpha",
+ "ground": false
+}

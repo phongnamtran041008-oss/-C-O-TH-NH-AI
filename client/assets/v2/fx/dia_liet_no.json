@@ -1,0 +1,19 @@
+{
+ "id": "dia_liet_no",
+ "name_vi": "Địa Liệt Trảm - đất bùng",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 80
+ },
+ "sheet": "dia_liet_no.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 14,
+ "loop": false,
+ "blend": "alpha",
+ "ground": false
+}
