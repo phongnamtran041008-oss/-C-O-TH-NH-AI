@@ -229,14 +229,14 @@ def _clips(arm, P):
     # holdout ground cuts what goes under), jaws to the sky, in a ring of mud ripples
     def sink(z, head, jaw, rip, tl=1.0):
         p = L.plant(drop=0.04, pitch=-6)
-        p.update({"root": {"l": (0, 0.45 * z, -z)}, "pelvis": {"l": (0, 0, -0.04)}, "chest": {"r": (-6, 0, 0)},
-                  "head": H(head), "jaw": {"r": (jaw, 0, 0)}, "ripple": {"l": (0, -0.45 * z, z), "s": rip}})
+        p.update({"root": {"l": (0, 0.2 * z, -z)}, "pelvis": {"l": (0, 0, -0.04)}, "chest": {"r": (-6, 0, 0)},
+                  "head": H(head), "jaw": {"r": (jaw, 0, 0)}, "ripple": {"l": (0, -0.2 * z, z), "s": rip}})
         p.update(tail(0, 4, 0, bias=-4, lift=-50))   # the tail goes under first
         p["tc1"]["s"] = tl
         return p
     thrash = merge(hit[0], {"head": H(-36, 0, 20), "jaw": {"r": (40, 0, 0)}})
-    die = [hit[0], thrash, sink(0.06, -40, 40, 0.7, 0.4), sink(0.16, -50, 32, 0.9, 0.15),
-           sink(0.26, -56, 22, 1.0, TINY), sink(0.34, -58, 12, 1.0, TINY)]
+    die = [hit[0], thrash, sink(0.06, -40, 40, 0.7, 0.3), sink(0.16, -50, 32, 0.9, TINY),
+           sink(0.26, -62, 22, 1.0, TINY), sink(0.34, -64, 12, 1.0, TINY)]
     for clip_poses in (idle, walk, windup, attack, hit, die):
         for p in clip_poses:
             p.setdefault("ripple", {"s": TINY})
