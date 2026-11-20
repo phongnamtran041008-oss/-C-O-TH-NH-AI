@@ -69,6 +69,7 @@ def build_thiet_giap_thu():
     stub_m = material("MAT_tg_stub", hx("#94a6ba"), hx("#cfcbd3"), ramp=("steel", "bone"), metal=True)
     claw = material("MAT_tg_claw", hx("#cfcbd3"), hx("#cfcbd3"), ramp="bone")
     eye = material("MAT_tg_eye", (1.0, 0.89, 0.48), (1.0, 0.45, 0.2), emit=6.0, glow=("holy", "flame"))
+    eye["kit_halo"] = 0
     nose = material("MAT_tg_nose", hx("#1d1922"), hx("#1d1922"), ramp="hair")
     tongue = material("MAT_tg_tongue", hx("#e88aa6"), hx("#e88aa6"), ramp="pink")
     grip = material("MAT_tg_grip", hx("#573420"), hx("#94302a"), ramp=("wood", "red"))
@@ -92,7 +93,7 @@ def build_thiet_giap_thu():
         thetas = (-80, -48, -16, 16, 48, 80) if r % 2 else (-64, -32, 0, 32, 64)
         for c, th in enumerate(thetas):
             p, n = _body_surface(th, t, 1.03)
-            m = sh_a if (r + c) % 2 == 0 else sh_b
+            m = sh_a if r % 2 == 0 else sh_b       # rows of plates, as on a pangolin
             size = 0.78 + 0.3 * math.sqrt(max(0.0, 1 - t * t))
             att(arm, "chest" if p.y < 0.0 else "pelvis",
                 _shard(f"tg_sh{r}_{c}", m, p, n, Vector((0, 1, -0.2)), size=size))
@@ -114,17 +115,17 @@ def build_thiet_giap_thu():
 
     # head: conical, a little big for the body (it must read from the front), glowing eyes
     HY, HZ = -0.255, 0.25
-    hd = [ball("tg_head", (0.098, 0.105, 0.09), (0, HY, HZ), skin_m),
-          aim("tg_snout", skin_m, (0, HY - 0.05, HZ - 0.015), (0, HY - 0.13, HZ - 0.04), 0.062, 0.032, seg=10,
+    hd = [ball("tg_head", (0.112, 0.112, 0.102), (0, HY, HZ + 0.01), skin_m),
+          aim("tg_snout", skin_m, (0, HY - 0.06, HZ - 0.01), (0, HY - 0.135, HZ - 0.04), 0.066, 0.034, seg=10,
               smooth=True),
-          ball("tg_nose", (0.03, 0.024, 0.024), (0, HY - 0.135, HZ - 0.042), nose, seg=8, rings=5)]
+          ball("tg_nose", (0.032, 0.026, 0.026), (0, HY - 0.14, HZ - 0.042), nose, seg=8, rings=5)]
     for k, (x, y, z, th) in enumerate(((0.0, HY + 0.0, HZ + 0.075, 0), (0.05, HY + 0.02, HZ + 0.06, 42),
                                        (-0.05, HY + 0.02, HZ + 0.06, -42))):
         n = Vector((math.sin(math.radians(th)), -0.25, math.cos(math.radians(th)))).normalized()
         hd.append(_shard(f"tg_crown{k}", sh_a if k == 0 else sh_b, Vector((x, y - 0.03, z)), n,
                          Vector((0, 1, 0)), lift=24, size=0.62))
     att(arm, "head", *hd)
-    att(arm, "eyes", *[ball(f"tg_eye{s}", (0.03, 0.018, 0.03), (s * 0.058, HY - 0.068, HZ + 0.02), eye,
+    att(arm, "eyes", *[ball(f"tg_eye{s}", (0.032, 0.018, 0.032), (s * 0.064, HY - 0.08, HZ + 0.03), eye,
                             seg=8, rings=5) for s in (-1, 1)])
     att(arm, "jaw", aim("tg_tongue", tongue, (0, -0.36, 0.208), (0, -0.48, 0.20), 0.013, 0.009, seg=6))
 
@@ -255,7 +256,7 @@ def _clips(arm, P):
     # bursts open into a low ram stance, head up and shards bristling (f2), settles (f3)
     open_ = L.plant(drop=0.03, front=(-0.02, -0.02), back=(0.02, 0.02), pitch=10)
     open_.update({"root": {"l": (0, -0.02, 0)}, "pelvis": {"l": (0, 0, -0.03)},
-                  "chest": {"r": (10, 0, 0)}, "head": {"r": (-16, 0, 0)}, "jaw": {"s": (1, TINY, 1)},
+                  "chest": {"r": (6, 0, 0)}, "head": {"r": (-30, 0, 0)}, "jaw": {"s": (1, TINY, 1)},
                   "tail1": {"r": (26, 0, 0)}, "tail2": {"r": (22, 0, 10)}, "tail3": {"r": (16, 0, 16)}})
     settle = lerp_pose(open_, idle[0], 0.6)
     settle.update(L.plant(drop=0.012, pitch=4))

@@ -75,8 +75,9 @@ def build_loi_ung():
         ball("lu_neck", (0.075, 0.07, 0.07), (0, -0.05, 0.92), chest))
     # --- head: dark crown, pale cheek, hooked gold beak, glowing eye under a hard brow,
     # a crest of swept-back feathers with lightning tips
-    hd = [ball("lu_head", (0.088, 0.095, 0.082), (0, -0.085, 0.995), chest),
-          ball("lu_crown", (0.07, 0.07, 0.04), (0, -0.07, 1.05), slate),
+    hd = [ball("lu_head", (0.088, 0.095, 0.082), (0, -0.085, 0.995), back),
+          ball("lu_crown", (0.075, 0.08, 0.045), (0, -0.075, 1.04), slate),
+          ball("lu_throat", (0.06, 0.05, 0.05), (0, -0.125, 0.955), chest),
           aim("lu_beak", gold, (0, -0.16, 0.99), (0, -0.225, 0.975), 0.032, 0.01, seg=8),
           aim("lu_hook", gold, (0, -0.215, 0.982), (0, -0.228, 0.945), 0.013, 0.0, seg=6)]
     for sx in (-1, 1):

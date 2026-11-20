@@ -26,7 +26,7 @@ from quadrupeds import Legs, gait, quad_armature
 
 def build_huyet_ngac():
     use_collection("COL_huyet_ngac")
-    set_root_offset((0, 0.0, 0))
+    set_root_offset((0, 0.015, 0))
     hide = material("MAT_hn_hide", hx("#94302a"), hx("#2e2834"), ramp=("red", "hair"))
     scute = material("MAT_hn_scute", hx("#5c1a1c"), hx("#94302a"), ramp=("red", "red"))
     scute["kit_shadow"] = 0.45
@@ -124,15 +124,15 @@ def build_huyet_ngac():
             x = sx * P["x"]
             big = 1.0 if leg == "f" else 1.12
             att(arm, f"{leg}{side_}1", aim(f"hn_{leg}{side_}up", hide, (x * 0.8, y, 0.21),
-                                           (x + sx * 0.09, y, 0.125), 0.06 * big, 0.048 * big, seg=8, smooth=True))
-            att(arm, f"{leg}{side_}2", aim(f"hn_{leg}{side_}lo", hide, (x + sx * 0.09, y, 0.13),
-                                           (x + sx * 0.085, y - 0.01, 0.03), 0.046 * big, 0.04, seg=8, smooth=True))
-            ft = [ball(f"hn_{leg}{side_}foot", (0.055, 0.06, 0.024), (x + sx * 0.09, y - 0.025, 0.022), hide,
+                                           (x + sx * 0.055, y, 0.125), 0.06 * big, 0.048 * big, seg=8, smooth=True))
+            att(arm, f"{leg}{side_}2", aim(f"hn_{leg}{side_}lo", hide, (x + sx * 0.055, y, 0.13),
+                                           (x + sx * 0.05, y - 0.01, 0.03), 0.046 * big, 0.04, seg=8, smooth=True))
+            ft = [ball(f"hn_{leg}{side_}foot", (0.055, 0.06, 0.024), (x + sx * 0.055, y - 0.025, 0.022), hide,
                        seg=8, rings=5)]
             for c, a_ in enumerate((-35, 0, 35)):
                 ang = math.radians(a_)
                 d = Vector((math.sin(ang) * sx, -math.cos(ang), 0))
-                b0 = Vector((x + sx * 0.09, y - 0.04, 0.02))
+                b0 = Vector((x + sx * 0.055, y - 0.04, 0.02))
                 ft.append(aim(f"hn_{leg}{side_}claw{c}", tooth, tuple(b0 + d * 0.03), tuple(b0 + d * 0.075 - Vector((0, 0, 0.01))),
                               0.013, 0.0, seg=5))
             att(arm, f"{leg}{side_}3", *ft)
@@ -148,7 +148,7 @@ def build_huyet_ngac():
     return arm
 
 
-LIFT = -25.0
+LIFT = -30.0
 TINY = 0.001      # the head is carried raised: crocodile on the high walk, alert
 
 
@@ -218,7 +218,7 @@ def _clips(arm, P):
     attack = [lunge, snap, wrench, settle]
 
     hit = [merge(L.plant(drop=0.012, front=(0.03, 0.03), back=(0.0, 0.0), pitch=-6),
-                 {"root": {"l": (0, 0.03, 0)}, "pelvis": {"l": (0, 0, -0.012)},
+                 {"root": {"l": (0, 0.015, 0)}, "pelvis": {"l": (0, 0, -0.012)},
                   "chest": {"r": (-6, 0, 8)}, "head": H(-14, 0, 14), "jaw": {"r": (22, 0, 0)},
                   "tc1": {"r": (6, 0, -8)}, "tc2": {"r": (4, 0, -10)}}),
            merge(L.plant(drop=0.005, front=(0.012, 0.012), pitch=-2),

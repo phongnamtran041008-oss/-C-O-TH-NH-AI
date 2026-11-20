@@ -55,7 +55,7 @@ def build_loi_linh():
     bones = [("root", (0, 0, 0), (0, 0, 0.1), None),
              ("hover", (0, 0, 0.46), (0, 0, 0.56), "root"),
              ("core", tuple(CC), tuple(CC + Vector((0, 0, 0.12))), "hover"),
-             ("face", (0, -0.13, 0.56), (0, -0.13, 0.62), "core"),
+             ("face", (0, -0.15, 0.56), (0, -0.15, 0.62), "core"),
              ("spikes", tuple(CC), tuple(CC + Vector((0, 0, 0.1))), "core"),
              ("discharge", tuple(CC), tuple(CC + Vector((0, -0.1, 0))), "hover"),
              ("trail", (0, 0.12, 0.56), (0, 0.22, 0.56), "hover")]
@@ -65,19 +65,23 @@ def build_loi_linh():
     arm = armature("loi_linh", bones)
 
     # --- the core and its face
-    att(arm, "core", ball("ll_core", (0.13, 0.13, 0.13), tuple(CC), core, seg=16, rings=10),
-        *bolt("ll_crack_a", zigzag((0.06, -0.06, 0.68), (0.12, 0.02, 0.50), 3, 0.02, seed=1), 0.012, inner),
-        *bolt("ll_crack_b", zigzag((-0.07, -0.05, 0.67), (-0.12, 0.03, 0.52), 3, 0.02, seed=2), 0.012, inner))
+    att(arm, "core", ball("ll_core", (0.15, 0.15, 0.15), tuple(CC), core, seg=16, rings=10),
+        *bolt("ll_crack_a", zigzag((0.07, -0.07, 0.69), (0.14, 0.02, 0.50), 3, 0.02, seed=1), 0.012, inner),
+        *bolt("ll_crack_b", zigzag((-0.08, -0.06, 0.68), (-0.14, 0.03, 0.51), 3, 0.02, seed=2), 0.012, inner))
+    # the face: white-hot slanted eyes and a grin, each set in a dark socket so they read
+    sock = material("MAT_ll_socket", hx("#1d1922"), hx("#5c1a1c"), ramp=("hair", "red"))
     fc = []
     for sx in (-1, 1):
-        # slanted eyes, lower toward the middle: a mischievous glare
-        pts = [(x * sx, z) for x, z in ((-0.03, -0.012), (0.034, -0.008), (0.034, 0.024), (-0.03, 0.006))]
-        fc.append(plate(f"ll_eye{sx}", pts, dark, (sx * 0.048, -0.123, 0.585), (1, 0.4 * sx, 0), (0, 0, 1), thick=0.02))
-    grin = [(-0.06, 0.0), (0.06, 0.0), (0.045, -0.03), (0.0, -0.042), (-0.045, -0.03)]
-    fc.append(plate("ll_mouth", grin, mouth, (0, -0.128, 0.535), (1, 0, 0), (0, 0, 1), thick=0.02))
-    for sx in (-1, 1):
-        fc.append(plate(f"ll_fang{sx}", [(-0.012, 0.0), (0.012, 0.0), (0.0, -0.026)], fang,
-                        (sx * 0.026, -0.14, 0.537), (1, 0, 0), (0, 0, 1), thick=0.02))
+        pts = [(x * sx, z) for x, z in ((-0.036, -0.016), (0.04, -0.012), (0.04, 0.03), (-0.036, 0.008))]
+        big = [(x * 1.45, z * 1.45 + 0.002) for x, z in pts]
+        fc.append(plate(f"ll_sock{sx}", big, sock, (sx * 0.055, -0.140, 0.59), (1, 0.4 * sx, 0), (0, 0, 1),
+                        thick=0.02))
+        fc.append(plate(f"ll_eye{sx}", pts, dark, (sx * 0.055, -0.150, 0.59), (1, 0.4 * sx, 0), (0, 0, 1),
+                        thick=0.02))
+    grin = [(-0.06, 0.004), (0.06, 0.004), (0.045, -0.028), (0.0, -0.04), (-0.045, -0.028)]
+    fc.append(plate("ll_msock", [(x * 1.35, z * 1.4 + 0.004) for x, z in grin], sock, (0, -0.143, 0.53),
+                    (1, 0, 0), (0, 0, 1), thick=0.02))
+    fc.append(plate("ll_mouth", grin, mouth, (0, -0.152, 0.53), (1, 0, 0), (0, 0, 1), thick=0.02))
     att(arm, "face", *fc)
     # --- short crackling spikes standing off the surface
     sp = []
@@ -87,8 +91,8 @@ def build_loi_linh():
                     math.sin(math.radians(th)) * math.sin(math.radians(ph)), math.cos(math.radians(ph))))
         if d.y < -0.55 and d.z < 0.6:
             continue                       # keep the face clear
-        a = CC + d * 0.12
-        sp += bolt(f"ll_spike{k}_", zigzag(tuple(a), tuple(CC + d * 0.21), 2, 0.018, seed=k), 0.013, arc)
+        a = CC + d * 0.14
+        sp += bolt(f"ll_spike{k}_", zigzag(tuple(a), tuple(CC + d * 0.24), 2, 0.018, seed=k), 0.013, arc)
     att(arm, "spikes", *sp)
     # --- three broken rings of zigzag lightning (two opposite arcs each, so a half turn
     # brings a ring back to the same look and the loops close), a spark at each end
@@ -100,7 +104,7 @@ def build_loi_linh():
             n = 8
             for k in range(n + 1):
                 ang = math.radians(180 * half + 30 * r + 115 * k / n)
-                rr = 0.27 + (0.02 if k % 2 else -0.016)
+                rr = 0.30 + (0.02 if k % 2 else -0.016)
                 pts.append(tuple(CC + M @ Vector((rr * math.cos(ang), rr * math.sin(ang), 0))))
             parts += bolt(f"ll_ring{r}{half}_", pts, 0.012, arc)
             parts.append(ball(f"ll_rspark{r}{half}", (0.025,) * 3, pts[-1], spark, seg=8, rings=5))
