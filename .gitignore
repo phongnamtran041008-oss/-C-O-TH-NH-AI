@@ -27,3 +27,5 @@ art/render_items/
 # art v2: the .blend scenes are rebuilt by art/src/<batch>/build.py (docs/ART_PIPELINE.md);
 # the packed sprites in client/assets/v2/ are what the game needs
 art/blender/*/
+# M12: pygbag lives in its own environment (tools/build_web.py)
+.venv-web/

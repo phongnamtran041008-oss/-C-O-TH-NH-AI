@@ -27,6 +27,9 @@ OK, CE, RE, TLE = "ok", "ce", "re", "tle"
 DEFAULT_TIME_LIMIT_MS = 2000
 MAX_OUTPUT_CHARS = 100_000
 KILL_GRACE_S = 2.0
+# The pygbag web build (M12) has no subprocess: programs run in-process, see run_in_process
+IN_BROWSER = sys.platform == "emscripten"
+WEB_SLOWDOWN = 3
 
 
 @dataclass
@@ -109,6 +112,8 @@ def run_one(path: Path, data: str, time_limit_ms: int = DEFAULT_TIME_LIMIT_MS,
     is the same everywhere), -X utf8 (so printing Vietnamese works whatever the machine's
     code page is - PYTHONIOENCODING would be ignored, that is what -I means) and the file.
     Test data only ever goes in through stdin."""
+    if IN_BROWSER:
+        return run_in_process(path.read_text("utf-8"), data, time_limit_ms, max_output_chars, path.name)
     exe = interpreter(python)
     limit = max(0.1, time_limit_ms / 1000)
     env = {k: v for k, v in os.environ.items() if not k.startswith("PYTHON")}
@@ -127,6 +132,72 @@ def run_one(path: Path, data: str, time_limit_ms: int = DEFAULT_TIME_LIMIT_MS,
         tail = "\n".join((proc.stderr or "").strip().splitlines()[-6:])
         return RunResult(RE, output=out, error=tail, ms=ms)
     return RunResult(OK, output=out, ms=ms)
+
+
+class _TimeUp(BaseException):
+    """Raised inside the player's program by the tracer when its time is up."""
+
+
+def run_in_process(source: str, data: str, time_limit_ms: int = DEFAULT_TIME_LIMIT_MS,
+                   max_output_chars: int = MAX_OUTPUT_CHARS, filename: str = "bai_lam.py") -> RunResult:
+    """The web build (M12): a page cannot start another Python, so the program runs inside
+    the game's own interpreter, with `data` as its stdin and its prints caught. The time
+    limit is kept by a line tracer that stops the program when the time is up. Tracing
+    slows Python down a few times, so the program gets WEB_SLOWDOWN times its limit; the
+    time it reports is what it really took. The page freezes while the program runs (there
+    is no thread to run it on), at most WEB_SLOWDOWN x the limit per test."""
+    import builtins
+    import io
+    import traceback
+
+    code = compile(source, filename, "exec")
+    stdin, out, err = io.StringIO(data), io.StringIO(), io.StringIO()
+    started = time.perf_counter()
+    deadline = started + max(0.1, time_limit_ms / 1000) * WEB_SLOWDOWN
+    count = 0
+
+    def tracer(frame, event, arg):
+        nonlocal count
+        count += 1
+        if not count & 255 and time.perf_counter() > deadline:
+            raise _TimeUp
+        return tracer
+
+    def read_line(prompt=""):
+        line = stdin.readline()
+        if not line:
+            raise EOFError("EOF when reading a line")
+        return line[:-1] if line.endswith("\n") else line
+
+    env = {"__name__": "__main__", "__file__": filename, "__builtins__": builtins, "input": read_line}
+    saved = sys.stdin, sys.stdout, sys.stderr, sys.gettrace(), sys.getrecursionlimit()
+    status = OK
+    sys.stdin, sys.stdout, sys.stderr = stdin, out, err
+    sys.settrace(tracer)
+    try:
+        exec(code, env)
+    except _TimeUp:
+        status = TLE
+    except SystemExit as e:
+        if e.code not in (None, 0):
+            status = RE
+            if not isinstance(e.code, int):
+                err.write(f"{e.code}\n")
+    except BaseException:
+        status = RE
+        traceback.print_exc(file=err)
+    finally:
+        sys.settrace(saved[3])
+        sys.stdin, sys.stdout, sys.stderr = saved[:3]
+        sys.setrecursionlimit(saved[4])
+    ms = int((time.perf_counter() - started) * 1000)
+    if status == TLE:
+        return RunResult(TLE, ms=time_limit_ms)
+    output = out.getvalue()[:max_output_chars]
+    if status == RE:
+        tail = "\n".join(err.getvalue().strip().splitlines()[-6:])
+        return RunResult(RE, output=output, error=tail, ms=ms)
+    return RunResult(OK, output=output, ms=ms)
 
 
 def run_tests(path: Path, inputs: list[str], time_limit_ms: int = DEFAULT_TIME_LIMIT_MS,
