@@ -77,6 +77,7 @@ SYMBOLS = {
     r"\|": "||", r"\Sigma": "Sigma",                                         # (M11 đại số tuyến tính tầng 7-9)
     r"\partial": "d", r"\nabla": "grad",                                     # (M11 giải tích tầng 7-9)
     r"\min": "min", r"\eta": "eta",                                          # (M11 tối ưu tầng 7-9)
+    r"\rho": "rho",                                                         # (floor 10 xác suất: hệ số tương quan)
 }
 # Dropped: they only change spacing or size.
 IGNORED = (r"\left", r"\right", r"\displaystyle", r"\limits", r"\,", r"\;", r"\!", r"\:",

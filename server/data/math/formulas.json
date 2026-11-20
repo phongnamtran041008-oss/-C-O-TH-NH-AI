@@ -423,6 +423,12 @@
    "w": 93.07,
    "h": 24.73
   },
+  "3b0f8edbac98f095": {
+   "tex": "f_Y(y) = \\frac{1}{|a|}\\, f_X\\!\\left(\\frac{y - b}{a}\\right)",
+   "alt": "f_Y(y) = 1/(|a|) f_X ((y - b)/a)",
+   "w": 108.27,
+   "h": 24.52
+  },
   "3cc416bb27cd8779": {
    "tex": "\\sin x = x - \\frac{x^3}{3!} + \\frac{x^5}{5!} - \\cdots, \\qquad \\cos x = 1 - \\frac{x^2}{2!} + \\frac{x^4}{4!} - \\cdots",
    "alt": "sin x = x - (x^3)/(3!) + (x^5)/(5!) - ..., cos x = 1 - (x^2)/(2!) + (x^4)/(4!) - ...",
@@ -452,6 +458,12 @@
    "alt": "f(x^*) = max { f(x) : x thuoc D }",
    "w": 121.02,
    "h": 10.18
+  },
+  "3f22509d5c649b0b": {
+   "tex": "\\rho(X, Y) = \\frac{\\mathrm{Cov}(X, Y)}{\\sigma(X)\\,\\sigma(Y)}, \\qquad -1 \\le \\rho \\le 1",
+   "alt": "rho(X, Y) = (Cov(X, Y))/(sigma(X) sigma(Y)), -1 <= rho <= 1",
+   "w": 174.33,
+   "h": 24.64
   },
   "409abd28080d8a48": {
    "tex": "n^2, \\qquad n(n-1), \\qquad C_n^2 = \\frac{n(n-1)}{2}",
@@ -705,6 +717,12 @@
    "w": 162.47,
    "h": 10.18
   },
+  "668ddef0fc05beb6": {
+   "tex": "P(A) \\ge 0, \\qquad P(\\Omega) = 1, \\qquad A \\cap B = \\varnothing \\Rightarrow P(A \\cup B) = P(A) + P(B)",
+   "alt": "P(A) >= 0, P(Omega) = 1, A giao B = {} => P(A hop B) = P(A) + P(B)",
+   "w": 312.01,
+   "h": 10.18
+  },
   "67870db088d7e2fc": {
    "tex": "n^2 \\text{ (ma tran ke)}, \\quad n + 2m \\text{ (danh sach ke)}",
    "alt": "n^2 (ma tran ke), n + 2m (danh sach ke)",
@@ -801,6 +819,12 @@
    "w": 97.78,
    "h": 10.98
   },
+  "74778eda40c7ea6d": {
+   "tex": "P(X = i) = \\sum_j P(X = i, Y = j), \\qquad P(Y = j \\mid X = i) = \\frac{P(X = i, Y = j)}{P(X = i)}",
+   "alt": "P(X = i) = tong_j P(X = i, Y = j), P(Y = j | X = i) = (P(X = i, Y = j))/(P(X = i))",
+   "w": 332.4,
+   "h": 28.39
+  },
   "7477bd6f051ff562": {
    "tex": "(A^{T})^{T} = A",
    "alt": "(A^T)^T = A",
@@ -866,6 +890,12 @@
    "alt": "lim_(n -> vo cung) u_n = L",
    "w": 51.91,
    "h": 14.27
+  },
+  "7d8d9211459aa88b": {
+   "tex": "\\mathrm{Cov}(X, Y) = E\\big[(X - E(X))(Y - E(Y))\\big] = E(XY) - E(X)\\,E(Y)",
+   "alt": "Cov(X, Y) = E [(X - E(X))(Y - E(Y)) ] = E(XY) - E(X) E(Y)",
+   "w": 289.27,
+   "h": 12.21
   },
   "80d99357e54afa26": {
    "tex": "\\nabla f = (f_x, f_y), \\qquad D_u f = \\nabla f \\cdot u = |\\nabla f|\\cos\\theta",
@@ -1125,11 +1155,23 @@
    "w": 122.12,
    "h": 13.46
   },
+  "a45082668f3cf5b1": {
+   "tex": "b = \\frac{S_{xy}}{S_{xx}} = \\frac{\\sum (x_i - x_{tb})(y_i - y_{tb})}{\\sum (x_i - x_{tb})^2}, \\qquad a = y_{tb} - b\\,x_{tb}",
+   "alt": "b = (S_(xy))/(S_(xx)) = (tong (x_i - x_(tb))(y_i - y_(tb)))/(tong (x_i - x_(tb))^2), a = y_(tb) - b x_(tb)",
+   "w": 234.87,
+   "h": 24.74
+  },
   "a46113e02f7b3a42": {
    "tex": "D_{1} > 0, \\; D_{2} > 0, \\; \\ldots, \\; D_{n} > 0",
    "alt": "D_1 > 0, D_2 > 0, ..., D_n > 0",
    "w": 131.05,
    "h": 8.93
+  },
+  "a4740ee564a12a4c": {
+   "tex": "P(X = i, Y = j) = P(X = i)\\,P(Y = j) \\quad \\forall\\, i, j",
+   "alt": "P(X = i, Y = j) = P(X = i) P(Y = j) voi moi i, j",
+   "w": 198.89,
+   "h": 10.18
   },
   "a528bf79fa062de2": {
    "tex": "\\text{bai toan loi: cuc tieu dia phuong} \\Rightarrow \\text{cuc tieu toan cuc}",
@@ -1160,6 +1202,12 @@
    "alt": "tong_(i=1)^n a_i x_i <= b, x_i thuoc {0, 1}",
    "w": 113.4,
    "h": 28.59
+  },
+  "a7a62a6907a0647a": {
+   "tex": "P(Y = y) = \\sum_{x:\\, g(x) = y} P(X = x)",
+   "alt": "P(Y = y) = tong_(x: g(x) = y) P(X = x)",
+   "w": 130.91,
+   "h": 24.17
   },
   "a89e3f91338d1ea1": {
    "tex": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^{2} + d^{2}}",
@@ -1527,6 +1575,12 @@
    "w": 242.07,
    "h": 20.45
   },
+  "dc97ab7ebbb31572": {
+   "tex": "E(g(X)) = \\sum_x g(x)\\,P(X = x), \\qquad E(g(X)) e g(E(X))",
+   "alt": "E(g(X)) = tong_x g(x) P(X = x), E(g(X)) e g(E(X))",
+   "w": 235,
+   "h": 21.46
+  },
   "dea5c8b8fd750e49": {
    "tex": "P(AB) = P(A)\\,P(B \\mid A)",
    "alt": "P(AB) = P(A) P(B | A)",
@@ -1676,6 +1730,12 @@
    "alt": "d/dxtich phan_(u(x))^(v(x)) f(t) dt = f (v(x)) v'(x) - f (u(x)) u'(x)",
    "w": 212.65,
    "h": 27.4
+  },
+  "f7cda131836a6a12": {
+   "tex": "\\min_{a, b} \\sum_{i=1}^{n} \\big(y_i - a - b x_i\\big)^2",
+   "alt": "min_(a, b) tong_(i=1)^n (y_i - a - b x_i)^2",
+   "w": 100.95,
+   "h": 28.59
   },
   "f8cae9a486b8111b": {
    "tex": "f(x) \\ge 0, \\qquad \\int_{-\\infty}^{+\\infty} f(x)\\,dx = 1",
