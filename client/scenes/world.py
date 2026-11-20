@@ -21,6 +21,7 @@ from ..art.palette import rgb
 from ..art import build as B
 from ..engine import art2
 from ..engine import combat_vfx as CV
+from ..engine import flight as fl
 from ..engine import glide as gl
 from ..engine import movement as mv
 from ..engine import petfollow
@@ -88,6 +89,8 @@ class Ent:
     beast: bool = False
     need: int = 0                              # Phản Đòn it takes to tame this beast
     ride: bool = False
+    fly: int = 0                               # ngự kiếm: 1 low flight, 2 free flight (0 on the ground)
+    fsword: str = ""                           # the flying sword under it
     stage: int = 0                             # a player's realm stage (its kiếm khí tier)
     lc: int = 0                                # a player's linh căn giai (1-9; 0 = none)
     kick: tuple | None = None                  # a struck body's recoil (combat_vfx.recoil)
@@ -447,6 +450,18 @@ class WorldScene(Scene):
         self.glide_ready = 0.0
         self.tran_ready = 0.0
         self.glides: dict[str, tuple] = {}         # eid -> (t0, x0, y0, x1, y1, seconds) of a glide in flight
+        # ngự kiếm (G held): my rung in the air as predicted (0 on the ground), the gauge, the
+        # altitude of every flyer drawn (engine/flight.py), G's press time, the camera's lead
+        self.flight: dict | None = None            # the numbers sent with the zone (abilities.flight_view)
+        self.fly = 0
+        self.fly_gauge = 0.0
+        self.flyers: dict[str, fl.Flyer] = {}
+        self.g_down: float | None = None
+        self.cam_lead = [0.0, 0.0]
+        self.cam_dip = 0.0
+        self.fly_fx_t: dict[str, float] = {}       # eid -> when its last spray / mote was spawned
+        self.fly_shadows: list = []                # blits of the shadows under the flyers this frame
+        self.drawn_alt: dict[str, float] = {}      # eid -> world px it was drawn above its feet
         self.formations: list[list] = []           # [x, y, r, until, fx id] laid on the ground here
         self.taming: dict[str, dict] = {}          # beast eid -> {"n", "need", "yielded", "name"} (my taming)
         self.sniffed: list | None = None           # Linh Hồ: the weapons it smells nearby
@@ -574,7 +589,7 @@ class WorldScene(Scene):
                     self.game.state.character["qi"] = int(m["qi"])
             else:
                 self.game.toast(m.get("message_vi") or T.SKILL_FAIL.get(m.get("code"), ""), "#BC4749")
-        elif t in ("glide", "ride", "tran"):       # thần thông of Luyện Khí
+        elif t in ("glide", "ride", "tran", "fly"):       # thần thông of Luyện Khí, ngự kiếm
             self.on_ability(t, m)
 
     def open_question(self, m: dict, waited: float = 0.0) -> None:
@@ -719,16 +734,29 @@ class WorldScene(Scene):
         while self.pending and self.pending[0][0] <= ack:
             self.pending.popleft()
         x, y = float(m["me"][0]), float(m["me"][1])
+        # ngự kiếm: the server's rung now, then my unconfirmed take-offs and landings replayed
+        fly = int(m["me"][9]) if len(m["me"]) >= 11 else self.fly
+        fly_speeds = {self.fly_speed(i) for i in (1, 2)}
         for entry in self.pending:
             if len(entry) > 3 and entry[3]:                  # a glide (or mounting): no steps of its own
                 if entry[3][0] == "glide":
                     x, y = entry[3][1], entry[3][2]
+                elif entry[3][0] == "fly":
+                    fly = self.fly_level() if entry[3][1] else (0 if self.may_land(x, y, fly) else fly)
                 continue
             speed = entry[2] if len(entry) > 2 else SPEED     # a Né Đòn dash has its own speed, a rider its mount's
+            if fly:
+                speed = self.fly_speed(fly)
+            elif speed in fly_speeds:                         # sent in the air, but the server had us down
+                speed = SPEED
             for dx, dy, ms in entry[1]:
-                x, y = mv.step(x, y, dx, dy, ms, speed, self.col)
+                x, y = self.step_as(fly, x, y, dx, dy, ms, speed)
         for dx, dy, ms in self.batch:
-            x, y = mv.step(x, y, dx, dy, ms, self.move_speed(), self.col)
+            x, y = self.step_as(fly, x, y, dx, dy, ms, self.fly_speed(fly) if fly else self.move_speed())
+        if fly != self.fly:                  # the server disagreed (a landing refused, knocked off the sword)
+            self.set_fly(fly, x, y)
+        if len(m["me"]) >= 11:
+            self.fly_gauge = float(m["me"][10])
         p = self.player
         if abs(x - p.x) > 0.01 or abs(y - p.y) > 0.01:
             self.corrections += 1   # the server disagreed (blocked or too fast): follow it
@@ -754,6 +782,9 @@ class WorldScene(Scene):
             ent.pet = e.get("pet")
             ent.ghost = bool(e.get("gh"))
             ent.beast, ent.need, ent.ride = bool(e.get("beast")), int(e.get("need") or 0), bool(e.get("rd"))
+            ent.fly, ent.fsword = int(e.get("fl") or 0), e.get("fs") or ""
+            if e["k"] == "p":
+                self.sync_flyer(e["id"], ent.fly, now)
             ent.stage = int(e.get("stage") or 0)
             ent.lc = int(e.get("lc") or 0)
             if e["k"] == "r":
@@ -885,7 +916,7 @@ class WorldScene(Scene):
         if k in ("parry", "dodge", "dodged", "struck"):   # the open-world rule
             self.on_rule_fx(k, ev, me)
             return
-        if k in ("tame", "seal", "fire", "glide", "tran", "ride"):   # linh thú and thần thông (Thiên Địa Đồ)
+        if k in ("tame", "seal", "fire", "glide", "tran", "ride", "fly", "soar"):   # linh thú and thần thông
             self.on_beast_fx(k, ev, me)
             return
         v2 = art2.on()
@@ -1048,7 +1079,7 @@ class WorldScene(Scene):
         movement stream under its own sequence number, so the server repeats exactly the steps
         predicted here; the numbers come from the server with the zone."""
         d = (self.rule or {}).get("dodge")
-        if d is None or self.net is None or self.dead or self.ghost or not self.joined:
+        if d is None or self.net is None or self.dead or self.ghost or not self.joined or self.grounded_only():
             return
         if not self.dodge_open():
             self.fx.float_text(T.DODGE_LOCKED, self.player.x, self.player.y - 30, "#F4EBD9")
@@ -1090,13 +1121,229 @@ class WorldScene(Scene):
         ride = (self.abilities or {}).get("cuoi_linh_thu") or {}
         self.riding = bool(ride.get("riding"))
         self.ride_mult = float(ride.get("mult") or 1.0) if self.riding else 1.0
+        self.flight = ((self.abilities or {}).get("dap_kiem_luot") or {}).get("flight")
+        fv = self.flight or {}
+        self.fly = int(fv.get("flying") or 0)          # (a new zone puts us on the ground)
+        self.fly_gauge = float(fv.get("gauge_now") or 0.0)
+        self.flyers.clear()
+        self.g_down = None
         self.taming.clear()
         self.glides.clear()
         self.sniffed, self.sniff_t = None, 0.0
 
     def move_speed(self) -> float:
-        """My walking speed: the mount's when I ride (the server moves me at the same speed)."""
+        """My walking speed: the sword's in the air, the mount's when I ride (the server moves me
+        at the same speed)."""
+        if self.fly:
+            return self.fly_speed(self.fly)
         return SPEED * self.ride_mult if self.riding else SPEED
+
+    # ------------------------------------------------------------ ngự kiếm (G held)
+    def fly_rung(self, level: int) -> dict:
+        levels = (self.flight or {}).get("levels") or []
+        return levels[level] if 0 < level < len(levels) and isinstance(levels[level], dict) else {}
+
+    def fly_level(self) -> int:
+        """The rung open to me: 2 free flight (Trúc Cơ), 1 low flight, 0 none."""
+        return int((self.flight or {}).get("level") or 0)
+
+    def fly_speed(self, level: int) -> float:
+        return SPEED * float(self.fly_rung(level).get("speed_mult") or 1.0)
+
+    def fly_lift(self, level: int) -> float:
+        """World px a flyer of this rung cruises above its ground point."""
+        return float(self.fly_rung(level).get("lift") or (30.0 if level >= 2 else 18.0))
+
+    def fly_rise(self, level: int) -> float:
+        return float(self.fly_rung(level).get("rise") or 0.3)
+
+    def fly_over(self, level: int | None = None) -> set:
+        return set(self.fly_rung(level or self.fly or 1).get("over") or ())
+
+    def may_land(self, x: float, y: float, level: int | None = None) -> bool:
+        """The server's own landing rule (engine/glide.py, a copy of the server's)."""
+        return gl.land_ok(self.col, self.tile_at, self.fly_over(level), x, y)
+
+    def step_as(self, fly: int, x: float, y: float, dx: int, dy: int, ms: int, speed: float):
+        """One step as the server takes it: flown over water and chasms, or walked."""
+        if fly:
+            return gl.fly_step(self.col, self.tile_at, self.fly_over(fly), x, y, dx, dy, ms, speed)
+        return mv.step(x, y, dx, dy, ms, speed, self.col)
+
+    def flyer(self, eid: str) -> fl.Flyer:
+        f = self.flyers.get(eid)
+        if f is None:
+            f = self.flyers[eid] = fl.Flyer()
+        return f
+
+    def sync_flyer(self, eid: str, level: int, now: float) -> None:
+        """A player record arrived: one first seen in the air is drawn up there at once; one that
+        came down without an event in reach eases down."""
+        f = self.flyers.get(eid)
+        if level and (f is None or not f.flying):
+            if f is None or f.kind is None:
+                self.flyer(eid).hover(now, level, self.fly_lift(level))
+        elif not level and f is not None and f.flying and f.kind == "cruise" and now - f.t0 > 0.6:
+            f.land(now)
+
+    def my_eid(self) -> str:
+        return f"p{self.game.state.me.get('id')}"
+
+    def set_fly(self, level: int, x: float | None = None, y: float | None = None, fall_from=None) -> None:
+        """My rung changed (predicted, or said by the server): the altitude follows."""
+        now = self.game.now
+        f = self.flyer(self.my_eid())
+        if level:
+            f.take_off(now, level, self.fly_lift(level), self.fly_rise(level))
+        elif fall_from is not None and x is not None:
+            self.glides[self.my_eid()] = (now, fall_from[0], fall_from[1], x, y, fl.FALL_S)
+            f.land(now, fall=True)
+        else:
+            f.land(now)
+        self.fly = level
+
+    def fly_takeoff_fx(self, x: float, y: float, mine: bool = True) -> None:
+        """The ring and the dust where a flyer leaves the ground."""
+        vf = self.vfx
+        vf.spawn("phi_cat_canh", x, y, layer="ground", scale=0.8)
+        for side in (-1, 1):
+            vf.spawn("dust_step", x + side * 6, y + 1, layer="ground", scale=0.7, flip=side < 0, heavy=True)
+        if mine:
+            self.game.audio.play("whoosh")
+
+    def fly_landing_fx(self, x: float, y: float, mine: bool) -> None:
+        """Touch-down: the landing ring, a puff of dust, and (mine) the camera settles."""
+        vf = self.vfx
+        vf.spawn("phi_ha_canh", x, y, layer="ground", scale=0.8)
+        vf.spawn("dust_step", x, y + 1, layer="ground", scale=0.9, heavy=True)
+        if mine:
+            self.cam_dip = 3.0
+            self.game.audio.play("land")
+
+    def g_pressed(self) -> None:
+        """G: in the air it brings me down; on the ground a tap hops over the gap (Đạp Kiếm Lướt)
+        and holding it takes off (update() tells the two apart)."""
+        if self.fly:
+            self.land()
+            return
+        if self.fly_level() == 0:
+            self.glide()            # (says why it is locked)
+            return
+        self.g_down = self.game.now
+
+    def watch_g(self, top: bool) -> None:
+        """G held long enough takes off; let go sooner, it was a tap: the hop."""
+        if self.g_down is None:
+            return
+        if not top:                 # a card came up meanwhile: neither
+            self.g_down = None
+            return
+        held = pygame.key.get_pressed()[pygame.K_g]
+        if held and self.game.now - self.g_down >= fl.HOLD_S:
+            self.g_down = None
+            self.take_off()
+        elif not held:
+            self.g_down = None
+            self.glide()
+
+    def take_off(self) -> None:
+        """Ngự kiếm: up on the sword. Predicted here, decided by the server in the movement stream."""
+        level = self.fly_level()
+        fv = self.flight or {}
+        if level == 0 or self.net is None or self.dead or self.ghost or not self.joined or self.fly:
+            return
+        p = self.player
+        why = None
+        if self.riding:
+            why = T.FLY_RIDING
+        elif level == 1 and self.fly_gauge < float(fv.get("min_gauge") or 0):
+            why = T.FLY_GAUGE_LOW
+        if why:
+            self.fx.float_text(why, p.x, p.y - 30, "#F4EBD9")
+            return
+        self.flush_inputs()
+        if not self.net.send({"t": "fly", "s": self.seq, "on": True}):
+            return
+        self.pending.append((self.seq, [], SPEED, ("fly", True)))
+        self.seq += 1
+        self.set_fly(level)
+        self.fly_takeoff_fx(p.x, p.y)
+
+    def land(self) -> None:
+        """Come down where I hover - only over walkable ground (the server's rule)."""
+        if not self.fly or self.net is None:
+            return
+        p = self.player
+        if not self.may_land(p.x, p.y):
+            self.fx.float_text(T.FLY_NO_LANDING, p.x, p.y - 30 - self.fly_lift(self.fly), "#F4EBD9")
+            return
+        self.flush_inputs()
+        if not self.net.send({"t": "fly", "s": self.seq, "on": False}):
+            return
+        self.pending.append((self.seq, [], SPEED, ("fly", False)))
+        self.seq += 1
+        self.set_fly(0)
+
+    def grounded_only(self) -> bool:
+        """In the air: say so and refuse (attacks, chiêu, Né Đòn, talking, picking up, fishing)."""
+        if self.fly:
+            p = self.player
+            self.fx.float_text(T.FLY_LAND_FIRST, p.x, p.y - 30 - self.fly_lift(self.fly), "#F4EBD9")
+            return True
+        return False
+
+    def update_flight(self, dt: float) -> None:
+        """The gauge as predicted (the snapshots correct it), touch-downs, spray over water and
+        the spirit motes behind a moving sword."""
+        fv = self.flight
+        if fv:
+            top = float(fv.get("gauge_max") or 0)
+            if self.fly == 1:
+                self.fly_gauge = max(0.0, self.fly_gauge - dt)
+            elif not self.fly and top > 0:
+                self.fly_gauge = min(top, self.fly_gauge + dt * top / max(0.1, float(fv.get("refill") or 1)))
+        now = self.game.now
+        me = self.my_eid()
+        for eid, f in list(self.flyers.items()):
+            if eid == me:
+                x, y = self.glide_pos(me, self.player.x, self.player.y)[:2]
+            else:
+                ent = self.entities.get(eid)
+                if ent is None:
+                    if not f.shown(now):
+                        del self.flyers[eid]
+                    continue
+                x, y = self.glide_pos(eid, ent.pos[0], ent.pos[1])[:2]
+            f.track(x, y, now)
+            if f.touched_down(now):
+                self.fly_landing_fx(x, y, eid == me)
+                continue
+            if not f.flying or f.speed < fl.WAKE_MIN:
+                continue
+            last = self.fly_fx_t.get(eid, 0.0)
+            if now - last < 0.16:
+                continue
+            self.fly_fx_t[eid] = now
+            ux, uy = f.vx / f.speed, f.vy / f.speed
+            if self.tile_at(int(x // 16), int((y - 1) // 16)) == "water":     # spray on the water below
+                self.vfx.spawn("burst_thuy", x - ux * 4, y, layer="ground", hold=5, life=0.3, scale=0.42,
+                               fade_out=0.25, peak=0.7, heavy=True)
+            a = self.flyer(eid).alt(now)                                      # spirit motes off the tail
+            self.vfx.spawn("hit_spark", x - ux * 10, y + 1, lift=a + 2, to=(x - ux * 22, y - uy * 8),
+                           lift1=a + 6, hold=0, life=0.35, scale=0.28, fade_out=0.3, peak=0.8, heavy=True,
+                           layer="over")
+        self.cam_dip = max(0.0, self.cam_dip - dt * 14.0)
+        # the camera leads a little the way I fly (eased in and out, never a jump)
+        f = self.flyers.get(me)
+        tx = ty = 0.0
+        if f is not None and f.flying and self.fly:
+            tx, ty = f.vx * 0.18, f.vy * 0.18
+            d = math.hypot(tx, ty)
+            if d > 16.0:
+                tx, ty = tx * 16.0 / d, ty * 16.0 / d
+        a = min(1.0, dt * 3.0)
+        self.cam_lead[0] += (tx - self.cam_lead[0]) * a
+        self.cam_lead[1] += (ty - self.cam_lead[1]) * a
 
     def tile_at(self, tx: int, ty: int) -> str | None:
         """The ground of a tile ('water', 'ink'...), as the server's maps.tile_name names it."""
@@ -1141,6 +1388,8 @@ class WorldScene(Scene):
                      float(a.get("max_px", 80)), float(a.get("min_px", 0)))
         if to is None:
             self.fx.float_text(T.GLIDE_NO_LANDING, p.x, p.y - 30, "#F4EBD9")
+            if self.fly_level():
+                self.fx.float_text(T.GLIDE_HOLD_HINT, p.x, p.y - 40, "#9FE8F0")
             return
         self.flush_inputs()
         if not self.net.send({"t": "glide", "s": self.seq, "x": to[0], "y": to[1]}):
@@ -1149,9 +1398,15 @@ class WorldScene(Scene):
         self.seq += 1
         me = f"p{self.game.state.me.get('id')}"
         self.glides[me] = (now, p.x, p.y, to[0], to[1], float(a.get("ms", 450)) / 1000)
+        self.hop_fx(p.x, p.y, to[0], to[1], float(a.get("ms", 450)) / 1000, True)
         p.facing = face_to(to[0] - p.x, to[1] - p.y, p.facing)
         p.x, p.y = to
         self.glide_ready = now + float(a.get("cooldown", 2.5))
+
+    def hop_fx(self, x0: float, y0: float, x1: float, y1: float, secs: float, mine: bool) -> None:
+        """The hop is a real leap: the ring as the sword leaves the ground, dust where it lands."""
+        self.fly_takeoff_fx(x0, y0, mine)
+        self.vfx.at(secs, lambda: self.fly_landing_fx(x1, y1, mine))
 
     def toggle_ride(self) -> None:
         """Cưỡi linh thú (R): mount the worn beast or get down; it rides in the movement stream so
@@ -1162,6 +1417,8 @@ class WorldScene(Scene):
         on = not self.riding
         if on and not a.get("ok"):
             self._ability_locked("cuoi_linh_thu")
+            return
+        if on and self.grounded_only():
             return
         mult = float(a.get("mult") or 0)
         if on and (mult <= 0 or not self.game.worn_pet()):
@@ -1182,6 +1439,8 @@ class WorldScene(Scene):
         if not a.get("ok"):
             self._ability_locked("phap_tran")
             return
+        if self.grounded_only():
+            return
         if self.game.now < self.tran_ready:
             return
         self.flush_inputs()
@@ -1190,6 +1449,9 @@ class WorldScene(Scene):
 
     def on_ability(self, t: str, m: dict) -> None:
         """The server's answer to a thần thông."""
+        if t == "fly":
+            self.on_fly(m)
+            return
         if not m.get("ok"):
             if t == "ride":
                 self.riding, self.ride_mult = False, 1.0
@@ -1204,6 +1466,41 @@ class WorldScene(Scene):
             self.ride_mult = float(m.get("mult") or 1.0) if self.riding else 1.0
         elif t == "tran":
             self.tran_ready = self.game.now + float(m.get("ready_in") or 0)
+
+    def on_fly(self, m: dict) -> None:
+        """The server on my flight: a refusal (said as a short float text; the next snapshot puts
+        my rung right), a confirmation, or a landing it decided - the gauge ran dry (a fall back to
+        the ground when that was over water), knocked off while rising, or gone."""
+        p = self.player
+        if not m.get("ok"):
+            msg = m.get("message_vi") or ""
+            if msg:
+                self.fx.float_text(msg, p.x, p.y - 30 - (self.fly_lift(self.fly) if self.fly else 0), "#F4EBD9")
+            # the take-off (or the landing) I predicted did not happen: it is no change in the replay
+            for i in range(len(self.pending) - 1, -1, -1):
+                e = self.pending[i]
+                if len(e) > 3 and e[3] and e[3][0] == "fly":
+                    self.pending[i] = (e[0], [], SPEED, None)
+                    break
+            on = int(m.get("on") or 0)
+            if on != self.fly:
+                self.set_fly(on)
+            return
+        why = m.get("why")
+        if "gauge" in m:
+            self.fly_gauge = float(m["gauge"])
+        if why in ("gauge", "fall", "knocked", "gone") and self.fly:
+            x, y = float(m.get("x", p.x)), float(m.get("y", p.y))
+            if why == "fall":
+                self.set_fly(0, x, y, fall_from=(p.x, p.y))
+                p.x, p.y = x, y
+                self.fx.float_text(T.FLY_FALL, x, y - 30, "#F4A261")
+            else:
+                self.set_fly(0)
+                if why == "knocked":
+                    self.fx.float_text(T.FLY_KNOCKED, p.x, p.y - 30, "#F4A261")
+                elif why == "gauge":
+                    self.fx.float_text(T.FLY_FALL, p.x, p.y - 30, "#F4A261")
 
     def on_beast_fx(self, k: str, ev: dict, me: str) -> None:
         """Effects of the linh thú and the thần thông: `tame` (a Phản Đòn counted against a beast),
@@ -1232,8 +1529,12 @@ class WorldScene(Scene):
             self.fx.float_text(T.PARRY_FIRE, x, y - 34 / z, "#E76F51")
         elif k == "glide":
             if ev.get("id") != me:
-                self.glides[ev.get("id")] = (now, float(ev.get("x0", x)), float(ev.get("y0", y)), x, y,
-                                             float(ev.get("ms") or 450) / 1000)
+                secs = float(ev.get("ms") or 450) / 1000
+                self.glides[ev.get("id")] = (now, float(ev.get("x0", x)), float(ev.get("y0", y)), x, y, secs)
+                ent = self.entities.get(ev.get("id"))
+                if ent is not None and ev.get("sw"):
+                    ent.fsword = ev["sw"]
+                self.hop_fx(float(ev.get("x0", x)), float(ev.get("y0", y)), x, y, secs, False)
         elif k == "tran":
             fx = ((self.abilities or {}).get("phap_tran") or {}).get("fx") or ev.get("fx") or ""
             self.formations.append([x, y, float(ev.get("r") or 40), now + float(ev.get("d") or 10), fx])
@@ -1241,6 +1542,26 @@ class WorldScene(Scene):
             ent = self.entities.get(ev.get("id"))
             if ent is not None:
                 ent.ride = bool(ev.get("on"))
+        elif k == "fly":                     # ngự kiếm: someone took off or came down (mine: on_ability)
+            eid = ev.get("id")
+            if eid == me:
+                return
+            ent = self.entities.get(eid)
+            on = int(ev.get("on") or 0)
+            if ent is not None:
+                ent.fly, ent.fsword = on, ev.get("sw") or ent.fsword
+            f = self.flyer(eid)
+            if on:
+                f.take_off(now, on, self.fly_lift(on), self.fly_rise(on))
+                self.fly_takeoff_fx(x, y, False)
+            elif ev.get("why") == "fall" and "x0" in ev:
+                self.glides[eid] = (now, float(ev["x0"]), float(ev["y0"]), x, y, fl.FALL_S)
+                f.land(now, fall=True)
+            else:
+                f.land(now)
+        elif k == "soar":                    # a blow on the ground passed under a flyer
+            f = self.flyers.get(ev.get("id"))
+            self.fx.float_text(T.FLY_SOAR, x, y - 30 - (f.lift if f is not None else 0), "#9FE8F0")
 
     def yielded_beast(self, e: "Ent | None") -> bool:
         """A beast that yielded to me: E seals it, it is no longer a foe."""
@@ -1303,6 +1624,45 @@ class WorldScene(Scene):
             return x, y, False
         k = min(1.0, (self.game.now - g[0]) / max(0.05, g[5]))
         return g[1] + (g[3] - g[1]) * k, g[2] + (g[4] - g[2]) * k, k < 1.0
+
+    def air_of(self, eid: str, x: float, y: float) -> tuple[float, float, float, bool]:
+        """(x, y, altitude, on the sword) of a character: flying (or coming down, or falling back),
+        in the leap of a hop, or on its feet."""
+        now = self.game.now
+        gx, gy, gliding = self.glide_pos(eid, x, y)
+        f = self.flyers.get(eid)
+        if f is not None and f.shown(now):
+            return gx, gy, f.alt(now), True
+        if gliding:
+            g = self.glides[eid]
+            return gx, gy, fl.hop_alt((now - g[0]) / max(0.05, g[5])), True
+        return x, y, 0.0, False
+
+    def flyer_v2(self, drawables: list, eid: str, realm: str, x: float, y: float, facing: str,
+                 weapon: str | None, sword: str, alt: float) -> bool:
+        """A character on its flying sword, lifted `alt` world px: the shadow on the ground (drawn
+        under every body), wind, mist, wake, sword and body sorted together at the ground row
+        plus the height, so a flyer passes over what stands below it."""
+        sheet = art2.char_for(realm)
+        if sheet is None or not sheet.has("fly"):
+            return False
+        f = self.flyers.get(eid)
+        vx, vy = (f.vx, f.vy) if f is not None else (0.0, 0.0)
+        level = f.level if (f is not None and f.level) else 1
+        shadows, body = fl.compose(self.view, realm, x, y, facing, self.t, weapon, sword, alt, vx, vy,
+                                   self.fly_speed(level), aura_t=self.t, sheet=sheet)
+        self.fly_shadows += shadows
+        key = y + max(0.0, alt) + 0.5
+        for img, pos, flags in body:
+            drawables.append((key, img, pos, flags))
+        self.drawn_alt[eid] = alt
+        return True
+
+    def sword_of(self, realm: str | None) -> str:
+        """The flying sword of a realm (the plan's rule, sent with the zone) for a flyer whose own
+        record did not name one."""
+        fv = self.flight or {}
+        return fv.get("sword") or ((self.ability("dap_kiem_luot") or {}).get("sheet")) or "phi_kiem_1"
 
     def posed_v2(self, drawables: list, realm: str, x: float, y: float, clip: str, t: float, facing: str,
                  weapon: str | None, lift: int = 0, sword: bool = False) -> bool:
@@ -1384,11 +1744,46 @@ class WorldScene(Scene):
                 if left > 0:
                     frac = min(1.0, left / max(0.1, total))
                     ui.fill(x, y0 + 22 * (1 - frac), 22, 22 * frac, (0, 0, 0, 150))
+            if uid == "dap_kiem_luot" and a.get("ok"):
+                if self.g_down is not None:        # G held: the take-off charging up the icon
+                    k = min(1.0, (now - self.g_down) / fl.HOLD_S)
+                    ui.fill(x + 1, y0 + 21 - 20 * k, 20, 20 * k, (110, 220, 235, 90))
+                if self.fly:
+                    ui.border(x, y0, 22, 22, "#7FDDEB")
             if active and ui.hover(x, y0, 22, 22):
+                desc = T.ABILITY_DESC[uid]
+                if uid == "dap_kiem_luot" and self.fly_level() >= 2:
+                    desc += " " + T.FLY_DESC_HIGH
                 ui.set_tooltip(T.ABILITY_TIP.format(name=a.get("name_vi", ""), key=T.ABILITY_KEYS[uid],
-                                                    desc=T.ABILITY_DESC[uid]) if a.get("ok") else
+                                                    desc=desc) if a.get("ok") else
                                T.ABILITY_LOCKED.format(name=a.get("name_vi", ""),
                                                        stage=(a.get("unlock") or {}).get("stage", "")))
+        self.draw_fly_gauge(ui, x0, y0)
+
+    def draw_fly_gauge(self, ui, x0: float, y0: float) -> None:
+        """Ngự kiếm's gauge just over the ability row, with its key: it shows in the air and while
+        it refills (the low rung); free flight shows a full bar named Phi hành."""
+        fv = self.flight or {}
+        level = int(fv.get("level") or 0)
+        top = float(fv.get("gauge_max") or 0)
+        if not level or not self.joined:
+            return
+        free = self.fly >= 2 or (level >= 2 and not self.fly)
+        if free and not self.fly:
+            return
+        if not free and not self.fly and (top <= 0 or self.fly_gauge >= top - 0.01):
+            return
+        k = 1.0 if free else max(0.0, min(1.0, self.fly_gauge / max(0.1, top)))
+        x, y, w, h = x0, y0 - 9, 70, 6
+        ui.fill(x, y, w, h, (20, 18, 15, 200))
+        low = not free and k < 0.3
+        col = "#7FDDEB" if not low else ("#F4A261" if int(self.game.now * 6) % 2 else "#BC4749")
+        if not free and self.fly_gauge < float(fv.get("min_gauge") or 0) and not self.fly:
+            col = "#6B7F86"                        # refilling, not yet enough to take off
+        ui.fill(x + 1, y + 1, (w - 2) * k, h - 2, col)
+        ui.border(x, y, w, h, "#8B5A2B")
+        label = f"G · {T.FLY_FREE if free else T.FLY_GAUGE}"
+        ui.text(label, x + w / 2, y - 1, 6, "#F4EBD9", anchor="midbottom")
 
     def draw_taming_panel(self, ui) -> None:
         """While I am taming a beast: its name and the Phản Đòn counted so far, at the top."""
@@ -1833,7 +2228,7 @@ class WorldScene(Scene):
         """A chiêu thức key. The server decides everything (floor, qi, cooldown, range): a locked
         chiêu is sent too, so it is the server that says why it is locked."""
         sk = self.mskills or []
-        if slot >= len(sk) or self.net is None or self.dead:
+        if slot >= len(sk) or self.net is None or self.dead or self.grounded_only():
             return
         s = sk[slot]
         target = None
@@ -1971,6 +2366,7 @@ class WorldScene(Scene):
         self.update_bees(dt)
         self.update_pets(dt)
         self.update_beasts(dt)
+        self.update_flight(dt)
         self.release_landings()
         self.show_waiting_question()
         self.weather.update(dt, self.game.api)
@@ -2012,7 +2408,7 @@ class WorldScene(Scene):
             while ms > 0:
                 part = min(ms, 100)
                 ms -= part
-                p.x, p.y = mv.step(p.x, p.y, dx, dy, part, self.move_speed(), self.col)
+                p.x, p.y = self.step_as(self.fly, p.x, p.y, dx, dy, part, self.move_speed())
                 # sent exactly as applied (never merged): the server must repeat the same steps
                 self.batch.append([dx, dy, part])
             p.walk_t += dt
@@ -2023,11 +2419,12 @@ class WorldScene(Scene):
             self.flush_inputs()
         if self.batch_t >= SEND_EVERY:
             self.batch_t = 0.0
+        self.watch_g(top and not self._typing())
         self._check_portals()
         for e in self.entities.values():
             if e.pos[3]:
                 e.walk_t += dt
-        self.target = self.find_target() if top else None
+        self.target = self.find_target() if top and not self.fly else None   # (nothing to pick up in the air)
 
     def update_vfx(self, dt: float) -> None:
         """The VFX clock, "reduce effects" from the settings, held hits whose blow has landed, and
@@ -2125,7 +2522,7 @@ class WorldScene(Scene):
     def attack(self, ent: Ent | None) -> None:
         if ent is None or self.net is None or self.dead or self.game.now < self.attack_ready:
             return
-        if self.yielded_beast(ent):          # a beast that yielded is sealed, not struck
+        if self.yielded_beast(ent) or self.grounded_only():   # (a yielded beast is sealed; no blow from the air)
             return
         self.flush_inputs()
         self.net.send({"t": "atk", "id": ent.id})
@@ -2145,6 +2542,8 @@ class WorldScene(Scene):
         g.api.post("/inventory/use", {"item_id": "hoi_huyet_dan"}, ok, g.api_error)
 
     def start_fishing(self, bob) -> None:
+        if self.grounded_only():
+            return
         from .fishing import FishingScene
         self.flush_inputs()
         self.player.moving = False
@@ -2163,6 +2562,8 @@ class WorldScene(Scene):
         return obj.props.get("action") or ("talk_master" if obj.props.get("npc") == "truc_lao" else "talk_guide")
 
     def interact(self, target) -> None:
+        if self.grounded_only():            # talking, picking up, sealing: on the ground
+            return
         kind, obj = target
         if kind == "weapon":
             self.claim_weapon(obj)
@@ -2303,7 +2704,8 @@ class WorldScene(Scene):
         if art2.on():             # the 2x world: follow the player, kept inside the map or the room
             v.zoom = 2
             room = self.realm.room_rect() if self.realm is not None else None
-            v.follow(self.player.x, self.player.y - 12, self.map.px_w, self.map.px_h, w, h, bounds=room)
+            v.follow(self.player.x + self.cam_lead[0], self.player.y - 12 + self.cam_lead[1] + self.cam_dip / 2,
+                     self.map.px_w, self.map.px_h, w, h, bounds=room)   # (ngự kiếm: a lead, a settle)
             vf = getattr(self, "vfx", None)
             if vf is not None:               # the world shakes, never the HUD or the cards
                 v.shake(*vf.offset())
@@ -2652,6 +3054,8 @@ class WorldScene(Scene):
         v = self.view
         frame = int(self.t * 3) % 4
         drawables = []
+        self.fly_shadows = []
+        self.drawn_alt = {}                        # eid -> world px it is drawn above its feet (name tags)
         if self.realm is not None:   # stage 9: puzzle stones, tiles, pillars
             self.realm.floor(surf, v.ox, v.oy, frame)
             drawables += self.realm.drawables(v.ox, v.oy, frame)
@@ -2712,9 +3116,10 @@ class WorldScene(Scene):
                 continue
             if e.die_t0 is not None and e.hp > 0 and now - e.die_t0 > 1.0:
                 e.die_t0 = None                    # back on their feet
-            gx, gy, gliding = self.glide_pos(e.id, x, y)
-            if gliding:                            # Đạp Kiếm Lướt: on the flying sword
-                drawn = self.posed_v2(drawables, e.realm, gx, gy, "fly", now, FACING[f % 4], e.weapon, sword=True)
+            ax, ay, alt, on_sword = self.air_of(e.id, x, y)
+            if on_sword and e.die_t0 is None:      # ngự kiếm, or the hop of Đạp Kiếm Lướt: on the flying sword
+                drawn = self.flyer_v2(drawables, e.id, e.realm, ax, ay, FACING[f % 4], e.weapon,
+                                      e.fsword or self.sword_of(e.realm), alt)
             elif e.ride and e.pet and e.die_t0 is None:      # Cưỡi linh thú
                 drawn = self.rider_v2(drawables, e.realm, x, y, FACING[f % 4], bool(m), e.walk_t, e.pet, e.weapon)
             else:
@@ -2727,7 +3132,7 @@ class WorldScene(Scene):
                 drawables.append((y, v.img(ghostly(img) if e.ghost else img), v.to_screen(x - 8, y - 24)))
             if e.hp < 100 and e.die_t0 is None:
                 sx, sy = v.to_screen(x, y)
-                bars.append((sx, sy - V2_HEAD + 6, 16, e.hp, "#6A994E"))
+                bars.append((sx, sy - V2_HEAD + 6 - int(alt * v.zoom if on_sword else 0), 16, e.hp, "#6A994E"))
         p = self.player
         me = f"p{self.game.state.me.get('id')}"
         ch = self.game.state.character or {}
@@ -2736,10 +3141,10 @@ class WorldScene(Scene):
         die_t0 = self.my_die_t0 if self.dead and not self.ghost else None
         wp = (self.game.state.cult or {}).get("stats", {}).get("weapon")
         realm = ch.get("realm", "pham_nhan")
-        gx, gy, gliding = self.glide_pos(me, p.x, p.y)
+        ax, ay, alt, on_sword = self.air_of(me, p.x, p.y)
         posed = False
-        if gliding and not self.dead:              # Đạp Kiếm Lướt: on the flying sword, on the way
-            posed = self.posed_v2(drawables, realm, gx, gy, "fly", now, p.facing, wp, sword=True)
+        if on_sword and not self.dead:             # ngự kiếm, or the hop: on the flying sword
+            posed = self.flyer_v2(drawables, me, realm, ax, ay, p.facing, wp, self.sword_of(realm), alt)
         elif self.riding and not self.dead:        # Cưỡi linh thú: sitting on the worn mount
             posed = self.rider_v2(drawables, realm, p.x, p.y, p.facing, p.moving, p.walk_t, self.game.worn_pet(), wp)
         if not posed and not self.char_v2(drawables, me, realm, p.x, p.y, p.facing, p.moving, p.walk_t,
@@ -2769,6 +3174,8 @@ class WorldScene(Scene):
                 continue
             drawables.append((fb.y + 6, v.img(sprites.bee(look, fb.frame(), fb.left)),
                               v.to_screen(fb.x - 4, fb.y - fb.z - 4)))
+        for img, pos, flags in self.fly_shadows:  # ngự kiếm: shadows on the ground, under every body
+            surf.blit(img, pos, None, flags)
         for d in sorted(drawables, key=lambda d: d[0]):
             surf.blit(d[1], d[2], None, d[3] if len(d) > 3 else 0)
         self.ground_loot.draw_over(surf, v, self.t, now)     # the columns of light over the pieces
@@ -2871,6 +3278,7 @@ class WorldScene(Scene):
         placed: list = []            # name tags already drawn: a tag that would cover one moves up
         for x, y, name, col, eid, lift in (sorted(heads, key=lambda h: -h[1]) if v2 else heads):
             sx, sy = self.view.to_screen(x, y) if v2 else (x - cx, y - cy)
+            lift += int(self.drawn_alt.get(eid, 0.0) * self.z) if eid else 0     # a flyer's tag rides with it
             bx, by = sx, sy - lift
             if not (-40 < bx < 520 and -20 < by < 290):
                 continue
@@ -3005,7 +3413,8 @@ class WorldScene(Scene):
             w_, tall = self.ent_extent(e)
             tall /= z
             reach = (12 if e.kind == "m" else 8) if z == 1 else max(5.0, w_ / 2 / z)
-            if e.alive and abs(e.pos[0] - wx) < reach and e.pos[1] - tall < wy < e.pos[1] + 2:
+            fy = e.pos[1] - self.drawn_alt.get(e.id, 0.0)       # a flyer's box is its lifted body
+            if e.alive and abs(e.pos[0] - wx) < reach and fy - tall < wy < fy + 2:
                 hovered = e
         return hovered
 
@@ -3048,7 +3457,7 @@ class WorldScene(Scene):
             if ui.key(pygame.K_t):
                 self.place_formation()
             if ui.key(pygame.K_g):
-                self.glide()
+                self.g_pressed()         # tap: Đạp Kiếm Lướt; hold: ngự kiếm; in the air: land
             if ui.key(pygame.K_r):
                 self.toggle_ride()
         if self.target:
@@ -3059,7 +3468,8 @@ class WorldScene(Scene):
                 self.interact(self.target)
                 return
         from .fishing import water_near   # stage 6: F at the water (spec 11.1)
-        spot = water_near(self.map, self.player.x, self.player.y, self.player.facing) if not self.dead else None
+        spot = water_near(self.map, self.player.x, self.player.y, self.player.facing) \
+            if not (self.dead or self.fly) else None
         if spot:
             ui.text(T.PRESS_F, 240, 206 if self.target else 216, 9, "#FFFFFF", anchor="center")
             if ui.key(pygame.K_f):

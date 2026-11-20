@@ -21,7 +21,7 @@ class Audio:
         except pygame.error:
             return
         self.sounds = {name: self._make(name) for name in ("click", "correct", "wrong", "coin", "crack",
-                                                            "reveal", "discover", "step")}
+                                                            "reveal", "discover", "step", "whoosh", "land")}
 
     # ------------------------------------------------------------ synthesis
     def _tone(self, notes: list[tuple[float, float]], wave: str = "sine", vol: float = 0.5,
@@ -58,6 +58,10 @@ class Audio:
             return self._tone([(523, 0.1), (659, 0.1), (784, 0.1), (1047, 0.3)], vol=0.4, decay=4)
         if name == "discover":
             return self._tone([(784, 0.12), (988, 0.12), (1175, 0.12), (1568, 0.35)], vol=0.4, decay=3)
+        if name == "whoosh":         # ngự kiếm: the sword lifts off (a breath of wind and a rising note)
+            return self._tone([(0, 0.05), (660, 0.06), (880, 0.16)], vol=0.22, decay=7)
+        if name == "land":           # ...and touches down
+            return self._tone([(0, 0.07), (330, 0.08)], "noise", 0.16, 22)
         return self._tone([(0, 0.03)], "noise", 0.08, 50)
 
     # ------------------------------------------------------------ playback
