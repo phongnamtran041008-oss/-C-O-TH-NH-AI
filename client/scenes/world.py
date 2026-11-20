@@ -20,6 +20,7 @@ from ..art import skill_fx
 from ..art.palette import rgb
 from ..art import build as B
 from ..engine import art2
+from ..engine import combat_vfx as CV
 from ..engine import glide as gl
 from ..engine import movement as mv
 from ..engine import petfollow
@@ -27,6 +28,7 @@ from ..engine import sprites
 from ..engine.beeflock import Flock
 from ..engine.effects import Effects
 from ..engine.tilemap import load_map
+from ..engine.vfx import Vfx
 from ..net.interpolation import Interpolator
 from ..ui.dialog import DialogScene
 from . import guide
@@ -85,6 +87,9 @@ class Ent:
     beast: bool = False
     need: int = 0                              # Phản Đòn it takes to tame this beast
     ride: bool = False
+    stage: int = 0                             # a player's realm stage (its kiếm khí tier)
+    kick: tuple | None = None                  # a struck body's recoil (combat_vfx.recoil)
+    dissolve: bool = False                     # its death turns to light (the VFX layer took it over)
 
 
 _GHOST: dict = {}
@@ -386,6 +391,14 @@ class WorldScene(Scene):
         self.t = 0.0
         self.fx = Effects()
         self.fx.stack_texts = art2.on()
+        from ..config import IN_BROWSER
+        self.vfx = Vfx(reduced=bool(getattr(game.cfg, "reduce_effects", False)), web=IN_BROWSER)
+        self.vfx.resolve = self.vfx_where
+        self.vfx_hold: dict[str, float] = {}      # attacker eid -> until when its hits wait for the blade
+        self.vfx_held: dict[str, float] = {}      # monster eid -> until when (its death waits too)
+        self.vfx_late: list[tuple[float, dict]] = []   # events waiting for the blow to land on screen
+        self.vfx_bodies: dict[str, tuple] = {}    # eid -> its last drawn layers (for afterimages)
+        self.frozen: pygame.Surface | None = None  # the world's picture held through a hit-stop
         self.target = None
         self.land_id: str | None = None           # Thiên Địa Đồ: the land this zone is (from the zone message)
         self.weapon_spots: list[WeaponSpot] = []  # the weapons lying here (GET /weapons; none without it)
@@ -603,6 +616,9 @@ class WorldScene(Scene):
         self.seq = max(self.seq, int(m.get("ack", -1)) + 1)
         self.casting.clear()
         self.skill_fx.clear()
+        if getattr(self, "vfx", None) is not None:
+            self.vfx.clear()
+            self.vfx_late.clear()
         self.entities.clear()
         self.interp.clear()
         self.channel = m.get("channel", 1)
@@ -721,6 +737,7 @@ class WorldScene(Scene):
             ent.pet = e.get("pet")
             ent.ghost = bool(e.get("gh"))
             ent.beast, ent.need, ent.ride = bool(e.get("beast")), int(e.get("need") or 0), bool(e.get("rd"))
+            ent.stage = int(e.get("stage") or 0)
             if e["k"] == "r":
                 ent.realm_id, ent.left, ent.seen = e.get("realm", ""), float(e.get("left", 0)), self.game.now
             self.entities[e["id"]] = ent
@@ -740,7 +757,8 @@ class WorldScene(Scene):
                     ent.bees = row[6] or []
                 self.interp.push(eid, st, ex, ey, f, mvng)
                 seen.add(eid)
-        for ev in m.get("fx", []):
+        # the swings, chiêu and parries before the hits they cause (their hits wait for the blade)
+        for ev in sorted(m.get("fx", []), key=lambda e: 0 if e.get("k") in ("atk", "mskill", "parry") else 1):
             self.on_fx(ev)
         for eid in m.get("rm", []):
             self.entities.pop(eid, None)
@@ -752,7 +770,67 @@ class WorldScene(Scene):
                     self.interp.push(eid, st, last[1], last[2], last[3], 0)
 
     def on_fx(self, ev: dict) -> None:
-        """Combat effects from the server (spec 18: sparks, shake, red flash, ink to light)."""
+        """Combat effects from the server (spec 18: sparks, shake, red flash, ink to light). A
+        blow's hit (and the death it causes) waits, at most a fraction of a second, for the
+        blade or the chiêu to reach the target on screen (presentation only: the server has
+        already applied it)."""
+        if self.vfx_defer(ev):
+            return
+        self.fx_event(ev)
+
+    def vfx_defer(self, ev: dict) -> bool:
+        hold = getattr(self, "vfx_hold", None)
+        if not hold or ev.get("b"):
+            return False
+        now, k = self.game.now, ev.get("k")
+        if k == "hit":
+            until = hold.get(ev.get("by"))
+            if until is None or until <= now:
+                return False
+            self.vfx_held[ev.get("id")] = until
+        elif k in ("die", "shield"):
+            until = self.vfx_held.get(ev.get("id"))
+            if until is None or until <= now:
+                return False
+            until += 0.01
+        else:
+            return False
+        self.vfx_late.append((min(until, now + 0.6), ev))
+        return True
+
+    def vfx_release(self) -> None:
+        """The held events whose blow has now landed on screen."""
+        if not self.vfx_late:
+            return
+        now = self.game.now
+        due = [e for e in self.vfx_late if e[0] <= now]
+        if due:
+            self.vfx_late = [e for e in self.vfx_late if e[0] > now]
+            for _, ev in due:
+                self.fx_event(ev)
+
+    def vfx_where(self, key):
+        """Where a followed thing is now (the VFX layer's resolver): a player or a monster."""
+        if key == f"p{self.game.state.me.get('id')}":
+            return self.player.x, self.player.y
+        e = self.entities.get(key) if isinstance(key, str) else None
+        return (e.pos[0], e.pos[1]) if e is not None else None
+
+    def vfx_tier(self, eid: str | None) -> int:
+        """The kiếm khí tier of a player (me: my realm and stage; others: what the server sent)."""
+        if eid == f"p{self.game.state.me.get('id')}":
+            ch = self.game.state.character or {}
+            return CV.tier(ch.get("realm"), ch.get("realm_stage"))
+        e = self.entities.get(eid or "")
+        return CV.tier(e.realm, e.stage) if e is not None else 1
+
+    def garnish(self, x: float, y: float, el: str, n: int, speed: float) -> None:
+        """Code sparks over the sheets (a few pixels of debris; the look itself is the sheets)."""
+        if not getattr(self, "vfx", None) or self.vfx.reduced:
+            return
+        self.fx.burst(x, y, "#%02X%02X%02X" % CV.RGB.get(el, (255, 255, 255)), n, speed)
+
+    def fx_event(self, ev: dict) -> None:
         k = ev.get("k")
         x, y = ev.get("x", 0.0), ev.get("y", 0.0)
         me = f"p{self.game.state.me.get('id')}"
@@ -812,14 +890,27 @@ class WorldScene(Scene):
                 self.spark(art2.combat_fx("hit"), x, y - 26 / z)
         elif k in ("hit", "mk", "gb"):
             ent = self.entities.get(ev.get("id"))
+            crit = bool(ev.get("c")) and not ev.get("sh")
             if ent is not None:
-                ent.hurt_t = 0.15
+                ent.hurt_t = 0.22 if crit else 0.15
             col = "#9A9A9A" if ev.get("sh") else ("#E9C46A" if ev.get("c") else "#FFFFFF")
             if k in ("mk", "gb") or (ent is not None and ent.kind == "p"):
                 col = "#F08A8C"
             lift = self.ent_extent(ent)[1] / z if (v2 and ent is not None) else 22
-            self.fx.float_text(str(ev.get("v", "")), x + random.uniform(-4, 4), y - lift, col)
-            if v2:
+            self.fx.float_text(str(ev.get("v", "")), x + random.uniform(-4, 4), y - lift, col,
+                               style="crit" if crit else ("dim" if ev.get("sh") else "hit"))
+            vf = getattr(self, "vfx", None)
+            if v2 and vf is not None and ent is not None:
+                by = ev.get("by")
+                ent.hit_by = by
+                src = self.vfx_where(by) if by else None
+                if src is not None:
+                    ent.kick = CV.recoil((x, y), src, now, 3.5 if crit else 2.0)
+                if crit:
+                    CV.crit(vf, x, y, lift * 0.5, mine=by == me)
+                else:
+                    self.spark(art2.combat_fx("hit"), x, y - lift * 0.5)
+            elif v2:
                 self.spark(art2.combat_fx("crit" if ev.get("c") else "hit"), x, y - lift * 0.5)
         elif k == "tele":
             # [x, y, r, time left, total, monster, shape]; shape = {"sh", "a" (degrees), "deg", "w"}
@@ -849,6 +940,7 @@ class WorldScene(Scene):
                     self.my_die_t0 = now
             elif v2 and ent is not None:
                 ent.die_t0 = now                    # the die clip plays once, then it is gone
+                self.vfx_death(ent, x, y, me)
             else:
                 self.fx.burst(x, y - 8, "K", 22, 40)
                 self.fx.burst(x, y - 8, "W", 10, 30)
@@ -857,6 +949,8 @@ class WorldScene(Scene):
             if ent is not None:
                 ent.swing_t = 0.25
                 ent.atk_t0 = now
+                self.play_swing(ent.id, ev.get("wp") or ent.weapon, ent.realm,
+                                (ent.pos[0], ent.pos[1]) if any(ent.pos[:2]) else (x, y), ev.get("id"))
         elif k == "heal":
             self.fx.float_text(f"+{ev.get('v', '')}", x, y - 30, "#4A7CC8" if ev.get("q") else "#B5D67A")
             if v2 and art2.fx(art2.combat_fx("heal")) is not None:
@@ -877,26 +971,43 @@ class WorldScene(Scene):
                 self.flush_inputs()
                 self.player.moving = False
             return
+        vf = getattr(self, "vfx", None) if v2 else None
         if k == "parry":
             self.stunned[ev.get("id")] = now + float(ev.get("st") or 0.0)
             ent = self.entities.get(ev.get("id"))
-            if ent is not None:
-                ent.hurt_t = 0.15
             px, py = float(ev.get("px", x)), float(ev.get("py", y))
-            if v2 and art2.fx(art2.combat_fx("parry")) is not None:
+            if ent is not None:
+                ent.hurt_t = 0.25
+                ent.kick = CV.recoil((x, y), (px, py), now, 6.0)
+            by = ev.get("by")
+            if vf is not None:
+                weapon = (self.game.state.cult or {}).get("stats", {}).get("weapon") if by == me else \
+                    getattr(self.entities.get(by or ""), "weapon", None)
+                m_lift = self.ent_extent(ent)[1] / z * 0.5 if ent is not None else 12.0
+                land = CV.parry(vf, x, y, px, py, self.vfx_tier(by), weapon, mine=by == me, m_lift=m_lift,
+                                garnish=self.garnish)
+                self.vfx_hold[by] = now + land
+            elif v2 and art2.fx(art2.combat_fx("parry")) is not None:
                 self.spark(art2.combat_fx("parry"), (x + px) / 2, (y + py) / 2 - 18 / z)
             else:
                 self.fx.burst((x + px) / 2, (y + py) / 2 - 12, "W", 14, 30)
-            self.fx.float_text(T.PARRY, px, py - ((V2_HEAD + 4) / z if v2 else 40), "#E9C46A")
+            self.fx.float_text(T.PARRY, px, py - ((V2_HEAD + 4) / z if v2 else 40), "#E9C46A", style="parry")
             return
         if k == "dodge":
-            self.dodging[ev.get("id")] = now
+            eid = ev.get("id")
+            self.dodging[eid] = now
+            if vf is not None:
+                CV.dodge(vf, x, y, float(ev.get("dx") or 0), float(ev.get("dy") or 0))
+                vf.emit(("ghost", eid), 0.045, lambda: self.afterimage(eid), 0.2)
+                return
             fid = art2.combat_fx("dodge_trail") if v2 else None
             if fid and art2.fx(fid) is not None:
                 self.spark(fid, x, y - 12 / z)
             return
         if k == "dodged":
-            self.fx.float_text(T.DODGE_OK, x, y - ((V2_HEAD - 6) / z if v2 else 30), "#B5D67A")
+            if vf is not None:
+                CV.dodged(vf, x, y, mine=ev.get("id") == me)
+            self.fx.float_text(T.DODGE_OK, x, y - ((V2_HEAD - 6) / z if v2 else 30), "#B5D67A", style="dodge")
 
     def dodge_open(self) -> bool:
         """Is Né Đòn open for me? The server's word at the last zone message, or - after a
@@ -1297,6 +1408,68 @@ class WorldScene(Scene):
             if len(self.sparks) > 40:
                 del self.sparks[0]
 
+    # ------------------------------------------------------------ combat VFX (engine/combat_vfx.py)
+    def play_swing(self, eid: str, weapon: str | None, realm: str | None, src, target_id: str | None) -> None:
+        """A basic attack's kiếm khí (or arrow, orb, thrust, shock) at the strike frame of the
+        clip, sized by the attacker's tier. Presentation only: the server decides the hit."""
+        vf = getattr(self, "vfx", None)
+        tgt = self.entities.get(target_id or "")
+        if vf is None or tgt is None or not art2.on():
+            return
+        dst = (tgt.pos[0], tgt.pos[1]) if any(tgt.pos[:2]) else src
+        lift = self.ent_extent(tgt)[1] / self.z * 0.5
+        me = eid == f"p{self.game.state.me.get('id')}"
+        land = CV.swing(vf, weapon, self.vfx_tier(eid), src, dst, CV.strike_delay(realm, weapon), lift,
+                        follow=eid, mine=me, z=self.z, garnish=self.garnish)
+        self.vfx_hold[eid] = self.game.now + land
+
+    def vfx_death(self, ent: Ent, x: float, y: float, me: str) -> None:
+        """A monster's death: a burst now, and when its die clip ends it turns to light."""
+        vf = getattr(self, "vfx", None)
+        sheet = self.ent_sheet(ent) if vf is not None else None
+        if sheet is None or not sheet.has("die"):
+            return
+        n = sheet.index("die", 99.0, FACING[int(ent.pos[2]) % 4])
+        lift = self.ent_extent(ent)[1] / self.z * 0.5
+        ent.dissolve = True
+        CV.death(vf, x, y, lift, (sheet.frame(n), sheet.white(n), sheet.pivot), after=sheet.seconds("die"),
+                 mine=getattr(ent, "hit_by", None) == me)
+        self.fx.restyle(x, "kill")
+
+    def afterimage(self, eid: str) -> None:
+        """Né Đòn: a fading copy of the body where it just was."""
+        vf = getattr(self, "vfx", None)
+        layers = self.vfx_bodies.get(eid)
+        pos = self.vfx_where(eid)
+        if vf is None or not layers or pos is None:
+            return
+        for img, (ox, oy) in layers:
+            vf.sprite(img, (-ox, -oy), pos[0], pos[1], life=0.26, peak=0.45, fade_out=0.26, heavy=True)
+
+    def play_chieu(self, f: dict) -> None:
+        """A landed chiêu thức drawn by the VFX layer (charge, release, travel, impact, linger)."""
+        vf = getattr(self, "vfx", None)
+        if vf is None:
+            return
+        by = f["by"]
+        src = self.vfx_where(by) or (f["x"], f["y"])
+        dst = None if f["tx"] is None else (float(f["tx"]), float(f["ty"]))
+        land = CV.chieu(vf, f["fx"], src, dst, self.vfx_tier(by), f["r"], charged=bool(f.get("charged")),
+                        follow=by, mine=by == f"p{self.game.state.me.get('id')}", z=self.z, garnish=self.garnish)
+        f["vfx"] = True
+        self.vfx_hold[by] = self.game.now + land
+
+    def celebrate(self, kind: str) -> None:
+        """A stage climbed (`stage_up`) or a realm broken through (`breakthrough`)."""
+        vf = getattr(self, "vfx", None)
+        if vf is None or not art2.on():
+            return
+        p, me = self.player, f"p{self.game.state.me.get('id')}"
+        if kind == "breakthrough":
+            CV.breakthrough(vf, p.x, p.y, follow=me, garnish=self.garnish)
+        else:
+            CV.stage_up(vf, p.x, p.y, follow=me)
+
     def ent_sheet(self, e: Ent):
         """The v2 sheet an entity is drawn from (cached on first use), or None."""
         key = (e.kind, e.mtype, e.rank, e.realm, e.beast)
@@ -1355,13 +1528,19 @@ class WorldScene(Scene):
         by, now = ev.get("by"), self.game.now
         anim = ev.get("anim") or "slash"
         clip = self.cast_clip(anim)
+        vf = getattr(self, "vfx", None) if art2.on() else None
         if k == "mcast":
             if clip is not None and by:
                 self.casting[by] = {"anim": anim, "t0": now, "until": now + CAST_CHANNEL_MAX}
             else:
                 self.swing(by)
+            pos = self.vfx_where(by) if vf is not None else None
+            if pos is not None:
+                CV.channel(vf, self.chieu_fx_of(ev.get("s"), anim), by, pos[0], pos[1], self.vfx_tier(by))
             return
         ok = bool(ev.get("ok", 1))
+        c = self.casting.get(by)
+        charged = c is not None and c["until"] - c["t0"] >= CAST_CHANNEL_MAX
         mine = by == f"p{self.game.state.me.get('id')}"
         x, y = float(ev.get("x", 0.0)), float(ev.get("y", 0.0))
         fx = ev.get("fx") if ev.get("fx") in skill_fx.FX_IDS else "chem"
@@ -1377,12 +1556,21 @@ class WorldScene(Scene):
                 self.casting[by] = {"anim": anim, "t0": now, "until": now + secs}
         elif not wait:
             self.swing(by)
-        self.skill_fx.append({"fx": fx, "ok": ok, "t0": None if wait else now, "dur": dur, "by": by, "x": x, "y": y,
-                              "tx": ev.get("tx"), "ty": ev.get("ty"), "r": float(ev.get("r") or 0)})
+        f = {"fx": fx, "ok": ok, "t0": None if wait else now, "dur": dur, "by": by, "x": x, "y": y,
+             "tx": ev.get("tx"), "ty": ev.get("ty"), "r": float(ev.get("r") or 0), "charged": charged}
+        self.skill_fx.append(f)
+        if vf is not None and ok:
+            if wait:
+                f["vfx_pending"] = True          # played when the card closes (release_landings)
+            else:
+                self.play_chieu(f)
+        elif vf is not None:
+            dst = None if f["tx"] is None else (float(f["tx"]), float(f["ty"]))
+            CV.fizzle(vf, fx, self.vfx_where(by) or (x, y), dst, follow=by)
         if not ok:
-            self.fx.float_text(T.MSKILL_MISS, x, y - 36, "#D8D8D8")
+            self.fx.float_text(T.MSKILL_MISS, x, y - 36, "#D8D8D8", style="miss")
         elif int(ev.get("combo") or 0) > 1:
-            self.fx.float_text(T.MSKILL_COMBO.format(n=int(ev["combo"])), x, y - 36, "#E9C46A")
+            self.fx.float_text(T.MSKILL_COMBO.format(n=int(ev["combo"])), x, y - 36, "#E9C46A", style="combo")
 
     def cast_card_open(self) -> bool:
         """Is the question card of a chiêu on screen? (Not `getattr(sc, "cast")`: this scene has a method of that name.)"""
@@ -1397,6 +1585,8 @@ class WorldScene(Scene):
         for f in self.skill_fx:
             if f["t0"] is None:
                 f["t0"] = now
+                if f.pop("vfx_pending", False):
+                    self.play_chieu(f)
         for c in self.casting.values():
             if c.get("land") is not None:
                 c["t0"], c["until"] = now, now + c.pop("land")
@@ -1422,6 +1612,14 @@ class WorldScene(Scene):
         c = self.casting.get(eid)
         if c is not None and c["until"] - c["t0"] >= CAST_CHANNEL_MAX:
             del self.casting[eid]
+            if getattr(self, "vfx", None) is not None:
+                self.vfx.kill(("chan", eid))
+
+    def chieu_fx_of(self, skill_id: str | None, anim: str) -> str:
+        """The effect id of a chiêu (from GET /math/skills), else a guess from its clip."""
+        sk = next((s for s in self.mskills or [] if s.get("id") == skill_id), None)
+        fx = (sk or {}).get("fx")
+        return fx if fx in skill_fx.FX_IDS else ("kiem_khi" if anim == "slash" else "hoa_cau")
 
     def cast_image(self, eid: str, x: float, y: float, facing: str, cx: int, cy: int):
         """(image, position) of the caster playing its chiêu clip, or None when it is not casting
@@ -1461,6 +1659,8 @@ class WorldScene(Scene):
             if p > 1.0:
                 continue
             keep.append(f)
+            if f.get("vfx"):                     # the VFX layer draws this one (combat_vfx.chieu)
+                continue
             sx, sy = f["x"], f["y"]
             if f["by"] == me and not self.dead:
                 sx, sy = self.player.x, self.player.y         # the ward follows the caster
@@ -1686,6 +1886,7 @@ class WorldScene(Scene):
     def update(self, dt, top):
         self.t += dt
         guide.hud_update(self.game, self)
+        self.update_vfx(dt)
         self.fx.update(dt)
         self.update_bees(dt)
         self.update_pets(dt)
@@ -1747,6 +1948,23 @@ class WorldScene(Scene):
             if e.pos[3]:
                 e.walk_t += dt
         self.target = self.find_target() if top else None
+
+    def update_vfx(self, dt: float) -> None:
+        """The VFX clock, "reduce effects" from the settings, held hits whose blow has landed, and
+        the old `fx.shake` (set by many places) turned into camera trauma."""
+        vf = getattr(self, "vfx", None)
+        if vf is None:
+            return
+        vf.reduced = bool(getattr(self.game.cfg, "reduce_effects", False))
+        if self.fx.shake > getattr(self, "_shake_seen", 0.0) + 0.01:
+            vf.shake(math.sqrt(self.fx.shake) * 0.85)
+        self._shake_seen = self.fx.shake
+        vf.update(dt)
+        self.vfx_release()
+        if len(self.vfx_hold) > 40:
+            now = self.game.now
+            self.vfx_hold = {k: v for k, v in self.vfx_hold.items() if v > now}
+            self.vfx_held = {k: v for k, v in self.vfx_held.items() if v > now}
 
     def flush_inputs(self) -> None:
         if not self.batch or self.net is None:
@@ -1834,6 +2052,8 @@ class WorldScene(Scene):
         self.attack_ready = self.game.now + 0.45
         self.swing_t = 0.25
         self.my_atk_t0 = self.game.now
+        self.play_swing(f"p{self.game.state.me.get('id')}", (self.game.state.cult or {}).get("stats", {}).get("weapon"),
+                        (self.game.state.character or {}).get("realm"), (self.player.x, self.player.y), ent.id)
         dx, dy = ent.pos[0] - self.player.x, ent.pos[1] - self.player.y
         self.player.facing = ("right" if dx > 0 else "left") if abs(dx) > abs(dy) else ("down" if dy > 0 else "up")
 
@@ -2004,7 +2224,10 @@ class WorldScene(Scene):
             v.zoom = 2
             room = self.realm.room_rect() if self.realm is not None else None
             v.follow(self.player.x, self.player.y - 12, self.map.px_w, self.map.px_h, w, h, bounds=room)
-            if self.fx.shake:
+            vf = getattr(self, "vfx", None)
+            if vf is not None:               # the world shakes, never the HUD or the cards
+                v.shake(*vf.offset())
+            elif self.fx.shake:
                 v.shake(random.randint(-3, 3), random.randint(-3, 3))
             self.cam = v.cam
             return v.ox, v.oy
@@ -2016,7 +2239,11 @@ class WorldScene(Scene):
         room = self.realm.room_rect() if self.realm is not None else None
         if room is not None:   # a bí cảnh room fits the screen: keep it still and centred
             cx, cy = int(room.centerx - w / 2), int(room.centery - h / 2)
-        if self.fx.shake:
+        vf = getattr(self, "vfx", None)
+        if vf is not None:
+            dx, dy = vf.offset()
+            cx, cy = cx + dx // 2, cy + dy // 2
+        elif self.fx.shake:
             cx += random.randint(-2, 2)
             cy += random.randint(-2, 2)
         self.cam = [cx, cy]
@@ -2208,6 +2435,9 @@ class WorldScene(Scene):
         ix, iy = self.view.to_screen(x, y)
         for img, (ox, oy), flags in layers or ():
             drawables.append((y, ghostly(img) if ghost else img, (ix + ox, iy + oy), flags))
+        bodies = getattr(self, "vfx_bodies", None)
+        if bodies is not None and layers:
+            bodies[eid] = [(img, off) for img, off, flags in layers if not flags]
         return True
 
     def monster_v2(self, e: Ent, x: float, y: float, f: int, moving: int, drawables: list, bars: list) -> None:
@@ -2224,8 +2454,8 @@ class WorldScene(Scene):
         tl = self.tele_of(e.id)
         if e.die_t0 is not None:
             clip, t = "die", now - e.die_t0
-            if t > sheet.seconds("die") + 0.4:
-                return                            # played once: gone until it respawns
+            if t > sheet.seconds("die") + (0.0 if e.dissolve else 0.4):
+                return                            # played once: gone until it respawns (or turned to light)
         elif not e.alive:
             return
         elif e.hurt_t > 0 and sheet.has("hit"):
@@ -2242,7 +2472,8 @@ class WorldScene(Scene):
             facing = face_to(e.aim[0] - x, e.aim[1] - y, facing)
         n = sheet.index(clip, t, facing)
         img = sheet.white(n) if e.hurt_t > 0.1 else sheet.frame(n)
-        sx, sy = v.to_screen(x, y)
+        kx, ky = CV.recoil_offset(e.kick, now)     # shoved back by the blow for a moment
+        sx, sy = v.to_screen(x + kx, y + ky)
         drawables.append((y, img, (int(sx - sheet.pivot[0]), int(sy - sheet.pivot[1]))))
         if not e.alive or e.die_t0 is not None:
             return
@@ -2345,6 +2576,9 @@ class WorldScene(Scene):
             self.realm.floor(surf, v.ox, v.oy, frame)
             drawables += self.realm.drawables(v.ox, v.oy, frame)
         sw, sh = surf.get_size()
+        vf = getattr(self, "vfx", None)
+        if vf is not None:                         # scars and rings on the ground, under the hit zones
+            vf.draw(surf, v, "ground")
         self.draw_teles_v2(surf)
         self.draw_skill_fx(surf, ground=True)      # formation circles lie on the ground
         self.draw_sparks(surf, ground=True)
@@ -2454,7 +2688,9 @@ class WorldScene(Scene):
                               v.to_screen(fb.x - 4, fb.y - fb.z - 4)))
         for d in sorted(drawables, key=lambda d: d[0]):
             surf.blit(d[1], d[2], None, d[3] if len(d) > 3 else 0)
-        self.draw_teles_v2(surf, over=True)        # the zone's rim stays visible over whoever stands in it
+        if vf is not None:                         # kiếm khí, chiêu and hits over the bodies...
+            vf.draw(surf, v, "over")
+        self.draw_teles_v2(surf, over=True)        # ...and the zone's rim over them: gameplay first
         self.draw_skill_fx(surf)                   # M9: the effect of a chiêu thức, over the bodies
         self.draw_sparks(surf)
         if self.fishing is not None:
@@ -2479,6 +2715,16 @@ class WorldScene(Scene):
             pygame.draw.polygon(surf, rgb("o"), [(tx - 3, ty - 8 + bob), (tx + 3, ty - 8 + bob), (tx, ty - 4 + bob)])
 
     def draw_world(self, surf):
+        vf = getattr(self, "vfx", None)
+        if vf is not None and vf.frozen and not vf.freeze_pending and self.frozen is not None                 and self.frozen.get_size() == surf.get_size():
+            surf.blit(self.frozen, (0, 0))         # hit-stop: the picture holds; input does not
+            return
+        self.draw_world_now(surf)
+        if vf is not None and vf.freeze_pending:
+            self.frozen = surf.copy()
+            vf.freeze_pending = False
+
+    def draw_world_now(self, surf):
         cx, cy = self._cam(surf)
         v2 = art2.on()
         if v2:
@@ -2487,7 +2733,7 @@ class WorldScene(Scene):
         else:
             self.map.draw_ground(surf, (cx, cy), self.t)
             self.draw_world_v1(surf, cx, cy)
-        self.fx.draw(surf, (cx, cy), lambda t, c: self.game.fonts.render(t, 7, c, 1), self.t,
+        self.fx.draw(surf, (cx, cy), lambda t, c, size=7: self.game.fonts.render(t, size, c, 1), self.t,
                      view=self.view if v2 else None)
         if self.realm is not None:   # underground: no sky, and the other rooms unseen
             self.realm.outside(surf, cx, cy)
@@ -2499,6 +2745,8 @@ class WorldScene(Scene):
         if self.weather.rain:
             from .fishing import draw_rain
             draw_rain(surf, self.t)
+        if getattr(self, "vfx", None) is not None:
+            self.vfx.draw_tint(surf)
         if self.hurt_flash > 0:  # "chớp đỏ khi trúng Mặc Kích" (spec 18)
             red = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
             red.fill((188, 40, 40, int(160 * min(1.0, self.hurt_flash * 2))))

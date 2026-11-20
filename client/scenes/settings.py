@@ -15,6 +15,7 @@ class SettingsScene(Scene):
         self.scale = cfg.window_scale
         self.fullscreen = cfg.fullscreen
         self.sfx = cfg.sfx_volume
+        self.reduce_fx = bool(getattr(cfg, "reduce_effects", False))
         game.ui.set_value("set_server", game.api.base_url)
 
     def _slider(self, ui, wid, x, y, w, value) -> float:
@@ -36,6 +37,9 @@ class SettingsScene(Scene):
         if ui.button("fullscreen", x + 14, y + 49, 120, 14, T.FULLSCREEN + (": Bật" if self.fullscreen else ": Tắt"),
                      selected=self.fullscreen):
             self.fullscreen = not self.fullscreen
+        if ui.button("reduce_fx", x + 140, y + 49, 106, 14, T.REDUCE_FX + (": Bật" if self.reduce_fx else ": Tắt"),
+                     selected=self.reduce_fx):
+            self.reduce_fx = not self.reduce_fx
         ui.text(T.SFX_VOLUME, x + 14, y + 70, 8)
         self.sfx = self._slider(ui, "sfx", x + 120, y + 72, 120, self.sfx)
         if self.game.lan_mode:   # LAN worlds: no fixed server; show how friends reach this world
@@ -65,6 +69,7 @@ class SettingsScene(Scene):
         cfg = g.cfg
         cfg.window_scale, cfg.fullscreen = self.scale, self.fullscreen
         cfg.sfx_volume = round(self.sfx, 2)
+        cfg.reduce_effects = self.reduce_fx
         g.audio.sfx_volume = cfg.sfx_volume
         url = "" if g.lan_mode else normalize_url(g.ui.value("set_server"))
         if g.lan_mode:
