@@ -25,6 +25,7 @@ import math
 from typing import TYPE_CHECKING
 
 from ..learning import math_tree
+from ..systems import achievements
 
 if TYPE_CHECKING:
     from .zone import ChannelZone, Player
@@ -126,6 +127,8 @@ def apply_ride(ch: "ChannelZone", p: "Player", on: bool) -> None:
     if bool(p.riding) == bool(on):
         return
     p.riding = bool(on)
+    if p.riding:
+        achievements.bump(p.user_id, "ride")   # Thành Tựu
     for other in ch.players.values():        # everyone who sees this player gets them again, mounted
         other.known.pop(p.eid, None)
     ch.event(k="ride", id=p.eid, on=int(p.riding), x=round(p.x, 1), y=round(p.y, 1))
@@ -187,6 +190,7 @@ def apply_glide(ch: "ChannelZone", p: "Player", x: float, y: float) -> str | Non
     p.moved_this_tick = True
     ms = float(glide_cfg().get("ms", 450))
     ch.event(k="glide", id=p.eid, x0=round(x0, 1), y0=round(y0, 1), x=round(x, 1), y=round(y, 1), ms=ms)
+    achievements.bump(p.user_id, "glide")      # Thành Tựu
     if p.session is not None:
         p.session.send({"t": "glide", "ok": True, "x": round(x, 2), "y": round(y, 2), "ms": ms})
     return None
@@ -221,6 +225,7 @@ def place_formation(p: "Player | None", now: float) -> str | None:
     ch.formations.append({"x": p.x, "y": p.y, "r": float(c.get("radius_px", 56)), "until": now + secs,
                           "by": p.eid, "mult": float(c.get("windup_mult", 1.5))})
     p.tran_ready = now + float(c.get("cooldown_seconds", 30))
+    achievements.bump(p.user_id, "formation")  # Thành Tựu
     ch.event(k="tran", by=p.eid, x=round(p.x, 1), y=round(p.y, 1), r=float(c.get("radius_px", 56)), d=secs,
              fx=c.get("fx", ""))
     return None

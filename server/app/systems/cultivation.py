@@ -177,6 +177,8 @@ async def add_xp(db: AsyncSession, user_id: int, amount: int, reason: str = "") 
         ch.hp = st["max_hp"]  # reaching a new stage restores the body
         ch.qi = st["max_qi"]
         await push_to_world(db, ch)
+        from . import achievements   # Thành Tựu: a stage or realm reached
+        await achievements.on_event(db, user_id, "cult", realm=ch.realm, stage=ch.realm_stage)
         if ch.realm != before[0]:
             from . import quests
             await quests.on_event(db, user_id, "realm", ch.realm)
@@ -382,7 +384,8 @@ async def tribulation_handler(db: AsyncSession, user: User, s: QuizSession, corr
         await inventory.change_currency(db, user.id, "immortal_jade", jade, "tribulation", str(run.id))
         result.update({"realm": ch.realm, "label": stage_label(ch.realm, ch.realm_stage), "jade": jade})
         await push_to_world(db, ch)
-        from . import quests
+        from . import achievements, quests   # Thành Tựu: a Thiên Kiếp passed
+        await achievements.on_event(db, user.id, "tribulation", realm=ch.realm, stage=ch.realm_stage)
         await quests.on_event(db, user.id, "realm", ch.realm)
     else:
         from . import pets   # Hổ (stage 8): a failed Thiên Kiếp costs less Tu Vi

@@ -47,6 +47,11 @@ def frozen():
 @pytest_asyncio.fixture
 async def app(migrated, frozen):
     yield create_app(use_lifespan=False)
+    from app.systems import achievements   # Thành Tựu bumps of this test die with it
+    for t in achievements._tasks.values():
+        t.cancel()
+    achievements._tasks.clear()
+    achievements._pending.clear()
     async with dbm.SessionLocal() as db:  # clean tables between tests
         for t in reversed(models.Base.metadata.sorted_tables):
             await db.execute(delete(t))
@@ -67,3 +72,15 @@ async def db():
         yield s
 
 
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """Thành Tựu: when the whole suite ran, every event a call site may send must have been sent
+    by some test (achievements.FIRED), so no event of data/achievements.json is dead."""
+    if session.testscollected < 1500 or exitstatus != 0:
+        return
+    from app.systems import achievements
+    missing = sorted(set(achievements.RAW) - achievements.FIRED)
+    if missing:
+        print(f"Thành Tựu: no test sent the events {missing}")
+        session.exitstatus = 1

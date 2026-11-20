@@ -240,7 +240,8 @@ async def claim_chest(run_id: int, user_id: int, realm_id: str, fragments: int, 
             await _grant_table(db, user_id, rng, chest["table"], ref, out, tier, realm_id)
         if chest["xp"]:
             out["xp"] = await cultivation.add_xp(db, user_id, chest["xp"], "realm")
-        from . import quests
+        from . import achievements, quests   # Thành Tựu: a bí cảnh run to its chest
+        await achievements.on_event(db, user_id, "realm_clear", realm=realm_id)
         out["quests"] = await quests.on_event(db, user_id, "realm", realm_id)
         return out
     return await _claim(user_id, run_id, "chest", roll)

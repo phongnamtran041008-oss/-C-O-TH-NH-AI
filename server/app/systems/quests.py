@@ -176,6 +176,8 @@ def _rewards_vi(rw: dict) -> list[str]:
 
 async def on_event(db: AsyncSession, user_id: int, kind: str, target: str, n: int = 1) -> list[dict]:
     """Advance every active step whose objective matches; returns the steps finished now."""
+    from . import achievements   # Thành Tựu counts the same things (kills, meditation, fish, thủ thành)
+    await achievements.on_event(db, user_id, "quest", n, kind=kind, target=target)
     await ensure(db, user_id)   # a chain added in a later version starts counting at once
     rows = (await db.execute(select(Quest).where(Quest.user_id == user_id, Quest.state == ACTIVE))).scalars().all()
     finished = []

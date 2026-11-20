@@ -87,6 +87,8 @@ async def grant_equipment(db: AsyncSession, user_id: int, item_id: str, rarity: 
     await db.flush()
     db.add(AuditLog(user_id=user_id, currency_or_item=f"equip:{item_id}:{rarity}", delta=1, balance_after=None,
                     reason=reason, ref_id=ref or str(e.id), created_at=clock.now()))
+    from . import achievements   # Thành Tựu: a weapon of Thiên Địa Đồ, its type and phẩm
+    await achievements.on_event(db, user_id, "gear", item=item_id, rarity=rarity)
     return equipment_view(e)
 
 

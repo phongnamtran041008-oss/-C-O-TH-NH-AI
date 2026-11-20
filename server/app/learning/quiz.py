@@ -139,6 +139,8 @@ async def answer(db: AsyncSession, user: User, session_id: str, given: dict | No
             if s.context in _xp_listeners:
                 await _xp_listeners[s.context](db, s, info["gained"])
         await quests.on_event(db, user.id, "answer", "*")
+    from ..systems import achievements   # Thành Tựu: right answers, streaks, fast ones
+    await achievements.on_event(db, user.id, "answer", correct=correct, ms=s.answer_ms, limit=s.payload.get("time_limit"), context=s.context)
     return {"correct": correct, "timed_out": timed_out,
             "correct_option": s.answer_key.get("option"),
             "reveal": s.answer_key.get("reveal"), **extra}

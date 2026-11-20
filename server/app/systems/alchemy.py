@@ -290,6 +290,8 @@ async def finish(db: AsyncSession, user: User, session_id: str, timings: list,
     if made:
         from . import quests
         await quests.on_event(db, user.id, "brew", s.recipe_id)
+    from . import achievements   # Thành Tựu: the batch's quality and the pills made
+    await achievements.on_event(db, user.id, "brew", quality=q, made=made)
     result = {"quality": q, "quality_vi": _quality_vi(q), "points": got, "best": best, "hits": hits,
               "positions": positions, "made": made, "extra": extra, "pill": s.recipe_id,
               "pill_name_vi": p["name_vi"], "total": total_now, "xp": xp}
@@ -324,4 +326,6 @@ async def upgrade_furnace(db: AsyncSession, user: User) -> dict:
     flags["furnace"] = nxt["level"]
     user.flags = flags
     await db.flush()
+    from . import achievements   # Thành Tựu: the furnace level
+    await achievements.on_event(db, user.id, "furnace", level=nxt["level"])
     return {"furnace": nxt["level"], **(await overview(db, user))}

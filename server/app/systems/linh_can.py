@@ -394,6 +394,8 @@ async def awaken(db: AsyncSession, user: User, rng: random.Random | None = None)
     row.rolls = int(row.rolls or 0) + 1
     _discover(row, rid)
     await _after_change(db, ch)
+    from . import achievements   # Thành Tựu: the giai revealed and carried, the đồ giám, the tests
+    await achievements.on_event(db, user.id, "linh_can", root=row.root_id, rolled=rid, seen=len(row.discovered or []), rolls=row.rolls)
     return {"root": root_view(rid), "first": True, "view": await view(db, user)}
 
 
@@ -430,6 +432,8 @@ async def roll(db: AsyncSession, user: User, pill: str, rng: random.Random | Non
     same = rid == row.root_id
     if not same:
         row.pending_id, row.pending_pill = rid, pill
+    from . import achievements   # Thành Tựu: the giai revealed, the đồ giám, the tests
+    await achievements.on_event(db, user.id, "linh_can", root=row.root_id, rolled=rid, seen=len(row.discovered or []), rolls=row.rolls)
     return {"rolled": root_view(rid), "same": same, "pity_hit": forced and giai >= floor,
             "old": root_view(row.root_id), "view": await view(db, user)}
 
@@ -447,6 +451,8 @@ async def choose(db: AsyncSession, user: User, keep: bool) -> dict:
     row.updated_at = clock.now()
     if took:
         await _after_change(db, ch)
+        from . import achievements   # Thành Tựu: the giai carried
+        await achievements.on_event(db, user.id, "linh_can", root=row.root_id, seen=len(row.discovered or []), rolls=row.rolls)
     return {"root": root_view(row.root_id), "took": took, "view": await view(db, user)}
 
 

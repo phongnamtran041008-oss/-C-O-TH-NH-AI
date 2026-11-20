@@ -77,7 +77,8 @@ def _earnable() -> tuple[set[str], set[str]]:
                 titles.add(r["title"])
             if r.get("frame"):
                 frames.add(r["frame"])
-    return titles, frames
+    from . import achievements    # the danh hiệu of Thành Tựu are worn the same way
+    return titles | achievements.title_names(), frames
 
 
 def owned_badges(user: User) -> tuple[list[str], list[str]]:

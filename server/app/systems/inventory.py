@@ -47,6 +47,8 @@ async def change_currency(db: AsyncSession, user_id: int, currency: str, delta: 
         raise InsufficientFunds(currency, -delta, have)
     new_balance = row[0]
     await _audit(db, user_id, currency, delta, new_balance, reason, ref)
+    from . import achievements   # Thành Tựu: linh thạch earned and spent, tiên ngọc earned
+    await achievements.on_event(db, user_id, "currency", currency=currency, delta=delta, reason=reason)
     return new_balance
 
 

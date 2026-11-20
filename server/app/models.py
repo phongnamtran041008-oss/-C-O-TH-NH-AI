@@ -139,6 +139,29 @@ class LinhCan(Base):
     updated_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
 
 
+class AchievementCounter(Base):
+    """Thành Tựu (systems/achievements.py): one number per player and counter key - a running
+    total ('kill', 'kill|rank=boss'), a best value ('answer_streak', 'cult') or, for a key with
+    a '#', the marker that one value of a distinct count was already seen ('zones#loi_kiep_dai')."""
+    __tablename__ = "achievement_counters"
+    user_id: Mapped[int] = mapped_column(UserFK(), primary_key=True)
+    key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    value: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class Achievement(Base):
+    """One achievement a player has reached at least its first tier of: the highest tier
+    reached, the tiers claimed (bit i = tier i+1) and the highest tier the player was told of
+    (the unlock toast; below `tier` = still to announce, even after a logout)."""
+    __tablename__ = "achievements"
+    user_id: Mapped[int] = mapped_column(UserFK(), primary_key=True)
+    ach_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    tier: Mapped[int] = mapped_column(Integer, default=0)
+    claimed: Mapped[int] = mapped_column(Integer, default=0)
+    seen: Mapped[int] = mapped_column(Integer, default=0)
+    unlocked_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
+
+
 class Bee(Base):
     __tablename__ = "bees"
     id: Mapped[int] = mapped_column(primary_key=True)

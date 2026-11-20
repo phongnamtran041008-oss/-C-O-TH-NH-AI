@@ -235,6 +235,8 @@ async def judge(db: AsyncSession, user: User, problem_id: str, outputs: list[str
     row.ms, row.code, row.judged_at = result.ms, code, now
     row.xp_gained = gain
     xp = await cultivation.add_xp(db, user.id, gain, reason="math_code") if gain else None
+    from . import achievements   # Thành Tựu: an exercise solved, a Xạ Trường grade
+    await achievements.on_event(db, user.id, "code", problem=problem.id, scored=problem.scored, grade=result.passed, full=bool(result.total) and result.passed >= result.total)
     return {"mode": SUBMIT, "result": result.view(), "problem_id": problem.id,
             "attempt_id": row.id, "xp": xp, "xp_gained": gain,
             "best": _best_view(await _best(db, user.id, problem.id), problem)}
