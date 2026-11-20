@@ -191,7 +191,8 @@ async def test_a_vacant_node_counts_as_done_and_is_shown_as_being_written(client
     st = await state(uid)
     # NumPy is the one Lập Trình node of Luyện Khí left empty (whether players must install it is undecided)
     assert st.status["lt_numpy"] == "vacant" and "lt_numpy" in st.done
-    assert st.status["du_an_luyen_khi"] == "vacant"
+    # the realm project got its exercises with Xạ Trường: no longer vacant, it waits for its prerequisites
+    assert st.status["du_an_luyen_khi"] == "locked"
     # lt_cau_truc_du_lieu needs lt_python_co_ban (open, it has exercises) and ds_ngon_ngu: both hold it back
     assert st.status["lt_python_co_ban"] == "open" and st.status["lt_python_co_ban"] not in ("vacant", "done")
     assert st.status["lt_cau_truc_du_lieu"] == "locked"

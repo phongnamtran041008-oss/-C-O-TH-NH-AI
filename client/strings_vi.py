@@ -825,6 +825,31 @@ CODE_VERDICTS = {
     "CE": "Lỗi cú pháp",
     "-": "chưa chạy",
 }
+# Xạ Trường: bài Thực Chiến chấm theo phẩm (docs/THUC_CHIEN_TRONG_GAME.md)
+XT_HIDDEN_SETS = "{n} bộ bia ẩn"
+XT_TIME_LIMIT = "{n} giây mỗi bộ bia"
+XT_PRACTICE = "Bia tập: {note}"
+XT_ACCURACY = "Độ chính xác {v}"
+XT_ERROR = "Sai số {v}"
+XT_BARS = "Mốc hạ / trung / thượng phẩm: {bars}"
+XT_SET_LINE = "Bộ {n}: {v}"
+XT_SAMPLE_SET_LINE = "Ví dụ {n}: {v}"
+XT_NO_SCORE = "không chấm được"
+XT_BAD_COUNT = "in {got} dự đoán, cần {want}"
+XT_NOT_NUMBER = "có dự đoán không phải số"
+XT_TARGET_HIDDEN = "Bắn thật: bia ẩn"
+XT_TARGET_PRACTICE = "Bắn tập: bia tập"
+XT_LOSS_TITLE = "Đường mất mát ({where})"
+XT_WHERE_SET = "bộ {n}"
+XT_WHERE_SAMPLE = "ví dụ {n}"
+XT_LOSS_RANGE = "mất mát {a} -> {b} sau {n} vòng"
+XT_LOSS_NONE = "Chương trình không in dòng #loss nào ra stderr, nên không có đường mất mát để vẽ."
+XT_LOSS_BLOWN = "Mất mát thành nan hay vô cùng: tẩu hỏa nhập ma, hãy giảm tốc độ học."
+XT_LOSS_VAL = "đường nhạt: #val"
+XT_LOSS_LOG = "thang log"
+XT_SHOW_TARGET = "Xem bia"
+XT_SHOW_STATEMENT = "Xem đề"
+XT_BEST = "Tốt nhất: {g}"
 
 # Tàng Thư Các của bí cảnh toán (M4)
 LIB_TITLE = "Tàng Thư Các"

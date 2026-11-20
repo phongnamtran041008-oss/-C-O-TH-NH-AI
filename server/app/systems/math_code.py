@@ -17,6 +17,16 @@ can drift apart. It pays nothing and keeps no row.
 Tu Vi follows the plan ("phần thưởng tỉ lệ theo số test đạt"): the exercise's tier is worth
 `xp_per_correct` and the player gets that times the share of tests passed - but only for
 the part they had not already earned, so handing in the same solution twice pays once.
+
+Xạ Trường (scored exercises, docs/THUC_CHIEN_TRONG_GAME.md): Nộp bài hands out each hidden
+set's training data and the inputs of its points, never their labels; what comes back is
+the program's predictions, and math_problems.judge_scored computes the score here. The
+row keeps the grade as passed out of 3, so the same rule pays tier XP x grade / 3, only
+for a grade above the best one so far, and the exercise is solved at thượng phẩm.
+
+Exercises listed by a Thực Chiến or project node (branch "ud") also wait for that node to
+open: their micro-skill's node opens much earlier (R10), but a training ground is reached
+through its own node of Đạo Thụ.
 """
 from __future__ import annotations
 
@@ -45,13 +55,33 @@ def _visible(problem: Problem) -> bool:
     return settings.allow_unreviewed or problem.reviewed
 
 
+GATED_BRANCHES = ("ud",)     # Thực Chiến and the realm project: exercises open with their node
+
+
+def _gate_nodes(st, problem: Problem) -> list[str]:
+    """The Thực Chiến / project nodes that list this exercise."""
+    return [n.id for n in st.tree.nodes.values() if n.branch in GATED_BRANCHES and problem.id in n.problems]
+
+
+def problem_open(st, problem: Problem) -> bool:
+    """R10 (the micro-skill's node is open or done), and for an exercise of a Thực Chiến or
+    project node, that node is open or done too."""
+    if not math_tree_progress.problem_open(st, problem):
+        return False
+    gates = _gate_nodes(st, problem)
+    return not gates or any(st.status.get(n) in (math_tree_progress.OPEN, math_tree_progress.DONE)
+                            for n in gates)
+
+
 async def _playable_floor(db: AsyncSession, user: User, problem: Problem) -> None:
     """An exercise belongs to a micro-skill, and it is open when that micro-skill's node of
-    Đạo Thụ is open or done (R10); otherwise it stays shut."""
+    Đạo Thụ is open or done (R10); an exercise of a Thực Chiến node also needs that node
+    open or done. Otherwise it stays shut."""
     st = await math_tree_progress.state(db, user.id)
-    if not math_tree_progress.problem_open(st, problem):
+    if not problem_open(st, problem):
         owner = st.tree.node_of_skill().get(problem.skill)
-        raise MathError(403, "node_locked", math_tree_progress.locked_message(st, [owner] if owner else []))
+        shut = _gate_nodes(st, problem) or ([owner] if owner else [])
+        raise MathError(403, "node_locked", math_tree_progress.locked_message(st, shut))
 
 
 async def _best(db: AsyncSession, user_id: int, problem_id: str) -> MathSubmission | None:
@@ -62,16 +92,25 @@ async def _best(db: AsyncSession, user_id: int, problem_id: str) -> MathSubmissi
     return max(rows, key=lambda s: (s.passed / s.total if s.total else 0, s.id), default=None)
 
 
-def _best_view(best: MathSubmission | None) -> dict | None:
+def _best_view(best: MathSubmission | None, problem: Problem | None = None) -> dict | None:
     if best is None:
         return None
-    return {"verdict": best.verdict, "passed": best.passed, "total": best.total,
-            "ms": best.ms, "xp_gained": best.xp_gained}
+    out = {"verdict": best.verdict, "passed": best.passed, "total": best.total,
+           "ms": best.ms, "xp_gained": best.xp_gained}
+    if problem is not None and problem.scored:            # passed is the grade, 0..3
+        grade = max(0, min(math_problems.GRADES, best.passed))
+        out.update({"grade": grade, "grade_vi": math_problems.GRADE_NAMES_VI[grade]})
+    return out
 
 
-async def list_view(db: AsyncSession, user: User, subject_id: str, floor: int | None = None) -> dict:
+async def list_view(db: AsyncSession, user: User, subject_id: str, floor: int | None = None,
+                    ids: list[str] | None = None) -> dict:
     """The exercises of a subject, floor by floor, with how the player has done on each.
-    An exercise whose node is still shut keeps to itself (R10), so only open ones are listed."""
+    An exercise whose node is still shut keeps to itself (R10), so only open ones are listed.
+
+    With `ids` (the exercises of one node of Đạo Thụ) the list holds those exercises only,
+    from every subject they belong to: the realm project mixes three. The floors of another
+    subject than `subject_id` carry that subject's name in their title."""
     try:
         subject = math_path.subject(subject_id)
         if floor is not None:
@@ -79,20 +118,26 @@ async def list_view(db: AsyncSession, user: User, subject_id: str, floor: int | 
     except KeyError:
         raise MathError(404, "no_floor", "Không có tầng này.")
     st = await math_tree_progress.state(db, user.id)
+    wanted = set(ids or [])
+    subjects = [subject] if not wanted else [subject] + [
+        s for s in math_path.subjects() if s.id != subject.id
+        and any(p.subject == s.id for pid, p in math_problems.bank().items() if pid in wanted)]
     floors = []
-    for f in subject.floors:
-        if floor is not None and f.number != floor:
-            continue
-        problems = [p for p in math_problems.floor_problems(subject_id, f.number, settings.allow_unreviewed)
-                    if math_tree_progress.problem_open(st, p)]
-        if not problems:
-            continue
-        out = []
-        for p in problems:
-            brief = p.brief()
-            brief["best"] = _best_view(await _best(db, user.id, p.id))
-            out.append(brief)
-        floors.append({"floor": f.number, "title_vi": f.title_vi, "problems": out})
+    for subj in subjects:
+        for f in subj.floors:
+            if floor is not None and f.number != floor:
+                continue
+            problems = [p for p in math_problems.floor_problems(subj.id, f.number, settings.allow_unreviewed)
+                        if problem_open(st, p) and (not wanted or p.id in wanted)]
+            if not problems:
+                continue
+            out = []
+            for p in problems:
+                brief = p.brief()
+                brief["best"] = _best_view(await _best(db, user.id, p.id), p)
+                out.append(brief)
+            title = f.title_vi if subj.id == subject.id else f"{subj.name_vi}: {f.title_vi}"
+            floors.append({"floor": f.number, "title_vi": title, "problems": out})
     return {"subject_id": subject_id, "name_vi": subject.name_vi, "floors": floors}
 
 
@@ -106,7 +151,7 @@ async def problem_view(db: AsyncSession, user: User, problem_id: str) -> dict:
         raise MathError(404, "no_problem", "Không có bài tập này.")
     await _playable_floor(db, user, problem)
     view = problem.view()
-    view["best"] = _best_view(await _best(db, user.id, problem_id))
+    view["best"] = _best_view(await _best(db, user.id, problem_id), problem)
     view["max_code_chars"] = cfg()["max_code_chars"]
     return {"problem": view}
 
@@ -128,11 +173,13 @@ async def open_attempt(db: AsyncSession, user: User, problem_id: str) -> dict:
     if open_row is None:
         open_row = MathSubmission(user_id=user.id, problem_id=problem.id, subject_id=problem.subject,
                                   floor=problem.floor, tier=problem.tier, passed=0,
-                                  total=len(problem.tests), ms=0, xp_gained=0, code="",
-                                  created_at=clock.now())
+                                  total=math_problems.GRADES if problem.scored else problem.test_count,
+                                  ms=0, xp_gained=0, code="", created_at=clock.now())
         db.add(open_row)
         await db.flush()
-    return {"attempt_id": open_row.id, "total": len(problem.tests),
+    # a scored exercise's hidden input is training data plus the points to predict; the
+    # labels of those points are the test's expected output and stay here
+    return {"attempt_id": open_row.id, "total": problem.test_count,
             "time_limit_ms": problem.time_limit_ms,
             "inputs": [t.data for t in problem.tests]}
 
@@ -167,7 +214,7 @@ async def judge(db: AsyncSession, user: User, problem_id: str, outputs: list[str
     if attempt_id is None:                      # Chạy thử, on the samples
         tests = list(problem.samples)
         _check_outputs(outputs, len(tests), config)
-        result = math_problems.judge(tests, outputs, status, times_ms, problem.checker, error)
+        result = math_problems.judge_problem(problem, tests, outputs, status, times_ms, error)
         return {"mode": RUN, "result": result.view(), "problem_id": problem.id}
 
     row = await db.get(MathSubmission, attempt_id)
@@ -178,7 +225,7 @@ async def judge(db: AsyncSession, user: User, problem_id: str, outputs: list[str
     await _playable_floor(db, user, problem)
     tests = list(problem.tests)
     _check_outputs(outputs, len(tests), config)
-    result = math_problems.judge(tests, outputs, status, times_ms, problem.checker, error)
+    result = math_problems.judge_problem(problem, tests, outputs, status, times_ms, error)
 
     before = await _best(db, user.id, problem.id)
     had = (before.passed / before.total) if before and before.total else 0.0
@@ -190,4 +237,4 @@ async def judge(db: AsyncSession, user: User, problem_id: str, outputs: list[str
     xp = await cultivation.add_xp(db, user.id, gain, reason="math_code") if gain else None
     return {"mode": SUBMIT, "result": result.view(), "problem_id": problem.id,
             "attempt_id": row.id, "xp": xp, "xp_gained": gain,
-            "best": _best_view(await _best(db, user.id, problem.id))}
+            "best": _best_view(await _best(db, user.id, problem.id), problem)}
