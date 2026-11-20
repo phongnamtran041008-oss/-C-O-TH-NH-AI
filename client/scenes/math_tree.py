@@ -177,6 +177,10 @@ def card_blocks(node: dict, name_of) -> list[tuple[str, str]]:
     out: list[tuple[str, str]] = []
     if node.get("why_vi"):
         out.append(("t", node["why_vi"]))
+    if node.get("chieu"):                # Chiêu Thức II: what finishing this node helps to open
+        out.append(("h", T.NODE_OPENS_CHIEU))
+        out += [("b", T.NODE_CHIEU_ITEM.format(name=c["name_vi"], el=T.ELEMENT_VI.get(c.get("element"), "")))
+                for c in node["chieu"]]
     out.append(("h", T.NODE_SOURCE))
     src = node.get("source")
     if not src:

@@ -831,13 +831,13 @@ def _c_van_kiem(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_li
     land on its frames 1-6). Never turned; scaled with the area, but kept under the screen."""
     ex = ex or {}
     r = radius or 70.0
-    s = max(0.9, min(1.6, r / 44.0)) * (1.0 + 0.02 * (t - 1))
+    s = max(0.9, min(1.4, r / 52.0)) * (1.0 + 0.02 * (t - 1))     # (a whole-area sigil would bury the fight)
     troi = art2.fx("van_kiem_troi")
     roi = art2.fx("van_kiem_roi")
     t_troi = troi.duration if troi is not None else 0.57
     t_roi = roi.duration if roi is not None else 0.63
     v.spawn("van_kiem_vong", dst[0], dst[1], charge * 0.4, life=charge * 0.6 + t_troi + t_roi + 0.25,
-            layer="ground", scale=s, fade_in=0.15, fade_out=0.3, peak=0.8)
+            layer="ground", scale=s, fade_in=0.15, fade_out=0.3, peak=0.65)
     v.spawn("van_kiem_troi", dst[0], dst[1], charge, scale=s)
     v.spawn("van_kiem_roi", dst[0], dst[1], charge + t_troi, scale=s)
     land = charge + t_troi + 2 / 16
@@ -891,7 +891,8 @@ def _c_loi_xich(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_li
         deg = math.degrees(math.atan2(dy, dx))
         delay = charge + 0.07 * i
         w = max(8.0, d * z * fw / span)
-        v.spawn("loi_xich", ax, ay, delay, life=0.34, lift=al, angle=deg, size=(w, fh * (1.25 if i == 0 else 1.0)),
+        v.spawn("hit_spark", bx, by, delay + 0.05, lift=bl, scale=0.6, peak=0.7)      # the scorch it leaves
+        v.spawn("loi_xich", ax, ay, delay, life=0.42, lift=al, angle=deg, size=(w, fh * (1.25 if i == 0 else 1.0)),
                 fade_out=0.14, frames=(0, 3))
         v.spawn("loi_cham", bx, by, delay + 0.03, lift=bl, scale=_k(t))
     land = charge + 0.03
@@ -913,6 +914,7 @@ def _c_hoa_long(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_li
     speed = 200.0 + 6 * t
     travel = max(0.2, dist / speed)
     ang, flip = _aim(deg)
+    hx, hy = hx + ux * 14, hy + uy * 14          # (its tail would lie over the caster)
     v.spawn("hoa_long", hx, hy, charge, life=travel, to=end, lift=lift + 2, lift1=lift + 2, angle=ang, flip=flip,
             scale=0.8 * k, fade_in=0.06, fade_out=0.14)
     burn = float(ex.get("d") or 2.0)
@@ -952,7 +954,7 @@ def _c_dia_liet(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_li
     head = 0.25 * min(1.6, kx)                              # seconds the head takes to the end
     ang, flip = _aim(deg)
     if sh is not None:
-        v.spawn("dia_liet", fx0, fy0, charge, layer="ground", size=(sh.fw * kx, sh.fh * (0.9 + 0.1 * min(kx, 2))),
+        v.spawn("dia_liet", fx0, fy0, charge, layer="ground", size=(sh.fw * kx, sh.fh * (1.0 + 0.15 * min(kx, 2))),
                 angle=ang, flip=flip, life=sh.duration + 0.5, fade_out=0.5)
     first = None
     for i, (x, y) in enumerate(_hits(ex, dst)):
@@ -1048,13 +1050,12 @@ def _c_kiem_vuc(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_li
     r = radius or 60.0
     s = max(1.0, min(2.0, r / 30.0))
     hold = float(ex.get("d") or 6.0)
-    v.spawn("kiem_vuc", x, y, charge, life=hold, layer="ground", scale=s, fade_in=0.25, fade_out=0.5, peak=0.8,
+    v.spawn("kiem_vuc", x, y, charge, life=hold, layer="ground", scale=s, fade_in=0.12, fade_out=0.5, peak=0.8,
             follow=follow, tag=("domain", follow))
     v.spawn("kiem_vuc_xoay", x, y, charge, life=hold, scale=min(1.5, s * 0.8), fade_in=0.2, fade_out=0.5,
             follow=follow, tag=("domain", follow))
-    _shockwave(v, x, y, charge + 0.05, s, "kim")
     if mine:
-        v.tint((255, 226, 140), 0.12, 0.4, delay=charge)
+        v.tint((255, 226, 140), 0.06, 0.35, delay=charge)
         v.at(charge, lambda: v.shake(0.35))
     return charge
 
@@ -1065,7 +1066,7 @@ def _c_hoi_xuan(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_li
     x, y = src
     sh = art2.fx("hoi_xuan")
     fps = sh.fps if sh is not None else 12.0
-    v.spawn("hoi_xuan", x, y, charge, scale=_k(t), follow=follow)
+    v.spawn("hoi_xuan", x, y, charge, scale=1.15 * _k(t), follow=follow)
     land = charge + 4 / fps
     if mine:
         v.tint(RGB["moc"], 0.06, 0.4, delay=land)
