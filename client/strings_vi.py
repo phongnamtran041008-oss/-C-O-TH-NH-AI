@@ -753,6 +753,7 @@ MATH_TRIAL_PASSED = "Vượt Thiên kiếp nhỏ!"
 MATH_TRIAL_FAILED = "Chưa qua Thiên kiếp nhỏ"
 MATH_TRIAL_AGAIN = "Ôn lại vi kỹ năng yếu rồi thử lại ngay được."
 MATH_REVIEW = "Ôn xoắn ốc: tầng {n}"
+MATH_REVIEW_NODE = "Ôn lại: {name}"           # a review question: the node of Đạo Thụ it comes from
 MATH_REVIEW_COUNT = "Câu ôn tầng dưới: {n}"
 MATH_RESULT = "Xem kết quả"
 
@@ -1007,6 +1008,8 @@ MATH_PLACE_INTRO_CLIMB = (
 # ---- Đạo Thụ: sảnh toán đọc cây giáo trình (nút, tầng tu vi, nhánh)
 TREE_STAGE = "{realm} tầng {n}/{t}"
 TREE_STAGE_NONE = "{realm}: chưa qua tầng nào"
+TREE_STAGE_PROGRESS = "đã xong {d}/{t} nút của tầng {n}"     # inside the stage being worked on
+TREE_STAGE_PROGRESS_SHORT = "xong {d}/{t} nút tầng {n}"
 TREE_TAB_NEXT = "Nên học"
 TREE_TAB_SHORT = {"ds": "Đại Số", "gt": "Giải Tích", "xs": "Xác Suất", "tr": "Thuật Toán", "lt": "Lập Trình",
                   "ud": "Thực Chiến"}
@@ -1041,6 +1044,7 @@ NODE_SRC_WHERE = "Xem phần: {w}"
 NODE_SRC_LANG = "Ngôn ngữ: {lang} · {kind}"
 NODE_SRC_URL = "Đường dẫn: {u}"
 NODE_SRC_OPEN = "Mở trang"
+NODE_DO_PROBLEMS = "Làm bài"                   # opens the node's programming exercises
 NODE_SRC_FAILED = "Không mở được trình duyệt. Hãy chép đường dẫn trong thẻ."
 NODE_LANG = {"vi": "tiếng Việt", "en": "tiếng Anh"}
 NODE_KIND = {"bai_viet": "bài viết", "video": "video", "sach": "sách", "khoa_hoc": "khoá học",

@@ -87,6 +87,7 @@ def run_tree_flow(workdir: Path, shots: Path | None = None) -> None:
         assert not drv.has(f"math_trial_{NODE}_1")                    # the gate is closed
         text = drawn_text(drv)
         assert MT.header_text(stage) in text and "Tầng 1" in text
+        assert T.TREE_STAGE_PROGRESS.format(d=0, t=4, n=1) in text    # "đã xong 0/4 nút của tầng 1"
         drv.shot("tree_next")
 
         # ---- the card of a node: why, what it needs, the source - and the browser only on a press
@@ -252,6 +253,34 @@ def run_tree_flow(workdir: Path, shots: Path | None = None) -> None:
         assert MT.row_state(row) == "code"
         assert T.TREE_CODE_ONLY in drawn_text(drv)
         drv.shot("tree_other_branch_opened")
+
+        # ---- the stage line moves with every node: one of the four done, so "đã xong 1/4 nút của tầng 1"
+        assert top(drv).tree["stage"]["progress"] == {"stage": 1, "done": 1, "total": 4}
+        drv.click("math_tab_next")
+        assert T.TREE_STAGE_PROGRESS.format(d=1, t=4, n=1) in drawn_text(drv)
+        drv.game.toasts.clear()                                       # (the guide's "Xong" toasts hide the line)
+        drv.shot("tree_stage_progress")
+
+        # ---- a programming node's card has its own "Làm bài": it opens that node's exercises only
+        drv.click("math_tab_lt")
+        drv.click(f"math_info_{OTHER_BRANCH_NODE}")
+        drv.wait(lambda: drv.top_is("NodeCardScene"), 5, "the programming node's card")
+        code_node = top(drv).node
+        assert code_node["state"] == "open" and code_node["problems"] and MT.exercises_open(code_node)
+        assert T.NODE_DO_PROBLEMS in drawn_text(drv) and drv.has("math_info_code")
+        drv.game.toasts.clear()
+        drv.shot("tree_node_card_code")
+        drv.click("math_info_code")
+        drv.wait(lambda: drv.top_is("ProblemListScene") and top(drv).data is not None, 10, "the node's exercises")
+        listed = [p["id"] for f in top(drv).shown_floors() for p in f["problems"]]
+        assert listed == [p["id"] for p in code_node["problems"]], listed
+        assert all(drv.has(f"code_open_{pid}") for pid in listed)
+        drv.game.toasts.clear()
+        drv.shot("tree_node_exercises")
+        drv.click("code_close")
+        drv.wait(lambda: drv.top_is("NodeCardScene"), 5, "back on the card")
+        drv.click("math_info_close")
+        drv.wait(lambda: drv.top_is("MathPracticeScene"), 5, "the hub at the end")
         close_hub(drv)
         drv.close()
     finally:

@@ -1,5 +1,11 @@
 # Luận Đạo Đài — bài tự luận, chứng minh, và giám khảo AI tuỳ chọn
 
+> **Đã gác lại (2026-11-20).** Chủ dự án bỏ việc chấm bằng API ("API thì thôi bỏ đi"): không còn Thiên Đạo
+> Giám Khảo, không còn ô gắn khoá, và ba file `client/engine/giam_khao*.py` cùng bài thử của chúng đã bị xoá.
+> Luận Đạo Đài **không làm nữa**; 20 đề tự luận vẫn nằm trong `server/data/math/essays/` làm dữ liệu tham
+> khảo, chưa nối vào game, và `server/app/learning/math_essays.py` vẫn đọc, kiểm được chúng. Các mục 3 (cách
+> 2), 5 và 6 dưới đây giữ lại như lịch sử thiết kế, **không còn là kế hoạch**.
+
 > Bản thiết kế, **chưa nối vào game** (`"wired": false`). Viết ngày 2026-11-19 trong phiên "tối ưu nguồn
 > tài liệu". Không đụng tới `tree.json`, `world_plan.json`, ngân hàng câu hỏi hay mỹ thuật của hai phiên kia.
 
@@ -101,7 +107,7 @@ Bản mầm hiện có **20 đề** (mỗi bí cảnh 5), kiểm bằng `python 
 Mỗi đề có thêm `why_vi`: một câu nối bài chứng minh với việc làm AI (ví dụ bất đẳng thức e^x >= 1 + x là
 lý do độ lệch KL không âm), để phần tự luận không tách rời mục tiêu của cả giáo trình.
 
-## 5. Thiên Đạo Giám Khảo — chấm bằng khoá API của người chơi
+## 5. Thiên Đạo Giám Khảo — chấm bằng khoá API của người chơi (đã bỏ, chỉ còn là lịch sử)
 
 ### 5.1 Nguyên tắc
 
@@ -220,26 +226,17 @@ Game hiện số token đã dùng của phiên, và có ô "trần số lần ch
 
 ## 6. Đã làm gì, còn lại gì
 
-**Đã có (2026-11-19) — bộ máy chấm, toàn file mới, chưa nối vào game:**
+**Đã có — dữ liệu và luật chấm, chưa nối vào game (bộ máy gọi mô hình đã xoá):**
 
 | File | Việc | Kiểm bằng |
 |---|---|---|
 | `server/data/math/essays/*.json` | 20 đề mầm. | `python tools/check_essays.py` |
 | `server/app/learning/math_essays.py` | Đọc và kiểm ngân hàng đề; `public_view` (trước khi nộp: không lời giải, không thang điểm) và `marking_view` (sau khi nộp); `score` cộng điểm từ các mức du / mot_phan / khong, lỗi chí mạng thì trần 4; `dao_tam` chỉ trả cho phần tiến bộ. | `server/tests/test_math_essays.py` (19 test) |
-| `client/engine/giam_khao.py` | Cài đặt của người chơi (`giam_khao.json`, biến môi trường, trần mỗi ngày); ghép lời nhắc; lược đồ phán quyết; **kiểm trích dẫn**: ý được điểm mà đoạn trích không có trong bài làm thì thành `khong`; thử lại một lần khi phán quyết không đọc được, không bao giờ đoán điểm. | `client/tests/test_giam_khao.py` (61 test) |
-| `client/engine/giam_khao_claude.py` | Gọi Claude qua SDK chính thức `anthropic` (phụ thuộc tuỳ chọn, chỉ nạp khi người chơi chọn). | cùng file test, và đã chạy với SDK thật 2.10.0 qua một tầng HTTP giả |
-| `client/engine/giam_khao_openai.py` | Gọi mọi địa chỉ tương thích OpenAI bằng `httpx`, kể cả mô hình chạy trên máy (không cần khoá). Từ chối gửi khoá qua `http://` tới máy khác. | cùng file test, với một máy chủ giả |
+| `client/engine/giam_khao*.py`, `client/tests/test_giam_khao.py` | **Đã xoá 2026-11-20** cùng quyết định bỏ chấm bằng API. | — |
+| `client/engine/giam_khao*.py`, `client/tests/test_giam_khao.py` | **Đã xoá 2026-11-20** cùng quyết định bỏ chấm bằng API. | — |
+| `client/engine/giam_khao*.py`, `client/tests/test_giam_khao.py` | **Đã xoá 2026-11-20** cùng quyết định bỏ chấm bằng API. | — |
 
-Điều **chưa kiểm được**: chưa có lần gọi thật nào tới một mô hình (không có khoá, và không tiêu tiền của
-bạn khi chưa hỏi). Hình dạng yêu cầu gửi đi đã được kiểm với SDK thật; chất lượng chấm của từng mô hình thì
-chưa đo — đó là việc của bộ thử ở mục 5.4, điểm 6.
-
-Mã lỗi mà màn hình sẽ cần một câu tiếng Việt cho mỗi cái: `off`, `no_key`, `no_model`, `no_url`,
-`insecure_url`, `bad_provider`, `no_sdk`, `bad_key`, `no_permission`, `bad_model`, `rate_limit`,
-`bad_request`, `server`, `network`, `timeout`, `refused`, `cut_off`, `unreadable`, `daily_cap`,
-`empty_answer`, `answer_too_long`.
-
-**Còn lại — đụng tới file dùng chung, làm sau khi phiên viết câu hỏi và phiên mỹ thuật đã ghi xong:**
+**Từng định làm, nay không làm (đài đã gác):**
 
 | File | Việc |
 |---|---|

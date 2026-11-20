@@ -93,11 +93,13 @@ def test_dao_tam_pays_for_the_improvement_only():
 
 def test_mark_puts_it_together():
     essay = es.essay(ESSAY)
-    marking = es.mark(essay, "ai", {"r1": "du", "r2": "du", "r3": "mot_phan"}, fatal=False)
-    assert marking.points == 6 and marking.dao_tam == 6 and marking.marker == "ai"
+    marking = es.mark(essay, "tu_cham", {"r1": "du", "r2": "du", "r3": "mot_phan"}, fatal=False)
+    assert marking.points == 6 and marking.dao_tam == 6 and marking.marker == "tu_cham"
     assert marking.view()["marks"]["r4"] == "khong" and marking.view()["max_points"] == 10
     with pytest.raises(ValueError):
         es.mark(essay, "thay_giao", {})
+    with pytest.raises(ValueError):                                    # the AI marker was dropped
+        es.mark(essay, "ai", {})
 
 
 def test_answer_problem():

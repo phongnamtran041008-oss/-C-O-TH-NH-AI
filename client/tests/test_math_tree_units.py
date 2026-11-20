@@ -112,6 +112,34 @@ def test_stage_header_and_row_stage():
     assert MT.stage_text(node("a", "ds", None, status="phu")) == "Bàng môn"
 
 
+def test_the_stage_progress_line_and_its_shorter_form():
+    ui = FakeUi()
+    stage = {**sample_tree()["stage"], "progress": {"stage": 3, "done": 1, "total": 4}}
+    assert MT.progress_text(ui, stage, 400) == "đã xong 1/4 nút của tầng 3"
+    short = MT.progress_text(ui, stage, 4 * len("xong 1/4 nút tầng 3") + 1)         # the long form does not fit
+    assert short == "xong 1/4 nút tầng 3"
+    assert MT.progress_text(ui, stage, 10) == ""                                   # neither fits: say nothing
+    assert MT.progress_text(ui, {**stage, "progress": None}, 400) == ""            # the last stage is reached
+    assert MT.progress_text(ui, sample_tree()["stage"], 400) == ""                 # an older server sent none
+
+
+def test_the_exercise_button_needs_exercises_in_a_node_that_is_not_locked():
+    problems = [{"id": "p1", "title_vi": "Đếm", "solved": False, "subject_id": "dai_so_tuyen_tinh"},
+                {"id": "p2", "title_vi": "Chuyển vị", "solved": True, "subject_id": "dai_so_tuyen_tinh"}]
+    assert MT.exercises_open(node("a", "lt", 2, state="open", problems=problems))
+    assert MT.exercises_open(node("a", "lt", 2, state="done", problems=problems))
+    assert not MT.exercises_open(node("a", "lt", 2, state="locked", problems=problems))
+    assert not MT.exercises_open(node("a", "ds", 1, state="open"))                  # no exercises, no button
+    assert MT.exercises_subject(node("a", "lt", 2, problems=problems)) == "dai_so_tuyen_tinh"
+    assert MT.exercises_subject(node("a", "ds", 1)) is None
+
+
+def test_a_review_question_names_the_node_it_comes_from():
+    from client.scenes.math_practice import review_badge
+    assert review_badge({"floor": 1, "review": True, "review_node_vi": "Xác suất cơ bản"}) == "Ôn lại: Xác suất cơ bản"
+    assert review_badge({"floor": 2, "review": True}) == "Ôn xoắn ốc: tầng 2"     # a sitting from before Đạo Thụ
+
+
 def test_names_are_cut_to_fit_and_a_second_part_keeps_its_tail():
     ui = FakeUi()
     short = MT.rows_of(node("a", "ds", 1, name_vi="Tập hợp", parts=[part(1)]))[0]

@@ -432,10 +432,26 @@ def locked_message(st: TreeState, node_ids: list[str]) -> str:
 
 
 # ------------------------------------------------------------------ the view
+def stage_progress(st: TreeState, realm: str, stage: int) -> dict | None:
+    """How far the player is inside the stage they are working on (the one above the stage
+    reached): the main-path nodes of that stage that are really done, out of those that have
+    anything to learn. A vacant node ("Đang biên soạn") is left out of both numbers - it is no
+    work for the player, though it counts as done for `requires` and for the stage (R3). None
+    once the realm's last stage is reached: there is no next stage to work on."""
+    last = st.tree.realm_stages[realm]
+    if stage >= last:
+        return None
+    nodes = [n for n in st.tree.main_nodes(realm) if n.stage == stage + 1 and st.status[n.id] != VACANT]
+    if not nodes:
+        return None
+    return {"stage": stage + 1, "done": sum(1 for n in nodes if st.status[n.id] == DONE), "total": len(nodes)}
+
+
 def stage_view(st: TreeState) -> dict:
     realm, stage = st.stage
     raw = next(r for r in st.tree.raw["realms"] if r["id"] == realm)
-    return {"realm": realm, "realm_name_vi": raw["name_vi"], "stage": stage, "stages": raw["stages"]}
+    return {"realm": realm, "realm_name_vi": raw["name_vi"], "stage": stage, "stages": raw["stages"],
+            "progress": stage_progress(st, realm, stage)}
 
 
 async def part_view(db: AsyncSession, user_id: int, st: TreeState, part: Part, config: dict | None = None,
@@ -474,7 +490,8 @@ async def tree_view(db: AsyncSession, user: User) -> dict:
             "reinforces": list(node.reinforces),
             "parts": [await part_view(db, user.id, st, p, config, with_gate=status != LOCKED)
                       for p in parts(node) if st.has_questions(p)],
-            "problems": [{"id": pid, "title_vi": math_problems.bank()[pid].title_vi, "solved": pid in st.solved}
+            "problems": [{"id": pid, "title_vi": math_problems.bank()[pid].title_vi, "solved": pid in st.solved,
+                          "subject_id": math_problems.bank()[pid].subject}
                          for pid in node.problems if problem_available(pid)],
             "source": source(node)})
     run = await math_practice.open_run(db, user.id)

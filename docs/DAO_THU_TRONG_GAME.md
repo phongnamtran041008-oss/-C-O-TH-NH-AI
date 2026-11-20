@@ -60,7 +60,10 @@ kiểm thứ 18 trong `tools/check_all.py` (mỗi phần đúng tầng, và mộ
 
 Màn Bí Cảnh Toán (`client/scenes/math_practice.py`, `client/scenes/math_tree.py`) nay là Đạo Thụ:
 
-- Dòng đầu cho biết đang ở đâu, ví dụ "Luyện Khí tầng 2/9".
+- Dòng đầu cho biết đang ở đâu, ví dụ "Luyện Khí tầng 2/9", kèm tiến độ trong tầng đang làm: "đã xong 1/4
+  nút của tầng 3" (máy chủ tính trong `stage.progress` của `GET /math/tree`: các nút chính đạo của tầng đó
+  đã xong trên các nút có nội dung; nút "Đang biên soạn" không tính vào cả hai số). Trên thẻ nhánh có nút
+  ở bên phải thì chỗ hẹp, dòng này tự rút gọn hoặc ẩn.
 - Thẻ **Nên học** liệt kê các nút chính đạo đang mở; sau đó mỗi nhánh một thẻ (Đại Số, Giải Tích, Xác
   Suất, Thuật Toán, Lập Trình, Thực Chiến), nút xếp theo tầng, bàng môn ở cuối.
 - Mỗi dòng là một phần của nút: tên, bậc khó, tiến độ cổng thuần thục hoặc nút Thiên kiếp, nút Đọc (bài ở
@@ -68,6 +71,10 @@ Màn Bí Cảnh Toán (`client/scenes/math_practice.py`, `client/scenes/math_tre
 - Bấm vào tên nút mở **thẻ nút**: vì sao học, cần xong gì trước, ôn lại gì, học những gì, và **Nên học từ**
   — nguồn tốt nhất cho nút ấy lấy từ `server/data/math/sources/` (tên, tác giả, xem phần nào, ngôn ngữ,
   đường dẫn). Nút "Mở trang" mở đường dẫn bằng trình duyệt của máy; game không tự mở trang nào.
+- Thẻ của nút lập trình có nút **Làm bài**: mở danh sách bài tập của riêng nút ấy trong màn bài tập lập
+  trình (`client/scenes/math_code.py`), không cần qua nút "Bài tập" ở thẻ Đại Số.
+- Câu ôn trên thẻ câu hỏi ghi tên nút đang được ôn ("Ôn lại: Tập hợp và ánh xạ"), kể cả khi nút ấy thuộc môn
+  khác (`review_node_vi` trong thông tin câu hỏi). Chỉ buổi luyện cũ không có nút mới còn ghi "Ôn xoắn ốc: tầng N".
 - Qua Thiên kiếp nhỏ của một nút thì màn kết quả nói nút nào vừa mở, kể cả nút của nhánh khác.
 
 ## Tôi tự quyết — bạn đổi được
@@ -88,12 +95,7 @@ Màn Bí Cảnh Toán (`client/scenes/math_practice.py`, `client/scenes/math_tre
   nào dùng (`"wired": false`).
 - **Nội dung cho nút lập trình, thực chiến, dự án** và mọi cảnh giới sau Luyện Khí. Thiết kế cách làm ở
   `docs/THUC_CHIEN_TRONG_GAME.md`.
-- **Luận Đạo Đài** (bài tự luận) có bộ máy chấm nhưng chưa có màn hình (`docs/LUAN_DAO_DAI.md`).
-- **Bài tập của nút lập trình** hiện trên thẻ nút nhưng chỉ làm được từ nút "Bài tập" ở thẻ Đại Số; thẻ
-  nút chưa có nút "Làm bài".
-- **Câu ôn** trên thẻ câu hỏi vẫn ghi "Ôn xoắn ốc: tầng N"; nay câu ôn có thể đến từ môn khác, nên ghi tên
-  nút được ôn thì đúng hơn.
-- **Dòng "đang ở đâu"** chỉ đổi khi xong mọi nút chính đạo của một tầng ở cả bốn nhánh, nên đứng yên khá
-  lâu sau nút đầu tiên. Có thể thêm "đã xong 1/4 nút của tầng 1".
+- **Luận Đạo Đài** (bài tự luận) đã gác lại: chủ dự án bỏ việc chấm bằng API (2026-11-20). Đề vẫn còn làm
+  dữ liệu tham khảo, không có màn hình (`docs/LUAN_DAO_DAI.md`).
 - **Vi kỹ năng "Hiệp phương sai, tương quan và hồi quy"** (nút chính đạo tầng 8) nằm ở tầng ẩn 10 của Xác
   Suất, chưa có câu hỏi: hiện là nút "đang biên soạn".

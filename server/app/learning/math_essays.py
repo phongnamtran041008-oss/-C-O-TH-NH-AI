@@ -10,14 +10,14 @@ compute it and show the reasoning. They are optional and gate nothing. An essay 
     - handed out only once the learner has submitted an answer (`Essay.marking_view`),
     like the expected output of a programming exercise.
 
-Three kinds of marker use the same rubric: the learner (tu_cham), a language model called
-with the learner's own key from the learner's machine (ai), or a friend (dong_dao). A marker
-only says, for each rubric item, whether the answer has it in full, in part or not at all,
-and whether a fatal mistake was made. **The points are added up here**, never by the
-marker: a model that is asked for a total gives a generous one.
+Two kinds of marker use the same rubric: the learner (tu_cham) or a friend (dong_dao). A
+marker only says, for each rubric item, whether the answer has it in full, in part or not at
+all, and whether a fatal mistake was made. **The points are added up here**, never by the
+marker.
 
-Not wired into the game yet: no route and no table uses this module. Pure data and rules,
-like math_path and math_problems: no database here.
+The hall is shelved (the owner dropped grading by an AI model on 2026-11-20): no route and no
+table uses this module, and the essays are reference material. Pure data and rules, like
+math_path and math_problems: no database here.
 """
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ FULL, PART, NONE = "du", "mot_phan", "khong"
 SHARE = {FULL: 1.0, PART: 0.5, NONE: 0.0}
 MARKS = tuple(SHARE)
 FATAL_CAP = 4.0             # a fatal mistake: the essay is worth at most this, whatever else it has
-MARKERS = ("tu_cham", "ai", "dong_dao")
+MARKERS = ("tu_cham", "dong_dao")
 MAX_LINE = 260              # a line the reading panel can still lay out
 MIN_RUBRIC_ITEMS = 3
 MAX_ANSWER_CHARS = 8000     # about four handwritten pages; longer is not an exam answer

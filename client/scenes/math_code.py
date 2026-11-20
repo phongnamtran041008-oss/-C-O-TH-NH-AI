@@ -51,9 +51,10 @@ def verdict_text(v: str) -> str:
 class ProblemListScene(Scene):
     """The exercises of a subject, floor by floor. Locked floors are not in the answer."""
 
-    def __init__(self, game, subject_id: str, floor: int | None = None):
+    def __init__(self, game, subject_id: str, floor: int | None = None, only: list[str] | None = None):
         super().__init__(game)
         self.subject_id, self.floor = subject_id, floor
+        self.only = only            # the exercises of one node (its card's "Làm bài"): None lists them all
         self.data: dict | None = None
         self.busy = False
         self.first = 0              # M11: the first row shown, when the list scrolls
@@ -74,6 +75,14 @@ class ProblemListScene(Scene):
             self.busy, self.data = False, data
         self.api.get(query, ok, self.fail)
 
+    def shown_floors(self) -> list[dict]:
+        """The floors with the exercises to show: every one, or only the ones in `only`."""
+        floors = (self.data or {}).get("floors") or []
+        if self.only is None:
+            return floors
+        cut = [{**f, "problems": [p for p in f["problems"] if p["id"] in self.only]} for f in floors]
+        return [f for f in cut if f["problems"]]
+
     def fail(self, err):
         self.busy = False
         self.game.api_error(err)
@@ -82,7 +91,7 @@ class ProblemListScene(Scene):
         ui.dim()
         x, y, w, h = 60, 24, 360, 222
         ui.panel(x, y, w, h, T.CODE_TITLE)
-        floors = (self.data or {}).get("floors") or []
+        floors = self.shown_floors()
         if self.data is None:
             ui.text(T.CODE_LOADING, x + w / 2, y + h / 2, 9, GREY, anchor="center")
         elif not floors:
