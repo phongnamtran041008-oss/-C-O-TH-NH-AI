@@ -1,0 +1,19 @@
+{
+ "id": "van_kiem_roi",
+ "name_vi": "Vạn Kiếm Quy Tông - vạn kiếm rơi",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 112
+ },
+ "sheet": "van_kiem_roi.png",
+ "cols": 5,
+ "frames": 10,
+ "fps": 16,
+ "loop": false,
+ "blend": "alpha",
+ "ground": false
+}

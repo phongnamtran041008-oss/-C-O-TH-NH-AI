@@ -1,0 +1,19 @@
+{
+ "id": "pha_me_kiem",
+ "name_vi": "Phá Mê Kiếm Quyết",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 10,
+  "y": 64
+ },
+ "sheet": "pha_me_kiem.png",
+ "cols": 7,
+ "frames": 7,
+ "fps": 20,
+ "loop": false,
+ "blend": "alpha",
+ "ground": false
+}

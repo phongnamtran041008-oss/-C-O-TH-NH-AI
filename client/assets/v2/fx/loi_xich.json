@@ -1,0 +1,19 @@
+{
+ "id": "loi_xich",
+ "name_vi": "Chưởng Tâm Lôi - xích lôi",
+ "frame": {
+  "w": 96,
+  "h": 32
+ },
+ "pivot": {
+  "x": 3,
+  "y": 16
+ },
+ "sheet": "loi_xich.png",
+ "cols": 4,
+ "frames": 4,
+ "fps": 16,
+ "loop": true,
+ "blend": "alpha",
+ "ground": false
+}

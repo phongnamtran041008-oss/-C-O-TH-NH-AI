@@ -1,0 +1,19 @@
+{
+ "id": "kiem_vuc_xoay",
+ "name_vi": "Kiếm Vực - kiếm xoay quanh thân",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 104
+ },
+ "sheet": "kiem_vuc_xoay.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 12,
+ "loop": true,
+ "blend": "alpha",
+ "ground": false
+}

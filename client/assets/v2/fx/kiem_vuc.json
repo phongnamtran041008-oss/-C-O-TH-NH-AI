@@ -1,0 +1,19 @@
+{
+ "id": "kiem_vuc",
+ "name_vi": "Kiếm Vực - vùng kiếm",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 64
+ },
+ "sheet": "kiem_vuc.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 8,
+ "loop": true,
+ "blend": "alpha",
+ "ground": true
+}
