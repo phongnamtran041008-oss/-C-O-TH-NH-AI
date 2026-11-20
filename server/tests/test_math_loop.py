@@ -269,7 +269,9 @@ async def test_path_lists_the_floors_and_which_have_questions(client):
     # and floor 2 of Đại Số holds only an optional node that requires nothing, so it is open too
     opened = {SUBJECT: [1, 2]}
     for s in data["subjects"]:
-        assert [f["has_questions"] for f in s["floors"]] == [True] * 9 + [False], s["id"]
+        # (floor 10 is written for all four subjects, but a floor counts only the questions the tree lets be asked:
+        # the talent floors of Đại Số and Giải Tích are on its cut list, those of Xác Suất and Tối Ưu are not)
+        assert [f["has_questions"] for f in s["floors"]] == [True] * 9 + [s["id"] in ("xac_suat_thong_ke", "toi_uu_roi_rac")], s["id"]
         assert [f["floor"] for f in s["floors"] if f["playable"]] == opened.get(s["id"], [1]), s["id"]
         assert s["cleared"] == [] and s["next_floor"] == 1 and s["placement"]["offered"]
     floors = data["subjects"][0]["floors"]

@@ -88,11 +88,12 @@ def test_each_written_floor_mixes_every_question_type(floor):
     assert all(i.tier >= 2 for i in items if i.qtype == "find_mistake")
 
 
-def test_the_hidden_floor_has_no_questions_yet():
-    unwritten = [f.number for f in subject().floors if f.number not in WRITTEN]
-    assert unwritten == [10]
-    for number in unwritten:
-        assert not mi.floor_templates(SUBJECT, number, allow_unreviewed=True)
+def test_the_hidden_floor_is_written_but_every_one_of_its_skills_is_cut():
+    hidden = [f.number for f in subject().floors if f.number not in WRITTEN]
+    assert hidden == [10]
+    assert mi.floor_templates(SUBJECT, 10, allow_unreviewed=True)         # written (tests/test_math_gt_t10.py) ...
+    from app.systems import math_practice
+    assert math_practice._templates(SUBJECT, 10) == []                    # ... but on the tree's cut list: never asked
 
 
 def test_find_mistake_items_point_at_a_line():
@@ -107,7 +108,7 @@ def test_every_floor_has_its_generators_registered_and_listed():
     listed = {g.id for g in gt_generators()}
     registered = {gid for gid in math_gen.REGISTRY if gid.startswith("gt_")}
     assert listed == registered
-    assert {g.floor for g in gt_generators()} == set(WRITTEN)
+    assert {g.floor for g in gt_generators()} == set(WRITTEN) | {10}      # (floor 10 too: tests/test_math_gt_t10.py)
 
 
 @pytest.mark.parametrize("gid", sorted(g.id for g in gt_generators()))

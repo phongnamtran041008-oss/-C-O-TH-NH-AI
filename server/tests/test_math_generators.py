@@ -70,9 +70,10 @@ def test_the_written_subjects_are_the_four_of_luyen_khi():
 
 
 @pytest.mark.parametrize("subject", SUBJECTS)
-def test_floors_not_written_yet_have_no_templates(subject):
-    for floor in range(10, 11):
-        assert mi.floor_templates(subject, floor, allow_unreviewed=True) == []
+def test_every_floor_of_every_subject_is_written(subject):
+    """The nine main floors and the hidden floor 10 (written in M13: tests/test_math_<subject>_t10.py)."""
+    for floor in range(1, 11):
+        assert mi.floor_templates(subject, floor, allow_unreviewed=True), (subject, floor)
 
 
 def test_every_generator_is_listed_and_every_listed_generator_exists():

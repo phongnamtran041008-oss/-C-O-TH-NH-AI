@@ -93,9 +93,10 @@ def test_every_written_floor_mixes_all_six_types(floor):
     assert all(i.tier >= 2 for i in mi.floor_items(SUBJECT, floor, True) if i.qtype == "find_mistake")
 
 
-def test_unwritten_floors_have_no_questions():
-    for floor in range(10, 11):
-        assert mi.floor_templates(SUBJECT, floor, allow_unreviewed=True) == []
+def test_every_floor_including_the_hidden_tenth_is_written():
+    """Floor 10 (Tài Năng) is written too (tests/test_math_xs_t10.py): no floor of the subject is empty."""
+    for floor in range(1, 11):
+        assert mi.floor_templates(SUBJECT, floor, allow_unreviewed=True), floor
 
 
 def test_numeric_probabilities_are_written_in_lowest_terms():
