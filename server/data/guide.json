@@ -221,11 +221,11 @@
         {
           "id": "g_village",
           "title_vi": "Xuống Trúc Lâm Thôn",
-          "desc_vi": "Trúc Lâm Thôn là nơi các đạo hữu tụ họp. Quanh làng là các vùng đất, mỗi vùng luyện một nhánh toán: cổng bắc lên Kiếm Trủng Sơn (Đại Số), cổng đông bắc ra Lưu Vân Cốc (Giải Tích), cổng tây ra Vạn Tượng Trạch (Xác Suất), cổng đông ra Mê Đồ Lâm (Thuật Toán).",
+          "desc_vi": "Trúc Lâm Thôn là nơi các đạo hữu tụ họp. Mỗi cổng làng dẫn ra một vùng đất, mỗi vùng luyện một nhánh toán.",
           "how_vi": [
             "Ở Động Phủ, đi xuống phía nam (phím S hoặc mũi tên xuống) tới cổng tre rồi bấm E.",
             "Đường phía nam trong làng đưa con về lại Động Phủ.",
-            "Thiên Công Phường, Linh Xạ Nguyên và Lôi Kiếp Đài chỉ mở khi Đạo Thụ của con đủ tầng: đứng ở cổng, tấm bảng sẽ nói còn thiếu gì."
+            "Có vùng đất chỉ mở khi Đạo Thụ đủ tầng: tới cổng sẽ biết còn thiếu gì."
           ],
           "check": {"type": "seen", "key": "village"},
           "help": "phim_tat",
