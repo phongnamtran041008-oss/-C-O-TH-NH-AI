@@ -1,5 +1,5 @@
 """What a fight looks like: kiếm khí that grows with tu vi, the attacks of every weapon family, the
-six chiêu thức, hits, deaths, Phản Đòn, Né Đòn, stage-ups and breakthroughs - as recipes over
+seventeen chiêu thức, hits, deaths, Phản Đòn, Né Đòn, stage-ups and breakthroughs - as recipes over
 engine/vfx.py. Every picture is a frame of a Blender sheet (client/assets/v2/fx/); this module
 only decides which sheets, where, how big, turned which way, when, and how hard the camera kicks.
 
@@ -551,18 +551,69 @@ def _spell(v, t, src, dst, strike, dst_lift, follow, mine, z, garnish) -> float:
 
 
 # ------------------------------------------------------------------ chiêu thức
-# every chiêu: charge (qi gathers, a rune circle under the feet) -> release -> travel with a
-# trail -> impact with weight -> a short linger; the tier makes it bigger and adds layers
+# every chiêu: charge (qi gathers in the hand - tu_khi_<element> - and a rune circle under the
+# feet) -> release -> travel -> impact with weight -> linger; the tier makes it a little bigger.
+# The sequencing, pivots and timings of the hero sheets follow art/src/fx_chieu/README.md
+# ("Notes for the programmer"). `ex` carries what the server's event says beyond one target:
+# hits [(x, y) feet of every monster struck, in the order struck], end (x, y) of a line, d the
+# seconds what it leaves behind lasts (freeze, root, burn, bell, domain).
 CHIEU_EL = {"chem": "tho", "kiem_khi": "kim", "hoa_cau": "hoa", "tran_do": "moc", "ho_tran": "thuy",
-            "thien_loi": "loi"}
+            "thien_loi": "loi", "ngu_kiem": "kim", "van_kiem": "kim", "bang_phong": "thuy", "loi_xich": "loi",
+            "hoa_long": "hoa", "dia_liet": "tho", "thanh_dang": "moc", "phong_nhan": "moc", "kim_chung": "kim",
+            "kiem_vuc": "kim", "hoi_xuan": "moc"}
 CHIEU_CIRCLE = {"chem": "tran_1", "kiem_khi": "tran_5", "hoa_cau": "tran_4", "tran_do": "tran_3",
-                "ho_tran": "tran_2", "thien_loi": "tran_8"}
-CHARGE = {"chem": 0.12, "kiem_khi": 0.3, "hoa_cau": 0.36, "tran_do": 0.34, "ho_tran": 0.3, "thien_loi": 0.5}
+                "ho_tran": "tran_2", "thien_loi": "tran_8", "ngu_kiem": "tran_5", "van_kiem": "tran_7",
+                "bang_phong": "tran_2", "loi_xich": "tran_8", "hoa_long": "tran_4", "dia_liet": "tran_1",
+                "thanh_dang": "tran_3", "phong_nhan": "tran_3", "kim_chung": "tran_5", "kiem_vuc": "tran_7",
+                "hoi_xuan": "tran_6"}
+CHARGE = {"chem": 0.12, "kiem_khi": 0.3, "hoa_cau": 0.36, "tran_do": 0.34, "ho_tran": 0.3, "thien_loi": 0.5,
+          "ngu_kiem": 0.3, "van_kiem": 0.55, "bang_phong": 0.32, "loi_xich": 0.28, "hoa_long": 0.4,
+          "dia_liet": 0.16, "thanh_dang": 0.3, "phong_nhan": 0.22, "kim_chung": 0.2, "kiem_vuc": 0.55,
+          "hoi_xuan": 0.26}
+TUYET_KY = ("thien_loi", "van_kiem", "kiem_vuc")       # charged at full size, they shake and tint the screen
+NO_CIRCLE = ("chem", "ho_tran", "kim_chung", "hoi_xuan", "kiem_vuc")
+SELF_CAST = ("ho_tran", "kim_chung", "hoi_xuan", "kiem_vuc")   # no target: drawn on the caster
+
+
+def _k(t: int) -> float:
+    return 1.0 + 0.04 * (max(1, min(10, t)) - 1)
+
+
+def _hand(src, dst) -> tuple[float, float, float, str]:
+    """(x, y, lift, facing) of the casting hand of a caster at `src` turned towards `dst`."""
+    ux, uy, _d, _deg = _unit(src, dst)
+    face = _face(ux, uy)
+    ox, lift = HAND[face]
+    return src[0] + ox, src[1], lift, face
+
+
+def _aim(deg: float) -> tuple[float, bool]:
+    """(angle, mirrored) for art that points right flying at `deg`: leftwards it is mirrored
+    instead of turned upside down (the dragon, the fireball)."""
+    if math.cos(math.radians(deg)) < -1e-6:
+        return deg - 180.0, True
+    return deg, False
+
+
+def _charge(v: Vfx, fx_id: str, src, dst, charge: float, follow) -> None:
+    """tu_khi_<element> gathering at the hand for the charge (0.75 for a short cast, 1.0 for a
+    tuyệt kỹ), stopped as the chiêu is released."""
+    if charge <= 0.03:
+        return
+    hx, hy, lift, _face_ = _hand(src, dst)
+    big = fx_id in TUYET_KY
+    v.spawn(f"tu_khi_{CHIEU_EL.get(fx_id, 'kim')}", hx, hy, 0.0, life=charge + 0.04, lift=lift,
+            scale=1.0 if big else 0.75, fade_in=0.05, fade_out=0.08, follow=follow)
+
+
+def _hits(ex: dict, dst) -> list[tuple[float, float]]:
+    pts = [(float(h[0]), float(h[1])) for h in (ex.get("hits") or [])]
+    return pts or [dst]
 
 
 def channel(v: Vfx, fx_id: str, follow, x: float, y: float, t: int = 1) -> None:
-    """A chiêu being channelled (its question is open): the rune circle under the caster and qi
-    streaming in, until `v.kill(("chan", follow))`."""
+    """A chiêu being channelled (its question is open): the rune circle under the caster and
+    tu_khi gathering in the hand, until `v.kill(("chan", follow))`."""
     tag = ("chan", follow)
     v.kill(tag)
     circle = CHIEU_CIRCLE.get(fx_id, "tran_1")
@@ -570,51 +621,45 @@ def channel(v: Vfx, fx_id: str, follow, x: float, y: float, t: int = 1) -> None:
     v.spawn(circle, x, y, life=60.0, layer="ground", scale=(k * 0.5, k), fade_in=0.25, peak=0.85, follow=follow,
             tag=tag)
     el = CHIEU_EL.get(fx_id, "kim")
-    state = {"i": 0}
-
-    def gather():
-        i = state["i"] = state["i"] + 1
-        ang = (i * 137.5) % 360
-        ux, uy = math.cos(math.radians(ang)), math.sin(math.radians(ang))
-        d = 26 + (i % 3) * 5
-        v.spawn("sword_trail", x + ux * d, y + uy * d * 0.6, life=0.3, to=(x, y), lift=CHEST + 6, lift1=CHEST,
-                ease="in", angle=ang + 180, scale=0.42, peak=0.7, fade_in=0.08, follow=follow, tag=tag, heavy=True)
-        if i % 2 == 0:
-            v.spawn("bolt_" + el, x, y, life=0.3, lift=CHEST, scale=(0.2, 0.45), peak=0.5, fade_out=0.2,
-                    follow=follow, tag=tag, heavy=True)
-    v.emit(tag, 0.11, gather, 60.0)
+    ox, lift = HAND["right"]
+    if not v.spawn(f"tu_khi_{el}", x + ox, y, life=60.0, lift=lift, scale=1.0 if fx_id in TUYET_KY else 0.75,
+                   fade_in=0.15, follow=follow, tag=tag):
+        v.spawn("bolt_" + el, x, y, life=60.0, lift=CHEST, scale=(0.2, 0.45), peak=0.5, follow=follow, tag=tag)
 
 
 def chieu(v: Vfx, fx_id: str, src, dst, t: int = 1, radius: float = 0.0, charged: bool = False,
-          follow=None, mine: bool = True, z: float = 2.0, garnish=None, dst_lift: float = 10.0) -> float:
+          follow=None, mine: bool = True, z: float = 2.0, garnish=None, dst_lift: float = 10.0,
+          ex: dict | None = None) -> float:
     """A landed chiêu thức from `src` (the caster's feet) at `dst` (the target's feet; None for a
-    ward). `charged`: its channel was already shown (a bí cảnh question), so the charge is short.
-    Returns the seconds until it lands on the target."""
+    chiêu with no target). `charged`: its channel was already shown (a bí cảnh question), so the
+    charge is short. `ex`: hits / end / d from the server's event. Returns the seconds until it
+    lands on the (first) target."""
     t = max(1, min(10, int(t)))
+    ex = ex or {}
     v.kill(("chan", follow))
     if dst is None:
         dst = (src[0] + 14, src[1])
     charge = 0.1 if charged else CHARGE.get(fx_id, 0.3)
-    if fx_id != "chem" and fx_id != "ho_tran":
+    if fx_id not in NO_CIRCLE:
         k = 0.42 + 0.03 * t
         v.spawn(CHIEU_CIRCLE.get(fx_id, "tran_1"), src[0], src[1], life=charge + 0.45, layer="ground",
                 scale=(k * (0.9 if charged else 0.4), k), fade_in=0.08, fade_out=0.3, peak=0.85, follow=follow)
-    fn = {"chem": _c_chem, "kiem_khi": _c_kiem_khi, "hoa_cau": _c_hoa_cau, "tran_do": _c_tran_do,
-          "ho_tran": _c_ho_tran, "thien_loi": _c_thien_loi}.get(fx_id, _c_chem)
-    return fn(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift)
+    _charge(v, fx_id, src, dst, charge, follow)
+    fn = RECIPES.get(fx_id, _c_chem)
+    return fn(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex)
 
 
 def _gather(v, x, y, el, charge, follow, n=6) -> None:
-    """Qi streaming into the caster during the charge."""
+    """Qi streaming into the caster during the charge (thin streaks under the tu_khi)."""
     for i in range(n):
         ang = i * (360.0 / n) + 20
         ux, uy = math.cos(math.radians(ang)), math.sin(math.radians(ang))
         v.spawn("sword_trail", x + ux * 30, y + uy * 18, i * charge / (n + 2), life=max(0.12, charge * 0.6),
-                to=(x, y), lift=CHEST + 8, lift1=CHEST, ease="in", angle=ang + 180, scale=0.44, peak=0.75,
-                follow=follow, heavy=i % 2 == 1)
+                to=(x, y), lift=CHEST + 8, lift1=CHEST, ease="in", angle=ang + 180, scale=0.44, peak=0.55,
+                follow=follow, heavy=True)
 
 
-def _c_chem(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift) -> float:
+def _c_chem(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
     """Thường Quyền: an earthen cross cut - two heavy golden-brown arcs crossing on the target."""
     ux, uy, dist, deg = _unit(src, dst)
     k = 1.0 + 0.07 * (t - 1)
@@ -635,33 +680,20 @@ def _c_chem(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift) 
     return land + 0.06
 
 
-def _c_kiem_khi(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift) -> float:
-    """Phá Mê Kiếm Quyết: white-gold crescents of sword qi fly from the blade and cross on the
-    target (three from Nguyên Anh on)."""
+def _c_kiem_khi(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
+    """Phá Mê Kiếm Quyết: pha_me_kiem - one straight cut of sword light from the sword hand that
+    flashes a cross glint as it passes through the target (mirrored left, turned up / down)."""
     ux, uy, dist, deg = _unit(src, dst)
-    _gather(v, src[0], src[1], "kim", charge, follow)
-    k = 1.0 + 0.06 * (t - 1)
-    v.spawn("slash_kim", src[0] + ux * REACH, src[1] + uy * REACH, charge, lift=CHEST, scale=1.3 * k,
-            angle=deg - CREST, follow=follow)
-    n = 1 if t < 4 else (2 if t < 6 else 3)
-    speed = 260.0 + 10 * t
-    sx, sy = src[0] + ux * 12, src[1] + uy * 12
-    span = max(8.0, dist - 12)
-    travel = max(0.1, min(0.45, (span + 18) / speed))
-    land = charge + 0.03 + travel * span / (span + 18)
-    offs = [0.0] if n == 1 else ([-8.0, 8.0] if n == 2 else [-14.0, 0.0, 14.0])
-    for i, off in enumerate(offs):
-        wx, wy = _turn(ux, uy, off)
-        ex, ey = sx + wx * (span + 18), sy + wy * (span + 18)
-        d0 = charge + 0.03 + i * 0.04
-        v.spawn("slash_kim", sx, sy, d0, life=travel, to=(ex, ey), lift=CHEST, lift1=dst_lift, ease="out",
-                angle=deg + off - CREST, scale=1.05 * k, frames=(1, 2), trail=(4, 0.02), fade_out=0.1,
-                heavy=i > 0 and n == 3)
-        v.spawn("sword_trail", sx, sy, d0, life=travel, to=(ex, ey), lift=CHEST, lift1=dst_lift, ease="out",
-                angle=deg + off, scale=0.9 * k, peak=0.8, fade_out=travel * 0.4, heavy=True)
-    v.spawn("slash_kim", dst[0], dst[1], land, lift=dst_lift, scale=1.25 * k, angle=deg + 90 - CREST)
-    v.spawn("burst_kim", dst[0], dst[1], land + 0.03, lift=dst_lift, scale=0.95 * k, fade_out=0.12)
-    v.spawn("hit_spark", dst[0], dst[1], land + 0.05, lift=dst_lift, scale=1.1)
+    hx, hy, lift, face = _hand(src, dst)
+    ang, flip = _pose(face)
+    k = _k(t)
+    land = charge + 0.05                                  # damage on frame 1 (20 fps)
+    if not v.spawn("pha_me_kiem", hx, hy, charge, lift=lift, angle=ang, flip=flip, scale=k, follow=follow):
+        v.spawn("slash_kim", src[0] + ux * REACH, src[1] + uy * REACH, charge, lift=CHEST, scale=1.3 * k,
+                angle=deg - CREST, follow=follow)
+    v.spawn("slash_kim", dst[0], dst[1], land + 0.02, lift=dst_lift, scale=0.9 * k, angle=deg + 90 - CREST,
+            peak=0.8)
+    v.spawn("hit_spark", dst[0], dst[1], land + 0.03, lift=dst_lift, scale=1.0)
     if t >= 4:
         _scar(v, t, dst[0], dst[1], deg, land, z)
     if mine:
@@ -669,42 +701,36 @@ def _c_kiem_khi(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_li
     return land
 
 
-def _c_hoa_cau(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift) -> float:
-    """Hỏa Cầu Thuật: a fireball swells in the hand, arcs over with a tail of fire and bursts."""
-    ux, uy, dist, deg = _unit(src, dst)
-    k = 1.0 + 0.07 * (t - 1)
-    hx, hy = src[0] + ux * 7, src[1] + uy * 7
-    v.spawn("bolt_hoa", hx, hy, 0.0, life=charge, lift=CHEST + 2, scale=(0.25 * k, 1.0 * k), angle=deg,
-            follow=follow)
-    _gather(v, src[0], src[1], "hoa", charge, follow, n=4)
+def _c_hoa_cau(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
+    """Hỏa Cầu Thuật: hoa_cau_lon - the big fireball with its tail - arcs over to the target and
+    bursts as hoa_cau_no (damage on its frames 1-2)."""
+    hx, hy, lift, face = _hand(src, dst)
+    ux, uy, dist, deg = _unit((hx, hy), dst)
+    k = _k(t)
     speed = 170.0 + 8 * t
     travel = max(0.16, min(0.6, dist / speed))
-    land = charge + travel
-    v.spawn("bolt_hoa", hx, hy, charge, life=travel, to=(dst[0], dst[1]), lift=CHEST + 2, lift1=dst_lift,
-            arc=10 + dist * 0.12, angle=deg, scale=1.05 * k, trail=(5, 0.028))
-    if t >= 6:   # a second, smaller fireball close behind
-        v.spawn("bolt_hoa", hx, hy, charge + 0.08, life=travel, to=(dst[0], dst[1]), lift=CHEST + 2,
-                lift1=dst_lift, arc=4, angle=deg, scale=0.7 * k, trail=(3, 0.03), heavy=True)
-    v.spawn("burst_hoa", dst[0], dst[1], land, lift=dst_lift, scale=(1.2 * k, 1.7 * k), fade_out=0.12)
-    v.spawn("hit_crit", dst[0], dst[1], land + 0.02, lift=dst_lift, scale=0.9 * k, peak=0.85)
-    v.spawn("burst_hoa", dst[0], dst[1], land + 0.12, lift=dst_lift - 2, scale=(1.6 * k, 2.3 * k), peak=0.5,
-            fade_out=0.2, heavy=True)
+    ang, flip = _aim(deg)
+    if not v.spawn("hoa_cau_lon", hx, hy, charge, life=travel, to=(dst[0], dst[1]), lift=lift, lift1=dst_lift,
+                   arc=6 + dist * 0.08, angle=ang, flip=flip, scale=0.8 * k, fade_in=0.04):
+        v.spawn("bolt_hoa", hx, hy, charge, life=travel, to=(dst[0], dst[1]), lift=lift, lift1=dst_lift,
+                arc=10 + dist * 0.12, angle=deg, scale=1.05 * k, trail=(5, 0.028))
+    land = charge + travel + 0.06
+    if not v.spawn("hoa_cau_no", dst[0], dst[1], charge + travel, lift=dst_lift, scale=0.8 * k):
+        v.spawn("burst_hoa", dst[0], dst[1], charge + travel, lift=dst_lift, scale=(1.2 * k, 1.7 * k), fade_out=0.12)
     v.spawn("crack_ground", dst[0], dst[1] + 1, land, life=1.2, scale=0.5 * k, fade_out=0.7, layer="ground")
-    v.spawn("dust_step", dst[0], dst[1] + 3, land + 0.2, scale=0.8 * k, peak=0.45, heavy=True)
     if mine:
         v.at(land, lambda: v.shake(0.24 + 0.03 * t))
-        v.tint(RGB["hoa"], 0.07, 0.2, delay=land)
+        v.tint(RGB["hoa"], 0.06, 0.2, delay=land)
     if garnish is not None:
         v.at(land, lambda: garnish(dst[0], dst[1] - dst_lift, "hoa", 12, 50))
     return land
 
 
-def _c_tran_do(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift) -> float:
+def _c_tran_do(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
     """Ngũ Hành Trận: the array opens on the ground round the target, then its five marks erupt
     one after another in the five colours and the centre bursts."""
     r = radius or 60.0
     k = 1.0 + 0.04 * (t - 1)
-    _gather(v, src[0], src[1], "moc", charge, follow, n=5)
     arr = art2.fx("tran_3")
     d = 2 * r * z * (arr.fw / 90.0 if arr is not None else 1.07)
     land = charge + 0.3
@@ -722,11 +748,11 @@ def _c_tran_do(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lif
     _shockwave(v, dst[0], dst[1], land + 0.04, r / 40.0, "moc")
     if mine:
         v.at(land, lambda: v.shake(0.2 + 0.02 * t))
-        v.tint(RGB["moc"], 0.06, 0.25, delay=land)
+        v.tint(RGB["moc"], 0.05, 0.25, delay=land)
     return land
 
 
-def _c_ho_tran(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift) -> float:
+def _c_ho_tran(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
     """Hộ Thân Trận: the ward - a ring the size of its reach on the ground, a honeycomb dome that
     pops up round the caster, a wave of water-blue running outward."""
     x, y = src
@@ -740,50 +766,326 @@ def _c_ho_tran(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lif
             follow=follow)
     v.spawn("heal", x, y, charge + 0.1, life=0.9, lift=CHEST + 4, scale=0.9 * k, fade_out=0.3, follow=follow,
             heavy=True)
-    v.spawn("burst_thuy", x, y, charge, lift=CHEST, scale=(0.8, 2.2 * k), start=2, peak=0.6, fade_out=0.2, heavy=True)
     _shockwave(v, x, y, charge + 0.04, r / 45.0, "thuy")
     if mine:
-        v.tint(RGB["thuy"], 0.06, 0.3, delay=charge)
+        v.tint(RGB["thuy"], 0.05, 0.3, delay=charge)
     return charge
 
 
-def _c_thien_loi(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift) -> float:
-    """Thiên Lôi Tuyệt Kỹ: the sky darkens while the caster calls, then purple lightning pillars
-    come down on the target, the ground cracks and the screen goes white for a blink."""
+def _c_thien_loi(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
+    """Thiên Lôi Tuyệt Kỹ: the sky darkens while the caster calls, then thien_loi_giang - the
+    main bolt - comes down on the target (damage on its frame 1), the ground cracks and the
+    screen goes white for a blink."""
     ux, uy, dist, deg = _unit(src, dst)
-    k = 1.0 + 0.05 * (t - 1)
-    v.spawn("bolt_loi", src[0] + ux * 4, src[1], 0.0, life=charge, lift=CHEST + 14, scale=(0.3, 0.9 * k),
-            follow=follow)
-    _gather(v, src[0], src[1], "loi", charge, follow, n=8)
+    k = _k(t)
     if mine:
-        v.tint((40, 24, 80), 0.22, charge + 0.5)
-    land = charge + 0.08
+        v.tint((40, 24, 80), 0.2, charge + 0.5)
+    land = charge + 1 / 16
     if has("sword_trail"):      # the release: a bolt of qi thrown up into the clouds
         v.spawn("sword_trail", src[0], src[1], charge - 0.06, life=0.16, to=(src[0] + 4, src[1]), lift=CHEST + 10,
                 lift1=CHEST + 90, angle=-86, size=(90, 22), ease="in", peak=0.9)
-    v.spawn("slash_loi", src[0] + ux * 6, src[1], charge - 0.08, lift=CHEST + 8, scale=0.9 * k, angle=-90 - CREST,
-            peak=0.8, follow=follow)
-    v.spawn("loi_kiep", dst[0], dst[1], charge, scale=1.5 * k)
-    v.spawn("loi_kiep", dst[0] - 14, dst[1] + 3, charge + 0.12, scale=1.1 * k, peak=0.85)
+    if not v.spawn("thien_loi_giang", dst[0], dst[1], charge, scale=k):
+        v.spawn("loi_kiep", dst[0], dst[1], charge, scale=1.5 * k)
     if t >= 6:
-        v.spawn("loi_kiep", dst[0] + 15, dst[1] - 2, charge + 0.2, scale=1.0 * k, peak=0.8, heavy=True)
-    v.spawn("burst_loi", dst[0], dst[1], land, lift=dst_lift, scale=(1.4 * k, 2.0 * k), fade_out=0.12)
-    v.spawn("hit_crit", dst[0], dst[1], land + 0.02, lift=dst_lift, scale=1.1 * k, peak=0.8)
-    v.spawn("crack_ground", dst[0], dst[1] + 1, land, life=1.5, scale=0.75 * k, fade_out=0.8, layer="ground")
-    _shockwave(v, dst[0], dst[1], land + 0.06, 1.4 * k, "loi")
+        v.spawn("loi_kiep", dst[0] - 15, dst[1] + 2, charge + 0.18, scale=0.9 * k, peak=0.7, heavy=True)
+    v.spawn("crack_ground", dst[0], dst[1] + 1, land, life=1.5, scale=0.7 * k, fade_out=0.8, layer="ground")
+    _shockwave(v, dst[0], dst[1], land + 0.06, 1.3 * k, "loi")
     if mine:
-        v.tint((236, 230, 255), 0.24, 0.1, delay=land)
+        v.tint((236, 230, 255), 0.22, 0.1, delay=land)
         v.at(land, lambda: (v.shake(0.5), v.hitstop(0.08)))
     if garnish is not None:
         v.at(land, lambda: garnish(dst[0], dst[1] - dst_lift, "loi", 16, 56))
     return land
 
 
+# ------------------------------------------------------------------ Chiêu Thức II
+def _c_ngu_kiem(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
+    """Ngự Kiếm Thuật: the flying sword leaves the hand along the line, pierces every monster on
+    it (ngu_kiem_xuyen, its rings across the line, on each as it passes) and flies back."""
+    ex = ex or {}
+    hx, hy, lift, face = _hand(src, dst)
+    end = ex.get("end") or (dst[0] + (dst[0] - src[0]) * 0.6, dst[1] + (dst[1] - src[1]) * 0.6)
+    ux, uy, dist, deg = _unit((hx, hy), end)
+    k = _k(t)
+    speed = 240.0 + 6 * t
+    out = max(0.12, dist / speed)
+    v.spawn("ngu_kiem", hx, hy, charge, life=out, to=end, lift=lift, lift1=dst_lift, angle=deg, scale=0.85 * k,
+            fade_in=0.03)
+    back = max(0.12, min(0.45, dist / 340.0))
+    v.spawn("ngu_kiem", end[0], end[1], charge + out, life=back, to=(src[0], src[1]), lift=dst_lift, lift1=lift,
+            angle=deg + 180, scale=0.75 * k, fade_out=0.12, heavy=True)
+    first = None
+    for i, (x, y) in enumerate(_hits(ex, dst)):
+        along = max(0.0, (x - hx) * ux + (y - hy) * uy)
+        at = charge + along / speed
+        first = at if first is None else min(first, at)
+        v.spawn("ngu_kiem_xuyen", x, y, at, lift=dst_lift, angle=deg, scale=k)
+        if mine and i == 0:
+            v.at(at, lambda: v.shake(0.16 + 0.02 * t))
+    return first if first is not None else charge + out
+
+
+def _c_van_kiem(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
+    """Vạn Kiếm Quy Tông: the sword compass opens on the ground (the telegraph), the ring of
+    swords forms in the sky over it (van_kiem_troi) and rains down (van_kiem_roi; the swords
+    land on its frames 1-6). Never turned; scaled with the area, but kept under the screen."""
+    ex = ex or {}
+    r = radius or 70.0
+    s = max(0.9, min(1.6, r / 44.0)) * (1.0 + 0.02 * (t - 1))
+    troi = art2.fx("van_kiem_troi")
+    roi = art2.fx("van_kiem_roi")
+    t_troi = troi.duration if troi is not None else 0.57
+    t_roi = roi.duration if roi is not None else 0.63
+    v.spawn("van_kiem_vong", dst[0], dst[1], charge * 0.4, life=charge * 0.6 + t_troi + t_roi + 0.25,
+            layer="ground", scale=s, fade_in=0.15, fade_out=0.3, peak=0.8)
+    v.spawn("van_kiem_troi", dst[0], dst[1], charge, scale=s)
+    v.spawn("van_kiem_roi", dst[0], dst[1], charge + t_troi, scale=s)
+    land = charge + t_troi + 2 / 16
+    for i, (x, y) in enumerate(_hits(ex, dst)):
+        v.spawn("hit_spark", x, y, land + 0.04 * i, lift=dst_lift, scale=0.8, peak=0.8)
+    if mine:
+        v.tint((255, 226, 140), 0.1, 0.4, delay=land)
+        v.at(land, lambda: (v.shake(0.45), v.hitstop(0.06)))
+    if garnish is not None:
+        v.at(land, lambda: garnish(dst[0], dst[1] - 4, "kim", 18, 60))
+    return land
+
+
+def _c_bang_phong(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
+    """Băng Phong Thuật: ice bursts up round the target (bang_phong: frames 0-2 burst, 3-5 hold,
+    6-7 shatter; the ring of spikes keeps the middle clear), then from its frame 5 every frozen
+    monster wears bang_ket for the freeze."""
+    ex = ex or {}
+    k = _k(t)
+    s = max(0.9, min(1.3, (radius or 50.0) / 42.0)) * k
+    sh = art2.fx("bang_phong")
+    fps = sh.fps if sh is not None else 14.0
+    v.spawn("bang_phong", dst[0], dst[1], charge, scale=s)
+    land = charge + 3 / fps
+    hold = float(ex.get("d") or 4.0)
+    for i, (x, y) in enumerate(_hits(ex, dst)):
+        v.spawn("bang_ket", x, y, charge + 5 / fps + 0.03 * i, life=max(0.3, hold - 5 / fps), fade_in=0.08,
+                fade_out=0.4)
+    if mine:
+        v.at(land, lambda: v.shake(0.2 + 0.02 * t))
+        v.tint(RGB["thuy"], 0.05, 0.25, delay=land)
+    if garnish is not None:
+        v.at(land, lambda: garnish(dst[0], dst[1] - 6, "thuy", 10, 40))
+    return land
+
+
+def _c_loi_xich(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
+    """Chưởng Tâm Lôi: lightning from the palm to the first monster and on from monster to monster:
+    one loi_xich per link (its pivot on A, turned to B, stretched to |B - A|), one link every
+    70 ms, loi_cham on every monster it reaches."""
+    ex = ex or {}
+    hx, hy, lift, face = _hand(src, dst)
+    pts = [(hx, hy, lift)] + [(x, y, dst_lift) for x, y in _hits(ex, dst)]
+    sh = art2.fx("loi_xich")
+    fw, fh = (sh.fw, sh.fh) if sh is not None else (96, 32)
+    span = 89.0                                      # the segment's length in the sheet (pivot 3 -> 92)
+    for i in range(len(pts) - 1):
+        (ax, ay, al), (bx, by, bl) = pts[i], pts[i + 1]
+        dx, dy = bx - ax, (by - bl) - (ay - al)
+        d = math.hypot(dx, dy)
+        deg = math.degrees(math.atan2(dy, dx))
+        delay = charge + 0.07 * i
+        w = max(8.0, d * z * fw / span)
+        v.spawn("loi_xich", ax, ay, delay, life=0.34, lift=al, angle=deg, size=(w, fh * (1.25 if i == 0 else 1.0)),
+                fade_out=0.14, frames=(0, 3))
+        v.spawn("loi_cham", bx, by, delay + 0.03, lift=bl, scale=_k(t))
+    land = charge + 0.03
+    if mine:
+        v.at(land, lambda: v.shake(0.18 + 0.02 * t))
+        v.tint(RGB["loi"], 0.04, 0.18, delay=land)
+    return land
+
+
+def _c_hoa_long(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
+    """Hỏa Long Thuật: the fire dragon surges from the caster along the line (mirrored, never
+    upside down, when it flies left) and leaves hoa_long_vet - burning ground - every ~35 world
+    px under its path, which burns as long as the server's strip (d) and fades."""
+    ex = ex or {}
+    hx, hy, lift, face = _hand(src, dst)
+    end = ex.get("end") or (dst[0] + (dst[0] - src[0]) * 0.5, dst[1] + (dst[1] - src[1]) * 0.5)
+    ux, uy, dist, deg = _unit((hx, hy), end)
+    k = _k(t)
+    speed = 200.0 + 6 * t
+    travel = max(0.2, dist / speed)
+    ang, flip = _aim(deg)
+    v.spawn("hoa_long", hx, hy, charge, life=travel, to=end, lift=lift + 2, lift1=lift + 2, angle=ang, flip=flip,
+            scale=0.8 * k, fade_in=0.06, fade_out=0.14)
+    burn = float(ex.get("d") or 2.0)
+    fx_, fy_ = src
+    gx, gy, gd, gdeg = _unit(src, end)
+    step = 35.0
+    n = max(1, int(gd / step))
+    for i in range(n):
+        a = step * (i + 0.5)
+        v.spawn("hoa_long_vet", fx_ + gx * a, fy_ + gy * a + 1, charge + a / speed, life=burn + 0.3,
+                layer="ground", angle=gdeg if abs(gdeg) <= 90 else gdeg - 180, fade_in=0.08, fade_out=0.6, peak=0.9)
+    first = None
+    for x, y in _hits(ex, dst):
+        at = charge + max(0.0, (x - hx) * ux + (y - hy) * uy) / speed
+        first = at if first is None else min(first, at)
+        v.spawn("burst_hoa", x, y, at, lift=dst_lift, scale=(0.6 * k, 0.9 * k), start=2, peak=0.8, fade_out=0.1)
+    land = first if first is not None else charge + travel
+    if mine:
+        v.at(land, lambda: v.shake(0.26 + 0.02 * t))
+        v.tint(RGB["hoa"], 0.06, 0.3, delay=land)
+    if garnish is not None:
+        v.at(land, lambda: garnish(dst[0], dst[1] - dst_lift, "hoa", 12, 50))
+    return land
+
+
+def _c_dia_liet(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
+    """Địa Liệt Trảm: the fissure (dia_liet, ground) races out from the front foot along the aim,
+    stretched to the line's length, and dia_liet_no erupts under each monster as its head passes."""
+    ex = ex or {}
+    end = ex.get("end") or (dst[0] + (dst[0] - src[0]) * 0.4, dst[1] + (dst[1] - src[1]) * 0.4)
+    ux, uy, dist, deg = _unit(src, end)
+    fx0, fy0 = src[0] + ux * 5, src[1] + uy * 5 + 1
+    L = max(10.0, dist - 5)
+    sh = art2.fx("dia_liet")
+    reach = (112.0 if sh is None else sh.fw - 16) / z        # world px the crack covers in the sheet
+    kx = max(0.8, min(2.4, L / reach))
+    head = 0.25 * min(1.6, kx)                              # seconds the head takes to the end
+    ang, flip = _aim(deg)
+    if sh is not None:
+        v.spawn("dia_liet", fx0, fy0, charge, layer="ground", size=(sh.fw * kx, sh.fh * (0.9 + 0.1 * min(kx, 2))),
+                angle=ang, flip=flip, life=sh.duration + 0.5, fade_out=0.5)
+    first = None
+    for i, (x, y) in enumerate(_hits(ex, dst)):
+        frac = max(0.0, min(1.0, ((x - fx0) * ux + (y - fy0) * uy) / L))
+        at = charge + head * frac
+        first = at if first is None else min(first, at)
+        v.spawn("dia_liet_no", x, y + 1, at, scale=_k(t))
+        if mine:
+            v.at(at, lambda i=i: v.shake(0.14 if i == 0 else 0.06))
+    land = first if first is not None else charge + head
+    if garnish is not None:
+        v.at(land, lambda: garnish(dst[0], dst[1] - 2, "tho", 8, 30))
+    return land
+
+
+def _c_thanh_dang(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
+    """Thanh Đằng Triền: vines grow up round the target (thanh_dang, frames 0-4) and from its
+    frame 5 every held monster wears thanh_dang_troi for as long as it is held."""
+    ex = ex or {}
+    k = _k(t)
+    sh = art2.fx("thanh_dang")
+    fps = sh.fps if sh is not None else 12.0
+    v.spawn("thanh_dang", dst[0], dst[1], charge, scale=k)
+    hold = float(ex.get("d") or 3.0)
+    for i, (x, y) in enumerate(_hits(ex, dst)):
+        v.spawn("thanh_dang_troi", x, y, charge + 5 / fps + 0.04 * i, life=max(0.3, hold - 5 / fps), fade_in=0.08,
+                fade_out=0.3)
+    land = charge + 2 / fps
+    if mine:
+        v.at(land, lambda: v.shake(0.12))
+    if garnish is not None:
+        v.at(land, lambda: garnish(dst[0], dst[1] - 4, "moc", 8, 30))
+    return land
+
+
+def _c_phong_nhan(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
+    """Phong Nhận Thuật: a fan of wind blades (three, five from Nguyên Anh on) leaves the hand,
+    ±12° apart; where a blade meets a monster a whirl (phong_xoay) spins up."""
+    ex = ex or {}
+    hx, hy, lift, face = _hand(src, dst)
+    ux, uy, dist, deg = _unit((hx, hy), dst)
+    n = 3 if t < 6 else 5
+    speed = 260.0
+    reach = dist + 26
+    travel = max(0.12, reach / speed)
+    for i in range(n):
+        off = (i - (n - 1) / 2) * 12.0
+        wx, wy = _turn(ux, uy, off)
+        v.spawn("phong_nhan", hx, hy, charge + abs(off) * 0.002, life=travel, to=(hx + wx * reach, hy + wy * reach),
+                lift=lift, lift1=dst_lift, angle=deg + off, scale=_k(t) * (1.0 if off == 0 else 0.85),
+                fade_in=0.03, fade_out=0.08, heavy=off != 0)
+    first = None
+    for x, y in _hits(ex, dst):
+        at = charge + math.hypot(x - hx, y - hy) / speed
+        first = at if first is None else min(first, at)
+        v.spawn("phong_xoay", x, y + 1, at, scale=_k(t))
+    land = first if first is not None else charge + travel
+    if mine:
+        v.at(land, lambda: v.shake(0.12))
+    return land
+
+
+def _c_kim_chung(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
+    """Kim Chung Tráo: the golden bell drops over the caster (kim_chung), then stays round them,
+    translucent (kim_chung_tru), for the shield's duration; bell_block rings it on a blocked hit."""
+    ex = ex or {}
+    x, y = src
+    k = _k(t)
+    sh = art2.fx("kim_chung")
+    drop = sh.duration if sh is not None else 0.57
+    v.spawn("kim_chung", x, y, charge, scale=k, follow=follow)
+    hold = float(ex.get("d") or 6.0)
+    v.spawn("kim_chung_tru", x, y, charge + drop - 0.05, life=max(0.3, hold - drop), scale=k, fade_in=0.06,
+            fade_out=0.4, peak=0.85, follow=follow, tag=("bell", follow))
+    land = charge + drop * 0.6
+    if mine:
+        v.at(land, lambda: v.shake(0.14))
+        v.tint(RGB["kim"], 0.05, 0.25, delay=land)
+    return land
+
+
+def bell_block(v: Vfx, x: float, y: float, follow=None) -> None:
+    """A hit taken while the golden bell is up: it rings."""
+    v.spawn("kim_chung_vang", x, y, 0.0, follow=follow)
+
+
+def _c_kiem_vuc(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
+    """Kiếm Vực: the sword domain opens round the caster - kiem_vuc on the ground (its circle
+    marks the domain's reach) and the cage of orbiting swords (kiem_vuc_xoay) over them - and
+    follows them for the domain's duration."""
+    ex = ex or {}
+    x, y = src
+    r = radius or 60.0
+    s = max(1.0, min(2.0, r / 30.0))
+    hold = float(ex.get("d") or 6.0)
+    v.spawn("kiem_vuc", x, y, charge, life=hold, layer="ground", scale=s, fade_in=0.25, fade_out=0.5, peak=0.8,
+            follow=follow, tag=("domain", follow))
+    v.spawn("kiem_vuc_xoay", x, y, charge, life=hold, scale=min(1.5, s * 0.8), fade_in=0.2, fade_out=0.5,
+            follow=follow, tag=("domain", follow))
+    _shockwave(v, x, y, charge + 0.05, s, "kim")
+    if mine:
+        v.tint((255, 226, 140), 0.12, 0.4, delay=charge)
+        v.at(charge, lambda: v.shake(0.35))
+    return charge
+
+
+def _c_hoi_xuan(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_lift, ex=None) -> float:
+    """Hồi Xuân Thuật: a spiral of spring rises from the healed one's feet; the heal number shows
+    on its bloom (frame 4)."""
+    x, y = src
+    sh = art2.fx("hoi_xuan")
+    fps = sh.fps if sh is not None else 12.0
+    v.spawn("hoi_xuan", x, y, charge, scale=_k(t), follow=follow)
+    land = charge + 4 / fps
+    if mine:
+        v.tint(RGB["moc"], 0.06, 0.4, delay=land)
+    if garnish is not None:
+        v.at(land, lambda: garnish(x, y - CHEST, "moc", 10, 30))
+    return land
+
+
+RECIPES = {"chem": _c_chem, "kiem_khi": _c_kiem_khi, "hoa_cau": _c_hoa_cau, "tran_do": _c_tran_do,
+           "ho_tran": _c_ho_tran, "thien_loi": _c_thien_loi, "ngu_kiem": _c_ngu_kiem, "van_kiem": _c_van_kiem,
+           "bang_phong": _c_bang_phong, "loi_xich": _c_loi_xich, "hoa_long": _c_hoa_long, "dia_liet": _c_dia_liet,
+           "thanh_dang": _c_thanh_dang, "phong_nhan": _c_phong_nhan, "kim_chung": _c_kim_chung,
+           "kiem_vuc": _c_kiem_vuc, "hoi_xuan": _c_hoi_xuan}
+
+
 def fizzle(v: Vfx, fx_id: str, src, dst, follow=None) -> None:
     """Chiêu hụt: the channel dies (its circle goes out) and a grey puff where it gave up.
     The grey code-drawn fizzle of client/art/skill_fx.py stays the picture of the miss."""
     v.kill(("chan", follow))
-    x, y = (dst if dst is not None and fx_id not in ("ho_tran",) else src)
+    x, y = (dst if dst is not None and fx_id not in SELF_CAST else src)
     mx, my = (src[0] + x) / 2, (src[1] + y) / 2
     v.spawn("dust_step", mx, my + 2, 0.4, scale=0.8, peak=0.7)
 

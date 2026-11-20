@@ -169,7 +169,7 @@
       "angle": 60,
       "anim": "cast",
       "fx": "phong_nhan",
-      "icon": "quat",
+      "icon": "cung",
       "unlock": {"floor": 3, "nodes": ["tr_liet_ke_quay_lui"]},
       "desc_vi": "Liệt kê mọi nhánh rồi chém hết: một quạt lưỡi gió bay ra trước mặt, trúng mọi con quái trong hình quạt.",
       "reviewed": false
@@ -203,7 +203,7 @@
       "radius": 120, "heal_pct": 25,
       "anim": "cast",
       "fx": "hoi_xuan",
-      "icon": "linh_thao",
+      "icon": "dan",
       "unlock": {"floor": 4, "nodes": ["ud_knn"]},
       "desc_vi": "Mô hình đầu tiên con tự tay dựng xong là một mùa xuân: sinh khí xoáy lên, hồi máu cho con và đồng đội đứng gần.",
       "reviewed": false
@@ -290,7 +290,7 @@
       "radius": 60, "every": 0.5, "duration": 6,
       "anim": "cast",
       "fx": "kiem_vuc",
-      "icon": "kiem",
+      "icon": "cuon_thu",
       "icon_variant": 1,
       "unlock": {"floor": 9, "nodes": ["ud_mang_no_ron", "ud_ab_test", "lt_do_thi"]},
       "desc_vi": "Đại thành của Luyện Khí: mạng nơ-ron, kiểm định và đồ thị hợp làm một. Kiếm vực mở quanh thân, đi theo con, mọi con quái bên trong bị chém liên hồi. Tuyệt kỹ: tốn linh khí, hồi rất lâu.",

@@ -42,8 +42,11 @@ def colourfulness(surf: pygame.Surface) -> float:
 
 
 # ------------------------------------------------------------------ effects
-def test_the_six_effect_ids_are_exactly_the_contract():
-    assert F.FX_IDS == ("chem", "kiem_khi", "hoa_cau", "tran_do", "ho_tran", "thien_loi")
+def test_the_effect_ids_are_exactly_the_contract():
+    """The six of M9 and the eleven of Chiêu Thức II (named after their Blender sheets)."""
+    assert F.FX_IDS == ("chem", "kiem_khi", "hoa_cau", "tran_do", "ho_tran", "thien_loi",
+                        "ngu_kiem", "van_kiem", "bang_phong", "loi_xich", "hoa_long", "dia_liet", "thanh_dang",
+                        "phong_nhan", "kim_chung", "kiem_vuc", "hoi_xuan")
 
 
 @pytest.mark.parametrize("fx", F.FX_IDS)
