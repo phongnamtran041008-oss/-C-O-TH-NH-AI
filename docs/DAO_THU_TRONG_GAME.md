@@ -81,7 +81,9 @@ Màn Bí Cảnh Toán (`client/scenes/math_practice.py`, `client/scenes/math_tre
 
 | Việc | Tôi chọn | Vì sao | Muốn khác thì |
 |---|---|---|---|
-| Nút chưa có nội dung | Coi như xong, hiện "Đang biên soạn", không chặn gì | Nút Python nhập môn ở tầng 1 chưa có bài: nếu chặn thì không ai rời được tầng 1. Hiện 17 trên 19 nút lập trình/thực chiến/dự án của Luyện Khí chưa có nội dung | Viết nội dung cho nút: nó tự bắt đầu tính |
+| Nút chưa có nội dung | Coi như xong, hiện "Đang biên soạn", không chặn gì | Một nút trống mà chặn thì mọi nút đứng sau nó không ai tới được (lúc Python nhập môn còn trống, nếu chặn thì không ai rời được tầng 1). Hiện 10 trên 19 nút lập trình/thực chiến/dự án của Luyện Khí chưa có nội dung: NumPy, tám nút thực chiến và nút dự án; chín nút lập trình còn lại đã có 3-5 bài | Viết nội dung cho nút: nó tự bắt đầu tính |
+| Bài lập trình gắn vào vi kỹ năng nào | Mỗi bài gắn với vi kỹ năng mà toán của nó luyện, trong một nút toán mà nút lập trình đòi trước (hoặc mở cùng lúc với nút lập trình). Một nút lập trình chỉ dùng bài của **một** bí cảnh | Luật 10 (bài mở khi nút của vi kỹ năng mở hoặc xong) cho người chơi làm được mọi bài của một nút lập trình đang mở, không bao giờ bị khoá ngoài ý muốn. Nút "Làm bài" chỉ mở danh sách bài của một bí cảnh, nên không trộn bí cảnh trong một nút. Python nhập môn không có toán riêng nên mượn các vi kỹ năng đầu tiên của Đại Số: tập hợp, ánh xạ, tích Descartes | Nới luật 10: bài mở khi nút lập trình đang liệt kê nó mở (`problem_open`), rồi gắn bài tự do hơn; cho nút "Làm bài" đọc nhiều bí cảnh |
+| Mô phỏng xác suất cho ra đúng cùng một kết quả | Bốn bài mô phỏng tự viết bộ sinh số ngẫu nhiên ngay trong đề (đồng dư tuyến tính, chia dư 2^31) thay vì dùng `random` | Kết quả của `random` đổi theo bản Python; đề tự viết thì mọi máy cho đúng một đáp án và máy chấm so chính xác được | Đổi sang dung sai thống kê: cần một ô sai số riêng cho từng bài trong dữ liệu bài tập |
 | Tầng tu vi trên cây và cảnh giới nhân vật | **Không nối.** Tầng trên cây chỉ hiển thị; Tu Vi và cảnh giới nhân vật vẫn như cũ | Cách quy đổi là việc bạn chưa quyết | Nói cách quy đổi, tôi nối |
 | Cảnh giới chưa viết | Vị trí dừng ở Luyện Khí tầng 9 | Mọi nút sau Luyện Khí đều chưa có nội dung; nếu không chặn thì xong Luyện Khí sẽ hiện thẳng "Đại Thừa tầng 3" | — |
 | Thiên kiếp nhỏ của phần nhỏ | Số câu được sai = tối đa 1, nhưng không quá một phần tư số câu: phần 1-3 vi kỹ năng phải đúng hết | Trước đây mỗi tầng 5-6 câu, sai 1 vẫn qua. Phần của nút có khi chỉ 1-2 vi kỹ năng: giữ luật cũ thì sai một nửa, thậm chí sai hết, vẫn qua | Đổi trong `math_mastery.trial_allowed` |
@@ -93,8 +95,12 @@ Màn Bí Cảnh Toán (`client/scenes/math_practice.py`, `client/scenes/math_tre
 
 - **Luật đánh quái mới, binh khí, linh thú, mở khoá theo tu vi** trong `world_plan.json`: chưa có dòng code
   nào dùng (`"wired": false`).
-- **Nội dung cho nút lập trình, thực chiến, dự án** và mọi cảnh giới sau Luyện Khí. Thiết kế cách làm ở
+- **Nội dung cho nút thực chiến, dự án** và mọi cảnh giới sau Luyện Khí. Thiết kế cách làm ở
   `docs/THUC_CHIEN_TRONG_GAME.md`.
+- **Bài NumPy** (nút lập trình NumPy, tầng 4 của Luyện Khí): chưa viết vì NumPy chưa được cài kèm game, và
+  chủ dự án chưa quyết có bắt người chơi tự cài hay không. Nút vẫn hiện "Đang biên soạn", không chặn gì. Chín
+  nút lập trình còn lại của Luyện Khí đã có 3-5 bài mỗi nút (`server/data/math/problems/`), đều đánh dấu
+  chưa duyệt (`reviewed` không ghi, mặc định chưa duyệt), chờ một người đọc lại đề.
 - **Luận Đạo Đài** (bài tự luận) đã gác lại: chủ dự án bỏ việc chấm bằng API (2026-11-20). Đề vẫn còn làm
   dữ liệu tham khảo, không có màn hình (`docs/LUAN_DAO_DAI.md`).
 - **Vi kỹ năng "Hiệp phương sai, tương quan và hồi quy"** (nút chính đạo tầng 8) nằm ở tầng ẩn 10 của Xác

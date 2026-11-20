@@ -316,9 +316,10 @@ async def test_a_trial_asks_each_micro_skill_once_at_the_hardest_tier_and_never_
     assert not any(p["q"]["math"]["parallel"] or p["q"]["math"]["review"] for p in played)
     first, last = played[0]["res"]["math"]["trial"], played[-1]["res"]["math"]["trial"]
     assert (first["asked"], first["left"], first["passed"]) == (1, len(FLOOR1_SKILLS) - 1, None)
-    # passing floor 1's node opens floor 3 (ds_vecto_ma_tran) and the programming node built on it
+    # passing floor 1's node opens floor 3 (ds_vecto_ma_tran); the programming node built on it also waits
+    # for Python nhập môn, whose exercises are not done yet
     assert (last["passed"], last["left"], last["unlocked"], last["node_done"]) == (True, 0, 3, True)
-    assert set(last["opened"]) == {"ds_vecto_ma_tran", "lt_cau_truc_du_lieu"}
+    assert set(last["opened"]) == {"ds_vecto_ma_tran"}
 
 
 async def test_passing_the_trial_clears_the_floor_and_opens_the_next(client):

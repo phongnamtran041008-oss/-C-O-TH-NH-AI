@@ -15,8 +15,8 @@ from sqlalchemy import select
 
 from app import clock
 from app import db as dbm
-from app.learning import math_path
-from app.models import MathAnswer, MathRun, QuizSession, User
+from app.learning import math_path, math_problems, math_tree
+from app.models import MathAnswer, MathRun, MathSubmission, QuizSession, User
 from app.realtime import combat
 from app.realtime import world as wmod
 from app.realtime.party import Party
@@ -78,11 +78,17 @@ async def clear_floor(uid: int, floor: int) -> None:
 async def clear_first_floors(uid: int) -> None:
     """Đạo Thụ: a chiêu of "floor n" opens at Luyện Khí tầng n (the working stage, one above the
     stage reached). Luyện Khí tầng 1 is reached when every stage-1 main node is done: the first
-    node of each of the four branches, one per subject on floor 1 (the programming one is vacant)."""
+    node of each of the four branches: one Thiên kiếp per subject on floor 1, and every exercise of
+    Python nhập môn (the programming node) handed in with all its tests right."""
     async with dbm.SessionLocal() as db:
         for subject in math_path.subjects():
             db.add(MathRun(user_id=uid, subject_id=subject.id, floor=1, mode="trial", tier=1, passed=True,
                            started_at=clock.now(), ended_at=clock.now()))
+        for pid in math_tree.tree().nodes["lt_python_co_ban"].problems:
+            p = math_problems.problem(pid)
+            db.add(MathSubmission(user_id=uid, problem_id=pid, subject_id=p.subject, floor=p.floor, tier=p.tier,
+                                  verdict="AC", passed=len(p.tests), total=len(p.tests), ms=1, xp_gained=0,
+                                  created_at=clock.now(), judged_at=clock.now()))
         await db.commit()
 
 

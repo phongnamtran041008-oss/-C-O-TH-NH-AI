@@ -23,6 +23,13 @@ và lời giải đều tự soạn, không chép đề bài hay lời giải t�
 các bộ sinh câu được tính lại bằng SymPy; mọi câu **cần người duyệt** (cờ `reviewed`, bảng duyệt
 `tools/reports/math_review_<bí cảnh>.md`).
 
+Bài tập lập trình (`server/data/math/problems/`) cũng do AI viết: đề, ví dụ, test ẩn và lời giải mẫu đều tự
+soạn, không chép đề hay lời giải từ sách, trang web hay đề thi nào. Bản thân các ý tưởng là kiến thức chung của
+môn (dãy Collatz, tháp Hà Nội, tìm kiếm nhị phân, đếm nghịch thế bằng sắp xếp trộn, BFS, DFS, Dijkstra, khử
+Gauss...), mỗi đề đặt lời riêng và số liệu riêng. Hai hằng số 1103515245 và 12345 của bộ sinh số ngẫu nhiên viết
+ngay trong đề các bài mô phỏng xác suất là cặp hằng số quen thuộc của bộ sinh đồng dư tuyến tính trong thư viện
+chuẩn của ngôn ngữ C. Mọi bài đều chưa duyệt (cờ `reviewed` không ghi) cho tới khi có người đọc lại.
+
 ## Phần mềm
 
 FastAPI, SQLAlchemy, Alembic, bcrypt, PyJWT, Uvicorn, websockets, httpx, pygame-ce, pytest (các giấy phép
