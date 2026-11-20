@@ -866,9 +866,11 @@ def _land(p: "Player", ch: "ChannelZone", k: str, sk: dict, m, ev: dict, now: fl
     dealt = combat.hurt_monster(ch, m, p, damage(combat.base_damage(p, m), sk, streak, fast, p), fast, now)
     if sk["effect"] == "area":
         cx, cy = ev["tx"], ev["ty"]
+        ev["hits"] = [[m.eid, round(m.x, 1), round(m.y, 1)]]      # every monster in it (Chiêu Thức II)
         for o in list(ch.monsters):
             if o is m or not o.alive or combat.dist(cx, cy, o.x, o.y) > sk["radius"]:
                 continue
+            ev["hits"].append([o.eid, round(o.x, 1), round(o.y, 1)])
             o.slow_until, o.slow_mult = now + sk["duration"], sk["slow"]
             combat.engage(ch, o, p, now)
             combat.hurt_monster(ch, o, p, damage(combat.base_damage(p, o), sk, streak, fast, p), fast, now)

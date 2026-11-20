@@ -819,7 +819,7 @@ def _c_ngu_kiem(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_li
         along = max(0.0, (x - hx) * ux + (y - hy) * uy)
         at = charge + along / speed
         first = at if first is None else min(first, at)
-        v.spawn("ngu_kiem_xuyen", x, y, at, lift=dst_lift, angle=deg, scale=k)
+        v.spawn("ngu_kiem_xuyen", x, y, at, lift=dst_lift, angle=deg, scale=0.85 * k, peak=0.75)   # the body reads through
         if mine and i == 0:
             v.at(at, lambda: v.shake(0.16 + 0.02 * t))
     return first if first is not None else charge + out
@@ -1050,7 +1050,7 @@ def _c_kiem_vuc(v, t, src, dst, charge, radius, follow, mine, z, garnish, dst_li
     r = radius or 60.0
     s = max(1.0, min(2.0, r / 30.0))
     hold = float(ex.get("d") or 6.0)
-    v.spawn("kiem_vuc", x, y, charge, life=hold, layer="ground", scale=s, fade_in=0.12, fade_out=0.5, peak=0.8,
+    v.spawn("kiem_vuc", x, y, charge, life=hold, layer="ground", scale=s, fade_in=0.12, fade_out=0.5, peak=0.65,
             follow=follow, tag=("domain", follow))
     v.spawn("kiem_vuc_xoay", x, y, charge, life=hold, scale=min(1.5, s * 0.8), fade_in=0.2, fade_out=0.5,
             follow=follow, tag=("domain", follow))

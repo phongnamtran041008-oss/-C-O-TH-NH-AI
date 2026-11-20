@@ -194,9 +194,9 @@ def run_math_skill_flow(workdir: Path, shots: Path | None = None) -> None:
         spy = Spy(ws)
 
         # ---- the second hotbar row: six chiêu from the data, three open and three locked
-        drv.wait(lambda: ws.mskills is not None and len(ws.mskills) == 6, 10, "GET /math/skills")
-        assert [s["id"] for s in ws.mskills] == list(KEYS), [s["id"] for s in ws.mskills]
-        assert [s["unlocked"] for s in ws.mskills] == [True, True, True, False, False, False], ws.mskills
+        drv.wait(lambda: ws.mskills is not None and len(ws.mskills) == 17, 10, "GET /math/skills")
+        assert ws.mskill_loadout == list(KEYS), ws.mskill_loadout          # the Công Pháp bar of an old save
+        assert [ws.slot_skill(i)["unlocked"] for i in range(6)] == [True, True, True, False, False, False]
         for s in ws.mskills:
             assert s["locked_vi"] if not s["unlocked"] else s["locked_vi"] is None
         hover_slot(drv, 0)

@@ -88,7 +88,7 @@ class CongPhapScene(Scene):
         self.world.draw_mskill_icon(ui, sk, x + 6, y + 2, not learned)
         if not learned:
             ui.fill(x + 6, y + 2, 22, 22, (0, 0, 0, 110))
-        ui.text(fit(ui, sk["name_vi"], 7, CELL_W - 12), x + 6, y + 25, 7, INK if learned else GREY)
+        ui.text(fit(ui, sk["name_vi"], 6, CELL_W - 10), x + 6, y + 26, 6, INK if learned else GREY)
         if sk["id"] in self.slots:
             ui.text(str(self.slots.index(sk["id"]) + 1), x + CELL_W - 6, y + 3, 8, UICOL["accent"], anchor="topright")
         elif not learned:
@@ -106,6 +106,7 @@ class CongPhapScene(Scene):
         for n, sk in enumerate(self.skills):
             cx, cy = gx + (n % COLS) * CELL_W + 4, gy + (n // COLS) * CELL_H
             self.draw_cell(ui, sk, cx, cy)
+            ui.widgets[f"cp_skill_{sk['id']}"] = ui.rect(cx, cy, CELL_W - 2, CELL_H - 2)
             if ui.click_in(cx, cy, CELL_W - 2, CELL_H - 2):
                 self.look = sk["id"]
                 self.pick = sk["id"] if sk.get("unlocked", True) else None
@@ -128,6 +129,7 @@ class CongPhapScene(Scene):
         for i in range(SLOTS):
             sx = gx + i * 30
             s = self.by_id(self.slots[i])
+            ui.widgets[f"cp_slot_{i}"] = ui.rect(sx, sy, 26, 26)
             ui.fill(sx, sy, 26, 26, (20, 18, 15, 200))
             ui.border(sx, sy, 26, 26, UICOL["accent"] if self.pick and ui.hover(sx, sy, 26, 26) else "#8B5A2B")
             ui.text(str(i + 1), sx + 2, sy + 1, 6, "#E9E4D8")
