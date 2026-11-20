@@ -241,9 +241,23 @@ ABILITY_KEYS = {"phap_tran": "T", "dap_kiem_luot": "G", "cuoi_linh_thu": "R"}
 ABILITY_LOCKED = "{name} mở ở Luyện Khí tầng {stage} trên Đạo Thụ."
 ABILITY_TIP = "{name} ({key}): {desc}"
 ABILITY_DESC = {"phap_tran": "đặt pháp trận dưới chân, quái trong trận ra đòn chậm lại.",
-                "dap_kiem_luot": "lướt trên kiếm qua vực và mặt nước theo hướng đang đi.",
+                "dap_kiem_luot": "chạm G: lướt một quãng qua vực theo hướng đang đi. Giữ G: đạp kiếm bay lên, "
+                                 "phím hướng để lái, bay được tới khi cạn kiếm khí. Bấm G lần nữa để hạ xuống.",
                 "cuoi_linh_thu": "cưỡi linh thú đang đeo (Tiểu Long) để đi nhanh; bấm lại để xuống."}
 GLIDE_NO_LANDING = "Không có chỗ đặt chân trong tầm lướt."
+GLIDE_HOLD_HINT = "Giữ G để đạp kiếm bay qua."
+# ngự kiếm (giữ G): bay trên kiếm, hai bậc
+FLY_DESC_HIGH = ("Ngự Kiếm Phi Hành: giữ G để bay lên, phím hướng để lái, bay tự do không cạn kiếm khí, "
+                 "cao và nhanh hơn. Bấm G lần nữa để hạ xuống.")
+FLY_GAUGE = "Kiếm khí"
+FLY_FREE = "Phi hành"
+FLY_LAND_FIRST = "Hạ kiếm xuống đã (G)."
+FLY_NO_LANDING = "Dưới chân không có chỗ đáp."
+FLY_GAUGE_LOW = "Kiếm khí chưa hồi đủ."
+FLY_RIDING = "Xuống linh thú trước đã."
+FLY_FALL = "Cạn kiếm khí!"
+FLY_KNOCKED = "Bị đánh rơi khỏi kiếm!"
+FLY_SOAR = "Bay qua!"
 RIDE_NO_MOUNT = "Cần đeo một linh thú cưỡi được (Tiểu Long)."
 RIDE_ON = "Cưỡi {name}"
 STUNNED = "Choáng"

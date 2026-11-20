@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from .. import balance
-from . import ai
+from . import ai, glide
 from .maps import ZoneMap
 from .movement import facing_for, step
 from .protocol import FACING_CODE
@@ -91,6 +91,12 @@ class Player:
     riding: bool = False                                # Cưỡi linh thú: on the worn mount
     glide_ready: float = 0.0                            # Đạp Kiếm Lướt cooldown
     tran_ready: float = 0.0                             # Bày pháp trận cooldown
+    # ---- ngự kiếm (unlocks dap_kiem_luot / ngu_kiem_phi_hanh, realtime/abilities.py) ----
+    fly: int = 0                                        # 0 on the ground, 1 low flight (gauge), 2 free flight
+    fly_gauge: float = -1.0                             # seconds of low flight left (-1: full, not yet known)
+    fly_safe_at: float = 0.0                            # from then on blows on the ground miss (the rise is over)
+    struck_at: float = -1e9                             # when a blow last landed (no take-off right after)
+    ground: tuple = (0.0, 0.0)                          # the last walkable point under the player
 
     @property
     def eid(self) -> str:
@@ -114,11 +120,15 @@ class Player:
                 self.hp_pct(), self.bee_states()]
 
     def full(self) -> dict:
-        return {"id": self.eid, "k": "p", "uid": self.user_id, "n": self.name, "ap": self.appearance,
-                "realm": self.realm, "stage": int(self.stage), "x": round(self.x, 2), "y": round(self.y, 2),
-                "f": FACING_CODE[self.facing], "m": int(self.moving), "hp": self.hp_pct(), "wp": self.weapon,
-                "bees": self.bee_states(), "pet": self.pet, "gh": int(self.ghost), "rd": int(self.riding),
-                "lc": int(self.stats.get("lc", 0) or 0)}     # the giai of the linh căn (0 = none)
+        out = {"id": self.eid, "k": "p", "uid": self.user_id, "n": self.name, "ap": self.appearance,
+               "realm": self.realm, "stage": int(self.stage), "x": round(self.x, 2), "y": round(self.y, 2),
+               "f": FACING_CODE[self.facing], "m": int(self.moving), "hp": self.hp_pct(), "wp": self.weapon,
+               "bees": self.bee_states(), "pet": self.pet, "gh": int(self.ghost), "rd": int(self.riding),
+               "lc": int(self.stats.get("lc", 0) or 0)}     # the giai of the linh căn (0 = none)
+        if self.fly:                 # ngự kiếm: in the air, on this sword (a late joiner sees it too)
+            from . import abilities
+            out["fl"], out["fs"] = int(self.fly), abilities.sword_sheet(self.realm)
+        return out
 
     def apply_stats(self, stats: dict, heal: bool = False) -> None:
         self.stats = dict(stats)
@@ -187,6 +197,8 @@ class ChannelZone:
         p.budget_ms = 0.0
         p.known = {}
         p.moving = False
+        p.fly = 0                       # a new zone or channel: on the ground, where the player was put
+        p.ground = (p.x, p.y)
         self.players[p.user_id] = p
 
     def remove(self, p: Player) -> None:
@@ -254,16 +266,20 @@ class ChannelZone:
             while p.inputs and p.inputs[0][2] <= p.budget_ms:
                 entry = p.inputs.popleft()
                 seq, steps, total = entry[:3]
-                speed = entry[3] if len(entry) > 3 and entry[3] else self.speed * abilities.ride_mult(p)
-                # (a Né Đòn dash has its own speed; a rider moves at the mount's)
                 p.queued_ms -= total
                 p.budget_ms -= total
                 if len(entry) > 4:
-                    abilities.apply_special(self, p, entry[4])
+                    abilities.apply_special(self, p, entry[4], now)
+                speed = entry[3] if len(entry) > 3 and entry[3] else self.speed * abilities.speed_mult(p)
+                # (a Né Đòn dash has its own speed; a rider moves at the mount's, a flyer at the sword's)
+                over = abilities.fly_over(p.fly) if p.fly else None
                 for dx, dy, ms in steps:
                     if dx or dy:
                         p.facing = facing_for(dx, dy, p.facing)
-                        nx, ny = step(p.x, p.y, dx, dy, ms, speed, col)
+                        if over is not None:      # ngự kiếm: over water and chasms, never through walls
+                            nx, ny = glide.fly_step(col, self.map.tile_name, over, p.x, p.y, dx, dy, ms, speed)
+                        else:
+                            nx, ny = step(p.x, p.y, dx, dy, ms, speed, col)
                         if (nx, ny) != (p.x, p.y):
                             p.x, p.y = nx, ny
                             p.dirty = True
@@ -278,7 +294,8 @@ class ChannelZone:
         if not self.awake:
             return
         self._move_players(dt, now)
-        from . import combat, guard
+        from . import abilities, combat, guard
+        abilities.tick(self, dt, now)          # ngự kiếm: the gauge, the ground under a flyer
         combat.tick(self, dt, now)
         guard.tick(self, dt, now, self.rng)
         for p in self.players.values():
@@ -328,7 +345,8 @@ class ChannelZone:
         snap = {"t": "snap", "st": round(server_time, 3), "ack": p.ack,
                 "me": [p.x, p.y, FACING_CODE[p.facing], round(p.hp, 1), p.max_hp, round(p.qi, 1), p.max_qi,
                        [[b.id, b.sp, int(round(b.hp)), int(b.max_hp), round(max(0.0, b.down_until - p.now), 1),
-                         b.target or ""] for b in p.bees], int(p.ghost)]}
+                         b.target or ""] for b in p.bees], int(p.ghost),
+                       int(p.fly), round(max(0.0, p.fly_gauge), 2)]}   # ngự kiếm: in the air, the gauge
         # (exact x, y: the client replays its unconfirmed steps from there)
         if self.events:
             r2 = cfg_combat()["event_radius"] ** 2

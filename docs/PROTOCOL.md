@@ -59,6 +59,7 @@ Mỗi gói tin là **một object JSON**, trường `t` cho biết loại. Phiê
 | `dodge` | `s` (số thứ tự kế tiếp của dòng `in`), `dx`, `dy` (-1/0/1) | **Né Đòn** (luật vùng hoang, xem dưới): một cú lướt xếp vào hàng di chuyển dưới số `s` |
 | `glide` | `s` (số kế tiếp của dòng `in`), `x`, `y` (chỗ đáp client đã chọn) | **Đạp Kiếm Lướt** (thần thông, xem dưới) |
 | `ride` | `s` (số kế tiếp của dòng `in`), `on` (true/false) | **Cưỡi linh thú**: lên / xuống thú cưỡi đang đeo |
+| `fly` | `s` (số kế tiếp của dòng `in`), `on` (true/false) | **Ngự kiếm**: đạp kiếm bay lên / hạ xuống (xem dưới) |
 | `tran` | — | **Bày pháp trận** dưới chân |
 
 ### Vào vùng (`join`)
@@ -107,7 +108,8 @@ và client tự kéo về vị trí đúng nhờ snapshot. Gói trùng hoặc s�
 | `dodge` | `ok`, `ready_in` hoặc `code` (`cannot` \| `answering` \| `locked` \| `cooldown`), `message_vi` | trả lời gói `dodge` |
 | `glide` | `ok`, `x`, `y`, `ms` hoặc `code` (`cannot` \| `answering` \| `glide_locked` \| `cooldown` \| `too_far` \| `too_short` \| `bad_landing` \| `blocked`), `message_vi` | trả lời gói `glide`: từ chối ngay, hoặc khi server tới số `s` trong dòng di chuyển (lướt xong hay bị từ chối ở đó) |
 | `ride` | `ok`, `on`, `mult` hoặc `code` (`cannot` \| `ride_locked` \| `no_mount`), `message_vi` | trả lời gói `ride`; cũng gửi khi tháo thú cưỡi |
-| `tran` | `ok`, `ready_in` hoặc `code` (`cannot` \| `answering` \| `formation_locked` \| `cooldown`), `message_vi` | trả lời gói `tran` |
+| `tran` | `ok`, `ready_in` hoặc `code` (`cannot` \| `answering` \| `formation_locked` \| `cooldown` \| `flying`), `message_vi` | trả lời gói `tran` |
+| `fly` | `ok`, `on` (0 \| 1 \| 2), `why` (`up` \| `land` \| `gauge` \| `fall` \| `knocked` \| `gone`), `x`, `y`, `gauge` hoặc `code` (`cannot` \| `answering` \| `fly_locked` \| `riding` \| `struck` \| `gauge_low` \| `no_landing`), `message_vi`, `on` | trả lời gói `fly` (từ chối ngay, hoặc `no_landing` khi server tới số `s`); cũng gửi khi server tự hạ người bay: cạn kiếm khí (`gauge`; trên nước thì `fall`: đưa về bờ), trúng đòn lúc đang bay lên (`knocked`), rớt mạng / đổi kênh (`gone`) |
 | `q_end` | `sid`, `reason`: `broken` (người khác vừa phá khiên) \| `killed` \| `gone` \| `dead` | câu hỏi không cần trả lời nữa |
 | `dead` | `respawn_in` | hết máu; sau đó server tự đưa về điểm hồi sinh (một gói `zone` mới) |
 | `xp_lost` | `lost` | Tu Vi mất do chết |
@@ -217,6 +219,18 @@ Phần `beasts`, `beast_taming` và các thần thông trong `unlocks` của `wo
   bằng đúng hàm của server (`realtime/glide.py`, bản chép `client/engine/glide.py`); khi tới số `s`, server kiểm lại
   từ chỗ người ấy thật sự đứng. `fx`: `glide` (`id`, `x0, y0` → `x, y`, `ms`), `ride` (`id`, `on`), `tran` (`by`,
   `x, y, r`, `d` giây, `fx`). Người cưỡi có `"rd": 1` trong `add`.
+- **Ngự kiếm (2026-11-20)**: `fly` cũng đi trong dòng `in`. Từ số `s` ấy, các bước sau đó được **bay**: tốc độ
+  `74 × speed_mult` của bậc, mỗi bước kiểm bằng `glide.fly_step` (qua ô nước và vực, không qua tường, cây, nhà);
+  client đoán trước bằng đúng hàm ấy. Bậc 1 (`dap_kiem_luot.flight`) có thanh kiếm khí: cạn trên không thì server
+  hạ xuống. Bậc 2 (`ngu_kiem_phi_hanh.flight`, Trúc Cơ) không cạn. `snap.me` thêm hai số cuối: `[..., ghost, fly
+  (0/1/2), gauge (giây còn lại)]`; client phát lại các gói `fly` chưa xác nhận từ trạng thái ấy. Người bay có
+  `"fl": 1|2, "fs": "<phi_kiem_n>"` trong `add` (người tới sau cũng thấy); `fx`: `fly` (`id`, `on`, `why`, `x, y`,
+  `sw` = phi kiếm; `fall` thêm `x0, y0` = chỗ đang treo trên nước), `soar` (`id`, `by`: đòn dưới đất trượt qua
+  người bay), `glide` thêm `sw`. Trên không: `atk` trả `act_fail` `flying`; `dodge`, `mskill`, `ride`, `glide`,
+  `tran` và phong ấn trả `code` `flying`. Gói `zone`: `abilities.dap_kiem_luot.flight` = `{level, levels[1..2]
+  {speed_mult, lift, rise, over, gauge}, gauge_max, refill, min_gauge, hit_lock, sword, flying, gauge_now}`, và
+  `abilities.ngu_kiem_phi_hanh` (`ok`, `unlock`). Không cần tăng `PROTOCOL_VERSION`: client cũ bỏ qua số và khoá
+  mới, và không bao giờ gửi `fly`.
 - Quái đứng trong một pháp trận lúc ra đòn thì `tele.d` dài hơn (`windup_mult`).
 
 ### Ong hộ vệ (bản 4, giai đoạn 5)

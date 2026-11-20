@@ -21,6 +21,8 @@ Public API (one `Vfx` per scene; the world scene keeps it in `self.vfx`):
 
     pick([(fid, scale), ...])            -> (fid, scale) | (None, 0)  the first sheet that exists:
                                          the fallback chain that lets new sheets light up untouched
+    attached(fid, t, view, x, y, ...)    -> [(img, pos, flags)]  one frame stuck to a moving body,
+                                         returned to be depth-sorted with it (ngự kiếm's wake)
 
 spawn options (all optional): delay (s), life (s; default the sheet's one-shot length), lift
 (world px above the point), to=(x, y) + lift1 + ease ("lin" | "out" | "in" | "inout") + arc
@@ -128,6 +130,42 @@ def _shadow(img: pygame.Surface, alpha: int) -> pygame.Surface:
         while len(_cache) > _cache_max:
             _cache.popitem(last=False)
     return s
+
+
+def attached(fid: str | None, t: float, view, x: float, y: float, lift: float = 0.0, scale: float = 1.0,
+             size=None, angle: float = 0.0, alpha: float = 1.0, flip: bool = False, hold=None,
+             shade: float = 0.0) -> list:
+    """One frame of sheet `fid` stuck to something that moves every frame and is drawn in among
+    the bodies (ngự kiếm's shadow, wake, wind and mist, engine/flight.py): the same scaling,
+    turning, fading and bounded cache as an instance, but returned as blits to sort with the
+    bodies - [(image, (screen x, screen y), flags)], empty when the sheet is missing. `lift` is
+    in world px, `size` in screen px, `angle` in screen degrees (0 right, 90 down)."""
+    s = art2.fx(fid)
+    if s is None:
+        return []
+    n = max(0, min(s.total - 1, int(hold))) if hold is not None else s.fx_index(t)
+    img, (px, py), fw, fh, additive = s.frame(n), s.pivot, s.fw, s.fh, s.additive
+    w, h = (size[0] * scale, size[1] * scale) if size is not None else (fw * scale, fh * scale)
+    w, h = max(2, int(w) // 2 * 2), max(2, int(h) // 2 * 2)
+    level = min(16, int(round(max(0.0, alpha) * 16)))
+    if level <= 0:
+        return []
+    a = int(round(-angle / ANGLE_STEP) * ANGLE_STEP) % 360
+    out = _xform(img, w, h, a, level, additive, flip)
+    kx, ky = w / fw, h / fh
+    px, py = (fw - px if flip else px) * kx, py * ky
+    if a:
+        r = math.radians(-a)
+        dx, dy = px - w / 2, py - h / 2
+        px = out.get_width() / 2 + dx * math.cos(r) - dy * math.sin(r)
+        py = out.get_height() / 2 + dx * math.sin(r) + dy * math.cos(r)
+    sx, sy = view.to_screen(x, y - lift)
+    pos = (int(sx - px), int(sy - py))
+    blits = []
+    if shade > 0 and additive:        # a dark plate first, so the light keeps its colour on bright grass
+        blits.append((_shadow(out, int(shade * level * 16)), pos, 0))
+    blits.append((out, pos, s.flags))
+    return blits
 
 
 def _ease(k: float, kind: str) -> float:

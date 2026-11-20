@@ -344,8 +344,9 @@ def test_the_beasts_and_thanthong_of_luyen_khi_are_built_and_later_ones_wait(pla
     assert {b["id"] for b in built} == {"linh_ho", "huyen_quy", "bach_hac", "hoa_tuoc", "tieu_long"}
     assert all(b["requires"]["realm"] == "luyen_khi" and b["pos"] and b["gift"] for b in built)
     assert beast_of(plan, "ky_lan_con")["status"] == "chua_co" and "pos" not in beast_of(plan, "ky_lan_con")
-    for u in plan["unlocks"]:
-        assert u["status"] == ("co" if u["realm"] == "luyen_khi" else "chua_co"), u["id"]
+    for u in plan["unlocks"]:     # (Ngự Kiếm Phi Hành is built ahead of its land: test_flight)
+        assert u["status"] == ("co" if u["realm"] == "luyen_khi" or u["id"] == "ngu_kiem_phi_hanh"
+                               else "chua_co"), u["id"]
     assert plan["beast_taming"]["seal_unlock"] == "thu_phuc_linh_thu"
     assert mt.validate_world(plan, mt.tree()) == []
 

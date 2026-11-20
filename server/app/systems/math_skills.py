@@ -79,6 +79,7 @@ REFUSALS_VI = {
     "too_far": "Mục tiêu ở quá xa.",
     "tier_low": "Bậc câu hỏi con đã mở chưa đủ cho chiêu này. Luyện thêm ở Động Phủ nhé!",
     "no_question": "Chưa có câu hỏi loại này ở tầng của con.",
+    "flying": "Đang ngự kiếm trên không: hạ kiếm xuống rồi hãy thi triển.",
 }
 
 
@@ -380,6 +381,8 @@ def request(p: "Player", k: str, eid: str | None, now: float) -> str | None:
         return "cannot"
     if p.question is not None or p.q_pending or p.protected(now):
         return "answering"
+    if getattr(p, "fly", 0):          # ngự kiếm: no chiêu from up on the sword
+        return "flying"
     from ..realtime import combat
     if combat.on_hit_rule(p.channel):     # the wild: a chiêu is cast freely, no question
         # (cooldown, qi and target are checked after the unlock, so a locked chiêu always says so)

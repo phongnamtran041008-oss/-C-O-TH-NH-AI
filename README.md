@@ -111,6 +111,8 @@ thì tăng cả `PROTOCOL_VERSION`).
 | J | Nhiệm vụ (cốt truyện / hằng ngày) |
 | O | Linh Thú |
 | H / G | Linh Phong Sào / Thiên Cơ Các (ở Động Phủ) |
+| G (ngoài vùng đất) | Chạm: Đạp Kiếm Lướt qua vực; giữ: ngự kiếm bay (mũi tên lái, G lần nữa để hạ) |
+| T / R | Bày pháp trận / Cưỡi linh thú |
 | Tab | Túi đồ |
 | Y | Tổ đội |
 | P | Bạn bè |

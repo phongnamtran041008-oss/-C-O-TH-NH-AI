@@ -370,6 +370,101 @@ def loot_rows() -> list:
     return rows
 
 
+# ------------------------------------------------------------------ ngự kiếm (engine/flight.py)
+GROUNDS = {"co": 0, "nuoc": 7, "da": 9, "muc": 16, "co_toi": 14}     # tile index (maps.TILE_NAMES)
+LIFT_LOW, LIFT_HIGH = 18.0, 30.0               # world_plan.json flight.lift_px of the two rungs
+TOP_LOW, TOP_HIGH = 74.0 * 1.5, 74.0 * 2.1     # their top speeds (walking 74 px/s times speed_mult)
+SWORD_REALM = {"phi_kiem_1": ("truc_co", None), "phi_kiem_2": ("ket_dan", None), "phi_kiem_3": ("hoa_than", None)}
+
+
+def fly_cell(ground: str, alt: float, facing: str = "right", vx: float = 0.0, vy: float = 0.0, top: float = TOP_LOW,
+             t: float = 0.3, realm: str = "truc_co", sword: str = "phi_kiem_1", ring: str | None = None,
+             ring_t: float = 0.15, monster: bool = False, split: str | None = None, w: int = 136,
+             h: int = 150) -> pygame.Surface:
+    """One 2x-world picture of a flyer (engine/flight.compose, the game's own drawing) over a
+    ground, its feet's ground point at the middle bottom. `split` puts a second ground in the
+    top half (a shore); `ring` plays a take-off or landing sheet on the ground, `ring_t` into it."""
+    from client.engine import flight as F
+    surf = pygame.Surface((w, h))
+    ts = art2.tileset32()
+    for ty in range(0, h, 32):
+        for tx in range(0, w, 32):
+            g = split if (split is not None and ty < h // 2) else ground
+            if ts is not None:
+                surf.blit(ts.pick(GROUNDS[g], tx // 32, ty // 32), (tx, ty))
+            else:
+                surf.fill((70, 120, 60) if g == "co" else (40, 70, 120), (tx, ty, 32, 32))
+    v = View(2)
+    gx, gy = w / 4, h / 2 - 14                  # the ground point (world px): middle, low in the cell
+    vf = Vfx()
+    if ring is not None:
+        vf.spawn(ring, gx, gy, layer="ground", scale=0.8)
+        vf.spawn("dust_step", gx, gy + 1, layer="ground", scale=0.8)
+        while vf.t + 1e-6 < ring_t:
+            vf.update(1 / 120)
+    vf.draw(surf, v, "ground")
+    bodies = []
+    if monster:
+        m = art2.monster(MONSTER)
+        if m is not None:
+            mx, my = v.to_screen(gx + 4, gy + 6)
+            bodies.append((gy + 6, m.frame(m.index("idle", t, "left")), (int(mx - m.pivot[0]), int(my - m.pivot[1])), 0))
+    shadows, body = F.compose(v, realm, gx, gy, facing, t, "kiem_2", sword, alt, vx, vy, top, aura_t=t,
+                              dark=ground in F.DARK_GROUND_IDS)
+    for img, pos, flags in shadows:
+        surf.blit(img, pos, None, flags)
+    for img, pos, flags in body:
+        bodies.append((gy + max(0.0, alt) + 0.5, img, pos, flags))
+    for _y, img, pos, flags in sorted(bodies, key=lambda b: b[0]):
+        surf.blit(img, pos, None, flags)
+    vf.draw(surf, v, "over")
+    return surf
+
+
+def phi_hanh_rows() -> list:
+    """Take-off -> cruise -> turn -> over water -> landing, the low rung and the high one, on grass
+    and over water; the fall back when the gauge runs dry; the hop; the three swords."""
+    from client.engine import flight as F
+    rows = []
+    for name, lift, top, rise in (("Đạp Kiếm (thấp)", LIFT_LOW, TOP_LOW, 0.3), ("Ngự Kiếm (cao)", LIFT_HIGH, TOP_HIGH, 0.4)):
+        dur = F.CROUCH_S + max(0.25, rise)
+        crouch = F.CROUCH_S / dur
+        cells = [("ngồi thụp", fly_cell("co", F.takeoff_alt(crouch * 0.5, lift, crouch), ring="phi_cat_canh",
+                                        ring_t=0.05, top=top)),
+                 ("cất cánh", fly_cell("co", F.takeoff_alt(0.55, lift, crouch), ring="phi_cat_canh", ring_t=0.25,
+                                       top=top)),
+                 ("đứng trên không", fly_cell("co", lift, top=top, t=0.6)),
+                 ("bay phải", fly_cell("co", lift + 1, "right", top, 0, top, t=0.2)),
+                 ("rẽ lên", fly_cell("co", lift - 1, "up", 0, -top, top, t=0.35)),
+                 ("bay trái", fly_cell("co", lift, "left", -top, 0, top, t=0.5)),
+                 ("bay xuống", fly_cell("co", lift + 1, "down", 0, top, top, t=0.7)),
+                 ("chậm", fly_cell("co", lift, "right", top * 0.3, 0, top, t=0.9)),
+                 ("hạ cánh", fly_cell("co", F.landing_alt(0.6, lift), top=top, t=0.4)),
+                 ("chạm đất", fly_cell("co", 0.0, top=top, ring="phi_ha_canh", ring_t=0.12))]
+        rows.append((f"{name} trên cỏ", cells))
+        cells = [("bờ -> nước", fly_cell("nuoc", lift, "up", 0, -top, top, split="nuoc", t=0.1)),
+                 ("trên mặt nước", fly_cell("nuoc", lift, "right", top, 0, top, t=0.3)),
+                 ("đứng trên nước", fly_cell("nuoc", lift, t=0.5)),
+                 ("bay trái", fly_cell("nuoc", lift, "left", -top, 0, top, t=0.6)),
+                 ("trên vực mực", fly_cell("muc", lift, "right", top, 0, top, t=0.2)),
+                 ("trên cỏ tối", fly_cell("co_toi", lift, "up", 0, -top, top, t=0.4)),
+                 ("trên đá", fly_cell("da", lift, "down", 0, top, top, t=0.8)),
+                 ("bay qua quái", fly_cell("co", lift, "right", top, 0, top, t=0.3, monster=True)),
+                 ("bờ nước", fly_cell("co", lift, "down", 0, top, top, split="nuoc", t=0.2))]
+        rows.append((f"{name} trên nước, vực, đá", cells))
+    cells = [(f"rơi {k:.1f}", fly_cell("nuoc" if k < 0.8 else "co", F.fall_alt(k, LIFT_LOW), t=k)) for k in
+             (0.05, 0.2, 0.4, 0.6)]
+    cells.append(("về bờ", fly_cell("co", 0.0, ring="phi_ha_canh", ring_t=0.12)))
+    cells += [(f"lướt {k:.2f}", fly_cell("muc", F.hop_alt(k), "up", 0, -170, TOP_LOW, t=k)) for k in (0.2, 0.5, 0.8)]
+    rows.append(("Cạn kiếm khí: rơi về bờ; chạm G: lướt", cells))
+    cells = [(f"{sid} {realm}", fly_cell("co", LIFT_HIGH, "right", TOP_HIGH, 0, TOP_HIGH, realm=realm, sword=sid,
+                                         t=0.3)) for sid, (realm, _) in SWORD_REALM.items()]
+    cells += [(f"{sid} lên", fly_cell("nuoc", LIFT_HIGH, "up", 0, -TOP_HIGH, TOP_HIGH, realm=realm, sword=sid,
+                                     t=0.5)) for sid, (realm, _) in SWORD_REALM.items()]
+    rows.append(("Phi kiếm theo cảnh giới", cells))
+    return rows
+
+
 def main() -> int:
     out = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "art" / "preview"
     out.mkdir(parents=True, exist_ok=True)
@@ -382,7 +477,9 @@ def main() -> int:
                               ("vfx_chieu", chieu_rows, "Chiêu thức (Kết Đan): tụ lực, xuất chiêu, bay, trúng, dư âm, hụt"),
                               ("vfx_hits", hit_rows, "Đòn trúng, hạ quái, Phản Đòn, Né Đòn, lên tầng, đột phá"),
                               ("vfx_roi_do", loot_rows, "Đồ rơi phát sáng theo phẩm (trên cỏ)"),
-                              ("vfx_kiem_khi_co", kiem_khi_rows, "Kiếm khí trên cỏ (T1-T10)")):
+                              ("vfx_kiem_khi_co", kiem_khi_rows, "Kiếm khí trên cỏ (T1-T10)"),
+                              ("vfx_phi_hanh", phi_hanh_rows,
+                               "Ngự kiếm: cất cánh, bay, rẽ, trên nước, hạ cánh - bậc thấp và bậc cao")):
         if only and only != name:
             continue
         global GRASS

@@ -96,6 +96,15 @@ class Ride(BaseModel):
     on: bool
 
 
+class Fly(BaseModel):
+    """Ngự kiếm (unlocks dap_kiem_luot, ngu_kiem_phi_hanh): take off on the sword (on) or come
+    down, queued among the movement messages under the number `s`; the steps after it are
+    flown (realtime/glide.fly_step) until the landing."""
+    t: Literal["fly"]
+    s: int = Field(ge=0)
+    on: bool
+
+
 class Formation(BaseModel):
     """Bày pháp trận (unlock phap_tran): lay a formation on the ground at the feet."""
     t: Literal["tran"]
@@ -138,7 +147,7 @@ class Mark(BaseModel):
 MESSAGES: dict[str, type[BaseModel]] = {"ping": Ping, "in": Input, "join": Join, "channel": Channel,
                                         "chat": Chat, "face": Face, "atk": Attack, "dodge": Dodge,
                                         "mskill": MathCast, "party": PartyCmd, "realm": RealmCmd, "mark": Mark,
-                                        "glide": Glide, "ride": Ride, "tran": Formation}
+                                        "glide": Glide, "ride": Ride, "tran": Formation, "fly": Fly}
 
 
 class BadMessage(Exception):

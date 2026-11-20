@@ -430,6 +430,8 @@ def missing(p: dict, at: tuple[str, int], done: set[str]) -> list[str]:
     for need in filter(None, (land.get("needs"), p.get("needs"))):
         if not unlock_open(need, at):
             out.append(_unlock_reason(need))
+    if land and land.get("status") != "co":      # (Ngự Kiếm Phi Hành exists before Vân Hải Thiên Đảo)
+        out.append(f"{land.get('name_vi', p.get('land'))} chưa có trong game.")
     return out
 
 

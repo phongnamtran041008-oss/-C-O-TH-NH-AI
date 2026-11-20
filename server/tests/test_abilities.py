@@ -56,8 +56,9 @@ def test_the_four_luyen_khi_unlocks_are_built_and_later_ones_wait():
         u = unlock(uid)
         assert (u["realm"], u["stage"], u["status"]) == ("luyen_khi", stage, "co"), uid
     later = [u for u in math_tree.world_plan()["unlocks"] if u["realm"] != "luyen_khi"]
-    assert later and all(u["status"] == "chua_co" for u in later)
-    assert {"glide", "ride", "tran"} <= set(protocol.MESSAGES)
+    # (Ngự Kiếm Phi Hành is built ahead of its land: test_flight)
+    assert later and all(u["status"] == "chua_co" for u in later if u["id"] != "ngu_kiem_phi_hanh")
+    assert {"glide", "ride", "tran", "fly"} <= set(protocol.MESSAGES)
 
 
 # ------------------------------------------------------------------ Bày pháp trận

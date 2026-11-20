@@ -35,6 +35,7 @@ SEAL_REFUSALS_VI = {
     "not_yielded": "Linh thú chưa chịu phục: hãy Phản Đòn đủ số lần trước.",
     "too_far": "Đứng gần linh thú hơn rồi hãy phong ấn.",
     "locked": "Thu phục linh thú mở ở Luyện Khí tầng 3 trên Đạo Thụ.",
+    "flying": "Hạ kiếm xuống đất rồi hãy phong ấn linh thú.",
 }
 
 
@@ -147,6 +148,8 @@ def seal_target(p: "Player | None", eid: str, now: float):
         return "not_here"
     if not m.yielded_to(p.user_id, now):
         return "not_yielded"
+    if p.fly:                    # ngự kiếm: sealing is done standing on the ground
+        return "flying"
     if math.hypot(m.x - p.x, m.y - p.y) > float(data.taming().get("seal_reach_px", 56)):
         return "too_far"
     if not abilities.is_open(p, data.taming().get("seal_unlock", "thu_phuc_linh_thu")):

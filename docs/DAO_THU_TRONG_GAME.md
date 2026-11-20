@@ -148,7 +148,8 @@ Phần binh khí của `world_plan.json` đã nối (`"wired_sections": ["combat
 
 Phần `beasts` (cùng luật thu phục `beast_taming`) và các thần thông Luyện Khí trong `unlocks` đã nối:
 `"wired_sections": ["combat", "lands", "weapons", "beasts", "abilities"]`. Mọi mở khoá của Luyện Khí là `"co"`;
-mọi mở khoá của cảnh giới sau (Ngự Kiếm Phi Hành trở đi) vẫn `"chua_co"` vì chưa có vùng đất nào ở đó. Kỳ Lân
+mọi mở khoá của cảnh giới sau vẫn `"chua_co"` vì chưa có vùng đất nào ở đó - trừ Ngự Kiếm Phi Hành (xem
+"Ngự kiếm" dưới), có trước vùng đất của nó. Kỳ Lân
 Con (Vân Hải Thiên Đảo, Trúc Cơ) chờ vùng đất của nó. "Tu vi" vẫn là tầng trên Đạo Thụ.
 
 | Linh thú | Vùng đất, chỗ | Hiện từ | Phản Đòn để thu | Quà khi đeo |
@@ -175,7 +176,23 @@ Con (Vân Hải Thiên Đảo, Trúc Cơ) chờ vùng đất của nó. "Tu vi" 
 - **Đạp Kiếm Lướt** (tầng 6, phím G): lướt tối đa 80 px theo hướng đang đi, qua ô nước và ô vực (mực) kể cả
   chỗ không đi bộ được; không qua tường đá, cây, nhà. Máy chủ kiểm lại từ chỗ người chơi thật sự đứng: chưa mở,
   đáp xuống ô không đứng được, hay vướng vật cản thì từ chối và không ai di chuyển. Hình học dùng chung ở
-  `server/app/realtime/glide.py` (máy khách có bản chép y hệt).
+  `server/app/realtime/glide.py` (máy khách có bản chép y hệt). Chạm G là cú lướt ấy (nay là một cú nhảy thật:
+  bay vòng lên, bóng ở dưới đất); **giữ G** là ngự kiếm (dưới).
+- **Ngự kiếm (2026-11-20)**: hai bậc của một thần thông, số trong khối `flight` của hai mở khoá.
+  - *Bậc thấp* (cùng Đạp Kiếm Lướt, tầng 6): giữ G 0,22 giây để đạp kiếm bay lên, phím hướng để lái, nhanh gấp
+    1,5 lần đi bộ, cao 18 px; thanh kiếm khí 4 giây, hồi đầy sau 6 giây trên đất, cần ít nhất 1 giây mới bay
+    được. Kim Sí Điểu dài thêm 40%, linh căn `glide_cd` hồi nhanh hơn. Bay qua nước và vực, không qua tường, cây,
+    nhà. G lần nữa để hạ, chỉ hạ xuống chỗ đứng được; cạn kiếm khí trên nước thì máy chủ đưa về bờ cuối cùng vừa
+    bay qua (rơi về, không dịch chuyển im lặng).
+  - *Bậc cao* **Ngự Kiếm Phi Hành** (Trúc Cơ, `"status": "co"` dù Vân Hải Thiên Đảo chưa có): không cạn, nhanh
+    gấp 2,1, cao 30 px. Ba chỗ binh khí `truong_2_*` và Kỳ Lân Con vẫn đóng vì vùng đất chưa dựng
+    (`weapons.missing` nói "chưa có trong game").
+  - Trên không: không đánh, không thi triển, không Né Đòn, không cưỡi, không bày trận, không phong ấn, không nói
+    chuyện, nhặt đồ hay câu cá; đòn quái dưới đất trượt qua (`soar`) và quái không nhắm người đang bay. Không bay
+    lên khi đang có câu hỏi, cũng không trong 1,5 giây sau khi trúng đòn; trúng đòn lúc đang bay lên (0,3 / 0,4
+    giây đầu) thì rơi khỏi kiếm. Không bay trong bí cảnh; cưỡi và bay loại trừ nhau; rớt mạng, đổi kênh, đổi vùng
+    thì đứng lại trên đất (vị trí lưu là đất dưới chân).
+  - Phi kiếm theo cảnh giới: `phi_kiem_1` tới hết Trúc Cơ, `_2` từ Kết Đan, `_3` từ Hóa Thần (`flight.swords`).
 - **Cưỡi linh thú** (tầng 8, phím R): đeo Tiểu Long rồi bấm R; máy chủ cho đi nhanh gấp `speed_mult` của quà,
   người chơi chỉ gửi phím bấm nên không xin được nhanh hơn. Người cưỡi ngồi xếp bằng trên lưng linh thú (lớn
   gấp đôi khi được cưỡi).
@@ -249,6 +266,9 @@ Sáu linh thú mới, mỗi con một quà mới, đều `"status": "cho_hinh"` 
 | Linh thú hỏi gì | Câu của các nút mà quái cùng vùng đứng cho | "Toán của nhánh vùng"; Tiểu Long ở vùng Lập Trình cũng có câu hỏi (phần toán mà Lập Trình ôn lại) | Cho linh thú `nodes` riêng |
 | Cưỡi | Chỉ Tiểu Long cưỡi được (quà `mount`), nhanh gấp 1,5; người cưỡi ngồi tư thế đả tọa trên lưng nó, nó lớn gấp đôi khi được cưỡi | Kế hoạch ghi "Cưỡi được" là quà của Tiểu Long; bộ hình không có tư thế cưỡi riêng | Thêm quà `mount` cho linh thú khác |
 | Lướt | Tối đa 80 px (5 ô), chỉ qua nước và vực, hồi 2,5 giây | Đủ qua hai ô vực ở Kiếm Trủng Sơn và hai ô thác ở Lưu Vân Cốc, không đủ bay qua cả hồ | Đổi `glide` của `dap_kiem_luot` |
+| Ngự kiếm bậc thấp | Giữ G, ×1,5 tốc độ, cao 18 px, kiếm khí 4 giây (hồi 6 giây), cần 1 giây để bay | Đủ bay qua thác, vực và một khúc hồ (khoảng 440 px), không đủ bỏ qua cả vùng; luật "chạm lướt" vẫn còn | Đổi `flight` của `dap_kiem_luot` |
+| Ngự kiếm bậc cao | Trúc Cơ, ×2,1, cao 30 px, không cạn | "Bay tự do"; cao và nhanh hơn để người chơi thấy khác | Đổi `flight` của `ngu_kiem_phi_hanh` |
+| Bay giữa trận | Không bay khi đang trả lời; khoá 1,5 giây sau khi trúng; 0,3 giây bay lên vẫn bị đánh (rơi khỏi kiếm) | Bay là đường thoát kiểu tu tiên nhưng phải thấy đòn từ trước và tốn nhịp, như Né Đòn | Đổi `hit_lock_seconds`, `rise_ms` |
 
 ## Chưa làm
 
