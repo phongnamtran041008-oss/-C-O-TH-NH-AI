@@ -478,7 +478,9 @@ def make_kiem_no(g):
     core = fx.mat("core", ramp[3])
     acc = fx.mat("acc", RAMP["flame"][2] if g == 4 else ramp[3])
     F = MB().disc(0, 0, 1.0, 32, 1, 0).build(fx, "flash", glow)
-    fx.track(F, lambda t, i: dict(s=Rm * [0.55, 0.85, 0.9, 0.75, 0.5, 0.25][i], op=[1, 0.9, 0.6, 0.35, 0.15, 0.0][i] + 0.001))
+    # the flash shrinks away instead of dimming (dim gold / violet snaps to a dark plate)
+    fx.track(F, lambda t, i: dict(s=Rm * [0.55, 0.85, 0.75, 0.45, 0.2, 0.0][i] + 0.001, op=[1, 0.95, 0.85, 0.75, 0.6, 0.0][i] + 0.001,
+                                  show=i < 5))
     C = MB().disc(0, 0, 1.0, 24).build(fx, "white", core)
     fx.track(C, lambda t, i: dict(s=Rm * [0.32, 0.26, 0.14, 0.06, 0.0, 0.0][i] + 0.001, show=i < 4))
     # the cut itself: an X of two blades of light (the wave's crescent breaks into a cross)
@@ -576,7 +578,7 @@ def make_kiem_ngan(k):
             x = -L + 2 * L * s
             y = U(px * 0.05) * math.sin(PI * s) + off               # a shallow crescent bowing away from the camera
             pts.append((x, y))
-            ws.append(Wd * wk * math.sin(PI * s) ** 0.6 * (0.35 + 0.65 * s ** 0.7) + 0.005)
+            ws.append(Wd * wk * math.sin(PI * s) ** 0.95 * (0.35 + 0.65 * s ** 0.7) + 0.005)
         return MB().strip(pts, ws, soft=soft)
     HD = [0.45, 1.05, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1]
     TL = [-0.4, -0.4, -0.35, -0.3, -0.2, 0.0, 0.25, 0.55]

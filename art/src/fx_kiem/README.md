@@ -144,3 +144,17 @@ Round 4 (proof on the characters, 3x and 1x):
 - T1 still too bright for a mortal (white core): body now dull steel, core steel light, only the tip glint pale.
 - T10 cropped by the proof cell: cell made taller.
 - Song lightning branches touched the frame edge on 3 sheets: no branches on the flying wave.
+
+Round 5 (impacts, scars, families after round 3; then a clean rebuild):
+- kiem_no_4's flash disc faded by dimming and snapped to a dark gold-brown plate under the cross: it now shrinks away
+  (opacity stays high) and is gone by the last frame.
+- Scars were blunt lenses: ends sharpened (width profile sin^0.95).
+- Clean rebuild (blend + render folders deleted, full build twice): all 42 sheets and the 6 previews byte-identical;
+  no frame touches the edge; `qc.py client/assets/v2/fx`: OK (110 files, 0 problems).
+
+## Still weak (honest)
+- T5 / T6 / T7 share a size class and differ mostly by colour, the double wave and accents; T7's rune strokes are
+  barely readable at 1x (they show as texture).
+- The ground scar (`kiem_ngan`) and the low-group impacts are serviceable, not spectacular; `kiem_no` ring fragments
+  are evenly spaced (a little mechanical).
+- `cung_ten_1/2` and `phap_dan_1/2` share the 64 px frame, so g1 -> g2 is colour + ring, not size.
