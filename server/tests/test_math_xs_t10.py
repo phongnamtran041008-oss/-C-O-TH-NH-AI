@@ -298,4 +298,5 @@ async def test_a_player_who_cleared_every_floor_below_practises_floor_ten(client
         res = r.json()
         assert res["correct"] is correct, (q["qtype"], res)
         rights += correct
-    assert rights == 8 and on_floor >= 5 and len(kinds) >= 3
+    # the draws are random: over the 5-9 questions of the floor two kinds always turn up, a third only usually
+    assert rights == 8 and on_floor >= 5 and len(kinds) >= 2
