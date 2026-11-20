@@ -43,6 +43,10 @@ Exit code 0 when every check passes, 1 otherwise. The list grows with each miles
   * exercise tests have teeth (M6): every exercise is also run with three wrong programs
     (one that prints nothing, one that prints a constant, one that always prints the first
     sample's answer) and none of them may be accepted
+  * Xạ Trường (scored exercises): the reference solution reaches thượng phẩm on the hidden
+    sets and the top bar on every sample, in at most half its time limit; the exercise's
+    naive program (problems/<subject>/ngay_tho/<id>.py: predict the majority, the mean...)
+    does not even reach hạ phẩm, and a naive program of an exact exercise is not accepted
   * chiêu thức (M9): data/math/skills.json has at least five chiêu with sound fields, every
     question type exists, every effect is drawn by client/art/skill_fx.py and every
     animation is a clip of every Đạo Sĩ sheet; each chiêu unlocked on floors 1-3 has a
@@ -259,6 +263,9 @@ def check_problem_solutions() -> list[str]:
     errors = []
     for problem in math_problems.bank().values():
         path = math_problems.solution_path(problem.subject, problem.id)
+        if problem.scored:
+            errors += _check_scored_solution(coderun, problem, path)
+            continue
         for group, tests in (("ví dụ", problem.samples), ("test ẩn", problem.tests)):
             for n, test in enumerate(tests, 1):
                 result = coderun.run_one(path, test.data, problem.time_limit_ms)
@@ -271,6 +278,34 @@ def check_problem_solutions() -> list[str]:
                     errors.append(f"{where}: the reference solution printed "
                                   f"{result.output.strip()[:60]!r}, the answer says "
                                   f"{test.expected.strip()[:60]!r}")
+    return errors
+
+
+def _check_scored_solution(coderun, problem, path: Path) -> list[str]:
+    """Xạ Trường: the reference reaches thượng phẩm on the hidden sets, the top bar on each
+    sample, and needs at most half of the time limit (the limit is about five times what it
+    takes on the machine the bars were measured on)."""
+    errors = []
+    top = problem.grades[-1:]
+    for group, tests in (("ví dụ", problem.samples), ("bia ẩn", problem.tests)):
+        attempt = coderun.run_tests(path, [t.data for t in tests], problem.time_limit_ms)
+        if attempt.status != coderun.OK:
+            errors.append(f"{problem.id} {group}: the reference solution gave {attempt.status.upper()} "
+                          f"{attempt.error.strip()[:120]}")
+            continue
+        verdict = math_problems.judge_problem(problem, list(tests), attempt.outputs, attempt.status,
+                                              attempt.times_ms, attempt.error)
+        slow = max(attempt.times_ms, default=0)
+        if slow * 2 > problem.time_limit_ms:
+            errors.append(f"{problem.id} {group}: the reference solution took {slow} ms, more than half "
+                          f"of the {problem.time_limit_ms} ms limit")
+        if group == "bia ẩn" and verdict.grade != math_problems.GRADES:
+            errors.append(f"{problem.id}: the reference solution scores {verdict.score} on the hidden sets, "
+                          f"only {math_problems.GRADE_NAMES_VI[verdict.grade]} (bars {list(problem.grades)})")
+        for r in verdict.results if group == "ví dụ" else ():
+            if math_problems.grade_of(r.score, top, problem.checker) != 1:
+                errors.append(f"{problem.id} ví dụ {r.index}: the reference solution scores {r.score}, "
+                              f"short of the top bar {top[0]}")
     return errors
 
 
@@ -304,15 +339,28 @@ def check_problem_tests_have_teeth() -> list[str]:
             if len(answers) == 1:
                 errors.append(f"{problem.id}: every hidden test wants the same answer "
                               f"({answers.pop()[:40]!r}), so they cannot tell solutions apart")
+            tests = list(problem.tests)
             for name, build in MUTANTS:
                 coderun.write_solution(path, build(problem))
-                attempt = coderun.run_tests(path, [t.data for t in problem.tests],
-                                            problem.time_limit_ms)
-                verdict = math_problems.judge(list(problem.tests), attempt.outputs, attempt.status,
-                                              attempt.times_ms, problem.checker, attempt.error)
-                if verdict.accepted:
+                attempt = coderun.run_tests(path, [t.data for t in tests], problem.time_limit_ms)
+                verdict = math_problems.judge_problem(problem, tests, attempt.outputs, attempt.status,
+                                                      attempt.times_ms, attempt.error)
+                if verdict.accepted or (problem.scored and verdict.grade):
                     errors.append(f"{problem.id}: a program that only {name} is accepted; "
                                   f"the hidden tests do not test anything")
+            naive = math_problems.naive_path(problem.subject, problem.id)
+            if naive.is_file():         # Xạ Trường: the naive model fails, not even hạ phẩm
+                attempt = coderun.run_tests(naive, [t.data for t in tests], problem.time_limit_ms)
+                verdict = math_problems.judge_problem(problem, tests, attempt.outputs, attempt.status,
+                                                      attempt.times_ms, attempt.error)
+                if attempt.status != coderun.OK:
+                    errors.append(f"{problem.id}: the naive program does not even run ({attempt.status.upper()} "
+                                  f"{attempt.error.strip()[:80]}), so it proves nothing")
+                elif problem.scored and verdict.grade:
+                    errors.append(f"{problem.id}: the naive program reaches {math_problems.GRADE_NAMES_VI[verdict.grade]} "
+                                  f"(score {verdict.score}); the bars {list(problem.grades)} are too easy")
+                elif not problem.scored and verdict.accepted:
+                    errors.append(f"{problem.id}: the naive program is accepted; the hidden tests miss its mistake")
     return errors
 
 

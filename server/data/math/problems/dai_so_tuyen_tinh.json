@@ -1489,7 +1489,7 @@
       "starter": "import sys\n\ndata = sys.stdin.read().split()\nn, d = int(data[0]), int(data[1])\npos = 2\ntrain = []                      # (vecto x, nhan y)\nfor _ in range(n):\n    x = [float(v) for v in data[pos:pos + d]]\n    train.append((x, data[pos + d]))\n    pos += d + 1\nm = int(data[pos])\npos += 1\ntests = []\nfor _ in range(m):\n    tests.append([float(v) for v in data[pos:pos + d]])\n    pos += d\n\nK = 5\n\n\ndef khoang_cach(a, b):\n    return 0.0                  # TODO: khoang cach Euclid\n\n\nfor q in tests:\n    # TODO: tim K diem gan q nhat trong train, bo phieu, in nhan thang\n    print(train[0][1])\n",
       "samples": [
         {
-          "in": "8 2\n1 1 0\n1.5 1 0\n1 1.5 0\n2 2 0\n8 8 1\n8.5 8 1\n8 8.5 1\n7 7 1\n1 2\n8 7\n",
+          "in": "8 2\n1 1 0\n1.5 1 0\n1 1.5 0\n2 2 0\n8 8 1\n8.5 8 1\n8 8.5 1\n7 7 1\n2\n1 2\n8 7\n",
           "out": "0\n1\n",
           "note_vi": "Với k = 5, bia (1, 2) có bốn láng giềng nhãn 0 và một nhãn 1: đoán 0. Bia (8, 7) ngược lại: đoán 1."
         }

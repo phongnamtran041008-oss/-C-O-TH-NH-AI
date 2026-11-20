@@ -608,9 +608,9 @@
       "starter": "import sys\n\ndata = sys.stdin.read().split()\nn, d = int(data[0]), int(data[1])\npos = 2\ntrain = []                      # (64 diem anh 0..16, chu so)\nfor _ in range(n):\n    train.append(([int(v) for v in data[pos:pos + d]], data[pos + d]))\n    pos += d + 1\nm = int(data[pos])\npos += 1\ntests = []\nfor _ in range(m):\n    tests.append([int(v) for v in data[pos:pos + d]])\n    pos += d\n\n# TODO: mo hinh cua ban: k lang gieng, PCA + k lang gieng, mang no-ron...\nfor x in tests:\n    print(train[0][1])\n",
       "samples": [
         {
-          "in": "4 16\n0 16 0 0 0 16 0 0 0 16 0 0 0 16 0 0 0\n0 0 16 0 0 0 16 0 0 0 16 0 0 0 16 0 0\n0 0 0 0 16 16 16 16 0 0 0 0 0 0 0 0 1\n0 0 0 0 0 0 0 0 16 16 16 16 0 0 0 0 1\n2\n16 0 0 0 16 0 0 0 16 0 0 0 16 0 0 0\n0 0 0 0 0 0 0 0 0 0 0 0 16 16 16 16\n",
+          "in": "6 16\n8 16 0 0 16 16 0 0 16 16 0 0 16 16 0 0 0\n16 16 0 0 16 16 0 0 16 16 0 0 16 16 0 8 0\n16 16 0 0 16 16 8 0 16 16 0 0 16 16 0 0 0\n8 16 16 16 16 16 16 16 0 0 0 0 0 0 0 0 1\n16 16 16 16 16 16 16 16 0 0 0 0 0 0 0 8 1\n16 16 16 16 16 16 16 16 0 8 0 0 0 0 0 0 1\n2\n16 16 0 0 8 16 0 0 16 16 0 0 16 16 0 0\n16 16 16 8 16 16 16 16 0 0 0 0 0 0 0 0\n",
           "out": "0\n1\n",
-          "note_vi": "Ví dụ đồ chơi với ảnh 4 x 4 (d = 16) để thấy định dạng: nhãn 0 là nét dọc, nhãn 1 là nét ngang. Bài thật dùng ảnh 8 x 8."
+          "note_vi": "Ví dụ đồ chơi với ảnh 4 x 4 (d = 16) để thấy định dạng: nhãn 0 là ảnh sáng nửa trái, nhãn 1 là ảnh sáng nửa trên, mỗi ảnh lệch một điểm ảnh. Mỗi bia gần ba ảnh cùng loại nhất. Bài thật dùng ảnh 8 x 8."
         }
       ]
     }

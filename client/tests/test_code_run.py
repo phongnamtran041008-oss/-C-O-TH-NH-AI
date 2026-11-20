@@ -60,6 +60,52 @@ def test_a_program_that_crashes_is_re_with_the_last_lines_of_the_error(workdir):
     assert result.status == coderun.RE and "IndexError" in result.error
 
 
+# ------------------------------------------------------------------ Xạ Trường: the training log
+TRAIN = ("import sys\n"
+         "for i in range(5):\n"
+         "    print('#loss', i, 10 / (i + 1), file=sys.stderr)\n"
+         "    print('#val', i, 12 / (i + 1), file=sys.stderr)\n"
+         "print('ghi chu khac', file=sys.stderr)\n"
+         "print(1)\n")
+
+
+def test_the_loss_lines_on_stderr_become_the_training_log():
+    log = coderun.parse_log("#loss 0 2.5\nnoise\n#loss 1 1.25\n#val 1 1.5\n#loss x 3\n#lossy 1 2\n#loss 2 nan\n")
+    assert log["loss"] == [(0.0, 2.5), (1.0, 1.25), (2.0, float("inf"))]     # a blown-up loss is kept as inf
+    assert log["val"] == [(1.0, 1.5)]
+    assert coderun.parse_log("") == {"loss": [], "val": []}
+
+
+def test_a_very_long_log_is_thinned_but_keeps_its_ends():
+    log = coderun.parse_log("".join(f"#loss {i} {1 / (i + 1)}\n" for i in range(5000)))["loss"]
+    assert len(log) == coderun.MAX_LOG_POINTS and log[0] == (0.0, 1.0) and log[-1][0] == 4999.0
+
+
+def test_a_run_brings_its_log_back_and_its_output_stays_clean(workdir):
+    result = coderun.run_one(write(workdir, TRAIN), "")
+    assert result.ok and result.output.split() == ["1"]
+    assert [v for _, v in result.log["loss"]] == [10.0, 5.0, 10 / 3, 2.5, 2.0] and len(result.log["val"]) == 5
+
+
+def test_the_error_text_of_a_crash_leaves_the_log_out(workdir):
+    result = coderun.run_one(write(workdir, TRAIN + "raise ValueError('nan roi')\n"), "")
+    assert result.status == coderun.RE and "ValueError" in result.error and "#loss" not in result.error
+    assert len(result.log["loss"]) == 5
+
+
+def test_an_attempt_shows_the_longest_log(workdir):
+    path = write(workdir, "import sys\nn = int(input())\nfor i in range(n):\n    print('#loss', i, 1, file=sys.stderr)\n")
+    attempt = coderun.run_tests(path, ["2\n", "6\n", "3\n"])
+    run, log = attempt.log
+    assert run == 2 and len(log["loss"]) == 6
+    assert coderun.run_tests(path, ["0\n"]).log == (0, {})
+
+
+def test_the_web_build_path_reads_the_same_log():
+    result = coderun.run_in_process(TRAIN, "")
+    assert result.ok and result.output.split() == ["1"] and len(result.log["loss"]) == 5
+
+
 def test_a_program_that_never_stops_is_tle(workdir):
     result = coderun.run_one(write(workdir, FOREVER), "\n", time_limit_ms=300)
     assert result.status == coderun.TLE and result.ms == 300
