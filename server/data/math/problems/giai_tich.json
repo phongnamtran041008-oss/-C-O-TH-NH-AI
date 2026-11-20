@@ -1,0 +1,198 @@
+{
+  "_comment": "Bài tập lập trình của bí cảnh giai_tich (M6, kế hoạch 5.2). Đề, ví dụ và test ẩn. Lời giải mẫu nằm ở problems/giai_tich/<id>.py và không bao giờ gửi cho game; đáp án của test ẩn cũng vậy. Đáp án của test ẩn do chính lời giải mẫu sinh ra (tools/build_problem_tests.py), còn đáp án của ví dụ thì viết tay rồi để tools/check_all.py đối chiếu.",
+  "subject": "giai_tich",
+  "problems": [
+    {
+      "id": "gt_bt_gia_tri_ham",
+      "skill": "gt_t1_ham_so",
+      "tier": 1,
+      "title_vi": "Tính giá trị của một hàm số",
+      "statement_vi": [
+        "Hàm số f cho bởi công thức f(x) = 2*x^2 - 3*x + 1. Trúc Lão đọc cho bạn n giá trị của x, hãy tính f(x) cho từng giá trị.",
+        "Gợi ý: viết hẳn một hàm f(x) bằng def rồi gọi nó cho từng số. Dấu ^ trong đề nghĩa là lũy thừa, trong Python viết là **."
+      ],
+      "input_vi": "Dòng đầu là n. Dòng sau là n số nguyên x.",
+      "output_vi": "n số nguyên f(x), cách nhau một dấu cách, đúng thứ tự đề cho.",
+      "limits_vi": "1 <= n <= 100, mỗi x có trị tuyệt đối không quá 1000.",
+      "checker": "exact",
+      "samples": [
+        {
+          "in": "3\n0 1 2\n",
+          "out": "1 0 3\n",
+          "note_vi": "f(0) = 1, f(1) = 2 - 3 + 1 = 0, f(2) = 8 - 6 + 1 = 3."
+        },
+        {
+          "in": "2\n-1 3\n",
+          "out": "6 10\n",
+          "note_vi": "f(-1) = 2 + 3 + 1 = 6, f(3) = 18 - 9 + 1 = 10."
+        }
+      ],
+      "tests": [
+        {
+          "in": "1\n0\n",
+          "out": "1\n"
+        },
+        {
+          "in": "1\n1000\n",
+          "out": "1997001\n"
+        },
+        {
+          "in": "1\n-1000\n",
+          "out": "2003001\n"
+        },
+        {
+          "in": "4\n5 -5 7 -7\n",
+          "out": "36 66 78 120\n"
+        },
+        {
+          "in": "6\n10 20 30 40 50 60\n",
+          "out": "171 741 1711 3081 4851 7021\n"
+        },
+        {
+          "in": "5\n0 0 0 1 1\n",
+          "out": "1 1 1 0 0\n"
+        },
+        {
+          "in": "3\n-2 -1 0\n",
+          "out": "15 6 1\n"
+        }
+      ]
+    },
+    {
+      "id": "gt_bt_tap_xac_dinh",
+      "skill": "gt_t1_ham_so",
+      "tier": 2,
+      "title_vi": "Đếm số nguyên trong tập xác định",
+      "statement_vi": [
+        "Hàm số f(x) = căn(x - 1) / (x - 4) chỉ có nghĩa khi biểu thức dưới căn không âm và mẫu số khác không: x >= 1 và x != 4.",
+        "Cho hai số nguyên a, b. Hãy đếm có bao nhiêu số nguyên x với a <= x <= b mà f(x) có nghĩa."
+      ],
+      "input_vi": "Một dòng gồm hai số nguyên a và b.",
+      "output_vi": "Một số nguyên: số giá trị x thỏa mãn.",
+      "limits_vi": "-1000000 <= a <= b <= 1000000.",
+      "checker": "exact",
+      "samples": [
+        {
+          "in": "0 5\n",
+          "out": "4\n",
+          "note_vi": "Các số 1, 2, 3, 5 có nghĩa; 0 thì căn số âm, 4 làm mẫu bằng không."
+        },
+        {
+          "in": "5 10\n",
+          "out": "6\n",
+          "note_vi": "Cả sáu số từ 5 đến 10 đều có nghĩa."
+        }
+      ],
+      "tests": [
+        {
+          "in": "4 4\n",
+          "out": "0\n"
+        },
+        {
+          "in": "1 1\n",
+          "out": "1\n"
+        },
+        {
+          "in": "-10 0\n",
+          "out": "0\n"
+        },
+        {
+          "in": "1 4\n",
+          "out": "3\n"
+        },
+        {
+          "in": "3 5\n",
+          "out": "2\n"
+        },
+        {
+          "in": "0 0\n",
+          "out": "0\n"
+        },
+        {
+          "in": "-1000000 1000000\n",
+          "out": "999999\n"
+        },
+        {
+          "in": "4 10\n",
+          "out": "6\n"
+        },
+        {
+          "in": "-3 7\n",
+          "out": "6\n"
+        }
+      ]
+    },
+    {
+      "id": "gt_bt_lap_ham_hop",
+      "skill": "gt_t1_ham_hop",
+      "tier": 2,
+      "title_vi": "Hợp một hàm với chính nó",
+      "statement_vi": [
+        "Cho hàm f trên số nguyên dương: f(n) = n / 2 nếu n chẵn, f(n) = 3n + 1 nếu n lẻ. Bắt đầu từ n rồi lấy hàm hợp liên tiếp n, f(n), f(f(n)), ... cho tới khi gặp 1 thì dừng.",
+        "Hãy đếm số lần đã áp dụng f, và tìm giá trị lớn nhất xuất hiện trên đường đi (tính cả số bắt đầu và số 1)."
+      ],
+      "input_vi": "Một số nguyên n.",
+      "output_vi": "Hai số nguyên cách nhau một dấu cách: số lần áp dụng f, rồi giá trị lớn nhất.",
+      "limits_vi": "1 <= n <= 1000000. Mọi n trong khoảng này đều tới được 1.",
+      "checker": "exact",
+      "samples": [
+        {
+          "in": "6\n",
+          "out": "8 16\n",
+          "note_vi": "6, 3, 10, 5, 16, 8, 4, 2, 1: tám lần áp dụng f, lớn nhất là 16."
+        },
+        {
+          "in": "1\n",
+          "out": "0 1\n",
+          "note_vi": "Đã ở 1 nên không phải áp dụng f lần nào."
+        }
+      ],
+      "tests": [
+        {
+          "in": "2\n",
+          "out": "1 2\n"
+        },
+        {
+          "in": "3\n",
+          "out": "7 16\n"
+        },
+        {
+          "in": "7\n",
+          "out": "16 52\n"
+        },
+        {
+          "in": "27\n",
+          "out": "111 9232\n"
+        },
+        {
+          "in": "97\n",
+          "out": "118 9232\n"
+        },
+        {
+          "in": "871\n",
+          "out": "178 190996\n"
+        },
+        {
+          "in": "1000\n",
+          "out": "111 9232\n"
+        },
+        {
+          "in": "837799\n",
+          "out": "524 2974984576\n"
+        },
+        {
+          "in": "999999\n",
+          "out": "258 22781248\n"
+        },
+        {
+          "in": "8\n",
+          "out": "3 8\n"
+        },
+        {
+          "in": "5\n",
+          "out": "5 16\n"
+        }
+      ]
+    }
+  ]
+}

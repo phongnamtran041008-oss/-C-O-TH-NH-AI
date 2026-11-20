@@ -1,0 +1,372 @@
+{
+ "dstt_bt_cong_ma_tran": [
+  {
+   "name": "quên nhân k",
+   "code": "d = list(map(int, open(0).read().split()))\nn, m, k = d[:3]\nA = [d[3+i*m:3+(i+1)*m] for i in range(n)]\nB = [d[3+n*m+i*m:3+n*m+(i+1)*m] for i in range(n)]\nfor i in range(n):\n    print(*(A[i][j] + B[i][j] for j in range(m)))\n"
+  },
+  {
+   "name": "nhân k vào A",
+   "code": "d = list(map(int, open(0).read().split()))\nn, m, k = d[:3]\nA = [d[3+i*m:3+(i+1)*m] for i in range(n)]\nB = [d[3+n*m+i*m:3+n*m+(i+1)*m] for i in range(n)]\nfor i in range(n):\n    print(*(k * A[i][j] + B[i][j] for j in range(m)))\n"
+  },
+  {
+   "name": "trừ thay vì cộng",
+   "code": "d = list(map(int, open(0).read().split()))\nn, m, k = d[:3]\nA = [d[3+i*m:3+(i+1)*m] for i in range(n)]\nB = [d[3+n*m+i*m:3+n*m+(i+1)*m] for i in range(n)]\nfor i in range(n):\n    print(*(A[i][j] - k * B[i][j] for j in range(m)))\n"
+  }
+ ],
+ "dstt_bt_giai_he_gauss": [
+  {
+   "name": "không đổi hàng khi chốt bằng 0",
+   "code": "import sys\nfrom fractions import Fraction\nd = sys.stdin.read().split()\nn = int(d[0])\nM = [[Fraction(int(d[1+i*(n+1)+j])) for j in range(n+1)] for i in range(n)]\nfor c in range(n):\n    for r in range(c+1, n):\n        f = M[r][c] / M[c][c]\n        M[r] = [a - f*b for a, b in zip(M[r], M[c])]\nx = [0]*n\nfor i in range(n-1, -1, -1):\n    x[i] = (M[i][n] - sum(M[i][j]*x[j] for j in range(i+1, n))) / M[i][i]\nprint(*map(str, x))\n"
+  },
+  {
+   "name": "dùng số thực",
+   "code": "import sys\nd = sys.stdin.read().split()\nn = int(d[0])\nM = [[float(d[1+i*(n+1)+j]) for j in range(n+1)] for i in range(n)]\nfor c in range(n):\n    p = next(r for r in range(c, n) if M[r][c] != 0)\n    M[c], M[p] = M[p], M[c]\n    for r in range(c+1, n):\n        f = M[r][c] / M[c][c]\n        M[r] = [a - f*b for a, b in zip(M[r], M[c])]\nx = [0]*n\nfor i in range(n-1, -1, -1):\n    x[i] = (M[i][n] - sum(M[i][j]*x[j] for j in range(i+1, n))) / M[i][i]\nprint(*x)\n"
+  },
+  {
+   "name": "in phân số không tối giản dạng p/1",
+   "code": "import sys\nfrom fractions import Fraction\nd = sys.stdin.read().split()\nn = int(d[0])\nM = [[Fraction(int(d[1+i*(n+1)+j])) for j in range(n+1)] for i in range(n)]\nfor c in range(n):\n    p = next(r for r in range(c, n) if M[r][c] != 0)\n    M[c], M[p] = M[p], M[c]\n    for r in range(c+1, n):\n        f = M[r][c] / M[c][c]\n        M[r] = [a - f*b for a, b in zip(M[r], M[c])]\nx = [0]*n\nfor i in range(n-1, -1, -1):\n    x[i] = (M[i][n] - sum(M[i][j]*x[j] for j in range(i+1, n))) / M[i][i]\nprint(*(f'{v.numerator}/{v.denominator}' for v in x))\n"
+  }
+ ],
+ "dstt_bt_kich_thuoc_nhan": [
+  {
+   "name": "chỉ kiểm tra hai ma trận đầu",
+   "code": "d = list(map(int, open(0).read().split()))\nk = d[0]\nco = [(d[1+2*i], d[2+2*i]) for i in range(k)]\nif k >= 2 and co[0][1] != co[1][0]:\n    print('khong nhan duoc')\nelse:\n    h, c = co[0]\n    t = 0\n    for a, b in co[1:]:\n        t += h * c * b\n        c = b\n    print(h, c, t)\n"
+  },
+  {
+   "name": "tính chi phí sai a*b thay vì a*b*d",
+   "code": "d = list(map(int, open(0).read().split()))\nk = d[0]\nco = [(d[1+2*i], d[2+2*i]) for i in range(k)]\nh, c = co[0]\nt = 0\nfor a, b in co[1:]:\n    if c != a:\n        print('khong nhan duoc')\n        break\n    t += h * c\n    c = b\nelse:\n    print(h, c, t)\n"
+  },
+  {
+   "name": "nhân từ phải sang trái",
+   "code": "d = list(map(int, open(0).read().split()))\nk = d[0]\nco = [(d[1+2*i], d[2+2*i]) for i in range(k)]\nh, c = co[-1]\nt = 0\nfor a, b in reversed(co[:-1]):\n    if b != h:\n        print('khong nhan duoc')\n        break\n    t += a * b * c\n    h = a\nelse:\n    print(h, c, t)\n"
+  }
+ ],
+ "dstt_bt_loai_anh_xa": [
+  {
+   "name": "đơn ánh nhầm với toàn ánh",
+   "code": "d = open(0).read().split()\nn, m = int(d[0]), int(d[1])\nf = d[2:2+n]\ntoan = len(set(f)) == m\ndon = toan\nprint(*('co' if x else 'khong' for x in (don, toan, don and toan)))\n"
+  },
+  {
+   "name": "song ánh chỉ cần đơn ánh",
+   "code": "d = open(0).read().split()\nn, m = int(d[0]), int(d[1])\nf = d[2:2+n]\ndon = len(set(f)) == n\ntoan = len(set(f)) == m\nprint(*('co' if x else 'khong' for x in (don, toan, don)))\n"
+  },
+  {
+   "name": "toàn ánh chỉ so n với m",
+   "code": "d = open(0).read().split()\nn, m = int(d[0]), int(d[1])\nf = d[2:2+n]\ndon = len(set(f)) == n\ntoan = n >= m\nprint(*('co' if x else 'khong' for x in (don, toan, don and toan)))\n"
+  }
+ ],
+ "dstt_bt_loai_ma_tran": [
+  {
+   "name": "tam giác trên nhầm với dưới",
+   "code": "d = list(map(int, open(0).read().split()))\nn = d[0]\nA = [d[1+i*n:1+(i+1)*n] for i in range(n)]\nR = range(n)\nr = []\nif all(A[i][j] == 0 for i in R for j in R if i != j): r.append('duong_cheo')\nif all(A[i][j] == 0 for i in R for j in R if i < j): r.append('tam_giac_tren')\nif all(A[i][j] == 0 for i in R for j in R if i > j): r.append('tam_giac_duoi')\nif all(A[i][j] == A[j][i] for i in R for j in R): r.append('doi_xung')\nif all(A[i][j] == (i == j) for i in R for j in R): r.append('don_vi')\nprint(*(r or ['khong']))\n"
+  },
+  {
+   "name": "đơn vị chỉ xét đường chéo",
+   "code": "d = list(map(int, open(0).read().split()))\nn = d[0]\nA = [d[1+i*n:1+(i+1)*n] for i in range(n)]\nR = range(n)\nr = []\nif all(A[i][j] == 0 for i in R for j in R if i != j): r.append('duong_cheo')\nif all(A[i][j] == 0 for i in R for j in R if i > j): r.append('tam_giac_tren')\nif all(A[i][j] == 0 for i in R for j in R if i < j): r.append('tam_giac_duoi')\nif all(A[i][j] == A[j][i] for i in R for j in R): r.append('doi_xung')\nif all(A[i][i] == 1 for i in R): r.append('don_vi')\nprint(*(r or ['khong']))\n"
+  },
+  {
+   "name": "đối xứng chỉ xét nửa trên",
+   "code": "d = list(map(int, open(0).read().split()))\nn = d[0]\nA = [d[1+i*n:1+(i+1)*n] for i in range(n)]\nR = range(n)\nr = []\nif all(A[i][j] == 0 for i in R for j in R if i != j): r.append('duong_cheo')\nif all(A[i][j] == 0 for i in R for j in R if i > j): r.append('tam_giac_tren')\nif all(A[i][j] == 0 for i in R for j in R if i < j): r.append('tam_giac_duoi')\nif all(A[i][j] == A[j][i] for i in R for j in R if i < j and j < n - 1): r.append('doi_xung')\nif all(A[i][j] == (i == j) for i in R for j in R): r.append('don_vi')\nprint(*(r or ['khong']))\n"
+  },
+  {
+   "name": "không bao giờ in khong",
+   "code": "d = list(map(int, open(0).read().split()))\nn = d[0]\nA = [d[1+i*n:1+(i+1)*n] for i in range(n)]\nR = range(n)\nr = []\nif all(A[i][j] == 0 for i in R for j in R if i != j): r.append('duong_cheo')\nif all(A[i][j] == 0 for i in R for j in R if i > j): r.append('tam_giac_tren')\nif all(A[i][j] == 0 for i in R for j in R if i < j): r.append('tam_giac_duoi')\nif all(A[i][j] == A[j][i] for i in R for j in R): r.append('doi_xung')\nif all(A[i][j] == (i == j) for i in R for j in R): r.append('don_vi')\nprint(*r)\n"
+  }
+ ],
+ "dstt_bt_luy_thua_ma_tran": [
+  {
+   "name": "nhân k lần (quá chậm)",
+   "code": "d = list(map(int, open(0).read().split()))\nn, k, M = d[:3]\nA = [d[3+i*n:3+(i+1)*n] for i in range(n)]\nR = [[int(i == j) for j in range(n)] for i in range(n)]\nfor _ in range(k):\n    R = [[sum(R[i][t] * A[t][j] for t in range(n)) % M for j in range(n)] for i in range(n)]\nfor r in R:\n    print(*r)\n"
+  },
+  {
+   "name": "quên A^0 là ma trận đơn vị",
+   "code": "d = list(map(int, open(0).read().split()))\nn, k, M = d[:3]\nA = [d[3+i*n:3+(i+1)*n] for i in range(n)]\n\n\ndef mul(X, Y):\n    return [[sum(X[i][t] * Y[t][j] for t in range(n)) % M for j in range(n)] for i in range(n)]\n\n\nif k == 0:\n    R = A\nelse:\n    R = None\n    B = A\n    while k:\n        if k & 1:\n            R = B if R is None else mul(R, B)\n        B = mul(B, B)\n        k >>= 1\nfor r in R:\n    print(*r)\n"
+  },
+  {
+   "name": "không lấy dư trong lúc nhân (số phình to)",
+   "code": "d = list(map(int, open(0).read().split()))\nn, k, M = d[:3]\nA = [d[3+i*n:3+(i+1)*n] for i in range(n)]\n\n\ndef mul(X, Y):\n    return [[sum(X[i][t] * Y[t][j] for t in range(n)) for j in range(n)] for i in range(n)]\n\n\nR = [[int(i == j) for j in range(n)] for i in range(n)]\nB = A\nwhile k:\n    if k & 1:\n        R = mul(R, B)\n    B = mul(B, B)\n    k >>= 1\nfor r in R:\n    print(*(x % M for x in r))\n"
+  }
+ ],
+ "dstt_bt_nhan_ma_tran": [
+  {
+   "name": "nhân từng phần tử cùng vị trí",
+   "code": "d = list(map(int, open(0).read().split()))\np, q, r = d[:3]\nA = [d[3+i*q:3+(i+1)*q] for i in range(p)]\nB = [d[3+p*q+i*r:3+p*q+(i+1)*r] for i in range(q)]\nfor i in range(p):\n    print(*(A[i][j] * B[i][j] if i < q and j < q else 0 for j in range(r)))\n"
+  },
+  {
+   "name": "nhân B*A thay vì A*B",
+   "code": "d = list(map(int, open(0).read().split()))\np, q, r = d[:3]\nA = [d[3+i*q:3+(i+1)*q] for i in range(p)]\nB = [d[3+p*q+i*r:3+p*q+(i+1)*r] for i in range(q)]\nif p == r:\n    for i in range(q):\n        print(*(sum(B[i][k] * A[k][j] for k in range(p)) for j in range(q)))\nelse:\n    print(0)\n"
+  },
+  {
+   "name": "quên cộng dồn, lấy số hạng cuối",
+   "code": "d = list(map(int, open(0).read().split()))\np, q, r = d[:3]\nA = [d[3+i*q:3+(i+1)*q] for i in range(p)]\nB = [d[3+p*q+i*r:3+p*q+(i+1)*r] for i in range(q)]\nfor i in range(p):\n    print(*(A[i][q-1] * B[q-1][j] for j in range(r)))\n"
+  }
+ ],
+ "dstt_bt_so_nghiem_he": [
+  {
+   "name": "bỏ qua vế phải: chỉ xét hạng A",
+   "code": "import sys\nfrom fractions import Fraction\n\n\ndef hang(M, cot):\n    M = [h[:] for h in M]\n    r = 0\n    for c in range(cot):\n        p = next((i for i in range(r, len(M)) if M[i][c] != 0), None)\n        if p is None:\n            continue\n        M[r], M[p] = M[p], M[r]\n        for i in range(r + 1, len(M)):\n            f = M[i][c] / M[r][c]\n            M[i] = [x - f * y for x, y in zip(M[i], M[r])]\n        r += 1\n    return r\n\n\nd = sys.stdin.read().split()\nm, n = int(d[0]), int(d[1])\nM = [[Fraction(int(d[2+i*(n+1)+j])) for j in range(n+1)] for i in range(m)]\nra = hang(M, n)\nprint('duy_nhat' if ra == n else 'vo_so_nghiem', ra, ra)\n"
+  },
+  {
+   "name": "duy nhất khi m = n",
+   "code": "import sys\nd = sys.stdin.read().split()\nm, n = int(d[0]), int(d[1])\nprint('duy_nhat' if m == n else 'vo_so_nghiem', min(m, n), min(m, n))\n"
+  },
+  {
+   "name": "đếm hàng khác 0 mà không khử",
+   "code": "import sys\nd = sys.stdin.read().split()\nm, n = int(d[0]), int(d[1])\nM = [[int(d[2+i*(n+1)+j]) for j in range(n+1)] for i in range(m)]\nra = sum(1 for r in M if any(r[:n]))\nrb = sum(1 for r in M if any(r))\nprint('vo_nghiem' if ra < rb else ('duy_nhat' if ra == n else 'vo_so_nghiem'), ra, rb)\n"
+  }
+ ],
+ "dstt_bt_tao_anh": [
+  {
+   "name": "chỉ số từ 0",
+   "code": "import sys\nd = sys.stdin.read().split()\nn = int(d[0])\na = {}\nfor i in range(n):\n    a.setdefault(int(d[1+i]), []).append(i)\nq = int(d[n+1])\nfor y in d[n+2:n+2+q]:\n    c = a.get(int(y), [])\n    print(len(c), *c)\n"
+  },
+  {
+   "name": "chỉ lấy chỉ số đầu",
+   "code": "import sys\nd = sys.stdin.read().split()\nn = int(d[0])\na = {}\nfor i in range(1, n+1):\n    a.setdefault(int(d[i]), [i])\nq = int(d[n+1])\nfor y in d[n+2:n+2+q]:\n    c = a.get(int(y), [])\n    print(len(c), *c)\n"
+  },
+  {
+   "name": "in thiếu số phần tử",
+   "code": "import sys\nd = sys.stdin.read().split()\nn = int(d[0])\na = {}\nfor i in range(1, n+1):\n    a.setdefault(int(d[i]), []).append(i)\nq = int(d[n+1])\nfor y in d[n+2:n+2+q]:\n    print(*a.get(int(y), []))\n"
+  }
+ ],
+ "dstt_bt_tich_descartes": [
+  {
+   "name": "không bỏ trùng",
+   "code": "import sys\nd = sys.stdin.read().split()\nn = int(d[0])\nA = sorted(map(int, d[1:1+n]))\nm = int(d[1+n])\nB = sorted(map(int, d[2+n:2+n+m]))\nprint(len(A)*len(B))\nfor a in A:\n    for b in B:\n        print(a, b)\n"
+  },
+  {
+   "name": "sắp xếp theo chuỗi",
+   "code": "import sys\nd = sys.stdin.read().split()\nn = int(d[0])\nA = sorted(set(d[1:1+n]))\nm = int(d[1+n])\nB = sorted(set(d[2+n:2+n+m]))\nprint(len(A)*len(B))\nfor a in A:\n    for b in B:\n        print(a, b)\n"
+  },
+  {
+   "name": "cặp đảo chiều (b, a)",
+   "code": "import sys\nd = sys.stdin.read().split()\nn = int(d[0])\nA = sorted(set(map(int, d[1:1+n])))\nm = int(d[1+n])\nB = sorted(set(map(int, d[2+n:2+n+m])))\nprint(len(A)*len(B))\nfor b in B:\n    for a in A:\n        print(a, b)\n"
+  }
+ ],
+ "gt_bt_gia_tri_ham": [
+  {
+   "name": "quên số 1",
+   "code": "import sys\nd = sys.stdin.read().split()\nprint(' '.join(str(2*int(x)**2 - 3*int(x)) for x in d[1:]))\n"
+  },
+  {
+   "name": "x^2 hiểu thành x*2",
+   "code": "import sys\nd = sys.stdin.read().split()\nprint(' '.join(str(2*int(x)*2 - 3*int(x) + 1) for x in d[1:]))\n"
+  },
+  {
+   "name": "chỉ tính số đầu",
+   "code": "import sys\nd = sys.stdin.read().split()\nx = int(d[1])\nprint(2*x*x - 3*x + 1)\n"
+  }
+ ],
+ "gt_bt_lap_ham_hop": [
+  {
+   "name": "không tính số bắt đầu vào giá trị lớn nhất",
+   "code": "n = int(input())\nb = 0\nl = 0\nwhile n != 1:\n    n = n // 2 if n % 2 == 0 else 3 * n + 1\n    b += 1\n    l = max(l, n)\nprint(b, l)\n"
+  },
+  {
+   "name": "đếm cả bước cuối thừa",
+   "code": "n = int(input())\nb = 1\nl = n\nwhile n != 1:\n    n = n // 2 if n % 2 == 0 else 3 * n + 1\n    b += 1\n    l = max(l, n)\nprint(b, l)\n"
+  },
+  {
+   "name": "dùng / ra số thực",
+   "code": "n = int(input())\nb = 0\nl = n\nwhile n != 1:\n    n = n / 2 if n % 2 == 0 else 3 * n + 1\n    b += 1\n    l = max(l, n)\nprint(b, l)\n"
+  }
+ ],
+ "gt_bt_tap_xac_dinh": [
+  {
+   "name": "x > 1 thay vì x >= 1",
+   "code": "a, b = map(int, input().split())\nprint(sum(1 for x in range(a, b + 1) if x > 1 and x != 4))\n"
+  },
+  {
+   "name": "quên x != 4",
+   "code": "a, b = map(int, input().split())\nprint(sum(1 for x in range(a, b + 1) if x >= 1))\n"
+  },
+  {
+   "name": "bỏ sót đầu mút b",
+   "code": "a, b = map(int, input().split())\nprint(sum(1 for x in range(a, b) if x >= 1 and x != 4))\n"
+  }
+ ],
+ "tr_bt_bang_chan_tri": [
+  {
+   "name": "kéo theo đảo chiều",
+   "code": "import sys\nd = sys.stdin.read().split()\nfor i in range(int(d[0])):\n    p = int(d[1+2*i]); q = int(d[2+2*i])\n    print(p & q, p | q, int(p or (not q)), int(p == q))\n"
+  },
+  {
+   "name": "khi và chỉ khi thành khác nhau",
+   "code": "import sys\nd = sys.stdin.read().split()\nfor i in range(int(d[0])):\n    p = int(d[1+2*i]); q = int(d[2+2*i])\n    print(p & q, p | q, int((not p) or q), int(p != q))\n"
+  },
+  {
+   "name": "kéo theo thành và",
+   "code": "import sys\nd = sys.stdin.read().split()\nfor i in range(int(d[0])):\n    p = int(d[1+2*i]); q = int(d[2+2*i])\n    print(p & q, p | q, p & q, int(p == q))\n"
+  }
+ ],
+ "tr_bt_giai_thua_de_quy": [
+  {
+   "name": "điều kiện dừng sai: 0! = 0",
+   "code": "def g(n):\n    if n == 0:\n        return 0\n    return n * g(n - 1) if n > 1 else 1\n\n\nprint(g(int(input())))\n"
+  },
+  {
+   "name": "dừng ở n == 1 nên n = 0 đệ quy mãi",
+   "code": "def g(n):\n    if n == 1:\n        return 1\n    return n * g(n - 1)\n\n\nprint(g(int(input())))\n"
+  },
+  {
+   "name": "dùng số thực",
+   "code": "def g(n):\n    return 1.0 if n == 0 else n * g(n - 1)\n\n\nprint(g(int(input())))\n"
+  }
+ ],
+ "tr_bt_hoan_vi_tu_dien": [
+  {
+   "name": "sinh bằng hoán đổi nên sai thứ tự",
+   "code": "def p(a, k, o):\n    if k == len(a):\n        o.append(' '.join(map(str, a)))\n        return\n    for i in range(k, len(a)):\n        a[k], a[i] = a[i], a[k]\n        p(a, k + 1, o)\n        a[k], a[i] = a[i], a[k]\n\n\nn = int(input())\no = []\np(list(range(1, n + 1)), 0, o)\nprint(len(o))\nprint('\\n'.join(o))\n"
+  },
+  {
+   "name": "thử số từ lớn đến nhỏ",
+   "code": "import itertools\nn = int(input())\nL = [' '.join(map(str, p)) for p in itertools.permutations(range(n, 0, -1))]\nprint(len(L))\nprint('\\n'.join(L))\n"
+  },
+  {
+   "name": "quên số lượng",
+   "code": "import itertools\nn = int(input())\nfor p in itertools.permutations(range(1, n + 1)):\n    print(*p)\n"
+  }
+ ],
+ "tr_bt_so_cach_leo_thang": [
+  {
+   "name": "đệ quy trần quá chậm",
+   "code": "def f(n):\n    return 1 if n <= 1 else f(n - 1) + f(n - 2)\n\n\nprint(f(int(input())))\n"
+  },
+  {
+   "name": "f(0) = 0 sai",
+   "code": "n = int(input())\na, b = 0, 1\nfor _ in range(n):\n    a, b = b, a + b\nprint(b if n else 0)\n"
+  },
+  {
+   "name": "lệch một bậc",
+   "code": "n = int(input())\na, b = 1, 1\nfor _ in range(n):\n    a, b = b, a + b\nprint(b)\n"
+  }
+ ],
+ "tr_bt_tap_con_tong": [
+  {
+   "name": "cắt nhánh khi tổng vượt S (sai với số âm)",
+   "code": "d = list(map(int, open(0).read().split()))\nn, s = d[0], d[1]\na = d[2:2+n]\n\n\ndef f(i, c):\n    if c < 0:\n        return 0\n    if i == n:\n        return 1 if c == 0 else 0\n    return f(i + 1, c) + f(i + 1, c - a[i])\n\n\nprint(f(0, s))\n"
+  },
+  {
+   "name": "không tính tập rỗng",
+   "code": "d = list(map(int, open(0).read().split()))\nn, s = d[0], d[1]\na = d[2:2+n]\n\n\ndef f(i, c, k):\n    if i == n:\n        return 1 if c == 0 and k > 0 else 0\n    return f(i + 1, c, k) + f(i + 1, c - a[i], k + 1)\n\n\nprint(f(0, s, 0))\n"
+  },
+  {
+   "name": "gộp giá trị trùng nhau",
+   "code": "d = list(map(int, open(0).read().split()))\nn, s = d[0], d[1]\na = sorted(set(d[2:2+n]))\nm = len(a)\n\n\ndef f(i, c):\n    if i == m:\n        return 1 if c == 0 else 0\n    return f(i + 1, c) + f(i + 1, c - a[i])\n\n\nprint(f(0, s))\n"
+  }
+ ],
+ "tr_bt_thap_ha_noi": [
+  {
+   "name": "nhầm vai trò cọc phụ",
+   "code": "def c(n, a, b, d, o):\n    if n == 0:\n        return\n    c(n - 1, a, b, d, o)\n    o.append(f'{a} {d}')\n    c(n - 1, b, a, d, o)\n\n\nn = int(input())\no = []\nc(n, 'A', 'B', 'C', o)\nprint(len(o))\nprint('\\n'.join(o))\n"
+  },
+  {
+   "name": "đếm 2^n thay vì 2^n - 1",
+   "code": "def c(n, a, b, d, o):\n    if n == 0:\n        return\n    c(n - 1, a, d, b, o)\n    o.append(f'{a} {d}')\n    c(n - 1, b, a, d, o)\n\n\nn = int(input())\no = []\nc(n, 'A', 'B', 'C', o)\nprint(2 ** n)\nprint('\\n'.join(o))\n"
+  },
+  {
+   "name": "chỉ in số nước đi",
+   "code": "n = int(input())\nprint(2 ** n - 1)\n"
+  }
+ ],
+ "xs_bt_bernoulli_mo_phong": [
+  {
+   "name": "thành công khi r % 100 <= q",
+   "code": "from math import comb\nseed = int(input())\nn, q, T, k = map(int, input().split())\ns = seed\nd = 0\nfor _ in range(T):\n    c = 0\n    for _ in range(n):\n        s = (s * 1103515245 + 12345) % 2147483648\n        if (s >> 16) % 100 <= q:\n            c += 1\n    d += c == k\np = q / 100\nprint(d, f'{d / T:.6f}', f'{comb(n, k) * p ** k * (1 - p) ** (n - k):.6f}')\n"
+  },
+  {
+   "name": "đếm ít nhất k thành công",
+   "code": "from math import comb\nseed = int(input())\nn, q, T, k = map(int, input().split())\ns = seed\nd = 0\nfor _ in range(T):\n    c = 0\n    for _ in range(n):\n        s = (s * 1103515245 + 12345) % 2147483648\n        if (s >> 16) % 100 < q:\n            c += 1\n    d += c >= k\np = q / 100\nprint(d, f'{d / T:.6f}', f'{comb(n, k) * p ** k * (1 - p) ** (n - k):.6f}')\n"
+  },
+  {
+   "name": "công thức thiếu hệ số C(n, k)",
+   "code": "seed = int(input())\nn, q, T, k = map(int, input().split())\ns = seed\nd = 0\nfor _ in range(T):\n    c = 0\n    for _ in range(n):\n        s = (s * 1103515245 + 12345) % 2147483648\n        if (s >> 16) % 100 < q:\n            c += 1\n    d += c == k\np = q / 100\nprint(d, f'{d / T:.6f}', f'{p ** k * (1 - p) ** (n - k):.6f}')\n"
+  },
+  {
+   "name": "lấy r % 100 từ s thay vì s >> 16",
+   "code": "from math import comb\nseed = int(input())\nn, q, T, k = map(int, input().split())\ns = seed\nd = 0\nfor _ in range(T):\n    c = 0\n    for _ in range(n):\n        s = (s * 1103515245 + 12345) % 2147483648\n        if s % 100 < q:\n            c += 1\n    d += c == k\np = q / 100\nprint(d, f'{d / T:.6f}', f'{comb(n, k) * p ** k * (1 - p) ** (n - k):.6f}')\n"
+  }
+ ],
+ "xs_bt_bo_do_khac_mau": [
+  {
+   "name": "quên loại cặp cùng màu",
+   "code": "import sys\nd = sys.stdin.read().split()\nprint(int(d[0]) * int(d[1]))\n"
+  },
+  {
+   "name": "đếm màu khác nhau thay vì món",
+   "code": "import sys\nd = sys.stdin.read().split()\nn, m = int(d[0]), int(d[1])\na = set(d[2:2+n]); b = set(d[2+n:2+n+m])\nprint(sum(1 for x in a for y in b if x != y))\n"
+  }
+ ],
+ "xs_bt_rut_bi_khong_hoan_lai": [
+  {
+   "name": "rút có hoàn lại",
+   "code": "from math import comb\nseed = int(input())\na, b, k, T = map(int, input().split())\ns = seed\ndung = 0\nfor _ in range(T):\n    ok = True\n    for _ in range(k):\n        s = (s * 1103515245 + 12345) % 2147483648\n        if (s >> 16) % (a + b) >= a:\n            ok = False\n    dung += ok\nprint(dung, f'{dung / T:.6f}', f'{comb(a, k) / comb(a + b, k):.6f}')\n"
+  },
+  {
+   "name": "đặt lại hạt giống sau mỗi lần thử",
+   "code": "from math import comb\nseed = int(input())\na, b, k, T = map(int, input().split())\ndung = 0\nfor _ in range(T):\n    s = seed\n    hop = ['do'] * a + ['xanh'] * b\n    ok = True\n    for _ in range(k):\n        s = (s * 1103515245 + 12345) % 2147483648\n        if hop.pop((s >> 16) % len(hop)) != 'do':\n            ok = False\n    dung += ok\nprint(dung, f'{dung / T:.6f}', f'{comb(a, k) / comb(a + b, k):.6f}')\n"
+  },
+  {
+   "name": "xác suất đúng dùng hoán vị thay vì tổ hợp",
+   "code": "from math import perm\nseed = int(input())\na, b, k, T = map(int, input().split())\ns = seed\ndung = 0\nfor _ in range(T):\n    hop = ['do'] * a + ['xanh'] * b\n    ok = True\n    for _ in range(k):\n        s = (s * 1103515245 + 12345) % 2147483648\n        if hop.pop((s >> 16) % len(hop)) != 'do':\n            ok = False\n    dung += ok\nprint(dung, f'{dung / T:.6f}', f'{perm(a, k) / perm(a + b, k) * 1.5:.6f}')\n"
+  },
+  {
+   "name": "hộp xếp xanh trước đỏ",
+   "code": "from math import comb\nseed = int(input())\na, b, k, T = map(int, input().split())\ns = seed\ndung = 0\nfor _ in range(T):\n    hop = ['xanh'] * b + ['do'] * a\n    ok = True\n    for _ in range(k):\n        s = (s * 1103515245 + 12345) % 2147483648\n        if hop.pop((s >> 16) % len(hop)) != 'do':\n            ok = False\n    dung += ok\nprint(dung, f'{dung / T:.6f}', f'{comb(a, k) / comb(a + b, k):.6f}')\n"
+  }
+ ],
+ "xs_bt_tong_n_xuc_xac_dem_het": [
+  {
+   "name": "không rút gọn",
+   "code": "from itertools import product\nn, s = map(int, input().split())\nt = sum(1 for k in product(range(1, 7), repeat=n) if sum(k) == s)\nprint(f'{t}/{6 ** n}')\n"
+  },
+  {
+   "name": "đếm tổng ít nhất s",
+   "code": "from fractions import Fraction\nfrom itertools import product\nn, s = map(int, input().split())\nt = sum(1 for k in product(range(1, 7), repeat=n) if sum(k) >= s)\nprint(Fraction(t, 6 ** n))\n"
+  },
+  {
+   "name": "coi (a, b) và (b, a) là một",
+   "code": "from fractions import Fraction\nfrom itertools import combinations_with_replacement\nn, s = map(int, input().split())\nt = sum(1 for k in combinations_with_replacement(range(1, 7), n) if sum(k) == s)\nfrom math import comb\nprint(Fraction(t, comb(6 + n - 1, n)))\n"
+  }
+ ],
+ "xs_bt_xac_suat_dieu_kien_mo_phong": [
+  {
+   "name": "chia cho N (xác suất không điều kiện)",
+   "code": "seed, N = map(int, input().split())\ns = seed\nnB = nAB = 0\nfor _ in range(N):\n    s = (s * 1103515245 + 12345) % 2147483648\n    x = (s >> 16) % 6 + 1\n    s = (s * 1103515245 + 12345) % 2147483648\n    y = (s >> 16) % 6 + 1\n    if x == 6 or y == 6:\n        nB += 1\n        if x + y >= 10:\n            nAB += 1\nprint(nB, nAB, f'{nAB / N:.6f}')\n"
+  },
+  {
+   "name": "B chỉ xét xúc xắc đầu",
+   "code": "seed, N = map(int, input().split())\ns = seed\nnB = nAB = 0\nfor _ in range(N):\n    s = (s * 1103515245 + 12345) % 2147483648\n    x = (s >> 16) % 6 + 1\n    s = (s * 1103515245 + 12345) % 2147483648\n    y = (s >> 16) % 6 + 1\n    if x == 6:\n        nB += 1\n        if x + y >= 10:\n            nAB += 1\nprint(nB, nAB, f'{(nAB / nB if nB else 0):.6f}')\n"
+  },
+  {
+   "name": "A là tổng lớn hơn 10",
+   "code": "seed, N = map(int, input().split())\ns = seed\nnB = nAB = 0\nfor _ in range(N):\n    s = (s * 1103515245 + 12345) % 2147483648\n    x = (s >> 16) % 6 + 1\n    s = (s * 1103515245 + 12345) % 2147483648\n    y = (s >> 16) % 6 + 1\n    if x == 6 or y == 6:\n        nB += 1\n        if x + y > 10:\n            nAB += 1\nprint(nB, nAB, f'{(nAB / nB if nB else 0):.6f}')\n"
+  },
+  {
+   "name": "lỗi chia cho 0 khi nB = 0",
+   "code": "seed, N = map(int, input().split())\ns = seed\nnB = nAB = 0\nfor _ in range(N):\n    s = (s * 1103515245 + 12345) % 2147483648\n    x = (s >> 16) % 6 + 1\n    s = (s * 1103515245 + 12345) % 2147483648\n    y = (s >> 16) % 6 + 1\n    if x == 6 or y == 6:\n        nB += 1\n        if x + y >= 10:\n            nAB += 1\nprint(nB, nAB, f'{nAB / nB:.6f}')\n"
+  }
+ ],
+ "xs_bt_xuc_xac_tan_suat": [
+  {
+   "name": "tần suất của mặt 1 thay vì mặt 6",
+   "code": "seed, N = map(int, input().split())\ns = seed\nd = [0] * 6\nfor _ in range(N):\n    s = (s * 1103515245 + 12345) % 2147483648\n    d[(s >> 16) % 6] += 1\nprint(*d)\nprint(f'{d[0] / N:.6f}')\n"
+  },
+  {
+   "name": "mặt thành 0 đến 5 (đếm lệch nhãn)",
+   "code": "seed, N = map(int, input().split())\ns = seed\nd = [0] * 7\nfor _ in range(N):\n    s = (s * 1103515245 + 12345) % 2147483648\n    d[(s >> 16) % 6] += 1\nprint(*d[1:])\nprint(f'{d[5] / N:.6f}')\n"
+  },
+  {
+   "name": "lấy s thay vì s >> 16",
+   "code": "seed, N = map(int, input().split())\ns = seed\nd = [0] * 7\nfor _ in range(N):\n    s = (s * 1103515245 + 12345) % 2147483648\n    d[s % 6 + 1] += 1\nprint(*d[1:])\nprint(f'{d[6] / N:.6f}')\n"
+  },
+  {
+   "name": "dùng số của thư viện random",
+   "code": "import random\nseed, N = map(int, input().split())\nrandom.seed(seed)\nd = [0] * 7\nfor _ in range(N):\n    d[random.randint(1, 6)] += 1\nprint(*d[1:])\nprint(f'{d[6] / N:.6f}')\n"
+  },
+  {
+   "name": "dùng số của lần trước (lệch một lần)",
+   "code": "seed, N = map(int, input().split())\ns = seed\nd = [0] * 7\nfor _ in range(N):\n    d[(s >> 16) % 6 + 1] += 1\n    s = (s * 1103515245 + 12345) % 2147483648\nprint(*d[1:])\nprint(f'{d[6] / N:.6f}')\n"
+  }
+ ]
+}
