@@ -22,7 +22,8 @@ from kit import launcher  # noqa: E402
 
 BATCH = "weapon_layers"
 SCENE = Path(__file__).with_name("scene.py")
-TYPES = ("kiem", "dao", "thuong", "chuy", "truong", "cung", "phien", "ho_lo")
+TYPES = ("kiem", "dao", "thuong", "chuy", "truong", "cung", "phien", "ho_lo",
+         "kich", "roi", "am_khi", "luan", "phu", "cam")     # the last six: WEAPONS_C (kỳ binh)
 ALL = [f"{t}_{g}" for t in TYPES for g in range(1, 9)]
 FLY = ["phi_kiem_1", "phi_kiem_2", "phi_kiem_3"]
 

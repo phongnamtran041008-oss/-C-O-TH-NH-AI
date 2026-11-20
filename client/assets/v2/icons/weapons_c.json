@@ -1,0 +1,247 @@
+{
+ "sheet": "weapons_c.png",
+ "cell": 32,
+ "cols": 8,
+ "icons": {
+  "kich_1": {
+   "index": 0,
+   "name_vi": "Mộc Kích",
+   "grade": 1
+  },
+  "kich_2": {
+   "index": 1,
+   "name_vi": "Thiết Kích",
+   "grade": 2
+  },
+  "kich_3": {
+   "index": 2,
+   "name_vi": "Bích Ngọc Kích",
+   "grade": 3
+  },
+  "kich_4": {
+   "index": 3,
+   "name_vi": "Kim Lam Kích",
+   "grade": 4
+  },
+  "kich_5": {
+   "index": 4,
+   "name_vi": "Linh Quang Kích",
+   "grade": 5
+  },
+  "kich_6": {
+   "index": 5,
+   "name_vi": "Hỏa Diệm Kích",
+   "grade": 6
+  },
+  "kich_7": {
+   "index": 6,
+   "name_vi": "Băng Dực Kích",
+   "grade": 7
+  },
+  "kich_8": {
+   "index": 7,
+   "name_vi": "Tinh Không Kích",
+   "grade": 8
+  },
+  "roi_1": {
+   "index": 8,
+   "name_vi": "Mộc Roi",
+   "grade": 1
+  },
+  "roi_2": {
+   "index": 9,
+   "name_vi": "Thiết Roi",
+   "grade": 2
+  },
+  "roi_3": {
+   "index": 10,
+   "name_vi": "Bích Ngọc Roi",
+   "grade": 3
+  },
+  "roi_4": {
+   "index": 11,
+   "name_vi": "Kim Lam Roi",
+   "grade": 4
+  },
+  "roi_5": {
+   "index": 12,
+   "name_vi": "Linh Quang Roi",
+   "grade": 5
+  },
+  "roi_6": {
+   "index": 13,
+   "name_vi": "Hỏa Diệm Roi",
+   "grade": 6
+  },
+  "roi_7": {
+   "index": 14,
+   "name_vi": "Băng Dực Roi",
+   "grade": 7
+  },
+  "roi_8": {
+   "index": 15,
+   "name_vi": "Tinh Không Roi",
+   "grade": 8
+  },
+  "am_khi_1": {
+   "index": 16,
+   "name_vi": "Mộc Ám Khí",
+   "grade": 1
+  },
+  "am_khi_2": {
+   "index": 17,
+   "name_vi": "Thiết Ám Khí",
+   "grade": 2
+  },
+  "am_khi_3": {
+   "index": 18,
+   "name_vi": "Bích Ngọc Ám Khí",
+   "grade": 3
+  },
+  "am_khi_4": {
+   "index": 19,
+   "name_vi": "Kim Lam Ám Khí",
+   "grade": 4
+  },
+  "am_khi_5": {
+   "index": 20,
+   "name_vi": "Linh Quang Ám Khí",
+   "grade": 5
+  },
+  "am_khi_6": {
+   "index": 21,
+   "name_vi": "Hỏa Diệm Ám Khí",
+   "grade": 6
+  },
+  "am_khi_7": {
+   "index": 22,
+   "name_vi": "Băng Dực Ám Khí",
+   "grade": 7
+  },
+  "am_khi_8": {
+   "index": 23,
+   "name_vi": "Tinh Không Ám Khí",
+   "grade": 8
+  },
+  "luan_1": {
+   "index": 24,
+   "name_vi": "Mộc Luân",
+   "grade": 1
+  },
+  "luan_2": {
+   "index": 25,
+   "name_vi": "Thiết Luân",
+   "grade": 2
+  },
+  "luan_3": {
+   "index": 26,
+   "name_vi": "Bích Ngọc Luân",
+   "grade": 3
+  },
+  "luan_4": {
+   "index": 27,
+   "name_vi": "Kim Lam Luân",
+   "grade": 4
+  },
+  "luan_5": {
+   "index": 28,
+   "name_vi": "Linh Quang Luân",
+   "grade": 5
+  },
+  "luan_6": {
+   "index": 29,
+   "name_vi": "Hỏa Diệm Luân",
+   "grade": 6
+  },
+  "luan_7": {
+   "index": 30,
+   "name_vi": "Băng Dực Luân",
+   "grade": 7
+  },
+  "luan_8": {
+   "index": 31,
+   "name_vi": "Tinh Không Luân",
+   "grade": 8
+  },
+  "phu_1": {
+   "index": 32,
+   "name_vi": "Mộc Phủ",
+   "grade": 1
+  },
+  "phu_2": {
+   "index": 33,
+   "name_vi": "Thiết Phủ",
+   "grade": 2
+  },
+  "phu_3": {
+   "index": 34,
+   "name_vi": "Bích Ngọc Phủ",
+   "grade": 3
+  },
+  "phu_4": {
+   "index": 35,
+   "name_vi": "Kim Lam Phủ",
+   "grade": 4
+  },
+  "phu_5": {
+   "index": 36,
+   "name_vi": "Linh Quang Phủ",
+   "grade": 5
+  },
+  "phu_6": {
+   "index": 37,
+   "name_vi": "Hỏa Diệm Phủ",
+   "grade": 6
+  },
+  "phu_7": {
+   "index": 38,
+   "name_vi": "Băng Dực Phủ",
+   "grade": 7
+  },
+  "phu_8": {
+   "index": 39,
+   "name_vi": "Tinh Không Phủ",
+   "grade": 8
+  },
+  "cam_1": {
+   "index": 40,
+   "name_vi": "Mộc Cầm",
+   "grade": 1
+  },
+  "cam_2": {
+   "index": 41,
+   "name_vi": "Thiết Cầm",
+   "grade": 2
+  },
+  "cam_3": {
+   "index": 42,
+   "name_vi": "Bích Ngọc Cầm",
+   "grade": 3
+  },
+  "cam_4": {
+   "index": 43,
+   "name_vi": "Kim Lam Cầm",
+   "grade": 4
+  },
+  "cam_5": {
+   "index": 44,
+   "name_vi": "Linh Quang Cầm",
+   "grade": 5
+  },
+  "cam_6": {
+   "index": 45,
+   "name_vi": "Hỏa Diệm Cầm",
+   "grade": 6
+  },
+  "cam_7": {
+   "index": 46,
+   "name_vi": "Băng Dực Cầm",
+   "grade": 7
+  },
+  "cam_8": {
+   "index": 47,
+   "name_vi": "Tinh Không Cầm",
+   "grade": 8
+  }
+ }
+}
