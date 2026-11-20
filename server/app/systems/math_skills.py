@@ -844,7 +844,7 @@ def _land(p: "Player", ch: "ChannelZone", k: str, sk: dict, m, ev: dict, now: fl
         ch.event(**ev)
         return _block(k, correct=True, crit=fast, combo=combo, combo_mult=mult, heal=healed)
     if effect == "domain":
-        _zones(ch).append({"kind": "domain", "uid": p.user_id, "k": k, "until": now + float(sk["duration"]),
+        _zones(ch).append({"kind": "domain", "uid": p.user_id, "k": k, "left": _ticks(sk["duration"], sk["every"]),
                            "next": now, "every": float(sk["every"]), "radius": float(sk["radius"]),
                            "power": float(sk["power"]), "streak": streak, "fast": fast})
         ch.event(**ev)
@@ -1058,7 +1058,7 @@ def _land_many(p: "Player", ch: "ChannelZone", k: str, sk: dict, m, ev: dict, no
     if effect == "line" and "burn" in sk and "ex" in ev:
         b = sk["burn"]
         _zones(ch).append({"kind": "burn", "uid": p.user_id, "k": k, "x0": p.x, "y0": p.y, "x1": ev["ex"],
-                           "y1": ev["ey"], "width": float(sk["width"]), "until": now + float(b["duration"]),
+                           "y1": ev["ey"], "width": float(sk["width"]), "left": _ticks(b["duration"], b["every"]),
                            "next": now + float(b["every"]), "every": float(b["every"]), "power": float(b["power"]),
                            "streak": streak, "fast": fast})
     ch.event(**ev)
@@ -1079,10 +1079,16 @@ def _zones(ch: "ChannelZone") -> list:
     return z
 
 
+def _ticks(duration: float, every: float) -> int:
+    """How many times a zone strikes: once every `every` s for `duration` s."""
+    return max(1, int(round(float(duration) / float(every))))
+
+
 def tick_zones(ch: "ChannelZone", now: float) -> None:
     """realtime/combat.tick: every `every` seconds a burn strip or a domain strikes every
-    monster inside it (base x its power x the cast's combo and crit and the caster's linh căn).
-    A domain follows its caster and ends when they fall or leave; any zone ends at `until`."""
+    monster inside it (base x its power x the cast's combo and crit and the caster's linh căn):
+    a domain from the moment it is cast, a burn strip one `every` later, duration / every times
+    in all. A domain follows its caster; any zone ends early when its caster falls or leaves."""
     from ..realtime import combat
     zones = getattr(ch, "chieu_zones", None)
     if not zones:
@@ -1090,12 +1096,15 @@ def tick_zones(ch: "ChannelZone", now: float) -> None:
     keep = []
     for z in zones:
         p = ch.players.get(z["uid"])
-        if now >= z["until"] or p is None or p.dead or z["k"] not in skills():
+        if z["left"] <= 0 or p is None or p.dead or z["k"] not in skills():
             continue
-        keep.append(z)
-        if now < z["next"]:
+        if now < z["next"] - 1e-6:
+            keep.append(z)
             continue
         z["next"] += z["every"]
+        z["left"] -= 1
+        if z["left"] > 0:
+            keep.append(z)
         sk = skills()[z["k"]]
         for o in list(ch.monsters):
             if not o.alive:
