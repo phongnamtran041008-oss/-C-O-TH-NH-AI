@@ -45,6 +45,12 @@
    "w": 129.07,
    "h": 26.1
   },
+  "0a32b7c03d32f24e": {
+   "tex": "(a * b) * c = a * (b * c), \\qquad a * e = e * a = a, \\qquad a * a' = a' * a = e",
+   "alt": "(a * b) * c = a * (b * c), a * e = e * a = a, a * a' = a' * a = e",
+   "w": 296.33,
+   "h": 10.78
+  },
   "0a71cf0456ab4f7f": {
    "tex": "\\ln(1 + x) \\sim x, \\quad e^{x} - 1 \\sim x, \\quad 1 - \\cos x \\sim \\frac{x^{2}}{2}",
    "alt": "ln(1 + x) ~ x, e^x - 1 ~ x, 1 - cos x ~ (x^2)/2",
@@ -429,6 +435,12 @@
    "w": 108.27,
    "h": 24.52
   },
+  "3c01a2765d54addb": {
+   "tex": "\\exists\\, b : \\; ab \\equiv 1 \\ (\\mathrm{mod}\\ n) \\iff \\mathrm{gcd}(a, n) = 1",
+   "alt": "ton tai b : ab = 1 (mod n) <=> gcd(a, n) = 1",
+   "w": 177.93,
+   "h": 10.18
+  },
   "3cc416bb27cd8779": {
    "tex": "\\sin x = x - \\frac{x^3}{3!} + \\frac{x^5}{5!} - \\cdots, \\qquad \\cos x = 1 - \\frac{x^2}{2!} + \\frac{x^4}{4!} - \\cdots",
    "alt": "sin x = x - (x^3)/(3!) + (x^5)/(5!) - ..., cos x = 1 - (x^2)/(2!) + (x^4)/(4!) - ...",
@@ -470,6 +482,12 @@
    "alt": "n^2, n(n-1), C_n^2 = (n(n-1))/2",
    "w": 166.45,
    "h": 21.85
+  },
+  "415e067d4c137fd5": {
+   "tex": "f(x, y) = x^{T} A y, \\qquad q(x) = x^{T} A x = \\sum_{i, j} a_{ij} x_i x_j, \\qquad B = \\frac{A + A^{T}}{2}",
+   "alt": "f(x, y) = x^T A y, q(x) = x^T A x = tong_(i, j) a_(ij) x_i x_j, B = (A + A^T)/2",
+   "w": 293.63,
+   "h": 28.98
   },
   "417b96ad43ac1e42": {
    "tex": "a(u + v) = au + av",
@@ -608,6 +626,12 @@
    "alt": "p_i >= 0, tong_i p_i = 1",
    "w": 95.52,
    "h": 21.81
+  },
+  "53b3885428f5bc34": {
+   "tex": "\\mathrm{ord}(a) = \\frac{n}{\\mathrm{gcd}(a, n)} \\quad (a \\in \\mathbb{Z}_n), \\qquad \\mathrm{ord}(a) \\mid |G|",
+   "alt": "ord(a) = n/(gcd(a, n)) (a thuoc Z_n), ord(a) | |G|",
+   "w": 208.3,
+   "h": 21.15
   },
   "54135f60b6ecebbc": {
    "tex": "\\frac{t_{1} + \\ldots + t_{k}}{t_{1} + \\ldots + t_{n}}",
@@ -1459,6 +1483,12 @@
    "tex": "m + n \\quad \\text{(chon mot phuong an)}, \\qquad m \\cdot n \\quad \\text{(lam ca hai buoc)}",
    "alt": "m + n (chon mot phuong an), m . n (lam ca hai buoc)",
    "w": 268.83,
+   "h": 10.18
+  },
+  "cc0d357ee7706d3a": {
+   "tex": "a \\sim b \\iff n \\mid (a - b)",
+   "alt": "a ~ b <=> n | (a - b)",
+   "w": 98.28,
    "h": 10.18
   },
   "ce1bf27302ed640e": {
