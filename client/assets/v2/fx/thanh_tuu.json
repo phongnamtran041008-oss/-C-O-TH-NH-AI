@@ -1,0 +1,19 @@
+{
+ "id": "thanh_tuu",
+ "name_vi": "Thành tựu",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 48
+ },
+ "sheet": "thanh_tuu.png",
+ "cols": 5,
+ "frames": 10,
+ "fps": 12,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

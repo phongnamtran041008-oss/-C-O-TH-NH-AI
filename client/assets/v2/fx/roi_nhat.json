@@ -1,0 +1,19 @@
+{
+ "id": "roi_nhat",
+ "name_vi": "Nhặt vật phẩm",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 32,
+  "y": 32
+ },
+ "sheet": "roi_nhat.png",
+ "cols": 6,
+ "frames": 6,
+ "fps": 14,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

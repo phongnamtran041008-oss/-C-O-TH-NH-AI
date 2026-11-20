@@ -1,0 +1,19 @@
+{
+ "id": "uy_ap",
+ "name_vi": "Uy áp",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 64
+ },
+ "sheet": "uy_ap.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 10,
+ "loop": false,
+ "blend": "alpha",
+ "ground": true
+}
