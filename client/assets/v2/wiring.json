@@ -109,7 +109,16 @@
     "hammer": {"layer": "chuy_1",   "clip": "slash"},
     "mace":   {"layer": "chuy_1",   "clip": "slash"},
     "sabre":  {"layer": "dao_1",    "clip": "slash"},
-    "gourd":  {"layer": "ho_lo_1",  "clip": "cast"}
+    "gourd":  {"layer": "ho_lo_1",  "clip": "cast"},
+    "_comment_types": "the weapon types of world_plan.json: the server sends a weapon of Thiên Địa Đồ as <type>_<grade> (kiem_3), drawn with layer weapons/kiem_3 and its type's clip (art2.weapon_for); the clip must equal the plan's (tools/check_all.py)",
+    "kiem":   {"layer": "kiem_1",   "clip": "slash"},
+    "dao":    {"layer": "dao_1",    "clip": "slash"},
+    "ho_lo":  {"layer": "ho_lo_1",  "clip": "cast"},
+    "thuong": {"layer": "thuong_1", "clip": "slash"},
+    "chuy":   {"layer": "chuy_1",   "clip": "slash"},
+    "cung":   {"layer": "cung_1",   "clip": "shoot"},
+    "truong": {"layer": "truong_1", "clip": "cast"},
+    "phien":  {"layer": "phien_1",  "clip": "cast"}
   },
 
   "pets": {
@@ -217,6 +226,11 @@
       "sword": ["weapons_a", "kiem_1"], "brush": ["weapons_b", "truong_1"], "staff": ["weapons_b", "truong_1"],
       "fan": ["weapons_b", "phien_1"], "spear": ["weapons_a", "thuong_1"], "bow": ["weapons_b", "cung_1"],
       "hammer": ["weapons_a", "chuy_1"], "mace": ["weapons_a", "chuy_1"]
+    },
+    "by_weapon_type": {
+      "_comment": "a weapon of Thiên Địa Đồ (<type>_<grade>) -> the atlas holding the icon of that same id",
+      "kiem": "weapons_a", "dao": "weapons_a", "thuong": "weapons_a", "chuy": "weapons_a",
+      "cung": "weapons_b", "ho_lo": "weapons_b", "truong": "weapons_b", "phien": "weapons_b"
     },
     "by_kind": {
       "pill": ["dan_duoc", "dan_1"], "manual": ["cong_phap", "sach_1"], "note": ["cong_phap", "cuon_1"],
