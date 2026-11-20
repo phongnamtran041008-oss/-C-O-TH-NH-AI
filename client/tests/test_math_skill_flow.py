@@ -22,6 +22,7 @@ from client import strings_vi as T
 from client.tests.driver import ROOT, Driver, ServerProcess, fill_tribulation
 from client.tests.test_combat_flow import nearest, walk_to, world
 from client.tests.test_math_combat_flow import MA, VALLEY, answer_card
+from client.tests.test_math_tree_flow import python_basics_done
 from client.tests.test_world_flow import make_account
 
 sys.path.insert(0, str(ROOT / "server"))        # the test reads the map the server ships
@@ -267,12 +268,13 @@ def run_math_skill_flow(workdir: Path, shots: Path | None = None) -> None:
 
         # ---- finish Luyện Khí tầng 1 of Đạo Thụ: the Trận pháp open (a chiêu's "floor 2" is the stage
         # being worked on, and that moves up when every main node of the stage before is done: the
-        # first node of each of the four subjects; the Lập Trình node of that stage is vacant)
+        # first node of each of the four subjects, and Python nhập môn, whose exercises are handed in)
         for subject in (SUBJECT, "giai_tich", "xac_suat_thong_ke", "toi_uu_roi_rac"):
             server.sql("insert into math_runs(user_id, subject_id, floor, mode, tier, correct_streak, wrong_streak, "
                        "combo, best_combo, asked, correct, review_asked, xp_gained, passed, started_at, ended_at) "
                        "values (?, ?, 1, 'trial', 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, datetime('now'), datetime('now'))",
                        (uid, subject))
+        python_basics_done(server, uid)
         ws.load_mskills()
         drv.wait(lambda: all(s["unlocked"] for s in ws.mskills[3:5]), 10, "the Trận pháp unlock")
 

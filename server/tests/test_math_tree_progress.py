@@ -76,6 +76,19 @@ async def solve(client, h, problem_id):
     assert r.status_code == 200 and r.json()["result"]["verdict"] == "AC", r.text
 
 
+async def solve_node(client, h, node_id):
+    """Hand in every exercise of a programming node."""
+    for pid in tree().nodes[node_id].problems:
+        await solve(client, h, pid)
+
+
+async def clear_stage_one(client, h, uid):
+    """The whole first stage of Luyện Khí: its four maths nodes and Python nhập môn."""
+    for nid in ("ds_ngon_ngu", "gt_ham_so", "xs_dem_su_kien", "tr_logic_dem"):
+        await pass_node(uid, nid)
+    await solve_node(client, h, "lt_python_co_ban")
+
+
 def without_floors(*floors):
     """A stand-in for math_practice._templates with no question on these (subject, floor)s."""
     real = math_practice._templates
@@ -176,13 +189,19 @@ async def test_the_placement_test_passes_the_whole_floors_it_skipped(client):
 async def test_a_vacant_node_counts_as_done_and_is_shown_as_being_written(client):
     h, uid = await make(client)
     st = await state(uid)
-    assert st.status["lt_python_co_ban"] == "vacant" and "lt_python_co_ban" in st.done
+    # NumPy is the one Lập Trình node of Luyện Khí left empty (whether players must install it is undecided)
+    assert st.status["lt_numpy"] == "vacant" and "lt_numpy" in st.done
     assert st.status["du_an_luyen_khi"] == "vacant"
-    # lt_cau_truc_du_lieu needs the vacant lt_python_co_ban and ds_ngon_ngu: only the latter holds it back
-    assert st.status["lt_cau_truc_du_lieu"] == "locked" and st.missing("lt_cau_truc_du_lieu") == ["ds_ngon_ngu"]
+    # lt_cau_truc_du_lieu needs lt_python_co_ban (open, it has exercises) and ds_ngon_ngu: both hold it back
+    assert st.status["lt_python_co_ban"] == "open" and st.status["lt_python_co_ban"] not in ("vacant", "done")
+    assert st.status["lt_cau_truc_du_lieu"] == "locked"
+    assert st.missing("lt_cau_truc_du_lieu") == ["lt_python_co_ban", "ds_ngon_ngu"]
     view = (await client.get("/math/tree", headers=h)).json()
+    node = next(n for n in view["nodes"] if n["id"] == "lt_numpy")
+    assert node["state"] == "vacant" and node["state_vi"] == "Đang biên soạn"
+    assert node["parts"] == [] and node["problems"] == []
     node = next(n for n in view["nodes"] if n["id"] == "lt_python_co_ban")
-    assert node["state"] == "vacant" and node["state_vi"] == "Đang biên soạn" and node["parts"] == []
+    assert node["state"] == "open" and node["state_vi"] is None and len(node["problems"]) >= 3
 
 
 async def test_a_vacant_node_does_not_block_and_counts_again_once_it_has_questions(client, monkeypatch):
@@ -210,13 +229,23 @@ async def test_a_part_without_questions_does_not_count_for_its_node(client, monk
 async def test_a_programming_node_is_done_when_every_exercise_is_solved(client):
     h, uid = await make(client)
     await pass_node(uid, "ds_ngon_ngu")
-    assert (await state(uid)).status["lt_cau_truc_du_lieu"] == "open"
-    first, second = tree().nodes["lt_cau_truc_du_lieu"].problems
-    await solve(client, h, first)
-    assert (await state(uid)).status["lt_cau_truc_du_lieu"] == "open"
-    await solve(client, h, second)
+    assert (await state(uid)).status["lt_cau_truc_du_lieu"] == "locked"      # Python nhập môn comes first
+    basics = tree().nodes["lt_python_co_ban"].problems
+    for pid in basics[:-1]:
+        await solve(client, h, pid)
+    assert (await state(uid)).status["lt_python_co_ban"] == "open"          # one exercise is still undone
+    await solve(client, h, basics[-1])
     st = await state(uid)
-    assert st.status["lt_cau_truc_du_lieu"] == "done" and {first, second} <= st.solved
+    assert st.status["lt_python_co_ban"] == "done" and set(basics) <= st.solved
+    assert st.status["lt_cau_truc_du_lieu"] == "open"
+    problems = tree().nodes["lt_cau_truc_du_lieu"].problems
+    assert 3 <= len(problems) <= 5
+    for pid in problems[:-1]:
+        await solve(client, h, pid)
+    assert (await state(uid)).status["lt_cau_truc_du_lieu"] == "open"
+    await solve(client, h, problems[-1])
+    st = await state(uid)
+    assert st.status["lt_cau_truc_du_lieu"] == "done" and set(problems) <= st.solved
 
 
 # ------------------------------------------------------------------ R4: open
@@ -240,8 +269,7 @@ async def test_optional_nodes_open_by_the_same_rule_and_never_block(client):
     for node in tree().nodes.values():                     # no main node requires an optional one
         if node.main:
             assert all(tree().nodes[r].main for r in node.requires)
-    for nid in ("ds_ngon_ngu", "gt_ham_so", "xs_dem_su_kien", "tr_logic_dem"):
-        await pass_node(uid, nid)
+    await clear_stage_one(client, h, uid)
     st = await state(uid)
     assert st.status["ds_so_phuc"] == "open" and st.status["gt_tinh_chat_ham"] == "open"
     assert st.stage == ("luyen_khi", 1)                    # stage 1 reached with both optional nodes undone
@@ -255,15 +283,17 @@ async def test_the_stage_is_reached_when_every_main_node_of_it_is_done(client):
     async def realm():
         async with dbm.SessionLocal() as db:
             char = await db.get(Character, uid)
-            return char.realm, char.realm_stage, char.cultivation_xp
+            return char.realm, char.realm_stage            # exercises pay xp, so xp is not part of this
     before = await realm()
     assert (await state(uid)).stage == ("luyen_khi", 0)
     for nid in ("ds_ngon_ngu", "gt_ham_so", "xs_dem_su_kien"):
         await pass_node(uid, nid)
     assert (await state(uid)).stage == ("luyen_khi", 0)    # tr_logic_dem is still missing
     mid = (await client.get("/math/tree", headers=h)).json()["stage"]["progress"]
-    assert mid == {"stage": 1, "done": 3, "total": 4}      # inside the stage: 3 of its 4 real nodes
-    await pass_node(uid, "tr_logic_dem")                   # (lt_python_co_ban is vacant: it counts as done)
+    assert mid == {"stage": 1, "done": 3, "total": 5}      # inside the stage: 3 of its 5 real nodes
+    await pass_node(uid, "tr_logic_dem")
+    assert (await state(uid)).stage == ("luyen_khi", 0)    # Python nhập môn has exercises now: it counts too
+    await solve_node(client, h, "lt_python_co_ban")
     assert (await state(uid)).stage == ("luyen_khi", 1)
     view = (await client.get("/math/tree", headers=h)).json()
     assert view["stage"]["progress"] == {"stage": 2, "done": 0, "total": await real_nodes_of_stage(uid, 2)}
@@ -443,8 +473,7 @@ async def test_the_working_stage_is_one_above_the_stage_reached(client):
     h, uid = await make(client)
     async with dbm.SessionLocal() as db:
         assert await tp.working_stage(db, uid) == 1
-    for nid in ("ds_ngon_ngu", "gt_ham_so", "xs_dem_su_kien", "tr_logic_dem"):
-        await pass_node(uid, nid)
+    await clear_stage_one(client, h, uid)
     async with dbm.SessionLocal() as db:
         assert await tp.working_stage(db, uid) == 2
         assert await tp.working_position(db, uid) == ("luyen_khi", 2)
@@ -482,7 +511,7 @@ async def test_an_exercise_is_open_when_its_micro_skills_node_is_open_or_done(cl
     await pass_node(uid, "ds_vecto_ma_tran")              # done: still open
     assert (await client.get("/math/problem/dstt_bt_tich_vo_huong", headers=h)).status_code == 200
     listed = (await client.get("/math/problems", params={"subject_id": LA}, headers=h)).json()
-    assert [f["floor"] for f in listed["floors"]] == [1, 2, 3]
+    assert [f["floor"] for f in listed["floors"]] == [1, 2, 3, 4]       # ds_nhan_ma_tran opened with it
 
 
 # ------------------------------------------------------------------ R11: the old entry points
@@ -556,7 +585,7 @@ async def test_the_tree_view_has_every_node_with_its_state_parts_and_reading(cli
     assert [p["id"] for p in by["lt_cau_truc_du_lieu"]["problems"]] == list(tree().nodes["lt_cau_truc_du_lieu"].problems)
     assert by["lt_cau_truc_du_lieu"]["problems"][0]["solved"] is False
     assert by["lt_cau_truc_du_lieu"]["problems"][0]["subject_id"] == LA
-    assert view["next"][:4] == ["ds_ngon_ngu", "gt_ham_so", "tr_logic_dem", "xs_dem_su_kien"]
+    assert view["next"][:5] == ["ds_ngon_ngu", "gt_ham_so", "lt_python_co_ban", "tr_logic_dem", "xs_dem_su_kien"]
     assert all(tree().nodes[n].main for n in view["next"])
     assert view["run"]["run_id"] == run["run_id"] and view["run"]["node_id"] == "gt_ham_so"
 

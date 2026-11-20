@@ -27,7 +27,7 @@ NODE = "ds_ngon_ngu"
 NEXT_NODE = "ds_vecto_ma_tran"
 OTHER_BRANCH_NODE = "lt_cau_truc_du_lieu"          # Lập Trình: needs Python nhập môn and Tập hợp và ánh xạ
 TWO_FLOORS = "gt_gioi_han"
-VACANT = "lt_python_co_ban"
+VACANT = "lt_numpy"                              # the one Lập Trình node of Luyện Khí with nothing written
 
 
 def drawn_text(drv: Driver) -> list[str]:
@@ -47,6 +47,18 @@ def drawn_text(drv: Driver) -> list[str]:
     return seen
 
 
+def python_basics_done(server: ServerProcess, uid: int) -> None:
+    """Python nhập môn (the first Lập Trình node of Luyện Khí) done: every exercise of it handed in with
+    every hidden test right. These flows are about the maths nodes; the exercises themselves are tested
+    in server/tests/test_math_tree_progress.py and test_lt_exercises.py."""
+    tree = json.loads((Path(__file__).resolve().parents[2] / "server" / "data" / "math" / "tree.json").read_text("utf-8"))
+    node = next(n for n in tree["nodes"] if n["id"] == "lt_python_co_ban")
+    for pid in node["problems"]:
+        server.sql("insert into math_submissions(user_id, problem_id, subject_id, floor, tier, verdict, passed, "
+                   "total, ms, xp_gained, code, created_at, judged_at) "
+                   "values (?, ?, 'x', 1, 1, 'AC', 5, 5, 1, 0, '', datetime('now'), datetime('now'))", (uid, pid))
+
+
 def open_hub(drv: Driver) -> None:
     drv.click("hud_math")
     drv.wait(lambda: drv.top_is("MathPracticeScene") and top(drv).path is not None, 10, "the math hub")
@@ -64,6 +76,7 @@ def run_tree_flow(workdir: Path, shots: Path | None = None) -> None:
         url = server.url
         token, uid = make_account(url, "cay_sinh", "Cây Sinh")
         server.sql("update users set flags=? where id=?", (json.dumps({"tutorial": 5}), uid))
+        python_basics_done(server, uid)
         (workdir / "session.json").write_text(json.dumps({"token": token, "username": "cay_sinh", "server_url": url}))
         drv = Driver(url, workdir, shots)
         drv.click("menu_start")
@@ -87,7 +100,7 @@ def run_tree_flow(workdir: Path, shots: Path | None = None) -> None:
         assert not drv.has(f"math_trial_{NODE}_1")                    # the gate is closed
         text = drawn_text(drv)
         assert MT.header_text(stage) in text and "Tầng 1" in text
-        assert T.TREE_STAGE_PROGRESS.format(d=0, t=4, n=1) in text    # "đã xong 0/4 nút của tầng 1"
+        assert T.TREE_STAGE_PROGRESS.format(d=1, t=5, n=1) in text    # "đã xong 1/5 nút của tầng 1": Python nhập môn
         drv.shot("tree_next")
 
         # ---- the card of a node: why, what it needs, the source - and the browser only on a press
@@ -254,10 +267,10 @@ def run_tree_flow(workdir: Path, shots: Path | None = None) -> None:
         assert T.TREE_CODE_ONLY in drawn_text(drv)
         drv.shot("tree_other_branch_opened")
 
-        # ---- the stage line moves with every node: one of the four done, so "đã xong 1/4 nút của tầng 1"
-        assert top(drv).tree["stage"]["progress"] == {"stage": 1, "done": 1, "total": 4}
+        # ---- the stage line moves with every node: two of the five done, so "đã xong 2/5 nút của tầng 1"
+        assert top(drv).tree["stage"]["progress"] == {"stage": 1, "done": 2, "total": 5}
         drv.click("math_tab_next")
-        assert T.TREE_STAGE_PROGRESS.format(d=1, t=4, n=1) in drawn_text(drv)
+        assert T.TREE_STAGE_PROGRESS.format(d=2, t=5, n=1) in drawn_text(drv)
         drv.game.toasts.clear()                                       # (the guide's "Xong" toasts hide the line)
         drv.shot("tree_stage_progress")
 
