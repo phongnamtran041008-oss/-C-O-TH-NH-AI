@@ -261,8 +261,8 @@ TABLE["roi"] = melee_table(
     [ROI_CARRY,
      A((-0.3, 0.45, 0.84), xdir=(0, -1, 0.2), pose="arc"),
      A((-0.25, 0.1, 0.96), xdir=(0, -1, 0.0), pose="arc"),
-     A((-0.12, -0.99, 0.08), xdir=(0, 0, 1), pose="lash"),
-     A((-0.08, -0.96, -0.22), xdir=(0, 0, 1), pose="lash"),
+     A((-0.32, -0.94, 0.08), xdir=(0, 0, 1), pose="lash"),
+     A((-0.26, -0.93, -0.22), xdir=(0, 0, 1), pose="lash"),
      ROI_CARRY],
     [(0, A((-0.55, -0.1, 0.83), xdir=(0, -1, 0), pose="coil")), (2, A((-0.5, -0.2, 0.84), xdir=(0, -1, 0), pose="coil")),
      (3, A((-0.1, -1.0, 0.15), xdir=(0, 0, 1), pose="lash")), (4, A((-0.1, -1.0, 0.1), xdir=(0, 0, 1), pose="lash")),
@@ -308,7 +308,10 @@ CAM_BACK = A((-0.6, 0.12, 0.79), at="back", off=(0.0, 0.03, -0.02), face=(0.0, 1
 CAM_FRONT = dict(at="back", aim=(0.75, -0.6, -0.1), face=(-0.4, -0.6, 0.7))
 TABLE["cam"] = {
     "idle": CAM_BACK, "walk": CAM_BACK, "hit": CAM_BACK, "dodge": CAM_BACK, "slash": CAM_BACK,
-    "shoot": CAM_BACK, "die": CAM_BACK, "fly": CAM_BACK, "meditate": CAM_BACK,
+    "shoot": CAM_BACK, "fly": CAM_BACK, "meditate": CAM_BACK,
+    # die: slips off the back as the body falls and ends on the ground beside it
+    "die": [CAM_BACK, CAM_BACK, CAM_BACK, A((0.3, -1.0, 0.1), face=(0, -0.3, 1)),
+            A((0.2, -1.0, 0.0), face=(0, -0.3, 1)), A((0.2, -1.0, 0.0), face=(0, -0.3, 1))],
     "cast": [S(**dict(CAM_FRONT, off=(-0.05, -0.27, 0.0))),
              S(**dict(CAM_FRONT, off=(-0.05, -0.28, 0.03))),
              S(**dict(CAM_FRONT, off=(-0.05, -0.28, 0.04))),

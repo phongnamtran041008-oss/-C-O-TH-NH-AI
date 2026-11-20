@@ -126,6 +126,12 @@
     "chuy":   {"layer": "chuy_1",   "clip": "slash"},
     "cung":   {"layer": "cung_1",   "clip": "shoot"},
     "truong": {"layer": "truong_1", "clip": "cast"},
+    "kich":   {"layer": "kich_1",   "clip": "slash"},
+    "roi":    {"layer": "roi_1",    "clip": "slash"},
+    "am_khi": {"layer": "am_khi_1", "clip": "shoot"},
+    "luan":   {"layer": "luan_1",   "clip": "shoot"},
+    "phu":    {"layer": "phu_1",    "clip": "slash"},
+    "cam":    {"layer": "cam_1",    "clip": "cast"},
     "phien":  {"layer": "phien_1",  "clip": "cast"}
   },
 
@@ -244,6 +250,7 @@
     "by_weapon_type": {
       "_comment": "a weapon of Thiên Địa Đồ (<type>_<grade>) -> the atlas holding the icon of that same id",
       "kiem": "weapons_a", "dao": "weapons_a", "thuong": "weapons_a", "chuy": "weapons_a",
+      "kich": "weapons_c", "roi": "weapons_c", "am_khi": "weapons_c", "luan": "weapons_c", "phu": "weapons_c", "cam": "weapons_c",
       "cung": "weapons_b", "ho_lo": "weapons_b", "truong": "weapons_b", "phien": "weapons_b"
     },
     "by_kind": {
