@@ -1957,7 +1957,7 @@ class WorldScene(Scene):
             return
         vf.reduced = bool(getattr(self.game.cfg, "reduce_effects", False))
         if self.fx.shake > getattr(self, "_shake_seen", 0.0) + 0.01:
-            vf.shake(self.fx.shake * 0.7)
+            vf.shake(math.sqrt(self.fx.shake) * 0.85)
         self._shake_seen = self.fx.shake
         vf.update(dt)
         self.vfx_release()

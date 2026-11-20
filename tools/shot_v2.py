@@ -49,7 +49,7 @@ import pygame  # noqa: E402
 from client.tests.driver import Driver, ServerProcess  # noqa: E402
 from client.tests.test_combat_flow import nearest, walk_to, world  # noqa: E402
 from client.tests.test_math_combat_flow import MA, VALLEY  # noqa: E402
-from client.tests.test_math_skill_flow import answer, cast, settle  # noqa: E402
+from client.tests.test_math_skill_flow import Spy, answer, cast, settle  # noqa: E402
 from client.tests.test_world_flow import make_account  # noqa: E402
 
 from app.realtime import maps  # noqa: E402
@@ -324,9 +324,12 @@ def wild(server, url, workdir, out) -> None:
     if "windup" not in watch.done:
         print("no telegraph shot in 40 s")
 
-    # mid-slash, between the cards of the fight; the monster dies of it sooner or later
-    watch.add("slash", lambda: ws.my_atk_t0 is not None and 0.16 < drv.game.now - ws.my_atk_t0 < 0.3
+    # mid-slash, between the cards of the fight; the monster dies of it sooner or later (just
+    # after the strike frame of the clip, so the kiếm khí of the swing is in the picture)
+    watch.add("slash", lambda: ws.my_atk_t0 is not None and 0.24 < drv.game.now - ws.my_atk_t0 < 0.36
               and drv.game.top is ws and ws.hurt_flash <= 0)
+    watch.add("slash_land", lambda: ws.my_atk_t0 is not None and 0.34 < drv.game.now - ws.my_atk_t0 < 0.46
+              and drv.game.top is ws and ws.hurt_flash <= 0 and "slash" in watch.done)
     end = time.time() + 60
     while time.time() < end and not {"slash", "monster_die"} <= watch.done:
         if drv.top_is("MathCombatQuizScene"):
@@ -352,16 +355,20 @@ def wild(server, url, workdir, out) -> None:
         if name not in watch.done:
             print(f"no {name} frame in 60 s")
 
-    # a chiêu: Hỏa Cầu Thuật lands after its card closes
-    settle(drv, server)
-    card = cast(drv, server, "hoa_cau_thuat")
-    answer(drv, server, True)
-    drv.wait(lambda: card not in drv.game.scenes, 10, "the card closes")
-    drv.wait(lambda: any(f["t0"] is not None for f in ws.skill_fx), 6, "the effect")
-    t0 = next(f["t0"] for f in ws.skill_fx if f["t0"] is not None)
-    while drv.game.now - t0 < 0.42:
-        drv.step(1)
-    save(drv, out, "cast", 1)
+    # chiêu in the wild: cast freely (no card), each one caught at its charge, flight and impact
+    spy = Spy(ws)
+    for skill, name in (("hoa_cau_thuat", "cast"), ("kiem_quyet", "cast_kiem_khi"), ("thuong_quyen", "cast_chem")):
+        try:
+            settle(drv, server)
+            cast(drv, server, spy, skill)
+        except AssertionError as e:
+            print(f"{skill}: {e}")
+            continue
+        t0 = drv.game.now
+        for label, at in (("charge", 0.16), ("fly", 0.36), ("hit", 0.6)):
+            while drv.game.now - t0 < at:
+                drv.step(1)
+            save_now(drv, out, f"{name}_{label}")
     perf(drv, ws)
     drv.close()
 
@@ -403,9 +410,30 @@ def die(server, url, workdir, out) -> None:
 
 
 def perf(drv: Driver, ws) -> None:
-    """Time the world's draw (the 480x270 game surface) with the v2 art and with the old path."""
+    """Time the world's draw (the 480x270 game surface) with the v2 art and with the old path,
+    then with a heavy fight's worth of combat VFX live (a T10 swing, three chiêu and a parry
+    every few frames) at full effects and with "reduce effects"."""
     from client.engine import art2
+    from client.engine import combat_vfx as CV
     surf = pygame.Surface((480, 270))
+    p = ws.player
+    for label, reduced in (("vfx full", False), ("vfx reduced", True)):
+        ws.vfx.clear()
+        ws.vfx.reduced = reduced
+        live, t0 = 0, time.perf_counter()
+        for i in range(200):
+            if i % 12 == 0:
+                CV.swing(ws.vfx, "kiem_8", 10, (p.x, p.y), (p.x + 26, p.y), 0.2, 10, follow=None, mine=False)
+                CV.chieu(ws.vfx, ("thien_loi", "hoa_cau", "tran_do")[i // 12 % 3], (p.x, p.y), (p.x + 60, p.y), 9,
+                         radius=80, mine=False)
+                CV.parry(ws.vfx, p.x + 20, p.y, p.x, p.y, 10, "kiem_8", False)
+            ws.vfx.update(1 / 60)
+            ws.draw_world(surf)
+            live = max(live, len(ws.vfx.live))
+        ms = (time.perf_counter() - t0) / 200 * 1000
+        print(f"draw_world {label}: {ms:.2f} ms/frame (up to {live} live instances)")
+    ws.vfx.clear()
+    ws.vfx.reduced = False
     for label, on in (("v2", True), ("old", False)):
         real = art2.on
         if not on:

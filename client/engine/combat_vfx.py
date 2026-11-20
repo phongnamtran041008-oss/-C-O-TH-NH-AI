@@ -156,7 +156,7 @@ def _scar(v: Vfx, t: int, x: float, y: float, deg: float, delay: float, z: float
         v.spawn(f"kiem_ngan_{s}", x, y, delay, angle=deg, layer="ground", tag=tag)
         return
     sc = (0.36, 0.52, 0.74)[s - 1]
-    v.spawn("crack_ground", x, y + 1, delay, life=1.3, scale=sc, fade_out=0.8, peak=0.85, layer="ground", tag=tag)
+    v.spawn("crack_ground", x, y + 1, delay, life=1.3, scale=sc, fade_out=0.8, peak=0.6, layer="ground", tag=tag)
 
 
 def _wave_chain(t: int, el: str):
@@ -170,7 +170,7 @@ def _feel(v: Vfx, t: int, at: float, el: str, mine: bool) -> None:
     if SHAKE[t] > 0:
         v.at(at, lambda: v.shake(SHAKE[t]))
     if t >= 9:      # a breath of colour over the screen only at the very top (basic attacks repeat)
-        v.tint(RGB.get(el, (255, 255, 255)), 0.05 * (t - 8), 0.16, delay=at)
+        v.tint(RGB.get(el, (255, 255, 255)), 0.04 * (t - 8), 0.14, delay=at)
 
 
 # ------------------------------------------------------------------ basic attacks
@@ -262,8 +262,6 @@ def _sky_cut(v, dst, dst_lift, land, mine) -> None:
     v.spawn("loi_kiep", dst[0], dst[1], land + 0.08, scale=1.1, peak=0.8, heavy=True)
     v.spawn("crack_ground", dst[0], dst[1] + 1, land + 0.1, life=1.5, scale=0.95, fade_out=0.8, layer="ground",
             heavy=True)
-    if mine:
-        v.tint((255, 250, 232), 0.08, 0.1, delay=land + 0.06)
 
 
 def _thrust(v, t, src, dst, strike, dst_lift, follow, mine, z, garnish) -> float:
@@ -628,8 +626,8 @@ def crit(v: Vfx, x: float, y: float, lift: float, mine: bool) -> None:
 def death(v: Vfx, x: float, y: float, lift: float, body=None, after: float = 0.5, mine: bool = False) -> None:
     """A monster goes down: a burst at its chest now; when its die clip ends, its last frame
     turns to light, rises and fades (`body` = (frame, white frame, pivot))."""
-    v.spawn("burst_kim", x, y, 0.0, lift=lift, scale=(0.8, 1.4), peak=0.8, fade_out=0.12)
-    v.spawn("hit_spark", x, y, 0.04, lift=lift + 4, scale=1.0, heavy=True)
+    v.spawn("burst_kim", x, y, 0.0, lift=lift, scale=(0.8, 1.4), start=2, peak=0.8, fade_out=0.1)
+    v.spawn("hit_spark", x, y, 0.0, lift=lift + 4, scale=1.0)
     if body is not None:
         img, white, pivot = body
         v.sprite(img, pivot, x, y, delay=after, life=0.55, to=(x, y), lift=0, lift1=5, fade_out=0.55)
