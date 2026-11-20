@@ -1,9 +1,12 @@
 # Thực chiến trong game — huấn luyện mô hình và làm dự án AI như thế nào
 
-> Bản thiết kế, **chưa nối vào game**. Viết ngày 2026-11-19 trong phiên "tối ưu nguồn tài liệu". Dựa trên
-> các nút `thuc_chien` và `du_an` của Đạo Thụ (`tree.json` của phiên giáo trình) và bộ chạy bài tập lập
-> trình M6 đã có (`client/engine/coderun.py`, `server/app/learning/math_problems.py`). Không sửa file nào
-> của hai phiên kia.
+> Bản thiết kế viết ngày 2026-11-19 trong phiên "tối ưu nguồn tài liệu". Dựa trên các nút `thuc_chien` và
+> `du_an` của Đạo Thụ (`tree.json` của phiên giáo trình) và bộ chạy bài tập lập trình M6 đã có
+> (`client/engine/coderun.py`, `server/app/learning/math_problems.py`).
+>
+> **2026-11-20: bậc 1 (Xạ Trường) đã nối vào game cho Luyện Khí**, theo bước 1-4 của mục 8, với một thay đổi
+> lớn: **chỉ Python thuần**, không NumPy (game không bắt người chơi cài gì). Cái gì đã làm, làm thế nào, mốc
+> điểm đo ra sao và giới hạn chống gian lận: mục 10. Bậc 2 và 3 vẫn là thiết kế.
 
 ## 1. Bài toán
 
@@ -254,3 +257,111 @@ Bước 1-4 chỉ cần phiên viết câu hỏi ghi xong phần của mình (c�
    trên máy mình" cho các thiên kiếp từ Nguyên Anh không (sẽ loại người không có GPU)?
 4. Thiên kiếp từ Luyện Hư trở lên **tin lời khai** của người chơi. Nếu muốn chặt hơn thì bắt buộc đồng đạo
    thẩm định (cần ít nhất một người bạn trong thế giới).
+
+## 10. Xạ Trường đã làm (2026-11-20)
+
+Bậc 1 cho mọi nút Thực Chiến của Luyện Khí và thiên kiếp `du_an_luyen_khi`: 26 bài (id `xt_*`), trong đó 9 bài
+chấm theo phẩm. Chỉ Python thuần và thư viện chuẩn: không NumPy, không mô hình AI nào, không tải gì về.
+
+### 10.1 Chấm theo phẩm
+
+Một bài chấm theo phẩm (`server/data/math/problems/<môn>.json`) có thêm:
+
+- `checker`: `do_chinh_xac` (tỉ lệ dự đoán đúng, càng cao càng tốt) hoặc `sai_so` (căn của sai số bình phương
+  trung bình, càng thấp càng tốt). Phép `log_loss` của mục 2.1 chưa làm: chưa bài nào cần.
+- `grades`: ba mốc hạ, trung, thượng phẩm.
+- `data`: `{"gen", "seeds", "practice_seeds", "params"}`. Mỗi hạt giống trong `seeds` là một **bộ bia ẩn**, sinh bởi
+  `server/app/learning/xa_truong_data.py`: dữ liệu huấn luyện có nhãn, rồi các điểm cần đoán không nhãn. Mỗi hạt
+  giống trong `practice_seeds` là một **bộ bia tập**, đi kèm đề như một ví dụ (thấy cả nhãn) để Chạy thử có ý nghĩa.
+  Bài chấm theo phẩm không có `tests` viết sẵn.
+- `starter`: đoạn code mở đầu trong trình soạn (đọc dữ liệu, chỗ in `#loss`). Bài thường cũng dùng được.
+- Lời giải ngây thơ `problems/<môn>/ngay_tho/<id>.py` (đoán lớp nhiều nhất, đoán trung bình, trả nguyên điểm đo...).
+
+Chấm (`math_problems.judge_scored`): mỗi bộ bia một điểm; in sai số dự đoán so với số điểm thì bộ ấy 0 điểm
+(độ chính xác) hoặc không có điểm (sai số); có dự đoán không phải số thì không có điểm. Điểm của bài là trung bình
+các bộ; phẩm là số mốc điểm ấy vượt qua. Phẩm được ghi vào hàng `math_submissions` như M6 ghi số test đạt:
+`passed` = phẩm (0-3), `total` = 3. Nhờ vậy luật cũ chạy nguyên: Tu Vi = XP của bậc × phẩm / 3, chỉ trả phần vượt
+lần tốt nhất; bài "xong" (và nút Đạo Thụ tính là xong) khi đạt **thượng phẩm**. Verdict là AC ở thượng phẩm, còn lại
+WA (hoặc RE/TLE/CE nếu chương trình hỏng giữa chừng).
+
+Bài của một nút Thực Chiến hay của thiên kiếp chỉ mở khi **chính nút ấy** mở (hoặc xong), ngoài luật R10 (vi kỹ năng
+của bài nằm trong nút đang mở): vi kỹ năng thuộc nút toán mở sớm hơn nhiều, nhưng Xạ Trường phải vào qua nút của nó
+(`math_code.problem_open`). Thẻ nút mở danh sách bài của nút, kể cả khi bài thuộc nhiều môn (thiên kiếp có bài của
+ba môn): `/math/problems?ids=...`.
+
+### 10.2 Nhật ký huấn luyện
+
+Chương trình in ra **stderr** các dòng `#loss <vòng> <giá trị>` (và `#val <vòng> <giá trị>`).
+`client/engine/coderun.py` đọc chúng (`parse_log`, cả đường chạy trong trình duyệt), bỏ chúng khỏi phần lỗi hiện
+cho người chơi, và màn bài tập vẽ đường mất mát của bộ có nhật ký dài nhất (thang log khi mất mát giảm hơn 20 lần;
+`nan`/`inf` hiện chữ "tẩu hỏa nhập ma"). Nhật ký **không gửi lên server**. Màn kết quả của bài chấm theo phẩm
+("Xem bia"): phẩm, điểm, mốc, điểm từng bộ với một tấm bia nhỏ tô màu theo phẩm của bộ ấy, đường mất mát.
+
+### 10.3 Ai chấm, và giới hạn chống gian lận
+
+Server vẫn là người chấm: nhãn của bia ẩn không rời server, chương trình của người chơi chỉ nhận dữ liệu huấn luyện
+và tọa độ các bia, gửi về dự đoán, server tính điểm. Nhưng nói thẳng, cách này **không chống được gian lận**:
+
+1. Mã nguồn của game mở: ai đọc `xa_truong_data.py` và hạt giống trong JSON thì tự sinh lại được nhãn của bia ẩn.
+2. Máy khách sửa được thì gửi dự đoán nào cũng được, như M6 gửi verdict nào cũng được.
+3. Bia ẩn cố định theo hạt giống và mỗi lần nộp thấy điểm từng bộ, nên nộp đi nộp lại có thể dò dần nhãn.
+4. Game không kiểm được *cách* làm: bài hạ gradient giải bằng công thức cũng qua, nhật ký `#loss` in bừa cũng được vẽ.
+
+Như mục 3 đã nói: đó là tự lừa mình. Game làm cho đường thẳng thắn dễ đi nhất (code mở đầu, bia tập, đường mất mát),
+không đặt hàng rào.
+
+### 10.4 Bài của từng nút
+
+| Nút | Bài (bài cuối chấm theo phẩm) | Môn / vi kỹ năng |
+|---|---|---|
+| `ud_knn` | đo khoảng cách, bỏ phiếu, lãnh địa linh thú | Đại Số `dstt_t3_vecto_rn` |
+| `ud_naive_bayes` | đếm từ, công thức Bayes, bộ lọc thư rác | Xác Suất `xs_t4_bayes_ung_dung` |
+| `ud_hoi_quy_1_bien` | mất mát và đạo hàm, vòng lặp hạ gradient, khớp đường thẳng | Giải Tích `gt_t6_cuc_tri` |
+| `ud_binh_phuong_toi_thieu` | lập phương trình chuẩn, giải nó, sản lượng linh điền | Đại Số `dstt_t9_phep_chieu` |
+| `ud_mang_no_ron` | lan truyền xuôi, lan truyền ngược, trận đồ hình tròn | Giải Tích `gt_t9_gradient_lan_truyen` |
+| `ud_logistic` | mất mát log và gradient, linh thảo thật giả | Xác Suất `xs_t7_hop_ly_cuc_dai` |
+| `ud_pca` | hiệp phương sai, lặp lũy thừa, lọc nhiễu bằng PCA | Đại Số `dstt_t9_pca_svd` |
+| `ud_ab_test` | khoảng tin cậy một tỉ lệ, hiệu hai tỉ lệ, trăm cuộc A/B | Xác Suất `xs_t8_tin_cay_ty_le`, `xs_t9_so_sanh_ty_le` |
+| `du_an_luyen_khi` | ảnh là vectơ, báo cáo (độ chính xác, khoảng tin cậy, lỗi hay gặp), đọc chữ số | Đại Số, Xác Suất, Giải Tích |
+
+Chữ số của thiên kiếp là **chữ số tổng hợp** (nét vẽ bằng code, có nhiều kiểu viết cho 0, 1, 3, 4, 7, 9, rồi nghiêng,
+xoay, co giãn, dịch, đổi độ đậm, rắc nhiễu), 8 × 8 điểm ảnh 0-16; đề nói rõ điều này. Thư rác là mẫu câu tiếng Việt không
+dấu tự viết (dữ liệu đi qua stdin phải là ASCII).
+
+### 10.5 Mốc điểm và thời gian, đo bằng chính lời giải mẫu
+
+`python tools/build_problem_tests.py --measure --seeds 20` (máy phát triển, 2026-11-20). "Ẩn" là trung bình trên các
+bộ bia ẩn thật của bài (4 bộ; thiên kiếp 5 bộ); "1-20" là trung bình, thấp nhất và cao nhất của từng bộ trên hạt giống
+1 tới 20. Mốc thượng phẩm đặt dưới điểm của lời giải mẫu một khoảng rộng hơn độ dao động giữa các hạt giống; mốc hạ
+phẩm đặt trên điểm cao nhất mà lời giải ngây thơ đạt được ở bất kỳ hạt giống nào.
+
+| Bài | Mốc hạ / trung / thượng | Mẫu: ẩn; 1-20 (thấp-cao) | Ngây thơ: ẩn; 1-20 (thấp-cao) | Mẫu chậm nhất | Giới hạn |
+|---|---|---|---|---|---|
+| lãnh địa linh thú (độ chính xác) | 65% / 75% / 82% | 87,8%; 87,1% (82-92) | 43,5%; 43,7% (30-70) | 84 ms | 2 s |
+| bộ lọc thư rác (độ chính xác) | 80% / 88% / 93% | 97,2%; 96,9% (95,3-98,7) | 66,7%; 64,5% (56-71,3) | 71 ms | 2 s |
+| khớp đường thẳng (sai số) | 2,0 / 1,5 / 1,2 | 0,915; 1,018 (0,84-1,18) | 4,82; 5,81 (3,35-8,10) | 78 ms | 2 s |
+| sản lượng linh điền (sai số) | 1,5 / 0,9 / 0,7 | 0,494; 0,514 (0,43-0,63) | 3,51; 4,21 (2,55-6,62) | 69 ms | 2 s |
+| trận đồ hình tròn (độ chính xác) | 70% / 80% / 86% | 91,5%; 91,3% (87-96) | 51,5%; 52,0% (33-62) | 509 ms | 2,5 s |
+| linh thảo thật giả (độ chính xác) | 72% / 80% / 86% | 89,5%; 92,1% (86-95) | 57,8%; 60,2% (50-68) | 224 ms | 2 s |
+| lọc nhiễu bằng PCA (sai số) | 0,42 / 0,36 / 0,31 | 0,273; 0,261 (0,24-0,29) | 0,501; 0,495 (0,46-0,53) | 81 ms | 2 s |
+| trăm cuộc A/B (độ chính xác) | 75% / 85% / 90% | 97,5%; 96,9% (94-99) | 49,8%; 50,9% (39-60) | 64 ms | 2 s |
+| đọc chữ số (độ chính xác) | 86% / 88% / 90% | 93,2%; 92,5% (86-96,7) | 78,8%; 81,6% (76-88,7) | 520 ms | 3 s |
+
+Lời giải mẫu: k láng giềng (k = 5; chữ số k = 3), Bayes ngây thơ làm trơn Laplace, hạ gradient trên x đã trừ trung bình,
+phương trình chuẩn + khử Gauss, mạng 2-8-1 tanh/sigmoid với hạ gradient ngẫu nhiên, logistic trên đặc trưng chuẩn hóa,
+PCA bằng lặp lũy thừa có xuống thang, kiểm định z hai tỉ lệ. Lời giải ngây thơ: lớp nhiều nhất (linh thú, thư rác,
+linh thảo), trung bình y (đường thẳng, linh điền), hồi quy logistic không lớp ẩn (hình tròn), trả nguyên điểm đo
+(PCA), bên nào cao hơn thì thắng (A/B), so với ảnh trung bình của từng chữ số (chữ số). Giới hạn thời gian là khoảng 5
+lần thời gian của lời giải mẫu, không dưới 2 giây (mức mặc định của M6, vì riêng việc khởi động Python đã mất khoảng
+50 ms); `tools/check_all.py` kiểm lời giải mẫu không dùng quá nửa giới hạn.
+
+### 10.6 Chưa làm, và chỗ còn hở
+
+- **Bàn chỉnh cung** (mục 2.4) chưa làm: nó là một màn tương tác riêng (cần gạt, vẽ đường theo khung hình), không gói
+  gọn được trong `client/scenes/math_code.py` mà không làm màn bài tập rối thêm. Nên làm thành một màn riêng mở từ thẻ nút.
+- Tên và chủ đề của vài nút trong `tree.json` vẫn nhắc NumPy ("Giải bằng NumPy", "Lan truyền ngược bằng NumPy"): bài thì
+  viết bằng Python thuần. Nút `lt_numpy` vẫn trống.
+- Bản web (M12): các bài chạy trong tiến trình của trang, có bộ theo dõi thời gian. Trên máy bàn, lời giải mẫu của bài
+  chữ số chạy theo cách ấy mất khoảng 3,4 giây cho một bộ (giới hạn của bản web là 3 × 3 = 9 giây); trong trình duyệt
+  thật chưa đo, có thể quá giờ. Trang đứng hình trong lúc chạy.
+- Chưa có bài nào kiểm tập kiểm định (`#val`) hay dừng sớm; đường `#val` đã vẽ được.

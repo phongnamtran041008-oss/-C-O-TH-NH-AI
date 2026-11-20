@@ -30,6 +30,17 @@ Gauss...), mỗi đề đặt lời riêng và số liệu riêng. Hai hằng s�
 ngay trong đề các bài mô phỏng xác suất là cặp hằng số quen thuộc của bộ sinh đồng dư tuyến tính trong thư viện
 chuẩn của ngôn ngữ C. Mọi bài đều chưa duyệt (cờ `reviewed` không ghi) cho tới khi có người đọc lại.
 
+Xạ Trường, các bài Thực Chiến của Luyện Khí (id `xt_*`, `docs/THUC_CHIEN_TRONG_GAME.md`), cũng do AI viết, và
+**không dùng bộ dữ liệu nào lấy từ bên ngoài**: mọi dữ liệu huấn luyện và bia ẩn sinh bằng code của chính game
+(`server/app/learning/xa_truong_data.py`) từ hạt giống ghi trong đề, nên không có giấy phép dữ liệu nào phải theo.
+Điểm hai chiều, đường thẳng có nhiễu, mặt phẳng có nhiễu, hai đám điểm, trận đồ hình tròn và các cuộc thí nghiệm A/B
+là số ngẫu nhiên. Thư rác và thư thường là các mẫu câu tiếng Việt không dấu do AI tự viết rồi ghép ngẫu nhiên. Chữ số
+viết tay là **chữ số tổng hợp**: các nét được vẽ bằng code rồi nghiêng, xoay, co giãn, dịch và rắc nhiễu; chỉ định
+dạng ảnh 8 x 8 điểm, mỗi điểm 0 đến 16, là theo kiểu bộ "Optical Recognition of Handwritten Digits" của UCI (giấy phép
+CC BY 4.0) - không lấy ảnh nào của bộ ấy. Các phương pháp (k láng giềng, Bayes ngây thơ, hạ gradient, phương trình
+chuẩn, lan truyền ngược, hồi quy logistic, PCA bằng phép lặp lũy thừa, kiểm định hai tỉ lệ) là kiến thức chung của
+môn, viết lại bằng lời riêng.
+
 Tầng ẩn 10 của bốn môn cũng do AI viết, từng câu một: Đại Số (cấu trúc đại số, dạng song tuyến tính; theo tên mục của
 MI1141), Giải Tích (số thực, khả tích, hàm lồi, không gian metric; MI1111), Xác Suất và Thống Kê (hàm của biến ngẫu
 nhiên, tương quan, hồi quy; MI3030, MI3350) và Tối Ưu - Rời Rạc (phương pháp tính; MI2044). Chỉ tên mục và tên khái

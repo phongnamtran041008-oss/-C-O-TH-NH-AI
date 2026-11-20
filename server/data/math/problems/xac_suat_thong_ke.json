@@ -583,16 +583,16 @@
         "Chợ phường thị bán hai loại thảo dược trông như nhau: linh thảo thật (nhãn 1) và cỏ giả (nhãn 0). Mỗi cây được đo năm chỉ số, mỗi chỉ số một thang đo và một gốc khác nhau. Hai loại chồng lấn một phần, nên không cách nào đúng 100%; quy tắc tốt nhất có thể đúng khoảng 92%.",
         "Hãy huấn luyện hồi quy logistic bằng hạ gradient trên mất mát log (bài trước) và đoán nhãn các bia. Chuẩn hóa từng chỉ số (trừ trung bình, chia độ lệch chuẩn, tính trên dữ liệu huấn luyện) trước khi học sẽ giúp rất nhiều.",
         "Nhật ký huấn luyện: mỗi vòng (hoặc vài vòng) in ra stderr một dòng \"#loss <vòng> <mất mát>\", ví dụ print(\"#loss\", vong, mat_mat, file=sys.stderr). Game vẽ các dòng ấy thành đường mất mát; nhìn đường ấy đi xuống, đứng lại hay nổ tung là kỹ năng phải luyện. stdout chỉ dành cho dự đoán.",
-        "Chấm theo phẩm: trung bình trên 4 bộ bia ẩn, độ chính xác là tỉ lệ bia đoán đúng; mốc là 75%, 83% và 88% (đoán loại nhiều hơn cho mọi cây được khoảng 60%). Đạt mốc thứ nhất là hạ phẩm, mốc thứ hai trung phẩm, mốc thứ ba thượng phẩm; chỉ thượng phẩm mới tính là xong bài."
+        "Chấm theo phẩm: trung bình trên 4 bộ bia ẩn, độ chính xác là tỉ lệ bia đoán đúng; mốc là 72%, 80% và 86% (đoán loại nhiều hơn cho mọi cây được khoảng 60%). Đạt mốc thứ nhất là hạ phẩm, mốc thứ hai trung phẩm, mốc thứ ba thượng phẩm; chỉ thượng phẩm mới tính là xong bài."
       ],
       "input_vi": "Dòng 1: n và d (d = 5). Tiếp theo n dòng: d số thực rồi nhãn. Rồi một dòng m, và m dòng, mỗi dòng d số thực.",
       "output_vi": "m dòng, mỗi dòng 1 hoặc 0.",
       "limits_vi": "Mỗi bộ bia ẩn: n = 200, m = 100.",
       "checker": "do_chinh_xac",
       "grades": [
-        0.75,
-        0.83,
-        0.88
+        0.72,
+        0.8,
+        0.86
       ],
       "time_limit_ms": 2000,
       "data": {
