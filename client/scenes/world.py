@@ -18,8 +18,11 @@ import pygame
 from .. import strings_vi as T
 from ..art import skill_fx
 from ..art.palette import rgb
+from ..art import build as B
 from ..engine import art2
+from ..engine import glide as gl
 from ..engine import movement as mv
+from ..engine import petfollow
 from ..engine import sprites
 from ..engine.beeflock import Flock
 from ..engine.effects import Effects
@@ -78,6 +81,10 @@ class Ent:
     die_t0: float | None = None                # the die clip started
     atk_t0: float | None = None                # a monster's blow landed / a player's attack swing
     aim: tuple | None = None                   # where a winding-up monster is aiming
+    # Thiên Địa Đồ: a linh thú in the wild ("m" with beast), a player riding their mount
+    beast: bool = False
+    need: int = 0                              # Phản Đòn it takes to tame this beast
+    ride: bool = False
 
 
 _GHOST: dict = {}
@@ -373,6 +380,18 @@ class WorldScene(Scene):
         self.dodging: dict[str, float] = {}       # eid -> when its Né Đòn clip started
         self.stunned: dict[str, float] = {}       # monster eid -> until when a Phản Đòn stuns it
         self.attack_ready = 0.0
+        # Thiên Địa Đồ: thần thông of Luyện Khí and the linh thú (sent with the zone; None in a bí cảnh)
+        self.abilities: dict | None = None
+        self.riding = False
+        self.ride_mult = 1.0
+        self.glide_ready = 0.0
+        self.tran_ready = 0.0
+        self.glides: dict[str, tuple] = {}         # eid -> (t0, x0, y0, x1, y1, seconds) of a glide in flight
+        self.formations: list[list] = []           # [x, y, r, until, fx id] laid on the ground here
+        self.taming: dict[str, dict] = {}          # beast eid -> {"n", "need", "yielded", "name"} (my taming)
+        self.sniffed: list | None = None           # Linh Hồ: the weapons it smells nearby
+        self.sniff_t = 0.0
+        self.no_nose: str | None = None            # the worn pet that turned out to have no nose
         self.flock = Flock()                 # guard bees (stage 5), drawn flying around their owner
         self.pet_follow: dict = {}           # Linh Thú trotting after their owners (stage 8): eid -> PetFollower
         self.my_bees: list = []              # [id, species, hp, max hp, seconds resting, target]
@@ -494,6 +513,8 @@ class WorldScene(Scene):
                     self.game.state.character["qi"] = int(m["qi"])
             else:
                 self.game.toast(m.get("message_vi") or T.SKILL_FAIL.get(m.get("code"), ""), "#BC4749")
+        elif t in ("glide", "ride", "tran"):       # thần thông of Luyện Khí
+            self.on_ability(t, m)
 
     def open_question(self, m: dict, waited: float = 0.0) -> None:
         """Put the card of a `q` message on the screen. `waited`: seconds the question was held
@@ -556,6 +577,7 @@ class WorldScene(Scene):
         self.channel = m.get("channel", 1)
         self.channels = m.get("channels", [])
         self.rule = m.get("combat")
+        self.apply_abilities(m)
         self.zone_name = m.get("name_vi") or self.zone_name
         if m.get("land") != self.land_id or not self.weapon_spots:
             self.land_id = m.get("land")
@@ -634,11 +656,15 @@ class WorldScene(Scene):
             self.pending.popleft()
         x, y = float(m["me"][0]), float(m["me"][1])
         for entry in self.pending:
-            speed = entry[2] if len(entry) > 2 else SPEED     # a Né Đòn dash has its own speed
+            if len(entry) > 3 and entry[3]:                  # a glide (or mounting): no steps of its own
+                if entry[3][0] == "glide":
+                    x, y = entry[3][1], entry[3][2]
+                continue
+            speed = entry[2] if len(entry) > 2 else SPEED     # a Né Đòn dash has its own speed, a rider its mount's
             for dx, dy, ms in entry[1]:
                 x, y = mv.step(x, y, dx, dy, ms, speed, self.col)
         for dx, dy, ms in self.batch:
-            x, y = mv.step(x, y, dx, dy, ms, SPEED, self.col)
+            x, y = mv.step(x, y, dx, dy, ms, self.move_speed(), self.col)
         p = self.player
         if abs(x - p.x) > 0.01 or abs(y - p.y) > 0.01:
             self.corrections += 1   # the server disagreed (blocked or too fast): follow it
@@ -663,6 +689,7 @@ class WorldScene(Scene):
             ent.bees = e.get("bees") or []
             ent.pet = e.get("pet")
             ent.ghost = bool(e.get("gh"))
+            ent.beast, ent.need, ent.ride = bool(e.get("beast")), int(e.get("need") or 0), bool(e.get("rd"))
             if e["k"] == "r":
                 ent.realm_id, ent.left, ent.seen = e.get("realm", ""), float(e.get("left", 0)), self.game.now
             self.entities[e["id"]] = ent
@@ -730,6 +757,9 @@ class WorldScene(Scene):
             return
         if k in ("parry", "dodge", "dodged", "struck"):   # the open-world rule
             self.on_rule_fx(k, ev, me)
+            return
+        if k in ("tame", "seal", "fire", "glide", "tran", "ride"):   # linh thú and thần thông (Thiên Địa Đồ)
+            self.on_beast_fx(k, ev, me)
             return
         v2 = art2.on()
         now = self.game.now
@@ -887,6 +917,339 @@ class WorldScene(Scene):
         self.dodge_ready = self.game.now + float(d["cooldown"])
         self.dodging[f"p{self.game.state.me.get('id')}"] = self.game.now
 
+    # ------------------------------------------------------------ linh thú and thần thông (Thiên Địa Đồ)
+    def apply_abilities(self, m: dict) -> None:
+        """The thần thông sent with the zone (server realtime/abilities.py), the formations already
+        laid here, and whether the server still has us on our mount."""
+        self.abilities = m.get("abilities")
+        now = self.game.now
+        self.formations = [[float(f["x"]), float(f["y"]), float(f["r"]), now + float(f.get("left", 0)),
+                            ((self.abilities or {}).get("phap_tran") or {}).get("fx", "")]
+                           for f in (m.get("formations") or [])]
+        ride = (self.abilities or {}).get("cuoi_linh_thu") or {}
+        self.riding = bool(ride.get("riding"))
+        self.ride_mult = float(ride.get("mult") or 1.0) if self.riding else 1.0
+        self.taming.clear()
+        self.glides.clear()
+        self.sniffed, self.sniff_t = None, 0.0
+
+    def move_speed(self) -> float:
+        """My walking speed: the mount's when I ride (the server moves me at the same speed)."""
+        return SPEED * self.ride_mult if self.riding else SPEED
+
+    def tile_at(self, tx: int, ty: int) -> str | None:
+        """The ground of a tile ('water', 'ink'...), as the server's maps.tile_name names it."""
+        m = self.map
+        if not (0 <= tx < m.w and 0 <= ty < m.h) or not m.ground:
+            return None
+        gid = m.ground[ty * m.w + tx]
+        return B.TILESET[gid - 1][0] if 0 < gid <= len(B.TILESET) else None
+
+    def ability(self, uid: str) -> dict | None:
+        return (self.abilities or {}).get(uid)
+
+    def _ability_locked(self, uid: str) -> None:
+        a = self.ability(uid) or {}
+        self.fx.float_text(T.ABILITY_LOCKED.format(name=a.get("name_vi", ""), stage=(a.get("unlock") or {}).get("stage", "")),
+                           self.player.x, self.player.y - 30, "#F4EBD9")
+
+    def _keys_dir(self) -> tuple[int, int]:
+        keys = pygame.key.get_pressed()
+        dx = (keys[pygame.K_d] or keys[pygame.K_RIGHT]) - (keys[pygame.K_a] or keys[pygame.K_LEFT])
+        dy = (keys[pygame.K_s] or keys[pygame.K_DOWN]) - (keys[pygame.K_w] or keys[pygame.K_UP])
+        if not (dx or dy):
+            dx, dy = {"down": (0, 1), "up": (0, -1), "left": (-1, 0), "right": (1, 0)}[self.player.facing]
+        return dx, dy
+
+    def glide(self) -> None:
+        """Đạp Kiếm Lướt (G): the landing is picked here with the server's own geometry
+        (engine/glide.py, a copy of the server's); the glide rides in the movement stream and the
+        server checks it again from where it really has us."""
+        a = self.ability("dap_kiem_luot")
+        if a is None or self.net is None or self.dead or self.ghost or not self.joined:
+            return
+        if not a.get("ok"):
+            self._ability_locked("dap_kiem_luot")
+            return
+        now = self.game.now
+        if now < self.glide_ready:
+            return
+        dx, dy = self._keys_dir()
+        p = self.player
+        to = gl.pick(self.col, self.tile_at, set(a.get("over") or []), p.x, p.y, dx, dy,
+                     float(a.get("max_px", 80)), float(a.get("min_px", 0)))
+        if to is None:
+            self.fx.float_text(T.GLIDE_NO_LANDING, p.x, p.y - 30, "#F4EBD9")
+            return
+        self.flush_inputs()
+        if not self.net.send({"t": "glide", "s": self.seq, "x": to[0], "y": to[1]}):
+            return
+        self.pending.append((self.seq, [], SPEED, ("glide", to[0], to[1])))
+        self.seq += 1
+        me = f"p{self.game.state.me.get('id')}"
+        self.glides[me] = (now, p.x, p.y, to[0], to[1], float(a.get("ms", 450)) / 1000)
+        p.facing = face_to(to[0] - p.x, to[1] - p.y, p.facing)
+        p.x, p.y = to
+        self.glide_ready = now + float(a.get("cooldown", 2.5))
+
+    def toggle_ride(self) -> None:
+        """Cưỡi linh thú (R): mount the worn beast or get down; it rides in the movement stream so
+        the speed changes at the same step here and on the server."""
+        a = self.ability("cuoi_linh_thu")
+        if a is None or self.net is None or self.dead or self.ghost or not self.joined:
+            return
+        on = not self.riding
+        if on and not a.get("ok"):
+            self._ability_locked("cuoi_linh_thu")
+            return
+        mult = float(a.get("mult") or 0)
+        if on and (mult <= 0 or not self.game.worn_pet()):
+            self.game.toast(T.RIDE_NO_MOUNT, "#BC4749")
+            return
+        self.flush_inputs()
+        if not self.net.send({"t": "ride", "s": self.seq, "on": on}):
+            return
+        self.pending.append((self.seq, [], SPEED, ("ride", on)))
+        self.seq += 1
+        self.riding, self.ride_mult = on, (mult if on else 1.0)
+
+    def place_formation(self) -> None:
+        """Bày pháp trận (T): the server lays it at our feet and answers."""
+        a = self.ability("phap_tran")
+        if a is None or self.net is None or self.dead or self.ghost or not self.joined:
+            return
+        if not a.get("ok"):
+            self._ability_locked("phap_tran")
+            return
+        if self.game.now < self.tran_ready:
+            return
+        self.flush_inputs()
+        self.net.send({"t": "tran"})
+        self.tran_ready = self.game.now + 0.5        # until the server's answer says how long
+
+    def on_ability(self, t: str, m: dict) -> None:
+        """The server's answer to a thần thông."""
+        if not m.get("ok"):
+            if t == "ride":
+                self.riding, self.ride_mult = False, 1.0
+            if t == "glide":
+                self.glides.pop(f"p{self.game.state.me.get('id')}", None)
+            if t == "tran":
+                self.tran_ready = 0.0
+            self.game.toast(m.get("message_vi") or "", "#BC4749")
+            return
+        if t == "ride":
+            self.riding = bool(m.get("on"))
+            self.ride_mult = float(m.get("mult") or 1.0) if self.riding else 1.0
+        elif t == "tran":
+            self.tran_ready = self.game.now + float(m.get("ready_in") or 0)
+
+    def on_beast_fx(self, k: str, ev: dict, me: str) -> None:
+        """Effects of the linh thú and the thần thông: `tame` (a Phản Đòn counted against a beast),
+        `seal` (a Phong Ấn Phù took it), `fire` (Hỏa Tước's counter), `glide`, `tran`, `ride`."""
+        x, y = float(ev.get("x", 0.0)), float(ev.get("y", 0.0))
+        now, z = self.game.now, self.z
+        if k == "tame":
+            if ev.get("by") != me:
+                return
+            ent = self.entities.get(ev.get("id"))
+            name = ent.name if ent is not None else ""
+            done = bool(ev.get("ok"))
+            self.taming[ev.get("id")] = {"n": int(ev.get("n", 0)), "need": int(ev.get("need", 0)), "yielded": done,
+                                         "name": name}
+            self.fx.float_text(T.BEAST_TAME_COUNT.format(n=ev.get("n"), need=ev.get("need")), x, y - 40 / z, "#B5D67A")
+            if done:
+                self.game.toast(T.BEAST_YIELDED_TOAST.format(name=name), "#6A994E", 4.0)
+                if ent is not None:
+                    ent.aim = None
+        elif k == "seal":
+            self.spark("capture_seal", x, y - 14 / z, once=True)
+            if ev.get("by") == me:
+                self.taming.pop(ev.get("id"), None)
+        elif k == "fire":
+            self.spark("burst_hoa", x, y - 12 / z, once=True)
+            self.fx.float_text(T.PARRY_FIRE, x, y - 34 / z, "#E76F51")
+        elif k == "glide":
+            if ev.get("id") != me:
+                self.glides[ev.get("id")] = (now, float(ev.get("x0", x)), float(ev.get("y0", y)), x, y,
+                                             float(ev.get("ms") or 450) / 1000)
+        elif k == "tran":
+            fx = ((self.abilities or {}).get("phap_tran") or {}).get("fx") or ev.get("fx") or ""
+            self.formations.append([x, y, float(ev.get("r") or 40), now + float(ev.get("d") or 10), fx])
+        elif k == "ride":
+            ent = self.entities.get(ev.get("id"))
+            if ent is not None:
+                ent.ride = bool(ev.get("on"))
+
+    def yielded_beast(self, e: "Ent | None") -> bool:
+        """A beast that yielded to me: E seals it, it is no longer a foe."""
+        return e is not None and e.beast and bool((self.taming.get(e.id) or {}).get("yielded"))
+
+    def seal_beast(self, ent: Ent) -> None:
+        """Phong Ấn Phù on a beast that yielded (POST /beasts/seal); the server checks it all."""
+        g = self.game
+
+        def ok(r):
+            r = r if isinstance(r, dict) else {}
+            g.toast(r.get("message_vi") or "", "#6A994E", 4.0)
+            self.taming.pop(ent.id, None)
+            g.audio.play("coin")
+            g.refresh_pets()
+            g.refresh_inv()
+
+        g.api.post("/beasts/seal", {"id": ent.id}, ok, g.api_error)
+
+    def beast_label(self, e: Ent) -> str:
+        """The name over a beast: what it is, and how far my taming of it has come."""
+        tm = self.taming.get(e.id)
+        if tm and tm.get("yielded"):
+            return f"{e.name} · {T.BEAST_YIELDED}"
+        if tm:
+            return f"{e.name} · {T.BEAST_TAME_COUNT.format(n=tm['n'], need=tm['need'])}"
+        return f"{e.name} · {T.BEAST_RANK}"
+
+    def update_beasts(self, dt: float) -> None:
+        """Glides and formations that are over go; the Linh Hồ sniffs now and then."""
+        now = self.game.now
+        self.glides = {k: v for k, v in self.glides.items() if now - v[0] <= v[5]}
+        self.formations = [f for f in self.formations if f[3] > now]
+        pet = self.game.worn_pet()
+        if not self.joined or self.abilities is None or not pet or pet == self.no_nose:
+            if not pet or pet == self.no_nose or self.abilities is None:
+                self.sniffed = None
+            return
+        self.sniff_t -= dt
+        if self.sniff_t > 0:
+            return
+        self.sniff_t = 4.0
+
+        def ok(d):
+            self.sniffed = (d or {}).get("found") or []
+
+        def err(e):
+            if getattr(e, "message_vi", "") and getattr(e, "status", 0) == 400:
+                self.no_nose = pet
+            self.sniffed = None
+        try:
+            self.game.api.get("/beasts/sniff", ok, err)
+        except Exception:
+            self.sniffed = None
+
+    def glide_pos(self, eid: str, x: float, y: float) -> tuple[float, float, bool]:
+        """Where a gliding character is drawn (on the way, not yet at the landing), and whether it glides."""
+        g = self.glides.get(eid)
+        if g is None:
+            return x, y, False
+        k = min(1.0, (self.game.now - g[0]) / max(0.05, g[5]))
+        return g[1] + (g[3] - g[1]) * k, g[2] + (g[4] - g[2]) * k, k < 1.0
+
+    def posed_v2(self, drawables: list, realm: str, x: float, y: float, clip: str, t: float, facing: str,
+                 weapon: str | None, lift: int = 0, sword: bool = False) -> bool:
+        """A character in a pose of its own (on the flying sword, sitting on a mount): the v2
+        layers lifted `lift` screen px, sorted at its feet; `sword` adds the flying sword under it."""
+        sheet = art2.char_for(realm)
+        if sheet is None or not sheet.has(clip):
+            return False
+        ix, iy = self.view.to_screen(x, y)
+        iy -= lift
+        if sword:
+            sid = (self.ability("dap_kiem_luot") or {}).get("sheet") or "phi_kiem_1"
+            ss = art2.weapon(sid)
+            if ss is not None and ss.has("fly"):
+                ox, oy = ss.offset()
+                drawables.append((y, ss.frame(ss.index("fly", t, facing)), (ix + ox, iy + oy)))
+        for img, (ox, oy), flags in art2.char_layers(realm, clip, t, facing, weapon, aura_t=self.t, sheet=sheet) or ():
+            drawables.append((y, img, (ix + ox, iy + oy), flags))
+        return True
+
+    def rider_v2(self, drawables: list, realm: str, x: float, y: float, facing: str, moving: bool, walk_t: float,
+                 pet: str | None, weapon: str | None) -> bool:
+        """A rider: the mount (its own v2 sheet, larger) and the rider sitting cross-legged on it."""
+        mount = petfollow.mount_drawable(pet, x, y, facing, moving, walk_t, self.t, self.view)
+        if mount is None:
+            return False
+        drawables.append(mount)
+        return self.posed_v2(drawables, realm, x, y, petfollow.RIDER_CLIP, self.t, facing, weapon,
+                             lift=petfollow.MOUNT_LIFT)
+
+    def draw_formations(self, surf) -> None:
+        """Bày pháp trận: the formation sheet on the ground, stretched to the radius it slows."""
+        now = self.game.now
+        for fx_, fy, r, until, fid in self.formations:
+            if until <= now or not fid:
+                continue
+            sh = art2.fx(fid)
+            if sh is None:
+                continue
+            sx, sy = self.view.to_screen(fx_, fy)
+            d = int(2 * self.view.len(r) * sh.fw / 90)          # the circle fills ~90 of 96 px
+            art2.draw_fx(surf, fid, self.t, sx, sy, size=(d, d))
+
+    def draw_ability_row(self, ui, active: bool) -> None:
+        """The thần thông of Luyện Khí over the hotbar: T pháp trận, G lướt, R cưỡi - each drawn
+        from its own v2 art, grey with a padlock until its stage of Đạo Thụ, shaded while it rests."""
+        if self.abilities is None:
+            return
+        now = self.game.now
+        x0, y0 = 404, 200
+        for i, uid in enumerate(("phap_tran", "dap_kiem_luot", "cuoi_linh_thu")):
+            a = self.ability(uid)
+            if a is None:
+                continue
+            x = x0 + i * 24
+            ui.fill(x, y0, 22, 22, (20, 18, 15, 180))
+            ui.border(x, y0, 22, 22, "#3E8E5E" if (uid == "cuoi_linh_thu" and self.riding) else "#8B5A2B")
+            img = None
+            if uid == "phap_tran":
+                s = art2.fx(a.get("fx") or "")
+                img = art2.trim(s.frame(s.fx_index(ui.time))) if s is not None else None
+            elif uid == "dap_kiem_luot":
+                s = art2.weapon(a.get("sheet") or "")
+                img = art2.trim(s.frame(s.index("fly", ui.time, "right"))) if s is not None and s.has("fly") else None
+            else:
+                img = petfollow.picture(self.game.worn_pet() or "tieu_long", ui.time)
+            if img is not None:
+                k = min(1.0, 18 / max(img.get_width(), img.get_height()))
+                ui.image(img, x + 11, y0 + 11, zoom=k, anchor="center")
+            ui.text(T.ABILITY_KEYS[uid], x + 2, y0 + 1, 6, "#E9C46A")
+            if not a.get("ok"):
+                ui.fill(x, y0, 22, 22, (0, 0, 0, 120))
+                ui.border(x + 14, y0 + 2, 6, 5, "#B8B1A3")
+                ui.fill(x + 13, y0 + 5, 8, 6, "#B8B1A3")
+            else:
+                ready = {"phap_tran": self.tran_ready, "dap_kiem_luot": self.glide_ready}.get(uid, 0.0)
+                total = float(a.get("cooldown") or 1)
+                left = ready - now
+                if left > 0:
+                    frac = min(1.0, left / max(0.1, total))
+                    ui.fill(x, y0 + 22 * (1 - frac), 22, 22 * frac, (0, 0, 0, 150))
+            if active and ui.hover(x, y0, 22, 22):
+                ui.set_tooltip(T.ABILITY_TIP.format(name=a.get("name_vi", ""), key=T.ABILITY_KEYS[uid],
+                                                    desc=T.ABILITY_DESC[uid]) if a.get("ok") else
+                               T.ABILITY_LOCKED.format(name=a.get("name_vi", ""),
+                                                       stage=(a.get("unlock") or {}).get("stage", "")))
+
+    def draw_taming_panel(self, ui) -> None:
+        """While I am taming a beast: its name and the Phản Đòn counted so far, at the top."""
+        live = [(eid, tm) for eid, tm in self.taming.items() if eid in self.entities]
+        y = 20
+        for eid, tm in live[:2]:
+            line = (T.BEAST_YIELDED_TOAST.format(name=tm["name"]) if tm["yielded"] else
+                    T.BEAST_TAME_PANEL.format(name=tm["name"], n=tm["n"], need=tm["need"]))
+            w = ui.text_size(line, 7)[0] + 12
+            ui.fill(240 - w / 2, y, w, 11, (20, 18, 15, 190))
+            ui.border(240 - w / 2, y, w, 11, "#6A994E" if tm["yielded"] else "#E9C46A")
+            ui.text(line, 240, y + 5.5, 7, "#B5D67A" if tm["yielded"] else "#F4EBD9", anchor="center")
+            if not tm["yielded"]:
+                k = tm["n"] / max(1, tm["need"])
+                ui.fill(240 - w / 2 + 1, y + 9, (w - 2) * k, 1.5, "#E9C46A")
+            y += 13
+        if self.sniffed is not None:             # the worn beast has a nose (the server said so)
+            f = self.sniffed[0] if self.sniffed else None
+            line = T.BEAST_SNIFF.format(name=f["name_vi"], way=f["way_vi"], d=f["distance_tiles"]) if f \
+                else T.BEAST_SNIFF_NONE
+            ui.text(line, 240, y + 5, 7, "#E9C46A", anchor="center")
+
     # ------------------------------------------------------------ v2 helpers
     @property
     def z(self) -> int:
@@ -905,10 +1268,12 @@ class WorldScene(Scene):
 
     def ent_sheet(self, e: Ent):
         """The v2 sheet an entity is drawn from (cached on first use), or None."""
-        key = (e.kind, e.mtype, e.rank, e.realm)
+        key = (e.kind, e.mtype, e.rank, e.realm, e.beast)
         if getattr(e, "_sheet_key", None) != key:
             e._sheet_key = key
-            if e.kind == "m":
+            if e.kind == "m" and e.beast:            # a linh thú: its own beast sheet
+                e._sheet = petfollow.sheet(e.mtype)
+            elif e.kind == "m":
                 e._sheet = art2.monster_for(e.mtype, e.rank)
             elif e.kind == "p":
                 e._sheet = art2.char_for(e.realm)
@@ -1262,10 +1627,10 @@ class WorldScene(Scene):
         me = f"p{self.game.state.me.get('id')}"
         owners = []
         mine = self.game.worn_pet()
-        if mine and not self.dead:
+        if mine and not self.dead and not self.riding:          # (a ridden beast is under its rider)
             owners.append((me, mine, self.player.x, self.player.y, self.player.facing))
         for e in self.entities.values():
-            if e.kind == "p" and e.pet and e.alive:
+            if e.kind == "p" and e.pet and e.alive and not e.ride:
                 owners.append((e.id, e.pet, e.pos[0], e.pos[1], FACING[e.pos[2] % 4] if len(e.pos) > 2 else "down"))
         alive = set()
         for eid, kind, ox, oy, facing in owners:
@@ -1293,6 +1658,7 @@ class WorldScene(Scene):
         self.fx.update(dt)
         self.update_bees(dt)
         self.update_pets(dt)
+        self.update_beasts(dt)
         self.release_landings()
         self.show_waiting_question()
         self.weather.update(dt, self.game.api)
@@ -1334,7 +1700,7 @@ class WorldScene(Scene):
             while ms > 0:
                 part = min(ms, 100)
                 ms -= part
-                p.x, p.y = mv.step(p.x, p.y, dx, dy, part, SPEED, self.col)
+                p.x, p.y = mv.step(p.x, p.y, dx, dy, part, self.move_speed(), self.col)
                 # sent exactly as applied (never merged): the server must repeat the same steps
                 self.batch.append([dx, dy, part])
             p.walk_t += dt
@@ -1356,7 +1722,7 @@ class WorldScene(Scene):
             return
         steps = [list(s) for s in self.batch]
         if self.net.send({"t": "in", "s": self.seq, "k": steps}):
-            self.pending.append((self.seq, steps))
+            self.pending.append((self.seq, steps, self.move_speed()))
             self.seq += 1
         self.batch = []
         self.batch_t = 0.0
@@ -1427,6 +1793,8 @@ class WorldScene(Scene):
     def attack(self, ent: Ent | None) -> None:
         if ent is None or self.net is None or self.dead or self.game.now < self.attack_ready:
             return
+        if self.yielded_beast(ent):          # a beast that yielded is sealed, not struck
+            return
         self.flush_inputs()
         self.net.send({"t": "atk", "id": ent.id})
         self.attack_ready = self.game.now + 0.45
@@ -1453,6 +1821,8 @@ class WorldScene(Scene):
         if kind == "weapon":
             return "weapon"
         if kind == "ent":
+            if self.yielded_beast(obj):
+                return "seal"
             return "player" if obj.kind == "p" else ("rift" if obj.kind == "r" else "monster")
         if obj.type == "sign":
             return "sign"
@@ -1468,7 +1838,9 @@ class WorldScene(Scene):
         action = self.action_of(target)
         g = self.game
         if kind == "ent":
-            if obj.kind == "p":
+            if action == "seal":           # Phong Ấn Phù on a beast that yielded
+                self.seal_beast(obj)
+            elif obj.kind == "p":
                 g.open_player_menu(obj.uid, obj.name, obj.realm)
             elif obj.kind == "r":   # stage 9: a Khe Nứt Mực
                 from .realm import RealmGateScene
@@ -1942,6 +2314,7 @@ class WorldScene(Scene):
         self.draw_teles_v2(surf)
         self.draw_skill_fx(surf, ground=True)      # formation circles lie on the ground
         self.draw_sparks(surf, ground=True)
+        self.draw_formations(surf)                 # Bày pháp trận
         vw, vh = v.span(sw, sh)
         for o in self.map.objects:
             if o.x + o.w < v.x - 40 or o.x > v.x + vw + 40 or o.y + o.h < v.y - 8 or o.y > v.y + vh + 80:
@@ -1988,9 +2361,16 @@ class WorldScene(Scene):
                 continue
             if e.die_t0 is not None and e.hp > 0 and now - e.die_t0 > 1.0:
                 e.die_t0 = None                    # back on their feet
-            drawn = self.char_v2(drawables, e.id, e.realm, x, y, FACING[f % 4], bool(m), e.walk_t, e.weapon,
-                                 e.die_t0, e.atk_t0, now - (0.15 - e.hurt_t) if e.hurt_t > 0 else None,
-                                 e.ghost, e.hurt_t > 0.1)
+            gx, gy, gliding = self.glide_pos(e.id, x, y)
+            if gliding:                            # Đạp Kiếm Lướt: on the flying sword
+                drawn = self.posed_v2(drawables, e.realm, gx, gy, "fly", now, FACING[f % 4], e.weapon, sword=True)
+            elif e.ride and e.pet and e.die_t0 is None:      # Cưỡi linh thú
+                drawn = self.rider_v2(drawables, e.realm, x, y, FACING[f % 4], bool(m), e.walk_t, e.pet, e.weapon)
+            else:
+                drawn = False
+            drawn = drawn or self.char_v2(drawables, e.id, e.realm, x, y, FACING[f % 4], bool(m), e.walk_t, e.weapon,
+                                          e.die_t0, e.atk_t0, now - (0.15 - e.hurt_t) if e.hurt_t > 0 else None,
+                                          e.ghost, e.hurt_t > 0.1)
             if not drawn:
                 img = self._ent_frame(e, f, m)
                 drawables.append((y, v.img(ghostly(img) if e.ghost else img), v.to_screen(x - 8, y - 24)))
@@ -2004,15 +2384,23 @@ class WorldScene(Scene):
             self.my_die_t0 = now                   # dead: the fallen body stays until the respawn
         die_t0 = self.my_die_t0 if self.dead and not self.ghost else None
         wp = (self.game.state.cult or {}).get("stats", {}).get("weapon")
-        if not self.char_v2(drawables, me, ch.get("realm", "pham_nhan"), p.x, p.y, p.facing, p.moving, p.walk_t,
-                            wp, die_t0, self.my_atk_t0, self.my_hurt_t0, self.ghost, False) and not self.dead:
+        realm = ch.get("realm", "pham_nhan")
+        gx, gy, gliding = self.glide_pos(me, p.x, p.y)
+        posed = False
+        if gliding and not self.dead:              # Đạp Kiếm Lướt: on the flying sword, on the way
+            posed = self.posed_v2(drawables, realm, gx, gy, "fly", now, p.facing, wp, sword=True)
+        elif self.riding and not self.dead:        # Cưỡi linh thú: sitting on the worn mount
+            posed = self.rider_v2(drawables, realm, p.x, p.y, p.facing, p.moving, p.walk_t, self.game.worn_pet(), wp)
+        if not posed and not self.char_v2(drawables, me, realm, p.x, p.y, p.facing, p.moving, p.walk_t,
+                                          wp, die_t0, self.my_atk_t0, self.my_hurt_t0, self.ghost, False) \
+                and not self.dead:
             drawables.append((p.y, v.img(ghostly(p.frame()) if self.ghost else p.frame()),
                               v.to_screen(p.x - 8, p.y - 24)))
         for pf in self.pet_follow.values():
-            bd = art2.beast_drawable(pf.kind, pf.x, pf.y, pf.moving, pf.walk_t, self.t, pf.left, v)
+            bd = petfollow.drawable(pf.kind, pf.x, pf.y, pf.moving, pf.walk_t, self.t, pf.left, v)
             if bd is not None:
                 drawables.append(bd)
-            else:
+            elif not petfollow.is_spirit_beast(pf.kind):       # the old sprite (a linh thú has only its v2 sheet)
                 sx, sy = v.to_screen(pf.x - 5, pf.y - 1)
                 pygame.draw.ellipse(surf, (30, 36, 26), (sx, sy, int(v.len(10)), int(v.len(3))))
                 drawables.append((pf.y, v.img(sprites.pet(pf.kind, pf.frame, pf.left)),
@@ -2097,6 +2485,8 @@ class WorldScene(Scene):
                 continue
             col = "#F4EBD9" if e.kind == "p" else ("#E9C46A" if e.rank == "elite" else "#F08A8C")
             name = e.name if e.rank == "normal" or e.kind == "p" else f"{e.name} · {T.MONSTER_RANK.get(e.rank, '')}"
+            if e.beast:                            # a linh thú: what it is, and my taming of it
+                name, col = self.beast_label(e), "#B5D67A"
             if v2 and e.kind in ("p", "m"):
                 lift = V2_HEAD if e.kind == "p" else self.ent_extent(e)[1] + 7
             else:
@@ -2187,6 +2577,8 @@ class WorldScene(Scene):
                 ui.fill(mx + e.pos[0] * k - 1, my + e.pos[1] * k - 1, 2, 2, "#FFFFFF")
             elif e.kind == "r":
                 ui.fill(mx + e.pos[0] * k - 1.5, my + e.pos[1] * k - 1.5, 3, 3, "#8E5AC8")
+        for f in self.sniffed or []:               # what the Linh Hồ smells
+            ui.fill(mx + (f["pos"][0] * 16 + 8) * k - 1.5, my + (f["pos"][1] * 16 + 12) * k - 1.5, 3, 3, "#F4A261")
         ui.fill(mx + self.player.x * k - 1.5, my + self.player.y * k - 1.5, 3, 3, "#E9C46A")
         ui.border(mx - 2, my - 2, mw + 4, mh + 4, "#8B5A2B")
         # quest tracker under the minimap
@@ -2200,8 +2592,10 @@ class WorldScene(Scene):
             ui.fill(476 - tw, my + mh + 4, tw, 11, (20, 18, 15, 150))
             ui.text(line, 472, my + mh + 9.5, 7, col, anchor="midright")
         guide.draw_tracker(ui, g, 476 - guide.TRACKER_W, my + mh + (18 if quests else 5), top)
+        self.draw_taming_panel(ui)                 # Thiên Địa Đồ: taming a linh thú, the Linh Hồ's nose
         # hotbar: the chiêu thức 1-6 and the healing pill (spec 18)
         self.draw_hotbar(ui, top and not g.chatbox.typing)
+        self.draw_ability_row(ui, top and not g.chatbox.typing)   # thần thông: T, G, R
         # chat (before hotkeys, so typing never triggers them)
         g.chatbox.draw(ui, in_zone=self.joined, enabled=top)
         self._hud_buttons(ui, top)
@@ -2277,6 +2671,13 @@ class WorldScene(Scene):
             self.use_pill()
         if self.rule is not None and (ui.key(pygame.K_LSHIFT) or ui.key(pygame.K_RSHIFT)):
             self.dodge()                             # Né Đòn (the open-world rule)
+        if self.abilities is not None:               # thần thông of Luyện Khí (Thiên Địa Đồ)
+            if ui.key(pygame.K_t):
+                self.place_formation()
+            if ui.key(pygame.K_g):
+                self.glide()
+            if ui.key(pygame.K_r):
+                self.toggle_ride()
         if self.target:
             act = self.action_of(self.target)
             label = T.WEAPON_SPOT if act == "weapon" else T.WORLD_ACTIONS.get(act, T.SIGN_READ)

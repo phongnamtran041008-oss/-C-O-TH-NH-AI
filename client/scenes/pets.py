@@ -1,13 +1,19 @@
-"""Linh Thú (spec 13): the pets owned, wearing one, and the Linh Thú Phổ of the 12 con giáp."""
+"""Linh Thú (spec 13): the pets owned, wearing one, and the Linh Thú Phổ of the 12 con giáp.
+
+One companion model: the linh thú tamed in the lands of Thiên Địa Đồ (server systems/beasts.py)
+are pets like the con giáp - listed here, worn one at a time - marked as tamed, and drawn from
+their own v2 sheet (engine/petfollow.py)."""
 from __future__ import annotations
 
 import pygame
 
 from .. import strings_vi as T
-from ..engine import art2, sprites
+from ..engine import petfollow, sprites
 from .base import Scene
 
 RARITY_COLORS = {"common": "#7D7468", "rare": "#4A7CC8", "epic": "#8E5AC8", "legendary": "#C99A3A"}
+TAMED_COLOR = "#3E8E5E"
+PAGE = 12                  # cards on one page: a 4 x 3 grid
 
 
 class PetScene(Scene):
@@ -15,6 +21,7 @@ class PetScene(Scene):
         super().__init__(game)
         self.busy = False
         self.sel = 0
+        self.page = 0
         game.refresh_pets()
 
     def equip(self, pet_id):
@@ -52,34 +59,44 @@ class PetScene(Scene):
             ui.text(T.PETS_NONE, x + 16, y + 40, 8, max_w=w - 32)
         else:
             self.sel = min(self.sel, len(pets) - 1)
-            for i, p in enumerate(pets):      # up to 12, a 4 x 3 grid of cards
-                cx, cy = x + 12 + (i % 4) * 46, y + 30 + (i // 4) * 54
-                col = RARITY_COLORS.get(p["rarity"], "#7D7468")
+            pages = (len(pets) + PAGE - 1) // PAGE
+            self.page = min(self.page, pages - 1)
+            first = self.page * PAGE
+            for i, p in list(enumerate(pets))[first:first + PAGE]:      # a 4 x 3 grid of cards per page
+                k = i - first
+                cx, cy = x + 12 + (k % 4) * 46, y + 30 + (k // 4) * 54
+                col = TAMED_COLOR if p.get("tamed") else RARITY_COLORS.get(p["rarity"], "#7D7468")
                 ui.fill(cx, cy, 42, 50, "#FFFDF7" if i != self.sel else "#F4E6C2")
                 ui.border(cx, cy, 42, 50, col, 2 if p["equipped"] else 1)
-                v2 = art2.beast_picture(p["pet_type"], ui.time if p["equipped"] else 0.0)
+                v2 = petfollow.picture(p["pet_type"], ui.time if p["equipped"] else 0.0)
                 if v2 is not None:        # a Linh Thú rendered out of Blender
                     ui.image(v2, cx + 21, cy + 33, zoom=1, anchor="midbottom")
-                else:
+                elif not p.get("tamed"):
                     ui.image(sprites.pet(p["pet_type"], int(ui.time * 3) % 2 if p["equipped"] else 0),
                              cx + 21, cy + 20, zoom=2, anchor="center")
                 ui.text(p["name_vi"], cx + 21, cy + 38, 7, col, anchor="center")
-                ui.text(T.PETS_LEVEL.format(l=p["level"], m=p["max_level"]), cx + 21, cy + 45, 6, "#8E877A",
-                        anchor="center")
+                ui.text(T.PETS_TAMED if p.get("tamed") else T.PETS_LEVEL.format(l=p["level"], m=p["max_level"]),
+                        cx + 21, cy + 45, 6, "#8E877A", anchor="center")
                 if ui.click_in(cx, cy, 42, 50):
                     self.sel = i
+            if pages > 1:                 # more than twelve: pages of twelve
+                ui.text(T.PETS_PAGE.format(a=self.page + 1, b=pages), x + 96, y + 196, 7, "#5A5A5A", anchor="center")
+                if ui.button("pets_prev", x + 12, y + 190, 18, 12, "<", size=7, enabled=self.page > 0):
+                    self.page -= 1
+                if ui.button("pets_next", x + 162, y + 190, 18, 12, ">", size=7, enabled=self.page < pages - 1):
+                    self.page += 1
             p = pets[self.sel]
             px = x + 202
-            col = RARITY_COLORS.get(p["rarity"], "#7D7468")
+            col = TAMED_COLOR if p.get("tamed") else RARITY_COLORS.get(p["rarity"], "#7D7468")
             ui.fill(px, y + 30, w - 214, 160, "#FFFDF7")
             ui.border(px, y + 30, w - 214, 160, col)
-            v2 = art2.beast_picture(p["pet_type"], ui.time, "happy" if p["equipped"] else "idle")
+            v2 = petfollow.picture(p["pet_type"], ui.time, "happy" if p["equipped"] else "idle")
             if v2 is not None:
                 ui.image(v2, px + 30, y + 88, zoom=2, anchor="midbottom")
-            else:
+            elif not p.get("tamed"):
                 ui.image(sprites.pet(p["pet_type"], int(ui.time * 4) % 2), px + 30, y + 62, zoom=3.5, anchor="center")
-            ui.text(f"{p['name_vi']} · {p['zodiac_vi']}", px + 120, y + 44, 9, col)
-            ui.text(p["rarity_vi"], px + 120, y + 56, 7, col)
+            ui.text(p["name_vi"] if p.get("tamed") else f"{p['name_vi']} · {p['zodiac_vi']}", px + 120, y + 44, 9, col)
+            ui.text(T.PETS_TAMED_FROM if p.get("tamed") else p["rarity_vi"], px + 120, y + 56, 7, col)
             ui.text(T.PETS_LEVEL.format(l=p["level"], m=p["max_level"]), px + 120, y + 66, 7, "#8E877A")
             ui.text(p["skill_vi"], px + 10, y + 96, 7, "#2B2B2B", max_w=w - 234)
             stats = "  ".join(f"{T.STATS_VI.get(k, k)} +{v}" for k, v in p["stats"].items())
@@ -116,7 +133,7 @@ class PetBookScene(Scene):
             col = RARITY_COLORS.get(b["rarity"], "#7D7468")
             ui.fill(cx, cy, 60, 88, "#FFFDF7" if b["found"] else "#E3D5BA")
             ui.border(cx, cy, 60, 88, col)
-            v2 = art2.beast_picture(b["id"])
+            v2 = petfollow.picture(b["id"])
             img = v2 if v2 is not None else sprites.pet(b["id"], 0)
             if not b["found"]:
                 img = img.copy()
