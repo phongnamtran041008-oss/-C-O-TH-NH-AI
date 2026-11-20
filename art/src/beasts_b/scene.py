@@ -11,6 +11,7 @@ into the game folder.
 from __future__ import annotations
 
 import argparse
+import os
 import importlib
 import sys
 from pathlib import Path
@@ -92,6 +93,10 @@ def main():
         return
     hold = [o for o in bpy.data.objects if "holdout" in o.name]
     only = [c for c in a.clips.split(",") if c]
+    hide = [h for h in os.environ.get("BEASTS_B_HIDE", "").split(",") if h]
+    if hide and only:       # look-round debugging: drop parts by name (WIP renders only)
+        for o in [o for o in bpy.data.objects if any(h in o.name for h in hide)]:
+            bpy.data.objects.remove(o)
     clips = clips_from_actions(only)
     kit.render_animated(arm, a.id, clips, WIP if only else OUT, name_vi=name_vi, kind="beast",
                         holdout=hold or None)
