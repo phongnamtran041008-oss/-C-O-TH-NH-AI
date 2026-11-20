@@ -263,13 +263,13 @@ def test_the_world_checker_bites(plan):
     assert any("question_rule" in e for e in mt.validate_world(bad, t))
 
 
-def test_the_combat_lands_and_weapons_sections_are_wired(plan):
-    """The owner's waves: the fight rule, the lands of Luyện Khí and the weapons run in the game,
-    beasts do not yet."""
+def test_the_combat_lands_weapons_beasts_and_abilities_sections_are_wired(plan):
+    """The owner's waves: the fight rule, the lands of Luyện Khí, the weapons, the beasts of Luyện
+    Khí with their taming and its thần thông run in the game; what lies beyond Luyện Khí does not."""
     assert plan["wired"] is False
-    assert plan["wired_sections"] == ["combat", "lands", "weapons"]
-    assert mt.wired_sections(plan) == ("combat", "lands", "weapons")
-    assert all(mt.section_wired(s, plan) for s in ("combat", "lands", "weapons"))
+    assert plan["wired_sections"] == ["combat", "lands", "weapons", "beasts", "abilities"]
+    assert mt.wired_sections(plan) == ("combat", "lands", "weapons", "beasts", "abilities")
+    assert all(mt.section_wired(s, plan) for s in mt.WIREABLE_SECTIONS)
     assert mt.wired_sections({"wired": False}) == ()
     assert mt.wired_sections({"wired": True}) == mt.WIREABLE_SECTIONS
     unlocks = {u["id"]: u for u in plan["unlocks"]}
@@ -278,7 +278,7 @@ def test_the_combat_lands_and_weapons_sections_are_wired(plan):
 
 
 @pytest.mark.parametrize("change, message", [
-    (lambda p: p.__setitem__("wired_sections", ["beasts"]), "wired_sections"),
+    (lambda p: p.__setitem__("wired_sections", ["thu_cung"]), "wired_sections"),
     (lambda p: p.__setitem__("wired_sections", ["combat", "combat"]), "wired_sections"),
     (lambda p: p["combat"]["dodge"].pop("dash_px"), "dodge.dash_px"),
     (lambda p: p["combat"]["dodge"].__setitem__("invulnerable_seconds", 2), "shorter than cooldown"),
@@ -327,6 +327,66 @@ def test_a_wired_lands_section_is_checked(plan, change, message):
     bad = copy.deepcopy(plan)
     change(bad)
     assert any(message in e for e in mt.validate_world(bad, t)), mt.validate_world(bad, t)
+
+
+# ------------------------------------------------------------------ beasts and thần thông (wired 2026-11-20)
+def beast_of(p: dict, bid: str) -> dict:
+    return next(b for b in p["beasts"] if b["id"] == bid)
+
+
+def unlock_of(p: dict, uid: str) -> dict:
+    return next(u for u in p["unlocks"] if u["id"] == uid)
+
+
+def test_the_beasts_and_thanthong_of_luyen_khi_are_built_and_later_ones_wait(plan):
+    built = [b for b in plan["beasts"] if b["status"] == "co"]
+    assert {b["id"] for b in built} == {"linh_ho", "huyen_quy", "bach_hac", "hoa_tuoc", "tieu_long"}
+    assert all(b["requires"]["realm"] == "luyen_khi" and b["pos"] and b["gift"] for b in built)
+    assert beast_of(plan, "ky_lan_con")["status"] == "chua_co" and "pos" not in beast_of(plan, "ky_lan_con")
+    for u in plan["unlocks"]:
+        assert u["status"] == ("co" if u["realm"] == "luyen_khi" else "chua_co"), u["id"]
+    assert plan["beast_taming"]["seal_unlock"] == "thu_phuc_linh_thu"
+    assert mt.validate_world(plan, mt.tree()) == []
+
+
+@pytest.mark.parametrize("change, message", [
+    (lambda p: beast_of(p, "linh_ho").__setitem__("pos", [0, 0]), "not a walkable tile"),
+    (lambda p: beast_of(p, "linh_ho").pop("pos"), "needs a pos"),
+    (lambda p: beast_of(p, "huyen_quy").__setitem__("gift", {"type": "bay"}), "gift.type"),
+    (lambda p: beast_of(p, "bach_hac")["gift"].__setitem__("value", 1.5), "between 0 and 1"),
+    (lambda p: beast_of(p, "tieu_long")["gift"].__setitem__("speed_mult", 9), "speed_mult"),
+    (lambda p: beast_of(p, "linh_ho")["fight"].__setitem__("hp", 0), "fight.hp"),
+    (lambda p: beast_of(p, "ky_lan_con").__setitem__("status", "co"), "is not"),
+    (lambda p: beast_of(p, "ky_lan_con").__setitem__("pos", [3, 3]), "not built"),
+    (lambda p: beast_of(p, "hoa_tuoc").__setitem__("pos", [51, 6]), "can be walked to"),
+    (lambda p: beast_of(p, "linh_ho").__setitem__("needs", "dap_kiem_luot"), "can be walked to"),
+    (lambda p: p["beast_taming"].__setitem__("talisman", "giay_trang"), "not an item"),
+    (lambda p: p["beast_taming"].__setitem__("seal_unlock", "bay"), "unknown ability"),
+    (lambda p: p["beast_taming"].pop("yield_seconds"), "yield_seconds"),
+    (lambda p: p.pop("beast_taming"), "beast_taming must be an object"),
+])
+def test_a_wired_beasts_section_is_checked(plan, change, message):
+    bad = copy.deepcopy(plan)
+    change(bad)
+    errs = mt.validate_world(bad, mt.tree())
+    assert any(message in e for e in errs), errs
+
+
+@pytest.mark.parametrize("change, message", [
+    (lambda p: unlock_of(p, "phap_tran").__setitem__("status", "chua_co"), "status must be 'co'"),
+    (lambda p: unlock_of(p, "thuan_di").__setitem__("status", "co"), "status must be 'chua_co'"),
+    (lambda p: unlock_of(p, "phap_tran")["formation"].__setitem__("windup_mult", 0.5), "windup_mult"),
+    (lambda p: unlock_of(p, "phap_tran").pop("formation"), "'formation' numbers"),
+    (lambda p: unlock_of(p, "dap_kiem_luot")["glide"].__setitem__("over_tiles", ["lava"]), "over_tiles"),
+    (lambda p: unlock_of(p, "dap_kiem_luot")["glide"].__setitem__("min_px", 200), "min_px"),
+    (lambda p: unlock_of(p, "dap_kiem_luot")["glide"].__setitem__("max_px", 20), "no glide from where a player walks"),
+    (lambda p: unlock_of(p, "cuoi_linh_thu")["ride"].__setitem__("gift", "sniff"), "ride.gift"),
+])
+def test_a_wired_abilities_section_is_checked(plan, change, message):
+    bad = copy.deepcopy(plan)
+    change(bad)
+    errs = mt.validate_world(bad, mt.tree())
+    assert any(message in e for e in errs), errs
 
 
 def test_the_land_creatures_stand_for_nodes_of_their_own_branch(monkeypatch, plan):
