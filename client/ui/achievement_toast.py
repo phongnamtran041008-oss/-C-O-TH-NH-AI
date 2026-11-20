@@ -62,6 +62,10 @@ class AchievementToasts:
         if u.get("title"):
             g.refresh_me()
 
+    def clear_y(self) -> float:
+        """Where the ordinary toasts may start while a banner is up (0: anywhere)."""
+        return TOP + H + 4 if self.current is not None else 0
+
     # ------------------------------------------------------------ drawing
     def draw(self, ui) -> None:
         g = self.game

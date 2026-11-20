@@ -190,8 +190,13 @@ class AchievementsScene(Scene):
 
     # -------- a category
     def rows(self, v) -> list[dict]:
+        """The rows of the tab: what can be claimed first, then what is under way, what has not
+        started, and what is complete last (the data order inside each group)."""
         c = next((c for c in v["categories"] if c["id"] == self.tab), None)
-        return c["achievements"] if c else []
+        if not c:
+            return []
+        rank = {"claim": 0, "locked": 1, "done": 4}
+        return sorted(c["achievements"], key=lambda e: rank.get(row_state(e), 2 if e["tier"] > 0 else 3))
 
     def draw_list(self, ui, v) -> None:
         rows = self.rows(v)
@@ -250,9 +255,9 @@ class AchievementsScene(Scene):
         if hov and (ui.text_size(desc, 6)[0] > tw or e.get("reveal_vi")):
             ui.set_tooltip(e["desc_vi"] + ("\n" + e["reveal_vi"] if e.get("reveal_vi") else ""))
         # progress
-        bw = tw - 70
+        bw = tw - 112
         ui.progress(tx, y + 24, bw, 5, e["frac"], GREEN if e["done"] else UICOL["blue"], back="#CFC6B4")
-        ui.text(fit(ui, e["progress_vi"], 6, 66), tx + bw + 4, y + 22, 6, INK)
+        ui.text(fit(ui, e["progress_vi"], 6, 108), tx + bw + 4, y + 22, 6, INK)
         # reward and claim
         t = focus_tier(e)
         if t is not None:
@@ -260,8 +265,11 @@ class AchievementsScene(Scene):
                 head = T.ACH_REWARD_TIER.format(n=t["n"], r="")
                 ui.text(head.rstrip(": ").rstrip(), rx, y + 2, 6, PALE)
             reward = ", ".join(t["reward_vi"])
-            ui.text(fit(ui, reward, 6, 108), rx, y + 11, 6, GOLD_TEXT if e["revealed"] else PALE)
-            if hov and ui.text_size(reward, 6)[0] > 108:
+            lines = ui.f.wrap(reward, 6, int(108 * ui.s), ui.s)
+            if len(lines) > 2:
+                lines = [lines[0], fit(ui, " ".join(lines[1:]), 6, 108)]
+            ui.text("\n".join(lines), rx, y + 10, 6, GOLD_TEXT if e["revealed"] else PALE, line_gap=1.0)
+            if hov and len(ui.f.wrap(reward, 6, int(108 * ui.s), ui.s)) > 2:
                 ui.set_tooltip(reward)
         if state == "claim":
             if ui.button(f"ach_claim_{e['id']}", x + w - 46, y + h - 15, 42, 12, T.ACH_CLAIM, size=7, style="gold",

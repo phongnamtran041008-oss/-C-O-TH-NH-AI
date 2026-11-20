@@ -157,7 +157,7 @@ def displayed_strings() -> list[tuple[str, str]]:
 
 
 M10_TEXT_FILES = ("math/dungeon.json", "math/fortune.json", "math/td.json", "math/drops.json", "realms.json",
-                  "guide.json", "linh_can.json")
+                  "guide.json", "linh_can.json", "achievements.json")
 
 
 def _vi_strings(node, where: str = "") -> list[tuple[str, str]]:
@@ -800,6 +800,8 @@ CHECKS = [
     ("rơi đồ: mỗi món có mốc tu vi, không nguồn nào vượt trần", _mode_check("loot")),
     ("linh căn: odds, caps, pity, every effect wired, every pill brewable from tiered drops",
      _mode_check("linh_can")),
+    ("thành tựu: at least 90, every event sent by the code, rising tiers, rewards within their tu vi, icons, titles",
+     _mode_check("achievements")),
     ("Đạo Thụ: the tree is sound, every part names real micro-skills, every main node can be reached",
      check_tree),
     ("Lộ Trình: guide.json chapters, steps, checks, rewards and text lengths are sound", check_guide),

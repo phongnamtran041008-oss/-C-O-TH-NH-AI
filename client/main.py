@@ -735,7 +735,7 @@ class Game:
 
     def _draw_overlays(self) -> None:
         ui = self.ui
-        y = getattr(self.top, "toast_y", 4)
+        y = max(getattr(self.top, "toast_y", 4), self.achievements.clear_y())   # under a Thành Tựu banner
         for t in list(self.toasts):
             age = self.now - t.born
             if age > t.life:
