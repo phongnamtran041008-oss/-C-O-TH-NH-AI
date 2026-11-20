@@ -297,6 +297,23 @@ WPN_WHERE = "{land}: {spot}"
 WPN_HAND = "Trong tay"
 WPN_EQUIPPED = "Đang cầm"
 WPN_TU_VI = "Đạo Thụ: {realm} tầng {stage}"
+WPN_KY_BINH = "Kỳ binh: chỉ rơi từ tinh anh và trùm của vùng đất."
+# the five phẩm of a weapon (world_plan.json qualities) and the rarity colour each glows in; the
+# server sends both (GET /weapons `qualities`), these only stand in for an older server
+QUALITY_NAMES = {"ha": "Hạ phẩm", "trung": "Trung phẩm", "thuong": "Thượng phẩm", "cuc": "Cực phẩm",
+                 "tuyet": "Tuyệt phẩm"}
+QUALITY_COLORS = {"ha": "#7D7468", "trung": "#6A994E", "thuong": "#4A7CC8", "cuc": "#8E5AC8", "tuyet": "#C99A3A"}
+
+
+def gear_grade(e: dict) -> tuple[str, str]:
+    """(the word, the colour) of a piece's grade: its phẩm for a weapon of Thiên Địa Đồ, else
+    its rarity."""
+    w = e.get("weapon") if isinstance(e.get("weapon"), dict) else {}
+    if w.get("quality_vi"):
+        return w["quality_vi"], w.get("quality_color") or e.get("color") or "#7D7468"
+    return e.get("rarity_vi", ""), e.get("color") or "#7D7468"
+
+
 USE = "Dùng"
 EQUIP = "Mặc"
 UNEQUIP = "Tháo"
@@ -905,6 +922,9 @@ UPG_LOCKED = "Chưa mở. {why}"
 UPG_DO = "Nâng phẩm"
 UPG_DONE = "Nâng phẩm xong: {name} thành {quality}!"
 UPG_ATK = "Công {a} → {b}"
+UPG_STEP_NONE = "Chưa có binh khí {frm} nào."
+UPG_TOP = "Tuyệt phẩm là phẩm cao nhất: không nâng thêm được."
+UPG_HINT = "Mỗi lần lên một phẩm. Cuộn chuột để xem các bậc trên."
 NOTE_READ = "Đọc ghi chú"
 
 # M9: chiêu thức gắn câu hỏi (thanh chiêu, thẻ câu hỏi) và hai kiểu câu mới

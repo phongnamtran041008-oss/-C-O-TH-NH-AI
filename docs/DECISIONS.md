@@ -1398,3 +1398,44 @@ thì chết tôi".
   của bí cảnh toán (`math_realm.validate`) nới đúng phần này: được trả Mảnh Bảo Vật và Linh Quả; vẫn không Tu Vi,
   không Tiên Ngọc từ rương.
 - Không khoá: cửa hàng, thưởng nhiệm vụ và mốc sưu tập, gacha, chế tạo, câu cá, luyện đan, thưởng sao thủ thành.
+
+## 2026-11-20: binh khí - năm phẩm, rơi từ quái, lò rèn nhiều bậc, sáu kỳ binh
+
+Chủ dự án: binh khí rơi từ quái phải phát sáng nhẹ, mỗi phẩm một màu; loại binh khí quá ít; làm thật kỹ.
+
+- **Năm phẩm, ánh sáng là màu độ hiếm.** `qualities`: hạ `ha` (Phàm, power 1.0), trung `trung` (Linh, 1.35),
+  thượng `thuong` (Huyền, 1.8), cực `cuc` (Địa, 2.4), tuyệt `tuyet` (Thiên, 3.2). Id và độ hiếm là giao ước với hoạ
+  sĩ và người làm hiệu ứng (`weapons.QUALITY_RARITY`, `validate()` giữ nó). Vì sao 2.4 và 3.2: bậc 2 có `atk` 24 =
+  2,4 lần bậc 1, nên Mộc cực phẩm bằng Thiết hạ phẩm và Mộc tuyệt phẩm (32) ngang Thiết trung phẩm (32,4): lên phẩm
+  không bao giờ vượt hẳn một bậc cao hơn.
+- **Rơi từ quái, bảng ở kế hoạch, không sửa `drops` của từng con.** `weapon_drops` (thêm vào `wired_sections`):
+  quái của một vùng rơi loại chính của vùng, bậc của cảnh giới vùng. Thường 3%, tinh anh 15%, trùm 100%; tỉ lệ phẩm
+  thường 80/17/3/0/0, tinh anh 50/35/13/2/0, trùm 20/40/28/10/2 (hạ/trung/thượng/cực/tuyệt). `combat._reward` hỏi
+  `weapons.grant_drops` sau bảng `drops` cũ (thứ tự xúc xắc của bảng cũ không đổi).
+- **Luật rơi đồ theo tu vi giữ nguyên.** Phẩm bị chặn bởi tu vi nhân vật (`loot_tiers.json` `equipment_rarity`) và
+  trần nơi hạ quái (`source_caps`). Bị tu vi chặn: nhận phẩm cao nhất được phép, món cao hơn vào `locked` (người chơi
+  biết leo thêm thì được). Bị nơi chốn chặn: chỉ nhận phẩm cao nhất nơi ấy cho, **không** báo khoá - leo tu vi không
+  mở được nó ở đây, báo thì là nói sai. Ngày nay mọi vùng Luyện Khí có trần Luyện Khí tầng 9, nên cực và tuyệt phẩm
+  chỉ ra từ lò rèn; vùng Trúc Cơ sau này tự mở cực phẩm.
+- **Lôi Long có thể rơi bậc 2, có khoá.** Lôi Kiếp Đài không có loại riêng: Lôi Long rơi một trong sáu loại chính,
+  bậc 1 (trọng số 3) hoặc bậc 2 (trọng số 1, `tu_vi` Trúc Cơ sơ kỳ). Chưa Trúc Cơ mà xúc xắc ra bậc 2: nhận bậc 1,
+  bậc 2 vào `locked`. Trùm vẫn chắc chắn rơi.
+- **Tin `loot` nói món nằm đâu.** Mỗi món trong `equipment` (cả đồ cũ) có thêm `item`, `quality`, `quality_vi`,
+  `weapon` (bool: ô vũ khí), `weapon_info` (khối binh khí), `x`, `y` (chỗ quái chết, lệch vài pixel khi nhiều món).
+  Khối `weapon` của dạng `equipment` đổi thành bool **chỉ trong tin `loot`** (client hôm nay chỉ đọc `name_vi`,
+  `rarity_vi`, `color`); món đã cấp ngay nên bỏ đi không mất. Hình trên đất và ánh sáng: đợt sau.
+- **Lò rèn bốn bậc.** `crafting.json` `upgrades`: hạ→trung (`nang_pham`, Đạo Thụ Luyện Khí 4, phí 40), trung→thượng
+  (Đạo Thụ Luyện Khí 7, tu vi Luyện Khí 6, phí 150), thượng→cực (Đạo Thụ và tu vi Trúc Cơ 1, phí 500), cực→tuyệt (Đạo
+  Thụ Kết Đan 1, tu vi Kết Đan sơ kỳ, phí 1500). Nguyên liệu chỉ là thứ quái Luyện Khí rơi thật (Lõi Ma Trận, Thiên
+  Tằm Ti, Mặc Linh Chi, Ấn Rương Đề, Tinh Số Phức), số lượng tăng dần, vì chưa có nguyên liệu cao hơn nào rơi; khi
+  có, đổi ở đây. `validate()` đòi chuỗi liền (mỗi bước đúng một phẩm), phí tăng, mốc không lùi, nguyên liệu rơi
+  không muộn hơn lúc bước mở. Bước đầu giữ mốc tu vi `pham_nhan` như trước (Đạo Thụ đã chặn nó).
+- **Sáu kỳ binh, chờ hình.** `kich` Kích (Đại Số, Kiếm Trủng Sơn, slash, tầm 34, 0,75 s, ×1,2), `roi` Roi (Giải
+  Tích, Lưu Vân Cốc, slash, 44, 0,65 s, ×0,9), `am_khi` Ám Khí (Xác Suất, Vạn Tượng Trạch, shoot, 52, 0,45 s,
+  ×0,75), `luan` Luân (Thuật Toán, Mê Đồ Lâm, shoot, 48, 0,85 s, ×1,1), `phu` Phủ (Lập Trình, Thiên Công Phường,
+  slash, 22, 1,0 s, ×1,45), `cam` Cầm (Thực Chiến, Linh Xạ Nguyên, cast, 50, 0,9 s, ×1,05). `drop_only`: chỉ tinh
+  anh (5%) và trùm (35%) của vùng rơi, hiếm hơn loại chính. Mỗi loại có `status` `co` / `cho_hinh`; sáu kỳ binh ở
+  `cho_hinh`: là dữ liệu đã kiểm, không rơi, không phải trang bị, `check_all` và `test_art2` bỏ qua hình của chúng.
+  Hình vào thì chỉ đổi `status` (test `test_flipping_the_status_is_the_only_change_needed`). Riêng client:
+  `client/scenes/world.py` `PLAN_WEAPON_RANGE` / `PLAN_WEAPON_LOOK` (ngắm tự động, hình vẽ bằng code khi tắt v2) do
+  người làm hiệu ứng giữ, cần thêm sáu dòng; thiếu thì loại ấy ngắm với tầm mặc định.

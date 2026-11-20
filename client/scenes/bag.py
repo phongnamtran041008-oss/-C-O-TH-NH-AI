@@ -128,9 +128,13 @@ class BagScene(Scene):
         lvl = f" +{r['enhance']}" if r["enhance"] else ""
         ui.text(r["name_vi"] + lvl, tx, ry + 8, 8, r["color"], anchor="midleft")
         stats = " ".join(f"{T.STATS_VI.get(k, k)} {v}" for k, v in r["stats"].items())
-        ui.text(f"{r['slot_vi']} · {stats}", lx + 130, ry + 8, 7, "#5A5A5A", anchor="midleft")
+        grade, colour = T.gear_grade(r)
+        gw = ui.text_size(grade, 6)[0]
+        ui.text(fit(ui, f"{r['slot_vi']} · {stats}", 7, lw - 130 - 78 - gw), lx + 130, ry + 8, 7, "#5A5A5A",
+                anchor="midleft")
+        ui.text(grade, lx + lw - 74, ry + 8, 6, colour, anchor="midright")
         if ui.hover(lx, ry, lw - 70, 16):
-            ui.set_tooltip(f"{r['name_vi']} · {r['rarity_vi']}\n{r.get('desc_vi', '')}")
+            ui.set_tooltip(f"{r['name_vi']} · {grade}\n{r.get('desc_vi', '')}")
         if r.get("equipped"):
             if ui.button(f"uneq_{r['id']}", lx + lw - 70, ry + 2, 66, 12, T.UNEQUIP, size=7, selected=True):
                 self.api.post("/equipment/unequip", {"slot": r["equipped"]}, self._after(), self.game.api_error)
@@ -178,13 +182,16 @@ class BagScene(Scene):
         wv = r["weapon"]
         tx = self.row_icon(ui, r, lx, ry, r["color"])
         lvl = f" +{r['enhance']}" if r["enhance"] else ""
+        quality, qcolour = T.gear_grade(r)
         ui.text(r["name_vi"] + lvl, tx, ry + 5, 8, r["color"], anchor="midleft")
-        ui.text(fit(ui, T.WPN_LINE.format(type=wv["type_vi"], grade=wv["grade"], quality=wv.get("quality_vi", ""),
+        ui.text(quality, lx + lw - 58, ry + 5, 7, qcolour, anchor="midright")     # the phẩm, in its colour
+        ui.text(fit(ui, T.WPN_LINE.format(type=wv["type_vi"], grade=wv["grade"], quality=quality,
                                           atk=r["stats"].get("atk", 0)), 6, lw - (tx - lx) - 58),
                 tx, ry + 14, 6, "#5A5A5A", anchor="midleft")
         if ui.hover(lx, ry, lw - 56, 16):
-            ui.set_tooltip(T.WPN_TIP.format(name=r["name_vi"], quality=wv.get("quality_vi", ""),
-                                            effect=wv["effect_vi"], branch=wv["branch_vi"], why=wv["why_vi"]))
+            tip = T.WPN_TIP.format(name=r["name_vi"], quality=quality, effect=wv["effect_vi"],
+                                   branch=wv["branch_vi"], why=wv["why_vi"])
+            ui.set_tooltip(tip + (f"\n{T.WPN_KY_BINH}" if wv.get("ky_binh") else ""))
         if r.get("equipped"):
             if ui.button(f"wuneq_{r['id']}", lx + lw - 54, ry + 3, 50, 12, T.UNEQUIP, size=7, selected=True):
                 self.api.post("/weapons/unequip", {}, self._after(), self.game.api_error)
@@ -199,7 +206,10 @@ class BagScene(Scene):
             ui.image(img, lx, ry + 1, zoom=0.5)
             tx = lx + 20
         colour = {"available": "#6A994E", "taken": "#8E877A", "locked": "#BC4749"}.get(p["state"], "#5A5A5A")
-        ui.text(f"{p['name_vi']} · {p.get('quality_vi', '')}", tx, ry + 5, 8, "#2B2B2B", anchor="midleft")
+        name = f"{p['name_vi']} · "
+        ui.text(name, tx, ry + 5, 8, "#2B2B2B", anchor="midleft")
+        ui.text(p.get("quality_vi", ""), tx + ui.text_size(name, 8)[0], ry + 5, 8,
+                p.get("quality_color") or T.QUALITY_COLORS.get(p.get("quality"), "#2B2B2B"), anchor="midleft")
         detail = p["reason_vi"] if p["state"] == "locked" else T.WPN_WHERE.format(land=p["land_vi"], spot=p["spot_vi"])
         ui.text(fit(ui, detail, 6, lw - (tx - lx) - 4), tx, ry + 14, 6,
                 colour if p["state"] == "locked" else "#5A5A5A", anchor="midleft")
@@ -227,6 +237,11 @@ class BagScene(Scene):
         if tv:
             ui.text(T.WPN_TU_VI.format(realm=tv["realm_vi"], stage=tv["stage"]), x + w / 2, y + 122, 6,
                     "#6A994E", anchor="midtop", max_w=w)
+        # the five phẩm, low to high, each in the colour a dropped piece glows in
+        qs = d.get("qualities") or [{"id": k, "name_vi": v, "color": T.QUALITY_COLORS[k]}
+                                    for k, v in T.QUALITY_NAMES.items()]
+        for i, q in enumerate(qs):
+            ui.text(q["name_vi"], x + 4 + (i % 2) * (w / 2), y + 140 + (i // 2) * 9, 6, q.get("color") or "#2B2B2B")
 
 
 _HAND: dict = {}         # hand_picture by the frames it is made of

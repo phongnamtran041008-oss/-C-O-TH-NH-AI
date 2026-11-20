@@ -2,7 +2,7 @@
  "_comment": "Thiên Địa Đồ: tu vi mở khoá cái gì, vùng đất nào có vũ khí gì, linh thú ở đâu, và luật đánh quái mới. Đi cùng tree.json (cây giáo trình): mọi 'nodes' ở đây là nút của cây ấy, nên yêu cầu của một món vũ khí luôn là một phần giáo trình đã học xong. 'wired': false nghĩa là game chưa chạy theo file này; nó là bản thiết kế đã được kiểm (server/app/learning/math_tree.py), chờ duyệt rồi mới nối vào game. 'wired_sections' liệt kê các phần đã nối vào game dù 'wired' còn false: 'combat' (luật đánh quái mới) chạy ở mọi vùng hoang; 'lands' (các vùng đất Luyện Khí: bản đồ, quái, luật vào cửa) đã nối vào game (server/app/realtime/lands.py); 'weapons' (binh khí, server/app/systems/weapons.py); 'beasts' (linh thú Luyện Khí và luật thu phục 'beast_taming', server/app/realtime/beasts.py); 'abilities' (thần thông Luyện Khí trong 'unlocks': số của pháp trận, Đạp Kiếm Lướt và cưỡi linh thú, server/app/realtime/abilities.py). 'status' của từng mục: 'co' = game đã có, 'chua_co' = chưa làm. Tầng 0 của một cảnh giới là lúc vừa độ kiếp lên cảnh giới ấy, chưa xong tầng 1.",
  "version": 1,
  "wired": false,
- "wired_sections": ["combat", "lands", "weapons", "beasts", "abilities"],
+ "wired_sections": ["combat", "lands", "weapons", "beasts", "abilities", "weapon_drops"],
  "combat": {
   "_comment": "Luật mới theo yêu cầu: chỉ phải trả lời câu hỏi khi bị quái đánh trúng. Đã nối vào game (wired_sections) ở mọi vùng hoang; bí cảnh, hầm ngục, thủ thành và cơ duyên giữ luật cũ. Game đọc mọi con số ở đây (server/app/realtime/combat.py): 'telegraph' là hình vùng đánh theo bậc quái (con quái lần lượt dùng từng hình trong danh sách), 'question_wait_seconds' là lúc người bị đánh trúng được giữ yên trong khi máy chủ soạn câu, 'shielded_ranks' là bậc quái mang Mặc Thuẫn ngoài vùng hoang.",
   "question_rule": "on_hit",
@@ -42,24 +42,32 @@
  "qualities": [
   {"id": "ha", "name_vi": "Hạ phẩm", "power": 1.0, "rarity": "pham"},
   {"id": "trung", "name_vi": "Trung phẩm", "power": 1.35, "rarity": "linh"},
-  {"id": "thuong", "name_vi": "Thượng phẩm", "power": 1.8, "rarity": "huyen"}
+  {"id": "thuong", "name_vi": "Thượng phẩm", "power": 1.8, "rarity": "huyen"},
+  {"id": "cuc", "name_vi": "Cực phẩm", "power": 2.4, "rarity": "dia"},
+  {"id": "tuyet", "name_vi": "Tuyệt phẩm", "power": 3.2, "rarity": "thien"}
  ],
  "weapons": {
-  "_comment": "Đã nối vào game (wired_sections 'weapons', server/app/systems/weapons.py). Một binh khí là '<weapon_types.id>_<grade>' (kiem_1 = Mộc Kiếm); id của một chỗ đặt trong weapons_placed là '<weapon>_<quality>' (kiem_1_ha). Nhặt rồi nó là một món trang bị như mọi món khác (ô Vũ khí): 'atk' của bậc nhân 'power' của phẩm là Công của nó, 'rarity' của phẩm là độ hiếm nó mang trong túi đồ. 'range', 'cooldown', 'mult' của loại là cách đánh thường, 'clip' là động tác. Phản Đòn: câu hỏi thuộc đúng nhánh của binh khí thì đòn phản mạnh thêm 'own_branch_parry_bonus'; binh khí của nhánh không có môn toán riêng (Lập Trình, Thực Chiến, Học Máy, Học Sâu: chúng dùng mọi nhánh toán) thì mạnh thêm 'any_branch_parry_bonus' với mọi câu. Nhặt cần mở 'claim_unlock'; nâng phẩm ở lò rèn cần mở 'upgrade_unlock' (công thức trong crafting.json, mục upgrades).",
+  "_comment": "Đã nối vào game (wired_sections 'weapons', server/app/systems/weapons.py). Một binh khí là '<weapon_types.id>_<grade>' (kiem_1 = Mộc Kiếm); id của một chỗ đặt trong weapons_placed là '<weapon>_<quality>' (kiem_1_ha). Nhặt rồi nó là một món trang bị như mọi món khác (ô Vũ khí): 'atk' của bậc nhân 'power' của phẩm là Công của nó, 'rarity' của phẩm là độ hiếm nó mang trong túi đồ. 'range', 'cooldown', 'mult' của loại là cách đánh thường, 'clip' là động tác. Phản Đòn: câu hỏi thuộc đúng nhánh của binh khí thì đòn phản mạnh thêm 'own_branch_parry_bonus'; binh khí của nhánh không có môn toán riêng (Lập Trình, Thực Chiến, Học Máy, Học Sâu: chúng dùng mọi nhánh toán) thì mạnh thêm 'any_branch_parry_bonus' với mọi câu. Nhặt cần mở 'claim_unlock'; nâng phẩm ở lò rèn cần mở 'upgrade_unlock' (công thức trong crafting.json, mục upgrades: một chuỗi hạ → trung → thượng → cực → tuyệt). Năm phẩm và độ hiếm của chúng là giao ước với hoạ sĩ: màu món rơi phát sáng là màu độ hiếm. 'status' của một loại: 'co' = có trong game, 'cho_hinh' = chờ hình vẽ (chỉ là dữ liệu: không nằm ở đâu, không rơi, không phải trang bị; có hình rồi thì đổi thành 'co' là đủ). 'drop_only' = kỳ binh: chỉ rơi từ tinh anh và trùm của vùng đất ('weapon_drops'), không bao giờ nằm trong weapons_placed.",
   "own_branch_parry_bonus": 0.5,
   "any_branch_parry_bonus": 0.15,
   "claim_unlock": "nhat_vu_khi",
   "upgrade_unlock": "nang_pham"
  },
  "weapon_types": [
-  {"id": "kiem", "name_vi": "Kiếm", "branch": "ds", "land": "kiem_trung_son", "clip": "slash", "range": 26, "cooldown": 0.5, "mult": 1.0, "why_vi": "Vectơ là mũi tên thẳng: kiếm là binh khí của Đại Số Tuyến Tính."},
-  {"id": "dao", "name_vi": "Đao", "branch": "gt", "land": "luu_van_coc", "clip": "slash", "range": 28, "cooldown": 0.6, "mult": 1.1, "why_vi": "Lưỡi đao là một đường cong: binh khí của Giải Tích."},
-  {"id": "ho_lo", "name_vi": "Hồ Lô", "branch": "xs", "land": "van_tuong_trach", "clip": "cast", "range": 40, "cooldown": 0.7, "mult": 1.0, "why_vi": "Rút bi từ trong bình: binh khí của Xác Suất."},
-  {"id": "thuong", "name_vi": "Thương", "branch": "tr", "land": "me_do_lam", "clip": "slash", "range": 38, "cooldown": 0.7, "mult": 1.1, "why_vi": "Đi thẳng tới đích theo đường ngắn nhất: binh khí của Thuật Toán và Tối Ưu."},
-  {"id": "chuy", "name_vi": "Chùy", "branch": "lt", "land": "thien_cong_phuong", "clip": "slash", "range": 24, "cooldown": 0.9, "mult": 1.3, "why_vi": "Búa của thợ rèn: lập trình là tự tay rèn ra công cụ."},
-  {"id": "cung", "name_vi": "Cung", "branch": "ud", "land": "linh_xa_nguyen", "clip": "shoot", "range": 60, "cooldown": 0.8, "mult": 1.0, "why_vi": "Nhắm vào đích và chỉnh dần cho trúng: đó chính là huấn luyện một mô hình."},
-  {"id": "truong", "name_vi": "Trượng", "branch": "ml", "land": "van_hai_thien_dao", "clip": "cast", "range": 46, "cooldown": 0.9, "mult": 1.25, "why_vi": "Pháp trượng của người điều khiển mô hình, từ Trúc Cơ."},
-  {"id": "phien", "name_vi": "Phiến", "branch": "dl", "land": null, "clip": "cast", "range": 32, "cooldown": 0.6, "mult": 0.9, "why_vi": "Quạt nhiều nan xếp lớp như mạng nhiều tầng, từ Nguyên Anh."}
+  {"id": "kiem", "name_vi": "Kiếm", "branch": "ds", "land": "kiem_trung_son", "status": "co", "clip": "slash", "range": 26, "cooldown": 0.5, "mult": 1.0, "why_vi": "Vectơ là mũi tên thẳng: kiếm là binh khí của Đại Số Tuyến Tính."},
+  {"id": "dao", "name_vi": "Đao", "branch": "gt", "land": "luu_van_coc", "status": "co", "clip": "slash", "range": 28, "cooldown": 0.6, "mult": 1.1, "why_vi": "Lưỡi đao là một đường cong: binh khí của Giải Tích."},
+  {"id": "ho_lo", "name_vi": "Hồ Lô", "branch": "xs", "land": "van_tuong_trach", "status": "co", "clip": "cast", "range": 40, "cooldown": 0.7, "mult": 1.0, "why_vi": "Rút bi từ trong bình: binh khí của Xác Suất."},
+  {"id": "thuong", "name_vi": "Thương", "branch": "tr", "land": "me_do_lam", "status": "co", "clip": "slash", "range": 38, "cooldown": 0.7, "mult": 1.1, "why_vi": "Đi thẳng tới đích theo đường ngắn nhất: binh khí của Thuật Toán và Tối Ưu."},
+  {"id": "chuy", "name_vi": "Chùy", "branch": "lt", "land": "thien_cong_phuong", "status": "co", "clip": "slash", "range": 24, "cooldown": 0.9, "mult": 1.3, "why_vi": "Búa của thợ rèn: lập trình là tự tay rèn ra công cụ."},
+  {"id": "cung", "name_vi": "Cung", "branch": "ud", "land": "linh_xa_nguyen", "status": "co", "clip": "shoot", "range": 60, "cooldown": 0.8, "mult": 1.0, "why_vi": "Nhắm vào đích và chỉnh dần cho trúng: đó chính là huấn luyện một mô hình."},
+  {"id": "truong", "name_vi": "Trượng", "branch": "ml", "land": "van_hai_thien_dao", "status": "co", "clip": "cast", "range": 46, "cooldown": 0.9, "mult": 1.25, "why_vi": "Pháp trượng của người điều khiển mô hình, từ Trúc Cơ."},
+  {"id": "phien", "name_vi": "Phiến", "branch": "dl", "land": null, "status": "co", "clip": "cast", "range": 32, "cooldown": 0.6, "mult": 0.9, "why_vi": "Quạt nhiều nan xếp lớp như mạng nhiều tầng, từ Nguyên Anh."},
+  {"id": "kich", "name_vi": "Kích", "branch": "ds", "land": "kiem_trung_son", "drop_only": true, "status": "cho_hinh", "clip": "slash", "range": 34, "cooldown": 0.75, "mult": 1.2, "why_vi": "Cán dài cộng lưỡi sắc, mỗi phần một hệ số: kích là tổ hợp tuyến tính, binh khí của Đại Số Tuyến Tính."},
+  {"id": "roi", "name_vi": "Roi", "branch": "gt", "land": "luu_van_coc", "drop_only": true, "status": "cho_hinh", "clip": "slash", "range": 44, "cooldown": 0.65, "mult": 0.9, "why_vi": "Sợi roi quất ra vẽ một đường cong liền mạch: binh khí của Giải Tích."},
+  {"id": "am_khi", "name_vi": "Ám Khí", "branch": "xs", "land": "van_tuong_trach", "drop_only": true, "status": "cho_hinh", "clip": "shoot", "range": 52, "cooldown": 0.45, "mult": 0.75, "why_vi": "Phi đao ném ra, trúng hay trật là một phép thử ngẫu nhiên: binh khí của Xác Suất."},
+  {"id": "luan", "name_vi": "Luân", "branch": "tr", "land": "me_do_lam", "drop_only": true, "status": "cho_hinh", "clip": "shoot", "range": 48, "cooldown": 0.85, "mult": 1.1, "why_vi": "Vòng luân bay ra rồi quay về tay như một vòng lặp: binh khí của Thuật Toán."},
+  {"id": "phu", "name_vi": "Phủ", "branch": "lt", "land": "thien_cong_phuong", "drop_only": true, "status": "cho_hinh", "clip": "slash", "range": 22, "cooldown": 1.0, "mult": 1.45, "why_vi": "Một nhát búa rìu bổ đôi khúc gỗ lớn: chia để trị, cách người lập trình xẻ một bài toán."},
+  {"id": "cam", "name_vi": "Cầm", "branch": "ud", "land": "linh_xa_nguyen", "drop_only": true, "status": "cho_hinh", "clip": "cast", "range": 50, "cooldown": 0.9, "mult": 1.05, "why_vi": "Đàn lên dây từng sợi cho đúng âm, như tinh chỉnh một mô hình: binh khí của Thực Chiến AI."}
  ],
  "lands": [
   {"id": "truc_lam_thon", "name_vi": "Trúc Lâm Thôn", "kind": "hub", "realm": "luyen_khi", "branch": null, "map": "truc_lam_thon", "opens": {"stage": 0, "nodes": []}, "status": "co",
@@ -123,6 +131,18 @@
   {"weapon": "truong_2", "quality": "trung", "land": "van_hai_thien_dao", "spot_vi": "Trên đảo có cây quyết định cổ thụ.", "needs": "ngu_kiem_phi_hanh", "requires": {"realm": "truc_co", "stage": 2, "nodes": ["tc_cay_quyet_dinh", "tc_phan_loai"]}},
   {"weapon": "truong_2", "quality": "thuong", "land": "van_hai_thien_dao", "spot_vi": "Trên đảo cao nhất.", "needs": "ngu_kiem_phi_hanh", "requires": {"realm": "truc_co", "stage": 3, "nodes": ["tc_danh_gia"]}}
  ],
+ "weapon_drops": {
+  "_comment": "Binh khí rơi từ quái (wired_sections 'weapon_drops', server/app/systems/weapons.py roll_drops, gọi từ realtime/combat.py _reward). Quái của một vùng đất rơi binh khí của vùng ấy: loại chính là các weapon_types có 'land' là vùng ấy và không 'drop_only'; kỳ binh ('drop_only': chỉ rơi, không bao giờ nằm trong weapons_placed) chỉ do tinh anh và trùm của vùng ấy rơi, hiếm hơn loại chính. Một loại 'status' 'cho_hinh' (chờ hình vẽ) không rơi. 'by_rank': 'chance' là xác suất rơi một binh khí loại chính mỗi lần hạ quái (nhân với drop_mult của ong và thú cưng), 'ky_binh_chance' là xác suất rơi thêm một kỳ binh, 'qualities' là tỉ lệ các phẩm khi rơi (tổng bằng 1). Bậc của binh khí là bậc của cảnh giới vùng đất ('grades'); 'lands' ghi đè cho một vùng: 'types' (vùng không có loại riêng, như Lôi Kiếp Đài) và 'grades' có trọng số ('weight') và mốc tu vi ('tu_vi', cảnh giới tu luyện của nhân vật, như loot_tiers.json). Luật rơi đồ theo tu vi: phẩm rút ra bị chặn bởi tu vi của người hạ quái (loot_tiers.json equipment_rarity của độ hiếm mà phẩm ấy mang) và bởi mức trần của nơi hạ quái (source_caps); bị tu vi chặn thì nhận phẩm cao nhất được phép và món cao hơn được báo là 'locked'. Bậc có 'tu_vi' chưa tới thì rơi bậc thấp nhất và báo 'locked'.",
+  "by_rank": {
+   "normal": {"chance": 0.03, "ky_binh_chance": 0, "qualities": {"ha": 0.8, "trung": 0.17, "thuong": 0.03, "cuc": 0, "tuyet": 0}},
+   "elite": {"chance": 0.15, "ky_binh_chance": 0.05, "qualities": {"ha": 0.5, "trung": 0.35, "thuong": 0.13, "cuc": 0.02, "tuyet": 0}},
+   "boss": {"chance": 1.0, "ky_binh_chance": 0.35, "qualities": {"ha": 0.2, "trung": 0.4, "thuong": 0.28, "cuc": 0.1, "tuyet": 0.02}}
+  },
+  "lands": {
+   "loi_kiep_dai": {"types": ["kiem", "dao", "ho_lo", "thuong", "chuy", "cung"],
+                    "grades": [{"grade": 1, "weight": 3}, {"grade": 2, "weight": 1, "tu_vi": "truc_co:1"}]}
+  }
+ },
  "beasts": [
   {"id": "linh_ho", "name_vi": "Linh Hồ", "land": "me_do_lam", "where_vi": "Sâu trong rừng, chỉ hiện ở ngõ cụt.", "requires": {"realm": "luyen_khi", "stage": 3}, "needs": null, "parries_to_tame": 3, "gift_vi": "Đánh hơi vũ khí và rương ẩn ở gần.", "status": "co",
    "pos": [40, 8], "fight": {"hp": 120, "atk": 9, "def": 2, "speed": 34, "attack_radius": 22, "aggro_radius": 70},

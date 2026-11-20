@@ -5,9 +5,10 @@ A recipe shows two lists, because it asks for two different things: materials, w
 spent, and ghi chú lỗi sai, which are only checked - the note stays in the bag, so the line
 under them says so rather than letting the player guess.
 
-The second tab is Rèn nâng phẩm (world_plan.json, unlock nang_pham): a weapon of Thiên Địa Đồ
-picked up hạ phẩm becomes trung phẩm for the materials of crafting.json `upgrades`
-(GET/POST /weapons/upgrade). Before Đạo Thụ reaches its stage the tab says why it is shut.
+The second tab is Rèn nâng phẩm: the chain of crafting.json `upgrades` raises a weapon of
+Thiên Địa Đồ one phẩm a step - hạ, trung, thượng, cực, tuyệt (GET/POST /weapons/upgrade). Every
+step is listed, scrolled with the wheel, with its cost against what the player holds, why it is
+shut (its stage of Đạo Thụ, the character's tu vi) and the weapons it can raise.
 """
 from __future__ import annotations
 
@@ -99,46 +100,79 @@ class MathCraftScene(Scene):
         if ui.button("craft_close", x + w - 62, y + h - 20, 50, 14, T.CLOSE, key=pygame.K_ESCAPE):
             self.close()
 
+    def upgrade_rows(self) -> list[tuple[str, dict, dict | None]]:
+        """The forge chain as rows: each step, then the weapons it can raise (or a line saying
+        there are none). An older server sends one step at the top level, no `steps`."""
+        up = self.up or {}
+        rows: list[tuple[str, dict, dict | None]] = []
+        for st in up.get("steps") or ([up] if up.get("name_vi") else []):
+            rows.append(("step", st, None))
+            cands = st.get("candidates", [])
+            rows += [("cand", st, c) for c in cands] or [("none", st, None)]
+        return rows
+
     def draw_upgrade(self, ui, x, y, w, h):
         up = self.up
         if up is None:
             ui.text(T.CRAFT_LOADING, x + w / 2, y + h / 2, 9, GREY, anchor="center")
             return
-        top = y + 24
         if not up.get("name_vi"):
             ui.text(up.get("reason_vi", ""), x + w / 2, y + h / 2, 9, GREY, anchor="center", max_w=w - 40)
             return
-        ui.text(T.UPG_TITLE.format(name=up["name_vi"], frm=up["from_vi"], to=up["to_vi"]), x + 12, top, 9,
-                "#2B2B2B")
-        ui.text(up.get("desc_vi", ""), x + 12, top + 12, 7, GREY, max_w=w - 24)
+        heights = {"step": 50, "cand": 31, "none": 14}
+        rows = self.upgrade_rows()
+        top, bottom = y + 22, y + h - 24
+        total = sum(heights[k] for k, _, _ in rows)
+        self.scroll = max(0.0, min(self.scroll - ui.inp.wheel * 24, max(0.0, total - (bottom - top))))
+        ui.text(T.UPG_HINT, x + 12, y + h - 30, 6, GREY)
+        cy = top - self.scroll
+        for kind, st, c in rows:
+            rh = heights[kind]
+            if cy >= top - 1 and cy + rh <= bottom + 1:          # only whole rows: no text off the panel
+                if kind == "step":
+                    self.draw_step(ui, st, x + 10, cy, w - 20)
+                elif kind == "cand":
+                    self.draw_candidate(ui, st, c, x + 10, cy, w - 20)
+                else:
+                    ui.text(T.UPG_STEP_NONE.format(frm=st["from_vi"].lower()), x + 16, cy + 2, 7, GREY)
+            cy += rh
+
+    def draw_step(self, ui, st, x, y, w):
+        """One step of the chain: its name, from phẩm -> to phẩm in their colours, what it costs
+        against what the player holds, and why it is shut."""
+        ui.fill(x, y, w, 46, "#EFE4CC")
+        r = ui.text(st["name_vi"] + ": ", x + 4, y + 3, 9, "#2B2B2B")
+        r = ui.text(st["from_vi"], r.right, y + 3, 9, st.get("from_color") or "#2B2B2B")
+        r = ui.text(" → ", r.right, y + 3, 9, "#2B2B2B")
+        ui.text(st["to_vi"], r.right, y + 3, 9, st.get("to_color") or "#2B2B2B")
+        ui.text(T.CRAFT_FEE.format(n=st["fee"]), x + w - 4, y + 4, 7, "#C99A3A", anchor="topright")
+        ok = all(i["enough"] for i in st["ingredients"])
         ui.text(T.CRAFT_NEEDS + ": " + "  ".join(
-            f"{i['name_vi']} {T.CRAFT_HAVE.format(have=i['have'], need=i['qty'])}" for i in up["ingredients"]),
-            x + 12, top + 24, 7, GREEN if all(i["enough"] for i in up["ingredients"]) else RED, max_w=w - 24)
-        ui.text(T.CRAFT_FEE.format(n=up["fee"]), x + 12, top + 35, 7, "#C99A3A")
-        if not up["open"]:
-            ui.text(T.UPG_LOCKED.format(why=up["reason_vi"]), x + 12, top + 47, 8, RED, max_w=w - 24)
-        cands = up.get("candidates", [])
-        cy = top + 62
-        if not cands:
-            ui.text(T.UPG_NONE.format(frm=up["from_vi"].lower()), x + 12, cy, 8, GREY, max_w=w - 24)
-            return
+            f"{i['name_vi']} {T.CRAFT_HAVE.format(have=i['have'], need=i['qty'])}" for i in st["ingredients"]),
+            x + 4, y + 16, 7, GREEN if ok else RED, max_w=w - 8)
+        if not st["open"]:
+            ui.text(T.UPG_LOCKED.format(why=st["reason_vi"]), x + 4, y + 35, 7, RED, max_w=w - 8)
+        else:
+            ui.text(st.get("desc_vi", ""), x + 4, y + 35, 6, GREY, max_w=w - 8)
+
+    def draw_candidate(self, ui, st, c, x, y, w):
         from ..engine import art2
-        for c in cands[:6]:
-            ui.fill(x + 10, cy, w - 20, 28, "#F4EBD9" if up["can"] else "#EDE6D6")
-            ui.border(x + 10, cy, w - 20, 28, UICOL["accent"] if up["can"] else "#D6CDBA", 1)
-            img = art2.item_icon(c) if art2.on() else None
-            tx = x + 16
-            if img is not None:
-                ui.image(img, x + 14, cy + 6, zoom=0.5)
-                tx = x + 34
-            after = c["after"]
-            ui.text(f"{c['name_vi']} · {c['weapon'].get('quality_vi', '')} → {after['quality_vi']}", tx, cy + 3, 8,
-                    "#2B2B2B")
-            ui.text(T.UPG_ATK.format(a=c["stats"].get("atk", 0), b=c.get("after_atk", after["atk"])), tx, cy + 16, 7, GREEN)
-            if ui.button(f"upgrade_{c['id']}", x + w - 86, cy + 6, 70, 16, T.UPG_DO, style="primary",
-                         enabled=up["can"] and not self.busy):
-                self.raise_quality(c["id"])
-            cy += 32
+        ui.fill(x, y, w, 28, "#F4EBD9" if st["can"] else "#EDE6D6")
+        ui.border(x, y, w, 28, UICOL["accent"] if st["can"] else "#D6CDBA", 1)
+        img = art2.item_icon(c) if art2.on() else None
+        tx = x + 6
+        if img is not None:
+            ui.image(img, x + 4, y + 6, zoom=0.5)
+            tx = x + 24
+        after = c["after"]
+        r = ui.text(c["name_vi"] + " · ", tx, y + 3, 8, "#2B2B2B")
+        r = ui.text(c["weapon"].get("quality_vi", ""), r.right, y + 3, 8, st.get("from_color") or "#2B2B2B")
+        r = ui.text(" → ", r.right, y + 3, 8, "#2B2B2B")
+        ui.text(after["quality_vi"], r.right, y + 3, 8, st.get("to_color") or "#2B2B2B")
+        ui.text(T.UPG_ATK.format(a=c["stats"].get("atk", 0), b=c.get("after_atk", after["atk"])), tx, y + 16, 7, GREEN)
+        if ui.button(f"upgrade_{c['id']}", x + w - 76, y + 6, 70, 16, T.UPG_DO, style="primary",
+                     enabled=st["can"] and not self.busy):
+            self.raise_quality(c["id"])
 
     def draw_recipes(self, ui, x, y, w, h):
         top, bottom = y + 22, y + h - 24

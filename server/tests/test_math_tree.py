@@ -216,7 +216,7 @@ def test_questions_only_come_when_a_monster_lands_a_blow(plan):
 
 def test_every_luyen_khi_branch_has_a_land_and_its_own_weapon(plan):
     t = mt.tree()
-    types = {w["branch"]: w for w in plan["weapon_types"]}
+    types = {w["branch"]: w for w in plan["weapon_types"] if not w.get("drop_only")}   # kỳ binh only drop
     lands = {l["id"]: l for l in plan["lands"]}
     for branch in ("ds", "gt", "xs", "tr", "lt", "ud"):
         w = types[branch]
@@ -264,11 +264,12 @@ def test_the_world_checker_bites(plan):
 
 
 def test_the_combat_lands_weapons_beasts_and_abilities_sections_are_wired(plan):
-    """The owner's waves: the fight rule, the lands of Luyện Khí, the weapons, the beasts of Luyện
-    Khí with their taming and its thần thông run in the game; what lies beyond Luyện Khí does not."""
+    """The owner's waves: the fight rule, the lands of Luyện Khí, the weapons (and their drops from
+    monsters), the beasts of Luyện Khí with their taming and its thần thông run in the game; what
+    lies beyond Luyện Khí does not."""
     assert plan["wired"] is False
-    assert plan["wired_sections"] == ["combat", "lands", "weapons", "beasts", "abilities"]
-    assert mt.wired_sections(plan) == ("combat", "lands", "weapons", "beasts", "abilities")
+    assert plan["wired_sections"] == ["combat", "lands", "weapons", "beasts", "abilities", "weapon_drops"]
+    assert mt.wired_sections(plan) == ("combat", "lands", "weapons", "beasts", "abilities", "weapon_drops")
     assert all(mt.section_wired(s, plan) for s in mt.WIREABLE_SECTIONS)
     assert mt.wired_sections({"wired": False}) == ()
     assert mt.wired_sections({"wired": True}) == mt.WIREABLE_SECTIONS

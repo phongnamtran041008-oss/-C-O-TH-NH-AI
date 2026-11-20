@@ -111,10 +111,31 @@ và client tự kéo về vị trí đúng nhờ snapshot. Gói trùng hoặc s�
 | `q_end` | `sid`, `reason`: `broken` (người khác vừa phá khiên) \| `killed` \| `gone` \| `dead` | câu hỏi không cần trả lời nữa |
 | `dead` | `respawn_in` | hết máu; sau đó server tự đưa về điểm hồi sinh (một gói `zone` mới) |
 | `xp_lost` | `lost` | Tu Vi mất do chết |
-| `loot` | `monster`, `stones`, `spirit_stones` (số dư mới), `items`, `equipment` [trang bị], `kills`, `xp`, `quests` | phần thưởng khi hạ quái (gửi cho mọi người đã đánh trúng) |
+| `loot` | `monster`, `stones`, `spirit_stones` (số dư mới), `items`, `equipment` [trang bị nằm trên đất, xem dưới], `kills`, `xp`, `quests`, `locked`? | phần thưởng khi hạ quái (gửi cho mọi người đã đánh trúng). `locked` = `[{name_vi, need_vi}]` (tối đa 3): món rút ra mà tu vi chưa cho nhận |
 | `stats` | `realm`, `stage`, `stats`, `stage_up`, `hp`, `max_hp`, `combat` | chỉ số đổi (lên tầng, đổi trang bị); `combat` như trong `zone` (Né Đòn có thể vừa mở) |
 | `quest` | `event: "done"`, `quest` | một nhiệm vụ vừa đủ điều kiện |
 | `act_fail` | `code`: `too_far` \| `no_target` | đòn đánh bị từ chối (đang hồi chiêu thì bỏ qua im lặng) |
+
+**Trang bị rơi trong `loot`** (binh khí của Thiên Địa Đồ rơi từ quái, `world_plan.json` `weapon_drops`, và đồ cũ
+của bảng `drops`). Món đã được **cấp ngay** vào túi khi gửi tin (người chơi bỏ đi cũng không mất); các trường dưới
+đây để client vẽ nó nằm trên đất chỗ quái chết, phát sáng theo màu phẩm, tới khi người chơi đi qua. Mỗi mục của
+`equipment` là dạng `equipment` của `GET /inventory` (`id`, `item_id`, `name_vi`, `slot`, `rarity`, `rarity_vi`,
+`color`, `stats`, `enhance`...) cộng thêm:
+
+| Trường | Nghĩa |
+|---|---|
+| `item` | id món (= `item_id`; binh khí là `<loại>_<bậc>`, `kiem_1`) |
+| `name_vi` | tên hiện (Mộc Kiếm) |
+| `rarity` | độ hiếm: `pham`, `linh`, `huyen`, `dia`, `thien` |
+| `color` | màu của độ hiếm (`#7D7468`, `#6A994E`, `#4A7CC8`, `#8E5AC8`, `#C99A3A`): màu phát sáng |
+| `quality` | phẩm của binh khí: `ha`, `trung`, `thuong`, `cuc`, `tuyet` (cùng thứ tự với độ hiếm); `null` với đồ cũ |
+| `quality_vi` | Hạ phẩm ... Tuyệt phẩm; `null` với đồ cũ |
+| `weapon` | `true` khi món nằm ở ô vũ khí (binh khí của Thiên Địa Đồ, cả Kiếm Gỗ Đào cũ); `false` với nhẫn, áo... |
+| `weapon_info` | chỉ với binh khí của Thiên Địa Đồ: khối `weapon` của `GET /weapons` (loại, bậc, phẩm, Công, hiệu ứng) |
+| `x`, `y` | toạ độ thế giới (pixel) nơi món nằm: chỗ quái chết, hơi lệch khi một con rơi nhiều món (lệch tối đa 10 px ngang, 8 px dọc, không hai món trùng chỗ); `null` khi server không biết chỗ |
+
+Client hiện tại chỉ hiện thông báo (`name_vi`, `rarity_vi`, `color`) rồi tải lại túi; hình nằm trên đất và ánh sáng
+là việc của đợt sau.
 
 Câu trả lời của `q` gửi qua REST `POST /quiz/answer` như mọi câu hỏi khác; server chấm, rồi áp kết quả vào trận
 đấu trong bộ nhớ ngay lập tức. Hết giờ mà không trả lời thì vòng tick tự chấm là sai.

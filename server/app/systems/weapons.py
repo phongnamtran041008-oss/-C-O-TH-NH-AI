@@ -1,31 +1,45 @@
-"""Binh khí của Thiên Địa Đồ: the weapons lying in the lands (world_plan.json, wired section
-`weapons`).
+"""Binh khí của Thiên Địa Đồ: the weapons lying in the lands, dropping from their creatures and
+raised at the forge (world_plan.json, wired sections `weapons` and `weapon_drops`).
 
-The plan names eight weapon types (one per curriculum branch, `weapon_types`), a grade per
-realm (`grades`), three qualities (`qualities`) and the spots where weapons lie
-(`weapons_placed`). This module turns that into rules, and fits them into the equipment the
-game already has instead of building a second inventory beside it:
+The plan names the weapon types (`weapon_types`: one main type per curriculum branch, plus the
+kỳ binh - drop-only types of a land), a grade per realm (`grades`), five qualities
+(`qualities`: hạ, trung, thượng, cực, tuyệt), the spots where weapons lie (`weapons_placed`)
+and what the creatures of a land drop (`weapon_drops`). This module turns that into rules, and
+fits them into the equipment the game already has instead of building a second inventory
+beside it:
 
-  * a weapon is `<type>_<grade>` (kiem_1 = Mộc Kiếm). Every weapon that is placed somewhere
-    becomes a piece of equipment of slot `weapon` in `catalog.equipment()` (equipment_items),
-    whose `kind` is the weapon id itself - so the stats the world reads (`stats.weapon`), the
-    fight profile and the layer drawn in the hand all follow the weapon, grade included;
-  * a quality is stored as the equipment rarity it maps to (`qualities[].rarity`: hạ = Phàm,
-    trung = Linh, thượng = Huyền), so the bag, the shop, Bảo Vật Phổ and the enhance forge
-    treat the piece like any other; its power is the plan's own number (`power`), not the
-    rarity multiplier (cultivation.instance_stats reads `power_by_rarity`);
+  * a weapon is `<type>_<grade>` (kiem_1 = Mộc Kiếm). Every weapon that is placed somewhere or
+    can drop becomes a piece of equipment of slot `weapon` in `catalog.equipment()`
+    (equipment_items), whose `kind` is the weapon id itself - so the stats the world reads
+    (`stats.weapon`), the fight profile and the layer drawn in the hand all follow the weapon,
+    grade included;
+  * a type's `status` is "co" (in the game) or "cho_hinh" (waiting for its art): a cho_hinh
+    type is plan data only - never placed, never dropped, not equipment. Flipping it to "co"
+    is the only change needed once its art is in (tools/check_all.py then demands the art);
+  * a quality is stored as the equipment rarity it maps to (QUALITY_RARITY: hạ = Phàm,
+    trung = Linh, thượng = Huyền, cực = Địa, tuyệt = Thiên - also the colour a drop glows
+    in), so the bag, the shop, Bảo Vật Phổ and the enhance forge treat the piece like any
+    other; its power is the plan's own number (`power`), not the rarity multiplier
+    (cultivation.instance_stats reads `power_by_rarity`);
   * a spot gives its weapon once per player (`WeaponClaim`), only when the player's place in
     Đạo Thụ - "tu vi" in the plan - reaches its realm and stage and every node it names is
     done, and when its land is open and the ability it needs exists;
+  * a creature of a land drops that land's weapons (roll_drops, called by
+    realtime/combat._reward): a chance by rank, odds over the qualities by rank, the grade of
+    the land's realm. The loot rule holds (systems/loot.py): the quality is capped by the
+    killer's cultivation tu vi and by the cap of the place of the kill, and a roll the
+    player's tu vi blocks is reported as locked;
   * the fight: the type decides the normal attack (range, cooldown, multiplier) and the
     animation clip; the weapon's Công is the grade's `atk` times the quality's `power`; a
     Phản Đòn on a question of the weapon's own branch hits harder (`weapons` block of the
     plan, parry_mult);
-  * Rèn nâng phẩm (unlock nang_pham): at the forge, a hạ phẩm weapon becomes trung phẩm for
-    materials that really drop (crafting.json, `upgrades`).
+  * Rèn nâng phẩm: at the forge, a weapon goes up one quality per step of the chain of
+    crafting.json `upgrades` (hạ -> trung -> thượng -> cực -> tuyệt), each step for materials
+    that really drop, a fee, a stage of Đạo Thụ and a cultivation tu vi.
 """
 from __future__ import annotations
 
+import random
 from functools import lru_cache
 
 from sqlalchemy import select
@@ -39,6 +53,13 @@ from . import catalog, inventory
 
 AVAILABLE, TAKEN, LOCKED = "available", "taken", "locked"
 CLIPS = ("slash", "cast", "shoot")
+STATUSES = ("co", "cho_hinh")
+RANKS = ("normal", "elite", "boss")
+# a contract with the artist and the VFX programmer: the quality ids and the equipment rarity
+# each is stored as (the colour a dropped piece glows in is that rarity's colour)
+QUALITY_RARITY = {"ha": "pham", "trung": "linh", "thuong": "huyen", "cuc": "dia", "tuyet": "thien"}
+# where the pieces of one kill lie around the spot the monster died, in pixels
+SCATTER = ((0, 0), (10, 4), (-10, 4), (6, -8), (-6, -8))
 
 
 class WeaponError(Exception):
@@ -56,6 +77,7 @@ def data() -> dict:
         placed.append({**p, "id": placed_id(p)})
     return {"plan": plan,
             "cfg": plan.get("weapons", {}),
+            "drops": plan.get("weapon_drops", {}),
             "grades": {g["grade"]: g for g in plan.get("grades", [])},
             "qualities": {q["id"]: q for q in plan.get("qualities", [])},
             "types": {t["id"]: t for t in plan.get("weapon_types", [])},
@@ -88,6 +110,11 @@ def is_weapon(weapon_id: str | None) -> bool:
     return split(weapon_id) is not None
 
 
+def type_live(kind: str) -> bool:
+    """A type that is in the game: status 'co'. A 'cho_hinh' type waits for its art."""
+    return data()["types"].get(kind, {}).get("status") == "co"
+
+
 def weapon_name(weapon_id: str) -> str:
     kind, grade = split(weapon_id)
     return f"{data()['grades'][grade]['prefix_vi']} {data()['types'][kind]['name_vi']}"
@@ -95,6 +122,17 @@ def weapon_name(weapon_id: str) -> str:
 
 def quality_of_rarity(rarity: str) -> dict | None:
     return next((q for q in data()["qualities"].values() if q.get("rarity") == rarity), None)
+
+
+def quality_order() -> list[str]:
+    return list(data()["qualities"])
+
+
+def qualities_view() -> list[dict]:
+    """Every quality with the name, colour and power the client shows."""
+    rar = catalog.equipment()["rarities"]
+    return [{"id": q["id"], "name_vi": q["name_vi"], "rarity": q["rarity"], "power": float(q["power"]),
+             "color": rar.get(q["rarity"], {}).get("color")} for q in data()["qualities"].values()]
 
 
 def branch_name(branch: str) -> str:
@@ -124,17 +162,18 @@ def effect_vi(weapon_id: str) -> str:
 
 
 def equipment_items() -> dict[str, dict]:
-    """Every weapon that lies somewhere, as a piece of equipment (merged into
-    catalog.equipment()). Its `atk` is the grade's; `power_by_rarity` holds the quality powers
-    by the rarity each quality is stored as."""
+    """Every weapon of a live type that lies somewhere or can drop, as a piece of equipment
+    (merged into catalog.equipment()). Its `atk` is the grade's; `power_by_rarity` holds the
+    quality powers by the rarity each quality is stored as."""
     d = data()
     power = {q["rarity"]: float(q["power"]) for q in d["qualities"].values() if q.get("rarity")}
     out = {}
-    for p in d["placed"]:
-        wid = p["weapon"]
+    for wid in [p["weapon"] for p in d["placed"]] + sorted(droppable_weapons()):
         if wid in out or not is_weapon(wid):
             continue
         kind, grade = split(wid)
+        if not type_live(kind):
+            continue
         t = d["types"][kind]
         out[wid] = {"name_vi": weapon_name(wid), "slot": "weapon", "kind": wid, "weapon_type": kind,
                     "grade": grade, "stats": {"atk": int(d["grades"][grade]["atk"])},
@@ -168,6 +207,168 @@ def parry_mult(weapon_id: str | None, subject_id: str | None) -> float:
     if subject_id and subject_id == own:
         return 1.0 + float(cfg.get("own_branch_parry_bonus", 0))
     return 1.0
+
+
+# ------------------------------------------------------------------ drops from monsters
+def drops_wired() -> bool:
+    return math_tree.section_wired("weapon_drops", data()["plan"])
+
+
+def realm_grade(realm: str | None) -> int | None:
+    return next((g for g, x in data()["grades"].items() if x.get("realm") == realm), None)
+
+
+def land_table(land_id: str | None) -> dict | None:
+    """What the creatures of a land drop: {"main": [types], "ky_binh": [types], "grades":
+    [{"grade", "weight", "tu_vi"?}]}, live types only. A land's main types are the types whose
+    `land` it is and that are not drop_only; its kỳ binh the drop_only ones. `weapon_drops.lands`
+    may override the types and the grades (the boss arena has no type of its own). None for an
+    unknown land."""
+    d = data()
+    land = d["lands"].get(land_id or "")
+    if land is None:
+        return None
+    over = d["drops"].get("lands", {}).get(land_id, {})
+    own = [k for k, t in d["types"].items() if t.get("land") == land_id]
+    main = over.get("types") if "types" in over else [k for k in own if not d["types"][k].get("drop_only")]
+    ky = over.get("ky_binh") if "ky_binh" in over else [k for k in own if d["types"][k].get("drop_only")]
+    g = realm_grade(land.get("realm"))
+    grades = over.get("grades") or ([{"grade": g, "weight": 1}] if g is not None else [])
+    return {"main": [k for k in main if type_live(k)], "ky_binh": [k for k in ky if type_live(k)],
+            "grades": grades}
+
+
+def droppable_weapons() -> set[str]:
+    """Every weapon id some creature can drop today."""
+    d = data()
+    out: set[str] = set()
+    for land_id, land in d["lands"].items():
+        if land.get("status") != "co":
+            continue
+        tb = land_table(land_id)
+        for kind in tb["main"] + tb["ky_binh"]:
+            out |= {f"{kind}_{g['grade']}" for g in tb["grades"]}
+    return out
+
+
+def _weighted(rng: random.Random, pairs: list[tuple[object, float]]):
+    total = sum(w for _, w in pairs if w > 0)
+    if total <= 0:
+        return pairs[0][0] if pairs else None
+    x = rng.uniform(0, total)
+    for v, w in pairs:
+        if w <= 0:
+            continue
+        x -= w
+        if x <= 0:
+            return v
+    return next(v for v, w in reversed(pairs) if w > 0)
+
+
+def roll_quality(rng: random.Random, odds: dict[str, float]) -> str:
+    return _weighted(rng, [(q, float(odds.get(q, 0))) for q in quality_order()])
+
+
+def cap_quality(quality: str, realm: str, stage: int, within=None) -> tuple[str | None, str | None]:
+    """(the quality granted, the quality to report as locked or None) for a rolled quality.
+    The granted one is the best at or below the roll that both the player's cultivation tu vi
+    (loot.rarity_cap) and the cap of the place of the kill (`within`, a loot tier) allow. The
+    roll is reported as locked only when it is the player's tu vi that held it back: then the
+    report names the best quality this place could have given (the roll, or lower), which the
+    player will get here by climbing."""
+    from . import loot
+    from .items import RARITY_ORDER
+    order = quality_order()
+    q = data()["qualities"]
+
+    def idx(qid: str) -> int:
+        return RARITY_ORDER.index(q[qid]["rarity"])
+
+    mine = loot.rarity_cap(realm, stage)
+    me = RARITY_ORDER.index(mine) if mine is not None else -1
+    src = RARITY_ORDER.index(loot.best_rarity(within) or RARITY_ORDER[0]) if within is not None \
+        else len(RARITY_ORDER) - 1
+    allowed = min(me, src)
+    granted = next((x for x in reversed(order[:order.index(quality) + 1]) if idx(x) <= allowed), None)
+    shown = next((x for x in reversed(order[:order.index(quality) + 1]) if idx(x) <= src), None)
+    locked = shown if shown is not None and idx(shown) > me else None
+    return granted, locked
+
+
+def roll_drops(rng: random.Random, kind: str, realm: str, stage: int, within=None,
+               drop_mult: float = 1.0) -> tuple[list[dict], list[dict]]:
+    """The weapons one kill of this monster drops for one player: (grants, locked).
+    grants: [{"weapon", "quality", "rarity"}]; locked: [{"name_vi", "need_vi"}] for
+    loot.note_locked. Nothing (and no dice thrown) for a monster without a land, a land that
+    drops nothing, or when the section is not wired."""
+    from . import loot
+    if not drops_wired():
+        return [], []
+    info = catalog.monsters().get(kind, {})
+    rank = info.get("rank", "normal")
+    tb = land_table(info.get("land"))
+    rk = data()["drops"].get("by_rank", {}).get(rank)
+    if tb is None or rk is None or not tb["grades"]:
+        return [], []
+    picks = []
+    if tb["main"] and rng.random() < min(1.0, float(rk.get("chance", 0)) * drop_mult):
+        picks.append(rng.choice(tb["main"]))
+    if tb["ky_binh"] and rank != "normal" \
+            and rng.random() < min(1.0, float(rk.get("ky_binh_chance", 0)) * drop_mult):
+        picks.append(rng.choice(tb["ky_binh"]))
+    grants, locked = [], []
+    me = loot.rank(realm, stage)
+    open_grades = [g for g in tb["grades"] if not g.get("tu_vi")]
+    for wtype in picks:
+        g = _weighted(rng, [(x, float(x.get("weight", 1))) for x in tb["grades"]])
+        if g.get("tu_vi") and me < loot.parse(g["tu_vi"]):
+            locked.append({"name_vi": weapon_name(f"{wtype}_{g['grade']}"), "need_vi": loot.label(loot.parse(g["tu_vi"]))})
+            g = min(open_grades, key=lambda x: x["grade"]) if open_grades else None
+            if g is None:
+                continue
+        wid = f"{wtype}_{g['grade']}"
+        rolled = roll_quality(rng, rk.get("qualities", {}))
+        got, held = cap_quality(rolled, realm, stage, within)
+        if held is not None:
+            qq = data()["qualities"][held]
+            locked.append({"name_vi": f"{weapon_name(wid)} ({qq['name_vi']})",
+                           "need_vi": loot.label(loot.rarity_tier(qq["rarity"]))})
+        if got is None:
+            continue
+        grants.append({"weapon": wid, "quality": got, "rarity": data()["qualities"][got]["rarity"]})
+    return grants, locked
+
+
+def ground_entry(view: dict, x: float | None, y: float | None, index: int = 0) -> dict:
+    """An `equipment` entry of the `loot` message: the piece as items.equipment_view shows it,
+    plus where it lies (the spot the monster died, scattered a little when one kill drops
+    several pieces) and what the client needs to draw it glowing in its rarity colour. For a
+    weapon of the plan `weapon_info` is the weapon part of the view (type, grade, quality...)."""
+    w = view.get("weapon") if isinstance(view.get("weapon"), dict) else None
+    dx, dy = SCATTER[index % len(SCATTER)]
+    out = {**view, "item": view.get("item_id"), "weapon": view.get("slot") == "weapon",
+           "quality": w.get("quality") if w else None, "quality_vi": w.get("quality_vi") if w else None,
+           "x": None if x is None else round(float(x) + dx, 1),
+           "y": None if y is None else round(float(y) + dy, 1)}
+    if w:
+        out["weapon_info"] = w
+    return out
+
+
+async def grant_drops(db: AsyncSession, uid: int, kind: str, realm: str, stage: int, within,
+                      rng: random.Random, drop_mult: float, out: dict,
+                      x: float | None = None, y: float | None = None) -> None:
+    """Roll this kill's weapons for one player, grant them like any equipment drop (nothing is
+    lost if the player walks away) and add them to the `loot` payload `out`."""
+    from . import items
+    from . import loot
+    grants, locked = roll_drops(rng, kind, realm, stage, within, drop_mult)
+    for note in locked:
+        loot.note_locked(out, name_vi=note["name_vi"], need=note["need_vi"])
+    for g in grants:
+        view = await items.grant_equipment(db, uid, g["weapon"], g["rarity"], "weapon_drop", kind)
+        eq = out.setdefault("equipment", [])
+        eq.append(ground_entry(view, x, y, len(eq)))
 
 
 # ------------------------------------------------------------------ where the player stands
@@ -249,10 +450,11 @@ def weapon_view(weapon_id: str, quality: str | None = None) -> dict:
     out = {"weapon": weapon_id, "name_vi": weapon_name(weapon_id), "type": kind, "type_vi": t["name_vi"],
            "grade": grade, "grade_vi": d["grades"][grade]["prefix_vi"], "branch": t["branch"],
            "branch_vi": branch_name(t["branch"]), "clip": t["clip"], "effect_vi": effect_vi(weapon_id),
-           "why_vi": t.get("why_vi", "")}
+           "why_vi": t.get("why_vi", ""), "ky_binh": bool(t.get("drop_only"))}
     if quality in d["qualities"]:
         q = d["qualities"][quality]
         out.update(quality=quality, quality_vi=q["name_vi"],
+                   quality_color=catalog.equipment()["rarities"].get(q["rarity"], {}).get("color"),
                    atk=int(round(int(d["grades"][grade]["atk"]) * float(q["power"]))))
     return out
 
@@ -263,8 +465,7 @@ def instance_extra(e: EquipmentInstance) -> dict | None:
         return None
     q = quality_of_rarity(e.rarity)
     out = weapon_view(e.item_id, q["id"] if q else None)
-    up = upgrade_recipe()
-    out["upgradable"] = bool(q and up and q["id"] == up["from"])
+    out["upgradable"] = bool(q and step_for(q["id"]))
     return out
 
 
@@ -286,7 +487,8 @@ async def _taken(db: AsyncSession, user_id: int) -> set[str]:
 
 
 async def view(db: AsyncSession, user: User) -> dict:
-    """GET /weapons: the player's weapons, the one equipped, and every placed weapon."""
+    """GET /weapons: the player's weapons, the one equipped, every placed weapon, and the
+    qualities with their colours."""
     from . import items
     at, done = await standing(db, user.id)
     taken = await _taken(db, user.id)
@@ -297,6 +499,7 @@ async def view(db: AsyncSession, user: User) -> dict:
     equipped = next((w for w in weapons if w.get("equipped") == "weapon"), None)
     return {"weapons": weapons, "equipped": equipped["id"] if equipped else None,
             "placed": [placed_view(p, at, done, taken) for p in data()["placed"]],
+            "qualities": qualities_view(),
             "tu_vi": {"realm": at[0], "realm_vi": _realm_vi(at[0]), "stage": at[1]},
             "can_claim": unlock_open(data()["cfg"].get("claim_unlock", ""), at),
             "can_upgrade": unlock_open(data()["cfg"].get("upgrade_unlock", ""), at)}
@@ -354,8 +557,24 @@ async def unequip(db: AsyncSession, user: User) -> dict:
 
 
 # ------------------------------------------------------------------ Rèn nâng phẩm
+def upgrade_steps() -> list[dict]:
+    """The chain of forge steps of crafting.json `upgrades` (each with its `id`), from the
+    lowest quality up."""
+    ups = catalog.math_crafting().get("upgrades", {})
+    order = quality_order()
+    steps = [{**v, "id": k} for k, v in ups.items() if not k.startswith("_") and isinstance(v, dict)]
+    return sorted(steps, key=lambda s: order.index(s["from"]) if s.get("from") in order else len(order))
+
+
 def upgrade_recipe() -> dict | None:
-    return catalog.math_crafting().get("upgrades", {}).get(data()["cfg"].get("upgrade_unlock", ""))
+    """The first step of the chain (hạ -> trung), the one opened by the unlock nang_pham."""
+    uid = data()["cfg"].get("upgrade_unlock", "")
+    return next((s for s in upgrade_steps() if s["id"] == uid), None)
+
+
+def step_for(quality: str | None) -> dict | None:
+    """The forge step that raises a weapon of this quality (None at the top)."""
+    return next((s for s in upgrade_steps() if s.get("from") == quality), None)
 
 
 def _lines(recipe: dict, held: dict[str, int]) -> list[dict]:
@@ -375,50 +594,81 @@ def _atk_as(e: EquipmentInstance, rarity: str) -> int:
     return int(cultivation.instance_stats(probe).get("atk", 0))
 
 
-async def upgrade_view(db: AsyncSession, user: User) -> dict:
-    """What the forge shows for Rèn nâng phẩm: whether it is open, the cost against what the
-    player holds, and the weapons it can raise."""
-    from . import items
-    r = upgrade_recipe()
+def step_missing(step: dict, at: tuple[str, int], tier: tuple[str, int]) -> list[str]:
+    """Why a forge step is shut, one sentence each (empty = open): the first step opens with
+    the unlock nang_pham, a later one at its stage of Đạo Thụ (`requires`); every step also
+    asks the character's cultivation tu vi (`tu_vi`, a loot tier)."""
+    from . import loot
+    out: list[str] = []
     uid = data()["cfg"].get("upgrade_unlock", "")
-    at, _ = await standing(db, user.id)
-    if r is None:
-        return {"open": False, "reason_vi": "Lò rèn chưa có công thức nâng phẩm.", "candidates": []}
-    held = await items.stacks(db, user.id)
-    frm, to = data()["qualities"][r["from"]], data()["qualities"][r["to"]]
-    rows = (await db.execute(select(EquipmentInstance).where(
-        EquipmentInstance.user_id == user.id, EquipmentInstance.rarity == frm["rarity"])
-        .order_by(EquipmentInstance.id))).scalars().all()
-    lines = _lines(r, held)
-    is_open = unlock_open(uid, at)
-    return {"open": is_open, "reason_vi": "" if is_open else _unlock_reason(uid),
-            "name_vi": r["name_vi"], "desc_vi": r.get("desc_vi", ""), "fee": int(r.get("fee", 0)),
-            "from": r["from"], "from_vi": frm["name_vi"], "to": r["to"], "to_vi": to["name_vi"],
-            "ingredients": lines,
-            "can": is_open and all(x["enough"] for x in lines) and user.spirit_stones >= int(r.get("fee", 0)),
-            "candidates": [{**items.equipment_view(e), "after": weapon_view(e.item_id, r["to"]),
+    if step["id"] == uid:
+        if not unlock_open(uid, at):
+            out.append(_unlock_reason(uid))
+    else:
+        req = step.get("requires", {})
+        if not reaches(at, req.get("realm", "luyen_khi"), int(req.get("stage", 0))):
+            out.append(f"Mở ở {_realm_vi(req.get('realm', ''))} tầng {req.get('stage', 0)} trên Đạo Thụ.")
+    if step.get("tu_vi") and loot.rank(*tier) < loot.parse(step["tu_vi"]):
+        out.append(f"Cần tu vi {loot.label(loot.parse(step['tu_vi']))}.")
+    return out
+
+
+def _step_view(step: dict, at, tier, held: dict[str, int], rows: list[EquipmentInstance], stones: int) -> dict:
+    from . import items
+    d = data()
+    rar = catalog.equipment()["rarities"]
+    frm, to = d["qualities"][step["from"]], d["qualities"][step["to"]]
+    lines = _lines(step, held)
+    why = step_missing(step, at, tier)
+    fee = int(step.get("fee", 0))
+    return {"id": step["id"], "name_vi": step["name_vi"], "desc_vi": step.get("desc_vi", ""), "fee": fee,
+            "from": step["from"], "from_vi": frm["name_vi"], "from_color": rar[frm["rarity"]]["color"],
+            "to": step["to"], "to_vi": to["name_vi"], "to_color": rar[to["rarity"]]["color"],
+            "ingredients": lines, "open": not why, "reason_vi": " ".join(why),
+            "can": not why and all(x["enough"] for x in lines) and stones >= fee,
+            "candidates": [{**items.equipment_view(e), "after": weapon_view(e.item_id, step["to"]),
                             "after_atk": _atk_as(e, to["rarity"])}
-                           for e in rows if is_weapon(e.item_id)],
-            "spirit_stones": user.spirit_stones}
+                           for e in rows if e.rarity == frm["rarity"] and is_weapon(e.item_id)]}
+
+
+async def upgrade_view(db: AsyncSession, user: User) -> dict:
+    """What the forge shows for Rèn nâng phẩm: every step of the chain (`steps`) - whether it is
+    open and why not, its cost against what the player holds, and the weapons it can raise. The
+    first step's fields are also at the top level (the shape of the one-step forge)."""
+    from . import items, loot
+    steps = upgrade_steps()
+    first = upgrade_recipe()
+    if first is None:
+        return {"open": False, "reason_vi": "Lò rèn chưa có công thức nâng phẩm.", "candidates": [], "steps": []}
+    at, _ = await standing(db, user.id)
+    tier = await loot.player_tier(db, user.id)
+    held = await items.stacks(db, user.id)
+    rows = (await db.execute(select(EquipmentInstance).where(EquipmentInstance.user_id == user.id)
+                             .order_by(EquipmentInstance.id))).scalars().all()
+    views = [_step_view(s, at, tier, held, rows, user.spirit_stones) for s in steps]
+    top = next(v for v in views if v["id"] == first["id"])
+    return {**top, "steps": views, "qualities": qualities_view(), "spirit_stones": user.spirit_stones}
 
 
 async def upgrade(db: AsyncSession, user: User, instance_id: int) -> dict:
-    """Hạ phẩm -> trung phẩm for the recipe's materials and fee; grade and enhance stay."""
-    from . import items
-    r = upgrade_recipe()
-    uid = data()["cfg"].get("upgrade_unlock", "")
-    if r is None:
+    """One quality up, by the step of the chain that starts at the piece's quality, for its
+    materials and fee; grade and enhance stay."""
+    from . import items, loot
+    if upgrade_recipe() is None:
         raise WeaponError(400, "no_recipe", "Lò rèn chưa có công thức nâng phẩm.")
     e = await _mine(db, user, instance_id)
     if not is_weapon(e.item_id):
-        raise WeaponError(400, "not_plan_weapon", "Chỉ binh khí nhặt ở các vùng đất mới nâng phẩm được.")
+        raise WeaponError(400, "not_plan_weapon", "Chỉ binh khí của các vùng đất mới nâng phẩm được.")
     q = quality_of_rarity(e.rarity)
-    if q is None or q["id"] != r["from"]:
-        frm = data()["qualities"][r["from"]]["name_vi"]
-        raise WeaponError(400, "wrong_quality", f"Chỉ nâng được binh khí {frm.lower()}.")
+    r = step_for(q["id"] if q else None)
+    if r is None:
+        if q is not None and q["id"] == quality_order()[-1]:
+            raise WeaponError(400, "wrong_quality", f"Binh khí này đã là {q['name_vi'].lower()}, không nâng được nữa.")
+        raise WeaponError(400, "wrong_quality", "Lò rèn không có cách nâng phẩm binh khí này.")
     at, _ = await standing(db, user.id)
-    if not unlock_open(uid, at):
-        raise WeaponError(400, "locked", _unlock_reason(uid))
+    why = step_missing(r, at, await loot.player_tier(db, user.id))
+    if why:
+        raise WeaponError(400, "locked", " ".join(why))
     held = await items.stacks(db, user.id)
     for line in _lines(r, held):
         if not line["enough"]:
@@ -427,29 +677,31 @@ async def upgrade(db: AsyncSession, user: User, instance_id: int) -> dict:
     fee = int(r.get("fee", 0))
     if fee:
         try:
-            await inventory.change_currency(db, user.id, "spirit_stones", -fee, "nang_pham", str(e.id))
+            await inventory.change_currency(db, user.id, "spirit_stones", -fee, r["id"], str(e.id))
         except inventory.InsufficientFunds as err:
             raise WeaponError(400, "no_stones", err.message_vi) from None
     for i in r["ingredients"]:
         try:
-            await inventory.consume_item(db, user.id, i["item"], int(i["qty"]), "nang_pham", str(e.id))
+            await inventory.consume_item(db, user.id, i["item"], int(i["qty"]), r["id"], str(e.id))
         except inventory.InsufficientFunds as err:
             raise WeaponError(400, "need_material", err.message_vi) from None
     to = data()["qualities"][r["to"]]
     e.rarity = to["rarity"]
     db.add(AuditLog(user_id=user.id, currency_or_item=f"equip:{e.item_id}:{e.rarity}", delta=0, balance_after=None,
-                    reason="nang_pham", ref_id=str(e.id), created_at=clock.now()))
+                    reason=r["id"], ref_id=str(e.id), created_at=clock.now()))
     await db.flush()
     stats = await items._after_gear_change(db, user.id) if e.equipped_slot else None
     await db.refresh(user, ["spirit_stones"])
-    return {"upgraded": e.id, "item": items.equipment_view(e), "stats": stats, "spirit_stones": user.spirit_stones}
+    return {"upgraded": e.id, "step": r["id"], "item": items.equipment_view(e), "stats": stats,
+            "spirit_stones": user.spirit_stones}
 
 
 # ------------------------------------------------------------------ content check
 def validate() -> list[str]:
     """The weapon sections can be played: every number the rules read is there and sane, every
-    placed weapon is a piece of equipment, and the forge upgrade costs things that really drop
-    no later than it opens (tools/check_all.py adds the client art: icon and in-hand layer)."""
+    placed or droppable weapon is a piece of equipment, the drop table keeps the loot rule, and
+    every forge step costs things that really drop no later than it opens (tools/check_all.py
+    adds the client art of the live types: icons and in-hand layers)."""
     errs: list[str] = []
     d = data()
     t = math_tree.tree()
@@ -466,10 +718,13 @@ def validate() -> list[str]:
         if q.get("rarity") not in catalog.equipment()["rarities"]:
             errs.append(f"quality {qid}: rarity {q.get('rarity')!r} is not an equipment rarity")
         powers.append(float(q.get("power", 0)))
-    if powers != sorted(powers) or (powers and powers[0] <= 0):
-        errs.append("qualities: 'power' must be positive and grow from hạ to thượng")
+    if powers != sorted(powers) or len(set(powers)) != len(powers) or (powers and powers[0] <= 0):
+        errs.append("qualities: 'power' must be positive and grow from hạ to tuyệt")
     if len({q.get("rarity") for q in d["qualities"].values()}) != len(d["qualities"]):
         errs.append("qualities: two qualities share a rarity")
+    got = {qid: q.get("rarity") for qid, q in d["qualities"].items()}
+    if list(got) != list(QUALITY_RARITY) or got != QUALITY_RARITY:
+        errs.append(f"qualities: the ids and rarities are a contract with the art: {QUALITY_RARITY}")
     for kid, k in d["types"].items():
         if k.get("clip") not in CLIPS:
             errs.append(f"weapon type {kid}: clip {k.get('clip')!r} is not one of {CLIPS}")
@@ -477,6 +732,14 @@ def validate() -> list[str]:
             v = k.get(key)
             if not isinstance(v, (int, float)) or isinstance(v, bool) or v <= 0:
                 errs.append(f"weapon type {kid}: '{key}' must be a positive number")
+        if k.get("status") not in STATUSES:
+            errs.append(f"weapon type {kid}: status {k.get('status')!r} is not one of {STATUSES}")
+        if not k.get("why_vi"):
+            errs.append(f"weapon type {kid}: no why_vi")
+        if k.get("drop_only"):
+            land = d["lands"].get(k.get("land") or "")
+            if land is None or land.get("kind") not in ("wild", "boss"):
+                errs.append(f"weapon type {kid}: a kỳ binh (drop_only) needs a land whose creatures drop it")
     cfg = d["cfg"]
     for key in ("own_branch_parry_bonus", "any_branch_parry_bonus"):
         v = cfg.get(key)
@@ -493,6 +756,11 @@ def validate() -> list[str]:
         if not is_weapon(p["weapon"]):
             errs.append(f"{where}: {p['weapon']!r} is not <weapon type>_<grade>")
             continue
+        kind = split(p["weapon"])[0]
+        if d["types"][kind].get("drop_only"):
+            errs.append(f"{where}: {kind} is a kỳ binh, it only drops and is never placed")
+        if not type_live(kind):
+            errs.append(f"{where}: type {kind} is not in the game (status {d['types'][kind].get('status')!r})")
         if items.get(p["weapon"], {}).get("slot") != "weapon":
             errs.append(f"{where}: {p['weapon']} is not a piece of equipment")
         for n in p.get("requires", {}).get("nodes", []):
@@ -504,41 +772,169 @@ def validate() -> list[str]:
             errs.append(f"{where}: 'pos' must be [x, y]")
     if len(d["by_id"]) != len(d["placed"]):
         errs.append("weapons_placed: two spots share an id")
+    for wid in sorted(droppable_weapons()):
+        if items.get(wid, {}).get("slot") != "weapon":
+            errs.append(f"weapon_drops: {wid} can drop but is not a piece of equipment")
+    errs += _validate_drops()
     errs += _validate_upgrade()
     return errs
 
 
-def _validate_upgrade() -> list[str]:
+def _validate_drops() -> list[str]:
+    """weapon_drops: wired, a rate for every rank (rising with the rank; kỳ binh only from
+    elites and bosses and rarer than the main type), odds over known qualities that sum to 1,
+    sound land overrides, and every built land with creatures drops something."""
     from . import loot
     errs: list[str] = []
     d = data()
-    r = upgrade_recipe()
-    if r is None:
+    dr = d["drops"]
+    if not dr:
+        return ["world_plan: no weapon_drops section"]
+    if not drops_wired():
+        errs.append("world_plan: 'weapon_drops' is not in wired_sections, yet the game runs on it")
+    by_rank = dr.get("by_rank", {})
+    chances = []
+    for rank in RANKS:
+        r = by_rank.get(rank)
+        where = f"weapon_drops.by_rank.{rank}"
+        if not isinstance(r, dict):
+            errs.append(f"{where} missing")
+            continue
+        c, k = r.get("chance"), r.get("ky_binh_chance", 0)
+        for key, v in (("chance", c), ("ky_binh_chance", k)):
+            if not isinstance(v, (int, float)) or isinstance(v, bool) or not 0 <= v <= 1:
+                errs.append(f"{where}.{key} must be a number from 0 to 1")
+        if not isinstance(c, (int, float)) or not isinstance(k, (int, float)):
+            continue
+        chances.append(c)
+        if rank == "normal" and k:
+            errs.append(f"{where}: a kỳ binh drops only from elites and bosses")
+        if rank != "normal" and not 0 < k < c:
+            errs.append(f"{where}: a kỳ binh must drop, and more rarely than the land's main type")
+        odds = r.get("qualities", {})
+        for q, v in odds.items():
+            if q not in d["qualities"]:
+                errs.append(f"{where}.qualities: unknown quality {q!r}")
+            if not isinstance(v, (int, float)) or isinstance(v, bool) or v < 0:
+                errs.append(f"{where}.qualities.{q} must be a number from 0")
+        total = sum(v for v in odds.values() if isinstance(v, (int, float)))
+        if abs(total - 1.0) > 1e-6:
+            errs.append(f"{where}.qualities add up to {total:g}, not 1")
+    if len(chances) == len(RANKS) and chances != sorted(chances):
+        errs.append("weapon_drops.by_rank: the chance must rise from normal to elite to boss")
+    for land_id, over in dr.get("lands", {}).items():
+        where = f"weapon_drops.lands.{land_id}"
+        if land_id not in d["lands"]:
+            errs.append(f"{where}: unknown land")
+            continue
+        for key in ("types", "ky_binh"):
+            for k in over.get(key, []):
+                if k not in d["types"]:
+                    errs.append(f"{where}.{key}: unknown weapon type {k!r}")
+                elif bool(d["types"][k].get("drop_only")) != (key == "ky_binh"):
+                    errs.append(f"{where}.{key}: {k} is {'not ' if key == 'ky_binh' else ''}a kỳ binh")
+        grades = over.get("grades", [])
+        for g in grades:
+            if g.get("grade") not in d["grades"]:
+                errs.append(f"{where}.grades: unknown grade {g.get('grade')!r}")
+            w = g.get("weight", 1)
+            if not isinstance(w, (int, float)) or w <= 0:
+                errs.append(f"{where}.grades: weight of grade {g.get('grade')} must be positive")
+            if g.get("tu_vi"):
+                try:
+                    loot.parse(g["tu_vi"])
+                except ValueError as e:
+                    errs.append(f"{where}.grades: {e}")
+        if grades and all(g.get("tu_vi") for g in grades):
+            errs.append(f"{where}.grades: at least one grade must drop without a tu vi gate")
+    mons = catalog.monsters()
+    lands_with_creatures = {m.get("land") for m in mons.values() if m.get("land")}
+    for land_id in sorted(lands_with_creatures):
+        land = d["lands"].get(land_id)
+        if land is None or land.get("status") != "co":
+            continue
+        tb = land_table(land_id)
+        if not tb["main"] or not tb["grades"]:
+            errs.append(f"weapon_drops: the creatures of {land_id} drop no weapon")
+    return errs
+
+
+def _validate_upgrade() -> list[str]:
+    """The forge chain: one step per quality but the last, each from the quality the previous
+    one reaches to the next one up, a rising fee, gates that never go down, and ingredients
+    that really drop no later than the step opens."""
+    from . import loot
+    errs: list[str] = []
+    d = data()
+    steps = upgrade_steps()
+    if upgrade_recipe() is None:
         return [f"crafting.json: no upgrades.{d['cfg'].get('upgrade_unlock')} recipe"]
-    if r.get("from") not in d["qualities"] or r.get("to") not in d["qualities"]:
-        return ["crafting.json upgrades: 'from' and 'to' must be qualities of world_plan.json"]
-    order = list(d["qualities"])
-    if order.index(r["to"]) != order.index(r["from"]) + 1:
-        errs.append("crafting.json upgrades: an upgrade raises a weapon by exactly one quality")
-    if int(r.get("fee", 0)) < 0:
-        errs.append("crafting.json upgrades: a negative fee")
-    if not r.get("ingredients"):
-        errs.append("crafting.json upgrades: no ingredients")
+    order = quality_order()
+    for s in steps:
+        if s.get("from") not in d["qualities"] or s.get("to") not in d["qualities"]:
+            return [f"crafting.json upgrades.{s['id']}: 'from' and 'to' must be qualities of world_plan.json"]
+    if [s["from"] for s in steps] != order[:-1]:
+        errs.append(f"crafting.json upgrades: the chain must have one step from each quality but the last "
+                    f"({' -> '.join(order)})")
+    if upgrade_recipe()["from"] != order[0]:
+        errs.append("crafting.json upgrades: the step of the unlock nang_pham must be the first")
     dropped: set[str] = set()
     for m in catalog.monsters().values():
         dropped |= {x["item"] for x in m.get("drops", []) if "item" in x}
+    realms = {r["id"] for r in catalog.realms()}
     u = d["unlocks"].get(d["cfg"].get("upgrade_unlock"), {})
-    opens = loot.parse(f"{u.get('realm')}:{u.get('stage')}") if u else None
-    for i in r.get("ingredients", []):
-        item = i.get("item")
-        if catalog.stack_item(item) is None:
-            errs.append(f"crafting.json upgrades: {item!r} is not an item")
+    prev_fee, prev_tu_vi, prev_at = -1, None, None
+    for s in steps:
+        where = f"crafting.json upgrades.{s['id']}"
+        if order.index(s["to"]) != order.index(s["from"]) + 1:
+            errs.append(f"{where}: an upgrade raises a weapon by exactly one quality")
+        fee = int(s.get("fee", 0))
+        if fee < 0:
+            errs.append(f"{where}: a negative fee")
+        if fee <= prev_fee:
+            errs.append(f"{where}: the fee must rise along the chain")
+        prev_fee = fee
+        if not s.get("ingredients"):
+            errs.append(f"{where}: no ingredients")
+        # Đạo Thụ: the first step by its unlock, the others by `requires`
+        if s["id"] == d["cfg"].get("upgrade_unlock"):
+            at = (u.get("realm"), int(u.get("stage", 0))) if u else None
+        else:
+            req = s.get("requires", {})
+            if req.get("realm") not in t_realms():
+                errs.append(f"{where}: 'requires' must name a realm of Đạo Thụ and a stage")
+                continue
+            at = (req["realm"], int(req.get("stage", 0)))
+        if at and prev_at and not math_tree.tree().reaches(prev_at[0], prev_at[1], at):
+            errs.append(f"{where}: opens on Đạo Thụ before the step below it")
+        prev_at = at or prev_at
+        try:
+            tu_vi = loot.parse(s.get("tu_vi", "pham_nhan"))
+        except ValueError as e:
+            errs.append(f"{where}: tu_vi: {e}")
             continue
-        if item not in dropped:
-            errs.append(f"crafting.json upgrades: nothing drops {item!r}")
-        tier = loot.item_tier(item)
-        if opens is not None and tier is not None and tier > opens:
-            errs.append(f"crafting.json upgrades: {item!r} drops only from {loot.label(tier)}, after the upgrade opens")
-        if int(i.get("qty", 0)) <= 0:
-            errs.append(f"crafting.json upgrades: {item!r} with qty {i.get('qty')!r}")
+        if prev_tu_vi is not None and tu_vi < prev_tu_vi:
+            errs.append(f"{where}: its tu vi is below the step under it")
+        prev_tu_vi = tu_vi
+        # the loot tier by which it opens: its tu vi, or the Đạo Thụ stage read as a tier when
+        # the realm has the same id in both ladders (Luyện Khí, Trúc Cơ)
+        opens = tu_vi
+        if at and at[0] in realms:
+            opens = max(opens, loot.parse(f"{at[0]}:{max(at[1], 1) if at[0] != 'pham_nhan' else 0}"))
+        for i in s.get("ingredients", []):
+            item = i.get("item")
+            if catalog.stack_item(item) is None:
+                errs.append(f"{where}: {item!r} is not an item")
+                continue
+            if item not in dropped:
+                errs.append(f"{where}: nothing drops {item!r}")
+            tier = loot.item_tier(item)
+            if tier is not None and tier > opens:
+                errs.append(f"{where}: {item!r} drops only from {loot.label(tier)}, after the step opens")
+            if int(i.get("qty", 0)) <= 0:
+                errs.append(f"{where}: {item!r} with qty {i.get('qty')!r}")
     return errs
+
+
+def t_realms() -> set[str]:
+    return set(math_tree.tree().realm_order)

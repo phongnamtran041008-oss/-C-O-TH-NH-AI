@@ -542,7 +542,9 @@ class Game:
             for it in m.get("items", []):
                 self.toast(T.LOOT_ITEM.format(name=it["name_vi"], qty=it["qty"]), "#4A7CC8")
             for e in m.get("equipment", []):
-                self.toast(T.LOOT_GEAR.format(name=e["name_vi"], rarity=e["rarity_vi"]), e.get("color", "#6A994E"))
+                # a weapon of Thiên Địa Đồ says its phẩm (Cực phẩm), other gear its rarity
+                self.toast(T.LOOT_GEAR.format(name=e["name_vi"], rarity=e.get("quality_vi") or e["rarity_vi"]),
+                           e.get("color", "#6A994E"))
             if m.get("locked"):
                 self.toast(T.locked_text(m["locked"]), "#8C8C8C")
             if m.get("items") or m.get("equipment"):

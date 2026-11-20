@@ -165,6 +165,25 @@ def test_every_chieu_has_an_effect_and_an_icon_and_every_weapon_kind_a_layer():
         assert art2.item_icon({"item_id": iid, **it}) is not None, iid
 
 
+def test_every_weapon_type_in_the_game_has_its_art_for_every_grade():
+    """world_plan.json weapon_types: a type in the game (status "co") has its layer wiring with
+    the plan's clip, an icon and an in-hand layer for each grade - so a dropped one of any
+    grade can be drawn. A "cho_hinh" type (the kỳ binh, waiting for the artist) is skipped
+    until it is flipped to "co"."""
+    plan = data("math/world_plan.json")
+    w = W()
+    grades = [g["grade"] for g in plan["grades"]]
+    live = [t for t in plan["weapon_types"] if t["status"] == "co"]
+    assert live, "the main types are in the game"
+    for t in live:
+        assert w["weapons"][t["id"]]["clip"] == t["clip"], t["id"]
+        atlas = w["item_icons"]["by_weapon_type"][t["id"]]
+        for g in grades:
+            wid = f"{t['id']}_{g}"
+            assert wid in icon_ids(atlas) and exists("weapons", wid), wid
+            assert art2.weapon_icon(wid) is not None and art2.weapon_for(wid)[0] is not None, wid
+
+
 def test_every_td_creature_and_every_map_nature_prop_has_v2_art():
     from client.scenes.td import SPRITE_OF
     for kind in SPRITE_OF:

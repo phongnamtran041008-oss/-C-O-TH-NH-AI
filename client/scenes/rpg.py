@@ -150,6 +150,9 @@ class CharacterScene(Scene):
                 if e:
                     lvl = f" +{e['enhance']}" if e["enhance"] else ""
                     ui.text(e["name_vi"] + lvl, gx + 48, ry, 8, e["color"])
+                    if isinstance(e.get("weapon"), dict):      # a weapon of Thiên Địa Đồ: its phẩm too
+                        grade, colour = T.gear_grade(e)
+                        ui.text(grade, x + w - 10, ry + 1, 6, colour, anchor="topright")
                 else:
                     ui.text(T.NO_WEAPON if slot == "weapon" else "—", gx + 48, ry, 8, "#B8AE9C")
             # chiêu thức (M9): what the player can cast, with the picture of each
@@ -437,7 +440,7 @@ class ForgeScene(Scene):
                 lvl = f" +{e['enhance']}" if e["enhance"] else ""
                 ui.text(e["name_vi"] + lvl, x + 18, ry + 1, 8, e["color"])
                 stats = " ".join(f"{T.STATS_VI.get(k, k)} {v}" for k, v in e["stats"].items())
-                ui.text(f"{e['slot_vi']} · {e['rarity_vi']} · {stats}", x + 18, ry + 11, 6, "#5A5A5A")
+                ui.text(f"{e['slot_vi']} · {T.gear_grade(e)[0]} · {stats}", x + 18, ry + 11, 6, "#5A5A5A")
                 n = e.get("next_enhance")
                 if n:
                     ui.text(T.FORGE_COST.format(p=n["success_pct"], s=n["stones"], q=n["material_qty"],

@@ -508,41 +508,50 @@ def check_math_crafting() -> list[str]:
     return out
 
 
-def check_weapons() -> list[str]:
+def check_weapons(v2: Path | None = None) -> list[str]:
     """Binh khí của Thiên Địa Đồ: the rules' own check (app/systems/weapons.py validate():
-    numbers, quality rarities, real nodes, a forge upgrade made of things that drop by the time
-    it opens), plus the client art: every placed weapon has its icon in the atlas wired for its
-    type and its own in-hand layer, and each type's clip in wiring.json is the plan's."""
+    numbers, the five qualities and their rarities, real nodes, a drop table that keeps the loot
+    rule, a forge chain made of things that drop by the time each step opens), plus the client
+    art of every type in the game (status "co"; a "cho_hinh" type waits for its art and is
+    skipped): every placed or droppable weapon has its icon in the atlas wired for its type and
+    its own in-hand layer, and each type's clip in wiring.json is the plan's. `v2` is the art
+    folder (client/assets/v2; a test passes a fake one)."""
     try:
         from app.systems import weapons
         out = list(weapons.validate())
     except Exception as e:      # noqa: BLE001 - a broken file or module must fail the check, not crash the run
         return [f"app/systems/weapons.py: validate() raised {type(e).__name__}: {e}"]
-    v2 = ROOT / "client" / "assets" / "v2"
+    v2 = v2 or ROOT / "client" / "assets" / "v2"
     wiring = _json(v2 / "wiring.json")
     atlases = (wiring.get("item_icons") or {}).get("by_weapon_type") or {}
     layers = wiring.get("weapons") or {}
     icons: dict[str, set] = {}
     for kind, t in weapons.data()["types"].items():
+        if not weapons.type_live(kind):
+            continue
         entry = layers.get(kind)
         if not isinstance(entry, dict):
             out.append(f"wiring.json weapons: no entry for weapon type {kind!r}")
         elif entry.get("clip") != t["clip"]:
             out.append(f"wiring.json weapons.{kind}: clip {entry.get('clip')!r}, the plan says {t['clip']!r}")
-    for p in weapons.data()["placed"]:
-        wid = p["weapon"]
+    shown = {p["weapon"]: f"weapon {p['id']}" for p in weapons.data()["placed"]}
+    for wid in sorted(weapons.droppable_weapons()):
+        shown.setdefault(wid, f"dropped weapon {wid}")
+    for wid, where in shown.items():
         kind = wid.rpartition("_")[0]
+        if not weapons.type_live(kind):
+            continue
         atlas = atlases.get(kind)
         if atlas is None:
-            out.append(f"weapon {p['id']}: no icon atlas wired for type {kind!r}")
+            out.append(f"{where}: no icon atlas wired for type {kind!r}")
         else:
             if atlas not in icons:
                 doc = _json(v2 / "icons" / f"{atlas}.json") if (v2 / "icons" / f"{atlas}.json").exists() else {}
                 icons[atlas] = set((doc or {}).get("icons") or {})
             if wid not in icons[atlas]:
-                out.append(f"weapon {p['id']}: no icon {wid!r} in the {atlas} atlas")
+                out.append(f"{where}: no icon {wid!r} in the {atlas} atlas")
         if not (v2 / "weapons" / f"{wid}.json").exists() or not (v2 / "weapons" / f"{wid}.png").exists():
-            out.append(f"weapon {p['id']}: no in-hand layer weapons/{wid}")
+            out.append(f"{where}: no in-hand layer weapons/{wid}")
     return out
 
 
@@ -774,7 +783,7 @@ CHECKS = [
      check_mistake_monsters),
     ("Lò Toán: every recipe makes real equipment from things that really drop",
      check_math_crafting),
-    ("binh khí: every placed weapon has requirements, an icon, an in-hand layer and a forge path",
+    ("binh khí: every placed or dropped weapon has requirements, an icon, an in-hand layer, gated drops and a forge chain",
      check_weapons),
     ("linh thú và thần thông: every built beast, the flying sword, the formation and the talisman have their art",
      check_beasts),
