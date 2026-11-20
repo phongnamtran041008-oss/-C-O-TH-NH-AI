@@ -89,6 +89,7 @@ COUNTERS: dict[str, Counter] = {
     "answer_comeback": Counter("sum", doc="a right answer after five wrong ones in a row"),
     "trial_pass": Counter("sum", doc="Thiên kiếp nhỏ passed"),
     "tree_nodes": Counter("max", doc="Đạo Thụ nodes done (vacant ones not counted)"),
+    "chieu_learned": Counter("max", doc="chiêu thức learned (open on Đạo Thụ)"),
     "code_solved": Counter("distinct", of="problem", doc="programming exercises fully solved"),
     "xa_truong": Counter("distinct", of="problem", doc="Xạ Trường exercises at hạ phẩm or better"),
     "xa_truong_top": Counter("distinct", of="problem", doc="Xạ Trường exercises at thượng phẩm"),
@@ -139,6 +140,7 @@ RAW: dict[str, str] = {
     "tribulation": "systems/cultivation.tribulation_handler (Thiên Kiếp passed)",
     "trial": "systems/math_practice._trial_after_answer (a Thiên kiếp nhỏ passed)",
     "code": "systems/math_code.judge (Nộp bài)",
+    "chieu_unlock": "systems/math_skills.view (a chiêu learned on Đạo Thụ, announced once)",
     "gear": "systems/items.grant_equipment (every piece of equipment granted)",
     "weapon_claim": "systems/weapons.claim",
     "weapon_forge": "systems/weapons.upgrade",
@@ -299,6 +301,8 @@ def _expand_static(event: str, n: int, ctx: dict) -> list[tuple[str, int, dict]]
         i, s = loot.rank(ctx.get("realm") or "pham_nhan", int(ctx.get("stage") or 0))
         out = [("cult", i * 100 + s, {})]
         return out + ([("tribulation", 1, {})] if event == "tribulation" else [])
+    if event == "chieu_unlock":
+        return [("chieu_learned", int(ctx.get("count") or 0), {})]
     if event == "trial":
         return [("trial_pass", 1, {}), ("tree_nodes", int(ctx.get("nodes") or 0), {})]
     if event == "code":
@@ -951,8 +955,14 @@ def domain(counter: str) -> int | None:
          "xa_truong_top": lambda: len(math_problems.bank()), "lc_book": lambda: len(linh_can.roots()),
          "lc_giai": lambda: 9, "lc_carry": lambda: 9, "beast_tame": lambda: len(beasts._data()["all"]),
          "weapon_claim": lambda: len(weapons.data()["placed"]), "tree_nodes": lambda: len(math_tree.tree().nodes),
-         "furnace": lambda: max(f["level"] for f in alchemy.cfg()["furnace"])}.get(counter)
+         "furnace": lambda: max(f["level"] for f in alchemy.cfg()["furnace"]),
+         "chieu_learned": lambda: _chieu_count()}.get(counter)
     return f() if f else None
+
+
+def _chieu_count() -> int:
+    from . import math_skills
+    return len(math_skills.skills())
 
 
 def _emitted() -> set[str]:

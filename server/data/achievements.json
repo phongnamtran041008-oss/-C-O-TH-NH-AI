@@ -552,6 +552,46 @@
    ]
   },
   {
+   "id": "chieu_learned",
+   "category": "tu_luyen",
+   "name_vi": "Học Một Biết Mười",
+   "desc_vi": "Lĩnh ngộ chiêu thức nhờ học xong các nút trên Đạo Thụ.",
+   "counter": "chieu_learned",
+   "icon": [
+    "cong_phap",
+    "cuon_3"
+   ],
+   "tiers": [
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Sơ Thông Chiêu Thức"
+    },
+    {
+     "at": 10,
+     "points": 25,
+     "reward": {
+      "spirit_stones": 1200,
+      "immortal_jade": 5
+     },
+     "name_vi": "Thập Chiêu Tại Thân"
+    },
+    {
+     "at": 17,
+     "points": 60,
+     "reward": {
+      "spirit_stones": 4000,
+      "immortal_jade": 20,
+      "title": "Chiêu Thức Đại Thành"
+     },
+     "name_vi": "Chiêu Thức Đại Thành"
+    }
+   ]
+  },
+  {
    "id": "trial_pass",
    "category": "tu_luyen",
    "name_vi": "Vượt Thiên Kiếp Nhỏ",

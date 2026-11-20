@@ -478,6 +478,11 @@ async def tree_view(db: AsyncSession, user: User) -> dict:
     st = await state(db, user.id)
     t = st.tree
     config = math_path.cfg()
+    from . import math_skills          # Chiêu Thức II: the chiêu a node helps to open
+    opens: dict[str, list[dict]] = {}
+    for sid, sk in math_skills.skills().items():
+        for nid in sk["unlock"].get("nodes", []):
+            opens.setdefault(nid, []).append({"id": sid, "name_vi": sk["name_vi"], "element": sk["element"]})
     nodes = []
     for node in sorted(t.nodes.values(), key=node_order):
         status = st.status[node.id]
@@ -493,7 +498,7 @@ async def tree_view(db: AsyncSession, user: User) -> dict:
             "problems": [{"id": pid, "title_vi": math_problems.bank()[pid].title_vi, "solved": pid in st.solved,
                           "subject_id": math_problems.bank()[pid].subject}
                          for pid in node.problems if problem_available(pid)],
-            "source": source(node)})
+            "source": source(node), "chieu": opens.get(node.id, [])})
     run = await math_practice.open_run(db, user.id)
     return {"wired": bool(t.raw.get("wired")), "stage": stage_view(st),
             "branches": [{"id": b["id"], "name_vi": b["name_vi"], "subject": b.get("subject")}

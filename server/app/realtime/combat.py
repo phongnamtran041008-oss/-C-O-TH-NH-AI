@@ -987,6 +987,9 @@ def tick(ch: "ChannelZone", dt: float, now: float) -> None:
     w = _world()
     for m in ch.monsters:
         _monster_tick(ch, m, dt, now)
+    if getattr(ch, "chieu_zones", None):      # burning ground and sword domains (math_skills, Chiêu Thức II)
+        from ..systems import math_skills
+        math_skills.tick_zones(ch, now)
     for p in list(ch.players.values()):
         if p.dead:
             if now >= p.respawn_at:

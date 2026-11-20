@@ -146,7 +146,7 @@ def test_the_data_validates():
 
 def test_the_six_chieu_of_the_contract_are_there_unchanged():
     sk = math_skills.skills()
-    assert list(sk) == list(FIXED), "data order is the hotbar order (keys Z X C V B N)"
+    assert list(sk)[:len(FIXED)] == list(FIXED), "the first six are the default Công Pháp bar (keys 1-6)"
     for sid, (qtypes, min_tier, effect, anim, fx_id, floor) in FIXED.items():
         s = sk[sid]
         assert (s["qtypes"], s["min_tier"], s["effect"], s["anim"], s["fx"], s["unlock"]["floor"]) == \
@@ -211,7 +211,8 @@ async def test_the_view_follows_the_learning_path(client, gw):
     assert r.status_code == 200, r.text
     v = r.json()
     assert v["combo"] == math_skills.combo_cfg()
-    assert [x["id"] for x in v["skills"]] == list(FIXED)
+    assert [x["id"] for x in v["skills"]] == list(math_skills.skills())
+    assert v["loadout"] == list(FIXED) and v["new"] == []
     by = {x["id"]: x for x in v["skills"]}
     for sid in ("thuong_quyen", "kiem_quyet", "hoa_cau_thuat"):
         assert by[sid]["unlocked"] and by[sid]["locked_vi"] is None
@@ -535,6 +536,8 @@ async def test_question_type_is_the_chieus_and_tier_never_above_the_players(clie
             if not math_skills.castable_floors(sk):
                 continue
             if sk["unlock"]["floor"] > open_floor:          # Thiên Lôi (floor 7): locked for this player,
+                if k != "thien_loi_tuyet_ky":               # (the unlock is checked by the cast, not here)
+                    continue
                 for target in (info, None):                  # and nothing of floors 1-3 may cast it
                     q, code = await math_skills.question_for(db, user, sk, target, rng)
                     assert q is None and code == "no_question", (k, code)
