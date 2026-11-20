@@ -9,7 +9,8 @@ This module only turns that answer into something to draw:
   * `row_state`, `locked_reason`, `row_label`, `stage_text` ... - what a row says;
   * `NodeCardScene` - the node's why, what it needs, what it reviews, what it teaches, its
                     exercises and the recommended source, with a button that opens the source in
-                    the system browser (only when the player presses it).
+                    the system browser (only when the player presses it) and, for a node with
+                    exercises, one that opens them in the code scene.
 
 The pure helpers take plain dicts, so the unit tests need no server and no window."""
 from __future__ import annotations
@@ -24,6 +25,7 @@ from .. import strings_vi as T
 from ..art.palette import UI as UICOL
 from ..ui.mathdraw import fit
 from .base import Scene
+from .math_code import ProblemListScene
 from .math_library import line_h, scroll_rows
 
 GREY = "#5A5A5A"
@@ -111,6 +113,20 @@ def header_text(stage: dict) -> str:
     return T.TREE_STAGE.format(realm=stage.get("realm_name_vi", ""), n=stage["stage"], t=stage.get("stages", "?"))
 
 
+def progress_text(ui, stage: dict, room: float) -> str:
+    """How far the player is inside the stage they are working on: "đã xong 1/4 nút của tầng 3",
+    the shorter form when that does not fit in `room`, "" when there is nothing to say (the
+    realm's last stage is reached, or an older server sent no progress)."""
+    p = stage.get("progress")
+    if not p:
+        return ""
+    for template in (T.TREE_STAGE_PROGRESS, T.TREE_STAGE_PROGRESS_SHORT):
+        text = template.format(d=p["done"], t=p["total"], n=p["stage"])
+        if ui.text_size(text, 7)[0] <= room:
+            return text
+    return ""
+
+
 def stage_text(node: dict) -> str:
     return T.TREE_ROW_STAGE.format(n=node["stage"]) if node.get("stage") is not None else T.TREE_OPTIONAL
 
@@ -196,6 +212,17 @@ def card_blocks(node: dict, name_of) -> list[tuple[str, str]]:
     return out
 
 
+def exercises_open(node: dict) -> bool:
+    """The "Làm bài" button works when the node lists exercises and is not locked (R10: an
+    exercise is open when its node is open or done)."""
+    return bool(node.get("problems")) and node["state"] in ("open", "done")
+
+
+def exercises_subject(node: dict) -> str | None:
+    """The subject whose exercise list holds the node's exercises."""
+    return next((p["subject_id"] for p in node.get("problems", []) if p.get("subject_id")), None)
+
+
 def safe_url(url: str | None) -> bool:
     """Only a plain web address is ever handed to the system browser."""
     if not url:
@@ -252,10 +279,18 @@ class NodeCardScene(Scene):
         if not open_in_browser(src.get("url")):
             self.game.toast(T.NODE_SRC_FAILED, "#BC4749")
 
+    def open_exercises(self) -> None:
+        """The node's exercises in the code scene (the same list the Đại Số card's "Bài tập" opens,
+        cut down to this node's)."""
+        subject = exercises_subject(self.node)
+        if subject:
+            self.game.push(ProblemListScene(self.game, subject, only=[p["id"] for p in self.node["problems"]]))
+
     def draw_ui(self, ui):
         ui.dim()
         x, y, w, h = self.PANEL
         n = self.node
+        node_problems = bool(n.get("problems"))
         ui.panel(x, y, w, h, T.NODE_CARD_TITLE)
         ui.text(fit(ui, n["name_vi"], 10, w - 32), x + 16, y + 19, 10, INK)
         tags = [T.NODE_STATE.get(n["state"], n["state"]), stage_text(n)]
@@ -283,9 +318,10 @@ class NodeCardScene(Scene):
                 ui.text(text, cx, cy, 8, INK)
             cy += lh
         if len(self.lines) > shown:
+            hint_x = 162 if node_problems else 100          # (right of the "Làm bài" button, when there is one)
             ui.text(T.TREE_SCROLL_MORE.format(a=self.first + 1, b=min(len(self.lines), self.first + shown),
-                                              t=len(self.lines)), x + 100, y + h - 13, 7, GREY, anchor="midleft",
-                    max_w=w - 170)
+                                              t=len(self.lines)), x + hint_x, y + h - 13, 7, GREY, anchor="midleft",
+                    max_w=w - hint_x - 70)
             frac = shown / len(self.lines)
             ui.fill(x + w - 9, top, 3, bottom - top, "#DCD2BC")
             ui.fill(x + w - 9, top + (bottom - top) * (1 - frac) * self.first / max(1, len(self.lines) - shown),
@@ -295,5 +331,8 @@ class NodeCardScene(Scene):
         if ui.button("math_src_open", x + 12, y + h - 20, 80, 14, T.NODE_SRC_OPEN, size=7, style="gold",
                      enabled=safe_url(url)):
             self.open_source()
+        if node_problems and ui.button("math_info_code", x + 98, y + h - 20, 56, 14, T.NODE_DO_PROBLEMS,
+                                       size=7, style="primary", enabled=exercises_open(n)):
+            self.open_exercises()
         if ui.button("math_info_close", x + w - 62, y + h - 20, 50, 14, T.CLOSE, key=pygame.K_ESCAPE):
             self.close()

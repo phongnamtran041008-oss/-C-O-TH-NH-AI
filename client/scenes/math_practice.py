@@ -25,13 +25,22 @@ from .base import Scene
 from .math_code import ProblemListScene
 from .math_library import DocScene, LibraryListScene, scroll_rows, subject_tabs
 from .math_tree import (NEXT_TAB, NodeCardScene, Row, first_tab, header_text, locked_reason, names_of,
-                        node_by_id, node_rows, part_playable, row_label, row_state, stage_text, tab_list)
+                        node_by_id, node_rows, part_playable, progress_text, row_label, row_state, stage_text,
+                        tab_list)
 from .quiz import KEYS, CombatCard, QuizScene
 
 GREY = "#5A5A5A"
 INK = "#2B2B2B"
 PALE = "#9A9387"
 OPTION_KEYS = KEYS + [pygame.K_5, pygame.K_6]
+
+
+def review_badge(m: dict) -> str:
+    """What the card says over a review question: the node of Đạo Thụ it comes from (it may be
+    in another subject), else - a sitting with no node, from before Đạo Thụ - the floor."""
+    if m.get("review_node_vi"):
+        return T.MATH_REVIEW_NODE.format(name=m["review_node_vi"])
+    return T.MATH_REVIEW.format(n=m.get("floor", "?"))
 
 
 def tiers_text(lo: int, hi: int) -> str:
@@ -175,9 +184,9 @@ class MathQuizScene(QuizScene):
                 "#BC4749" if frac < 0.3 else GREY, anchor="midright")
         top = y + 36
         badge = (T.MATH_PARALLEL if m.get("parallel") else       # rule 6a: the idea just missed
-                 T.MATH_REVIEW.format(n=m.get("floor", "?")) if m.get("review") else "")
-        if badge:                                   # rule 6b: a question from a floor below
-            ui.text(badge, x + w / 2, y + 32, 7, UICOL["accent"], anchor="midtop")
+                 review_badge(m) if m.get("review") else "")
+        if badge:                                   # rule 6b: a question from another node (or a floor below)
+            ui.text(badge, x + w / 2, y + 32, 7, UICOL["accent"], anchor="midtop", max_w=w - 30)
             top = y + 42
         ui.text(self.q.get("instruction_vi", ""), x + w / 2, top, 7, GREY, anchor="midtop", max_w=w - 30)
         prompt = self.q.get("prompt", {})
@@ -631,11 +640,17 @@ class MathPracticeScene(Scene):
     def draw_header(self, ui, x, cy, w):
         """Under the tabs: where the player stands, and - on the branch of a subject - the bài
         kiểm tra đầu vào when it is offered (or going on) and the subject's bài tập (M6)."""
-        ui.text(header_text(self.tree["stage"]), x + 12, cy + 7, 8, UICOL["accent"], anchor="midleft", max_w=w - 200)
         s = self.tab_subject()
+        p = (s or {}).get("placement") or {}
+        buttons = bool(s) and bool(s.get("problems") or p.get("offered") or p.get("status") == "in_progress")
+        room = w - 190 if buttons else w - 24                 # (the buttons sit at the right end)
+        head = header_text(self.tree["stage"])
+        ui.text(head, x + 12, cy + 7, 8, UICOL["accent"], anchor="midleft", max_w=room)
+        more = progress_text(ui, self.tree["stage"], room - ui.text_size(head, 8)[0] - 8)    # how far inside the stage
+        if more:
+            ui.text(more, x + 20 + ui.text_size(head, 8)[0], cy + 7, 7, GREY, anchor="midleft")
         if not s:
             return
-        p = s.get("placement") or {}
         if s.get("problems") and ui.button(f"math_code_{s['id']}", x + w - 78, cy, 66, 13,
                                            T.CODE_SHORT, size=7, enabled=not self.busy):
             self.game.push(ProblemListScene(self.game, s["id"]))      # bài tập lập trình (M6)

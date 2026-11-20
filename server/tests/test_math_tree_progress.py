@@ -82,6 +82,12 @@ def without_floors(*floors):
     return lambda s, f: [] if (s, f) in floors else real(s, f)
 
 
+async def real_nodes_of_stage(uid, stage):
+    """The main-path nodes of a Luyện Khí stage that have anything to learn (a vacant one is no work)."""
+    st = await state(uid)
+    return sum(1 for n in tree().main_nodes("luyen_khi") if n.stage == stage and st.status[n.id] != "vacant")
+
+
 def tree_with(**changes) -> math_tree.Tree:
     """The real tree with some raw changes: cut=[...] adds cut micro-skills, requires={node: [...]}."""
     import copy
@@ -255,10 +261,14 @@ async def test_the_stage_is_reached_when_every_main_node_of_it_is_done(client):
     for nid in ("ds_ngon_ngu", "gt_ham_so", "xs_dem_su_kien"):
         await pass_node(uid, nid)
     assert (await state(uid)).stage == ("luyen_khi", 0)    # tr_logic_dem is still missing
+    mid = (await client.get("/math/tree", headers=h)).json()["stage"]["progress"]
+    assert mid == {"stage": 1, "done": 3, "total": 4}      # inside the stage: 3 of its 4 real nodes
     await pass_node(uid, "tr_logic_dem")                   # (lt_python_co_ban is vacant: it counts as done)
     assert (await state(uid)).stage == ("luyen_khi", 1)
     view = (await client.get("/math/tree", headers=h)).json()
-    assert view["stage"] == {"realm": "luyen_khi", "realm_name_vi": "Luyện Khí", "stage": 1, "stages": 9}
+    assert view["stage"]["progress"] == {"stage": 2, "done": 0, "total": await real_nodes_of_stage(uid, 2)}
+    assert {k: v for k, v in view["stage"].items() if k != "progress"} == {
+        "realm": "luyen_khi", "realm_name_vi": "Luyện Khí", "stage": 1, "stages": 9}
     assert (await client.get("/math/path", headers=h)).json()["tree"]["stage"]["stage"] == 1
     assert await realm() == before                         # shown only: the cultivation realm is not touched
 
@@ -323,15 +333,18 @@ async def test_review_comes_from_the_reinforced_nodes_even_of_another_subject(cl
                               answer_ms=900, answered_at=clock.now()))
         await db.commit()
     run = (await node_start(client, h, "tr_dem")).json()["run"]
-    reviews = []
+    reviews, labels = [], []
     for _ in range(8):
         q, _ = await play(client, h, run["run_id"], correct=True)
         if q["math"]["review"]:
             reviews.append((q["math"]["subject"], q["math"]["skill"]))
+            labels.append(q["math"].get("review_node_vi"))
         else:
             assert q["math"]["skill"] in tree().nodes["tr_dem"].skills
+            assert "review_node_vi" not in q["math"]
     assert len(reviews) == 2
     assert all(subj == XS and skill in other for subj, skill in reviews)    # Xác Suất, in an algorithms sitting
+    assert all(name == tree().nodes["xs_dem_su_kien"].name_vi for name in labels)   # the card names the node reviewed
 
 
 async def test_review_falls_back_to_done_ancestors_and_else_there_is_none(client, monkeypatch):
@@ -542,6 +555,7 @@ async def test_the_tree_view_has_every_node_with_its_state_parts_and_reading(cli
     assert by["ds_ngon_ngu"]["source"]["url"].startswith("http")
     assert [p["id"] for p in by["lt_cau_truc_du_lieu"]["problems"]] == list(tree().nodes["lt_cau_truc_du_lieu"].problems)
     assert by["lt_cau_truc_du_lieu"]["problems"][0]["solved"] is False
+    assert by["lt_cau_truc_du_lieu"]["problems"][0]["subject_id"] == LA
     assert view["next"][:4] == ["ds_ngon_ngu", "gt_ham_so", "tr_logic_dem", "xs_dem_su_kien"]
     assert all(tree().nodes[n].main for n in view["next"])
     assert view["run"]["run_id"] == run["run_id"] and view["run"]["node_id"] == "gt_ham_so"
@@ -664,7 +678,8 @@ async def test_the_stage_stops_at_the_last_realm_that_is_written(client, monkeyp
         if st.status[node.id] != "vacant":
             st.status[node.id] = "done"
     assert st.stage == ("luyen_khi", 9)
-    assert tp.stage_view(st) == {"realm": "luyen_khi", "realm_name_vi": "Luyện Khí", "stage": 9, "stages": 9}
+    assert tp.stage_view(st) == {"realm": "luyen_khi", "realm_name_vi": "Luyện Khí", "stage": 9, "stages": 9,
+                                 "progress": None}      # no next stage to work on
     assert tp.working_position_of(st) == ("luyen_khi", 9)
     fresh = await state(uid)
     assert fresh.stage == ("luyen_khi", 0)             # a newcomer is still a newcomer

@@ -705,6 +705,10 @@ async def next_question(db: AsyncSession, user: User, run_id: int, rng: random.R
             item = choose_item(templates, run.tier, run.floor, results, recent, rng, [r[1] for r in rows])
     question = math_items.to_question(item, rng, cfg, parallel=retry is not None, review=review)
     question.meta["doc"] = doc_link(item.skill)          # "Đọc Tàng Thư" on the answer card
+    if review:                                           # "Ôn: <the node reviewed>" on the card
+        owner = math_tree.tree().node_of_skill().get(item.skill)
+        if owner is not None:
+            question.meta["review_node_vi"] = math_tree.tree().nodes[owner].name_vi
     if retry is not None:
         question.answer_key["retry_id"] = retry.id
     if ladder is not None:

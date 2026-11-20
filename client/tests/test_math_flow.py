@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pygame
 
+from client import strings_vi as T
 from client.tests.driver import Driver, ServerProcess, fill_math_answer
 from client.tests.test_linh_phong_flow import abode
 from client.tests.test_world_flow import make_account
@@ -228,6 +229,19 @@ def run_math_flow(workdir: Path, shots: Path | None = None) -> None:
             last = q["session_id"]
             if q["math"]["review"]:
                 reviewed = q
+                seen = []
+                real_text = drv.game.ui.text
+                drv.game.ui.text = lambda txt, *a, **k: (seen.append(txt), real_text(txt, *a, **k))[1]
+                try:
+                    drv.step(2)
+                finally:
+                    del drv.game.ui.text
+                tree_json = json.loads((Path(__file__).parents[2] / "server/data/math/tree.json").read_text("utf-8"))
+                name = next(n["name_vi"] for n in tree_json["nodes"] if n["id"] == NODE_1)
+                assert q["math"]["review_node_vi"] == name
+                assert T.MATH_REVIEW_NODE.format(name=name) in seen, seen   # the card names the node, not "tầng 1"
+                assert T.MATH_REVIEW.format(n=1) not in seen
+                drv.game.toasts.clear()
                 drv.shot("math_review")
             else:
                 assert q["math"]["floor"] == 3

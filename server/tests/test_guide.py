@@ -173,7 +173,9 @@ async def test_a_fresh_account_sees_the_whole_road(client, board):
     assert v["current"] == {"chapter_id": "c1", "step_id": "s_hub", "title_vi": "Bước thử", "hint_vi": "Bấm phím M.",
                             "progress": 0, "count": 1, "goto": "math"}
     assert v["claimable"] == 0
-    assert v["stage"] == {"realm": "luyen_khi", "realm_name_vi": "Luyện Khí", "stage": 0, "stages": 9}
+    assert {k: x for k, x in v["stage"].items() if k != "progress"} == {
+        "realm": "luyen_khi", "realm_name_vi": "Luyện Khí", "stage": 0, "stages": 9}
+    assert v["stage"]["progress"]["stage"] == 1 and v["stage"]["progress"]["done"] == 0
     assert v["handbook"] == BOARD["handbook"]
     st = v["study"]
     first = next(n for n in math_tree.tree().nodes.values() if n.id == st["node_id"])
