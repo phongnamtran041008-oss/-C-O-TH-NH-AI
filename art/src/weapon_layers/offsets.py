@@ -204,3 +204,115 @@ TABLE["cung"] = {"idle": BOW_CARRY, "walk": BOW_CARRY, "hit": BOW_CARRY, "dodge"
                          (3, A((1.0, -0.2, 0.0), at="l", xdir=(0, 0, 1))),
                          (5, A((1.0, -0.2, 0.0), at="l", xdir=(0, 0, 1)))],
                  "slash": BACK, "cast": BACK, "fly": BACK, "meditate": BACK}
+
+
+# ---------------------------------------------------------------- WEAPONS_C: the six "ky binh"
+# (art/src/weapons_c). Extra spec key used only here: `pose` = which pose meshes of the model
+# are shown on that frame (whip: coil / arc / lash; darts: hand / fly). Thrown weapons (am_khi,
+# luan) leave the hand on the strike frame (3) and frame 4 of `shoot`, and are back in the hand
+# on frame 5 (a fresh fan of darts; the chakram caught on its return).
+IN_HAND.update({
+    "kich": {"idle", "walk", "slash", "cast", "hit", "die", "dodge"},
+    "phu": {"idle", "walk", "slash", "cast", "hit", "die", "dodge"},
+    "roi": {"idle", "walk", "slash", "cast", "hit", "die", "dodge"},
+    "am_khi": {"idle", "walk", "shoot", "cast", "slash", "hit", "die", "dodge"},
+    "luan": {"idle", "walk", "shoot", "cast", "slash", "hit", "die", "dodge"},
+    "cam": {"cast"},                                   # held in front; on the back otherwise
+})
+TYPE_SCALE.update({"kich": 0.84, "phu": 0.82, "roi": 1.0, "am_khi": 1.15, "luan": 1.1, "cam": 0.9})
+SLIDE.add("kich")
+
+F45 = (-0.7, -0.7, 0.0)          # broad side half toward the viewer in every facing
+
+# halberd: carried like the spear, crescent turned half to the viewer; slash = a wide sweep
+# (raised over the right shoulder -> around the right side -> level across the front -> past the left)
+KICH_CARRY = A((-0.3, -0.2, 0.93), grip=0.15, face=F45)
+TABLE["kich"] = melee_table(
+    KICH_CARRY,
+    [(0, A((-0.35, -0.2, 0.9), grip=0.25, face=F45)), (1, A((-0.55, 0.45, 0.7), grip=0.35)),
+     (2, A((-0.85, 0.05, 0.5), grip=0.4)), (3, A((-0.3, -0.93, 0.18), grip=0.42)),
+     (4, A((0.45, -0.85, -0.05), grip=0.38)), (5, KICH_CARRY)],
+    [(0, A((-0.3, -0.3, 0.9), grip=0.3, face=F45)), (2, A((-0.2, -0.5, 0.8), grip=0.45, face=F45)),
+     (3, A((-0.15, -0.85, 0.5), grip=0.45)), (5, KICH_CARRY)],
+    lying(KICH_CARRY))
+
+# battle axe: carried like the mace, edge forward-out; slash = a heavy overhead chop: lifted,
+# held high behind the head, driven down through the strike, still low on the recovery
+AXE_X = (-0.55, -0.83, 0.0)
+AXE_CARRY = A((-0.5, -0.2, 0.85), xdir=AXE_X)
+TABLE["phu"] = melee_table(
+    AXE_CARRY,
+    [A((-0.45, 0.3, 0.84), xdir=(0, -1, 0.3)),
+     A((-0.3, 0.68, 0.67), xdir=(0, -0.7, 0.7)),
+     A((-0.2, 0.15, 0.97), xdir=(0, -1, 0.1)),
+     A((-0.15, -0.95, 0.1), xdir=(0, 0, -1)),
+     A((-0.1, -0.55, -0.8), xdir=(0, 0.8, -0.55)),
+     A((-0.35, -0.5, 0.2), xdir=(0, -0.4, -0.9))],
+    [(0, A((-0.55, -0.1, 0.83), xdir=AXE_X)), (2, A((-0.5, -0.3, 0.8), xdir=AXE_X)),
+     (3, A((-0.1, -1.0, 0.3), xdir=(0, 0, -1))), (4, A((-0.1, -1.0, 0.1), xdir=(0, 0, -1))), (5, AXE_CARRY)],
+    lying(AXE_CARRY))
+
+# whip: coiled in the right hand; slash = swung back over the head (arc), lashed straight out
+# on the strike, still out (dipping) on frame 4, coiled again on the recovery
+ROI_CARRY = A((-0.25, -0.25, 0.93), xdir=(-0.6, 0.8, 0.0), pose="coil")
+ROI_BACK = A((0.0, 0.0, 1.0), at="back", off=(-0.2, 0.05, -0.2), xdir=(0, 1, 0), pose="coil")
+TABLE["roi"] = melee_table(
+    ROI_CARRY,
+    [ROI_CARRY,
+     A((-0.3, 0.45, 0.84), xdir=(0, -1, 0.2), pose="arc"),
+     A((-0.25, 0.1, 0.96), xdir=(0, -1, 0.0), pose="arc"),
+     A((-0.12, -0.99, 0.08), xdir=(0, 0, 1), pose="lash"),
+     A((-0.08, -0.96, -0.22), xdir=(0, 0, 1), pose="lash"),
+     ROI_CARRY],
+    [(0, A((-0.55, -0.1, 0.83), xdir=(0, -1, 0), pose="coil")), (2, A((-0.5, -0.2, 0.84), xdir=(0, -1, 0), pose="coil")),
+     (3, A((-0.1, -1.0, 0.15), xdir=(0, 0, 1), pose="lash")), (4, A((-0.1, -1.0, 0.1), xdir=(0, 0, 1), pose="lash")),
+     (5, ROI_CARRY)],
+    lying(ROI_CARRY), back=ROI_BACK)
+
+# hidden darts: a fan held up between the fingers; shoot = drawn back past the ear, the fan
+# leaves the hand on the strike (pose "fly": blades side by side, flying forward), farther on
+# frame 4, a fresh fan in the hand on frame 5
+DART_FACE = (-0.8, -0.6, 0.0)
+DART_CARRY = A((-0.4, -0.3, 0.85), face=DART_FACE, pose="hand")
+DART_BACK = A((0.0, 0.0, 1.0), at="back", off=(-0.2, 0.05, -0.2), face=(-1, 0, 0), pose="hand")
+TABLE["am_khi"] = {
+    "idle": DART_CARRY, "walk": DART_CARRY, "hit": DART_CARRY, "dodge": DART_CARRY,
+    "slash": DART_CARRY, "cast": DART_CARRY,
+    "shoot": [DART_CARRY,
+              A((-0.45, 0.55, 0.7), face=DART_FACE, pose="hand"),
+              A((-0.35, 0.3, 0.88), face=DART_FACE, pose="hand"),
+              A((0.0, -1.0, 0.04), xdir=(0, 0, 1), off=(0.0, -0.26, 0.04), pose="fly"),
+              A((0.0, -1.0, 0.0), xdir=(0, 0, 1), off=(0.0, -0.5, 0.06), pose="fly"),
+              DART_CARRY],
+    "die": lying(DART_CARRY), "fly": DART_BACK, "meditate": DART_BACK}
+
+# chakram: held by its wrapped grip at the side; shoot = drawn back, thrown spinning forward
+# (the grip spins about the wheel's centre, `grip` = its radius), caught again on frame 5
+LUAN_CARRY = A((-0.35, -0.2, 0.9), face=F45)
+LUAN_BACK = A((0.0, 0.1, 1.0), at="back", off=(-0.05, 0.08, -0.05), face=(0, 1, 0))
+TABLE["luan"] = {
+    "idle": LUAN_CARRY, "walk": LUAN_CARRY, "hit": LUAN_CARRY, "dodge": LUAN_CARRY,
+    "slash": LUAN_CARRY, "cast": LUAN_CARRY,
+    "shoot": [LUAN_CARRY,
+              A((-0.5, 0.6, 0.6), face=F45),
+              A((-0.4, 0.3, 0.86), face=F45),
+              A((0.0, 0.0, 1.0), face=F45, off=(0.0, -0.3, 0.06), grip=0.17, rot=(0, 50, 0)),
+              A((0.0, 0.0, 1.0), face=F45, off=(0.0, -0.55, 0.1), grip=0.17, rot=(0, 115, 0)),
+              LUAN_CARRY],
+    "die": lying(LUAN_CARRY), "fly": LUAN_BACK, "meditate": LUAN_BACK}
+
+# zither: slung across the back; cast = brought round in front of the chest (following the
+# body, not the hand), held level and angled so the strings face the viewer, plucked: it
+# bobs on the wind-up and the strike frame is a hard strum (tilted, dipped)
+CAM_BACK = A((-0.6, 0.12, 0.79), at="back", off=(0.0, 0.03, -0.02), face=(0.0, 1.0, 0.0))
+CAM_FRONT = dict(at="back", aim=(0.75, -0.6, -0.1), face=(-0.4, -0.6, 0.7))
+TABLE["cam"] = {
+    "idle": CAM_BACK, "walk": CAM_BACK, "hit": CAM_BACK, "dodge": CAM_BACK, "slash": CAM_BACK,
+    "shoot": CAM_BACK, "die": CAM_BACK, "fly": CAM_BACK, "meditate": CAM_BACK,
+    "cast": [S(**dict(CAM_FRONT, off=(-0.05, -0.27, 0.0))),
+             S(**dict(CAM_FRONT, off=(-0.05, -0.28, 0.03))),
+             S(**dict(CAM_FRONT, off=(-0.05, -0.28, 0.04))),
+             S(**dict(CAM_FRONT, off=(-0.05, -0.28, -0.01), roll=-12.0)),
+             S(**dict(CAM_FRONT, off=(-0.05, -0.27, 0.0), roll=-6.0)),
+             S(**dict(CAM_FRONT, off=(-0.05, -0.27, 0.0)))],
+}

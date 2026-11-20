@@ -40,7 +40,8 @@ CHAR = opt("--char", "dao_si_luyen_khi")
 FLYING = "--flying" in ARGV
 CHAR_JSON = f"client/assets/v2/chars/{CHAR}.json"
 
-ALL = [f"{t}_{g}" for t in ("kiem", "dao", "thuong", "chuy", "truong", "cung", "phien", "ho_lo")
+ALL = [f"{t}_{g}" for t in ("kiem", "dao", "thuong", "chuy", "truong", "cung", "phien", "ho_lo",
+                             "kich", "roi", "am_khi", "luan", "phu", "cam")
        for g in range(1, 9)]
 
 
@@ -155,6 +156,27 @@ def apply_spec(weapon, carries, rig, socks, spec):
     weapon.matrix_basis = m
 
 
+def pose_of(root, spec):
+    """Weapons with pose meshes (weapons_c: the whip coiled / swung / lashed, the darts in the
+    fist / in flight) show one pose per frame: spec["pose"], else the model's pose_default.
+    None for every other weapon (no meshes carry a "pose" property)."""
+    if not root.get("poses"):
+        return None
+    return spec.get("pose") or root.get("pose_default") or None
+
+
+def pose_objects(objs, pose):
+    return [o for o in objs if pose is None or o.get("pose") in (None, pose)]
+
+
+def set_pose(objs, pose):
+    if pose is None:
+        return
+    for o in objs:
+        if o.get("pose") is not None:
+            o.hide_render = o.get("pose") != pose
+
+
 # ------------------------------------------------------------------ keeping it in the frame
 _DOC = json.loads(kit.out_path(CHAR_JSON).read_text("utf-8"))
 FW, FH = _DOC["frame"]["w"], _DOC["frame"]["h"]
@@ -215,7 +237,13 @@ def fit_plan(wid, root, objs, carries, rig, socks, clips_frames):
     """Per (clip, frame): slide the grip along the shaft (then shrink) until the weapon fits
     the 64 px frame in all four facings. Returns {(clip, i): (grip, scale)}; the changes are
     smoothed along the clip so the hand does not jitter along the shaft."""
-    pts = weapon_points(root, objs)
+    pts_of = {}
+
+    def points(spec):
+        p = pose_of(root, spec)
+        if p not in pts_of:
+            pts_of[p] = weapon_points(root, pose_objects(objs, p))
+        return pts_of[p]
     scene = bpy.context.scene
     turns = [kit.DIRS[d] for d in (DIRS or ("down", "left", "up", "right"))]
     out = {}
@@ -228,6 +256,7 @@ def fit_plan(wid, root, objs, carries, rig, socks, clips_frames):
             kit._set_time(scene, t)
             bpy.context.view_layer.update()
             spec = specs[i]
+            pts = points(spec)
             best, least = None, (1e9, (0.0, 0.7))
             slides = ([0.0] + [k * 0.05 * sgn for k in range(1, 10) for sgn in (1, -1)]
                       if OFF.weapon_type(wid) in OFF.SLIDE else [0.0])
@@ -255,7 +284,7 @@ def fit_plan(wid, root, objs, carries, rig, socks, clips_frames):
                 bpy.context.view_layer.update()
                 sp = dict(specs[i], grip=specs[i]["grip"] + sm[i])
                 name, m = basis_for(sp, rig, socks)
-                if overshoot(pts, carries[name].matrix_world, m, turns) == 0.0:
+                if overshoot(points(sp), carries[name].matrix_world, m, turns) == 0.0:
                     g = sm[i]
             out[(clip, i)] = (g, sc)
     return out
@@ -282,6 +311,7 @@ def render_weapon(wid, carries, rig, socks, sheet):
             spec["grip"] += g
             spec["scale"] *= sc
             apply_spec(root, carries, rig, socks, spec)
+            set_pose(objs, pose_of(root, spec))
 
         kw = {}
         if DIRS:
