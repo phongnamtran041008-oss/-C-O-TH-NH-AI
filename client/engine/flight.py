@@ -124,7 +124,7 @@ def compose(view, realm: str | None, x: float, y: float, facing: str, t: float, 
     # the sheet is a soft 30-45 % shadow: laid twice it still reads on water, stone and dark ground
     shadows = V.attached("phi_bong", t, view, x, y, scale=SHADOW_BASE * sc, alpha=sa) * 2
     if dark and alt > 2:          # over ink or stone a shadow is lost: the sword's light on the ground shows the spot
-        shadows += V.attached("phi_cat_canh", t, view, x, y, scale=0.42 * sc, alpha=0.45 * sa, hold=4)
+        shadows += V.attached("phi_cat_canh", t, view, x, y, scale=0.34 * sc, alpha=0.35 * sa, hold=4)
     speed = math.hypot(vx, vy)
     k = wake(speed, top)
     ux, uy = _travel(vx, vy, facing)

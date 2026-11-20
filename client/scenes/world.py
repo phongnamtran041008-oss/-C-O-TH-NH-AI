@@ -371,6 +371,11 @@ V2_TELE_RELEASE = 0.25             # how long the hit zone flashes after the blo
 class WorldScene(Scene):
     draws_world = True
     modal = False
+    # ngự kiếm defaults, read by helpers a scene built piecemeal (tests) may call before __init__ ran
+    fly = 0
+    flight: dict | None = None
+    g_down: float | None = None
+    drawn_alt: dict = {}           # (only ever replaced, never changed in place)
 
     @property
     def toast_y(self) -> int:
@@ -3252,7 +3257,8 @@ class WorldScene(Scene):
         now = g.now
         # names and chat bubbles over heads (window resolution, so text stays sharp)
         v2 = art2.on()
-        heads = [(self.player.x, self.player.y, g.state.character.get("display_name", ""), "#FFFFFF",
+        mx, my = self.glide_pos(self.my_eid(), self.player.x, self.player.y)[:2]   # (with the body mid-hop)
+        heads = [(mx, my, g.state.character.get("display_name", ""), "#FFFFFF",
                   f"p{g.state.me.get('id')}", V2_HEAD if v2 else 25)]
         for e in self.entities.values():
             if not e.alive:
