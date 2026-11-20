@@ -1127,8 +1127,8 @@ class WorldScene(Scene):
             self.sniffed = (d or {}).get("found") or []
 
         def err(e):
-            if getattr(e, "message_vi", "") and getattr(e, "status", 0) == 400:
-                self.no_nose = pet
+            if getattr(e, "code", "") == "no_nose" or getattr(e, "status", 0) in (404, 405):
+                self.no_nose = pet            # this companion has no nose (or the server has no sniffing)
             self.sniffed = None
         try:
             self.game.api.get("/beasts/sniff", ok, err)

@@ -323,11 +323,12 @@ class AbodeScene(Scene):
             img = self.player.frame()
             drawables.append((self.player.y, v.img(img), v.to_screen(self.player.x - 8, self.player.y - 24)))
         pf = self.pet_follow
-        bd = art2.beast_drawable(pf.kind, pf.x, pf.y, pf.moving, pf.walk_t, self.t, pf.left, v) \
+        from ..engine import petfollow   # a con giáp or a linh thú tamed in the lands: its own v2 sheet
+        bd = petfollow.drawable(pf.kind, pf.x, pf.y, pf.moving, pf.walk_t, self.t, pf.left, v) \
             if pf is not None and v.zoom != 1 else None
         if bd is not None:
             drawables.append(bd)
-        elif pf is not None:             # the worn Linh Thú (stage 8)
+        elif pf is not None and not petfollow.is_spirit_beast(pf.kind):   # the worn Linh Thú (stage 8)
             ex, ey = v.to_screen(pf.x - 5, pf.y - 1)
             pygame.draw.ellipse(surf, (40, 50, 30), (ex, ey, int(v.len(10)), int(v.len(3))))
             drawables.append((pf.y, v.img(sprites.pet(pf.kind, pf.frame, pf.left)), v.to_screen(pf.x - 8, pf.y - 13)))
