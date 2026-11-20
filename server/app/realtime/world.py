@@ -105,6 +105,7 @@ class Session:
         self.buffs: dict[str, int] = {}          # pill buffs: kind -> seconds left when loaded
         self.last_mark = -1e9                    # party ping icons (stage 9)
         self.tree = None                         # lands.TreePos: the doors of the lands (Thiên Địa Đồ)
+        self.tamed: set[str] = set()             # the linh thú this player sealed (realtime/beasts.py)
 
     def send(self, msg: dict) -> None:
         if self.closed:
@@ -406,6 +407,8 @@ class World:
             s.bees = await bees.guard_loadout(db, s.user_id)
             from . import lands
             s.tree = await lands.load_pos(db, s.user_id)
+            from ..systems import beasts
+            s.tamed = await beasts.tamed(db, s.user_id)
             await db.commit()
 
     async def refresh_tree(self, s: Session) -> None:
@@ -457,8 +460,8 @@ class World:
                 p.facing, p.dirty = msg.f, True
         elif isinstance(msg, protocol.Join):
             from . import lands
-            if lands.gated(msg.zone):
-                await self.refresh_tree(s)
+            if lands.gated(msg.zone) or lands.zone_land_id(msg.zone):
+                await self.refresh_tree(s)   # (a land's door, and who its beasts and thần thông are for)
             self.join(s, msg.zone, msg.via)
         elif isinstance(msg, protocol.Channel):
             self.switch_channel(s, msg.n)
@@ -473,10 +476,12 @@ class World:
             p = s.player
             err = combat.dodge(p, msg.s, msg.dx, msg.dy, self.mono()) if p else "cannot"
             if err is None:
-                s.send({"t": "dodge", "ok": True, "ready_in": float(combat.plan()["dodge"]["cooldown_seconds"])})
+                s.send({"t": "dodge", "ok": True, "ready_in": combat.dodge_cooldown(p)})
             else:
                 s.send({"t": "dodge", "ok": False, "code": err,
                         "message_vi": combat.DODGE_REFUSALS_VI.get(err, combat.DODGE_REFUSALS_VI["cannot"])})
+        elif isinstance(msg, (protocol.Glide, protocol.Ride, protocol.Formation)):
+            self._ability(s, msg)
         elif isinstance(msg, protocol.MathCast):
             from ..systems import math_skills   # chiêu thức gắn câu hỏi (M9)
             p = s.player
@@ -493,6 +498,23 @@ class World:
             if p is not None and p.channel is not None and self.mono() - s.last_mark >= 1.0:
                 s.last_mark = self.mono()
                 p.channel.event(k="mark", by=p.eid, x=round(msg.x, 1), y=round(msg.y, 1), i=msg.i)
+
+    def _ability(self, s: Session, msg) -> None:
+        """A thần thông of Luyện Khí (realtime/abilities.py): a refusal is answered at once; a
+        glide or a mount that passed is answered when the movement stream reaches it."""
+        from . import abilities
+        p, now = s.player, self.mono()
+        if isinstance(msg, protocol.Glide):
+            t, err = "glide", abilities.request_glide(p, msg.s, msg.x, msg.y, now)
+        elif isinstance(msg, protocol.Ride):
+            t, err = "ride", abilities.request_ride(p, msg.s, msg.on, now)
+        else:
+            t, err = "tran", abilities.place_formation(p, now)
+            if err is None:
+                s.send({"t": "tran", "ok": True, "ready_in": float(abilities.formation_cfg().get("cooldown_seconds", 30))})
+        if err is not None:
+            s.send({"t": t, "ok": False, "code": err,
+                    "message_vi": abilities.REFUSALS_VI.get(err, abilities.REFUSALS_VI["cannot"])})
 
     # ------------------------------------------------------------ zones
     def join(self, s: Session, zone_id: str, via: str) -> bool:
@@ -606,13 +628,16 @@ class World:
         return True
 
     def _send_zone(self, s: Session, p: Player) -> None:
+        from . import abilities
         ch = p.channel
         z = zone_defs()[ch.zone_id]
         s.send({"t": "zone", "zone": ch.zone_id, "name_vi": z["name_vi"], "safe": bool(z.get("safe")),
                 "channel": ch.number, "channels": [] if ch.instance else self.channel_list(ch.zone_id),
                 "x": p.x, "y": p.y, "f": p.facing, "ack": p.ack, "st": round(self.server_time(), 3),
                 "day": self.day_phase(), "combat": combat.rule_view(p),
-                "land": None if ch.instance else z.get("land")})
+                "land": None if ch.instance else z.get("land"),
+                "abilities": abilities.view(p, self.mono()),            # thần thông of Luyện Khí
+                "formations": abilities.formations_view(ch, self.mono())})
         self.chat.send_history(s, "zone")
 
     def switch_channel(self, s: Session, number: int) -> None:
@@ -753,6 +778,11 @@ class World:
         if p is None:
             return
         p.pet = pet_type
+        from . import abilities
+        if p.riding and abilities.mount_mult(p) <= 0:   # the mount was taken off: on foot again
+            p.riding = False
+            if p.session is not None:
+                p.session.send({"t": "ride", "ok": True, "on": False, "mult": 1.0})
         if p.channel is not None:
             for other in p.channel.players.values():
                 other.known.pop(p.eid, None)

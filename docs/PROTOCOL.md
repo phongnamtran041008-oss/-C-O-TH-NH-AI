@@ -57,6 +57,9 @@ Mỗi gói tin là **một object JSON**, trường `t` cho biết loại. Phiê
 | `chat` | `ch`: `world` \| `zone` \| `friend` \| `party`, `text`, `to` (đạo hiệu của bạn, khi `friend`) | chat |
 | `atk` | `id` (quái) | đánh thường (giai đoạn 4); server kiểm tra tầm vũ khí và thời gian hồi |
 | `dodge` | `s` (số thứ tự kế tiếp của dòng `in`), `dx`, `dy` (-1/0/1) | **Né Đòn** (luật vùng hoang, xem dưới): một cú lướt xếp vào hàng di chuyển dưới số `s` |
+| `glide` | `s` (số kế tiếp của dòng `in`), `x`, `y` (chỗ đáp client đã chọn) | **Đạp Kiếm Lướt** (thần thông, xem dưới) |
+| `ride` | `s` (số kế tiếp của dòng `in`), `on` (true/false) | **Cưỡi linh thú**: lên / xuống thú cưỡi đang đeo |
+| `tran` | — | **Bày pháp trận** dưới chân |
 
 ### Vào vùng (`join`)
 
@@ -102,6 +105,9 @@ và client tự kéo về vị trí đúng nhờ snapshot. Gói trùng hoặc s�
 | `admin` | `ok`, `lines` [chuỗi] | trả lời lệnh `/admin` (giai đoạn 10) |
 | `q` | `mid` (quái), `q` (câu hỏi như REST, `context: "combat"`), `first_meet`, `hit` | **Vấn Đạo** (bí cảnh): câu hỏi phá Mặc Thuẫn. Ở vùng hoang: câu của **một đòn vừa trúng**, `hit` = `{dmg, monster_vi, rest}`. Từ lúc gửi tới hạn trả lời nhân vật có **Hộ Thể** (không bị đánh, không di chuyển) |
 | `dodge` | `ok`, `ready_in` hoặc `code` (`cannot` \| `answering` \| `locked` \| `cooldown`), `message_vi` | trả lời gói `dodge` |
+| `glide` | `ok`, `x`, `y`, `ms` hoặc `code` (`cannot` \| `answering` \| `glide_locked` \| `cooldown` \| `too_far` \| `too_short` \| `bad_landing` \| `blocked`), `message_vi` | trả lời gói `glide`: từ chối ngay, hoặc khi server tới số `s` trong dòng di chuyển (lướt xong hay bị từ chối ở đó) |
+| `ride` | `ok`, `on`, `mult` hoặc `code` (`cannot` \| `ride_locked` \| `no_mount`), `message_vi` | trả lời gói `ride`; cũng gửi khi tháo thú cưỡi |
+| `tran` | `ok`, `ready_in` hoặc `code` (`cannot` \| `answering` \| `formation_locked` \| `cooldown`), `message_vi` | trả lời gói `tran` |
 | `q_end` | `sid`, `reason`: `broken` (người khác vừa phá khiên) \| `killed` \| `gone` \| `dead` | câu hỏi không cần trả lời nữa |
 | `dead` | `respawn_in` | hết máu; sau đó server tự đưa về điểm hồi sinh (một gói `zone` mới) |
 | `xp_lost` | `lost` | Tu Vi mất do chết |
@@ -163,6 +169,29 @@ Bí cảnh vẫn theo Vấn Đạo ở trên.
 - `dodge` đi cùng dòng `in`: client gửi hết bước đang gom rồi gửi `{"t": "dodge", "s": <số kế tiếp>, ...}` và tự
   đi trước cú lướt (các bước `step_ms` mili giây, tốc độ `dash_px / dash_ms`). Bị từ chối thì số `s` vẫn được
   nhận (một bước rỗng) nên các bước sau không lệch.
+
+### Linh thú và thần thông Luyện Khí (Thiên Địa Đồ)
+
+Phần `beasts`, `beast_taming` và các thần thông trong `unlocks` của `world_plan.json` (`wired_sections`: `beasts`,
+`abilities`). "Mở" nghĩa là tầng trên Đạo Thụ đủ (không phải cảnh giới nhân vật). Không có trong bí cảnh.
+
+- `zone.abilities` = `{"thu_phuc_linh_thu": {...}, "phap_tran": {..., "radius", "seconds", "cooldown", "fx"},
+  "dap_kiem_luot": {..., "max_px", "min_px", "ms", "cooldown", "over" (tên ô lướt qua được), "sheet"},
+  "cuoi_linh_thu": {..., "mult" (tốc độ thú cưỡi đang đeo, 0 = không cưỡi được), "riding"}}`, mỗi mục có `ok`,
+  `name_vi`, `unlock` {`realm`, `stage`}; `null` trong bí cảnh. `zone.formations` = các pháp trận đang có
+  `[{x, y, r, left, by}]`.
+- **Linh thú** là một quái trong `add` có `"beast": 1` và `need` (số Phản Đòn để thu). Server chỉ gửi nó cho
+  người đủ tầng (và có thần thông nó cần, chưa thu nó); với người khác nó không tồn tại. Nó đánh theo luật vùng
+  hoang. `fx` thêm: `tame` (`id` = linh thú, `by` = người, `n`/`need` = đã đếm / cần, `ok` = 1 khi nó chịu phục),
+  `seal` (đã phong ấn), `fire` (đòn phản của người đeo Hỏa Tước). Kết quả của câu trả lời (`combat` trong
+  `POST /quiz/answer`) có `tame` = `{beast, name_vi, n, need, yielded}` khi đòn là của linh thú, `fire`, và
+  `guarded` (đeo Huyền Quy, trả lời sai). Phong ấn bằng REST `POST /beasts/seal` (`docs/API.md`).
+- `glide`, `ride` đi trong dòng `in` như `dodge`: client gửi hết bước đang gom, rồi gói có `s` = số kế tiếp, và tự
+  đoán trước (lướt: đặt mình ở chỗ đáp; cưỡi: đi bằng tốc độ `74 × mult` từ bước ấy). Chỗ đáp do client chọn
+  bằng đúng hàm của server (`realtime/glide.py`, bản chép `client/engine/glide.py`); khi tới số `s`, server kiểm lại
+  từ chỗ người ấy thật sự đứng. `fx`: `glide` (`id`, `x0, y0` → `x, y`, `ms`), `ride` (`id`, `on`), `tran` (`by`,
+  `x, y, r`, `d` giây, `fx`). Người cưỡi có `"rd": 1` trong `add`.
+- Quái đứng trong một pháp trận lúc ra đòn thì `tele.d` dài hơn (`windup_mult`).
 
 ### Ong hộ vệ (bản 4, giai đoạn 5)
 

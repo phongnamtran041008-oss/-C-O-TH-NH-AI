@@ -178,10 +178,11 @@ class CharacterScene(Scene):
             pet = c.get("pet")
             py_ = y + 172
             if pet:
-                v2 = art2.beast_picture(pet["pet_type"], ui.time)
+                from ..engine import petfollow     # (a linh thú tamed in the lands has only its v2 sheet)
+                v2 = petfollow.picture(pet["pet_type"], ui.time)
                 if v2 is not None:
                     ui.image(v2, x + 24, py_ + 16, zoom=0.5, anchor="midbottom")
-                else:
+                elif not petfollow.is_spirit_beast(pet["pet_type"]):
                     ui.image(sprites.pet(pet["pet_type"], int(ui.time * 3) % 2), x + 24, py_ + 8, zoom=1.5,
                              anchor="center")
                 ui.text(f"{pet['name_vi']} · {T.PETS_LEVEL.format(l=pet['level'], m=pet['max_level'])}",

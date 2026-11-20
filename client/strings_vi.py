@@ -134,7 +134,7 @@ WORLD_ACTIONS = {"talk_master": "Nói chuyện", "talk_guide": "Hỏi đường"
                  "library": "Tàng Thư Các", "shop": "Mua bán", "alchemy": "Lò luyện đan", "forge": "Lò rèn",
                  "quests": "Bảng nhiệm vụ", "td": "Cổng Thủ Thành", "player": "Đạo hữu", "monster": "Mặc Quái",
                  "fisher": "Ngư Ông", "fish_book": "Ngư Phổ", "cloth": "Sạp Vải", "realm": "Cổng Bí Cảnh",
-                 "rift": "Khe Nứt Mực"}
+                 "rift": "Khe Nứt Mực", "seal": "Phong Ấn Phù"}
 COMING = {
     "cloth": "Sạp vải hôm nay đóng cửa. Bà Chủ Sạp ở Sạp Tạp Hóa bên cạnh có bán đồ Phàm, Linh.",
     "monster": "{name} lườm con một cái rồi lẩn vào sương mực. Vấn Đạo (đánh quái bằng câu đố) sẽ mở ở bản cập nhật tới.",
@@ -226,6 +226,25 @@ PARRY_REST = "Nghỉ {s} giây: đòn trúng chỉ nửa sát thương, không h
 DODGE_OK = "Né!"
 DODGE_LOCKED = "Né Đòn mở ở Luyện Khí tầng 1."
 DODGE_HINT = "[Shift] Né Đòn"
+# linh thú và thần thông Luyện Khí (Thiên Địa Đồ: thu phục, pháp trận, Đạp Kiếm Lướt, cưỡi linh thú)
+BEAST_RANK = "Linh thú"
+BEAST_TAME_COUNT = "Phản Đòn {n}/{need}"
+BEAST_TAME_PANEL = "Thu phục {name}: Phản Đòn {n}/{need}"
+BEAST_YIELDED = "Chịu phục"
+BEAST_YIELDED_TOAST = "{name} chịu phục! Đứng gần, bấm E để dùng Phong Ấn Phù."
+BEAST_SEAL = "Phong Ấn Phù"
+BEAST_SNIFF = "Linh Hồ đánh hơi: {name} ở {way}, cách {d} ô"
+BEAST_SNIFF_NONE = "Linh Hồ đánh hơi: quanh đây không còn binh khí nào"
+PARRY_FIRE = "Hỏa!"
+ABILITY_KEYS = {"phap_tran": "T", "dap_kiem_luot": "G", "cuoi_linh_thu": "R"}
+ABILITY_LOCKED = "{name} mở ở Luyện Khí tầng {stage} trên Đạo Thụ."
+ABILITY_TIP = "{name} ({key}): {desc}"
+ABILITY_DESC = {"phap_tran": "đặt pháp trận dưới chân, quái trong trận ra đòn chậm lại.",
+                "dap_kiem_luot": "lướt trên kiếm qua vực và mặt nước theo hướng đang đi.",
+                "cuoi_linh_thu": "cưỡi linh thú đang đeo (Tiểu Long) để đi nhanh; bấm lại để xuống."}
+GLIDE_NO_LANDING = "Không có chỗ đặt chân trong tầm lướt."
+RIDE_NO_MOUNT = "Cần đeo một linh thú cưỡi được (Tiểu Long)."
+RIDE_ON = "Cưỡi {name}"
 STUNNED = "Choáng"
 LOOT_STONES = "+{n} Linh Thạch"
 LOOT_XP = "+{n} Tu Vi"
@@ -605,6 +624,9 @@ PETS_BOOK_TITLE = "Tàng Thư Các · Linh Thú Phổ"
 PETS_FOUND = "Đã gặp {f}/{t} linh thú"
 PETS_UNKNOWN = "Chưa gặp"
 PETS_EQUIPPED = "{name} đã theo con."
+PETS_TAMED = "Đã thu phục"
+PETS_TAMED_FROM = "Linh thú"
+PETS_PAGE = "Trang {a}/{b}"
 GACHA_TAB_PETS = "Linh Thú"
 GACHA_PET_TITLE = "Thiên Cơ Các · Linh Thú"
 GACHA_PET_RATES = "Tỉ lệ: Thường 55% · Hiếm 30% · Quý 12% · Huyền thoại 3%. 12 con giáp, mỗi con một kỹ năng."

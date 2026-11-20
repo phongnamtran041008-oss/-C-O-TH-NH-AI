@@ -390,8 +390,9 @@ def test_new_channel_object_spawns_monsters_once():
     zmap = maps.load(FOREST)
     ch = ChannelZone(FOREST, 1, zmap)
     expected = sum(int(a.props["count"]) for a in zmap.monster_areas)
-    assert len(ch.monsters) == expected
-    assert len({m.eid for m in ch.monsters}) == expected
+    beasts = [m for m in ch.monsters if getattr(m, "beast", False)]     # + the linh thú of the land, one each
+    assert len(ch.monsters) == expected + len(beasts) and len(beasts) <= 1
+    assert len({m.eid for m in ch.monsters}) == expected + len(beasts)
 
 
 def test_gate_request_waits_for_queued_steps(w, mono):

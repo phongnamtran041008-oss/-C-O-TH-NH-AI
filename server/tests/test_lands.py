@@ -221,7 +221,7 @@ def test_every_land_spawns_its_own_creatures():
         zid = lands.zone_of(l["id"])
         w = World(mono=FakeMono())
         ch = w._channels(zid)[0]
-        kinds = {m.kind for m in ch.monsters}
+        kinds = {m.kind for m in ch.monsters if not getattr(m, "beast", False)}   # (its linh thú: test_beasts)
         assert set(l["monsters"]) <= kinds, l["id"]
         for k in kinds:
             if mons[k].get("land"):

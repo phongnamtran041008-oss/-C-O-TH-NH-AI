@@ -168,11 +168,16 @@ async def test_claim_is_refused_in_another_land(client, monkeypatch):
 
 
 async def test_a_spot_needing_an_ability_not_in_the_game_stays_locked(client, monkeypatch):
+    """Ngự Kiếm Phi Hành (Trúc Cơ) has no content yet: the spots in the clouds stay shut however far
+    the tree goes. Đạp Kiếm Lướt exists since the abilities were wired (test_abilities)."""
     h, _ = await player(client, "binh_dap")
-    pid = next(p["id"] for p in weapons.data()["placed"] if p.get("needs") == "dap_kiem_luot")
-    at(monkeypatch, 9, done=set(math_tree.tree().nodes))
+    pid = next(p["id"] for p in weapons.data()["placed"] if p.get("needs") == "ngu_kiem_phi_hanh")
+    at(monkeypatch, 3, done=set(math_tree.tree().nodes), realm="truc_co")
     r = await claim(client, h, pid)
-    assert r.status_code == 400 and err(r) == "locked" and "Đạp Kiếm Lướt" in r.json()["error"]["message_vi"]
+    assert r.status_code == 400 and err(r) == "locked" and "Ngự Kiếm Phi Hành" in r.json()["error"]["message_vi"]
+    glide = next(p["id"] for p in weapons.data()["placed"] if p.get("needs") == "dap_kiem_luot")
+    at(monkeypatch, 9, done=set(math_tree.tree().nodes))
+    assert (await claim(client, h, glide)).status_code == 200
 
 
 async def test_an_unknown_spot(client, monkeypatch):

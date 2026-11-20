@@ -107,7 +107,8 @@ Tám vùng đất của Luyện Khí có thật; Vân Hải Thiên Đảo (Trúc
   Cơ Đan chỉ rơi khi tu vi nhân vật đủ Luyện Khí tầng 7). Thắng không đổi cảnh giới nhân vật.
 - **Chỗ đặt binh khí**: mỗi mục `weapons_placed` của vùng đã dựng có `"pos": [x, y]` (một ô đi được trên bản
   đồ, đúng chỗ `spot_vi` tả). Hai chỗ cần Đạp Kiếm Lướt (đỉnh núi bên kia vực ở Kiếm Trủng Sơn, mỏm đá trong
-  mây trên thác ở Lưu Vân Cốc) đứng được nhưng chưa đi tới được. Hệ thống binh khí (đợt khác) cho `GET /weapons`
+  mây trên thác ở Lưu Vân Cốc) đứng được nhưng đi bộ không tới: chỉ lướt trên kiếm mới tới (xem phần "Linh thú
+  và thần thông Luyện Khí" ở dưới). Hệ thống binh khí (đợt khác) cho `GET /weapons`
   và `POST /weapons/claim`; game vẽ binh khí từ danh sách ấy và bấm E để nhặt; máy chủ chưa có hai đường ấy thì
   game không vẽ gì và không báo lỗi.
 - Bộ kiểm (`server/app/learning/math_tree.py`, chạy trong `tools/check_all.py`) đòi: mỗi vùng đã dựng có đúng
@@ -125,7 +126,8 @@ Phần binh khí của `world_plan.json` đã nối (`"wired_sections": ["combat
 - **Tu vi của yêu cầu là chỗ đứng trên Đạo Thụ.** Một chỗ đặt mở khi tầng trên cây tới tầng nó ghi, mọi nút nó
   ghi đã xong (nút "Đang biên soạn" tính là xong, như luật 3), vùng đất của nó đã mở (`opens` của vùng) và năng
   lực nó cần (`needs`, ví dụ Đạp Kiếm Lướt) đã có trong game. Chưa đủ thì danh sách nói thiếu gì, gọi nút bằng tên.
-  Bốn chỗ cần Đạp Kiếm Lướt hay Ngự Kiếm Phi Hành vì thế còn khoá cho tới khi năng lực ấy được làm.
+  Hai chỗ cần Đạp Kiếm Lướt mở từ khi thần thông ấy có (Luyện Khí tầng 6); ba chỗ cần Ngự Kiếm Phi Hành còn
+  khoá cho tới khi Trúc Cơ được làm.
 - **Một mô hình trang bị.** Nhặt rồi binh khí là một món ô Vũ khí như Kiếm Gỗ Đào; phẩm lưu thành độ hiếm
   (hạ = Phàm, trung = Linh, thượng = Huyền) nên túi đồ, sạp, Bảo Vật Phổ và lò cường hóa dùng được ngay; Công
   lấy từ kế hoạch: `atk` của bậc × `power` của phẩm. Đồ cũ (bút, kiếm gỗ, quạt, gậy) vẫn còn và vẫn đánh theo
@@ -141,6 +143,45 @@ Phần binh khí của `world_plan.json` đã nối (`"wired_sections": ["combat
   mỗi loại có lớp vẽ trong tay riêng (`client/assets/v2/weapons/<loại>_<bậc>`) và biểu tượng cùng tên.
 - **Điểm nhặt trên bản đồ**: vùng đất vẽ binh khí tại `pos` của từng chỗ đặt và bấm E để nhặt (xem phần
   "Vùng đất Luyện Khí" ở trên).
+
+## Linh thú và thần thông Luyện Khí (nối ngày 2026-11-20)
+
+Phần `beasts` (cùng luật thu phục `beast_taming`) và các thần thông Luyện Khí trong `unlocks` đã nối:
+`"wired_sections": ["combat", "lands", "weapons", "beasts", "abilities"]`. Mọi mở khoá của Luyện Khí là `"co"`;
+mọi mở khoá của cảnh giới sau (Ngự Kiếm Phi Hành trở đi) vẫn `"chua_co"` vì chưa có vùng đất nào ở đó. Kỳ Lân
+Con (Vân Hải Thiên Đảo, Trúc Cơ) chờ vùng đất của nó. "Tu vi" vẫn là tầng trên Đạo Thụ.
+
+| Linh thú | Vùng đất, chỗ | Hiện từ | Phản Đòn để thu | Quà khi đeo |
+|---|---|---|---|---|
+| Linh Hồ | Mê Đồ Lâm, ngõ cụt sâu trong rừng | Tầng 3 | 3 | Đánh hơi binh khí còn nằm trong 18 ô quanh mình (chấm trên bản đồ nhỏ, dòng chỉ hướng) |
+| Huyền Quy | Vạn Tượng Trạch, đảo sương | Tầng 4 | 3 | Đòn trúng khi trả lời sai nhẹ đi 30% |
+| Bạch Hạc | Lưu Vân Cốc, mỏm đá cao | Tầng 5 | 4 | Né Đòn hồi nhanh hơn 35% |
+| Hỏa Tước | Kiếm Trủng Sơn, tổ sau vực | Tầng 6 và Đạp Kiếm Lướt | 4 | Đòn phản mạnh thêm 25%, có lửa |
+| Tiểu Long | Thiên Công Phường, lò lớn | Tầng 8 | 5 | Cưỡi được, đi nhanh gấp 1,5 |
+
+- **Thu phục theo luật đánh mới** (`server/app/realtime/beasts.py`): linh thú là một con quái của vùng chỉ hiện
+  với người đủ tầng (và có thần thông nó cần, chưa thu nó); người khác không thấy, không bị nó đánh. Nó đánh có
+  báo trước như quái; đòn trúng thì hỏi câu thuộc các nút mà quái của vùng ấy đứng cho. Nó không bao giờ chết.
+  Mỗi Phản Đòn được đếm cho người trả lời; số đếm hiện trên đầu nó và ở giữa phía trên màn hình. Đủ
+  `parries_to_tame` thì nó chịu phục người ấy, thôi đánh người ấy và chờ 90 giây. Thôi đánh giữa chừng (nó về
+  chỗ) thì đếm lại từ đầu.
+- **Phong Ấn Phù**: đứng gần linh thú đã chịu phục, bấm E (`POST /beasts/seal`, cần thần thông Thu phục linh
+  thú, tầng 3). Mất một lá bùa. Bùa bán ở Sạp Tạp Hóa (60 Linh Thạch, 3 lá mỗi ngày); không quái nào rơi.
+- **Một mô hình bạn đồng hành**: linh thú đã thu là một Linh Thú như mười hai con giáp (cùng bảng `pets`, cùng
+  bảng Linh Thú, đeo một con một lúc, đi theo chủ), chỉ khác là không bao giờ ra ở Thiên Cơ Các và kỹ năng của
+  nó là quà của kế hoạch (`gift`). Linh Thú Phổ vẫn là mười hai con giáp.
+- **Bày pháp trận** (tầng 5, phím T): đặt một trận bán kính 56 px dưới chân trong 20 giây, hồi 30 giây; quái
+  đứng trong trận lúc ra đòn thì vùng đánh đầy chậm gấp 1,75 (`server/app/realtime/abilities.py`).
+- **Đạp Kiếm Lướt** (tầng 6, phím G): lướt tối đa 80 px theo hướng đang đi, qua ô nước và ô vực (mực) kể cả
+  chỗ không đi bộ được; không qua tường đá, cây, nhà. Máy chủ kiểm lại từ chỗ người chơi thật sự đứng: chưa mở,
+  đáp xuống ô không đứng được, hay vướng vật cản thì từ chối và không ai di chuyển. Hình học dùng chung ở
+  `server/app/realtime/glide.py` (máy khách có bản chép y hệt).
+- **Cưỡi linh thú** (tầng 8, phím R): đeo Tiểu Long rồi bấm R; máy chủ cho đi nhanh gấp `speed_mult` của quà,
+  người chơi chỉ gửi phím bấm nên không xin được nhanh hơn. Người cưỡi ngồi xếp bằng trên lưng linh thú (lớn
+  gấp đôi khi được cưỡi).
+- Bộ kiểm (`math_tree.py`) đòi thêm: mỗi linh thú đã dựng ở một vùng đã dựng, `pos` là ô đi được, đi bộ tới
+  được (hoặc nếu cần Đạp Kiếm Lướt thì đi bộ không tới mà một lần lướt tới được), số đánh và quà hợp lệ; số của
+  pháp trận, lướt, cưỡi đủ và hợp lý; hai chỗ binh khí cần Đạp Kiếm Lướt thật sự lướt tới được.
 
 
 ## Tôi tự quyết — bạn đổi được
@@ -164,15 +205,21 @@ Phần binh khí của `world_plan.json` đã nối (`"wired_sections": ["combat
 | Phẩm của binh khí | Lưu thành độ hiếm có sẵn (hạ = Phàm, trung = Linh, thượng = Huyền), Công theo `power` của kế hoạch | Một mô hình trang bị: túi, sạp, cường hóa, Bảo Vật Phổ dùng được ngay, không cần bảng mới | Đổi `rarity` của từng phẩm trong `qualities` |
 | Binh khí và nhánh | Phản Đòn câu đúng nhánh của binh khí mạnh thêm 50%; Chùy, Cung (nhánh không có môn toán riêng) thêm 15% mọi câu | Một luật dễ thấy, cho người chơi lý do cầm binh khí hợp môn đang học | Đổi hai số `weapons.*_parry_bonus` |
 | Nâng phẩm | 4 Lõi Ma Trận + 3 Mực Tinh + 40 Linh Thạch, chỉ hạ → trung | Lõi Ma Trận rớt từ Luyện Khí tầng 4, đúng lúc nâng phẩm mở; trung → thượng để dành cho chỗ đặt thượng phẩm | Sửa `crafting.json`, mục `upgrades` |
+| Linh thú và Linh Thú con giáp | Một mô hình: linh thú thu phục thành một dòng của bảng `pets`, đeo một con một lúc như con giáp; không ra ở Thiên Cơ Các | Không có hai loại bạn đồng hành song song; bảng Linh Thú, đi theo chủ, người khác thấy đều dùng lại | Cho linh thú một ô riêng (đeo cùng lúc với con giáp) |
+| Phong Ấn Phù lấy ở đâu | Sạp Tạp Hóa bán, 60 Linh Thạch, 3 lá mỗi ngày | Theo luật rơi đồ, sạp là nguồn không khoá theo tu vi; bùa chỉ dùng được từ tầng 3 nên không cho ai vượt cấp; không vướng trần của vùng | Cho tinh anh rơi bùa: thêm vào `drops` và một mốc trong `loot_tiers.json` |
+| Vị trí linh thú | Linh Hồ cạnh ngõ cụt có Thương trung phẩm, Huyền Quy trên đảo sương, Bạch Hạc trên bãi đá cao, Hỏa Tước trong tổ bên kia vực cạnh Thiết Kiếm, Tiểu Long trong lò lớn | Đúng `where_vi`; Hỏa Tước dùng chính túi đá sau vực, nên phải lướt mới tới | Đổi `pos` của linh thú |
+| Linh thú hỏi gì | Câu của các nút mà quái cùng vùng đứng cho | "Toán của nhánh vùng"; Tiểu Long ở vùng Lập Trình cũng có câu hỏi (phần toán mà Lập Trình ôn lại) | Cho linh thú `nodes` riêng |
+| Cưỡi | Chỉ Tiểu Long cưỡi được (quà `mount`), nhanh gấp 1,5; người cưỡi ngồi tư thế đả tọa trên lưng nó, nó lớn gấp đôi khi được cưỡi | Kế hoạch ghi "Cưỡi được" là quà của Tiểu Long; bộ hình không có tư thế cưỡi riêng | Thêm quà `mount` cho linh thú khác |
+| Lướt | Tối đa 80 px (5 ô), chỉ qua nước và vực, hồi 2,5 giây | Đủ qua hai ô vực ở Kiếm Trủng Sơn và hai ô thác ở Lưu Vân Cốc, không đủ bay qua cả hồ | Đổi `glide` của `dap_kiem_luot` |
 
 ## Chưa làm
 
-- **Linh thú và các mở khoá theo tu vi khác** trong `world_plan.json`: chưa nối (`"wired": false`).
-  **Vùng đất Luyện Khí và binh khí đã nối** (xem hai phần trên); Vân Hải Thiên Đảo chờ Trúc Cơ. **Luật đánh quái mới cũng đã
-  nối** (`"wired_sections": ["combat", "lands", "weapons"]`, ngày 2026-11-20): ở mọi vùng hoang chỉ hỏi khi bị quái đánh trúng, có Phản Đòn, thời gian nghỉ, vùng đánh tròn /
-  quạt / thẳng và Né Đòn (mở ở Luyện Khí tầng 1). Bí cảnh, hầm ngục, thủ thành và cơ duyên giữ luật cũ. Còn
-  thiếu của phần này: `phap_tran` (pháp trận làm quái ra đòn chậm) và việc thuần phục linh thú bằng Phản Đòn
-  (`parries_to_tame`) chờ đợt linh thú; số đòn Phản Đòn chưa được đếm ở đâu cả.
+- **Mọi thứ sau Luyện Khí** trong `world_plan.json`: chưa nối (`"wired": false`): Vân Hải Thiên Đảo, Kỳ Lân Con
+  và các mở khoá từ Ngự Kiếm Phi Hành trở đi chờ Trúc Cơ. **Vùng đất, binh khí, linh thú và thần thông của
+  Luyện Khí đã nối** (xem các phần trên). **Luật đánh quái mới cũng đã nối** (`"wired_sections": ["combat",
+  "lands", "weapons", "beasts", "abilities"]`, ngày 2026-11-20): ở mọi vùng hoang chỉ hỏi khi bị quái đánh trúng, có Phản Đòn, thời gian nghỉ, vùng đánh tròn /
+  quạt / thẳng và Né Đòn (mở ở Luyện Khí tầng 1). Bí cảnh, hầm ngục, thủ thành và cơ duyên giữ luật cũ. Phản
+  Đòn được đếm khi thu phục linh thú (chưa đếm cho việc gì khác).
 - **Nội dung cho nút thực chiến, dự án** và mọi cảnh giới sau Luyện Khí. Thiết kế cách làm ở
   `docs/THUC_CHIEN_TRONG_GAME.md`.
 - **Bài NumPy** (nút lập trình NumPy, tầng 4 của Luyện Khí): chưa viết vì NumPy chưa được cài kèm game, và
