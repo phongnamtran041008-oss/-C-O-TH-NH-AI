@@ -77,6 +77,32 @@ Màn Bí Cảnh Toán (`client/scenes/math_practice.py`, `client/scenes/math_tre
   khác (`review_node_vi` trong thông tin câu hỏi). Chỉ buổi luyện cũ không có nút mới còn ghi "Ôn xoắn ốc: tầng N".
 - Qua Thiên kiếp nhỏ của một nút thì màn kết quả nói nút nào vừa mở, kể cả nút của nhánh khác.
 
+## Binh khí trên các vùng đất
+
+Phần binh khí của `world_plan.json` đã nối (`"wired_sections": ["combat", "weapons"]`, 2026-11-20); mở khoá
+`nhat_vu_khi` (Luyện Khí tầng 1) và `nang_pham` (Luyện Khí tầng 4) là `"co"`. Luật ở
+`server/app/systems/weapons.py`, đường `GET /weapons`, `POST /weapons/claim`, `/weapons/equip`,
+`/weapons/unequip`, `GET/POST /weapons/upgrade` (`docs/API.md`).
+
+- **Tu vi của yêu cầu là chỗ đứng trên Đạo Thụ.** Một chỗ đặt mở khi tầng trên cây tới tầng nó ghi, mọi nút nó
+  ghi đã xong (nút "Đang biên soạn" tính là xong, như luật 3), vùng đất của nó đã mở (`opens` của vùng) và năng
+  lực nó cần (`needs`, ví dụ Đạp Kiếm Lướt) đã có trong game. Chưa đủ thì danh sách nói thiếu gì, gọi nút bằng tên.
+  Bốn chỗ cần Đạp Kiếm Lướt hay Ngự Kiếm Phi Hành vì thế còn khoá cho tới khi năng lực ấy được làm.
+- **Một mô hình trang bị.** Nhặt rồi binh khí là một món ô Vũ khí như Kiếm Gỗ Đào; phẩm lưu thành độ hiếm
+  (hạ = Phàm, trung = Linh, thượng = Huyền) nên túi đồ, sạp, Bảo Vật Phổ và lò cường hóa dùng được ngay; Công
+  lấy từ kế hoạch: `atk` của bậc × `power` của phẩm. Đồ cũ (bút, kiếm gỗ, quạt, gậy) vẫn còn và vẫn đánh theo
+  `weapon_kinds` của `balance/combat.json`.
+- **Khi đánh**: loại binh khí quyết định tầm, nhịp đòn, hệ số và động tác (chém, thi pháp, bắn). Phản Đòn với câu
+  thuộc nhánh của binh khí mạnh thêm 50%; Chùy (Lập Trình) và Cung (Thực Chiến) không có môn toán riêng nên mạnh
+  thêm 15% với mọi câu.
+- **Rèn nâng phẩm** ở Lò Toán, tab Nâng phẩm: hạ phẩm thành trung phẩm cho 4 Lõi Ma Trận, 3 Mực Tinh và 40 Linh
+  Thạch (`crafting.json`, mục `upgrades`); hai thứ ấy quái thật rớt và đã rớt được từ trước Luyện Khí tầng 4
+  (`tools/check_all.py` kiểm).
+- **Trên màn hình**: túi đồ có tab Binh Khí (của mình: biểu tượng, loại, bậc, phẩm, Công, tác dụng, Mặc/Tháo; các
+  chỗ đặt: nhặt được, đã nhặt, hay chưa mở và vì sao; bên phải là nhân vật cầm binh khí đang dùng). Mỗi bậc của
+  mỗi loại có lớp vẽ trong tay riêng (`client/assets/v2/weapons/<loại>_<bậc>`) và biểu tượng cùng tên.
+- **Chưa có ở đây**: điểm nhặt trên bản đồ (phiên vùng đất vẽ và gọi `POST /weapons/claim`).
+
 ## Tôi tự quyết — bạn đổi được
 
 | Việc | Tôi chọn | Vì sao | Muốn khác thì |
@@ -90,11 +116,14 @@ Màn Bí Cảnh Toán (`client/scenes/math_practice.py`, `client/scenes/math_tre
 | Tháp Số Phức (thủ thành) | Mở khi người chơi xong nút bàng môn Số phức | Tầng 2 của Đại Số chỉ còn nút bàng môn, nên theo luật 6 và 12 tháp ấy sẽ không bao giờ mở | — |
 | Bài kiểm tra đầu vào | Giữ nguyên: vẫn hỏi theo cả tầng, kể cả vi kỹ năng bàng môn | Đổi cách hỏi là viết lại bài kiểm tra | Làm thành một việc riêng |
 | Quái lỗi sai | Vẫn hỏi đúng vi kỹ năng của nó, kể cả khi nút ấy chưa mở | Nó không đọc vị trí của người chơi; vi kỹ năng bị loại thì vẫn không bao giờ hỏi | — |
+| Phẩm của binh khí | Lưu thành độ hiếm có sẵn (hạ = Phàm, trung = Linh, thượng = Huyền), Công theo `power` của kế hoạch | Một mô hình trang bị: túi, sạp, cường hóa, Bảo Vật Phổ dùng được ngay, không cần bảng mới | Đổi `rarity` của từng phẩm trong `qualities` |
+| Binh khí và nhánh | Phản Đòn câu đúng nhánh của binh khí mạnh thêm 50%; Chùy, Cung (nhánh không có môn toán riêng) thêm 15% mọi câu | Một luật dễ thấy, cho người chơi lý do cầm binh khí hợp môn đang học | Đổi hai số `weapons.*_parry_bonus` |
+| Nâng phẩm | 4 Lõi Ma Trận + 3 Mực Tinh + 40 Linh Thạch, chỉ hạ → trung | Lõi Ma Trận rớt từ Luyện Khí tầng 4, đúng lúc nâng phẩm mở; trung → thượng để dành cho chỗ đặt thượng phẩm | Sửa `crafting.json`, mục `upgrades` |
 
 ## Chưa làm
 
-- **Binh khí, vùng đất, linh thú và các mở khoá theo tu vi khác** trong `world_plan.json`: chưa có dòng code
-  nào dùng (`"wired": false`). **Luật đánh quái mới thì đã nối** (`"wired_sections": ["combat"]`, ngày
+- **Vùng đất, linh thú và các mở khoá theo tu vi khác** trong `world_plan.json`: chưa có dòng code
+  nào dùng (`"wired": false`). **Binh khí đã nối** (mục "Binh khí trên các vùng đất" ở trên). **Luật đánh quái mới thì đã nối** (`"wired_sections": ["combat"]`, ngày
   2026-11-20): ở mọi vùng hoang chỉ hỏi khi bị quái đánh trúng, có Phản Đòn, thời gian nghỉ, vùng đánh tròn /
   quạt / thẳng và Né Đòn (mở ở Luyện Khí tầng 1). Bí cảnh, hầm ngục, thủ thành và cơ duyên giữ luật cũ. Còn
   thiếu của phần này: `phap_tran` (pháp trận làm quái ra đòn chậm) và việc thuần phục linh thú bằng Phản Đòn

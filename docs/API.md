@@ -555,6 +555,36 @@ vì vùng đất, binh khí, linh thú chưa nối). Mọi con số đọc từ 
   của con quái trúng nguyên vẹn. Hết giờ được vòng tick chấm là sai. Không có câu nào để hỏi
   (`no_math_question`): đòn trúng nửa máu và bắt đầu thời gian nghỉ.
 
+### Binh khí của Thiên Địa Đồ
+
+Các phần `grades`, `qualities`, `weapon_types`, `weapons`, `weapons_placed` của `server/data/math/world_plan.json`
+(`"wired_sections"` có `"weapons"`), luật ở `server/app/systems/weapons.py`. Một binh khí là `<loại>_<bậc>`
+(`kiem_1` = Mộc Kiếm); id của một chỗ đặt là `<binh khí>_<phẩm>` (`kiem_1_ha`), hoặc `id` của mục nếu kế hoạch
+ghi. Nhặt rồi nó là **một món trang bị như mọi món khác** (ô `weapon`, `kind` = id binh khí): `GET /inventory`
+liệt kê nó trong `equipment`, `/equipment/equip` cũng mặc được, Lò Rèn cường hóa được, sạp mua lại được. Phẩm
+lưu thành độ hiếm (hạ = `pham`, trung = `linh`, thượng = `huyen`); Công = `atk` của bậc × `power` của phẩm
+(× cường hóa). Mỗi món như vậy trong `equipment` có thêm khối `weapon` = `{weapon, name_vi, type, type_vi, grade,
+grade_vi, quality, quality_vi, atk, branch, branch_vi, clip, effect_vi, why_vi, upgradable}`.
+
+"Tu vi" của yêu cầu là **chỗ đứng trên Đạo Thụ** (`math_tree_progress`), không phải cảnh giới nhân vật.
+
+| Method | Đường dẫn | Body | Ghi chú |
+|---|---|---|---|
+| GET | `/weapons` | — | `{weapons[], equipped, placed[], tu_vi{realm, realm_vi, stage}, can_claim, can_upgrade}`. `weapons`: mọi món ô vũ khí của người chơi (dạng `equipment` của `/inventory`; món của Thiên Địa Đồ có khối `weapon`); `equipped`: id món đang cầm hoặc `null`. `placed`: mọi chỗ đặt, theo thứ tự kế hoạch: `{id, weapon, quality, land, pos, state, reason_vi, name_vi, quality_vi, type, type_vi, grade, grade_vi, atk, branch, branch_vi, clip, effect_vi, why_vi, land_vi, spot_vi, requires{realm, realm_vi, stage, nodes[{id, name_vi}], needs}}`. `state`: `available`, `taken` hoặc `locked`; `reason_vi` (rỗng khi không khoá) nói thiếu gì: tầng Đạo Thụ, tên các nút chưa xong, vùng đất chưa mở, năng lực chưa có. `pos` = `[x, y]` chép từ mục của kế hoạch, không có thì `null` |
+| POST | `/weapons/claim` | `{id, land?}` | nhặt một lần. `land` (tuỳ chọn): vùng người chơi đang đứng; có thì phải đúng vùng của chỗ đặt. Trả `{claimed, equipment, placed}`. Lỗi `no_weapon` (404), `taken`, `wrong_land`, `locked` (400, `message_vi` = lý do) |
+| POST | `/weapons/equip` | `{instance_id}` | qua đúng đường `/equipment/equip`: `{equipped, stats}`; `stats.weapon` = id binh khí. Lỗi `no_item` (404), `not_weapon` (400) |
+| POST | `/weapons/unequip` | — | tháo ô vũ khí: `{stats}` |
+| GET | `/weapons/upgrade` | — | Rèn nâng phẩm ở Lò Toán: `{open, reason_vi, name_vi, desc_vi, fee, from, from_vi, to, to_vi, ingredients[{item_id, name_vi, qty, have, enough}], can, candidates[], spirit_stones}`; `candidates` = món hạ phẩm của Thiên Địa Đồ (dạng `equipment`) kèm `after` (khối `weapon` ở phẩm mới) và `after_atk` |
+| POST | `/weapons/upgrade` | `{instance_id}` | hạ phẩm → trung phẩm, giữ bậc và cường hóa: `{upgraded, item, stats, spirit_stones}`. Lỗi `locked` (chưa tới Luyện Khí tầng 4 trên Đạo Thụ), `not_plan_weapon`, `wrong_quality`, `need_material`, `no_stones` (400), `no_item` (404) |
+
+Lỗi theo dạng chung `{"error": {"code", "message_vi"}}`.
+
+Khi đánh: loại binh khí quyết định đòn thường (`range`, `cooldown`, `mult` của `weapon_types`) và động tác (`clip`:
+`slash`, `cast`, `shoot`). Phản Đòn (luật vùng hoang) với câu thuộc đúng nhánh của binh khí mạnh thêm
+`weapons.own_branch_parry_bonus` (Kiếm với câu Đại Số...); binh khí của nhánh không có môn toán riêng (Chùy - Lập
+Trình, Cung - Thực Chiến, Trượng, Phiến) mạnh thêm `weapons.any_branch_parry_bonus` với mọi câu. Khối `combat` của
+Phản Đòn có thêm `"weapon_bonus": true|false`.
+
 ## M10 — Cơ duyên (sự kiện ngẫu nhiên sau câu đúng)
 
 Dữ liệu: `server/data/math/fortune.json` (`_comment` giải thích từng trường). Mã: `app/systems/math_fortune.py`.

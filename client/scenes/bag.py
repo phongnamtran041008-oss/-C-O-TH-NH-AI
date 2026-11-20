@@ -229,6 +229,9 @@ class BagScene(Scene):
                     "#6A994E", anchor="midtop", max_w=w)
 
 
+_HAND: dict = {}         # hand_picture by the frames it is made of
+
+
 def fit(ui, txt: str, size: float, max_w: float) -> str:
     """`txt` cut with "..." to fit one line of max_w (the whole text stays in the tooltip)."""
     if ui.text_size(txt, size)[0] <= max_w:
@@ -245,6 +248,9 @@ def hand_picture(realm: str | None, weapon: str | None, t: float, facing: str = 
     layers = art2.char_layers(realm, "idle", t, facing, weapon, aura=False)
     if not layers:
         return None
+    key = tuple((id(img), ox, oy, flags) for img, (ox, oy), flags in layers)   # sheet frames are cached
+    if key in _HAND:
+        return _HAND[key]
     x0 = min(ox for _, (ox, oy), _ in layers)
     y0 = min(oy for _, (ox, oy), _ in layers)
     x1 = max(ox + img.get_width() for img, (ox, oy), _ in layers)
@@ -252,4 +258,7 @@ def hand_picture(realm: str | None, weapon: str | None, t: float, facing: str = 
     surf = pygame.Surface((x1 - x0, y1 - y0), pygame.SRCALPHA)
     for img, (ox, oy), flags in layers:
         surf.blit(img, (ox - x0, oy - y0), special_flags=flags)
-    return art2.trim(surf)
+    if len(_HAND) > 64:
+        _HAND.clear()
+    _HAND[key] = art2.trim(surf)
+    return _HAND[key]
