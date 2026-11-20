@@ -1041,7 +1041,51 @@ một lần, lần sau chỉ đăng nhập, dùng Firebase (dự án và API key
 - **`client/main.py` phải biết gói `mcast`.** Danh sách gói được chuyển tới màn thế giới nằm ở `Game._on_net`;
   thiếu `mcast` thì lời từ chối của máy chủ (chưa hồi xong, thiếu linh khí, còn khoá) không bao giờ hiện.
 
-## Nhánh `toan-tu-tien` — M10: bí cảnh tổ đội, hầm ngục, cơ duyên, thủ thành
+### 2026-11-20: vùng hoang chỉ hỏi khi bị quái đánh trúng (thay luật "trả lời để ra chiêu" ở trên)
+
+Tác giả yêu cầu "chỉ hỏi khi quái đánh trúng mình"; thiết kế đã duyệt là phần `combat` của
+`server/data/math/world_plan.json`. Nay nó chạy: `"wired_sections": ["combat"]`, còn `"wired"` vẫn `false` vì
+vùng đất, binh khí, linh thú chưa nối. Mọi con số đọc từ file ấy (`realtime/combat.py`).
+
+- **Chỉ vùng hoang.** Bí cảnh (`realm.RealmInstance`, `instance = True`) vẫn là Vấn Đạo và chiêu ra bằng câu
+  hỏi; hầm ngục, thủ thành, cơ duyên không đụng tới. Các test cũ của Vấn Đạo và chiêu M9 (`test_combat`,
+  `test_math_skills`, `test_bee_guard`) ghim luật cũ lên một vùng hoang để vẫn kiểm được đường mã bí cảnh dùng.
+- **"Trận đấu dừng lại" chỉ dừng cho người bị hỏi.** Từ lúc đòn trúng tới lúc trả lời (hay hết giờ) người ấy
+  có Hộ Thể: không mất máu, không đi, không đánh, không né, không ra chiêu, và không quái nào chọn họ làm mục
+  tiêu. Thế giới không dừng: người khác trong vùng vẫn đánh, kể cả chính con quái ấy, và nó quay sang họ; đòn
+  đang báo trước vẫn rơi xuống ai đứng trong vùng. Không ai trả lời hộ ai, câu đúng của người này không đóng
+  câu của người kia. Trong lúc máy chủ soạn câu, người bị trúng được giữ yên tối đa `question_wait_seconds`
+  (số mới, 3 giây) để đòn khác không chồng lên.
+- **Câu hỏi đi đúng đường cũ.** Quái lỗi sai hỏi vi kỹ năng của nó ở bậc người chơi đã mở (`math_combat.
+  question_for`), Mặc Quái hỏi phần Đạo Thụ của người chơi (`math_ask.pick_own`); câu trả lời ghi vào
+  `math_answers` nên tính vào bậc, cổng thuần thục và lịch ôn xoắn ốc (`test_combat_on_hit` kiểm cả ba).
+- **Phản Đòn** = `base_damage × counter_multiplier`, không có chí mạng "trả lời nhanh" (luật mới không nói tới);
+  quái choáng `stun_seconds`; Linh Lực cộng `linh_luc_gain` (số mới, 8 như `correct_qi_gain` cũ); Tu Vi theo bậc
+  câu như mọi câu toán.
+- **Sai hoặc hết giờ**: đòn của con quái trúng nguyên vẹn (công quái trừ phòng thủ), **không còn Mặc Kích** ở vùng
+  hoang. Hệ quả chờ tác giả quyết: Kháng Mực và Linh Thú Rắn (giảm Mặc Kích) nay chỉ có tác dụng trong bí cảnh.
+- **Không soạn được câu** (`no_math_question`): đòn tính như đòn trong thời gian nghỉ (nửa sát thương) và thời
+  gian nghỉ bắt đầu; không hỏi lại ngay.
+- **Quái chết trong lúc người bị trúng đang trả lời**: câu vẫn được chấm; đúng thì không có đòn phản để đánh
+  (`gone`), sai thì đòn vẫn trúng - đòn đã rơi xuống rồi, người khác hạ quái không xoá được nó.
+- **Khiên**: quái thường ở vùng hoang không có Mặc Thuẫn (`shielded_ranks` = tinh anh, thủ lĩnh), nên đòn thường
+  hạ được. Khiên tinh anh chỉ vỡ khi Phản Đòn; khiên mọc lại theo `shield_regen` như cũ và lại cần Phản Đòn.
+  Chiêu và ong hộ vệ không phá được khiên ở vùng hoang.
+- **Hình vùng đánh**: tròn, quạt, thẳng đều làm (rẻ: phép thử hình học trên máy chủ, sheet `warn_cone_*` /
+  `warn_line_*` đã có). Quái thường đánh tròn; tinh anh lần lượt quạt, tròn, thẳng; thủ lĩnh tròn, quạt, thẳng
+  (`telegraph.by_rank`); quái có thể ghi `attack_shape` riêng. Quạt và thẳng đi từ con quái về phía mục tiêu.
+- **Né Đòn**: lướt `dash_px` = 40 px trong `dash_ms` = 150 ms (hai số mới), bất khả xâm phạm 0,25 giây, hồi 1,2
+  giây. Cú lướt xếp vào hàng di chuyển dưới số thứ tự riêng để máy chủ đi đúng như client đoán; bị từ chối thì
+  vẫn chiếm số ấy (bước rỗng). Mở theo tu vi (Luyện Khí tầng 1, mục `ne_don`), nên Phàm Nhân chưa né được.
+  Không né trong bí cảnh. Phím Shift.
+- **Chiêu thức ngoài vùng hoang ra tự do**: cùng mở khoá theo Đạo Thụ, linh lực, hồi chiêu, tầm và công thức,
+  không câu hỏi. **Combo** nay đếm số **Phản Đòn liên tiếp** (về 0 khi trả lời sai, hết giờ, chết, rời thế giới),
+  để học vẫn làm chiêu mạnh hơn. `qtypes` và `min_tier` chỉ còn dùng trong bí cảnh. Máy chủ đọc mở khoá trước
+  nên chiêu còn khoá luôn nói "còn khoá" trước "chưa hồi" hay "chưa chọn mục tiêu".
+- **Client**: thẻ `rpg.ParryCard` (con của thẻ quái lỗi sai) ghi rõ đòn bao nhiêu, kết quả Phản Đòn / trúng đòn,
+  thời gian nghỉ; trả lời sai thì thẻ ở lại 4,5 giây để đọc lời giải (Enter đóng sớm). `client/main.py` (phiên khác
+  giữ) không chuyển gói `dodge` và `stats` tới màn thế giới, nên client tự kiểm mở khoá Né Đòn từ cảnh giới của
+  nhân vật và tự tính hồi chiêu; máy chủ vẫn là bên quyết định.
 
 - **Một chỗ duy nhất để chọn câu hỏi.** `systems/math_ask.py` là nơi cả bốn chế độ lấy câu: bậc là của người
   chơi ở vi kỹ năng ấy và không bao giờ cao hơn, không hỏi tầng chưa tới, cửa sổ chống lặp là cả sổ trả lời,

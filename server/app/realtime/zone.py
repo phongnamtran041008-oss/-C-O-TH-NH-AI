@@ -82,6 +82,11 @@ class Player:
     # ---- chiêu thức gắn câu hỏi (M9) ----
     mskill_ready: dict = field(default_factory=dict)    # chiêu id -> time it can be cast again
     mcombo: int = 0                                     # right cast answers in a row (0 after a miss/death)
+    # ---- the open-world rule (world_plan.json "combat"): in the wild mcombo counts Phản Đòn in a row ----
+    rest_until: float = 0.0                             # after a question: blows do half damage, ask nothing
+    dodge_until: float = 0.0                            # Né Đòn: invulnerable until then
+    dodge_ready: float = 0.0                            # Né Đòn cooldown
+    free_casting: set = field(default_factory=set)      # chiêu whose free cast is being checked (unlock)
 
     @property
     def eid(self) -> str:
@@ -128,6 +133,11 @@ class ChannelZone:
         self.players: dict[int, Player] = {}
         self.rng = rng or random.Random()
         self.monsters: list[ai.Monster] = ai.spawn_all(zmap, self.rng, prefix=f"m{number}_")
+        from . import combat
+        if combat.on_hit_rule(self):     # the wild: questions only when a monster lands a blow
+            for m in self.monsters:
+                m.on_hit = True
+                m.reset()
         c = cfg()
         self.cell_px = c["aoi_cell_tiles"] * 16
         self.radius = c["aoi_radius_cells"]
@@ -196,6 +206,15 @@ class ChannelZone:
         p.inputs.append((seq, steps, total))
         p.queued_ms += total
 
+    def queue_dash(self, p: Player, seq: int, steps: list[tuple[int, int, int]], speed: float) -> bool:
+        """Né Đòn (combat.dodge): a dash queued among the movement messages under its own
+        sequence number, at its own speed and costing no movement budget. False when the
+        number is stale (a duplicate or out of order)."""
+        if seq <= p.ack or (p.inputs and seq <= p.inputs[-1][0]):
+            return False
+        p.inputs.append((seq, steps, 0, speed))
+        return True
+
     def _move_players(self, dt: float, now: float = 0.0) -> None:
         cap = cfg()["move_budget_max_ms"]
         col = self.map.collider
@@ -211,13 +230,15 @@ class ChannelZone:
             # time budget: a player can never move for longer than real time has passed
             p.budget_ms = min(cap, p.budget_ms + dt * 1000.0)
             while p.inputs and p.inputs[0][2] <= p.budget_ms:
-                seq, steps, total = p.inputs.popleft()
+                entry = p.inputs.popleft()
+                seq, steps, total = entry[:3]
+                speed = entry[3] if len(entry) > 3 else self.speed   # a Né Đòn dash has its own
                 p.queued_ms -= total
                 p.budget_ms -= total
                 for dx, dy, ms in steps:
                     if dx or dy:
                         p.facing = facing_for(dx, dy, p.facing)
-                        nx, ny = step(p.x, p.y, dx, dy, ms, self.speed, col)
+                        nx, ny = step(p.x, p.y, dx, dy, ms, speed, col)
                         if (nx, ny) != (p.x, p.y):
                             p.x, p.y = nx, ny
                             p.dirty = True

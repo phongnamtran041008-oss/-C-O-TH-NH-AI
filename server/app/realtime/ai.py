@@ -37,7 +37,7 @@ class Monster:
     mode: str = "wander"                # wander | chase | return | dead
     engaged: set = field(default_factory=set)   # user ids fighting this monster
     atk_ready: float = 0.0
-    tele: tuple | None = None           # (x, y, radius, lands_at) of a telegraphed attack
+    tele: dict | None = None            # a telegraphed attack (combat.make_tele: shape, x, y, r, land...)
     slow_until: float = 0.0
     slow_mult: float = 1.0
     respawn_at: float = 0.0
@@ -49,6 +49,9 @@ class Monster:
     # ---- bí cảnh (stage 9) ----
     hp_scale: float = 1.0               # the boss grows with the size of the party
     group_hits: set = field(default_factory=set)     # who already answered right against the big shield
+    # ---- the open-world rule (world_plan.json "combat") ----
+    on_hit: bool = False                # set by its channel: questions only when it lands a blow
+    shape_i: int = 0                    # which telegraph shape of its rank comes next
 
     def __post_init__(self):
         self.reset()
@@ -59,6 +62,10 @@ class Monster:
         self.hp = self.max_hp
         self.shield = True
         self.regen = sorted(i.get("shield_regen", []), reverse=True)
+        if self.on_hit:
+            from . import combat   # out in the wild a normal monster wears no Mặc Thuẫn
+            if not combat.shielded_rank(i):
+                self.shield, self.regen = False, []
         self.mode = "wander"
         self.engaged = set()
         self.tele = None

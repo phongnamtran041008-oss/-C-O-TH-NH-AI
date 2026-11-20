@@ -8,6 +8,7 @@ from app.models import Bee, Character, Hive
 from app.realtime import combat, guard
 from app.systems import bees as beesys
 from tests.test_combat import FOREST, answer, at_monster, fighter, gw, hit, last, run, settle  # noqa: F401
+from tests.test_combat import van_dao  # noqa: F401  (autouse: the bees are tested against Mặc Thuẫn)
 
 
 async def with_guards(client, w, username, display, kinds=("muc", "hoang_kim"), realm="luyen_khi", level=1):

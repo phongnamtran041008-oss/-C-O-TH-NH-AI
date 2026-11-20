@@ -1,12 +1,15 @@
-"""Stage 4 through the real client UI: fight a Mực Con (attack, Vấn Đạo card, Hộ Thể,
-shield break, kill, loot), take a Mặc Kích from a wrong answer, look at the cultivation,
-bag, quest and Yêu Quái Phổ screens, then pass Thiên Kiếp from Luyện Khí 9 to Trúc Cơ.
-Every question on the way is a math question at the player's own floor, on the math card."""
+"""Stage 4 through the real client UI: fight a Mực Con (attack freely, its blow lands, the
+question card, Hộ Thể, Phản Đòn, kill, loot), take a blow in full from a wrong answer, look at
+the cultivation, bag, quest and Yêu Quái Phổ screens, then pass Thiên Kiếp from Luyện Khí 9 to
+Trúc Cơ. Every question on the way is a math question at the player's own floor, on the math
+card. Out in the wild a question comes only when a monster lands a blow (world_plan.json
+"combat"); test_parry_flow drives that rule in detail."""
 from __future__ import annotations
 
 import json
 import math
 import tempfile
+import time
 from pathlib import Path
 
 import pygame
@@ -15,7 +18,7 @@ from client.tests.driver import Driver, ServerProcess, fill_math_answer
 from client.tests.test_world_flow import make_account
 
 
-CARD = "MathCombatQuizScene"       # the card every monster's question opens
+CARD = "ParryCard"       # the card a monster's blow opens in the wild (rpg.ParryCard)
 
 
 def world(drv):
@@ -56,19 +59,22 @@ def nearest(ws, kind: str):
 
 
 def engage(drv: Driver, server: ServerProcess, kind: str = "ink_slime"):
-    """Walk up to the nearest monster of that kind and attack it until its Vấn Đạo card opens.
+    """Walk up to the nearest monster of that kind, hit it once so it fights back, then stand
+    still in its hit zone until its blow lands and the question card opens.
 
-    One click is not enough. A weapon has a cooldown (0.7 s for a brush, combat.json) and the
-    server simply ignores an attack sent inside it - no error, no event - so an attack that
-    follows a flurry of swings can land in the dead time and nothing at all happens. A click
-    can also miss a monster that moved since the frame it was aimed at. A player clicks again;
-    so does this. The monster that comes back is the one that really asked, which is not always
-    the nearest one: a bystander can get the swing."""
+    Attacking asks nothing in the wild: the card comes with the monster's blow. One click may
+    not start the fight - a weapon has a cooldown and the server ignores an attack sent inside
+    it, and a click can miss a monster that moved since the frame it was aimed at - so after a
+    while without a card this clicks again, as a player would. Not more often than that: a
+    flurry of hits could kill a Mực Con before it ever swings. The monster that comes back is
+    the one whose blow landed, which is not always the nearest one."""
     import time
     ws = world(drv)
     drv.wait(lambda: nearest(ws, kind) is not None, 10, f"a {kind}")
-    end = time.time() + 15
+    end = time.time() + 20
     while time.time() < end:
+        if drv.top_is(CARD):                # a blow already landed (a bystander's, maybe)
+            return ws.entities.get(getattr(drv.game.top, "monster_id", "")) or nearest(ws, kind)
         m = nearest(ws, kind)
         if m is None:
             break
@@ -77,30 +83,27 @@ def engage(drv: Driver, server: ServerProcess, kind: str = "ink_slime"):
             drv.step(5)
             continue
         drv.click_at(drv.game.display.to_window(*ws.world_to_screen(m.pos[0], m.pos[1] - 8)))   # left click = attack
-        for _ in range(40):                 # longer than any weapon cooldown, then attack again
+        for _ in range(100):                # its windup and its blow, then attack again
             drv.step(3)
             if drv.top_is(CARD):
                 asked = getattr(drv.game.top, "monster_id", "")
                 return ws.entities.get(asked) or m
     open_q = server.sql("select ref, created_at from quiz_sessions where answered_at is null")
-    raise AssertionError(f"no Vấn Đạo card after attacking a {kind}; questions the server still "
+    raise AssertionError(f"no card from the blow of a {kind}; questions the server still "
                          f"has open: {open_q}; scenes={drv.scene_names()}; toasts={drv.toast_log[-5:]}")
 
 
 def beat(drv: Driver, ws, m, server: ServerProcess | None = None) -> None:
-    """Swing (Space) at a monster whose shield is down until it falls.
+    """Swing (Space) at a monster until it falls.
 
-    A swing hits whatever is in range and a Mực Con that decides to attack engages by
-    itself, so a *bystander* that still has its Mặc Thuẫn up can ask its own question in
-    the middle of this (spec 8.1). That is the game working: answer it the way a player
-    would and go back to the monster we came for. A question about that monster is a
-    different matter - its shield would have to come back, which only elites do."""
+    It hits back meanwhile, and so may a bystander: a blow that lands outside the rest window
+    opens a card. That is the game working: answer it right (a Phản Đòn) the way a player
+    would and go back to swinging."""
     for _ in range(60):
         if not m.alive or m.id not in ws.entities:
             return
         if drv.top_is(CARD):
             asked = getattr(drv.game.top, "monster_id", "")
-            assert asked != m.id, f"the Mặc Thuẫn of {m.id} came back"
             assert server is not None, f"{asked} asked a question and this test cannot answer it"
             answer_math(drv, server, correct=True)
             drv.wait(lambda: not drv.top_is(CARD), 6, f"the card of {asked} closes")
@@ -138,39 +141,39 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         ws = world(drv)
         assert ws.zone_id == "rung_muc_loang"
 
-        # fight: the first hit brings the Vấn Đạo card, the character is protected meanwhile
+        # fight: hitting asks nothing; its blow lands and brings the card, Hộ Thể meanwhile
         m = engage(drv, server)
         drv.shot("combat_question")
         q = drv.game.top.q
         assert q["context"] == "math_combat" and q["math"]["floor"] == 1, q
         assert q["math"]["monster_vi"] == "Mực Con"
         res = answer_math(drv, server, correct=True)
-        assert res["combat"]["shield_broken"]
+        assert res["combat"]["parry"] and res["combat"]["damage"] > 0, res["combat"]
         rows = server.sql("select skill_id, correct, run_id from math_answers where user_id=?", (uid,))
         assert rows == [(q["math"]["skill"], 1, None)], rows        # the learning log, once
         drv.step(8)
-        drv.shot("shield_broken")
+        drv.shot("parry")
         drv.wait(lambda: not drv.top_is(CARD), 6, "card closes by itself")
         beat(drv, ws, m, server)
         drv.wait(lambda: any("Linh Thạch" in t or "Nhận" in t for t in drv.toast_log) or
                  any(f.text.startswith("+") for f in ws.fx.texts), 6, "loot")
         drv.shot("loot")
 
-        # a wrong answer: Mặc Kích (10% of max HP, minus Kháng Mực), red flash
+        # a wrong answer: the blow lands in full, red flash, and the solution on the card
+        rest_until = time.time() + res["combat"]["rest"] + 0.5     # past the rest window of the last answer
+        while time.time() < rest_until and not drv.top_is(CARD):
+            drv.step(5)
         hp0 = drv.game.state.character.get("hp")
         m2 = engage(drv, server)
         res = answer_math(drv, server, correct=False)
-        assert res["combat"]["mac_kich"] > 0
+        assert res["combat"]["damage_taken"] > 0 and not res["combat"]["parry"]
         drv.step(6)
-        drv.shot("mac_kich")
+        drv.shot("guard_break")
+        drv.press(pygame.K_RETURN)         # read enough: close it
         drv.wait(lambda: not drv.top_is(CARD), 6, "wrong card closes")
         drv.wait(lambda: drv.game.state.character.get("hp", 0) < hp0, 5, "hp drops")
         drv.press(pygame.K_q)              # Hồi Huyết Đan
         drv.wait_api()
-        # the next question comes after a short pause; answer it and finish the fight
-        drv.wait_scene(CARD, 8)
-        answer_math(drv, server, correct=True)
-        drv.wait(lambda: not drv.top_is(CARD), 6, "card closes")
         beat(drv, ws, m2, server)
 
         # the screens

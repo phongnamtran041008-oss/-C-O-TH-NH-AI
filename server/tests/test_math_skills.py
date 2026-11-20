@@ -41,6 +41,14 @@ FIXED = {
 }
 
 
+@pytest.fixture(autouse=True)
+def van_dao(monkeypatch):
+    """Casting by answering a question (M9) is the rule of a bí cảnh: these tests pin it on a
+    wild zone. Out in the wild a chiêu is cast freely: tests/test_combat_on_hit.py."""
+    from app.realtime import combat
+    monkeypatch.setattr(combat, "on_hit_rule", lambda ch: False)
+
+
 @pytest_asyncio.fixture
 async def gw(app, monkeypatch):
     w = World(mono=FakeMono())

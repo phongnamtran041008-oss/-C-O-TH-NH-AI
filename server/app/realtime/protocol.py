@@ -70,6 +70,15 @@ class Attack(BaseModel):
     id: str = Field(max_length=24)
 
 
+class Dodge(BaseModel):
+    """Né Đòn (the open-world rule, world_plan.json "combat"): a short dash in a direction,
+    queued among the movement messages under the next sequence number `s`."""
+    t: Literal["dodge"]
+    s: int = Field(ge=0)
+    dx: int = Field(ge=-1, le=1)
+    dy: int = Field(ge=-1, le=1)
+
+
 class MathCast(BaseModel):
     """Cast a chiêu thức gắn câu hỏi (M9, data/math/skills.json): the server answers with a
     question of the chiêu's type; id = target monster, null for a ward."""
@@ -105,7 +114,7 @@ class Mark(BaseModel):
 
 
 MESSAGES: dict[str, type[BaseModel]] = {"ping": Ping, "in": Input, "join": Join, "channel": Channel,
-                                        "chat": Chat, "face": Face, "atk": Attack,
+                                        "chat": Chat, "face": Face, "atk": Attack, "dodge": Dodge,
                                         "mskill": MathCast, "party": PartyCmd, "realm": RealmCmd, "mark": Mark}
 
 
@@ -131,4 +140,4 @@ def error(code: str, message_vi: str, **extra) -> dict:
 
 __all__ = ["PROTOCOL_VERSION", "Hello", "Ping", "Input", "Join", "Channel", "Chat", "Face", "parse",
            "BadMessage", "error", "FACING", "FACING_CODE", "Attack", "MathCast", "PartyCmd", "RealmCmd",
-           "Mark"]
+           "Mark", "Dodge"]

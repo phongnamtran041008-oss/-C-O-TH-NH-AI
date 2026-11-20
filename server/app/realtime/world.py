@@ -453,6 +453,14 @@ class World:
             err = combat.attack(p, msg.id, self.mono(), self.rng) if p else "cannot"
             if err in ("too_far", "no_target"):
                 s.send({"t": "act_fail", "code": err})
+        elif isinstance(msg, protocol.Dodge):
+            p = s.player
+            err = combat.dodge(p, msg.s, msg.dx, msg.dy, self.mono()) if p else "cannot"
+            if err is None:
+                s.send({"t": "dodge", "ok": True, "ready_in": float(combat.plan()["dodge"]["cooldown_seconds"])})
+            else:
+                s.send({"t": "dodge", "ok": False, "code": err,
+                        "message_vi": combat.DODGE_REFUSALS_VI.get(err, combat.DODGE_REFUSALS_VI["cannot"])})
         elif isinstance(msg, protocol.MathCast):
             from ..systems import math_skills   # chiêu thức gắn câu hỏi (M9)
             p = s.player
@@ -577,7 +585,7 @@ class World:
         s.send({"t": "zone", "zone": ch.zone_id, "name_vi": z["name_vi"], "safe": bool(z.get("safe")),
                 "channel": ch.number, "channels": [] if ch.instance else self.channel_list(ch.zone_id),
                 "x": p.x, "y": p.y, "f": p.facing, "ack": p.ack, "st": round(self.server_time(), 3),
-                "day": self.day_phase()})
+                "day": self.day_phase(), "combat": combat.rule_view(p)})
         self.chat.send_history(s, "zone")
 
     def switch_channel(self, s: Session, number: int) -> None:
@@ -696,7 +704,8 @@ class World:
             p.known = {}
         if s is not None:
             s.send({"t": "stats", "realm": realm, "stage": stage, "stats": stats, "stage_up": stage_up,
-                    "hp": p.hp if p else None, "max_hp": stats.get("max_hp")})
+                    "hp": p.hp if p else None, "max_hp": stats.get("max_hp"),
+                    "combat": combat.rule_view(p) if p is not None and p.channel is not None else None})
 
     def set_bees(self, user_id: int, loadout: list[dict]) -> None:
         """Guard bees changed (role, level, release): the ones out in the world follow."""

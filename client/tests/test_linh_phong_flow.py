@@ -168,7 +168,7 @@ def run_bee_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.shot("guards_follow")
         m = engage(drv, server)
         res = answer_math(drv, server, correct=True)
-        assert res["combat"]["shield_broken"]
+        assert res["combat"]["parry"]           # a Phản Đòn: the monster is stunned, the bees go in
         drv.wait(lambda: not drv.top_is(CARD), 5, "card closes")
         drv.wait(lambda: ws.bee_hits > 0, 6, "bees sting the monster")
         drv.shot("guards_sting")

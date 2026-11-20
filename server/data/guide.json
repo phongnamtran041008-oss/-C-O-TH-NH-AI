@@ -259,7 +259,7 @@
         {
           "id": "g_skill",
           "title_vi": "Mở chiêu thức thứ tư",
-          "desc_vi": "Chiêu thức là đòn đánh quái bằng toán: ra chiêu, trả lời đúng thì trúng. Ba chiêu đầu mở sẵn, học lên thì mở thêm.",
+          "desc_vi": "Chiêu thức là đòn mạnh, ngoài vùng hoang ra chiêu tự do. Ba chiêu đầu mở sẵn, học lên thì mở thêm.",
           "how_vi": [
             "Xong Luyện Khí tầng 1 trên Đạo Thụ là mở Ngũ Hành Trận và Hộ Thân Trận.",
             "Thử chiêu ở Rừng Mực Loang (cổng đông của làng): lại gần Mặc Quái, bấm phím 1 đến 6."
@@ -446,10 +446,12 @@
       "id": "chieu_thuc",
       "title_vi": "Chiêu thức",
       "lines_vi": [
-        "Chiêu thức là đòn đánh quái bằng toán, dùng ngoài làng như ở Rừng Mực Loang (cổng đông).",
-        "Mỗi chiêu gắn một dạng câu. Bấm phím 1 đến 6 trên thanh chiêu, rồi trả lời câu hỏi hiện ra.",
-        "Đúng thì chiêu trúng. Sai hoặc hết giờ thì chiêu hụt: không gây sát thương, chuỗi liên chiêu về 0.",
-        "Linh Lực đã dùng và thời gian hồi chiêu vẫn tính dù chiêu hụt.",
+        "Chiêu thức là đòn mạnh, dùng ngoài làng như ở Rừng Mực Loang (cổng đông). Bấm phím 1 đến 6.",
+        "Ngoài vùng hoang chiêu ra ngay, không phải trả lời gì; tốn Linh Lực và có thời gian hồi.",
+        "Câu hỏi đến khi quái đánh trúng con. Đúng là Phản Đòn: không mất máu, quái choáng, con được Linh Lực.",
+        "Phản Đòn liên tiếp làm chiêu mạnh dần. Sai hoặc hết giờ thì trúng đòn và chuỗi về 0.",
+        "Né Đòn (Shift, từ Luyện Khí tầng 1): lướt ra khỏi vùng đỏ trên đất trước khi quái ra đòn.",
+        "Trong bí cảnh luật vẫn như cũ: bấm chiêu thì trả lời câu hỏi, đúng thì chiêu trúng.",
         "Chiêu cần một Mặc Quái gần đó; đưa chuột lên quái để chọn mục tiêu. Space là đòn đánh thường.",
         "Mở theo tầng Luyện Khí con đang học trên Đạo Thụ: Thường Quyền, Phá Mê Kiếm Quyết, Hỏa Cầu Thuật từ tầng 1.",
         "Ngũ Hành Trận và Hộ Thân Trận từ tầng 2; Thiên Lôi Tuyệt Kỹ từ tầng 7.",
@@ -480,7 +482,7 @@
         "Trả lời câu hỏi: phím số chọn đáp án, Enter hoặc Space sang câu tiếp, Esc để Nghỉ, T mở Tàng Thư.",
         "Đọc Tàng Thư: Trái, Phải đổi mục; PageUp, PageDown, Space hoặc mũi tên lên xuống để cuộn; Esc đóng.",
         "Trong Đạo Thụ: Trái, Phải đổi thẻ nhánh; lên, xuống hoặc lăn chuột để cuộn danh sách nút.",
-        "Ngoài làng: Space đánh quái gần nhất, phím 1 đến 6 ra chiêu thức.",
+        "Ngoài làng: Space đánh quái gần nhất, phím 1 đến 6 ra chiêu thức, Shift để Né Đòn.",
         "Muốn xuống Trúc Lâm Thôn: đi xuống phía nam Động Phủ tới cổng tre rồi bấm E."
       ]
     },

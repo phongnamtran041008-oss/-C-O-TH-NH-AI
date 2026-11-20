@@ -83,6 +83,48 @@ class Ent:
 _GHOST: dict = {}
 
 
+def tele_shape(tl: list) -> dict:
+    """The shape of a hit zone: [x, y, r, left, total, monster, shape]; an old entry is a circle."""
+    return tl[6] if len(tl) > 6 and isinstance(tl[6], dict) else {"sh": "circle", "a": 0.0, "deg": 90.0, "w": 12.0}
+
+
+def tele_points(sx: float, sy: float, r: float, shape: dict, k: float = 1.0) -> list[tuple[float, float]]:
+    """The outline of a cone or line from its origin (screen px), filled to `k` of its reach."""
+    a = math.radians(shape["a"])
+    reach = max(1.0, r * k)
+    if shape["sh"] == "cone":
+        half = math.radians(min(shape["deg"], 179) / 2)
+        pts = [(sx, sy)]
+        for i in range(9):
+            b = a - half + 2 * half * i / 8
+            pts.append((sx + math.cos(b) * reach, sy + math.sin(b) * reach))
+        return pts
+    w = shape["w"] / 2
+    ca, sa = math.cos(a), math.sin(a)
+    return [(sx - sa * w, sy + ca * w), (sx + ca * reach - sa * w, sy + sa * reach + ca * w),
+            (sx + ca * reach + sa * w, sy + sa * reach - ca * w), (sx + sa * w, sy - ca * w)]
+
+
+def draw_tele_poly(surf: pygame.Surface, sx: float, sy: float, r: float, shape: dict, k: float,
+                   outline_only: bool = False) -> None:
+    """A cone or line drawn with plain polygons (no v2 sheet): the whole zone faint, the part
+    already filled stronger, and its rim."""
+    full = tele_points(sx, sy, r, shape)
+    if outline_only:
+        pygame.draw.polygon(surf, (255, 214, 120), full, 1)
+        return
+    xs, ys = [q[0] for q in full], [q[1] for q in full]
+    left, top = int(min(xs)) - 2, int(min(ys)) - 2
+    zone = pygame.Surface((int(max(xs)) - left + 4, int(max(ys)) - top + 4), pygame.SRCALPHA)
+    shift = [(qx - left, qy - top) for qx, qy in full]
+    pygame.draw.polygon(zone, (188, 71, 73, 50), shift)
+    if k > 0.05:
+        part = [(qx - left, qy - top) for qx, qy in tele_points(sx, sy, r, shape, k)]
+        pygame.draw.polygon(zone, (188, 71, 73, 110), part)
+    pygame.draw.polygon(zone, (142, 53, 55, 200), shift, 1)
+    surf.blit(zone, (left, top))
+
+
 def ghostly(img: pygame.Surface) -> pygame.Surface:
     """A bí cảnh ghost: the same sprite, pale and see-through."""
     key = id(img)
@@ -251,6 +293,11 @@ class WorldScene(Scene):
         self.casting: dict[str, dict] = {}        # eid -> the chiêu animation it is playing
         self.skill_fx: list[dict] = []            # chiêu effects in flight
         self.waiting_q: tuple[dict, float] | None = None   # a "q" message held back, and when it came
+        # the open-world rule (world_plan.json "combat", sent with the zone): None = Vấn Đạo (a bí cảnh)
+        self.rule: dict | None = None
+        self.dodge_ready = 0.0
+        self.dodging: dict[str, float] = {}       # eid -> when its Né Đòn clip started
+        self.stunned: dict[str, float] = {}       # monster eid -> until when a Phản Đòn stuns it
         self.attack_ready = 0.0
         self.flock = Flock()                 # guard bees (stage 5), drawn flying around their owner
         self.pet_follow: dict = {}           # Linh Thú trotting after their owners (stage 8): eid -> PetFollower
@@ -379,10 +426,14 @@ class WorldScene(Scene):
         while self.game.top is not None and self.game.top is not self and self in self.game.scenes:
             self.game.pop()      # the fight comes first: close bag/menus so the card sits over the world
         if m.get("first_meet"):
-            self.game.toast(T.COMBAT_INTRO, "#4A7CC8")
+            self.game.toast(T.PARRY_INTRO if m.get("hit") else T.COMBAT_INTRO, "#4A7CC8")
         q = m["q"]
         if waited > 0:
             q = {**q, "time_limit": max(1.0, float(q.get("time_limit") or 10) - waited)}
+        if m.get("hit"):     # the open-world rule: a blow landed and this question decides it
+            from .rpg import ParryCard
+            self.game.push(ParryCard(self.game, q, m.get("mid") or "", m["hit"], on_result=self.on_combat_result))
+            return
         self.start_cooldown((m.get("cast") or {}).get("k"))
         # every monster, chiêu (M9) and bí cảnh (M10) asks a math question: the math card
         self.game.push(MathCombatQuizScene(self.game, q, m.get("mid") or "",
@@ -428,6 +479,7 @@ class WorldScene(Scene):
         self.interp.clear()
         self.channel = m.get("channel", 1)
         self.channels = m.get("channels", [])
+        self.rule = m.get("combat")
         self.zone_name = m.get("name_vi") or self.zone_name
         self.joined = True
         self.waiting_zone = None
@@ -444,9 +496,10 @@ class WorldScene(Scene):
         while self.pending and self.pending[0][0] <= ack:
             self.pending.popleft()
         x, y = float(m["me"][0]), float(m["me"][1])
-        for _, steps in self.pending:
-            for dx, dy, ms in steps:
-                x, y = mv.step(x, y, dx, dy, ms, SPEED, self.col)
+        for entry in self.pending:
+            speed = entry[2] if len(entry) > 2 else SPEED     # a Né Đòn dash has its own speed
+            for dx, dy, ms in entry[1]:
+                x, y = mv.step(x, y, dx, dy, ms, speed, self.col)
         for dx, dy, ms in self.batch:
             x, y = mv.step(x, y, dx, dy, ms, SPEED, self.col)
         p = self.player
@@ -538,31 +591,43 @@ class WorldScene(Scene):
         if k == "stun":
             self.fx.float_text(T.BEE_STUN, x, y - 30, "#B5A0E0")
             return
+        if k in ("parry", "dodge", "dodged", "struck"):   # the open-world rule
+            self.on_rule_fx(k, ev, me)
+            return
         v2 = art2.on()
         now = self.game.now
         z = self.z                       # screen pixels per world pixel: a lift in screen px / z = world px
-        if k in ("hit", "mk") and ev.get("id") == me:   # we were hit
+        if k == "gb" and v2:             # a wrong answer: the blow breaks through the guard
+            ent = self.entities.get(ev.get("id"))
+            top = (V2_HEAD - 6) / z if ev.get("id") == me else (self.ent_extent(ent)[1] / z if ent else 20)
+            self.spark(art2.combat_fx("guard_break"), x, y - top * 0.6)
+        if k in ("hit", "mk", "gb") and ev.get("id") == me:   # we were hit
             self.fx.shake = 0.6 if k == "mk" else 0.3
             self.hurt_flash = 0.45 if k == "mk" else 0.2
             self.fx.float_text(f"-{ev.get('v', '')}", x, y - ((V2_HEAD - 6) / z if v2 else 30), "#F08A8C")
             if k == "mk":
                 self.fx.float_text(T.MAC_KICH, x, y - ((V2_HEAD + 4) / z if v2 else 40), "#BC4749")
+            elif k == "gb":
+                self.fx.float_text(T.GUARD_BREAK, x, y - ((V2_HEAD + 4) / z if v2 else 40), "#BC4749")
             if v2:
                 self.my_hurt_t0 = now
                 self.spark(art2.combat_fx("hit"), x, y - 26 / z)
-        elif k in ("hit", "mk"):
+        elif k in ("hit", "mk", "gb"):
             ent = self.entities.get(ev.get("id"))
             if ent is not None:
                 ent.hurt_t = 0.15
             col = "#9A9A9A" if ev.get("sh") else ("#E9C46A" if ev.get("c") else "#FFFFFF")
-            if k == "mk" or (ent is not None and ent.kind == "p"):
+            if k in ("mk", "gb") or (ent is not None and ent.kind == "p"):
                 col = "#F08A8C"
             lift = self.ent_extent(ent)[1] / z if (v2 and ent is not None) else 22
             self.fx.float_text(str(ev.get("v", "")), x + random.uniform(-4, 4), y - lift, col)
             if v2:
                 self.spark(art2.combat_fx("crit" if ev.get("c") else "hit"), x, y - lift * 0.5)
         elif k == "tele":
-            self.teles.append([x, y, ev.get("r", 20), ev.get("d", 0.8), ev.get("d", 0.8), ev.get("id")])
+            # [x, y, r, time left, total, monster, shape]; shape = {"sh", "a" (degrees), "deg", "w"}
+            self.teles.append([x, y, ev.get("r", 20), ev.get("d", 0.8), ev.get("d", 0.8), ev.get("id"),
+                               {"sh": ev.get("sh", "circle"), "a": float(ev.get("a") or 0.0),
+                                "deg": float(ev.get("deg") or 90.0), "w": float(ev.get("w") or 12.0)}])
             ent = self.entities.get(ev.get("id"))
             if ent is not None:
                 ent.aim = (x, y)
@@ -600,6 +665,90 @@ class WorldScene(Scene):
                 self.spark(art2.combat_fx("heal"), x, y - 24 / z, once=True)
             else:
                 self.fx.burst(x, y - 10, "l", 8, 15)
+
+    def on_rule_fx(self, k: str, ev: dict, me: str) -> None:
+        """Effects of the open-world rule: `struck` (a blow landed: the card is on its way),
+        `parry` (a right answer: the monster takes the counter and is stunned), `dodge` (a Né Đòn
+        dash starts) and `dodged` (its moment of invulnerability beat a blow)."""
+        x, y = float(ev.get("x", 0.0)), float(ev.get("y", 0.0))
+        now, z, v2 = self.game.now, self.z, art2.on()
+        if k == "struck":
+            if ev.get("id") == me:
+                self.fx.shake = 0.35
+                self.hurt_flash = 0.25
+                self.flush_inputs()
+                self.player.moving = False
+            return
+        if k == "parry":
+            self.stunned[ev.get("id")] = now + float(ev.get("st") or 0.0)
+            ent = self.entities.get(ev.get("id"))
+            if ent is not None:
+                ent.hurt_t = 0.15
+            px, py = float(ev.get("px", x)), float(ev.get("py", y))
+            if v2 and art2.fx(art2.combat_fx("parry")) is not None:
+                self.spark(art2.combat_fx("parry"), (x + px) / 2, (y + py) / 2 - 18 / z)
+            else:
+                self.fx.burst((x + px) / 2, (y + py) / 2 - 12, "W", 14, 30)
+            self.fx.float_text(T.PARRY, px, py - ((V2_HEAD + 4) / z if v2 else 40), "#E9C46A")
+            return
+        if k == "dodge":
+            self.dodging[ev.get("id")] = now
+            fid = art2.combat_fx("dodge_trail") if v2 else None
+            if fid and art2.fx(fid) is not None:
+                self.spark(fid, x, y - 12 / z)
+            return
+        if k == "dodged":
+            self.fx.float_text(T.DODGE_OK, x, y - ((V2_HEAD - 6) / z if v2 else 30), "#B5D67A")
+
+    def dodge_open(self) -> bool:
+        """Is Né Đòn open for me? The server's word at the last zone message, or - after a
+        breakthrough since - the realm and stage it named, read against my own."""
+        d = (self.rule or {}).get("dodge") or {}
+        if d.get("ok"):
+            return True
+        need = d.get("unlock") or {}
+        order = list(T.REALMS)
+        ch = self.game.state.character or {}
+        mine, want = ch.get("realm", "pham_nhan"), need.get("realm")
+        if want not in order or mine not in order:
+            return False
+        a, b = order.index(mine), order.index(want)
+        return a > b or (a == b and int(ch.get("realm_stage") or 0) >= int(need.get("stage", 0)))
+
+    def dodge(self) -> None:
+        """Né Đòn (Shift): a dash the way the keys point (or the way we face). It rides in the
+        movement stream under its own sequence number, so the server repeats exactly the steps
+        predicted here; the numbers come from the server with the zone."""
+        d = (self.rule or {}).get("dodge")
+        if d is None or self.net is None or self.dead or self.ghost or not self.joined:
+            return
+        if not self.dodge_open():
+            self.fx.float_text(T.DODGE_LOCKED, self.player.x, self.player.y - 30, "#F4EBD9")
+            return
+        if self.game.now < self.dodge_ready:
+            return
+        keys = pygame.key.get_pressed()
+        dx = (keys[pygame.K_d] or keys[pygame.K_RIGHT]) - (keys[pygame.K_a] or keys[pygame.K_LEFT])
+        dy = (keys[pygame.K_s] or keys[pygame.K_DOWN]) - (keys[pygame.K_w] or keys[pygame.K_UP])
+        if not (dx or dy):
+            dx, dy = {"down": (0, 1), "up": (0, -1), "left": (-1, 0), "right": (1, 0)}[self.player.facing]
+        self.flush_inputs()
+        total, step_ms = int(round(float(d["dash_ms"]))), int(d.get("step_ms") or 10)
+        speed = float(d["dash_px"]) / (total / 1000.0)
+        steps, left = [], total
+        while left > 0:
+            part = min(step_ms, left)
+            steps.append([dx, dy, part])
+            left -= part
+        if not self.net.send({"t": "dodge", "s": self.seq, "dx": dx, "dy": dy}):
+            return
+        self.pending.append((self.seq, steps, speed))
+        self.seq += 1
+        p = self.player
+        for sdx, sdy, ms in steps:
+            p.x, p.y = mv.step(p.x, p.y, sdx, sdy, ms, speed, self.col)
+        self.dodge_ready = self.game.now + float(d["cooldown"])
+        self.dodging[f"p{self.game.state.me.get('id')}"] = self.game.now
 
     # ------------------------------------------------------------ v2 helpers
     @property
@@ -1340,8 +1489,13 @@ class WorldScene(Scene):
             drawables += self.realm.drawables(cx, cy, frame)
         sw, sh = surf.get_size()
         # telegraphed monster attacks: a red zone that fills up before it lands (spec 8.1)
-        for tx, ty, r, left, total in self.teles:
+        for tl in self.teles:
+            tx, ty, r, left, total = tl[:5]
             k = 1 - max(0.0, left) / max(0.01, total)
+            shape = tele_shape(tl)
+            if shape["sh"] != "circle":
+                draw_tele_poly(surf, tx - cx, ty - cy, r, shape, k)
+                continue
             zone = pygame.Surface((int(r * 2 + 4), int(r * 1.3 + 4)), pygame.SRCALPHA)
             rect = zone.get_rect()
             pygame.draw.ellipse(zone, (188, 71, 73, 50), rect)
@@ -1468,6 +1622,12 @@ class WorldScene(Scene):
                 clip = c["anim"] if sheet.has(c["anim"]) else "slash"
                 return clip, now - c["t0"]
             del self.casting[eid]
+        t0 = self.dodging.get(eid)
+        if t0 is not None:
+            if sheet.has("dodge") and now - t0 < sheet.seconds("dodge"):
+                return "dodge", now - t0
+            if now - t0 > 2.0:
+                del self.dodging[eid]
         _, attack = art2.weapon_for(weapon)
         if atk_t0 is not None and now - atk_t0 < sheet.seconds(attack):
             return attack, now - atk_t0
@@ -1511,7 +1671,7 @@ class WorldScene(Scene):
             clip, t = "hit", 0.15 - e.hurt_t
         elif e.atk_t0 is not None and now - e.atk_t0 < sheet.seconds("attack"):
             clip, t = "attack", now - e.atk_t0
-        elif tl is not None:
+        elif tl is not None and self.stunned.get(e.id, 0.0) <= now:
             clip, t = "windup", tl[4] - tl[3]     # held on its last frame while the zone fills
         elif moving:
             clip, t = "walk", e.walk_t
@@ -1547,6 +1707,10 @@ class WorldScene(Scene):
             tx, ty, r, left, total = tl[:5]
             cx_, cy_ = v.to_screen(tx, ty)
             rad = v.len(r + 5)
+            shape = tele_shape(tl)
+            if shape["sh"] != "circle":
+                self.draw_tele_shaped(surf, cx_, cy_, v.len(r), shape, left, total, over)
+                continue
             if over:
                 if left > 0:
                     pygame.draw.circle(surf, (255, 214, 120), (cx_, cy_), int(rad), 1)
@@ -1563,6 +1727,43 @@ class WorldScene(Scene):
             else:
                 img = art2.scaled(release.frame(release.fx_index(-left)), d, d)
                 surf.blit(img, (int(cx_ - d / 2), int(cy_ - d / 2)))
+
+    def draw_tele_shaped(self, surf, sx: float, sy: float, r: float, shape: dict, left: float, total: float,
+                         over: bool) -> None:
+        """A cone or a line on the ground: the warn_cone / warn_line sheets (they point right from
+        their pivot), stretched to the reach and turned to the direction of the blow. Without the
+        sheets, a plain polygon."""
+        k = 1 - max(0.0, left) / max(0.01, total)
+        # a line's width in screen px; the direction snapped like art2.rotated snaps the artwork
+        shape = {**shape, "w": self.view.len(shape["w"]), "a": round(shape["a"] / 15) * 15}
+        if over:
+            if left > 0:
+                draw_tele_poly(surf, sx, sy, r, shape, 1.0, outline_only=True)
+            return
+        name = "telegraph_" + shape["sh"]
+        charge = art2.fx(art2.combat_fx(name))
+        if charge is None:
+            draw_tele_poly(surf, sx, sy, r, shape, k if left > 0 else 1.0)
+            return
+        fid = art2.combat_fx(name)
+        # the artwork reaches from its pivot (left edge) to 4 px short of the right edge, and a
+        # quarter-circle fan (or the line) fills its height
+        length = max(8, int(r * charge.fw / max(1, charge.fw - charge.pivot[0] - 4)))
+        if shape["sh"] == "cone":
+            spread = math.sin(math.radians(min(shape["deg"], 179) / 2)) / math.sin(math.radians(45))
+            width = max(8, int(length * spread))
+        else:
+            width = max(4, int(shape["w"] * charge.fh / max(1, charge.fh - 6)))
+        angle = -shape["a"]          # pygame turns counter-clockwise; screen y points down
+        if left > 0:
+            art2.draw_fx(surf, fid, self.t, sx, sy, size=(length, width), angle=angle)
+            inner = int(length * k)
+            if inner >= 8:
+                art2.draw_fx(surf, fid, self.t, sx, sy, size=(inner, width), angle=angle)
+        else:
+            land = art2.combat_fx(name + "_land")
+            if not (land and art2.draw_fx(surf, land, -left, sx, sy, size=(length, width), angle=angle)):
+                art2.draw_fx(surf, fid, self.t, sx, sy, size=(length, width), angle=angle)
 
     def npc_talking(self, o) -> bool:
         """Is this NPC's dialog on screen (it plays `talk` then)?"""
@@ -1914,6 +2115,8 @@ class WorldScene(Scene):
                 self.cast_mskill(i, hovered)
         if ui.key(pygame.K_q):
             self.use_pill()
+        if self.rule is not None and (ui.key(pygame.K_LSHIFT) or ui.key(pygame.K_RSHIFT)):
+            self.dodge()                             # Né Đòn (the open-world rule)
         if self.target:
             label = T.WORLD_ACTIONS.get(self.action_of(self.target), T.SIGN_READ)
             ui.text(T.PRESS_E.format(action=label), 240, 216, 9, "#FFFFFF", anchor="center")

@@ -93,8 +93,12 @@ Màn Bí Cảnh Toán (`client/scenes/math_practice.py`, `client/scenes/math_tre
 
 ## Chưa làm
 
-- **Luật đánh quái mới, binh khí, linh thú, mở khoá theo tu vi** trong `world_plan.json`: chưa có dòng code
-  nào dùng (`"wired": false`).
+- **Binh khí, vùng đất, linh thú và các mở khoá theo tu vi khác** trong `world_plan.json`: chưa có dòng code
+  nào dùng (`"wired": false`). **Luật đánh quái mới thì đã nối** (`"wired_sections": ["combat"]`, ngày
+  2026-11-20): ở mọi vùng hoang chỉ hỏi khi bị quái đánh trúng, có Phản Đòn, thời gian nghỉ, vùng đánh tròn /
+  quạt / thẳng và Né Đòn (mở ở Luyện Khí tầng 1). Bí cảnh, hầm ngục, thủ thành và cơ duyên giữ luật cũ. Còn
+  thiếu của phần này: `phap_tran` (pháp trận làm quái ra đòn chậm) và việc thuần phục linh thú bằng Phản Đòn
+  (`parries_to_tame`) chờ đợt linh thú; số đòn Phản Đòn chưa được đếm ở đâu cả.
 - **Nội dung cho nút thực chiến, dự án** và mọi cảnh giới sau Luyện Khí. Thiết kế cách làm ở
   `docs/THUC_CHIEN_TRONG_GAME.md`.
 - **Bài NumPy** (nút lập trình NumPy, tầng 4 của Luyện Khí): chưa viết vì NumPy chưa được cài kèm game, và

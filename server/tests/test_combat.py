@@ -2,6 +2,7 @@
 world runs with a fake clock and its tick is called by hand."""
 import asyncio
 
+import pytest
 import pytest_asyncio
 from sqlalchemy import select
 
@@ -24,6 +25,14 @@ class FakeMono:
 
     def __call__(self):
         return self.t
+
+
+@pytest.fixture(autouse=True)
+def van_dao(monkeypatch):
+    """These tests pin Vấn Đạo on a wild zone: the rule a bí cảnh still fights by (an engaged
+    monster asks, a right answer breaks its shield, a wrong one is a Mặc Kích). The wild zones
+    themselves now ask only when a monster lands a blow: tests/test_combat_on_hit.py."""
+    monkeypatch.setattr(combat, "on_hit_rule", lambda ch: False)
 
 
 @pytest_asyncio.fixture
