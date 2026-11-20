@@ -88,6 +88,11 @@ class Monster:
     def hp_pct(self) -> int:
         return max(0, min(100, int(round(100 * self.hp / max(1.0, self.max_hp)))))
 
+    def fights(self, p) -> bool:
+        """Does it fight this player? Every monster does; a linh thú (realtime/beasts.py) only
+        those it shows itself to and has not yielded to."""
+        return True
+
     def state(self) -> list:
         return [self.eid, round(self.x, 1), round(self.y, 1), FACING_CODE[self.facing], int(self.moving),
                 self.hp_pct(), int(self.shield), int(self.alive)]

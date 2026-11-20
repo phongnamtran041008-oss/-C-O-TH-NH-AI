@@ -163,6 +163,13 @@ def dodge_unlocked(p: "Player") -> bool:
     return have > need or (have == need and p.stage >= int(u["stage"]))
 
 
+def dodge_cooldown(p: "Player") -> float:
+    """Né Đòn's cooldown; the worn Bạch Hạc (gift dodge_cooldown) shortens it."""
+    from ..systems import beasts
+    return float(plan()["dodge"]["cooldown_seconds"]) * (1 - beasts.gift_value(getattr(p, "pet", None),
+                                                                                  "dodge_cooldown"))
+
+
 def dodge(p: "Player", seq: int, dx: int, dy: int, now: float) -> str | None:
     """Né Đòn: a short dash with a moment of invulnerability. Returns a refusal code or None.
 
@@ -194,7 +201,7 @@ def dodge(p: "Player", seq: int, dx: int, dy: int, now: float) -> str | None:
         left -= part
     if not ch.queue_dash(p, seq, steps, speed):
         return "cannot"
-    p.dodge_ready = now + float(d["cooldown_seconds"])
+    p.dodge_ready = now + dodge_cooldown(p)
     p.dodge_until = now + float(d["invulnerable_seconds"])
     p.last_combat = now
     ch.event(k="dodge", id=p.eid, x=round(p.x, 1), y=round(p.y, 1), dx=dx, dy=dy)
@@ -212,7 +219,7 @@ def rule_view(p: "Player") -> dict | None:
     return {"rule": c["question_rule"], "rest": float(c["question_cooldown_seconds"]),
             "dodge": {"ok": dodge_unlocked(p), "unlock": {"realm": u["realm"], "stage": int(u["stage"])},
                       "dash_px": float(c["dodge"]["dash_px"]),
-                      "dash_ms": float(c["dodge"]["dash_ms"]), "cooldown": float(c["dodge"]["cooldown_seconds"]),
+                      "dash_ms": float(c["dodge"]["dash_ms"]), "cooldown": dodge_cooldown(p),
                       "iframes": float(c["dodge"]["invulnerable_seconds"]), "step_ms": DASH_STEP_MS}}
 
 
@@ -274,16 +281,31 @@ def _parry(ch: "ChannelZone", p: "Player", q: dict, m: "Monster | None", correct
         m.stun_until = max(m.stun_until, now + stun)
         ch.event(k="parry", id=m.eid, by=p.eid, x=round(m.x, 1), y=round(m.y, 1), px=round(p.x, 1),
                  py=round(p.y, 1), st=stun)
-        from ..systems import weapons   # a Phản Đòn on a question of the weapon's own branch hits harder
+        from ..systems import beasts, weapons   # a Phản Đòn on a question of the weapon's own branch hits harder
         wmult = weapons.parry_mult(p.weapon, q.get("subject"))
-        dealt = hurt_monster(ch, m, p, base_damage(p, m) * float(right["counter_multiplier"]) * wmult, False, now)
-        return {**out, "damage": int(round(dealt)), "weapon_bonus": wmult > 1.0, "shield_broken": broke, "stun": stun,
-                "monster_hp": max(0, m.hp_pct()), "killed": not m.alive}
+        fire = beasts.gift_value(getattr(p, "pet", None), "parry_fire")      # the worn Hỏa Tước
+        if fire > 0:
+            ch.event(k="fire", id=m.eid, by=p.eid, x=round(m.x, 1), y=round(m.y, 1))
+        dealt = hurt_monster(ch, m, p, base_damage(p, m) * float(right["counter_multiplier"]) * wmult * (1 + fire),
+                             False, now)
+        from . import beasts as wild     # a linh thú counts the Phản Đòn: enough of them and it yields
+        tame = wild.on_parry(ch, m, p, now)
+        res = {**out, "damage": int(round(dealt)), "weapon_bonus": wmult > 1.0, "shield_broken": broke, "stun": stun,
+               "monster_hp": max(0, m.hp_pct()), "killed": not m.alive, "fire": fire > 0}
+        if tame is not None:
+            res["tame"] = tame
+        return res
     p.mcombo = 0
-    amount = float(q["hit"]) * float(c["wrong_answer"]["damage_taken"])
+    from ..systems import beasts         # the worn Huyền Quy: a wrong answer's blow is lighter
+    guard = beasts.gift_value(getattr(p, "pet", None), "wrong_guard")
+    amount = float(q["hit"]) * float(c["wrong_answer"]["damage_taken"]) * (1 - guard)
     taken = hurt_player(ch, p, amount, now, kind="gb", by=q["mid"], ignore_protect=True) if amount > 0 else 0.0
-    return {"parry": False, "correct": False, "rest": rest, "damage_taken": int(round(taken)),
-            "hp": max(0, int(round(p.hp))), "dead": p.dead, "shows_solution": True}
+    out = {"parry": False, "correct": False, "rest": rest, "damage_taken": int(round(taken)),
+           "hp": max(0, int(round(p.hp))), "dead": p.dead, "shows_solution": True, "guarded": guard > 0}
+    if m is not None and getattr(m, "beast", False):      # the taming count so far, shown with the result
+        out["tame"] = {"beast": m.kind, "name_vi": m.plan["name_vi"], "n": m.parries.get(p.user_id, 0),
+                       "need": m.need, "yielded": False}
+    return out
 
 
 # ------------------------------------------------------------------ damage
@@ -314,6 +336,8 @@ def hurt_monster(ch: "ChannelZone", m: "Monster", p: "Player | None", dmg: float
     regrow = False
     if m.shield:  # spec 8.1: a shielded monster cannot be killed, a hit only scratches it
         dmg = float(cfg()["shielded_damage"])
+        m.hp = max(1.0, m.hp - dmg)
+    elif getattr(m, "beast", False):   # a linh thú is never killed: it is tamed (realtime/beasts.py)
         m.hp = max(1.0, m.hp - dmg)
     elif m.regen and m.hp - dmg <= m.max_hp * m.regen[0] / 100:
         # elites: the Mặc Thuẫn comes back at its threshold, even a huge hit stops there
@@ -479,7 +503,7 @@ async def _create_question(ch: "ChannelZone", p: "Player", mid: str, kind: str, 
                 return
             context, question = built
             out = await quiz.create_session(db, user, context, question, ref=f"{ch.key}|{mid}")
-            first = await codex.meet_monster(db, p.user_id, kind)
+            first = False if getattr(m0, "beast", False) else await codex.meet_monster(db, p.user_id, kind)
             await db.commit()
     except Exception:
         log.exception("could not create a combat question")
@@ -600,7 +624,7 @@ def attack(p: "Player", eid: str, now: float, rng: random.Random) -> str | None:
     if now < p.next_attack_at:
         return "cooldown"
     m = ch.monster(eid)
-    if m is None or not m.alive:
+    if m is None or not m.alive or not m.fights(p):
         return "no_target"
     prof = weapon_profile(p)
     if dist(p.x, p.y - 6, m.x, m.y - 6) > prof["range"] + 10:
@@ -848,7 +872,7 @@ def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float) -> Non
     if not m.engaged and info.get("aggressive"):
         r = info.get("aggro_radius", 0)
         near = [p for p in ch.players.values() if not p.dead and dist(p.x, p.y, m.x, m.y) <= r
-                and not (m.on_hit and (p.protected(now) or p.q_pending))]
+                and not (m.on_hit and (p.protected(now) or p.q_pending)) and m.fights(p)]
         if near:
             engage(ch, m, min(near, key=lambda p: dist(p.x, p.y, m.x, m.y)), now)
     if not m.engaged:
@@ -864,7 +888,7 @@ def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float) -> Non
         m.mode, m.tele = "return", None
         return
     m.mode = "chase"
-    targets = [ch.players[u] for u in m.engaged if u in ch.players]
+    targets = [ch.players[u] for u in m.engaged if u in ch.players and m.fights(ch.players[u])]
     if m.on_hit:   # the fight is paused for whoever is answering: nobody swings at them
         targets = [p for p in targets if not p.protected(now) and not p.q_pending]
     if m.tele is not None:
@@ -874,7 +898,7 @@ def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float) -> Non
             m.atk_ready = now + c["monster_attack_cooldown"]
             if m.on_hit:
                 for p in list(ch.players.values()):
-                    if not p.dead and not p.ghost and in_tele(tele, p.x, p.y):
+                    if not p.dead and not p.ghost and m.fights(p) and in_tele(tele, p.x, p.y):
                         dmg = max(1.0, info.get("atk", 5) - p.stats.get("def", 0) * c["defense_factor"])
                         land_blow(ch, m, p, dmg, now)
             elif targets:
@@ -897,7 +921,8 @@ def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float) -> Non
         m.moving = False
         if now >= m.atk_ready and not tgt.protected(now):
             if m.on_hit:
-                dur = windup()
+                from . import abilities      # Bày pháp trận: a monster standing in one winds up slower
+                dur = windup() * abilities.windup_mult(ch, m, now)
                 m.tele = make_tele(m, tgt.x, tgt.y, reach, now + dur, next_shape(m))
                 ch.event(**tele_event(m, m.tele, dur))
             else:

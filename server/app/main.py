@@ -20,6 +20,7 @@ from .routers import (auth_routes, bee_routes, economy_routes, fishing_routes, g
                       realm_routes, rpg_routes, server_routes, social_routes, books_routes)
 from .routers import guide_routes
 from .routers import weapon_routes
+from .routers import beast_routes
 from .systems import cultivation as _cultivation  # noqa: F401  (registers meditate/tribulation handlers)
 
 log = logging.getLogger("toan_tu_tien")
@@ -86,6 +87,7 @@ def create_app(use_lifespan: bool = True) -> FastAPI:
     app.include_router(math_fortune_routes.router)    # M10: cơ duyên
     app.include_router(math_td_routes.router)         # M10: thủ thành toán
     app.include_router(weapon_routes.router)          # binh khí của Thiên Địa Đồ
+    app.include_router(beast_routes.router)           # linh thú của Thiên Địa Đồ
     app.include_router(guide_routes.router)           # Lộ Trình tân thủ
     app.include_router(ws_routes.router)
 

@@ -12,10 +12,12 @@ functions. The **tree is wired** (`"wired": true` in tree.json, approved by the 
 2026-11-19): systems/math_tree_progress.py reads it to decide which nodes a player has open
 and done, and the question loop (systems/math_practice.py) sits down on the parts of a node
 (a floor of math_path.py is still the address of the questions). The world plan as a whole is
-not wired yet (`"wired": false` in world_plan.json): its lands, weapons and beasts are a design.
-Parts of it are: `"wired_sections": ["combat", "lands"]` names the sections the game already
-runs on although the whole plan is not (the combat rule "questions only when a monster hits you",
-realtime/combat.py; the lands of Luyện Khí - their maps, creatures and doors, realtime/lands.py). A wired section is checked harder - every number the game reads must be
+not wired yet (`"wired": false` in world_plan.json): what lies beyond Luyện Khí is a design.
+Parts of it are: `"wired_sections"` names the sections the game already runs on although the
+whole plan is not (the combat rule "questions only when a monster hits you", realtime/combat.py;
+the lands of Luyện Khí - their maps, creatures and doors, realtime/lands.py; the weapons lying in
+them, systems/weapons.py; the beasts of Luyện Khí and their taming, realtime/beasts.py; the thần
+thông of Luyện Khí, realtime/abilities.py). A wired section is checked harder - every number the game reads must be
 there and make sense - because a typo in it is a bug in the game, not in a design document.
 
 What `validate()` guarantees, because a wrong tree would teach things in the wrong order:
@@ -50,7 +52,11 @@ STATUSES = ("chinh", "phu")
 CONTENT = ("co", "dang_viet", "chua_co")
 KINDS = ("toan", "code", "thuc_chien", "du_an", "hoc_may", "hoc_sau", "he_thong", "nghien_cuu", "dan_dat")
 QUESTION_RULES = ("on_hit",)
-WIREABLE_SECTIONS = ("combat", "lands", "weapons")   # the parts of world_plan.json the game can run on by themselves
+# the parts of world_plan.json the game can run on by themselves: 'beasts' is the beasts with their
+# taming rule (beast_taming), 'abilities' the thần thông of the unlocks that have content
+WIREABLE_SECTIONS = ("combat", "lands", "weapons", "beasts", "abilities")
+GIFT_TYPES = ("sniff", "wrong_guard", "dodge_cooldown", "parry_fire", "mount")
+ABILITY_BLOCKS = {"phap_tran": "formation", "dap_kiem_luot": "glide", "cuoi_linh_thu": "ride"}
 TELEGRAPH_SHAPES = ("circle", "cone", "line")
 RANKS = ("normal", "elite", "boss")
 
@@ -418,6 +424,196 @@ def _wired_lands_problems(plan: dict, t: Tree, math_dir: Path) -> list[str]:
     return errs
 
 
+def _walk_region(zmap, start: tuple[int, int]) -> set[tuple[int, int]]:
+    """The tiles a character can walk to from `start` (four ways, the movement collider)."""
+    from collections import deque
+    cols, rows = zmap.width_px // TILE, zmap.height_px // TILE
+    if not (0 <= start[0] < cols and 0 <= start[1] < rows) or not _tile_walkable(zmap, *start):
+        return set()
+    seen, q = {start}, deque([start])
+    while q:
+        x, y = q.popleft()
+        for n in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            if 0 <= n[0] < cols and 0 <= n[1] < rows and n not in seen and _tile_walkable(zmap, *n):
+                seen.add(n)
+                q.append(n)
+    return seen
+
+
+def glide_reaches(zmap, foot: set, target: set, glide: dict) -> bool:
+    """Can a player walking the tiles `foot` reach the tiles `target` by one Đạp Kiếm Lướt
+    (realtime/glide.py), from the middle of a tile, in one of eight directions?"""
+    from ..realtime import glide as g
+    over = set(glide.get("over_tiles", []))
+    reach = int(float(glide.get("max_px", 0)) // TILE) + 2
+    near = [t for t in foot if any(abs(t[0] - a) <= reach and abs(t[1] - b) <= reach for a, b in target)]
+    for tx, ty in near:
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                land = g.pick(zmap.collider, zmap.tile_name, over, tx * TILE + TILE / 2, ty * TILE + 12, dx, dy,
+                              float(glide.get("max_px", 0)), float(glide.get("min_px", 0)))
+                if land is not None and (int(land[0] // TILE), int((land[1] - 1) // TILE)) in target:
+                    return True
+    return False
+
+
+def _wired_beasts_problems(plan: dict, math_dir: Path) -> list[str]:
+    """What realtime/beasts.py and systems/beasts.py read, checked once 'beasts' is wired: the
+    taming rule's numbers, a talisman that is an item, and for every built beast a built land of
+    Luyện Khí, a walkable `pos` (on foot from the land's gate, unless it `needs` an ability -
+    then not on foot but by that ability), sane fighting numbers and a gift of a known type."""
+    from ..realtime import maps as rmaps
+    errs: list[str] = []
+    data_dir = math_dir.parent
+    tm = plan.get("beast_taming")
+    if not isinstance(tm, dict):
+        return ["beast_taming must be an object (the taming rule of the beasts)"]
+    unlocks = {u.get("id"): u for u in plan.get("unlocks", [])}
+    lands = {l["id"]: l for l in plan.get("lands", [])}
+    items: set[str] = set()
+    for f in sorted((data_dir / "items").glob("*.json")):
+        items |= {k for k in _read(f.name, data_dir / "items") if not k.startswith("_")}
+    if tm.get("talisman") not in items:
+        errs.append(f"beast_taming.talisman: {tm.get('talisman')!r} is not an item of data/items")
+    if tm.get("seal_unlock") not in unlocks:
+        errs.append(f"beast_taming.seal_unlock: unknown ability {tm.get('seal_unlock')!r}")
+    elif unlocks[tm["seal_unlock"]].get("status") != "co":
+        errs.append(f"beast_taming.seal_unlock: {tm['seal_unlock']} is wired, so its status must be 'co'")
+    for key in ("seal_reach_px", "yield_seconds", "roam_tiles"):
+        if not _num(tm.get(key)) or tm[key] <= 0:
+            errs.append(f"beast_taming.{key} must be a positive number")
+    if list(tm.get("gift_types", [])) != list(GIFT_TYPES):
+        errs.append(f"beast_taming.gift_types must be {list(GIFT_TYPES)} (the gifts the game knows)")
+    abilities = unlocks
+    glide = (abilities.get("dap_kiem_luot") or {}).get("glide", {})
+    zmaps: dict[str, object] = {}
+    for b in plan.get("beasts", []):
+        where = f"beast {b.get('id')}"
+        if b.get("status") not in CONTENT[::2]:
+            errs.append(f"{where}: status must be 'co' or 'chua_co'")
+            continue
+        land = lands.get(b.get("land"), {})
+        if b["status"] != "co":
+            if b.get("pos") is not None:
+                errs.append(f"{where}: has a pos but is not built")
+            continue
+        if land.get("status") != "co" or not land.get("map"):
+            errs.append(f"{where}: built, but its land {b.get('land')} is not")
+            continue
+        if land.get("realm") != b.get("requires", {}).get("realm"):
+            errs.append(f"{where}: requires a realm other than its land's")
+        f = b.get("fight")
+        if not isinstance(f, dict):
+            errs.append(f"{where}: built, so it needs 'fight' (hp, atk, def, speed, attack_radius, aggro_radius)")
+        else:
+            for key in ("hp", "atk", "speed", "attack_radius", "aggro_radius"):
+                if not _num(f.get(key)) or f[key] <= 0:
+                    errs.append(f"{where}: fight.{key} must be a positive number")
+            if not _num(f.get("def")) or f["def"] < 0:
+                errs.append(f"{where}: fight.def must be a number >= 0")
+        gift = b.get("gift")
+        if not isinstance(gift, dict) or gift.get("type") not in GIFT_TYPES:
+            errs.append(f"{where}: gift.type must be one of {GIFT_TYPES}")
+        else:
+            gt = gift["type"]
+            if gt == "sniff" and (not _num(gift.get("radius_tiles")) or gift["radius_tiles"] <= 0):
+                errs.append(f"{where}: gift sniff needs a positive radius_tiles")
+            if gt in ("wrong_guard", "dodge_cooldown", "parry_fire") and \
+                    (not _num(gift.get("value")) or not 0 < gift["value"] < 1):
+                errs.append(f"{where}: gift {gt} needs a value between 0 and 1 (a small effect)")
+            if gt == "mount" and (not _num(gift.get("speed_mult")) or not 1 < gift["speed_mult"] <= 2.5):
+                errs.append(f"{where}: gift mount needs a speed_mult above 1 and at most 2.5")
+        pos = b.get("pos")
+        if not (isinstance(pos, list) and len(pos) == 2 and all(isinstance(v, int) and not isinstance(v, bool)
+                                                                for v in pos)):
+            errs.append(f"{where}: needs a pos [x, y] (a tile of map {land['map']})")
+            continue
+        path = data_dir.parent / "maps" / f"{land['map']}.tmj"
+        if not path.is_file():
+            continue          # (the lands check names a missing map)
+        zmap = zmaps.get(land["map"]) or zmaps.setdefault(land["map"], rmaps.parse(path))
+        if not _tile_walkable(zmap, *pos):
+            errs.append(f"{where}: pos {pos} is not a walkable tile")
+            continue
+        gate = zmap.spawn("from_village")
+        foot = _walk_region(zmap, (int(gate[0] // TILE), int(gate[1] // TILE)))
+        if not b.get("needs"):
+            if tuple(pos) not in foot:
+                errs.append(f"{where}: pos {pos} cannot be walked to from the gate of {land['map']}")
+        elif tuple(pos) in foot:
+            errs.append(f"{where}: needs {b['needs']}, yet pos {pos} can be walked to")
+        elif b["needs"] == "dap_kiem_luot" and not glide_reaches(zmap, foot, _walk_region(zmap, tuple(pos)), glide):
+            errs.append(f"{where}: needs Đạp Kiếm Lướt, but no glide from where a player walks reaches pos {pos}")
+    return errs
+
+
+def _wired_abilities_problems(plan: dict, math_dir: Path) -> list[str]:
+    """What realtime/abilities.py reads, checked once 'abilities' is wired: every unlock of a realm
+    with a built land has content ('co') and every other one waits ('chua_co'); the numbers of the
+    formation, the glide and the ride; and every weapon spot behind a chasm or water that
+    needs Đạp Kiếm Lướt can really be reached by one glide."""
+    from ..realtime import maps as rmaps
+    errs: list[str] = []
+    data_dir = math_dir.parent
+    lands = {l["id"]: l for l in plan.get("lands", [])}
+    built_realms = {l.get("realm") for l in lands.values() if l.get("status") == "co"}
+    unlocks = {u.get("id"): u for u in plan.get("unlocks", [])}
+    for uid, u in unlocks.items():
+        if u.get("status") not in CONTENT[::2]:
+            errs.append(f"unlock {uid}: status must be 'co' or 'chua_co'")
+        elif (u.get("status") == "co") != (u.get("realm") in built_realms):
+            want = "co" if u.get("realm") in built_realms else "chua_co"
+            errs.append(f"unlock {uid}: status must be '{want}' (realm {u.get('realm')} "
+                        f"{'has' if want == 'co' else 'has no'} built land)")
+    for uid, block in ABILITY_BLOCKS.items():
+        u = unlocks.get(uid)
+        if u is None:
+            errs.append(f"unlock {uid}: missing (the game runs it)")
+            continue
+        if u.get("status") != "co":
+            continue
+        c = u.get(block)
+        if not isinstance(c, dict):
+            errs.append(f"unlock {uid}: needs its '{block}' numbers")
+            continue
+        if block == "formation":
+            for key in ("radius_px", "seconds", "cooldown_seconds"):
+                if not _num(c.get(key)) or c[key] <= 0:
+                    errs.append(f"unlock {uid}: formation.{key} must be a positive number")
+            if not _num(c.get("windup_mult")) or not 1 < c["windup_mult"] <= 3:
+                errs.append(f"unlock {uid}: formation.windup_mult must be above 1 (slower) and at most 3")
+        elif block == "glide":
+            for key in ("max_px", "ms", "cooldown_seconds"):
+                if not _num(c.get(key)) or c[key] <= 0:
+                    errs.append(f"unlock {uid}: glide.{key} must be a positive number")
+            if not _num(c.get("min_px")) or c["min_px"] < 0 or (_num(c.get("max_px")) and c["min_px"] >= c["max_px"]):
+                errs.append(f"unlock {uid}: glide.min_px must be >= 0 and below max_px")
+            over = c.get("over_tiles")
+            if not isinstance(over, list) or not over or any(t not in rmaps.TILE_NAMES for t in over):
+                errs.append(f"unlock {uid}: glide.over_tiles must name ground tiles out of {sorted(set(rmaps.TILE_NAMES))}")
+        elif block == "ride":
+            mounts = [b for b in plan.get("beasts", []) if b.get("status") == "co"
+                      and (b.get("gift") or {}).get("type") == c.get("gift")]
+            if c.get("gift") != "mount" or not mounts:
+                errs.append(f"unlock {uid}: ride.gift must be 'mount' and some built beast must have it")
+    glide = (unlocks.get("dap_kiem_luot") or {}).get("glide", {})
+    if (unlocks.get("dap_kiem_luot") or {}).get("status") == "co" and isinstance(glide, dict) and _num(glide.get("max_px")):
+        for p in plan.get("weapons_placed", []):
+            land = lands.get(p.get("land"), {})
+            if p.get("needs") != "dap_kiem_luot" or land.get("status") != "co" or not p.get("pos"):
+                continue
+            path = data_dir.parent / "maps" / f"{land['map']}.tmj"
+            if not path.is_file():
+                continue
+            zmap = rmaps.parse(path)
+            gate = zmap.spawn("from_village")
+            foot = _walk_region(zmap, (int(gate[0] // TILE), int(gate[1] // TILE)))
+            if not glide_reaches(zmap, foot, _walk_region(zmap, tuple(p["pos"])), glide):
+                errs.append(f"weapons_placed {p.get('weapon')} {p.get('quality')}: needs Đạp Kiếm Lướt, "
+                            f"but no glide from where a player walks reaches pos {p['pos']}")
+    return errs
+
+
 def subject_skills(math_dir: Path = MATH_DIR) -> dict[str, tuple[str, ...]]:
     """Every micro-skill id of the four subject files -> its prerequisites."""
     out: dict[str, tuple[str, ...]] = {}
@@ -626,6 +822,10 @@ def validate_world(plan: dict, t: Tree, math_dir: Path = MATH_DIR) -> list[str]:
         errs += _wired_combat_problems(combat, {u.get("id"): u for u in plan.get("unlocks", [])})
     if section_wired("lands", plan):
         errs += _wired_lands_problems(plan, t, math_dir)
+    if section_wired("beasts", plan):
+        errs += _wired_beasts_problems(plan, math_dir)
+    if section_wired("abilities", plan):
+        errs += _wired_abilities_problems(plan, math_dir)
 
     grades = {g["grade"]: g for g in plan.get("grades", [])}
     if sorted(grades) != list(range(1, len(t.realm_order) + 1)):

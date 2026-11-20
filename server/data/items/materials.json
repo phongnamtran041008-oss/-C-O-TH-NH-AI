@@ -173,5 +173,11 @@
   "kind": "material",
   "sell_price": 10,
   "desc_vi": "Mảnh vỡ của bảo vật trong bí cảnh, cả đội cùng nhận. Gom đủ thì ghép thành đồ bộ Mặc Ảnh phẩm Thiên ở Cổng Bí Cảnh."
+ },
+ "phong_an_phu": {
+  "name_vi": "Phong Ấn Phù",
+  "kind": "material",
+  "sell_price": 5,
+  "desc_vi": "Lá bùa phong ấn linh thú. Khi linh thú đã chịu phục (đủ số lần Phản Đòn), đứng gần nó bấm E để thu. Mở ở Luyện Khí tầng 3 trên Đạo Thụ; bán ở Sạp Tạp Hóa."
  }
 }

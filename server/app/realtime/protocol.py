@@ -79,6 +79,28 @@ class Dodge(BaseModel):
     dy: int = Field(ge=-1, le=1)
 
 
+class Glide(BaseModel):
+    """Đạp Kiếm Lướt (world_plan.json unlock dap_kiem_luot): glide on the sword to the landing
+    point (x, y) the client picked, queued among the movement messages under the number `s`."""
+    t: Literal["glide"]
+    s: int = Field(ge=0)
+    x: float = Field(ge=0, le=10000)
+    y: float = Field(ge=0, le=10000)
+
+
+class Ride(BaseModel):
+    """Cưỡi linh thú (unlock cuoi_linh_thu): mount the worn beast (on) or get down, queued among
+    the movement messages under the number `s` (the speed changes from that step on)."""
+    t: Literal["ride"]
+    s: int = Field(ge=0)
+    on: bool
+
+
+class Formation(BaseModel):
+    """Bày pháp trận (unlock phap_tran): lay a formation on the ground at the feet."""
+    t: Literal["tran"]
+
+
 class MathCast(BaseModel):
     """Cast a chiêu thức gắn câu hỏi (M9, data/math/skills.json): the server answers with a
     question of the chiêu's type; id = target monster, null for a ward."""
@@ -115,7 +137,8 @@ class Mark(BaseModel):
 
 MESSAGES: dict[str, type[BaseModel]] = {"ping": Ping, "in": Input, "join": Join, "channel": Channel,
                                         "chat": Chat, "face": Face, "atk": Attack, "dodge": Dodge,
-                                        "mskill": MathCast, "party": PartyCmd, "realm": RealmCmd, "mark": Mark}
+                                        "mskill": MathCast, "party": PartyCmd, "realm": RealmCmd, "mark": Mark,
+                                        "glide": Glide, "ride": Ride, "tran": Formation}
 
 
 class BadMessage(Exception):
@@ -140,4 +163,4 @@ def error(code: str, message_vi: str, **extra) -> dict:
 
 __all__ = ["PROTOCOL_VERSION", "Hello", "Ping", "Input", "Join", "Channel", "Chat", "Face", "parse",
            "BadMessage", "error", "FACING", "FACING_CODE", "Attack", "MathCast", "PartyCmd", "RealmCmd",
-           "Mark", "Dodge"]
+           "Mark", "Dodge", "Glide", "Ride", "Formation"]

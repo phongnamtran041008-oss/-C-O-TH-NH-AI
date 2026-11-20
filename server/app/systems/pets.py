@@ -39,6 +39,14 @@ def cfg() -> dict:
 
 
 def species() -> dict[str, dict]:
+    """Every Linh Thú a player can own: the 12 con giáp and the linh thú of Thiên Địa Đồ tamed in
+    the lands (systems/beasts.py: one companion model, `source` 'thu_phuc', never on the banner)."""
+    from . import beasts
+    return {**zodiac(), **beasts.species()}
+
+
+def zodiac() -> dict[str, dict]:
+    """The 12 con giáp of the Linh Thú banner and of the Linh Thú Phổ."""
     return cfg()["species"]
 
 
@@ -117,7 +125,7 @@ def view(p: Pet) -> dict:
             "rarity": sp["rarity"],
             "rarity_vi": RARITY_VI.get(sp["rarity"], sp["rarity"]), "level": p.level, "max_level": cfg()["max_level"],
             "equipped": bool(p.equipped), "skill_vi": sp["skill_vi"], "stats": stats_of(p.pet_type, p.level),
-            "look": sp["look"]}
+            "look": sp["look"], "tamed": sp.get("source") == "thu_phuc"}
 
 
 async def owned(db: AsyncSession, user_id: int) -> list[Pet]:
@@ -129,7 +137,7 @@ async def overview(db: AsyncSession, user: User) -> dict:
     mine = await owned(db, user.id)
     have = {p.pet_type for p in mine}
     book = []
-    for pid, sp in species().items():
+    for pid, sp in zodiac().items():
         if pid in have:
             book.append({"id": pid, "found": True, "name_vi": sp["name_vi"], "zodiac_vi": sp["zodiac_vi"],
                          "rarity": sp["rarity"],
@@ -138,10 +146,10 @@ async def overview(db: AsyncSession, user: User) -> dict:
             book.append({"id": pid, "found": False, "zodiac_vi": sp["zodiac_vi"], "rarity": sp["rarity"],
                          "look": {"plan": sp["look"]["plan"]}})
     w = next((p for p in mine if p.equipped), None)
-    return {"pets": [view(p) for p in mine], "equipped": w.id if w else None, "book": book,
-            "found": len(have), "total": len(species()),
-            # every species' look, to draw the pets other players walk with
-            "looks": {pid: sp["look"] for pid, sp in species().items()}}
+    return {"pets": [view(p) for p in mine if p.pet_type in species()], "equipped": w.id if w else None,
+            "book": book, "found": len(have & set(zodiac())), "total": len(zodiac()),
+            # every con giáp's look, to draw the pets other players walk with (a tamed beast has its v2 sheet)
+            "looks": {pid: sp["look"] for pid, sp in zodiac().items()}}
 
 
 async def _after_change(db: AsyncSession, user_id: int) -> None:
@@ -187,7 +195,7 @@ async def resolve_gacha(db: AsyncSession, user: User, rarities: list[str], rng: 
     a species already owned gains a level, and past the top level turns into Linh Thạch."""
     c = cfg()
     pool: dict[str, list[str]] = {}
-    for pid, sp in species().items():
+    for pid, sp in zodiac().items():          # a linh thú is tamed in its land, never rolled
         pool.setdefault(sp["rarity"], []).append(pid)
     lucky = rare_upgrade_chance(await skill_value(db, user.id, "pet_rare"))
     out = []

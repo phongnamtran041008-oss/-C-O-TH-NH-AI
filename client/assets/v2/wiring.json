@@ -134,6 +134,11 @@
     "chuot": "pet_chuot", "trau": "pet_trau", "ho": "pet_ho", "meo": "pet_meo", "rong": "pet_rong", "ran": "pet_ran",
     "ngua": "pet_ngua", "de": "pet_de", "khi": "pet_khi", "ga": "pet_ga", "cho": "pet_cho", "lon": "pet_lon"
   },
+  "spirit_beasts": {
+    "_comment": "Linh thú of Thiên Địa Đồ (world_plan.json 'beasts') -> beasts/<id>: idle, walk, windup, attack, hit, die, happy, sleep. Drawn wild in its land and, once tamed, following its owner like a pet (client/engine/petfollow.py)",
+    "linh_ho": "linh_ho", "huyen_quy": "huyen_quy", "bach_hac": "bach_hac", "hoa_tuoc": "hoa_tuoc", "tieu_long": "tieu_long",
+    "ky_lan_con": "ky_lan_con"
+  },
   "bees": {
     "_comment": "Linh Phong species (server/data/creatures/bees.json) -> beasts/bee_<id> (fly, sting; facings right/left)",
     "muc": "bee_muc", "thao": "bee_thao", "hoa": "bee_hoa", "vu": "bee_vu", "tra": "bee_tra", "thuy_linh": "bee_thuy_linh",
@@ -228,7 +233,8 @@
       "manh_tap_hop": ["misc", "linh_thach_1"],
       "tinh_so_phuc": ["misc", "linh_thach_3"],
       "loi_ma_tran": ["misc", "linh_thach_3"],
-      "an_ruong_de": ["misc", "chia_khoa"]
+      "an_ruong_de": ["misc", "chia_khoa"],
+      "phong_an_phu": ["misc", "phong_an_phu"]
     },
     "by_weapon": {
       "sword": ["weapons_a", "kiem_1"], "brush": ["weapons_b", "truong_1"], "staff": ["weapons_b", "truong_1"],

@@ -87,6 +87,10 @@ class Player:
     dodge_until: float = 0.0                            # Né Đòn: invulnerable until then
     dodge_ready: float = 0.0                            # Né Đòn cooldown
     free_casting: set = field(default_factory=set)      # chiêu whose free cast is being checked (unlock)
+    # ---- thần thông of Luyện Khí (world_plan.json "unlocks", realtime/abilities.py) ----
+    riding: bool = False                                # Cưỡi linh thú: on the worn mount
+    glide_ready: float = 0.0                            # Đạp Kiếm Lướt cooldown
+    tran_ready: float = 0.0                             # Bày pháp trận cooldown
 
     @property
     def eid(self) -> str:
@@ -113,7 +117,7 @@ class Player:
         return {"id": self.eid, "k": "p", "uid": self.user_id, "n": self.name, "ap": self.appearance,
                 "realm": self.realm, "x": round(self.x, 2), "y": round(self.y, 2),
                 "f": FACING_CODE[self.facing], "m": int(self.moving), "hp": self.hp_pct(), "wp": self.weapon,
-                "bees": self.bee_states(), "pet": self.pet, "gh": int(self.ghost)}
+                "bees": self.bee_states(), "pet": self.pet, "gh": int(self.ghost), "rd": int(self.riding)}
 
     def apply_stats(self, stats: dict, heal: bool = False) -> None:
         self.stats = dict(stats)
@@ -133,6 +137,10 @@ class ChannelZone:
         self.players: dict[int, Player] = {}
         self.rng = rng or random.Random()
         self.monsters: list[ai.Monster] = ai.spawn_all(zmap, self.rng, prefix=f"m{number}_")
+        from . import beasts                  # Thiên Địa Đồ: the linh thú of this land (never in a bí cảnh)
+        if not self.instance:
+            self.monsters += beasts.spawn_for(zone_id, number)
+        self.formations: list[dict] = []      # Bày pháp trận laid here (realtime/abilities.py)
         from . import combat
         if combat.on_hit_rule(self):     # the wild: questions only when a monster lands a blow
             for m in self.monsters:
@@ -219,7 +227,16 @@ class ChannelZone:
         p.inputs.append((seq, steps, 0, speed))
         return True
 
+    def queue_special(self, p: Player, seq: int, action) -> bool:
+        """A thần thông that rides in the movement stream under its own sequence number
+        (realtime/abilities.py: a glide, mounting, getting down); None keeps the number, empty."""
+        if seq <= p.ack or (p.inputs and seq <= p.inputs[-1][0]):
+            return False
+        p.inputs.append((seq, [], 0, None, action))
+        return True
+
     def _move_players(self, dt: float, now: float = 0.0) -> None:
+        from . import abilities
         cap = cfg()["move_budget_max_ms"]
         col = self.map.collider
         for p in self.players.values():
@@ -236,9 +253,12 @@ class ChannelZone:
             while p.inputs and p.inputs[0][2] <= p.budget_ms:
                 entry = p.inputs.popleft()
                 seq, steps, total = entry[:3]
-                speed = entry[3] if len(entry) > 3 else self.speed   # a Né Đòn dash has its own
+                speed = entry[3] if len(entry) > 3 and entry[3] else self.speed * abilities.ride_mult(p)
+                # (a Né Đòn dash has its own speed; a rider moves at the mount's)
                 p.queued_ms -= total
                 p.budget_ms -= total
+                if len(entry) > 4:
+                    abilities.apply_special(self, p, entry[4])
                 for dx, dy, ms in steps:
                     if dx or dy:
                         p.facing = facing_for(dx, dy, p.facing)
@@ -285,8 +305,8 @@ class ChannelZone:
         for gy in range(cy - r, cy + r + 1):
             for gx in range(cx - r, cx + r + 1):
                 for e in self.grid.get((gx, gy), ()):
-                    if e is not p:
-                        out.append(e)
+                    if e is not p and not (getattr(e, "beast", False) and not e.shows_to(p)):
+                        out.append(e)        # (a linh thú shows itself only to who may meet it)
         return out
 
     def snapshot_for(self, p: Player, server_time: float) -> dict:
