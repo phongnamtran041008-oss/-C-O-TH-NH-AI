@@ -8,7 +8,8 @@ The skills are read where they act through `skill_value(db, user_id, type)`:
   dungeon_stones (Trâu)     — math_dungeon._grant, Linh Thạch of rooms and chest;
   tribulation_guard (Hổ)    — cultivation.tribulation_handler, Tu Vi lost on a failed Thiên Kiếp;
   fish_luck (Mèo)           — fishing;
-  streak_double (Rồng), xp_meditate (Gà) — on_math_answer below, called by math_combat.record;
+  streak_double (Rồng), xp_meditate (Gà), xp_bonus (Cửu Vĩ Hồ, a tamed linh thú) — on_math_answer
+                            below, called by math_combat.record;
   mac_kich (Rắn), kill_stones (Ngựa), drop (Chó) — realtime combat;
   honey (Dê)                — bees.collect;
   td_qi (Khỉ)               — math_td;
@@ -62,6 +63,11 @@ async def worn(db: AsyncSession, user_id: int) -> Pet | None:
     return (await db.execute(select(Pet).where(Pet.user_id == user_id, Pet.equipped.is_(True)))).scalars().first()
 
 
+async def worn_type(db: AsyncSession, user_id: int) -> str | None:
+    p = await worn(db, user_id)
+    return p.pet_type if p else None
+
+
 async def worn_stats(db: AsyncSession, user_id: int) -> dict:
     p = await worn(db, user_id)
     return stats_of(p.pet_type, p.level) if p else {}
@@ -109,6 +115,8 @@ async def on_math_answer(db: AsyncSession, user: User, s: QuizSession, correct: 
         from .cultivation import MEDITATE_CONTEXT
         if s.context != MEDITATE_CONTEXT:
             return {}
+        bonus = math.ceil(_answer_xp(user, s) * float(sk.get("value", 0)))
+    elif kind == "xp_bonus" and correct:      # Cửu Vĩ Hồ, a linh thú of Thiên Địa Đồ (systems/beasts.py)
         bonus = math.ceil(_answer_xp(user, s) * float(sk.get("value", 0)))
     else:
         return {}

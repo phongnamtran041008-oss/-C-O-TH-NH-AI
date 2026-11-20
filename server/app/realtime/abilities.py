@@ -58,6 +58,13 @@ def glide_cfg() -> dict:
     return unlock(GLIDE).get("glide", {})
 
 
+def glide_max_px(p: "Player | None") -> float:
+    """How far this player's Đạp Kiếm Lướt flies: the plan's max_px, farther with the worn
+    Kim Sí Điểu (gift glide_range)."""
+    from ..systems import beasts
+    return float(glide_cfg().get("max_px", 80)) * (1 + beasts.gift_value(getattr(p, "pet", None), "glide_range"))
+
+
 def formation_cfg() -> dict:
     return unlock(FORMATION).get("formation", {})
 
@@ -155,16 +162,18 @@ def request_glide(p: "Player | None", seq: int, x: float, y: float, now: float) 
     return code
 
 
-def check_glide(ch: "ChannelZone", x0: float, y0: float, x1: float, y1: float) -> str | None:
+def check_glide(ch: "ChannelZone", x0: float, y0: float, x1: float, y1: float,
+                max_px: float | None = None) -> str | None:
     from . import glide
     c = glide_cfg()
+    reach = float(c.get("max_px", 80)) if max_px is None else max_px
     return glide.check(ch.map.collider, ch.map.tile_name, set(c.get("over_tiles", [])), x0, y0, x1, y1,
-                       float(c.get("max_px", 80)), float(c.get("min_px", 0)))
+                       reach, float(c.get("min_px", 0)))
 
 
 def apply_glide(ch: "ChannelZone", p: "Player", x: float, y: float) -> str | None:
     """Reached in the movement stream: glide from where the player stands now, or refuse."""
-    code = check_glide(ch, p.x, p.y, x, y)
+    code = check_glide(ch, p.x, p.y, x, y, glide_max_px(p))
     if code is not None:
         if p.session is not None:
             p.session.send({"t": "glide", "ok": False, "code": code, "message_vi": REFUSALS_VI[code],
@@ -244,7 +253,7 @@ def view(p: "Player", now: float) -> dict | None:
         u = unlock(uid)
         out[uid] = {"ok": is_open(p, uid), "name_vi": u.get("name_vi", uid),
                     "unlock": {"realm": u.get("realm"), "stage": int(u.get("stage", 0))}}
-    out[GLIDE].update(max_px=float(g.get("max_px", 80)), min_px=float(g.get("min_px", 0)),
+    out[GLIDE].update(max_px=glide_max_px(p), min_px=float(g.get("min_px", 0)),
                       ms=float(g.get("ms", 450)), cooldown=float(g.get("cooldown_seconds", 2.5)),
                       over=list(g.get("over_tiles", [])), sheet=g.get("sheet", ""))
     out[FORMATION].update(radius=float(f.get("radius_px", 56)), seconds=float(f.get("seconds", 20)),

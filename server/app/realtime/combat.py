@@ -96,11 +96,13 @@ def windup() -> float:
 
 
 def next_shape(m: "Monster") -> str:
-    """The shape of this monster's next blow: its own `attack_shape` if the data gives one,
-    else its rank's list in turn."""
-    if m.info.get("attack_shape") in plan()["telegraph_shapes"]:
-        return m.info["attack_shape"]
-    shapes = plan()["telegraph"]["by_rank"].get(m.info.get("rank", "normal")) or ["circle"]
+    """The shape of this monster's next blow: its own `attack_shape` if the data gives one (one
+    shape, or a list: its own rhythm, in turn), else its rank's list in turn."""
+    own = m.info.get("attack_shape")
+    if isinstance(own, str) and own in plan()["telegraph_shapes"]:
+        return own
+    shapes = own if isinstance(own, list) and own else \
+        plan()["telegraph"]["by_rank"].get(m.info.get("rank", "normal")) or ["circle"]
     shape = shapes[m.shape_i % len(shapes)]
     m.shape_i += 1
     return shape
@@ -258,6 +260,18 @@ def _unasked_blow(ch: "ChannelZone", p: "Player", mid: str, dmg: float) -> None:
         hurt_player(ch, p, amount, now, by=mid)
 
 
+def parry_heal(ch: "ChannelZone", p: "Player") -> int:
+    """The worn Ngọc Thố (gift heal_on_right): a Phản Đòn heals a share of max HP. Returns the HP healed."""
+    from ..systems import beasts
+    share = beasts.gift_value(getattr(p, "pet", None), "heal_on_right")
+    amount = min(p.max_hp - p.hp, p.max_hp * share) if share > 0 and not p.dead else 0.0
+    if amount <= 0:
+        return 0
+    p.hp += amount
+    ch.event(k="heal", id=p.eid, v=max(1, int(round(amount))), x=p.x, y=p.y)
+    return int(round(amount))
+
+
 def _parry(ch: "ChannelZone", p: "Player", q: dict, m: "Monster | None", correct: bool, now: float) -> dict:
     """The question of a blow was answered (or ran out): Phản Đòn, or the blow lands."""
     c = plan()
@@ -291,7 +305,8 @@ def _parry(ch: "ChannelZone", p: "Player", q: dict, m: "Monster | None", correct
         from . import beasts as wild     # a linh thú counts the Phản Đòn: enough of them and it yields
         tame = wild.on_parry(ch, m, p, now)
         res = {**out, "damage": int(round(dealt)), "weapon_bonus": wmult > 1.0, "shield_broken": broke, "stun": stun,
-               "monster_hp": max(0, m.hp_pct()), "killed": not m.alive, "fire": fire > 0}
+               "monster_hp": max(0, m.hp_pct()), "killed": not m.alive, "fire": fire > 0,
+               "healed": parry_heal(ch, p)}                                   # the worn Ngọc Thố
         if tame is not None:
             res["tame"] = tame
         return res
@@ -719,7 +734,8 @@ def _loot_bonus(p: "Player", m: "Monster") -> dict:
             best["drop_mult"] *= 1 + float(sk["value"])
         elif sk.get("type") == "kill_stones":
             best["stones_pct"] += float(sk["value"]) * 100
-    return best
+    from ..systems import beasts     # the worn Tầm Bảo Thử (stones) and Kim Thiềm (drop luck)
+    return beasts.loot_gift(pet, best)
 
 
 async def _bee_xp(uid: int, bee_ids: list[int]) -> None:
