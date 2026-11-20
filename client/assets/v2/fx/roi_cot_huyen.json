@@ -1,0 +1,19 @@
+{
+ "id": "roi_cot_huyen",
+ "name_vi": "Ánh quang rơi đồ Huyền",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 84
+ },
+ "sheet": "roi_cot_huyen.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 8,
+ "loop": true,
+ "blend": "add",
+ "ground": false
+}

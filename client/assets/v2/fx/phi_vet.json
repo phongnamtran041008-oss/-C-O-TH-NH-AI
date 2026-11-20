@@ -1,0 +1,19 @@
+{
+ "id": "phi_vet",
+ "name_vi": "Vệt kiếm quang",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 80,
+  "y": 48
+ },
+ "sheet": "phi_vet.png",
+ "cols": 6,
+ "frames": 6,
+ "fps": 12,
+ "loop": true,
+ "blend": "add",
+ "ground": false
+}

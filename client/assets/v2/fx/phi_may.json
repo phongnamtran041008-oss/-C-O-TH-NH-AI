@@ -1,0 +1,19 @@
+{
+ "id": "phi_may",
+ "name_vi": "Mây dưới chân",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 56
+ },
+ "sheet": "phi_may.png",
+ "cols": 6,
+ "frames": 6,
+ "fps": 8,
+ "loop": true,
+ "blend": "alpha",
+ "ground": false
+}

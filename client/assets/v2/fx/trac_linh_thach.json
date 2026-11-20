@@ -1,0 +1,19 @@
+{
+ "id": "trac_linh_thach",
+ "name_vi": "Trắc Linh Thạch",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 84
+ },
+ "sheet": "trac_linh_thach.png",
+ "cols": 6,
+ "frames": 6,
+ "fps": 6,
+ "loop": true,
+ "blend": "alpha",
+ "ground": false
+}

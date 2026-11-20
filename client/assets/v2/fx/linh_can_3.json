@@ -1,0 +1,19 @@
+{
+ "id": "linh_can_3",
+ "name_vi": "Linh căn Huyền - bùng sáng",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 108
+ },
+ "sheet": "linh_can_3.png",
+ "cols": 8,
+ "frames": 11,
+ "fps": 12,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

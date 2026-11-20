@@ -1,0 +1,19 @@
+{
+ "id": "phi_ha_canh",
+ "name_vi": "Hạ cánh",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 48
+ },
+ "sheet": "phi_ha_canh.png",
+ "cols": 6,
+ "frames": 6,
+ "fps": 14,
+ "loop": false,
+ "blend": "alpha",
+ "ground": true
+}
