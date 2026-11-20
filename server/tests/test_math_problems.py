@@ -80,14 +80,15 @@ def test_an_exercise_has_samples_hidden_tests_and_a_reference_solution():
 
 PUBLIC_KEYS = {"id", "subject", "subject_name_vi", "skill", "skill_name_vi", "floor", "tier",
                "tier_name_vi", "title_vi", "statement_vi", "input_vi", "output_vi", "limits_vi",
-               "checker", "time_limit_ms", "samples", "tests", "think_limit_s", "reviewed"}
+               "checker", "time_limit_ms", "samples", "tests", "think_limit_s", "reviewed", "starter"}
+SCORED_KEYS = {"scored", "grades", "higher_better", "grade_names_vi"}     # Xạ Trường only
 
 
 def test_the_statement_the_game_gets_never_carries_a_hidden_test():
     """The view is the whole contract: these keys and no others, and `tests` is a count."""
     for p in pr.bank().values():
         view = p.view()
-        assert set(view) == PUBLIC_KEYS, p.id
+        assert set(view) == PUBLIC_KEYS | (SCORED_KEYS if p.scored else set()), p.id
         assert view["tests"] == len(p.tests) and isinstance(view["tests"], int)
         assert view["samples"] == [s.view() for s in p.samples]
         # The view is a fixed set of fields, so nothing hidden can ride along in a new one.

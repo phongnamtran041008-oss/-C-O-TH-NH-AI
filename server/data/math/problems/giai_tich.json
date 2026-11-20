@@ -261,6 +261,358 @@
           "out": "hoi_tu\nhoi_tu\nhoi_tu\nhoi_tu\nphan_ky\n"
         }
       ]
+    },
+    {
+      "id": "xt_hq_mat_mat",
+      "skill": "gt_t6_cuc_tri",
+      "tier": 3,
+      "title_vi": "Khớp đường thẳng: mất mát và hai đạo hàm",
+      "statement_vi": [
+        "Muốn đường y = a*x + b đi sát các điểm, ta đo độ lệch bằng sai số bình phương trung bình L(a, b) = (1/n) * tổng (a*x_i + b - y_i)^2. Đường khớp nhất là chỗ L nhỏ nhất, tức là chỗ cả hai đạo hàm riêng bằng 0.",
+        "Đặt e_i = a*x_i + b - y_i. Theo quy tắc dây chuyền: dL/da = (2/n) * tổng e_i * x_i và dL/db = (2/n) * tổng e_i. Hãy tính L và hai đạo hàm tại (a, b) cho trước."
+      ],
+      "input_vi": "Dòng 1: n. Tiếp theo n dòng, mỗi dòng hai số thực x y. Dòng cuối: hai số a b.",
+      "output_vi": "Ba số trên một dòng: L, dL/da, dL/db, mỗi số làm tròn 6 chữ số sau dấu chấm.",
+      "limits_vi": "1 <= n <= 1000, các số có trị tuyệt đối <= 100.",
+      "checker": "float",
+      "samples": [
+        {
+          "in": "2\n0 1\n1 3\n1 0\n",
+          "out": "2.500000 -2.000000 -3.000000\n",
+          "note_vi": "Với a = 1, b = 0: e = -1 và -2. L = (1 + 4)/2 = 2.5; dL/da = (2/2)(0 + (-2)(1)) = -2; dL/db = (2/2)(-1 - 2) = -3."
+        }
+      ],
+      "tests": [
+        {
+          "in": "2\n1.57 1.58\n-4.02 -5.34\n0.82 -1.07\n",
+          "out": "1.402288 -6.053154 -0.389000\n"
+        },
+        {
+          "in": "3\n2.68 -0.72\n-2.17 3.32\n-1.36 2.52\n2.95 2.63\n",
+          "out": "64.070837 33.907570 0.175000\n"
+        },
+        {
+          "in": "5\n-2.07 0.56\n-3.75 0.35\n-4.52 0.51\n0.21 -3.15\n-0.72 -1.87\n-0.24 0.68\n",
+          "out": "5.033376 -5.091069 3.841600\n"
+        },
+        {
+          "in": "6\n-2.36 -7.61\n-4.4 -9.04\n2.05 1.77\n-1.05 -5.7\n1.89 -0.41\n3.48 2.66\n-2.57 -1.33\n",
+          "out": "139.123163 -64.439749 3.784100\n"
+        },
+        {
+          "in": "8\n0.1 -0.85\n2.05 -2.23\n3.06 -3.36\n-2.53 2.67\n-2.03 1.46\n4.34 -3.49\n-2.51 1.05\n-0.27 0.62\n-1.51 -2.97\n",
+          "out": "11.190249 -9.602504 -5.741775\n"
+        },
+        {
+          "in": "10\n4.58 -0.02\n-2.94 2.9\n-0.04 0.4\n-3.69 0.63\n2.15 0.38\n-2.05 2.93\n-4.31 1.6\n4.16 -1.83\n0.43 1.13\n0.23 0.41\n-2.96 -1.48\n",
+          "out": "65.380101 -45.750502 -3.789840\n"
+        },
+        {
+          "in": "15\n-4.3 1.33\n1.11 -4.2\n1.01 -3.93\n-0.34 -3.14\n2.56 -4.55\n2.18 -6.02\n0.61 -2.66\n-3.52 2.3\n-4.65 2.37\n1.9 -6.11\n3.16 -7.02\n-4.2 -0.24\n1.49 -3.34\n-1.78 -0.65\n1.6 -4.8\n-2.95 -0.83\n",
+          "out": "32.015099 -27.493834 5.008200\n"
+        },
+        {
+          "in": "20\n1.68 3.06\n4.44 7.73\n1.47 3.56\n-3.68 -5.15\n0.54 1.25\n-1.17 -0.7\n-2.01 -2.74\n-4.31 -6.61\n-0.53 2.33\n4.31 8.86\n3.11 6.29\n4.01 7.91\n4.73 8.46\n4.94 8.03\n1.54 3.84\n2.36 5.43\n-4.31 -5.46\n1.83 2.44\n-2.57 -3.58\n-3.85 -6.58\n0.72 0.61\n",
+          "out": "9.811212 -19.293028 -1.714840\n"
+        }
+      ]
+    },
+    {
+      "id": "xt_hq_vong_lap",
+      "skill": "gt_t6_cuc_tri",
+      "tier": 4,
+      "title_vi": "Khớp đường thẳng: vòng huấn luyện",
+      "statement_vi": [
+        "Hạ gradient: bắt đầu từ (a, b), lặp T lần: tính dL/da và dL/db tại (a, b) hiện tại, rồi bước ngược hướng gradient một đoạn tỉ lệ với tốc độ học lr: a = a - lr * dL/da, b = b - lr * dL/db.",
+        "Chú ý: cả hai đạo hàm phải tính tại cùng một điểm cũ, rồi mới cập nhật cả hai. Cập nhật a xong rồi dùng a mới để tính đạo hàm cho b là một lỗi hay gặp.",
+        "Thử đổi lr trong bài làm của bạn để thấy: lr quá nhỏ thì nhích từng li, quá lớn thì văng qua văng lại."
+      ],
+      "input_vi": "Dòng 1: n. Tiếp theo n dòng, mỗi dòng hai số thực x y. Dòng cuối: a b lr T (điểm xuất phát, tốc độ học, số bước).",
+      "output_vi": "Ba số trên một dòng: a và b sau T bước, và L tại điểm ấy; mỗi số làm tròn 6 chữ số sau dấu chấm.",
+      "limits_vi": "1 <= n <= 1000, 1 <= T <= 5000; dữ liệu chọn sao cho các số không vượt quá 10^6.",
+      "checker": "float",
+      "samples": [
+        {
+          "in": "2\n0 1\n1 3\n0 0 0.1 1\n",
+          "out": "0.300000 0.400000 2.825000\n",
+          "note_vi": "Tại (0, 0): e = -1 và -3, dL/da = -3, dL/db = -4. Sau một bước: a = 0.3, b = 0.4; e mới = -0.6 và -2.3, L = (0.36 + 5.29)/2 = 2.825."
+        }
+      ],
+      "tests": [
+        {
+          "in": "3\n-3.67 8.35\n-0.43 3.65\n-1.75 5.31\n0 0 0.01 1\n",
+          "out": "-0.276710 0.115400 28.656308\n"
+        },
+        {
+          "in": "4\n1.33 1.58\n4.81 3.67\n-1.43 0.15\n-3.45 -1.36\n0 0 0.01 10\n",
+          "out": "0.548684 0.164702 0.487134\n"
+        },
+        {
+          "in": "5\n-2.72 -4.94\n-0.4 -1.09\n0.89 -0.34\n-1.81 -3.78\n-1.9 -2.53\n0 0 0.02 50\n",
+          "out": "1.315197 -0.898678 0.341033\n"
+        },
+        {
+          "in": "6\n-2.66 6.73\n3.01 -2.61\n-0.35 2.89\n-4.65 10.36\n-1.4 4.51\n1.21 0.24\n0 0 0.05 100\n",
+          "out": "-1.687795 2.325017 0.016211\n"
+        },
+        {
+          "in": "8\n2.53 -2.86\n0.91 0.48\n3.56 -3.5\n4.39 -6.77\n1.88 -2.38\n2.53 -3.85\n-2.81 6.93\n-2.24 5.42\n0 0 0.03 200\n",
+          "out": "-1.808210 1.613378 0.435090\n"
+        },
+        {
+          "in": "10\n-2.53 -2.87\n-3.66 -5.14\n4.58 9.31\n1.13 4.01\n-2.87 -3.4\n-4.55 -7.6\n0.39 2.01\n-2.97 -3.87\n0.08 1.78\n3.2 7.32\n0 0 0.01 500\n",
+          "out": "1.817613 1.463562 0.135946\n"
+        },
+        {
+          "in": "12\n4.33 -4.96\n4.38 -4.17\n-3.02 5.09\n-4.86 8.46\n-2.31 4.28\n-3.41 6.46\n2.64 -2.73\n1.66 -1.08\n1.54 -0.43\n1.86 -1.16\n-3.38 6.49\n-1.36 3.59\n0 0 0.08 30\n",
+          "out": "-1.408502 1.419202 0.123388\n"
+        },
+        {
+          "in": "15\n3.44 1.72\n-0.87 0.63\n-0.98 0.07\n0.5 1.89\n-1.2 -0.33\n-4.05 -1.2\n3.97 2.67\n0.4 1.23\n-1.4 0.27\n0.93 0.59\n0.39 0.75\n-4.43 -1.8\n0.06 0.5\n2.57 2.43\n-2.18 -0.78\n0 0 0.06 1000\n",
+          "out": "0.501908 0.671362 0.182131\n"
+        }
+      ]
+    },
+    {
+      "id": "xt_hq_khop_duong_thang",
+      "skill": "gt_t6_cuc_tri",
+      "tier": 4,
+      "title_vi": "Xạ Trường: khớp đường thẳng bằng hạ gradient",
+      "statement_vi": [
+        "Một trận pháp tỏa linh khí theo khoảng cách: y gần bằng a*x + b, cộng nhiễu. Bạn có n lần đo (x, y) để học, rồi phải đoán y tại m vị trí x mới. Game giữ các y thật của những vị trí ấy (cũng có nhiễu, như mọi phép đo).",
+        "Hãy huấn luyện a, b bằng hạ gradient như bài trước. x ở đây chạy từ 0 tới 10: nếu b học chậm quá, thử trừ trung bình của x trước khi học (rồi nhớ trừ đúng như thế khi đoán).",
+        "Nhật ký huấn luyện: mỗi vòng (hoặc vài vòng) in ra stderr một dòng \"#loss <vòng> <mất mát>\", ví dụ print(\"#loss\", vong, mat_mat, file=sys.stderr). Game vẽ các dòng ấy thành đường mất mát; nhìn đường ấy đi xuống, đứng lại hay nổ tung là kỹ năng phải luyện. stdout chỉ dành cho dự đoán.",
+        "Đoán trung bình của mọi y cho mọi x thì sai số khoảng 3 tới 8: chưa đạt.",
+        "Chấm theo phẩm: trung bình trên 4 bộ bia ẩn, điểm là căn của sai số bình phương trung bình (càng nhỏ càng tốt); mốc là 2.0, 1.5 và 1.2 (nhiễu của dữ liệu là 1, nên không ai xuống dưới 1 nhiều được). Đạt mốc thứ nhất là hạ phẩm, mốc thứ hai trung phẩm, mốc thứ ba thượng phẩm; chỉ thượng phẩm mới tính là xong bài."
+      ],
+      "input_vi": "Dòng 1: n. Tiếp theo n dòng, mỗi dòng hai số thực x y. Rồi một dòng m và m dòng, mỗi dòng một số x cần đoán.",
+      "output_vi": "m dòng, mỗi dòng một số thực: y bạn đoán.",
+      "limits_vi": "Mỗi bộ bia ẩn: n = 100, m = 50.",
+      "checker": "sai_so",
+      "grades": [
+        2.0,
+        1.5,
+        1.2
+      ],
+      "time_limit_ms": 2000,
+      "data": {
+        "gen": "hq_duong_thang",
+        "seeds": [
+          11,
+          12,
+          13,
+          14
+        ],
+        "practice_seeds": [
+          7
+        ]
+      },
+      "starter": "import sys\n\ndata = sys.stdin.read().split()\nn = int(data[0])\nxs = [float(data[1 + 2 * i]) for i in range(n)]\nys = [float(data[2 + 2 * i]) for i in range(n)]\nm = int(data[1 + 2 * n])\nqs = [float(v) for v in data[2 + 2 * n:2 + 2 * n + m]]\n\na, b, lr = 0.0, 0.0, 0.01\nfor epoch in range(200):\n    # TODO: tinh mat mat va dao ham theo a, b; cap nhat a, b\n    loss = 0.0\n    print(\"#loss\", epoch, loss, file=sys.stderr)   # game ve duong mat mat tu cac dong nay\nfor q in qs:\n    print(a * q + b)\n",
+      "samples": [
+        {
+          "in": "5\n0 1\n1 3\n2 5\n3 7\n4 9\n2\n10\n0.5\n",
+          "out": "21\n2\n",
+          "note_vi": "Năm điểm nằm đúng trên y = 2x + 1, nên tại x = 10 là 21, tại x = 0.5 là 2."
+        }
+      ]
+    },
+    {
+      "id": "xt_nn_lan_truyen_xuoi",
+      "skill": "gt_t9_gradient_lan_truyen",
+      "tier": 5,
+      "title_vi": "Mạng nơ-ron: lan truyền xuôi",
+      "statement_vi": [
+        "Mạng hai lớp nhỏ nhất: lớp ẩn h = tanh(W1 x + b1) (W1 là ma trận H x d, tanh lấy từng phần tử), rồi đầu ra p = sigmoid(W2 . h + b2), với sigmoid(z) = 1 / (1 + e^(-z)). p là xác suất mạng gán cho nhãn 1.",
+        "Lan truyền xuôi chỉ là nhân ma trận với vectơ rồi áp hàm kích hoạt. Hãy tính h và p."
+      ],
+      "input_vi": "Dòng 1: d (số đầu vào) và H (số nơ-ron ẩn). Tiếp theo H dòng, mỗi dòng d số: các hàng của W1. Rồi một dòng H số b1, một dòng H số W2, một dòng một số b2, và một dòng d số: đầu vào x.",
+      "output_vi": "Dòng 1: H số của h. Dòng 2: p. Mọi số làm tròn 6 chữ số sau dấu chấm.",
+      "limits_vi": "1 <= d, H <= 20, |mọi số| <= 10.",
+      "checker": "float",
+      "samples": [
+        {
+          "in": "1 1\n1\n0\n2\n0\n0.5\n",
+          "out": "0.462117\n0.715904\n",
+          "note_vi": "h = tanh(0.5) = 0.462117; z = 2 * 0.462117 = 0.924234; p = sigmoid(z) = 0.715904."
+        }
+      ],
+      "tests": [
+        {
+          "in": "1 1\n-1.7\n0.66\n-1.55\n-0.56\n1.21\n",
+          "out": "-0.884701\n0.692384\n"
+        },
+        {
+          "in": "2 2\n0.44 0.42\n-1.69 1.67\n-0.77 0.77\n1.46 1.49\n0.04\n-0.53 -1.09\n",
+          "out": "-0.897847 -0.153380\n0.182516\n"
+        },
+        {
+          "in": "2 3\n-1.45 -1.26\n-1.53 -0.16\n-0.04 0.83\n-0.06 -0.73 0.72\n-0.46 0.76 1.41\n-0.87\n1.02 -1.15\n",
+          "out": "-0.089758 -0.970834 -0.268550\n0.125078\n"
+        },
+        {
+          "in": "3 2\n1.95 -1.67 -0.31\n-0.28 -1.12 -1.44\n0.28 0.71\n1.78 0.79\n-0.3\n-1.38 -0.5 0.57\n",
+          "out": "-0.941682 0.683471\n0.192126\n"
+        },
+        {
+          "in": "2 4\n-1.43 0.22\n-1.34 0.28\n-0.86 1.23\n-0.94 0.55\n-0.47 0.81 -0.03 0.79\n1.64 0.84 0.58 -0.77\n-0.38\n1.4 -0.57\n",
+          "out": "-0.988971 -0.841298 -0.959144 -0.685544\n0.060823\n"
+        },
+        {
+          "in": "4 3\n-1.25 -1.5 0.81 -0.02\n0.58 0.57 1.31 1.62\n0.79 -1.31 -1.38 -0.23\n0.27 0.66 0.28\n-0.74 -0.02 -1.37\n-0.45\n0.84 1.35 0.63 -0.86\n",
+          "out": "-0.979190 0.873770 -0.904514\n0.817023\n"
+        },
+        {
+          "in": "3 5\n0.76 1.57 -1.76\n0.76 1.73 -1.65\n1.01 1.3 -0.21\n0.5 -0.63 -1.08\n-0.09 1.71 -0.82\n-0.56 0.27 -0.71 0.41 0.39\n0.21 1.32 0.96 0.01 -1.85\n-0.26\n-1.38 -0.98 0.22\n",
+          "out": "-0.998300 -0.993158 -0.997879 0.099470 -0.872152\n0.245252\n"
+        },
+        {
+          "in": "5 4\n1.31 0.55 -0.24 -1.74 0.8\n1.64 -0.84 -0.15 0.16 -0.08\n1.31 0.54 -1.94 1.82 0.58\n-0.57 -0.46 1.02 -1.24 -1.98\n-0.43 -0.96 -0.92 0.13\n0.11 0.46 0.97 1.73\n-0.95\n0.32 0.58 1.14 -1.02 -0.78\n",
+          "out": "0.829147 -0.831877 -0.999837 0.998657\n0.381397\n"
+        }
+      ]
+    },
+    {
+      "id": "xt_nn_lan_truyen_nguoc",
+      "skill": "gt_t9_gradient_lan_truyen",
+      "tier": 5,
+      "title_vi": "Mạng nơ-ron: lan truyền ngược",
+      "statement_vi": [
+        "Cùng mạng ấy, với một mẫu (x, y), y là 0 hoặc 1, mất mát entropy chéo L = -(y log p + (1 - y) log(1 - p)). Lan truyền ngược là quy tắc dây chuyền đi từ cuối về đầu:",
+        "dL/dz = p - y (z là đầu vào của sigmoid). dL/dW2_j = (p - y) h_j, dL/db2 = p - y. dL/dh_j = (p - y) W2_j. Qua tanh: dL/da_j = dL/dh_j * (1 - h_j^2), với a_j là đầu vào của tanh. Cuối cùng dL/dW1_jk = dL/da_j * x_k và dL/db1_j = dL/da_j.",
+        "Hãy tính L và mọi đạo hàm. Muốn chắc tay, đối chiếu một đạo hàm với sai phân (L(w + h) - L(w - h)) / (2h) như ở nút Đạo hàm bằng code."
+      ],
+      "input_vi": "Dòng 1: d (số đầu vào) và H (số nơ-ron ẩn). Tiếp theo H dòng, mỗi dòng d số: các hàng của W1. Rồi một dòng H số b1, một dòng H số W2, một dòng một số b2, và một dòng d số: đầu vào x. Dòng cuối: nhãn y (0 hoặc 1).",
+      "output_vi": "Dòng 1: L. Tiếp theo H dòng, mỗi dòng d số: dL/dW1. Rồi một dòng H số dL/db1, một dòng H số dL/dW2, và một dòng dL/db2. Mọi số làm tròn 6 chữ số sau dấu chấm.",
+      "limits_vi": "1 <= d, H <= 20, |mọi số| <= 10.",
+      "checker": "float",
+      "samples": [
+        {
+          "in": "1 1\n1\n0\n2\n0\n0.5\n1\n",
+          "out": "0.334209\n-0.223427\n-0.446853\n-0.131286\n-0.284096\n",
+          "note_vi": "p = 0.715904, L = -log p = 0.334209, p - y = -0.284096. dL/dW2 = -0.284096 * 0.462117 = -0.131286. dL/da = -0.284096 * 2 * (1 - 0.213552) = -0.446853, nhân x = 0.5 được dL/dW1 = -0.223427."
+        }
+      ],
+      "tests": [
+        {
+          "in": "1 1\n-0.45\n-0.97\n-1.01\n-0.54\n-0.79\n1\n",
+          "out": "0.686788\n-0.277672\n0.351484\n0.271898\n-0.496810\n"
+        },
+        {
+          "in": "2 2\n-0.77 -1.33\n0.28 0.17\n0.88 -0.41\n0.5 -1.09\n0.96\n1.3 -0.46\n0\n",
+          "out": "1.558426\n0.407021 -0.144023\n-1.101686 0.389827\n0.313093 -0.847451\n0.359120 -0.097559\n0.789533\n"
+        },
+        {
+          "in": "2 3\n1.73 0.17\n0.76 -0.74\n1.7 -0.36\n-0.57 0.53 0.21\n0.18 0.92 0.22\n0.73\n-1.24 -1.32\n0\n",
+          "out": "1.188764\n-0.001727 -0.001838\n-0.585974 -0.623778\n-0.039379 -0.041919\n0.001393 0.472559 0.031757\n-0.691523 0.355514 -0.619035\n0.695403\n"
+        },
+        {
+          "in": "3 2\n1.32 1.21 1.07\n0.04 -1.14 0.08\n0.6 0.84\n-1.07 -1.86\n0.18\n0.4 1.16 1.07\n1\n",
+          "out": "0.805143\n0.000606 0.001757 0.001620\n0.357082 1.035539 0.955195\n0.001514 0.892706\n-0.552268 0.200953\n-0.552976\n"
+        },
+        {
+          "in": "2 4\n0.81 -1.73\n-0.29 -1.02\n1.94 -0.91\n1.7 -0.14\n-0.25 -0.67 0.35 0.3\n-1.35 1.85 0.81 1.48\n-0.91\n0.98 -0.28\n0\n",
+          "out": "0.368714\n-0.164084 0.046881\n0.368369 -0.105248\n0.006433 -0.001838\n0.031285 -0.008938\n-0.167433 0.375887 0.006564 0.031923\n0.238432 -0.180110 0.304298 0.297396\n0.308377\n"
+        },
+        {
+          "in": "4 3\n0.31 0.07 0.07 -1.68\n-1.24 -0.08 -0.03 0.96\n-1.36 1.83 0.58 -0.06\n0.79 0.77 0.83\n1.82 -0.57 0.72\n0.56\n-0.22 -1.12 0.91 -0.41\n1\n",
+          "out": "0.189437\n0.015045 0.076591 -0.062230 0.028038\n-0.013546 -0.068959 0.056029 -0.025244\n0.023944 0.121898 -0.099042 0.044623\n-0.068385 0.061571 -0.108837\n-0.152636 -0.105550 0.060788\n-0.172575\n"
+        },
+        {
+          "in": "3 5\n-1.85 1.36 1.75\n-0.17 -0.89 1.16\n1.39 0.2 -1.84\n-1.11 -0.31 -1.95\n0.35 1.77 -1.23\n0.46 -0.12 0.95 0.97 -0.74\n-0.93 1.64 1.91 1.19 -1.49\n0.46\n0.78 -0.52 -0.52\n1\n",
+          "out": "0.009725\n0.000153 -0.000102 -0.000102\n-0.010649 0.007100 0.007100\n-0.000178 0.000119 0.000119\n-0.002396 0.001597 0.001597\n0.006729 -0.004486 -0.004486\n0.000196 -0.013653 -0.000228 -0.003072 0.008627\n0.009572 0.003619 -0.009618 -0.008288 0.006134\n-0.009678\n"
+        },
+        {
+          "in": "5 4\n-0.91 1.78 0.81 0.44 -1.8\n-0.6 -0.86 0.33 -1.5 1.58\n1.26 0.61 -1.52 1.03 -1.02\n-1.81 -1.92 -0.71 1.39 -0.76\n-0.36 -0.33 -0.45 -0.02\n0.89 0.15 0.51 -0.71\n0.7\n0.69 0.48 -0.5 0.6 -0.47\n1\n",
+          "out": "0.137107\n-0.057694 -0.040135 0.041807 -0.050169 0.039299\n-0.000140 -0.000098 0.000102 -0.000122 0.000096\n-0.001045 -0.000727 0.000757 -0.000909 0.000712\n0.042530 0.029586 -0.030819 0.036983 -0.028970\n-0.083615 -0.000204 -0.001514 0.061638\n-0.066171 0.127443 -0.126630 0.072751\n-0.128123\n"
+        }
+      ]
+    },
+    {
+      "id": "xt_nn_vong_tron",
+      "skill": "gt_t9_gradient_lan_truyen",
+      "tier": 5,
+      "title_vi": "Xạ Trường: trận đồ hình tròn",
+      "statement_vi": [
+        "Trong hình vuông [-1, 1] x [-1, 1] có một trận đồ hình tròn tâm gốc tọa độ: điểm trong trận có nhãn 1, ngoài trận nhãn 0, và vài điểm bị đo nhầm. Không đường thẳng nào tách được hình tròn khỏi hình vuông: hồi quy logistic ở đây chỉ hơn đoán bừa một chút.",
+        "Hãy huấn luyện mạng hai lớp của hai bài trước (vài nơ-ron ẩn tanh, đầu ra sigmoid, mất mát entropy chéo) bằng hạ gradient, rồi đoán nhãn cho các bia: 1 khi p >= 0.5.",
+        "Khởi tạo trọng số ngẫu nhiên bằng random.Random(một số cố định) để lần chạy nào cũng như nhau. Khởi tạo toàn 0 thì mọi nơ-ron ẩn học y hệt nhau: thử xem chuyện gì xảy ra.",
+        "Nhật ký huấn luyện: mỗi vòng (hoặc vài vòng) in ra stderr một dòng \"#loss <vòng> <mất mát>\", ví dụ print(\"#loss\", vong, mat_mat, file=sys.stderr). Game vẽ các dòng ấy thành đường mất mát; nhìn đường ấy đi xuống, đứng lại hay nổ tung là kỹ năng phải luyện. stdout chỉ dành cho dự đoán.",
+        "Chấm theo phẩm: trung bình trên 4 bộ bia ẩn, độ chính xác là tỉ lệ bia đoán đúng; mốc là 70%, 80% và 86%. Đạt mốc thứ nhất là hạ phẩm, mốc thứ hai trung phẩm, mốc thứ ba thượng phẩm; chỉ thượng phẩm mới tính là xong bài."
+      ],
+      "input_vi": "Dòng 1: n và d (d = 2). Tiếp theo n dòng: x y nhãn. Rồi một dòng m, và m dòng: x y của từng bia.",
+      "output_vi": "m dòng, mỗi dòng 1 hoặc 0.",
+      "limits_vi": "Mỗi bộ bia ẩn: n = 200, m = 100.",
+      "checker": "do_chinh_xac",
+      "grades": [
+        0.7,
+        0.8,
+        0.86
+      ],
+      "time_limit_ms": 2500,
+      "data": {
+        "gen": "nn_vong_tron",
+        "seeds": [
+          11,
+          12,
+          13,
+          14
+        ],
+        "practice_seeds": [
+          7
+        ]
+      },
+      "starter": "import sys\n\ndata = sys.stdin.read().split()\nn, d = int(data[0]), int(data[1])\npos = 2\ntrain = []                      # (vecto x, nhan y)\nfor _ in range(n):\n    x = [float(v) for v in data[pos:pos + d]]\n    train.append((x, float(data[pos + d])))\n    pos += d + 1\nm = int(data[pos])\npos += 1\ntests = []\nfor _ in range(m):\n    tests.append([float(v) for v in data[pos:pos + d]])\n    pos += d\nimport math\nimport random\n\nH = 8\nrng = random.Random(0)\nW1 = [[rng.gauss(0, 1) for _ in range(d)] for _ in range(H)]\nb1 = [0.0] * H\nW2 = [rng.gauss(0, 1) / math.sqrt(H) for _ in range(H)]\nb2 = 0.0\n\nfor epoch in range(100):\n    loss = 0.0\n    for x, y in train:\n        pass                    # TODO: lan truyen xuoi, cong mat mat, lan truyen nguoc, cap nhat\n    print(\"#loss\", epoch, loss / n, file=sys.stderr)\nfor x in tests:\n    print(0)                    # TODO: 1 neu xac suat >= 0.5\n",
+      "samples": [
+        {
+          "in": "8 2\n0 0 1\n0.1 0.2 1\n-0.2 0.1 1\n0.2 -0.2 1\n0.9 0.9 0\n-0.9 0.8 0\n0.95 -0.9 0\n-0.9 -0.95 0\n2\n0.05 -0.1\n-0.85 0.9\n",
+          "out": "1\n0\n",
+          "note_vi": "Gần tâm là trong trận, ở góc là ngoài trận."
+        }
+      ]
+    },
+    {
+      "id": "xt_da_nhan_dang",
+      "skill": "gt_t9_gradient_lan_truyen",
+      "tier": 5,
+      "title_vi": "Thiên kiếp Luyện Khí 3: nhận dạng chữ số",
+      "statement_vi": [
+        "Trận cuối. Bạn có 600 ảnh chữ số có nhãn để học, rồi phải đọc 150 ảnh bia. Game chấm trên năm bộ bia, mỗi bộ sinh từ một hạt giống khác: mô hình chỉ gặp may một lần thì không qua.",
+        "Các chữ số ở đây là chữ số tổng hợp: game tự vẽ từng nét bằng code rồi nghiêng, xoay, co giãn, dịch, đổi độ đậm và rắc nhiễu, theo đúng định dạng 8 x 8 điểm ảnh, mỗi điểm 0 đến 16, của bộ chữ số 8 x 8 hay dùng để dạy. Không phải chữ viết tay thật của người nào.",
+        "Chọn vũ khí là việc của bạn, miễn là Python thuần và đủ nhanh: k láng giềng gần nhất trên 64 điểm ảnh; nén bằng PCA xuống vài chục chiều rồi mới so; hay mạng nơ-ron tự viết với đầu ra mười lớp. So mỗi ảnh với ảnh trung bình của từng chữ số chỉ đúng khoảng 80%: người viết số 1, 4, 7, 9 theo nhiều kiểu, một ảnh trung bình không chứa nổi.",
+        "Nếu mô hình của bạn có huấn luyện, in nhật ký \"#loss <vòng> <mất mát>\" ra stderr để game vẽ. Xong rồi, dùng bài báo cáo trước để tự viết vài dòng về mô hình của mình: đúng bao nhiêu, khoảng tin cậy bao rộng, hay nhầm chữ nào thành chữ nào.",
+        "Chấm theo phẩm: trung bình trên 5 bộ bia ẩn, độ chính xác là tỉ lệ ảnh đọc đúng; mốc là 86%, 88% và 90%. Đạt mốc thứ nhất là hạ phẩm, mốc thứ hai trung phẩm, mốc thứ ba thượng phẩm; chỉ thượng phẩm mới tính là xong bài."
+      ],
+      "input_vi": "Dòng 1: n và d (d = 64). Tiếp theo n dòng, mỗi dòng 64 số nguyên 0..16 rồi nhãn. Rồi một dòng m, và m dòng, mỗi dòng 64 số của một ảnh bia.",
+      "output_vi": "m dòng, mỗi dòng một chữ số 0..9.",
+      "limits_vi": "Mỗi bộ bia ẩn: n = 600, m = 150. Mỗi bộ có giới hạn thời gian riêng.",
+      "checker": "do_chinh_xac",
+      "grades": [
+        0.86,
+        0.88,
+        0.9
+      ],
+      "time_limit_ms": 3000,
+      "data": {
+        "gen": "da_chu_so",
+        "seeds": [
+          21,
+          22,
+          23,
+          24,
+          25
+        ],
+        "practice_seeds": [
+          7
+        ]
+      },
+      "starter": "import sys\n\ndata = sys.stdin.read().split()\nn, d = int(data[0]), int(data[1])\npos = 2\ntrain = []                      # (64 diem anh 0..16, chu so)\nfor _ in range(n):\n    train.append(([int(v) for v in data[pos:pos + d]], data[pos + d]))\n    pos += d + 1\nm = int(data[pos])\npos += 1\ntests = []\nfor _ in range(m):\n    tests.append([int(v) for v in data[pos:pos + d]])\n    pos += d\n\n# TODO: mo hinh cua ban: k lang gieng, PCA + k lang gieng, mang no-ron...\nfor x in tests:\n    print(train[0][1])\n",
+      "samples": [
+        {
+          "in": "4 16\n0 16 0 0 0 16 0 0 0 16 0 0 0 16 0 0 0\n0 0 16 0 0 0 16 0 0 0 16 0 0 0 16 0 0\n0 0 0 0 16 16 16 16 0 0 0 0 0 0 0 0 1\n0 0 0 0 0 0 0 0 16 16 16 16 0 0 0 0 1\n2\n16 0 0 0 16 0 0 0 16 0 0 0 16 0 0 0\n0 0 0 0 0 0 0 0 0 0 0 0 16 16 16 16\n",
+          "out": "0\n1\n",
+          "note_vi": "Ví dụ đồ chơi với ảnh 4 x 4 (d = 16) để thấy định dạng: nhãn 0 là nét dọc, nhãn 1 là nét ngang. Bài thật dùng ảnh 8 x 8."
+        }
+      ]
     }
   ]
 }
