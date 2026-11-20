@@ -1,0 +1,19 @@
+{
+ "id": "thuong_dam_4",
+ "name_vi": "Thương đâm 4",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 15,
+  "y": 64
+ },
+ "sheet": "thuong_dam_4.png",
+ "cols": 6,
+ "frames": 6,
+ "fps": 20,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

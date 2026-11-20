@@ -1,0 +1,19 @@
+{
+ "id": "kiem_ngan_3",
+ "name_vi": "Vết chém trên đất 3",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 64
+ },
+ "sheet": "kiem_ngan_3.png",
+ "cols": 8,
+ "frames": 8,
+ "fps": 12,
+ "loop": false,
+ "blend": "add",
+ "ground": true
+}

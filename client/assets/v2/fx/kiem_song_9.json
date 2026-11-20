@@ -1,0 +1,19 @@
+{
+ "id": "kiem_song_9",
+ "name_vi": "Kiếm sóng bậc 9 (Hợp Thể)",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 64
+ },
+ "sheet": "kiem_song_9.png",
+ "cols": 6,
+ "frames": 6,
+ "fps": 14,
+ "loop": true,
+ "blend": "add",
+ "ground": false
+}

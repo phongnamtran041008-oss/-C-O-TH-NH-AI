@@ -1,0 +1,19 @@
+{
+ "id": "kiem_khi_6",
+ "name_vi": "Kiếm khí bậc 6 (Nguyên Anh)",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 22,
+  "y": 50
+ },
+ "sheet": "kiem_khi_6.png",
+ "cols": 7,
+ "frames": 7,
+ "fps": 20,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

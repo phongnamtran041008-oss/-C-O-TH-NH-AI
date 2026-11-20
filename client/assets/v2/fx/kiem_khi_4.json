@@ -1,0 +1,19 @@
+{
+ "id": "kiem_khi_4",
+ "name_vi": "Kiếm khí bậc 4 (Trúc Cơ)",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 22,
+  "y": 50
+ },
+ "sheet": "kiem_khi_4.png",
+ "cols": 7,
+ "frames": 7,
+ "fps": 20,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

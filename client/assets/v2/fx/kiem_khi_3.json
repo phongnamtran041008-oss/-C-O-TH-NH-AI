@@ -1,0 +1,19 @@
+{
+ "id": "kiem_khi_3",
+ "name_vi": "Kiếm khí bậc 3 (Luyện Khí hậu)",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 16,
+  "y": 35
+ },
+ "sheet": "kiem_khi_3.png",
+ "cols": 7,
+ "frames": 7,
+ "fps": 20,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

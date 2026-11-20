@@ -1,0 +1,19 @@
+{
+ "id": "kiem_song_5",
+ "name_vi": "Kiếm sóng bậc 5 (Kết Đan)",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 48
+ },
+ "sheet": "kiem_song_5.png",
+ "cols": 6,
+ "frames": 6,
+ "fps": 14,
+ "loop": true,
+ "blend": "add",
+ "ground": false
+}
