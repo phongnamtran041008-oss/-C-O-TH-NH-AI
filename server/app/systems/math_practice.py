@@ -939,6 +939,8 @@ async def _trial_after_answer(db: AsyncSession, user: User, run: MathRun, now: d
         st = await tp.state(db, user.id)
         out["opened"] = [n for n in st.open if n not in before]
         out["node_done"] = run.node_id is not None and run.node_id in st.done
+        from . import achievements   # Thành Tựu: a Thiên kiếp nhỏ passed, the nodes of Đạo Thụ done
+        await achievements.on_event(db, user.id, "trial", nodes=sum(1 for v in st.status.values() if v == tp.DONE))
         floors = [p.floor for n in out["opened"] for p in tp.parts(n)
                   if p.subject_id == run.subject_id and st.has_questions(p)]
         out["unlocked"] = min(floors) if floors else None

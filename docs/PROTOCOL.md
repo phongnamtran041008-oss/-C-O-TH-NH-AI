@@ -114,6 +114,7 @@ và client tự kéo về vị trí đúng nhờ snapshot. Gói trùng hoặc s�
 | `loot` | `monster`, `stones`, `spirit_stones` (số dư mới), `items`, `equipment` [trang bị nằm trên đất, xem dưới], `kills`, `xp`, `quests`, `locked`? | phần thưởng khi hạ quái (gửi cho mọi người đã đánh trúng). `locked` = `[{name_vi, need_vi}]` (tối đa 3): món rút ra mà tu vi chưa cho nhận |
 | `stats` | `realm`, `stage`, `stats`, `stage_up`, `hp`, `max_hp`, `combat` | chỉ số đổi (lên tầng, đổi trang bị); `combat` như trong `zone` (Né Đòn có thể vừa mở) |
 | `quest` | `event: "done"`, `quest` | một nhiệm vụ vừa đủ điều kiện |
+| `achievement` | `unlocks` [`{key, id, tier, tiers, name_vi, tier_name_vi, category, icon, points, title, hidden, reveal_vi}`] | Thành Tựu: một hay nhiều bậc vừa đạt, ở bất cứ đâu (động phủ, thế giới, bí cảnh, sau một gọi REST). Chỉ gửi **sau khi** giao dịch đã commit; client hiện dải vàng từng cái một rồi gửi `POST /achievements/seen`. Không trực tuyến lúc đạt thì `GET /achievements/new` trả lại lúc đăng nhập (`docs/THANH_TUU.md`) |
 | `act_fail` | `code`: `too_far` \| `no_target` | đòn đánh bị từ chối (đang hồi chiêu thì bỏ qua im lặng) |
 
 **Trang bị rơi trong `loot`** (binh khí của Thiên Địa Đồ rơi từ quái, `world_plan.json` `weapon_drops`, và đồ cũ

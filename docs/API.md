@@ -639,6 +639,24 @@ color, he[], he_vi[], loai, loai_vi, effects[{type, value, text_vi}], effects_vi
 thủ, sinh lực, linh lực, bạo kích đã cộng thẳng vào `stats`). Đan tẩy linh không dùng ở túi: `POST /inventory/use`
 trả `linh_can_pill` (400), `GET /inventory` ghi `usable: false`.
 
+### Thành Tựu
+
+Dữ liệu `server/data/achievements.json`, luật `server/app/systems/achievements.py`, thiết kế và bảng đầy đủ ở
+`docs/THANH_TUU.md`. Một bậc vừa đạt (`unlock`) có dạng `{key: "<id>:<bậc>", id, tier, tiers, name_vi,
+tier_name_vi, category, icon: [bộ, id], points, title (danh hiệu trao kèm hoặc null), hidden, reveal_vi}`.
+
+| | Đường | Gửi | Trả về |
+|---|---|---|---|
+| GET | `/achievements` | — | `{points_name_vi ("Đạo Tâm"), points, points_max, done, total, claimable, categories[], milestones[], next_milestone, titles[], title}`. `categories`: `{id, name_vi, icon, done, total, claimable, achievements[]}`; mỗi thành tựu `{id, category, icon, hidden, revealed, name_vi, desc_vi, reveal_vi, tier, max, done, value, next, progress_vi, frac, claimable, points, points_max, tiers[]}`, mỗi bậc `{n, at, at_vi, name_vi, points, reward_vi[], reached, claimed, claimable, req_vi}` (`req_vi` khác rỗng: đã đạt nhưng tu vi chưa đủ để nhận). Thành tựu ẩn chưa đạt: `name_vi` "???", `desc_vi` là câu gợi ý, bậc và thưởng "???". `milestones`: `{points, reward_vi[], reached, claimed, claimable}`. `titles`: `[{title, source: "thanh_tuu" \| "tang_thu"}]`, `title` = danh hiệu đang mang. Lần xem đầu điền bộ đếm từ dữ liệu cũ (không báo) |
+| GET | `/achievements/new` | — | `{unlocks: [unlock]}`: các bậc đã đạt mà người chơi chưa được báo (client gọi lúc đăng nhập). Không đánh dấu đã xem |
+| POST | `/achievements/seen` | `{keys: ["<id>:<bậc>"]}` | `{marked}`: dải vàng của các bậc ấy đã hiện, không báo lại |
+| POST | `/achievements/claim` | `{id, tier}` | `{claimed: [{id, tier, rewards_vi[], spirit_stones?, immortal_jade?, items?}], view}` (`view` = như `GET`). Lỗi `no_achievement` (404), `not_reached` (400), `claimed` (409), `locked` (403: thưởng cần cảnh giới cao hơn) |
+| POST | `/achievements/claim-all` | — | mọi bậc và mốc Đạo Tâm nhận được ngay: `{claimed[], milestones[{points, rewards_vi[], ...}], view}`; bậc bị khoá theo tu vi thì để lại. Lỗi `nothing` (400) |
+| POST | `/achievements/milestone` | `{points}` | một mốc Đạo Tâm: `{milestone, view}`. Lỗi `no_milestone` (404), `not_reached` (400), `claimed` (409) |
+
+Danh hiệu của Thành Tựu được trao ngay khi đạt bậc và mang bằng `POST /books/wear {title}` như danh hiệu của Tàng
+Thư Các (`GET /books` và `/me` cũng thấy chúng). Thưởng của Thành Tựu không tính vào bộ đếm linh thạch của chính nó.
+
 ## M10 — Cơ duyên (sự kiện ngẫu nhiên sau câu đúng)
 
 Dữ liệu: `server/data/math/fortune.json` (`_comment` giải thích từng trường). Mã: `app/systems/math_fortune.py`.

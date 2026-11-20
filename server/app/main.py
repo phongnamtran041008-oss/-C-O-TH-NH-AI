@@ -22,6 +22,7 @@ from .routers import guide_routes
 from .routers import weapon_routes
 from .routers import linh_can_routes
 from .routers import beast_routes
+from .routers import achievement_routes
 from .systems import cultivation as _cultivation  # noqa: F401  (registers meditate/tribulation handlers)
 
 log = logging.getLogger("toan_tu_tien")
@@ -91,6 +92,7 @@ def create_app(use_lifespan: bool = True) -> FastAPI:
     app.include_router(beast_routes.router)           # linh thú của Thiên Địa Đồ
     app.include_router(guide_routes.router)           # Lộ Trình tân thủ
     app.include_router(linh_can_routes.router)        # linh căn, Trắc Linh Đài
+    app.include_router(achievement_routes.router)     # Thành Tựu
     app.include_router(ws_routes.router)
 
     @app.exception_handler(HTTPException)

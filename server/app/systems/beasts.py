@@ -206,6 +206,8 @@ async def seal(db: AsyncSession, user: User, bid: str) -> dict:
     if await db.get(CodexEntry, (user.id, "pet", bid)) is None:
         db.add(CodexEntry(user_id=user.id, codex="pet", entry_id=bid, discovered_at=clock.now(), progress={}))
         await db.flush()
+    from . import achievements   # Thành Tựu: a linh thú sealed
+    await achievements.on_event(db, user.id, "beast_tame", beast=bid)
     return pets.view(row)
 
 

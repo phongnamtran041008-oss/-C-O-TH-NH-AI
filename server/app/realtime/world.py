@@ -25,6 +25,7 @@ from .. import balance, clock
 from .. import db as dbm
 from ..config import DATA_DIR
 from ..models import Block, Character, Friendship, User
+from ..systems import achievements
 from . import combat, maps, protocol
 from .chat import ChatService
 from .party import PartyService
@@ -254,6 +255,7 @@ class World:
         for p in self.players.values():
             self._queue_save(p)
         await self.flush_saves()
+        await achievements.flush_all()     # Thành Tựu bumps still waiting
 
     async def _loop(self) -> None:
         c = cfg()
@@ -620,6 +622,7 @@ class World:
         p.x, p.y, p.facing = float(x), float(y), facing
         p.ack = -1
         ch.add(p)
+        achievements.bump(s.user_id, "zone", zone=ch.zone_id)   # Thành Tựu: zones and lands entered
         ch.safe = bool(zone_defs()[ch.zone_id].get("safe"))
         self._attach(s, p)
         s.saved_zone, s.saved_pos = ch.zone_id, (p.x, p.y, p.facing)

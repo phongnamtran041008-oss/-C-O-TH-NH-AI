@@ -1,0 +1,3817 @@
+{
+ "_comment": "Thành Tựu (app/systems/achievements.py, docs/THANH_TUU.md). Every achievement reads one counter (achievements.COUNTERS), optionally filtered by one 'where' field; its tiers are reached at rising 'at' values ('cult' takes a cultivation tier such as 'truc_co:2'). A tier's reward (spirit_stones, immortal_jade, items, title) is claimed with Nhận, except the title, given on unlock; 'req' is the cultivation tier needed to claim it (default: the highest unlock tier of its items in loot_tiers.json, the tier itself for 'cult'). Points (Đạo Tâm) count on unlock and open the milestones. A hidden achievement shows '???' and its hint_vi until earned, then its reveal_vi. Checked by achievements.validate() (tools/check_all.py).",
+ "points_name_vi": "Đạo Tâm",
+ "categories": [
+  {
+   "id": "tu_luyen",
+   "name_vi": "Tu Luyện",
+   "icon": [
+    "misc",
+    "pha_canh_dan"
+   ]
+  },
+  {
+   "id": "ngo_dao",
+   "name_vi": "Ngộ Đạo",
+   "icon": [
+    "cong_phap",
+    "sach_1"
+   ]
+  },
+  {
+   "id": "chien_dau",
+   "name_vi": "Chiến Đấu",
+   "icon": [
+    "weapons_a",
+    "kiem_1"
+   ]
+  },
+  {
+   "id": "suu_tam",
+   "name_vi": "Sưu Tầm",
+   "icon": [
+    "misc",
+    "ruong_mo"
+   ]
+  },
+  {
+   "id": "kham_pha",
+   "name_vi": "Khám Phá",
+   "icon": [
+    "misc",
+    "ngu_kiem_lenh"
+   ]
+  },
+  {
+   "id": "tai_phu",
+   "name_vi": "Tài Phú",
+   "icon": [
+    "misc",
+    "linh_thach_3"
+   ]
+  },
+  {
+   "id": "bi_an",
+   "name_vi": "Bí Ẩn",
+   "icon": [
+    "cong_phap",
+    "cuon_8"
+   ]
+  }
+ ],
+ "milestones": [
+  {
+   "points": 50,
+   "reward": {
+    "spirit_stones": 500,
+    "items": [
+     {
+      "item": "hoi_huyet_dan",
+      "qty": 5
+     }
+    ]
+   }
+  },
+  {
+   "points": 150,
+   "reward": {
+    "spirit_stones": 1500,
+    "immortal_jade": 10,
+    "title": "Đạo Tâm Sơ Thành"
+   }
+  },
+  {
+   "points": 400,
+   "reward": {
+    "spirit_stones": 4000,
+    "immortal_jade": 25
+   }
+  },
+  {
+   "points": 800,
+   "reward": {
+    "spirit_stones": 8000,
+    "immortal_jade": 50,
+    "title": "Đạo Tâm Kiên Định"
+   }
+  },
+  {
+   "points": 1500,
+   "reward": {
+    "spirit_stones": 15000,
+    "immortal_jade": 100
+   }
+  },
+  {
+   "points": 2500,
+   "reward": {
+    "spirit_stones": 25000,
+    "immortal_jade": 200,
+    "title": "Đạo Tâm Thông Minh"
+   }
+  },
+  {
+   "points": 4000,
+   "reward": {
+    "spirit_stones": 50000,
+    "immortal_jade": 400,
+    "title": "Đạo Tâm Viên Mãn"
+   }
+  }
+ ],
+ "achievements": [
+  {
+   "id": "cult_luyen_khi",
+   "category": "tu_luyen",
+   "name_vi": "Dẫn Khí Nhập Thể",
+   "desc_vi": "Bước vào Luyện Khí, rồi luyện tới viên mãn.",
+   "counter": "cult",
+   "icon": [
+    "misc",
+    "pha_canh_dan"
+   ],
+   "tiers": [
+    {
+     "at": "luyen_khi:1",
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100,
+      "items": [
+       {
+        "item": "hoi_khi_dan",
+        "qty": 3
+       }
+      ]
+     },
+     "name_vi": "Dẫn Khí Nhập Thể",
+     "req": "luyen_khi:1"
+    },
+    {
+     "at": "luyen_khi:5",
+     "points": 10,
+     "reward": {
+      "spirit_stones": 300,
+      "items": [
+       {
+        "item": "tay_linh_thao",
+        "qty": 2
+       }
+      ]
+     },
+     "name_vi": "Khí Hải Sơ Thành",
+     "req": "luyen_khi:1"
+    },
+    {
+     "at": "luyen_khi:9",
+     "points": 20,
+     "reward": {
+      "spirit_stones": 600,
+      "items": [
+       {
+        "item": "tay_linh_dan",
+        "qty": 1
+       }
+      ]
+     },
+     "name_vi": "Luyện Khí Viên Mãn",
+     "req": "luyen_khi:1"
+    }
+   ]
+  },
+  {
+   "id": "cult_truc_co",
+   "category": "tu_luyen",
+   "name_vi": "Trúc Cơ Thành Công",
+   "desc_vi": "Đắp nền Trúc Cơ, từ sơ kỳ tới hậu kỳ.",
+   "counter": "cult",
+   "icon": [
+    "misc",
+    "linh_thach_2"
+   ],
+   "tiers": [
+    {
+     "at": "truc_co:1",
+     "points": 5,
+     "reward": {
+      "spirit_stones": 1000,
+      "immortal_jade": 5,
+      "items": [
+       {
+        "item": "linh_tuy_tinh",
+        "qty": 2
+       }
+      ],
+      "title": "Trúc Cơ Tu Sĩ"
+     },
+     "name_vi": "Trúc Cơ Sơ Kỳ",
+     "req": "luyen_khi:3"
+    },
+    {
+     "at": "truc_co:2",
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1500
+     },
+     "name_vi": "Trúc Cơ Trung Kỳ"
+    },
+    {
+     "at": "truc_co:3",
+     "points": 20,
+     "reward": {
+      "spirit_stones": 2000,
+      "immortal_jade": 10,
+      "items": [
+       {
+        "item": "thien_linh_qua",
+        "qty": 2
+       }
+      ]
+     },
+     "name_vi": "Trúc Cơ Hậu Kỳ",
+     "req": "luyen_khi:6"
+    }
+   ]
+  },
+  {
+   "id": "cult_kim_dan",
+   "category": "tu_luyen",
+   "name_vi": "Kết Thành Kim Đan",
+   "desc_vi": "Ngưng tụ Kim Đan trong đan điền.",
+   "counter": "cult",
+   "icon": [
+    "dan_duoc",
+    "dan_6"
+   ],
+   "tiers": [
+    {
+     "at": "kim_dan:1",
+     "points": 5,
+     "reward": {
+      "spirit_stones": 3000,
+      "immortal_jade": 15,
+      "items": [
+       {
+        "item": "thien_linh_dan",
+        "qty": 1
+       }
+      ],
+      "title": "Kim Đan Chân Nhân"
+     },
+     "name_vi": "Kim Đan Sơ Thành",
+     "req": "truc_co:1"
+    },
+    {
+     "at": "kim_dan:3",
+     "points": 10,
+     "reward": {
+      "spirit_stones": 4000,
+      "immortal_jade": 15
+     },
+     "name_vi": "Kim Đan Đại Thành"
+    }
+   ]
+  },
+  {
+   "id": "cult_nguyen_anh",
+   "category": "tu_luyen",
+   "name_vi": "Nguyên Anh Xuất Khiếu",
+   "desc_vi": "Phá đan thành anh, nguyên thần xuất khiếu.",
+   "counter": "cult",
+   "icon": [
+    "dan_duoc",
+    "dan_7"
+   ],
+   "tiers": [
+    {
+     "at": "nguyen_anh:1",
+     "points": 5,
+     "reward": {
+      "spirit_stones": 5000,
+      "immortal_jade": 20,
+      "items": [
+       {
+        "item": "tao_hoa_dan",
+        "qty": 1
+       }
+      ]
+     },
+     "name_vi": "Nguyên Anh Sơ Sinh",
+     "req": "kim_dan:1"
+    },
+    {
+     "at": "nguyen_anh:3",
+     "points": 10,
+     "reward": {
+      "spirit_stones": 6000,
+      "immortal_jade": 20
+     },
+     "name_vi": "Nguyên Anh Viên Mãn"
+    }
+   ]
+  },
+  {
+   "id": "cult_hoa_than",
+   "category": "tu_luyen",
+   "name_vi": "Hóa Thần Thông Huyền",
+   "desc_vi": "Đạt cảnh giới Hóa Thần.",
+   "counter": "cult",
+   "icon": [
+    "cong_phap",
+    "sach_6"
+   ],
+   "tiers": [
+    {
+     "at": "hoa_than:1",
+     "points": 5,
+     "reward": {
+      "spirit_stones": 8000,
+      "immortal_jade": 30,
+      "title": "Hóa Thần Tôn Giả"
+     },
+     "name_vi": "Hóa Thần Thông Huyền"
+    }
+   ]
+  },
+  {
+   "id": "cult_luyen_hu",
+   "category": "tu_luyen",
+   "name_vi": "Luyện Hư Hợp Đạo",
+   "desc_vi": "Đạt cảnh giới Luyện Hư.",
+   "counter": "cult",
+   "icon": [
+    "cong_phap",
+    "sach_7"
+   ],
+   "tiers": [
+    {
+     "at": "luyen_hu:1",
+     "points": 5,
+     "reward": {
+      "spirit_stones": 10000,
+      "immortal_jade": 40
+     },
+     "name_vi": "Luyện Hư Hợp Đạo"
+    }
+   ]
+  },
+  {
+   "id": "cult_hop_the",
+   "category": "tu_luyen",
+   "name_vi": "Hợp Thể Thiên Nhân",
+   "desc_vi": "Đạt cảnh giới Hợp Thể.",
+   "counter": "cult",
+   "icon": [
+    "cong_phap",
+    "sach_8"
+   ],
+   "tiers": [
+    {
+     "at": "hop_the:1",
+     "points": 5,
+     "reward": {
+      "spirit_stones": 12000,
+      "immortal_jade": 50
+     },
+     "name_vi": "Hợp Thể Thiên Nhân"
+    }
+   ]
+  },
+  {
+   "id": "cult_dai_thua",
+   "category": "tu_luyen",
+   "name_vi": "Đại Thừa Chi Cảnh",
+   "desc_vi": "Chạm tới Đại Thừa, đỉnh của con đường tu tiên.",
+   "counter": "cult",
+   "icon": [
+    "cong_phap",
+    "gian_8"
+   ],
+   "tiers": [
+    {
+     "at": "dai_thua:1",
+     "points": 160,
+     "reward": {
+      "spirit_stones": 15000,
+      "immortal_jade": 60,
+      "title": "Đại Thừa Chân Quân"
+     },
+     "name_vi": "Đại Thừa Sơ Kỳ"
+    },
+    {
+     "at": "dai_thua:3",
+     "points": 250,
+     "reward": {
+      "spirit_stones": 20000,
+      "immortal_jade": 100,
+      "title": "Vô Thượng Chí Tôn"
+     },
+     "name_vi": "Đại Thừa Viên Mãn"
+    }
+   ]
+  },
+  {
+   "id": "tribulation",
+   "category": "tu_luyen",
+   "name_vi": "Nghịch Thiên Độ Kiếp",
+   "desc_vi": "Vượt qua Thiên Kiếp khi phá cảnh giới.",
+   "counter": "tribulation",
+   "icon": [
+    "linh_thao",
+    "day_loi"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 500
+     },
+     "name_vi": "Vượt Kiếp Đầu"
+    },
+    {
+     "at": 3,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1500,
+      "immortal_jade": 10
+     },
+     "name_vi": "Tam Độ Lôi Kiếp"
+    },
+    {
+     "at": 6,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 3000,
+      "immortal_jade": 25,
+      "title": "Lôi Kiếp Bất Diệt"
+     },
+     "name_vi": "Lục Kiếp Bất Hoại"
+    }
+   ]
+  },
+  {
+   "id": "meditate",
+   "category": "tu_luyen",
+   "name_vi": "Tĩnh Tọa Ngộ Tâm",
+   "desc_vi": "Ngồi thiền trong động phủ đến khi xong.",
+   "counter": "meditate",
+   "icon": [
+    "linh_thao",
+    "sen_ngoc"
+   ],
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100,
+      "items": [
+       {
+        "item": "hoi_huyet_dan",
+        "qty": 3
+       }
+      ]
+     },
+     "name_vi": "Tĩnh Tâm"
+    },
+    {
+     "at": 100,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 600
+     },
+     "name_vi": "Nhập Định"
+    },
+    {
+     "at": 500,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 2000
+     },
+     "name_vi": "Thiền Tâm Như Nước"
+    }
+   ]
+  },
+  {
+   "id": "tree_nodes",
+   "category": "tu_luyen",
+   "name_vi": "Đạo Thụ Khai Hoa",
+   "desc_vi": "Hoàn thành các nút trên Đạo Thụ.",
+   "counter": "tree_nodes",
+   "icon": [
+    "linh_thao",
+    "la_long"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Mầm Đạo"
+    },
+    {
+     "at": 5,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 400,
+      "immortal_jade": 5
+     },
+     "name_vi": "Cành Non"
+    },
+    {
+     "at": 15,
+     "points": 40,
+     "reward": {
+      "spirit_stones": 1200,
+      "immortal_jade": 10
+     },
+     "name_vi": "Tán Lá"
+    },
+    {
+     "at": 40,
+     "points": 80,
+     "reward": {
+      "spirit_stones": 3000,
+      "immortal_jade": 20,
+      "title": "Người Vun Đạo Thụ"
+     },
+     "name_vi": "Đại Thụ"
+    },
+    {
+     "at": 80,
+     "points": 160,
+     "reward": {
+      "spirit_stones": 6000,
+      "immortal_jade": 40,
+      "title": "Đạo Thụ Thông Thiên"
+     },
+     "name_vi": "Đạo Thụ Thông Thiên"
+    }
+   ]
+  },
+  {
+   "id": "trial_pass",
+   "category": "tu_luyen",
+   "name_vi": "Vượt Thiên Kiếp Nhỏ",
+   "desc_vi": "Qua các Thiên kiếp nhỏ của Đạo Thụ.",
+   "counter": "trial_pass",
+   "icon": [
+    "linh_thao",
+    "hoa_diem"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 150,
+      "items": [
+       {
+        "item": "hoi_huyet_dan",
+        "qty": 2
+       }
+      ]
+     },
+     "name_vi": "Qua Kiếp Đầu"
+    },
+    {
+     "at": 10,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5
+     },
+     "name_vi": "Thập Kiếp"
+    },
+    {
+     "at": 30,
+     "points": 40,
+     "reward": {
+      "spirit_stones": 2000,
+      "immortal_jade": 15
+     },
+     "name_vi": "Tam Thập Kiếp"
+    },
+    {
+     "at": 60,
+     "points": 80,
+     "reward": {
+      "spirit_stones": 4000,
+      "immortal_jade": 30
+     },
+     "name_vi": "Lục Thập Kiếp"
+    }
+   ]
+  },
+  {
+   "id": "answer_right",
+   "category": "ngo_dao",
+   "name_vi": "Vấn Đạo Cầu Chân",
+   "desc_vi": "Trả lời đúng câu hỏi ở bất cứ đâu.",
+   "counter": "answer_right",
+   "icon": [
+    "cong_phap",
+    "sach_1"
+   ],
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100,
+      "items": [
+       {
+        "item": "hoi_huyet_dan",
+        "qty": 3
+       }
+      ]
+     },
+     "name_vi": "Sơ Khai Linh Trí"
+    },
+    {
+     "at": 100,
+     "points": 15,
+     "reward": {
+      "spirit_stones": 500,
+      "immortal_jade": 5
+     },
+     "name_vi": "Học Hải Vô Nhai"
+    },
+    {
+     "at": 500,
+     "points": 30,
+     "reward": {
+      "spirit_stones": 1500,
+      "immortal_jade": 10
+     },
+     "name_vi": "Bác Lãm Quần Thư"
+    },
+    {
+     "at": 2000,
+     "points": 60,
+     "reward": {
+      "spirit_stones": 4000,
+      "immortal_jade": 30,
+      "title": "Bác Học Chân Nhân"
+     },
+     "name_vi": "Thông Thiên Triệt Địa"
+    },
+    {
+     "at": 10000,
+     "points": 120,
+     "reward": {
+      "spirit_stones": 10000,
+      "immortal_jade": 80,
+      "title": "Vạn Pháp Quy Tông"
+     },
+     "name_vi": "Vạn Pháp Quy Tông"
+    }
+   ]
+  },
+  {
+   "id": "answer_streak",
+   "category": "ngo_dao",
+   "name_vi": "Liên Hoàn Ngộ Đạo",
+   "desc_vi": "Trả lời đúng liền một mạch, không sai câu nào.",
+   "counter": "answer_streak",
+   "icon": [
+    "cong_phap",
+    "cuon_3"
+   ],
+   "tiers": [
+    {
+     "at": 5,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Ngũ Liên"
+    },
+    {
+     "at": 10,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Thập Liên"
+    },
+    {
+     "at": 20,
+     "points": 25,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5
+     },
+     "name_vi": "Nhị Thập Liên"
+    },
+    {
+     "at": 50,
+     "points": 60,
+     "reward": {
+      "spirit_stones": 2500,
+      "immortal_jade": 20,
+      "title": "Tâm Như Chỉ Thủy"
+     },
+     "name_vi": "Ngũ Thập Liên"
+    },
+    {
+     "at": 100,
+     "points": 120,
+     "reward": {
+      "spirit_stones": 6000,
+      "immortal_jade": 50,
+      "title": "Đạo Tâm Bất Động"
+     },
+     "name_vi": "Bách Liên Bất Bại"
+    }
+   ]
+  },
+  {
+   "id": "answer_fast",
+   "category": "ngo_dao",
+   "name_vi": "Tâm Nhanh Như Điện",
+   "desc_vi": "Trả lời đúng khi chưa hết một phần ba thời gian.",
+   "counter": "answer_fast",
+   "icon": [
+    "linh_thao",
+    "day_loi"
+   ],
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Nhanh Trí"
+    },
+    {
+     "at": 100,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 600,
+      "immortal_jade": 5
+     },
+     "name_vi": "Điện Quang Hỏa Thạch"
+    },
+    {
+     "at": 500,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 2000,
+      "immortal_jade": 15
+     },
+     "name_vi": "Thần Tốc"
+    },
+    {
+     "at": 2000,
+     "points": 40,
+     "reward": {
+      "spirit_stones": 5000,
+      "immortal_jade": 40,
+      "title": "Nhất Niệm Thông Thiên"
+     },
+     "name_vi": "Nhất Niệm Vạn Lý"
+    }
+   ]
+  },
+  {
+   "id": "ans_practice",
+   "category": "ngo_dao",
+   "name_vi": "Khổ Luyện Tàng Kinh",
+   "desc_vi": "Trả lời đúng trong các buổi luyện ở Tàng Kinh.",
+   "counter": "answer_right",
+   "icon": [
+    "cong_phap",
+    "cuon_1"
+   ],
+   "where": {
+    "context": "math"
+   },
+   "tiers": [
+    {
+     "at": 50,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 200,
+      "items": [
+       {
+        "item": "hoi_huyet_dan",
+        "qty": 3
+       }
+      ]
+     },
+     "name_vi": "Siêng Năng"
+    },
+    {
+     "at": 300,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1000
+     },
+     "name_vi": "Khổ Luyện"
+    },
+    {
+     "at": 1500,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 3000
+     },
+     "name_vi": "Thiết Trụ Ma Thành Châm"
+    }
+   ]
+  },
+  {
+   "id": "ans_combat",
+   "category": "ngo_dao",
+   "name_vi": "Lâm Trận Bất Loạn",
+   "desc_vi": "Trả lời đúng giữa trận chiến, khi đòn yêu ma sắp giáng xuống.",
+   "counter": "answer_right",
+   "icon": [
+    "weapons_a",
+    "kiem_2"
+   ],
+   "where": {
+    "context": "math_combat"
+   },
+   "tiers": [
+    {
+     "at": 20,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 200
+     },
+     "name_vi": "Bình Tĩnh"
+    },
+    {
+     "at": 200,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1200,
+      "immortal_jade": 5
+     },
+     "name_vi": "Lâm Nguy Bất Loạn"
+    },
+    {
+     "at": 1000,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 4000,
+      "immortal_jade": 20,
+      "title": "Thái Sơn Bất Động"
+     },
+     "name_vi": "Thái Sơn Băng Tiền"
+    }
+   ]
+  },
+  {
+   "id": "ans_tribulation",
+   "category": "ngo_dao",
+   "name_vi": "Lôi Hạ Ngộ Đạo",
+   "desc_vi": "Trả lời đúng dưới sấm sét của Thiên Kiếp.",
+   "counter": "answer_right",
+   "icon": [
+    "linh_thao",
+    "day_loi"
+   ],
+   "where": {
+    "context": "math_tribulation"
+   },
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Sấm Bên Tai"
+    },
+    {
+     "at": 60,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1500,
+      "immortal_jade": 10
+     },
+     "name_vi": "Lôi Đình Ngộ Đạo"
+    }
+   ]
+  },
+  {
+   "id": "ans_dungeon",
+   "category": "ngo_dao",
+   "name_vi": "Hầm Ngục Giải Đề",
+   "desc_vi": "Trả lời đúng trong hầm ngục.",
+   "counter": "answer_right",
+   "icon": [
+    "misc",
+    "chia_khoa"
+   ],
+   "where": {
+    "context": "math_dungeon"
+   },
+   "tiers": [
+    {
+     "at": 20,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 200
+     },
+     "name_vi": "Kẻ Dò Đường"
+    },
+    {
+     "at": 150,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1200
+     },
+     "name_vi": "Chủ Nhân Hầm Ngục"
+    }
+   ]
+  },
+  {
+   "id": "ans_td",
+   "category": "ngo_dao",
+   "name_vi": "Thủ Thành Toán Sư",
+   "desc_vi": "Trả lời đúng để dựng và nâng tháp thủ thành.",
+   "counter": "answer_right",
+   "icon": [
+    "trang_bi",
+    "mu_3"
+   ],
+   "where": {
+    "context": "math_td"
+   },
+   "tiers": [
+    {
+     "at": 20,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 200
+     },
+     "name_vi": "Thợ Dựng Tháp"
+    },
+    {
+     "at": 150,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1200
+     },
+     "name_vi": "Toán Sư Giữ Thành"
+    }
+   ]
+  },
+  {
+   "id": "ans_fortune",
+   "category": "ngo_dao",
+   "name_vi": "Cơ Duyên Tự Đến",
+   "desc_vi": "Trả lời đúng khi gặp cơ duyên.",
+   "counter": "answer_right",
+   "icon": [
+    "misc",
+    "ruong_mo"
+   ],
+   "where": {
+    "context": "math_fortune"
+   },
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 200
+     },
+     "name_vi": "Có Duyên"
+    },
+    {
+     "at": 80,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1000
+     },
+     "name_vi": "Phúc Duyên Thâm Hậu"
+    }
+   ]
+  },
+  {
+   "id": "ans_skill",
+   "category": "ngo_dao",
+   "name_vi": "Chiêu Thức Như Ý",
+   "desc_vi": "Trả lời đúng để tung chiêu thức.",
+   "counter": "answer_right",
+   "icon": [
+    "cong_phap",
+    "gian_2"
+   ],
+   "where": {
+    "context": "math_skill"
+   },
+   "tiers": [
+    {
+     "at": 20,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 200
+     },
+     "name_vi": "Ra Chiêu"
+    },
+    {
+     "at": 200,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1200,
+      "immortal_jade": 5
+     },
+     "name_vi": "Chiêu Chiêu Trúng Đích"
+    },
+    {
+     "at": 1000,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 4000,
+      "immortal_jade": 20
+     },
+     "name_vi": "Tâm Kiếm Hợp Nhất"
+    }
+   ]
+  },
+  {
+   "id": "ans_fishing",
+   "category": "ngo_dao",
+   "name_vi": "Câu Đề Bên Hồ",
+   "desc_vi": "Trả lời đúng khi câu cá.",
+   "counter": "answer_right",
+   "icon": [
+    "linh_thao",
+    "sen_bang"
+   ],
+   "where": {
+    "context": "math_fishing"
+   },
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Thả Câu"
+    },
+    {
+     "at": 100,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800
+     },
+     "name_vi": "Lão Ngư Thông Toán"
+    }
+   ]
+  },
+  {
+   "id": "ans_meditate",
+   "category": "ngo_dao",
+   "name_vi": "Tọa Thiền Vấn Tâm",
+   "desc_vi": "Trả lời đúng khi ngồi thiền.",
+   "counter": "answer_right",
+   "icon": [
+    "linh_thao",
+    "lan_nguyet"
+   ],
+   "where": {
+    "context": "math_meditate"
+   },
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Vấn Tâm"
+    },
+    {
+     "at": 100,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800
+     },
+     "name_vi": "Minh Tâm Kiến Tánh"
+    }
+   ]
+  },
+  {
+   "id": "ans_realm",
+   "category": "ngo_dao",
+   "name_vi": "Trận Nhãn Phá Giải",
+   "desc_vi": "Trả lời đúng để phá trận nhãn trong bí cảnh.",
+   "counter": "answer_right",
+   "icon": [
+    "misc",
+    "ngu_kiem_lenh"
+   ],
+   "where": {
+    "context": "math_realm"
+   },
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 200
+     },
+     "name_vi": "Phá Trận"
+    },
+    {
+     "at": 100,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1200
+     },
+     "name_vi": "Trận Pháp Đại Sư"
+    }
+   ]
+  },
+  {
+   "id": "ans_placement",
+   "category": "ngo_dao",
+   "name_vi": "Khảo Hạch Nhập Môn",
+   "desc_vi": "Trả lời đúng trong bài kiểm tra đầu vào.",
+   "counter": "answer_right",
+   "icon": [
+    "cong_phap",
+    "gian_1"
+   ],
+   "where": {
+    "context": "math_placement"
+   },
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 200
+     },
+     "name_vi": "Khảo Hạch Nhập Môn"
+    }
+   ]
+  },
+  {
+   "id": "code_solved",
+   "category": "ngo_dao",
+   "name_vi": "Kiếm Tu Mã Đạo",
+   "desc_vi": "Giải trọn một bài lập trình: mọi bộ kiểm tra đều qua.",
+   "counter": "code_solved",
+   "icon": [
+    "cong_phap",
+    "cuon_5"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 200
+     },
+     "name_vi": "Dòng Lệnh Đầu"
+    },
+    {
+     "at": 5,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 1000,
+      "immortal_jade": 5
+     },
+     "name_vi": "Ngũ Bài Đắc Đạo"
+    },
+    {
+     "at": 15,
+     "points": 40,
+     "reward": {
+      "spirit_stones": 3000,
+      "immortal_jade": 15
+     },
+     "name_vi": "Mã Đạo Tinh Thông"
+    },
+    {
+     "at": 40,
+     "points": 80,
+     "reward": {
+      "spirit_stones": 8000,
+      "immortal_jade": 40,
+      "title": "Mã Đạo Chân Tiên"
+     },
+     "name_vi": "Mã Thánh"
+    }
+   ]
+  },
+  {
+   "id": "xa_truong",
+   "category": "ngo_dao",
+   "name_vi": "Xạ Trường Trúng Đích",
+   "desc_vi": "Đạt từ hạ phẩm trở lên ở một bài Xạ Trường.",
+   "counter": "xa_truong",
+   "icon": [
+    "weapons_b",
+    "cung_2"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Trúng Bia"
+    },
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 2000,
+      "immortal_jade": 10
+     },
+     "name_vi": "Thiện Xạ"
+    }
+   ]
+  },
+  {
+   "id": "xa_truong_top",
+   "category": "ngo_dao",
+   "name_vi": "Bách Phát Bách Trúng",
+   "desc_vi": "Đạt thượng phẩm ở một bài Xạ Trường.",
+   "counter": "xa_truong_top",
+   "icon": [
+    "weapons_b",
+    "cung_6"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5
+     },
+     "name_vi": "Thượng Phẩm Xạ Thủ"
+    },
+    {
+     "at": 3,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 3000,
+      "immortal_jade": 20,
+      "title": "Bách Phát Bách Trúng"
+     },
+     "name_vi": "Thần Tiễn Thủ"
+    }
+   ]
+  },
+  {
+   "id": "kill",
+   "category": "chien_dau",
+   "name_vi": "Trảm Yêu Trừ Ma",
+   "desc_vi": "Hạ yêu quái ngoài thế giới.",
+   "counter": "kill",
+   "icon": [
+    "weapons_a",
+    "kiem_1"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 50,
+      "items": [
+       {
+        "item": "hoi_huyet_dan",
+        "qty": 2
+       }
+      ]
+     },
+     "name_vi": "Sơ Thí Đao Phong"
+    },
+    {
+     "at": 50,
+     "points": 15,
+     "reward": {
+      "spirit_stones": 400
+     },
+     "name_vi": "Trảm Yêu Bách Lý"
+    },
+    {
+     "at": 500,
+     "points": 30,
+     "reward": {
+      "spirit_stones": 2000,
+      "immortal_jade": 10
+     },
+     "name_vi": "Ngàn Yêu Bạt Vía"
+    },
+    {
+     "at": 2000,
+     "points": 60,
+     "reward": {
+      "spirit_stones": 5000,
+      "immortal_jade": 25,
+      "title": "Yêu Ma Khắc Tinh"
+     },
+     "name_vi": "Vạn Yêu Khiếp Đảm"
+    },
+    {
+     "at": 10000,
+     "points": 120,
+     "reward": {
+      "spirit_stones": 12000,
+      "immortal_jade": 60,
+      "title": "Sát Thần Vô Song"
+     },
+     "name_vi": "Sát Thần"
+    }
+   ]
+  },
+  {
+   "id": "kill_elite",
+   "category": "chien_dau",
+   "name_vi": "Tinh Anh Khắc Tinh",
+   "desc_vi": "Hạ yêu quái tinh anh.",
+   "counter": "kill",
+   "icon": [
+    "weapons_a",
+    "dao_3"
+   ],
+   "where": {
+    "rank": "elite"
+   },
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Phá Tinh Anh"
+    },
+    {
+     "at": 100,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1500,
+      "immortal_jade": 10
+     },
+     "name_vi": "Bách Tinh Anh"
+    },
+    {
+     "at": 500,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 5000,
+      "immortal_jade": 25
+     },
+     "name_vi": "Tinh Anh Khiếp Sợ"
+    }
+   ]
+  },
+  {
+   "id": "kill_boss",
+   "category": "chien_dau",
+   "name_vi": "Trảm Thủ Lĩnh",
+   "desc_vi": "Hạ thủ lĩnh yêu ma.",
+   "counter": "kill",
+   "icon": [
+    "weapons_a",
+    "chuy_5"
+   ],
+   "where": {
+    "rank": "boss"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 500,
+      "immortal_jade": 5
+     },
+     "name_vi": "Thí Thủ Lĩnh"
+    },
+    {
+     "at": 10,
+     "points": 30,
+     "reward": {
+      "spirit_stones": 3000,
+      "immortal_jade": 20
+     },
+     "name_vi": "Thập Vương Bại"
+    },
+    {
+     "at": 50,
+     "points": 80,
+     "reward": {
+      "spirit_stones": 10000,
+      "immortal_jade": 50,
+      "title": "Thí Vương Giả"
+     },
+     "name_vi": "Thí Vương Giả"
+    }
+   ]
+  },
+  {
+   "id": "kill_dstt",
+   "category": "chien_dau",
+   "name_vi": "Diệt Ma Đại Số",
+   "desc_vi": "Hạ các quái lỗi sai của Đại Số Tuyến Tính.",
+   "counter": "kill",
+   "icon": [
+    "cong_phap",
+    "sach_2"
+   ],
+   "where": {
+    "subject": "dai_so_tuyen_tinh"
+   },
+   "tiers": [
+    {
+     "at": 20,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Phá Ma Ma Trận"
+    },
+    {
+     "at": 200,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 2000
+     },
+     "name_vi": "Đại Số Thanh Tẩy"
+    }
+   ]
+  },
+  {
+   "id": "kill_kiem_trung",
+   "category": "chien_dau",
+   "name_vi": "Kiếm Trủng Trảm Linh",
+   "desc_vi": "Hạ yêu quái ở Kiếm Trủng Sơn.",
+   "counter": "kill",
+   "icon": [
+    "weapons_a",
+    "kiem_3"
+   ],
+   "where": {
+    "land": "kiem_trung_son"
+   },
+   "tiers": [
+    {
+     "at": 20,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Vào Kiếm Trủng"
+    },
+    {
+     "at": 200,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 2000
+     },
+     "name_vi": "Kiếm Trủng Chi Chủ"
+    }
+   ]
+  },
+  {
+   "id": "kill_luu_van",
+   "category": "chien_dau",
+   "name_vi": "Lưu Vân Quét Mây",
+   "desc_vi": "Hạ yêu quái ở Lưu Vân Cốc.",
+   "counter": "kill",
+   "icon": [
+    "weapons_b",
+    "phien_2"
+   ],
+   "where": {
+    "land": "luu_van_coc"
+   },
+   "tiers": [
+    {
+     "at": 20,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Vén Mây"
+    },
+    {
+     "at": 200,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 2000
+     },
+     "name_vi": "Lưu Vân Thanh Bình"
+    }
+   ]
+  },
+  {
+   "id": "kill_me_do",
+   "category": "chien_dau",
+   "name_vi": "Mê Độ Phá Chướng",
+   "desc_vi": "Hạ yêu quái ở Mê Độ Lâm.",
+   "counter": "kill",
+   "icon": [
+    "linh_thao",
+    "nam_do"
+   ],
+   "where": {
+    "land": "me_do_lam"
+   },
+   "tiers": [
+    {
+     "at": 20,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Lạc Lối Không Sợ"
+    },
+    {
+     "at": 200,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 2000
+     },
+     "name_vi": "Mê Độ Thông Lộ"
+    }
+   ]
+  },
+  {
+   "id": "kill_tam_ma",
+   "category": "chien_dau",
+   "name_vi": "Trảm Tâm Ma",
+   "desc_vi": "Hạ Tâm Ma ở Linh Xà Nguyên.",
+   "counter": "kill",
+   "icon": [
+    "cong_phap",
+    "cuon_8"
+   ],
+   "where": {
+    "monster": "tam_ma"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 500
+     },
+     "name_vi": "Đối Diện Tâm Ma"
+    },
+    {
+     "at": 20,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 2500,
+      "immortal_jade": 10
+     },
+     "name_vi": "Tâm Ma Tận Diệt"
+    }
+   ]
+  },
+  {
+   "id": "kill_loi_long",
+   "category": "chien_dau",
+   "name_vi": "Đồ Long Giả",
+   "desc_vi": "Hạ Lôi Long trên Lôi Kiếp Đài.",
+   "counter": "kill",
+   "icon": [
+    "linh_thao",
+    "la_long"
+   ],
+   "where": {
+    "monster": "loi_long"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 40,
+     "reward": {
+      "spirit_stones": 2000,
+      "immortal_jade": 10,
+      "title": "Đồ Long Giả"
+     },
+     "name_vi": "Đồ Long"
+    },
+    {
+     "at": 5,
+     "points": 100,
+     "reward": {
+      "spirit_stones": 8000,
+      "immortal_jade": 40
+     },
+     "name_vi": "Ngũ Long Phục Thủ"
+    }
+   ]
+  },
+  {
+   "id": "parry",
+   "category": "chien_dau",
+   "name_vi": "Lấy Nhu Chế Cương",
+   "desc_vi": "Phản Đòn: đỡ đòn yêu ma bằng một câu trả lời đúng.",
+   "counter": "parry",
+   "icon": [
+    "trang_bi",
+    "gang_3"
+   ],
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Sơ Học Phản Kích"
+    },
+    {
+     "at": 100,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5
+     },
+     "name_vi": "Lấy Nhu Chế Cương"
+    },
+    {
+     "at": 1000,
+     "points": 50,
+     "reward": {
+      "spirit_stones": 4000,
+      "immortal_jade": 20,
+      "title": "Phản Kích Đại Sư"
+     },
+     "name_vi": "Tứ Lạng Bạt Thiên Cân"
+    },
+    {
+     "at": 5000,
+     "points": 120,
+     "reward": {
+      "spirit_stones": 10000,
+      "immortal_jade": 60,
+      "title": "Nghịch Mệnh Chi Nhân"
+     },
+     "name_vi": "Phản Thiên Nghịch Mệnh"
+    }
+   ]
+  },
+  {
+   "id": "parry_combo",
+   "category": "chien_dau",
+   "name_vi": "Chiêu Liên Hoàn",
+   "desc_vi": "Phản Đòn liền nhiều lần không đứt mạch trong một trận.",
+   "counter": "parry_combo",
+   "icon": [
+    "cong_phap",
+    "gian_5"
+   ],
+   "tiers": [
+    {
+     "at": 3,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Tam Liên Kích"
+    },
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 400
+     },
+     "name_vi": "Ngũ Liên Kích"
+    },
+    {
+     "at": 10,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 1500,
+      "immortal_jade": 10
+     },
+     "name_vi": "Thập Liên Kích"
+    },
+    {
+     "at": 20,
+     "points": 40,
+     "reward": {
+      "spirit_stones": 5000,
+      "immortal_jade": 30
+     },
+     "name_vi": "Nhị Thập Liên Kích"
+    }
+   ]
+  },
+  {
+   "id": "kill_flawless",
+   "category": "chien_dau",
+   "name_vi": "Toàn Thân Nhi Thoái",
+   "desc_vi": "Hạ yêu quái mà máu vẫn đầy.",
+   "counter": "kill_flawless",
+   "icon": [
+    "trang_bi",
+    "ao_5"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Không Một Vết Xước"
+    },
+    {
+     "at": 25,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1000,
+      "immortal_jade": 5
+     },
+     "name_vi": "Bạch Y Bất Nhiễm"
+    },
+    {
+     "at": 200,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 5000,
+      "immortal_jade": 25
+     },
+     "name_vi": "Thân Như Kim Cương"
+    }
+   ]
+  },
+  {
+   "id": "kill_flawless_elite",
+   "category": "chien_dau",
+   "name_vi": "Tinh Anh Không Chạm",
+   "desc_vi": "Hạ yêu quái tinh anh mà máu vẫn đầy.",
+   "counter": "kill_flawless",
+   "icon": [
+    "trang_bi",
+    "ao_7"
+   ],
+   "where": {
+    "rank": "elite"
+   },
+   "tiers": [
+    {
+     "at": 5,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 500
+     },
+     "name_vi": "Né Tinh Anh"
+    },
+    {
+     "at": 50,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 3000
+     },
+     "name_vi": "Tinh Anh Vô Dụng"
+    }
+   ]
+  },
+  {
+   "id": "weapon_get",
+   "category": "suu_tam",
+   "name_vi": "Binh Khí Trong Tay",
+   "desc_vi": "Có được binh khí của Thiên Địa Đồ.",
+   "counter": "weapon_get",
+   "icon": [
+    "weapons_a",
+    "kiem_4"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Binh Khí Đầu Tiên"
+    },
+    {
+     "at": 10,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5
+     },
+     "name_vi": "Thập Binh"
+    },
+    {
+     "at": 50,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 3000,
+      "immortal_jade": 15
+     },
+     "name_vi": "Bách Binh Tàng"
+    }
+   ]
+  },
+  {
+   "id": "weapon_types",
+   "category": "suu_tam",
+   "name_vi": "Bách Binh Phổ",
+   "desc_vi": "Sở hữu nhiều loại binh khí khác nhau.",
+   "counter": "weapon_types",
+   "icon": [
+    "weapons_b",
+    "truong_3"
+   ],
+   "tiers": [
+    {
+     "at": 3,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Tam Binh"
+    },
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1000,
+      "immortal_jade": 5
+     },
+     "name_vi": "Ngũ Binh"
+    },
+    {
+     "at": 8,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 3000,
+      "immortal_jade": 20,
+      "title": "Bách Binh Chi Chủ"
+     },
+     "name_vi": "Bát Binh Tề Tựu"
+    }
+   ]
+  },
+  {
+   "id": "weapon_q_ha",
+   "category": "suu_tam",
+   "name_vi": "Hạ Phẩm Nhập Thủ",
+   "desc_vi": "Có được một binh khí hạ phẩm.",
+   "counter": "weapon_get",
+   "icon": [
+    "weapons_a",
+    "dao_1"
+   ],
+   "where": {
+    "quality": "ha"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Hạ Phẩm Nhập Thủ"
+    },
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 400,
+      "immortal_jade": 2
+     },
+     "name_vi": "Ngũ Binh Hạ Phẩm"
+    }
+   ]
+  },
+  {
+   "id": "weapon_q_trung",
+   "category": "suu_tam",
+   "name_vi": "Trung Phẩm Binh Khí",
+   "desc_vi": "Có được một binh khí trung phẩm.",
+   "counter": "weapon_get",
+   "icon": [
+    "weapons_a",
+    "dao_3"
+   ],
+   "where": {
+    "quality": "trung"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 400
+     },
+     "name_vi": "Trung Phẩm Binh Khí"
+    },
+    {
+     "at": 5,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 1600,
+      "immortal_jade": 8
+     },
+     "name_vi": "Ngũ Binh Trung Phẩm"
+    }
+   ]
+  },
+  {
+   "id": "weapon_q_thuong",
+   "category": "suu_tam",
+   "name_vi": "Thượng Phẩm Thần Binh",
+   "desc_vi": "Có được một binh khí thượng phẩm.",
+   "counter": "weapon_get",
+   "icon": [
+    "weapons_a",
+    "dao_5"
+   ],
+   "where": {
+    "quality": "thuong"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 15,
+     "reward": {
+      "spirit_stones": 900
+     },
+     "name_vi": "Thượng Phẩm Thần Binh"
+    },
+    {
+     "at": 5,
+     "points": 30,
+     "reward": {
+      "spirit_stones": 3600,
+      "immortal_jade": 18
+     },
+     "name_vi": "Ngũ Binh Thượng Phẩm"
+    }
+   ]
+  },
+  {
+   "id": "weapon_q_cuc",
+   "category": "suu_tam",
+   "name_vi": "Cực Phẩm Bảo Khí",
+   "desc_vi": "Có được một binh khí cực phẩm.",
+   "counter": "weapon_get",
+   "icon": [
+    "weapons_a",
+    "dao_7"
+   ],
+   "where": {
+    "quality": "cuc"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 1600
+     },
+     "name_vi": "Cực Phẩm Bảo Khí"
+    },
+    {
+     "at": 5,
+     "points": 40,
+     "reward": {
+      "spirit_stones": 6400,
+      "immortal_jade": 32
+     },
+     "name_vi": "Ngũ Binh Cực Phẩm"
+    }
+   ]
+  },
+  {
+   "id": "weapon_q_tuyet",
+   "category": "suu_tam",
+   "name_vi": "Tuyệt Phẩm Tiên Khí",
+   "desc_vi": "Có được một binh khí tuyệt phẩm.",
+   "counter": "weapon_get",
+   "icon": [
+    "weapons_a",
+    "dao_8"
+   ],
+   "where": {
+    "quality": "tuyet"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 25,
+     "reward": {
+      "spirit_stones": 2500
+     },
+     "name_vi": "Tuyệt Phẩm Tiên Khí"
+    },
+    {
+     "at": 5,
+     "points": 50,
+     "reward": {
+      "spirit_stones": 10000,
+      "immortal_jade": 50
+     },
+     "name_vi": "Ngũ Binh Tuyệt Phẩm"
+    }
+   ]
+  },
+  {
+   "id": "weapon_t_kiem",
+   "category": "suu_tam",
+   "name_vi": "Kiếm Tu Chi Đạo",
+   "desc_vi": "Có được binh khí loại kiếm.",
+   "counter": "weapon_get",
+   "icon": [
+    "weapons_a",
+    "kiem_2"
+   ],
+   "where": {
+    "type": "kiem"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 150
+     },
+     "name_vi": "Kiếm Tu Chi Đạo"
+    },
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800
+     },
+     "name_vi": "Kiếm Tu Chi Đạo Đại Thành"
+    }
+   ]
+  },
+  {
+   "id": "weapon_t_dao",
+   "category": "suu_tam",
+   "name_vi": "Đao Khách Giang Hồ",
+   "desc_vi": "Có được binh khí loại đao.",
+   "counter": "weapon_get",
+   "icon": [
+    "weapons_a",
+    "dao_2"
+   ],
+   "where": {
+    "type": "dao"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 150
+     },
+     "name_vi": "Đao Khách Giang Hồ"
+    },
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800
+     },
+     "name_vi": "Đao Khách Giang Hồ Đại Thành"
+    }
+   ]
+  },
+  {
+   "id": "weapon_t_ho_lo",
+   "category": "suu_tam",
+   "name_vi": "Hồ Lô Tiên Ông",
+   "desc_vi": "Có được binh khí loại hồ lô.",
+   "counter": "weapon_get",
+   "icon": [
+    "weapons_b",
+    "ho_lo_2"
+   ],
+   "where": {
+    "type": "ho_lo"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 150
+     },
+     "name_vi": "Hồ Lô Tiên Ông"
+    },
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800
+     },
+     "name_vi": "Hồ Lô Tiên Ông Đại Thành"
+    }
+   ]
+  },
+  {
+   "id": "weapon_t_thuong",
+   "category": "suu_tam",
+   "name_vi": "Thương Thần Xuất Thế",
+   "desc_vi": "Có được binh khí loại thương.",
+   "counter": "weapon_get",
+   "icon": [
+    "weapons_a",
+    "thuong_2"
+   ],
+   "where": {
+    "type": "thuong"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 150
+     },
+     "name_vi": "Thương Thần Xuất Thế"
+    },
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800
+     },
+     "name_vi": "Thương Thần Xuất Thế Đại Thành"
+    }
+   ]
+  },
+  {
+   "id": "weapon_t_chuy",
+   "category": "suu_tam",
+   "name_vi": "Chùy Bá Sơn Hà",
+   "desc_vi": "Có được binh khí loại chùy.",
+   "counter": "weapon_get",
+   "icon": [
+    "weapons_a",
+    "chuy_2"
+   ],
+   "where": {
+    "type": "chuy"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 150
+     },
+     "name_vi": "Chùy Bá Sơn Hà"
+    },
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800
+     },
+     "name_vi": "Chùy Bá Sơn Hà Đại Thành"
+    }
+   ]
+  },
+  {
+   "id": "weapon_t_cung",
+   "category": "suu_tam",
+   "name_vi": "Thần Tiễn Truy Phong",
+   "desc_vi": "Có được binh khí loại cung.",
+   "counter": "weapon_get",
+   "icon": [
+    "weapons_b",
+    "cung_2"
+   ],
+   "where": {
+    "type": "cung"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 150
+     },
+     "name_vi": "Thần Tiễn Truy Phong"
+    },
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800
+     },
+     "name_vi": "Thần Tiễn Truy Phong Đại Thành"
+    }
+   ]
+  },
+  {
+   "id": "weapon_t_truong",
+   "category": "suu_tam",
+   "name_vi": "Trượng Pháp Huyền Môn",
+   "desc_vi": "Có được binh khí loại trượng.",
+   "counter": "weapon_get",
+   "icon": [
+    "weapons_b",
+    "truong_2"
+   ],
+   "where": {
+    "type": "truong"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 150
+     },
+     "name_vi": "Trượng Pháp Huyền Môn"
+    },
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800
+     },
+     "name_vi": "Trượng Pháp Huyền Môn Đại Thành"
+    }
+   ]
+  },
+  {
+   "id": "weapon_t_phien",
+   "category": "suu_tam",
+   "name_vi": "Phiến Sĩ Phong Lưu",
+   "desc_vi": "Có được binh khí loại phiến.",
+   "counter": "weapon_get",
+   "icon": [
+    "weapons_b",
+    "phien_2"
+   ],
+   "where": {
+    "type": "phien"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 150
+     },
+     "name_vi": "Phiến Sĩ Phong Lưu"
+    },
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800
+     },
+     "name_vi": "Phiến Sĩ Phong Lưu Đại Thành"
+    }
+   ]
+  },
+  {
+   "id": "weapon_forge",
+   "category": "suu_tam",
+   "name_vi": "Lò Rèn Hừng Hực",
+   "desc_vi": "Rèn nâng phẩm binh khí ở lò rèn.",
+   "counter": "weapon_forge",
+   "icon": [
+    "trang_bi",
+    "gang_5"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Nhóm Lò"
+    },
+    {
+     "at": 10,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 2000,
+      "immortal_jade": 10
+     },
+     "name_vi": "Thợ Rèn"
+    },
+    {
+     "at": 30,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 6000,
+      "immortal_jade": 30,
+      "title": "Thần Tượng Rèn Binh"
+     },
+     "name_vi": "Đại Sư Rèn Binh"
+    }
+   ]
+  },
+  {
+   "id": "beast_tame",
+   "category": "suu_tam",
+   "name_vi": "Ngự Thú Sư",
+   "desc_vi": "Thu phục linh thú của Thiên Địa Đồ.",
+   "counter": "beast_tame",
+   "icon": [
+    "misc",
+    "trung_linh_thu"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 500,
+      "immortal_jade": 5
+     },
+     "name_vi": "Thu Phục Đầu Tiên"
+    },
+    {
+     "at": 3,
+     "points": 30,
+     "reward": {
+      "spirit_stones": 2000,
+      "immortal_jade": 15
+     },
+     "name_vi": "Tam Thú Tùy Thân"
+    },
+    {
+     "at": 6,
+     "points": 80,
+     "reward": {
+      "spirit_stones": 6000,
+      "immortal_jade": 40,
+      "title": "Vạn Thú Chi Chủ"
+     },
+     "name_vi": "Lục Thú Quy Tâm"
+    }
+   ]
+  },
+  {
+   "id": "beast_linh_ho",
+   "category": "suu_tam",
+   "name_vi": "Linh Hồ Quy Tâm",
+   "desc_vi": "Thu phục Linh Hồ.",
+   "counter": "beast_tame",
+   "icon": [
+    "misc",
+    "phong_an_phu"
+   ],
+   "where": {
+    "beast": "linh_ho"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 15,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5
+     },
+     "name_vi": "Linh Hồ Quy Tâm"
+    }
+   ]
+  },
+  {
+   "id": "beast_huyen_quy",
+   "category": "suu_tam",
+   "name_vi": "Huyền Quy Hộ Thể",
+   "desc_vi": "Thu phục Huyền Quy.",
+   "counter": "beast_tame",
+   "icon": [
+    "misc",
+    "phong_an_phu"
+   ],
+   "where": {
+    "beast": "huyen_quy"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 15,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5
+     },
+     "name_vi": "Huyền Quy Hộ Thể"
+    }
+   ]
+  },
+  {
+   "id": "beast_bach_hac",
+   "category": "suu_tam",
+   "name_vi": "Bạch Hạc Tùy Phong",
+   "desc_vi": "Thu phục Bạch Hạc.",
+   "counter": "beast_tame",
+   "icon": [
+    "misc",
+    "phong_an_phu"
+   ],
+   "where": {
+    "beast": "bach_hac"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 15,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5
+     },
+     "name_vi": "Bạch Hạc Tùy Phong"
+    }
+   ]
+  },
+  {
+   "id": "beast_hoa_tuoc",
+   "category": "suu_tam",
+   "name_vi": "Hỏa Tước Phần Thiên",
+   "desc_vi": "Thu phục Hỏa Tước.",
+   "counter": "beast_tame",
+   "icon": [
+    "misc",
+    "phong_an_phu"
+   ],
+   "where": {
+    "beast": "hoa_tuoc"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 15,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5
+     },
+     "name_vi": "Hỏa Tước Phần Thiên"
+    }
+   ]
+  },
+  {
+   "id": "beast_tieu_long",
+   "category": "suu_tam",
+   "name_vi": "Tiểu Long Tọa Kỵ",
+   "desc_vi": "Thu phục Tiểu Long.",
+   "counter": "beast_tame",
+   "icon": [
+    "misc",
+    "phong_an_phu"
+   ],
+   "where": {
+    "beast": "tieu_long"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 15,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5
+     },
+     "name_vi": "Tiểu Long Tọa Kỵ"
+    }
+   ]
+  },
+  {
+   "id": "beast_ky_lan_con",
+   "category": "suu_tam",
+   "name_vi": "Kỳ Lân Giáng Thế",
+   "desc_vi": "Thu phục Kỳ Lân Con.",
+   "counter": "beast_tame",
+   "icon": [
+    "misc",
+    "phong_an_phu"
+   ],
+   "where": {
+    "beast": "ky_lan_con"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 15,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5
+     },
+     "name_vi": "Kỳ Lân Giáng Thế"
+    }
+   ]
+  },
+  {
+   "id": "lc_giai",
+   "category": "suu_tam",
+   "name_vi": "Linh Căn Phẩm Giai",
+   "desc_vi": "Trắc ra linh căn giai càng cao càng hiếm.",
+   "counter": "lc_giai",
+   "icon": [
+    "linh_thao",
+    "qua_tinh"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Phàm Căn"
+    },
+    {
+     "at": 2,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 200,
+      "items": [
+       {
+        "item": "tay_linh_thao",
+        "qty": 2
+       }
+      ]
+     },
+     "name_vi": "Hoàng Căn",
+     "req": "luyen_khi:1"
+    },
+    {
+     "at": 3,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 400
+     },
+     "name_vi": "Huyền Căn"
+    },
+    {
+     "at": 4,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5,
+      "items": [
+       {
+        "item": "tay_linh_dan",
+        "qty": 1
+       }
+      ]
+     },
+     "name_vi": "Địa Căn",
+     "req": "luyen_khi:1"
+    },
+    {
+     "at": 5,
+     "points": 30,
+     "reward": {
+      "spirit_stones": 1500,
+      "immortal_jade": 10,
+      "items": [
+       {
+        "item": "tay_tuy_dan",
+        "qty": 1
+       }
+      ]
+     },
+     "name_vi": "Thiên Căn",
+     "req": "luyen_khi:4"
+    },
+    {
+     "at": 6,
+     "points": 50,
+     "reward": {
+      "spirit_stones": 3000,
+      "immortal_jade": 20
+     },
+     "name_vi": "Thánh Căn"
+    },
+    {
+     "at": 7,
+     "points": 80,
+     "reward": {
+      "spirit_stones": 5000,
+      "immortal_jade": 40
+     },
+     "name_vi": "Tiên Căn"
+    },
+    {
+     "at": 8,
+     "points": 120,
+     "reward": {
+      "spirit_stones": 8000,
+      "immortal_jade": 60
+     },
+     "name_vi": "Thần Căn"
+    },
+    {
+     "at": 9,
+     "points": 200,
+     "reward": {
+      "spirit_stones": 12000,
+      "immortal_jade": 100,
+      "title": "Hỗn Độn Linh Thể"
+     },
+     "name_vi": "Hỗn Độn Căn"
+    }
+   ]
+  },
+  {
+   "id": "lc_carry",
+   "category": "suu_tam",
+   "name_vi": "Thiên Phú Gia Thân",
+   "desc_vi": "Mang trên mình linh căn giai cao.",
+   "counter": "lc_carry",
+   "icon": [
+    "linh_thao",
+    "nhan_sam"
+   ],
+   "tiers": [
+    {
+     "at": 4,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5
+     },
+     "name_vi": "Địa Phẩm Gia Thân"
+    },
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 2000,
+      "immortal_jade": 15,
+      "title": "Thiên Chi Kiêu Tử"
+     },
+     "name_vi": "Thiên Phẩm Gia Thân"
+    },
+    {
+     "at": 7,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 6000,
+      "immortal_jade": 40
+     },
+     "name_vi": "Tiên Phẩm Gia Thân"
+    }
+   ]
+  },
+  {
+   "id": "lc_book",
+   "category": "suu_tam",
+   "name_vi": "Linh Căn Đồ Giám",
+   "desc_vi": "Ghi được nhiều linh căn vào đồ giám.",
+   "counter": "lc_book",
+   "icon": [
+    "cong_phap",
+    "sach_4"
+   ],
+   "tiers": [
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 200
+     },
+     "name_vi": "Ngũ Căn Nhập Giám"
+    },
+    {
+     "at": 15,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 1000,
+      "immortal_jade": 5
+     },
+     "name_vi": "Thập Ngũ Căn"
+    },
+    {
+     "at": 30,
+     "points": 50,
+     "reward": {
+      "spirit_stones": 3000,
+      "immortal_jade": 20
+     },
+     "name_vi": "Tam Thập Căn"
+    },
+    {
+     "at": 52,
+     "points": 150,
+     "reward": {
+      "spirit_stones": 10000,
+      "immortal_jade": 80,
+      "title": "Linh Căn Bác Sĩ"
+     },
+     "name_vi": "Đồ Giám Viên Mãn"
+    }
+   ]
+  },
+  {
+   "id": "lc_test",
+   "category": "suu_tam",
+   "name_vi": "Tẩy Linh Bất Khuất",
+   "desc_vi": "Trắc linh nhiều lần, không chịu thua số mệnh.",
+   "counter": "lc_test",
+   "icon": [
+    "dan_duoc",
+    "binh_3"
+   ],
+   "tiers": [
+    {
+     "at": 5,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300,
+      "items": [
+       {
+        "item": "tay_linh_thao",
+        "qty": 2
+       }
+      ]
+     },
+     "name_vi": "Ngũ Lần Tẩy Linh",
+     "req": "luyen_khi:1"
+    },
+    {
+     "at": 20,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1200
+     },
+     "name_vi": "Nhị Thập Tẩy Linh"
+    },
+    {
+     "at": 50,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 4000
+     },
+     "name_vi": "Nghịch Thiên Cải Mệnh"
+    }
+   ]
+  },
+  {
+   "id": "kill_kinds",
+   "category": "suu_tam",
+   "name_vi": "Yêu Quái Phổ",
+   "desc_vi": "Ghi vào Yêu Quái Phổ những loài yêu quái con đã hạ.",
+   "counter": "kill_kinds",
+   "icon": [
+    "cong_phap",
+    "sach_3"
+   ],
+   "tiers": [
+    {
+     "at": 5,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Ngũ Loài"
+    },
+    {
+     "at": 12,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1500,
+      "immortal_jade": 10
+     },
+     "name_vi": "Thập Nhị Loài"
+    },
+    {
+     "at": 20,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 5000,
+      "immortal_jade": 30,
+      "title": "Bách Yêu Thông"
+     },
+     "name_vi": "Bách Yêu Đồ Phổ"
+    }
+   ]
+  },
+  {
+   "id": "pill_made",
+   "category": "suu_tam",
+   "name_vi": "Đan Hương Ngào Ngạt",
+   "desc_vi": "Luyện ra đan dược ở lò đan.",
+   "counter": "pill_made",
+   "icon": [
+    "dan_duoc",
+    "binh_1"
+   ],
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 200
+     },
+     "name_vi": "Đan Đồng"
+    },
+    {
+     "at": 100,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1500,
+      "immortal_jade": 10
+     },
+     "name_vi": "Đan Sư"
+    },
+    {
+     "at": 500,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 6000,
+      "immortal_jade": 30,
+      "title": "Đan Đạo Tông Sư"
+     },
+     "name_vi": "Đan Đạo Tông Sư"
+    }
+   ]
+  },
+  {
+   "id": "brew_thuong",
+   "category": "suu_tam",
+   "name_vi": "Thượng Phẩm Đan",
+   "desc_vi": "Canh lửa khéo, ra một mẻ đan thượng phẩm.",
+   "counter": "brew",
+   "icon": [
+    "dan_duoc",
+    "dan_8"
+   ],
+   "where": {
+    "quality": "thuong"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Mẻ Thượng Phẩm"
+    },
+    {
+     "at": 10,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1500,
+      "immortal_jade": 5
+     },
+     "name_vi": "Thập Mẻ Thượng Phẩm"
+    },
+    {
+     "at": 50,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 5000,
+      "immortal_jade": 20
+     },
+     "name_vi": "Lửa Trong Lòng Bàn Tay"
+    }
+   ]
+  },
+  {
+   "id": "fish",
+   "category": "suu_tam",
+   "name_vi": "Ngư Ông Đắc Lợi",
+   "desc_vi": "Câu được cá.",
+   "counter": "fish",
+   "icon": [
+    "linh_thao",
+    "sen_bang"
+   ],
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Cần Câu Mới"
+    },
+    {
+     "at": 100,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800
+     },
+     "name_vi": "Lão Ngư"
+    },
+    {
+     "at": 500,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 3000
+     },
+     "name_vi": "Ngư Ông Đắc Đạo"
+    }
+   ]
+  },
+  {
+   "id": "lands",
+   "category": "kham_pha",
+   "name_vi": "Hành Tẩu Thiên Địa Đồ",
+   "desc_vi": "Đặt chân lên các vùng đất của Thiên Địa Đồ.",
+   "counter": "lands",
+   "icon": [
+    "misc",
+    "ngu_kiem_lenh"
+   ],
+   "tiers": [
+    {
+     "at": 2,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 200
+     },
+     "name_vi": "Rời Thôn"
+    },
+    {
+     "at": 5,
+     "points": 30,
+     "reward": {
+      "spirit_stones": 1500,
+      "immortal_jade": 10
+     },
+     "name_vi": "Ngũ Phương"
+    },
+    {
+     "at": 9,
+     "points": 80,
+     "reward": {
+      "spirit_stones": 5000,
+      "immortal_jade": 30,
+      "title": "Hành Giả Thiên Địa"
+     },
+     "name_vi": "Cửu Châu Du Ký"
+    }
+   ]
+  },
+  {
+   "id": "zones",
+   "category": "kham_pha",
+   "name_vi": "Vân Du Tứ Hải",
+   "desc_vi": "Đi qua nhiều vùng đất khác nhau.",
+   "counter": "zones",
+   "icon": [
+    "misc",
+    "ruong_dong"
+   ],
+   "tiers": [
+    {
+     "at": 3,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 150
+     },
+     "name_vi": "Bước Chân Đầu"
+    },
+    {
+     "at": 6,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800
+     },
+     "name_vi": "Lữ Khách"
+    },
+    {
+     "at": 9,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 3000
+     },
+     "name_vi": "Vân Du Bốn Biển"
+    }
+   ]
+  },
+  {
+   "id": "land_kiem_trung_son",
+   "category": "kham_pha",
+   "name_vi": "Đặt Chân Kiếm Trủng",
+   "desc_vi": "Đặt chân tới Kiếm Trủng Sơn.",
+   "counter": "lands",
+   "icon": [
+    "misc",
+    "chia_khoa"
+   ],
+   "where": {
+    "land": "kiem_trung_son"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 500
+     },
+     "name_vi": "Đặt Chân Kiếm Trủng"
+    }
+   ]
+  },
+  {
+   "id": "land_linh_xa_nguyen",
+   "category": "kham_pha",
+   "name_vi": "Đặt Chân Linh Xà Nguyên",
+   "desc_vi": "Đặt chân tới Linh Xà Nguyên.",
+   "counter": "lands",
+   "icon": [
+    "misc",
+    "chia_khoa"
+   ],
+   "where": {
+    "land": "linh_xa_nguyen"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 500
+     },
+     "name_vi": "Đặt Chân Linh Xà Nguyên"
+    }
+   ]
+  },
+  {
+   "id": "land_loi_kiep_dai",
+   "category": "kham_pha",
+   "name_vi": "Leo Lên Lôi Kiếp Đài",
+   "desc_vi": "Đặt chân tới Lôi Kiếp Đài.",
+   "counter": "lands",
+   "icon": [
+    "misc",
+    "chia_khoa"
+   ],
+   "where": {
+    "land": "loi_kiep_dai"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 500
+     },
+     "name_vi": "Leo Lên Lôi Kiếp Đài"
+    }
+   ]
+  },
+  {
+   "id": "glide",
+   "category": "kham_pha",
+   "name_vi": "Đạp Kiếm Lướt Gió",
+   "desc_vi": "Dùng Đạp Kiếm Lướt.",
+   "counter": "glide",
+   "icon": [
+    "weapons_a",
+    "kiem_5"
+   ],
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Ngự Kiếm Sơ Học"
+    },
+    {
+     "at": 100,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5
+     },
+     "name_vi": "Kiếm Lướt Như Gió"
+    },
+    {
+     "at": 1000,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 4000,
+      "immortal_jade": 20,
+      "title": "Ngự Kiếm Phi Tiên"
+     },
+     "name_vi": "Ngự Kiếm Phi Tiên"
+    }
+   ]
+  },
+  {
+   "id": "formation",
+   "category": "kham_pha",
+   "name_vi": "Bày Trận Giữ Mình",
+   "desc_vi": "Bày pháp trận dưới chân.",
+   "counter": "formation",
+   "icon": [
+    "misc",
+    "ngu_kiem_lenh"
+   ],
+   "tiers": [
+    {
+     "at": 5,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Trận Đồ Sơ Khai"
+    },
+    {
+     "at": 50,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 800
+     },
+     "name_vi": "Trận Pháp Sư"
+    },
+    {
+     "at": 300,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 4000
+     },
+     "name_vi": "Trận Đạo Tông Sư"
+    }
+   ]
+  },
+  {
+   "id": "ride",
+   "category": "kham_pha",
+   "name_vi": "Cưỡi Linh Thú",
+   "desc_vi": "Cưỡi linh thú đi khắp nơi.",
+   "counter": "ride",
+   "icon": [
+    "misc",
+    "trung_linh_thu"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Lên Lưng Linh Thú"
+    },
+    {
+     "at": 50,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 2000
+     },
+     "name_vi": "Kỵ Sĩ Linh Thú"
+    }
+   ]
+  },
+  {
+   "id": "weapon_claim",
+   "category": "kham_pha",
+   "name_vi": "Nhặt Bảo Ven Đường",
+   "desc_vi": "Tìm và nhặt binh khí nằm rải rác ở Thiên Địa Đồ.",
+   "counter": "weapon_claim",
+   "icon": [
+    "misc",
+    "ruong_mo"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 200
+     },
+     "name_vi": "Nhặt Bảo"
+    },
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1000,
+      "immortal_jade": 5
+     },
+     "name_vi": "Mắt Tinh"
+    },
+    {
+     "at": 15,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 3000,
+      "immortal_jade": 15
+     },
+     "name_vi": "Thám Bảo"
+    },
+    {
+     "at": 27,
+     "points": 40,
+     "reward": {
+      "spirit_stones": 8000,
+      "immortal_jade": 40,
+      "title": "Thiên Hạ Thám Bảo"
+     },
+     "name_vi": "Thiên Địa Thu Tàng"
+    }
+   ]
+  },
+  {
+   "id": "realm_clear",
+   "category": "kham_pha",
+   "name_vi": "Bí Cảnh Đoạt Bảo",
+   "desc_vi": "Đi tới cuối bí cảnh và mở rương báu.",
+   "counter": "realm_clear",
+   "icon": [
+    "misc",
+    "ruong_dong"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Vào Bí Cảnh"
+    },
+    {
+     "at": 10,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 2000,
+      "immortal_jade": 10
+     },
+     "name_vi": "Thập Lần Đoạt Bảo"
+    },
+    {
+     "at": 50,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 6000,
+      "immortal_jade": 30
+     },
+     "name_vi": "Bí Cảnh Chi Vương"
+    }
+   ]
+  },
+  {
+   "id": "td_win",
+   "category": "kham_pha",
+   "name_vi": "Thủ Thành Bất Phá",
+   "desc_vi": "Giữ thành thắng một màn Thủ Thành Toán.",
+   "counter": "td_win",
+   "icon": [
+    "trang_bi",
+    "mu_5"
+   ],
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 200
+     },
+     "name_vi": "Giữ Thành"
+    },
+    {
+     "at": 10,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1500,
+      "immortal_jade": 5
+     },
+     "name_vi": "Thập Thắng"
+    },
+    {
+     "at": 50,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 5000,
+      "immortal_jade": 20
+     },
+     "name_vi": "Kim Thành Thang Trì"
+    }
+   ]
+  },
+  {
+   "id": "stones_earned",
+   "category": "tai_phu",
+   "name_vi": "Linh Thạch Như Sơn",
+   "desc_vi": "Kiếm được linh thạch.",
+   "counter": "stones_earned",
+   "icon": [
+    "misc",
+    "linh_thach_1"
+   ],
+   "tiers": [
+    {
+     "at": 1000,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Túi Nặng"
+    },
+    {
+     "at": 10000,
+     "points": 15,
+     "reward": {
+      "spirit_stones": 500,
+      "immortal_jade": 5
+     },
+     "name_vi": "Rương Đầy"
+    },
+    {
+     "at": 100000,
+     "points": 40,
+     "reward": {
+      "spirit_stones": 2000,
+      "immortal_jade": 20
+     },
+     "name_vi": "Kho Như Núi"
+    },
+    {
+     "at": 1000000,
+     "points": 100,
+     "reward": {
+      "spirit_stones": 10000,
+      "immortal_jade": 60,
+      "title": "Phú Giáp Nhất Phương"
+     },
+     "name_vi": "Phú Khả Địch Quốc"
+    }
+   ]
+  },
+  {
+   "id": "stones_spent",
+   "category": "tai_phu",
+   "name_vi": "Vung Tay Hào Phóng",
+   "desc_vi": "Tiêu linh thạch: mua, rèn, nâng cấp.",
+   "counter": "stones_spent",
+   "icon": [
+    "misc",
+    "linh_thach_2"
+   ],
+   "tiers": [
+    {
+     "at": 1000,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100
+     },
+     "name_vi": "Biết Tiêu"
+    },
+    {
+     "at": 10000,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 600,
+      "immortal_jade": 5
+     },
+     "name_vi": "Hào Phóng"
+    },
+    {
+     "at": 100000,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 3000,
+      "immortal_jade": 20
+     },
+     "name_vi": "Tán Tài Như Thổ"
+    }
+   ]
+  },
+  {
+   "id": "jade_earned",
+   "category": "tai_phu",
+   "name_vi": "Tiên Ngọc Lấp Lánh",
+   "desc_vi": "Có được tiên ngọc.",
+   "counter": "jade_earned",
+   "icon": [
+    "misc",
+    "linh_thach_3"
+   ],
+   "tiers": [
+    {
+     "at": 10,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Viên Ngọc Đầu"
+    },
+    {
+     "at": 100,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 1500
+     },
+     "name_vi": "Trăm Viên Ngọc"
+    },
+    {
+     "at": 500,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 5000
+     },
+     "name_vi": "Ngọc Khố"
+    }
+   ]
+  },
+  {
+   "id": "furnace",
+   "category": "tai_phu",
+   "name_vi": "Lò Đan Thăng Cấp",
+   "desc_vi": "Nâng cấp lò luyện đan trong động phủ.",
+   "counter": "furnace",
+   "icon": [
+    "dan_duoc",
+    "binh_5"
+   ],
+   "tiers": [
+    {
+     "at": 2,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 500
+     },
+     "name_vi": "Lò Mới"
+    },
+    {
+     "at": 3,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 2000,
+      "immortal_jade": 10
+     },
+     "name_vi": "Lò Thượng Hạng"
+    }
+   ]
+  },
+  {
+   "id": "weapon_forge_cuc",
+   "category": "tai_phu",
+   "name_vi": "Đổ Vốn Vào Lò Rèn",
+   "desc_vi": "Rèn một binh khí lên cực phẩm.",
+   "counter": "weapon_forge",
+   "icon": [
+    "trang_bi",
+    "nhan_5"
+   ],
+   "where": {
+    "quality": "cuc"
+   },
+   "tiers": [
+    {
+     "at": 1,
+     "points": 30,
+     "reward": {
+      "spirit_stones": 2000,
+      "immortal_jade": 10
+     },
+     "name_vi": "Cực Phẩm Xuất Lò"
+    },
+    {
+     "at": 5,
+     "points": 80,
+     "reward": {
+      "spirit_stones": 8000,
+      "immortal_jade": 40
+     },
+     "name_vi": "Ngũ Cực Phẩm"
+    }
+   ]
+  },
+  {
+   "id": "secret_clutch",
+   "category": "bi_an",
+   "name_vi": "Ngàn Cân Treo Sợi Tóc",
+   "desc_vi": "Trả lời đúng khi chỉ còn chưa tới hai giây.",
+   "counter": "answer_clutch",
+   "icon": [
+    "cong_phap",
+    "cuon_6"
+   ],
+   "hidden": true,
+   "reveal_vi": "Thời gian chẳng đợi ai, nhưng con đã kịp.",
+   "hint_vi": "Có những câu trả lời đến vào giây cuối cùng.",
+   "tiers": [
+    {
+     "at": 1,
+     "points": 15,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Treo Sợi Tóc"
+    },
+    {
+     "at": 20,
+     "points": 40,
+     "reward": {
+      "spirit_stones": 2000,
+      "immortal_jade": 10
+     },
+     "name_vi": "Sống Trên Lưỡi Dao"
+    }
+   ]
+  },
+  {
+   "id": "secret_night",
+   "category": "bi_an",
+   "name_vi": "Đêm Khuya Đọc Kinh",
+   "desc_vi": "Trả lời đúng mười câu lúc nửa đêm tới bốn giờ sáng.",
+   "counter": "answer_night",
+   "icon": [
+    "linh_thao",
+    "lan_nguyet"
+   ],
+   "hidden": true,
+   "reveal_vi": "Trăng đã lên cao mà đèn sách vẫn sáng. Nhớ ngủ đủ, đạo tâm mới vững.",
+   "hint_vi": "Khi trăng treo đỉnh trời, có người vẫn chưa ngủ.",
+   "tiers": [
+    {
+     "at": 10,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 800,
+      "immortal_jade": 5
+     },
+     "name_vi": "Đêm Khuya Đọc Kinh"
+    }
+   ]
+  },
+  {
+   "id": "secret_comeback",
+   "category": "bi_an",
+   "name_vi": "Thất Bại Là Mẹ Thành Công",
+   "desc_vi": "Trả lời đúng ngay sau năm câu sai liền.",
+   "counter": "answer_comeback",
+   "icon": [
+    "cong_phap",
+    "gian_3"
+   ],
+   "hidden": true,
+   "reveal_vi": "Sai không đáng sợ. Bỏ cuộc mới đáng sợ.",
+   "hint_vi": "Sau cơn mưa trời lại sáng.",
+   "tiers": [
+    {
+     "at": 1,
+     "points": 15,
+     "reward": {
+      "spirit_stones": 300
+     },
+     "name_vi": "Đứng Dậy"
+    },
+    {
+     "at": 10,
+     "points": 30,
+     "reward": {
+      "spirit_stones": 1500
+     },
+     "name_vi": "Ngã Bảy Lần Đứng Dậy Tám"
+    }
+   ]
+  },
+  {
+   "id": "secret_death",
+   "category": "bi_an",
+   "name_vi": "Ngã Xuống Rồi Đứng Lên",
+   "desc_vi": "Gục ngã ngoài thế giới một lần.",
+   "counter": "death",
+   "icon": [
+    "dan_duoc",
+    "binh_2"
+   ],
+   "hidden": true,
+   "reveal_vi": "Ai tu tiên mà chưa từng ngã? Đây, mấy viên Hồi Huyết Đan.",
+   "hint_vi": "Con đường nào cũng có vấp ngã.",
+   "tiers": [
+    {
+     "at": 1,
+     "points": 5,
+     "reward": {
+      "spirit_stones": 100,
+      "items": [
+       {
+        "item": "hoi_huyet_dan",
+        "qty": 5
+       }
+      ]
+     },
+     "name_vi": "Lần Ngã Đầu"
+    },
+    {
+     "at": 20,
+     "points": 20,
+     "reward": {
+      "spirit_stones": 1000
+     },
+     "name_vi": "Bất Khuất"
+    }
+   ]
+  },
+  {
+   "id": "secret_flawless_boss",
+   "category": "bi_an",
+   "name_vi": "Bất Nhiễm Trần Ai",
+   "desc_vi": "Hạ thủ lĩnh yêu ma mà máu vẫn đầy.",
+   "counter": "kill_flawless",
+   "icon": [
+    "trang_bi",
+    "day_chuyen_7"
+   ],
+   "where": {
+    "rank": "boss"
+   },
+   "hidden": true,
+   "reveal_vi": "Thủ lĩnh ngã xuống mà áo con không vương một hạt bụi.",
+   "hint_vi": "Có người bước qua bão mà áo không ướt.",
+   "tiers": [
+    {
+     "at": 1,
+     "points": 80,
+     "reward": {
+      "spirit_stones": 5000,
+      "immortal_jade": 30,
+      "title": "Bất Nhiễm Trần Ai"
+     },
+     "name_vi": "Bất Nhiễm Trần Ai"
+    }
+   ]
+  },
+  {
+   "id": "secret_combo",
+   "category": "bi_an",
+   "name_vi": "Nghịch Thiên Liên Kích",
+   "desc_vi": "Phản Đòn ba mươi lần liền không đứt mạch.",
+   "counter": "parry_combo",
+   "icon": [
+    "cong_phap",
+    "gian_7"
+   ],
+   "hidden": true,
+   "reveal_vi": "Ba mươi đòn đỡ, ba mươi lần đúng. Trời cũng phải nể.",
+   "hint_vi": "Một chuỗi dài như sông không dứt.",
+   "tiers": [
+    {
+     "at": 30,
+     "points": 100,
+     "reward": {
+      "spirit_stones": 6000,
+      "immortal_jade": 40,
+      "title": "Liên Kích Vô Song"
+     },
+     "name_vi": "Nghịch Thiên Liên Kích"
+    }
+   ]
+  },
+  {
+   "id": "secret_hon_don",
+   "category": "bi_an",
+   "name_vi": "Hỗn Độn Chi Thể",
+   "desc_vi": "Mang linh căn Hỗn Độn trên mình.",
+   "counter": "lc_carry",
+   "icon": [
+    "linh_thao",
+    "qua_do"
+   ],
+   "hidden": true,
+   "reveal_vi": "Hỗn Độn sơ khai, vạn vật chưa phân. Thể chất này vạn năm có một.",
+   "hint_vi": "Trước khi trời đất tách đôi, đã có thứ ấy.",
+   "tiers": [
+    {
+     "at": 9,
+     "points": 250,
+     "reward": {
+      "spirit_stones": 20000,
+      "immortal_jade": 150,
+      "title": "Hỗn Độn Chi Thể"
+     },
+     "name_vi": "Hỗn Độn Chi Thể",
+     "req": "hoa_than"
+    }
+   ]
+  },
+  {
+   "id": "secret_tuyet",
+   "category": "bi_an",
+   "name_vi": "Tuyệt Phẩm Xuất Thế",
+   "desc_vi": "Rèn một binh khí lên tuyệt phẩm.",
+   "counter": "weapon_forge",
+   "icon": [
+    "weapons_b",
+    "truong_8"
+   ],
+   "where": {
+    "quality": "tuyet"
+   },
+   "hidden": true,
+   "reveal_vi": "Lò rèn rực sáng, trời đất rung chuyển: một tuyệt phẩm ra đời.",
+   "hint_vi": "Lửa lò rèn có lúc đỏ tới tận trời.",
+   "tiers": [
+    {
+     "at": 1,
+     "points": 150,
+     "reward": {
+      "spirit_stones": 10000,
+      "immortal_jade": 80,
+      "title": "Thần Binh Chủ Nhân"
+     },
+     "name_vi": "Tuyệt Phẩm Xuất Thế"
+    }
+   ]
+  },
+  {
+   "id": "secret_phe_dan",
+   "category": "bi_an",
+   "name_vi": "Lò Đan Bốc Khói",
+   "desc_vi": "Luyện hỏng ra phế đan năm lần.",
+   "counter": "brew",
+   "icon": [
+    "dan_duoc",
+    "binh_8"
+   ],
+   "where": {
+    "quality": "phe"
+   },
+   "hidden": true,
+   "reveal_vi": "Khói đen mù mịt. Đan sư nào cũng từng làm nổ lò.",
+   "hint_vi": "Không phải mẻ đan nào cũng thơm.",
+   "tiers": [
+    {
+     "at": 5,
+     "points": 10,
+     "reward": {
+      "spirit_stones": 500,
+      "items": [
+       {
+        "item": "hoi_huyet_dan",
+        "qty": 3
+       }
+      ]
+     },
+     "name_vi": "Lò Đan Bốc Khói"
+    }
+   ]
+  },
+  {
+   "id": "secret_streak",
+   "category": "bi_an",
+   "name_vi": "Vô Thượng Đạo Tâm",
+   "desc_vi": "Trả lời đúng hai trăm câu liền.",
+   "counter": "answer_streak",
+   "icon": [
+    "cong_phap",
+    "sach_5"
+   ],
+   "hidden": true,
+   "reveal_vi": "Hai trăm câu không một lần sai. Đạo tâm này, trời đất cũng không lay nổi.",
+   "hint_vi": "Có người đi một mạch không vấp, xa tới tận chân trời.",
+   "tiers": [
+    {
+     "at": 200,
+     "points": 200,
+     "reward": {
+      "spirit_stones": 15000,
+      "immortal_jade": 100,
+      "title": "Vô Thượng Đạo Tâm"
+     },
+     "name_vi": "Vô Thượng Đạo Tâm"
+    }
+   ]
+  },
+  {
+   "id": "secret_ky_lan",
+   "category": "bi_an",
+   "name_vi": "Điềm Lành Giáng Thế",
+   "desc_vi": "Thu phục Kỳ Lân Con và cả năm linh thú khác.",
+   "counter": "beast_tame",
+   "icon": [
+    "misc",
+    "trung_linh_thu"
+   ],
+   "hidden": true,
+   "reveal_vi": "Kỳ lân xuất hiện, thiên hạ thái bình. Sáu linh thú đã về bên con.",
+   "hint_vi": "Khi đủ sáu, điềm lành tự đến.",
+   "tiers": [
+    {
+     "at": 6,
+     "points": 60,
+     "reward": {
+      "spirit_stones": 3000,
+      "immortal_jade": 30
+     },
+     "name_vi": "Điềm Lành Giáng Thế"
+    }
+   ]
+  }
+ ]
+}

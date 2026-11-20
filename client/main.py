@@ -93,6 +93,8 @@ class Game:
         self._day = (0.3, 0.0)                    # (phase, game time it was measured)
         self._day_length = 7200.0
         self.party_invites: list[dict] = []       # tổ đội invitations waiting for an answer (stage 9)
+        from .ui.achievement_toast import AchievementToasts
+        self.achievements = AchievementToasts(self)   # Thành Tựu: the unlock banners
         from .net.firebase import FirebaseAuth
         self.firebase = FirebaseAuth(self.api, self.session, self.cfg.firebase_api_key)   # LAN worlds
         self.host = None                          # the world this game opened (client/host.py), if any
@@ -255,6 +257,8 @@ class Game:
             self.refresh_guide()
             self.refresh_bee_species()
             self.refresh_pets()
+            self.achievements.reset()
+            self.achievements.fetch_missed()      # Thành Tựu reached while away
             zone = ch.get("zone_id")
             if zone in T.WORLD_ZONES:  # we logged out somewhere in the world: go back there
                 from .scenes.world import WorldScene
@@ -420,6 +424,11 @@ class Game:
         if not any(isinstance(s, LinhCanScene) for s in self.scenes):
             self.push(LinhCanScene(self))
 
+    def open_achievements(self) -> None:
+        from .scenes.achievements import AchievementsScene
+        if not any(isinstance(s, AchievementsScene) for s in self.scenes):
+            self.push(AchievementsScene(self))
+
     def open_quests(self) -> None:
         from .scenes.rpg import QuestScene
         self.push(QuestScene(self))
@@ -580,6 +589,8 @@ class Game:
         elif t == "quest" and m.get("event") == "done":
             self.toast(T.QUEST_DONE.format(title=m["quest"]["title_vi"]), "#C99A3A")
             self.refresh_quests()
+        elif t == "achievement":     # Thành Tựu: banners, one after another
+            self.achievements.add(m.get("unlocks"))
         elif t == "xp_lost":
             self.toast(T.XP_LOST.format(n=m.get("lost", 0)), "#BC4749")
             self.refresh_cult()
@@ -739,13 +750,14 @@ class Game:
             self.ui.enabled = s is self.top
             s.draw_ui(self.ui)
         self.ui.enabled = True
+        self.achievements.draw(self.ui)
         self._draw_overlays()
         self.ui.end()
         pygame.display.flip()
 
     def _draw_overlays(self) -> None:
         ui = self.ui
-        y = getattr(self.top, "toast_y", 4)
+        y = max(getattr(self.top, "toast_y", 4), self.achievements.clear_y())   # under a Thành Tựu banner
         for t in list(self.toasts):
             age = self.now - t.born
             if age > t.life:

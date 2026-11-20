@@ -530,6 +530,8 @@ async def claim(db: AsyncSession, user: User, pid: str, land: str | None = None)
     except IntegrityError:          # the same spot claimed twice at once: the second one loses
         await db.rollback()
         raise WeaponError(400, "taken", "Đã nhặt binh khí này rồi.") from None
+    from . import achievements   # Thành Tựu: a weapon spot claimed
+    await achievements.on_event(db, user.id, "weapon_claim", spot=pid)
     return {"claimed": pid, "equipment": piece,
             "placed": placed_view(p, at, done, {pid})}
 
@@ -690,6 +692,8 @@ async def upgrade(db: AsyncSession, user: User, instance_id: int) -> dict:
     db.add(AuditLog(user_id=user.id, currency_or_item=f"equip:{e.item_id}:{e.rarity}", delta=0, balance_after=None,
                     reason=r["id"], ref_id=str(e.id), created_at=clock.now()))
     await db.flush()
+    from . import achievements   # Thành Tựu: Rèn nâng phẩm, by the quality reached
+    await achievements.on_event(db, user.id, "weapon_forge", quality=r["to"])
     stats = await items._after_gear_change(db, user.id) if e.equipped_slot else None
     await db.refresh(user, ["spirit_stones"])
     return {"upgraded": e.id, "step": r["id"], "item": items.equipment_view(e), "stats": stats,

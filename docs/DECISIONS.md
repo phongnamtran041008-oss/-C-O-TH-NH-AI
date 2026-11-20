@@ -1486,3 +1486,27 @@ truyện tu tiên; quay bằng đan dược, đan phải cần nguyên liệu. C
 - **Chỗ tác dụng của quà**, mỗi chỗ một lời gọi: `combat.parry_heal` trong `_parry`, `beasts.loot_gift` cuối
   `combat._loot_bonus`, `beasts.stat_gift` trong `cultivation.current_stats` (sau `stats_for`), nhánh `xp_bonus`
   trong `pets.on_math_answer`, `abilities.glide_max_px` cho lướt và cho số gửi client.
+## 2026-11-21: Thành Tựu
+
+Tác giả: "Mình muốn có thành tựu", làm kỹ, làm đẹp. Chi tiết và bảng đủ 100 thành tựu: `docs/THANH_TUU.md`.
+
+- **Học trước, rồi mới đánh.** 100 thành tựu, bảy loại: Tu Luyện 12, Ngộ Đạo 17, Chiến Đấu 13, Sưu Tầm 31,
+  Khám Phá 11, Tài Phú 5, Bí Ẩn 11 (ẩn, "???" và một câu gợi ý). Ngộ Đạo đếm câu đúng theo từng nơi (trận đánh,
+  Thiên Kiếp, hầm ngục...), chuỗi đúng liền, câu đúng nhanh, Thiên kiếp nhỏ, nút Đạo Thụ, bài lập trình, Xạ Trường.
+  Phần lớn có nhiều bậc, mỗi bậc một tên (Sơ Khai Linh Trí ... Vạn Pháp Quy Tông).
+- **Một cửa vào, bộ đếm theo khoá.** `achievements.on_event` / `bump`; mỗi nơi gửi một dòng. Gắn vào
+  `quests.on_event` (một dòng) nên mọi nơi đã báo nhiệm vụ (hạ quái, thiền, câu cá, thủ thành) tự đếm. Đường tick
+  (Phản Đòn, lướt kiếm, pháp trận, cưỡi thú, vào vùng, ngã) gom trong bộ nhớ, ghi sau khoảng một giây; khi máy chủ
+  dừng thì ghi nốt. Chỉ ghi khoá có thành tựu đọc.
+- **Báo sau commit, không mất, không lặp.** Tin websocket `achievement` gửi sau `after_commit`; `seen` lưu ở máy
+  chủ, client xác nhận bằng `POST /achievements/seen`, lúc đăng nhập hỏi `GET /achievements/new`.
+- **Không SAVEPOINT** cho các dòng mới (pysqlite tự commit một SAVEPOINT mở đầu giao dịch): dùng
+  `INSERT ... ON CONFLICT DO NOTHING`.
+- **Thưởng theo tu vi.** Mỗi bậc có `req` (cảnh giới tu luyện); vật phẩm không vượt `req` (`validate()`), chưa đủ
+  thì thưởng chờ. Danh hiệu trao ngay, mang qua `POST /books/wear` (`books._earnable` nhận cả danh hiệu Thành Tựu).
+- **Đạo Tâm**: điểm tính khi đạt; bảy mốc 50 / 150 / 400 / 800 / 1500 / 2500 / 4000 (tổng có thể đạt 6280), bốn
+  mốc kèm danh hiệu (Đạo Tâm Sơ Thành ... Đạo Tâm Viên Mãn).
+- **Client**: Thành Tựu Lục (phím **V**, nút ở hàng nút động phủ và thế giới), dải vàng trên đầu màn hình với FX
+  `thanh_tuu`, xếp hàng từng cái, chờ khi đang mở thẻ câu hỏi; tiếng `thanh_tuu` tổng hợp trong `audio.py`.
+- **Người chơi cũ**: lần xem đầu điền bộ đếm từ cảnh giới, Yêu Quái Phổ, binh khí, linh thú, linh căn, Thiên kiếp
+  nhỏ, nút Đạo Thụ, lò đan; mở lặng lẽ, vẫn nhận thưởng được.

@@ -505,6 +505,20 @@
       ]
     },
     {
+      "id": "thanh_tuu",
+      "title_vi": "Thành Tựu",
+      "lines_vi": [
+        "Mỗi việc con làm đều được ghi lại: trả lời đúng, liền mạch không sai, phá Thiên kiếp nhỏ, nút Đạo Thụ.",
+        "Rồi tới chiến đấu, sưu tầm binh khí và linh thú, đi khắp Thiên Địa Đồ, luyện đan, kiếm linh thạch.",
+        "Đạt một bậc thì một dải vàng hiện trên đầu màn hình. Thành tựu nhiều bậc có tên mỗi bậc một khác.",
+        "Bấm V (hoặc nút Thành Tựu) để mở Thành Tựu Lục, rồi bấm Nhận để lấy thưởng.",
+        "Phần thưởng đi theo tu vi: món nào cần cảnh giới cao hơn thì chờ con đột phá rồi mới nhận được.",
+        "Mỗi bậc cho điểm Đạo Tâm. Đủ điểm thì nhận thêm thưởng ở các mốc Đạo Tâm.",
+        "Danh hiệu được trao ngay khi đạt. Mở thẻ Danh Hiệu để mang một cái, nó hiện dưới tên con.",
+        "Thẻ Bí Ẩn giữ những thành tựu ẩn: chỉ có một câu gợi ý cho tới khi con tình cờ đạt được."
+      ]
+    },
+    {
       "id": "phim_tat",
       "title_vi": "Phím tắt",
       "lines_vi": [
@@ -516,6 +530,7 @@
         "Trong Đạo Thụ: Trái, Phải đổi thẻ nhánh; lên, xuống hoặc lăn chuột để cuộn danh sách nút.",
         "Ngoài làng: Space đánh quái gần nhất, phím 1 đến 6 ra chiêu thức, Shift để Né Đòn.",
         "Thần thông khi đã mở: T bày pháp trận, G Đạp Kiếm Lướt, R cưỡi linh thú, E để phong ấn linh thú.",
+        "V: Thành Tựu Lục, nơi nhận thưởng thành tựu và mang danh hiệu. C: Trắc Linh Đài.",
         "Muốn xuống Trúc Lâm Thôn: đi xuống phía nam Động Phủ tới cổng tre rồi bấm E."
       ]
     },

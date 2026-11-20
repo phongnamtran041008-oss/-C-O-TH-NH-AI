@@ -35,6 +35,7 @@ from typing import TYPE_CHECKING
 
 from .. import balance
 from .. import db as dbm
+from ..systems import achievements
 
 if TYPE_CHECKING:
     from .ai import Monster
@@ -280,6 +281,7 @@ def _parry(ch: "ChannelZone", p: "Player", q: dict, m: "Monster | None", correct
     if correct:
         right = c["right_answer"]
         p.mcombo += 1          # right answers in a row: the chiêu combo of the open world
+        achievements.bump(p.user_id, "parry", combo=p.mcombo)    # Thành Tựu: Phản Đòn and the combo
         from ..systems import linh_can as lc      # the linh căn: more qi, a heal, a longer stun, a harder counter
         gain = float(right["linh_luc_gain"]) * (1 + lc.fx(p, "qi_gain"))
         p.qi = min(p.max_qi, p.qi + gain)
@@ -681,6 +683,8 @@ def kill(ch: "ChannelZone", m: "Monster", now: float) -> None:
             if p.next_q and p.next_q[0] == m.eid:
                 p.next_q = None
             if not p.dead:
+                if p.hp >= p.max_hp:   # Thành Tựu: a kill without a scratch
+                    achievements.bump(p.user_id, "kill_flawless", rank=m.info.get("rank", "normal"))
                 _world().spawn(_reward(p.user_id, m.kind, _loot_bonus(p, m),
                                        source=getattr(ch, "realm_id", None) or ch.zone_id, x=m.x, y=m.y))
     _party_share(ch, m)
@@ -828,6 +832,7 @@ def die(ch: "ChannelZone", p: "Player", now: float) -> None:
         return
     p.dead = True
     p.hp = 0
+    achievements.bump(p.user_id, "death")     # Thành Tựu (Bí Ẩn): a fall
     p.respawn_at = now + cfg()["death_overlay_seconds"]
     p.inputs.clear()
     p.queued_ms = 0
