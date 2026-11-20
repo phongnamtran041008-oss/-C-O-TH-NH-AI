@@ -18,22 +18,26 @@ from mathutils import Vector
 from common import (S, att, aim, ball, cute_eyes, eye_mats, eyes_bone, finish, glow, hexc, mat, merge,
                     quad_armature, quad_extra_poses, quad_poses, set_ramp, skin, tube, use_collection)
 
-N_TAILS = 9
-FAN = [-92 + 184 * k / (N_TAILS - 1) for k in range(N_TAILS)]     # degrees from straight up
+# (elevation above the back line, sideways angle, length): a three-dimensional fan. In profile
+# the elevations spread the tips from ~20 to ~110 degrees; from the front the low tails reach
+# far out to the sides and the high ones stay short behind the head (a peacock spread).
+TAILS = [(12, -62, 0.46), (22, 62, 0.43), (37, -42, 0.42), (48, 42, 0.45), (62, -26, 0.37),
+         (73, 26, 0.34), (87, -12, 0.30), (99, 12, 0.31), (115, 0, 0.26)]
+N_TAILS = len(TAILS)
 BASE = Vector((0, 0.11, 0.33))
 
 
-def tail_points(a_deg):
-    """Base, knee, end of the fluffy part and the glowing tip of a tail fanned at a_deg."""
-    a = math.radians(a_deg)
-    f = Vector((math.sin(a), 0, math.cos(a)))
-    d1 = (0.3 * f + Vector((0, 0.85, 0.42))).normalized()      # all leave the rump back-up as one bundle
-    d2 = (0.9 * f + Vector((0, 0.25, 0.3))).normalized()      # then open into a sunburst behind the head
-    d3 = (0.85 * f + Vector((0, 0.05, 0.5))).normalized()     # and the tips curl up
-    p1 = BASE + d1 * 0.12
-    p2 = p1 + d2 * 0.22
-    p3 = p2 + d3 * 0.10
-    return BASE.copy(), p1, p2, p3
+def tail_points(e_deg, phi_deg, length, n=6):
+    """Points along one tapered brush: it leaves the rump flatter and curls up toward its
+    own tip (elevation -14 -> +12 degrees along it), opening sideways as it goes."""
+    pts = [BASE.copy()]
+    for k in range(1, n):
+        t = k / (n - 1)
+        e = math.radians(e_deg - 14 + 26 * t)
+        f = math.radians(phi_deg * (0.7 + 0.3 * t))
+        d = Vector((math.cos(e) * math.sin(f), math.cos(e) * math.cos(f), math.sin(e)))
+        pts.append(pts[-1] + d * length / (n - 1))
+    return pts
 
 
 def build():
@@ -56,10 +60,10 @@ def build():
          "tail": ((0.11, 0.33), (0.18, 0.40), (0.24, 0.46))}
     extra = [eyes_bone(HY - 0.1, HZ + 0.02)]
     pts = {}
-    for k, a in enumerate(FAN):
-        p0, p1, p2, p3 = tail_points(a)
-        pts[k] = (p0, p1, p2, p3)
-        extra += [(f"t{k}a", tuple(p0), tuple(p1), "pelvis"), (f"t{k}b", tuple(p1), tuple(p2), f"t{k}a")]
+    for k, (e, f, ln) in enumerate(TAILS):
+        q = tail_points(e, f, ln)
+        pts[k] = q
+        extra += [(f"t{k}a", tuple(q[0]), tuple(q[2]), "pelvis"), (f"t{k}b", tuple(q[2]), tuple(q[5]), f"t{k}a")]
     arm = quad_armature("cuu_vi_ho", P, extra=extra)
 
     att(arm, "chest", ball("cv_chest", (0.105, 0.12, 0.10), (0, -0.03, 0.34), fur),
@@ -83,18 +87,22 @@ def build():
     for side, sx in (("l", 1), ("r", -1)):
         for leg, y in (("f", P["yf"]), ("b", P["yb"])):
             x = sx * P["x"]
-            att(arm, f"{leg}{side}1", aim(f"cv_{leg}{side}up", fur, (x, y, 0.29), (x, y, 0.15), 0.042 if leg == "b" else 0.036, 0.028, seg=8))
-            att(arm, f"{leg}{side}2", aim(f"cv_{leg}{side}lo", fur, (x, y, 0.16), (x, y, 0.07), 0.024, 0.022, seg=8),
-                aim(f"cv_{leg}{side}sock", sock, (x, y, 0.08), (x, y, 0.03), 0.025, 0.024, seg=8))
+            # not straight columns: the hind knee points forward and the hock back, the
+            # foreleg has a soft wrist
+            kn, hk = (-0.03, 0.028) if leg == "b" else (0.008, -0.006)
+            att(arm, f"{leg}{side}1", aim(f"cv_{leg}{side}up", fur, (x, y, 0.29), (x, y + kn, 0.15),
+                                        0.046 if leg == "b" else 0.036, 0.028, seg=8))
+            att(arm, f"{leg}{side}2", aim(f"cv_{leg}{side}lo", fur, (x, y + kn, 0.156), (x, y + hk, 0.085), 0.026, 0.022, seg=8),
+                aim(f"cv_{leg}{side}sock", sock, (x, y + hk, 0.09), (x, y, 0.03), 0.024, 0.023, seg=8))
             att(arm, f"{leg}{side}3", ball(f"cv_{leg}{side}paw", (0.03, 0.04, 0.024), (x, y - 0.008, 0.022), sock, seg=8, rings=5))
     # the nine tails
     for k in range(N_TAILS):
-        p0, p1, p2, p3 = pts[k]
+        q = pts[k]
         m = tails[k % 2]
-        body = tube(f"cv_tail{k}", [p0, p0.lerp(p1, 0.5), p1, p1.lerp(p2, 0.5), p2, p2.lerp(p3, 0.4)],
-                    [0.02, 0.03, 0.04, 0.05, 0.046, 0.04], m, seg=10)
+        body = tube(f"cv_tail{k}", q, [0.014, 0.024, 0.032, 0.037, 0.034, 0.027], m, seg=10)
         skin(body, arm, [f"t{k}a", f"t{k}b"], power=3.0)
-        att(arm, f"t{k}b", aim(f"cv_tailtip{k}", tip, tuple(p2.lerp(p3, 0.3)), tuple(p3), 0.04, 0.0, seg=8))
+        d = (q[5] - q[4]).normalized()
+        att(arm, f"t{k}b", aim(f"cv_tailtip{k}", tip, tuple(q[5] - d * 0.03), tuple(q[5] + d * 0.06), 0.03, 0.0, seg=8))
 
     # ------------------------------------------------------------------ poses
     A = {"stride": 0.03, "lift": 0.045, "hop": 0.06, "crouch": 0.06, "drop": 0.14, "lunge": 0.02}
@@ -106,24 +114,25 @@ def build():
         with its neighbours, the tip a beat behind the base; `spread` opens / closes the
         fan, `lift` tips the whole fan back (-) or forward (+)."""
         out = {}
-        for k, a in enumerate(FAN):
+        for k, (e, f, _) in enumerate(TAILS):
             ph = TAU_K * k
-            th = (spread - 1.0) * a + amp * S(i * speed, n, ph) + base
-            out[f"t{k}a"] = {"r": (lift, th, 0)}
-            out[f"t{k}b"] = {"r": (lift * 0.4, lag * S(i * speed, n, ph - 1.2), 0)}
+            sw = S(i * speed, n, ph)
+            # sideways sway about z (spread opens/closes by azimuth), a smaller up-down bob
+            out[f"t{k}a"] = {"r": (lift + amp * 0.6 * S(i * speed, n, ph + 1.3), 0, -(spread - 1.0) * f + amp * sw + base)}
+            out[f"t{k}b"] = {"r": (lift * 0.4, 0, lag * S(i * speed, n, ph - 1.2))}
         return out
 
     TAU_K = 0.75
     deco = {"idle": dict(amp=6, lag=9), "walk": dict(amp=8, lag=12, lift=-6),
             "windup": dict(amp=3, lag=6, spread=1.06, lift=8), "attack": dict(amp=4, lag=14, spread=0.9, lift=-20),
             "hit": dict(amp=10, lag=16, spread=1.08, lift=10), "die": dict(amp=2, lag=4),
-            "happy": dict(amp=14, lag=18, spread=1.06), "sleep": dict(amp=2, lag=3, spread=0.75, lift=-40)}
+            "happy": dict(amp=14, lag=18, spread=1.06), "sleep": dict(amp=2, lag=3, spread=0.8, lift=6)}
     for clip_name, frames in poses.items():
         n = len(frames)
         for i, p in enumerate(frames):
             kw = dict(deco[clip_name])
             if clip_name == "die":       # the fan sinks as it faints
-                kw["lift"] = -35 * min(1.0, i / 3)
+                kw["lift"] = -14 * min(1.0, i / 3)
                 kw["spread"] = 1.0 - 0.15 * min(1.0, i / 3)
             p.update(fan(i, n, **kw))
     for i, p in enumerate(poses["idle"]):

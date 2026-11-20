@@ -56,7 +56,7 @@ loop). Each sprite frame is one key (rig.clip), loops repeat their first pose.
 | File | What |
 |---|---|
 | `build.py` | venv entry point: one headless Blender per beast (at most 2 at once), then QC, contact sheets, overview, line-up, zooms |
-| `scene.py` | inside Blender: build one beast, save `art/blender/beasts_b/<id>.blend`, render through the kit. `--clips a,b` renders a look-round subset into `art/render/beasts_b/wip/` (never the game folder); env `BEASTS_B_HIDE=name,name` drops parts in such a WIP render (debugging) |
+| `scene.py` | inside Blender: build one beast, save `art/blender/beasts_b/<id>.blend`, render through the kit. `--clips a,b` renders a look-round subset into `art/render/beasts_b/wip/` (never the game folder); in such a WIP render env `BEASTS_B_HIDE=name,name` drops parts and `BEASTS_B_BIG=1` renders at 2x resolution (debugging) |
 | `common.py` | imports the monsters_a helpers read-only (`rig.py`, `beasts.py`, `quadrupeds.py`); adds `hexc`/`mat`/`glow`/`set_ramp`, `finish` (the eight clips), and `quad_poses` / `quad_extra_poses`: copies of `quad_clips` / `extra_quad_clips` that return the pose lists so a beast can decorate them |
 | `ngoc_tho.py` … `kim_si_dieu.py` | one builder per beast (`build()` returns the armature) |
 | `previews.py` | `art/preview/beasts_b.png`, `beasts_b_lineup.png`, `beasts_b_zoom_<id>.png`; `previews.py zoom <id>` (5× key frames), `previews.py close <id>` (8× faces into art/render), `previews.py wip <id>` |
@@ -76,9 +76,9 @@ blender -b art/blender/beasts_b/<id>.blend --python art/src/monsters_a/fitcheck.
 |---|---|---|---|---|---|
 | `ngoc_tho` | Ngọc Thố | sitting rabbit: hips (squash/stretch), chest, head, two-bone ears, skinned front legs between shoulder and planted paw bones, root feet | white fur, dark shiny eyes, pink nose and ears, glowing jade ear tips, gold crescent mark on the brow, red cord with a jade bead | rears up on the hind feet, paws up like a boxer / hop-lunge and double paw strike | line ahead, ~1.5 tiles |
 | `tam_bao_thu` | Tầm Bảo Thử | upright mouse: hips, chest, head, round ears, arms (the gem rides the left arm), root feet, three-bone skinned tail | warm chestnut fur, coin-gold belly, round pink ears, white whiskers, buck teeth, glowing spirit gem hugged to the belly, red treasure pouch with a gold tie, pink curling tail | hoists the gem above its head / bonks forward, the gem flaring on the hit | line ahead, ~1 tile |
-| `kim_thiem` | Bích Nhãn Kim Thiềm | squat toad tilted nose-up 12° on straight front legs: body, head, jaw, throat sac, eyes, coin bone, skinned front legs to planted hands, ONE hind leg in the middle | deep amber-gold warty skin with bright gold warts, cream belly and throat, glowing jade eyes with slit pupils on top domes, a wide smile, a glowing square-holed coin in its lips, three coins down its back | puffs up, throat sac swelling / spits the coin straight ahead (a new one appears) | line ahead, ~2 tiles (coin projectile) |
+| `kim_thiem` | Bích Nhãn Kim Thiềm | (rebuilt for the side view after the lead's review) wide low body, a blunt wedge head with the eye domes bulging above its line, jaw, throat sac, coin bone; short front legs skinned to planted hands; two folded hind legs on the flanks (big thigh outside the body, shin and long foot skinned between a thigh bone and a planted foot bone, so they unfold in the hop) | bright gold skin with dark-gold warts, warm-brown legs, a pale belly band and throat, a dark mouth band round the head, glowing jade eyes with slit pupils on top domes, a wide smile, a glowing square-holed coin in its lips, three coins down its back | puffs up, throat sac swelling / spits the coin straight ahead (a new one appears) | line ahead, ~2 tiles (coin projectile) |
 | `bach_ho_con` | Bạch Hổ Con | shared quadruped rig (IK legs, level paws), eyes bone | chunky white cub, round head with cheek ruffs, dark-backed round ears, blue eyes, pink nose, glowing ice brow diamond, tapered back stripes, brow strokes, leg stripes, ringed tail with a dark tip, big paws | crouch with a cat's butt-wiggle / pounce-bite | line ahead, ~2 tiles |
-| `cuu_vi_ho` | Cửu Vĩ Hồ | shared quadruped rig + nine two-bone skinned tails fanned ±92° | slender white fox, gold almond eyes, red kitsune liner and brow mark, tall ears with gold insides; nine tails alternating cream and gold with glowing gold tips: a sunburst behind the head from the front, a rising plume in profile; tails sway out of phase in every clip, tips lagging | crouch, fan flaring / pounce-bite with the fan swept back | cone ahead, ~60°, 2 tiles |
+| `cuu_vi_ho` | Cửu Vĩ Hồ | shared quadruped rig (hind legs modelled with a forward knee and a back-pointing hock) + nine two-bone skinned tails in a three-dimensional fan: each has its own elevation above the back line (12°→115°), sideways angle and length | slender white fox, gold almond eyes, red kitsune liner and brow mark, tall ears with gold insides; nine slim tapered tails alternating cream and gold, each curling to a pale-gold glowing tip: separate tails fanned over the back in profile, a peacock spread behind the body from the front; tails sway out of phase in every clip, tips lagging | crouch, fan flaring / pounce-bite with the fan swept back | cone ahead, ~60°, 2 tiles |
 | `kim_si_dieu` | Kim Sí Điểu | bird biped (like bach_hac): body, neck, head, crest, two-bone wings (covert pad + five primaries on the hand), tail fan, two-bone legs | gold raptor chick with a cream chest, hooked steel-blue beak, dark eyes under a stern brow, swept red crest; deep-gold and gold primaries and tail feathers with flame-bright glowing tips | wings flung up in a great V, crest raised / forward wing sweep and lunging peck | cone ahead, ~60°, 1.5 tiles |
 
 ## Look rounds (what was wrong before each change)
@@ -121,6 +121,20 @@ Judged at 5× (`beasts_b_zoom_<id>.png`) and 8× (`previews.py close`), next to 
 4. The tilt pushed the haunch back (walk/up, windup/up sank). → root offset 1.2 cm forward,
    hind foot only skims in the hop, smaller splat.
 
+Lead review after round 4: in profile it is a lumpy gold nugget with a green tab, no head,
+legs or mouth. Rebuilt for the side view:
+5. Wide low body, wedge head, eye domes above the head line, irises turned out, two folded
+   hind legs on the flanks (the single centred hind leg never read from the side, so it now
+   has four legs, which the brief allowed). Still a bun: the hind legs and mouth line sat
+   inside the body/head ellipsoids.
+6. → narrower body so the thigh sits outside on the flank; the mouth became a dark band
+   round the head at lip height. Still a nugget: the dark-gold leg's lit tone equals the
+   body's shadow tone. A 2x-resolution WIP render (`BEASTS_B_BIG=1`) showed the shapes were
+   right and the problem was value.
+7. → bright gold skin, dark-gold warts, legs on the warm-brown wood ramp, a pale belly band
+   that shows under the flank; foot and shin tucked in, belly shortened and jaw opened less
+   for the standing rule (up and down facings).
+
 ### Bạch Hổ Con
 1. Evenly spaced vertical stripes read as a zebra / ribcage; a big dark "eye" smear on the
    side of the head in profile; pale ice-glow irises vanished on white fur; long thin legs (a
@@ -145,6 +159,17 @@ Judged at 5× (`beasts_b_zoom_<id>.png`) and 8× (`previews.py close`), next to 
 4. Face too small to read from the front. → bigger head, eyes, ears and kitsune marks; fan
    centre lowered.
 
+Lead review after round 4: in profile the nine tails read as ONE gold feather duster on the
+rump, from the front as a gold hat; legs four straight columns.
+5. → the fan became three-dimensional: each tail has its own elevation (spread over the back
+   line in profile), sideways angle (low tails reach far out to the sides from the front) and
+   length; each tail curls toward its own tip. First render: separate tips but fat short tails
+   clumped into a spiky crown; die/sleep drooped the fan off the frame in the up facing.
+6. → tails slimmer (about 2.8 px) and 15 % longer, elevations 12°→115°, less droop in die and
+   sleep: six to seven distinct tips with dark gaps in profile.
+7. Central tails still towered over the head from the front. → shorter central tails; hind
+   legs given a forward knee and a back-pointing hock, forelegs a soft wrist.
+
 ### Kim Sí Điểu
 1. A yellow chick / chocobo with a rooster comb: folded wings hidden in an egg body, flame tips
    invisible on gold, a one-pixel beak, die clipped. → longer primaries crossing past the tail,
@@ -158,15 +183,16 @@ Judged at 5× (`beasts_b_zoom_<id>.png`) and 8× (`previews.py close`), next to 
 
 ## Still weak (honest)
 
-- **Kim Thiềm** is small (about the size of Huyền Quy; a 1.10-1.15 scale was tried after the
-  line-up and failed the standing rule in the up facing, so it stays 1.0) and its profile is a lumpy wedge; the
-  third leg reads only from behind / in the hop. The coin's square hole is a single dark pixel
-  at best; at 1× the coin reads as a bright glint.
+- **Kim Thiềm** is still the smallest beast (same size as before, as asked) and has four legs,
+  not the three of the legend. In profile it now reads as a crouching toad at 3×-5×. At 1× it
+  is about 19 px wide: the hind leg is a brown patch and the mouth line one dark row. The
+  coin's square hole is a single dark pixel at best.
 - **Tầm Bảo Thử** in profile: the far ear still shows as a short spike above the head and the
   snout is small; the front view is the strong one.
 - **Kim Sí Điểu** keeps a little of the chick in its egg-shaped body from the front (a young
   roc, but the "proud" read comes mostly from the profile, beak and crest); its sleep and die
   silhouettes are blobby.
-- **Cửu Vĩ Hồ** legs are straight columns (the shared rig's stance); from behind the fan covers
-  most of the body.
+- **Cửu Vĩ Hồ**: near the rump the nine tails still overlap. The separation shows in the
+  outer two-thirds, and in profile the near and far tail of a pair can line up. The hock bend
+  is small at 48 px.
 - Faces are 3-4 px features: they read at 3× and up; at 1× the eyes are 1-2 px like the first six.
