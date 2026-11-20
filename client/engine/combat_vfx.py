@@ -173,6 +173,170 @@ def _feel(v: Vfx, t: int, at: float, el: str, mine: bool) -> None:
         v.tint(RGB.get(el, (255, 255, 255)), 0.04 * (t - 8), 0.14, delay=at)
 
 
+# ------------------------------------------------------------------ the rendered kiếm khí sheets
+# art/src/fx_kiem/README.md: kiem_khi pivot = the sword hand, spawned on the hit frame; the wave
+# leaves at FX frame 2 (100 ms later); facing left = mirror (never turn 180), up / down = -/+ 90.
+# Low tiers stay modest on purpose: T1 an arc and a tiny spark, T2 a short needle of qi, T3 a
+# crescent wave and kiem_no_1; the impact star and ring only from T4; at any moment one bright
+# core on the target, and the sheets' own colours (flame T8, frost T9, cosmic T10) carry the tier.
+TIER_TINT = {8: (255, 140, 60), 9: (140, 200, 255), 10: (170, 120, 255)}
+HAND = {"right": (6.5, 12.0), "left": (-6.5, 12.0), "up": (3.0, 15.0), "down": (-3.0, 9.0)}
+IMPACT_SCALE = {2: 0.72, 3: 0.62, 4: 0.55}   # kiem_no_g: a ring about the monster's width, its body still reads
+
+
+def _within(t: int) -> float:
+    """A little more size for each tier inside a tier group (the group sheets are shared)."""
+    return 1.0 + 0.07 * (t - (1, 4, 6, 8)[group(t) - 1])
+
+
+def _face(ux: float, uy: float) -> str:
+    return ("right" if ux >= 0 else "left") if abs(ux) >= abs(uy) else ("down" if uy > 0 else "up")
+
+
+def _pose(face: str) -> tuple[float, bool]:
+    """(screen angle, mirrored) of a sheet drawn pointing right, for a swing facing `face`."""
+    return {"right": (0.0, False), "left": (0.0, True), "up": (-90.0, False), "down": (90.0, False)}[face]
+
+
+def _real_impact(v: Vfx, t: int, x: float, y: float, lift: float, delay: float) -> None:
+    """The one bright core on the target: a spark for T1-T2, kiem_no_1 at T3, kiem_no_g from T4."""
+    if t <= 2:
+        v.spawn("hit_spark", x, y, delay, lift=lift, scale=0.42 if t == 1 else 0.55, peak=0.6 if t == 1 else 0.8)
+        return
+    fid = "kiem_no_1" if t == 3 else f"kiem_no_{group(t)}"
+    if not v.spawn(fid, x, y, delay, lift=lift, scale=0.6 if t == 3 else IMPACT_SCALE[group(t)], peak=0.85):
+        v.spawn("hit_spark", x, y, delay, lift=lift, scale=0.7)
+
+
+def _real_scar(v: Vfx, t: int, x: float, y: float, delay: float) -> None:
+    if t >= 4:
+        v.spawn(f"kiem_ngan_{1 if t <= 5 else (2 if t <= 7 else 3)}", x, y + 1, delay, layer="ground",
+                scale=0.8, peak=0.8)
+
+
+def _real_feel(v: Vfx, t: int, at: float, mine: bool) -> None:
+    if not mine:
+        return
+    if SHAKE[t] > 0:
+        v.at(at, lambda: v.shake(SHAKE[t]))
+    if t >= 8:
+        v.tint(TIER_TINT[t], 0.03 + 0.02 * (t - 8), 0.14, delay=at)
+
+
+def _blade_real(v, t, src, dst, strike, dst_lift, follow, mine, z, garnish) -> float:
+    ux, uy, dist, deg = _unit(src, dst)
+    face = _face(ux, uy)
+    ang, flip = _pose(face)
+    hx, hy = HAND[face]
+    v.spawn(f"kiem_khi_{t}", src[0] + hx, src[1], strike, lift=hy, angle=ang, flip=flip, follow=follow)
+    land = strike + 0.05
+    if t >= 2 and has(f"kiem_song_{t}"):
+        launch = strike + 0.1
+        sx, sy = src[0] + hx, src[1]
+        span = max(6.0, dist - abs(hx))
+        over = 0.0 if t == 2 else OVERSHOOT[t]          # T2: a short needle that dies on the target
+        speed = 300.0 + 20.0 * t
+        travel = max(0.1, (span + over) / speed)
+        land = launch + travel * span / (span + over)
+        offs = [0.0] if t < 8 else [0.0, 8.0 if t < 10 else -8.0]
+        for i, off in enumerate(offs):
+            wx, wy = _turn(ux, uy, off)
+            ex, ey = sx + wx * (span + over), sy + wy * (span + over)
+            v.spawn(f"kiem_song_{t}", sx, sy, launch + i * 0.05, life=travel, to=(ex, ey), lift=hy,
+                    lift1=dst_lift, angle=deg + off, scale=0.7 if t == 2 else 1.0, peak=1.0 if i == 0 else 0.45,
+                    fade_in=0.03, fade_out=min(0.1, travel * 0.4) if over else 0.04, heavy=i > 0)
+    _real_impact(v, t, dst[0], dst[1], dst_lift, land)
+    _real_scar(v, t, dst[0], dst[1], land)
+    _real_feel(v, t, land, mine)
+    if t == 10:                         # the sky is cut: the arc again, falling through the target
+        v.spawn("kiem_khi_10", dst[0] - 4, dst[1], land + 0.05, lift=dst_lift + 34, angle=90.0, peak=0.55,
+                heavy=True)
+    if t >= 8 and garnish is not None:
+        v.at(land, lambda: garnish(dst[0], dst[1] - dst_lift, ELEMENT[t], 6 + 2 * (t - 8), 40))
+    return land
+
+
+def _thrust_real(v, t, src, dst, strike, dst_lift, follow, mine, z, garnish) -> float:
+    """thuong_dam_g: a lance of light from the hand along the blow (its pivot is the hand)."""
+    ux, uy, dist, deg = _unit(src, dst)
+    hx, hy = HAND[_face(ux, uy)]
+    g = group(t)
+    s = art2.fx(f"thuong_dam_{g}")
+    reach = s.fw * 0.68 / z if s is not None else 30.0          # the lance is 0.68 of its frame
+    want = max(12.0, dist - abs(hx) + 6)
+    k = max(0.55, min(1.4, want / max(1.0, reach))) * _within(t)
+    v.spawn(f"thuong_dam_{g}", src[0] + hx, src[1], strike, lift=hy, angle=deg, scale=k, follow=follow)
+    land = strike + 0.06
+    _real_impact(v, t, dst[0], dst[1], dst_lift, land)
+    _real_scar(v, t, dst[0], dst[1], land)
+    _real_feel(v, t, land, mine)
+    return land
+
+
+def _smash_real(v, t, src, dst, strike, dst_lift, follow, mine, z, garnish) -> float:
+    """chuy_chan_g: the shock ring on the GROUND under the target; a small gold arc at the hand."""
+    ux, uy, dist, deg = _unit(src, dst)
+    hx, hy = HAND[_face(ux, uy)]
+    g = group(t)
+    land = strike + 0.03
+    v.spawn("slash_tho", src[0] + hx + ux * 4, src[1] + uy * 4, strike - 0.03, lift=hy, scale=0.5 + 0.03 * t,
+            angle=deg + 50 - CREST, peak=0.6, heavy=True)
+    v.spawn(f"chuy_chan_{g}", dst[0], dst[1] + 1, land, layer="ground", scale=(0.72 if g == 1 else 0.95) * _within(t))
+    if t >= 6:
+        _real_impact(v, t, dst[0], dst[1], dst_lift * 0.6, land + 0.02)
+    else:
+        v.spawn("hit_spark", dst[0], dst[1], land, lift=dst_lift * 0.6, scale=0.45 + 0.04 * t, peak=0.8)
+    if mine:
+        v.at(land, lambda: v.shake(0.1 + SHAKE[t] * 1.2))
+    if garnish is not None and t >= 4:
+        v.at(land, lambda: garnish(dst[0], dst[1] - 2, "tho", 4 + t, 28))
+    return land
+
+
+def _volley_real(v, t, src, dst, strike, dst_lift, mine, z, kind: str) -> float:
+    """cung_ten_g (arrow, its head forward) or phap_dan_g (orb with its tail) flying to the target."""
+    ux, uy, dist, deg = _unit(src, dst)
+    hx, hy = HAND[_face(ux, uy)]
+    g = group(t)
+    fid = f"cung_ten_{g}" if kind == "shot" else f"phap_dan_{g}"
+    speed = (320.0 + 20 * t) if kind == "shot" else (210.0 + 14 * t)
+    n = (1, 1, 2, 3)[g - 1] if kind == "shot" else (1, 1, 1, 2)[g - 1]
+    sx, sy = src[0] + hx, src[1]
+    span = max(6.0, dist - abs(hx))
+    travel = max(0.08, min(0.5, span / speed))
+    land = strike + travel
+    offs = [0.0] if n == 1 else ([-6.0, 6.0] if n == 2 else [-8.0, 0.0, 8.0])
+    for i, off in enumerate(offs):
+        wx, wy = _turn(ux, uy, off * 0.5)
+        v.spawn(fid, sx, sy, strike + i * 0.045, life=travel, to=(sx + wx * span, sy + wy * span), lift=hy,
+                lift1=dst_lift, angle=deg + off * 0.5, arc=0.0 if kind == "shot" else 4.0, fade_in=0.03,
+                scale=(0.8 if g <= 2 else 0.75) * _within(t), peak=1.0 if i == 0 else 0.7, heavy=i > 0)
+    _real_impact(v, t, dst[0], dst[1], dst_lift, land + 0.01 * (n - 1))
+    if t >= 6:
+        _real_scar(v, t, dst[0], dst[1], land)
+    _real_feel(v, t, land, mine)
+    return land
+
+
+def _shot_real(v, t, src, dst, strike, dst_lift, follow, mine, z, garnish) -> float:
+    return _volley_real(v, t, src, dst, strike, dst_lift, mine, z, "shot")
+
+
+def _spell_real(v, t, src, dst, strike, dst_lift, follow, mine, z, garnish) -> float:
+    return _volley_real(v, t, src, dst, strike, dst_lift, mine, z, "spell")
+
+
+def _real(fam: str, t: int):
+    """The recipe drawn from the rendered sheets for this family and tier, or None (the stand-ins)."""
+    g = group(t)
+    want = {"blade": f"kiem_khi_{t}", "thrust": f"thuong_dam_{g}", "smash": f"chuy_chan_{g}",
+            "shot": f"cung_ten_{g}", "spell": f"phap_dan_{g}"}[fam]
+    if not has(want):
+        return None
+    return {"blade": _blade_real, "thrust": _thrust_real, "smash": _smash_real, "shot": _shot_real,
+            "spell": _spell_real}[fam]
+
+
 # ------------------------------------------------------------------ basic attacks
 def swing(v: Vfx, weapon: str | None, t: int, src, dst, strike: float = 0.2, dst_lift: float = 10.0,
           follow=None, mine: bool = True, z: float = 2.0, garnish=None) -> float:
@@ -180,7 +344,7 @@ def swing(v: Vfx, weapon: str | None, t: int, src, dst, strike: float = 0.2, dst
     target's feet), its strike frame `strike` seconds from now. Returns when it lands."""
     fam = family(weapon)
     t = max(1, min(10, int(t)))
-    fn = {"blade": _blade, "thrust": _thrust, "smash": _smash, "shot": _shot, "spell": _spell}[fam]
+    fn = _real(fam, t) or {"blade": _blade, "thrust": _thrust, "smash": _smash, "shot": _shot, "spell": _spell}[fam]
     return fn(v, t, src, dst, strike, dst_lift, follow, mine, z, garnish)
 
 
@@ -616,8 +780,7 @@ def fizzle(v: Vfx, fx_id: str, src, dst, follow=None) -> None:
 # ------------------------------------------------------------------ hits, deaths, parries
 def crit(v: Vfx, x: float, y: float, lift: float, mine: bool) -> None:
     """A critical hit: a bigger star, a gold ring, a short hit-stop and a kick of the camera."""
-    v.spawn("hit_crit", x, y, 0.0, lift=lift, scale=(1.3, 1.0))
-    v.spawn("burst_kim", x, y, 0.02, lift=lift, scale=(0.7, 1.3), peak=0.7, fade_out=0.12, heavy=True)
+    v.spawn("hit_crit", x, y, 0.0, lift=lift, scale=(0.95, 0.75), peak=0.8)
     if mine:
         v.hitstop(0.05)
         v.shake(0.22)

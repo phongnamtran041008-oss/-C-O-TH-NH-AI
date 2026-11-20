@@ -77,8 +77,13 @@ def test_the_strike_comes_from_the_sheet_events():
 
 
 # ------------------------------------------------------------------ every tier, every family
-@pytest.mark.parametrize("weapon", ["kiem_3", "thuong_3", "chuy_3", "cung_3", "truong_3"])
-def test_every_tier_draws_and_a_higher_tier_draws_more(weapon):
+@pytest.mark.parametrize("sheets", ["rendered", "stand_ins"])
+@pytest.mark.parametrize("weapon", ["kiem_3", "thuong_3", "chuy_3", "cung_3", "truong_3", "kich_1", "phu_1",
+                                    "am_khi_1", "cam_1"])
+def test_every_tier_draws_and_a_higher_tier_draws_more(weapon, sheets, tmp_path, art_root):
+    """With the rendered kiếm khí sheets, and with only today's stand-ins (an art root without them)."""
+    if sheets == "stand_ins":
+        art2.set_root(make_root(tmp_path))
     seen = []
     for t in range(1, 11):
         v = V.Vfx()
@@ -89,19 +94,35 @@ def test_every_tier_draws_and_a_higher_tier_draws_more(weapon):
     assert all(b > a for a, b in zip(seen, seen[1:])), (weapon, seen)
 
 
-def test_from_t2_a_wave_flies_on_past_the_target():
-    for t in (1, 2, 5, 10):
+def test_t1_is_modest_t2_a_needle_t3_on_a_wave_that_flies_past():
+    """The rendered sheets: T1 an arc and a tiny spark; T2 a short needle of qi that dies on the
+    target; from T3 the wave flies on past it; from T8 a second wave; the ring only from T3."""
+    for t in (1, 2, 3, 5, 8, 10):
         v = V.Vfx()
         C.swing(v, "kiem_3", t, SRC, DST, strike=0.2)
-        moving = [it for it in v.live if it.to is not None]
+        ids = [it.fid for it in v.live]
+        waves = [it for it in v.live if it.fid.startswith("kiem_song_")]
+        assert ids[0] == f"kiem_khi_{t}"
         if t == 1:
-            assert not moving
+            assert not waves and not any(i.startswith("kiem_no_") for i in ids)
             continue
-        assert moving, t
-        assert max(it.to[0] for it in moving) > DST[0] + 5, t      # past the monster
+        assert waves, t
+        if t == 2:
+            assert max(w.to[0] for w in waves) <= DST[0] + 5 and not any(i.startswith("kiem_no_") for i in ids)
+        else:
+            assert max(w.to[0] for w in waves) > DST[0] + 5, t      # past the monster
+            assert sum(i.startswith("kiem_no_") for i in ids) == 1  # one bright core on the target
+        assert len(waves) == (2 if t >= 8 else 1), t
+
+
+def test_a_swing_to_the_left_is_mirrored_never_turned():
     v = V.Vfx()
-    C.swing(v, "kiem_3", 7, SRC, DST, strike=0.2)
-    assert len({round(it.angle) for it in v.live if it.to is not None and it.fid != "sword_trail"}) == 3
+    C.swing(v, "kiem_3", 5, DST, SRC, strike=0.2)
+    arc = v.live[0]
+    assert arc.flip and arc.angle == 0.0
+    v = V.Vfx()
+    C.swing(v, "kiem_3", 5, SRC, (SRC[0], SRC[1] - 30), strike=0.2)
+    assert not v.live[0].flip and v.live[0].angle == -90.0
 
 
 def test_from_t4_a_scar_on_the_ground_and_only_your_own_blows_shake_your_camera():
@@ -124,12 +145,18 @@ def test_from_t4_a_scar_on_the_ground_and_only_your_own_blows_shake_your_camera(
 
 
 # ------------------------------------------------------------------ the fallback chain
+NEW = ("kiem_khi_", "kiem_song_", "kiem_no_", "kiem_ngan_", "thuong_dam_", "chuy_chan_", "cung_ten_", "phap_dan_",
+       "uy_ap")
+
+
 def make_root(tmp: Path, extra: dict | None = None) -> Path:
-    """An art root with today's FX sheets, plus fake new sheets ({new id: copied from id})."""
+    """An art root with the FX sheets older than the kiếm khí set (none of NEW), plus fake new
+    sheets ({new id: copied from id})."""
     src = art2.ROOT
     (tmp / "fx").mkdir(parents=True)
     for p in (src / "fx").iterdir():
-        shutil.copy(p, tmp / "fx" / p.name)
+        if not p.name.startswith(NEW):
+            shutil.copy(p, tmp / "fx" / p.name)
     for new, old in (extra or {}).items():
         doc = json.loads((src / "fx" / f"{old}.json").read_text("utf-8"))
         doc["id"], doc["sheet"] = new, f"{new}.png"
@@ -159,7 +186,7 @@ def test_without_the_new_sheets_todays_sheets_stand_in(tmp_path, art_root):
 def test_the_new_sheets_light_up_when_they_arrive(tmp_path, art_root):
     new = {"kiem_khi_6": "slash_kim", "kiem_song_6": "sword_trail", "kiem_no_3": "hit_crit", "kiem_ngan_2": "crack_ground",
            "thuong_dam_2": "sword_trail", "chuy_chan_2": "crack_ground", "cung_ten_3": "bolt_kim",
-           "phap_dan_4": "bolt_hoa", "uy_ap": "burst_tho"}
+           "phap_dan_4": "bolt_hoa"}
     art2.set_root(make_root(tmp_path, new))
     v = V.Vfx()
     C.swing(v, "kiem_3", 6, SRC, DST)
@@ -169,7 +196,7 @@ def test_the_new_sheets_light_up_when_they_arrive(tmp_path, art_root):
     arc = next(it for it in v.live if it.fid == "kiem_khi_6")
     assert arc.scale[1] == 1.0                           # drawn at the size the artist rendered
     for weapon, t, fid in (("thuong_1", 4, "thuong_dam_2"), ("chuy_1", 5, "chuy_chan_2"), ("cung_1", 7, "cung_ten_3"),
-                           ("ho_lo_1", 9, "phap_dan_4"), ("chuy_1", 7, "uy_ap")):
+                           ("ho_lo_1", 9, "phap_dan_4")):
         v = V.Vfx()
         C.swing(v, weapon, t, SRC, DST)
         assert fid in {it.fid for it in v.live}, (weapon, fid)

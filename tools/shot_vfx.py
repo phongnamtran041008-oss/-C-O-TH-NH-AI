@@ -182,10 +182,10 @@ def weapon_rows() -> list:
             weapon = f"{wtype}_{max(1, min(8, g * 2))}"
             clip = art2.weapon_for(weapon)[1]
             strike = C.strike_delay(realm, weapon)
-            for label, when in (("blow", 0.04), ("land", None)):
+            for label, when in (("blow", 0.06), ("land", None), ("after", 0.15)):
                 cell = Cell(220, 100, src=(30.0, 36.0), dst=(70.0, 36.0) if fam in ("shot", "spell") else (56.0, 36.0))
                 land = C.swing(cell.vfx, weapon, t, cell.src, cell.dst, strike=strike, dst_lift=11, follow="me")
-                m = strike + when if when is not None else land + 0.03
+                m = (strike + when if label == "blow" else land + when) if when is not None else land + 0.03
                 cell.run_to(m)
                 cells.append((f"g{g} T{t} {label}", cell.picture(realm, weapon, clip, m)))
         rows.append((FAMILY_NAME[fam], cells))

@@ -283,9 +283,11 @@ _WEAPONS: dict = {}
 # client test checks the two agree), and with the v2 art off each type is drawn as the nearest
 # code-drawn weapon.
 PLAN_WEAPON_RANGE = {"kiem": 26, "dao": 28, "ho_lo": 40, "thuong": 38, "chuy": 24, "cung": 60,
-                     "truong": 46, "phien": 32}
+                     "truong": 46, "phien": 32, "kich": 34, "roi": 44, "am_khi": 52, "luan": 48, "phu": 22,
+                     "cam": 50}
 PLAN_WEAPON_LOOK = {"kiem": "sword", "dao": "sabre", "ho_lo": "gourd", "thuong": "spear", "chuy": "hammer",
-                    "cung": "bow", "truong": "staff", "phien": "fan"}
+                    "cung": "bow", "truong": "staff", "phien": "fan", "kich": "spear", "roi": "brush",
+                    "am_khi": "sword", "luan": "fan", "phu": "hammer", "cam": "staff"}
 
 
 def plan_weapon_type(kind: str | None) -> str | None:
@@ -908,7 +910,7 @@ class WorldScene(Scene):
                     ent.kick = CV.recoil((x, y), src, now, 3.5 if crit else 2.0)
                 if crit:
                     CV.crit(vf, x, y, lift * 0.5, mine=by == me)
-                else:
+                elif by not in self.vfx_hold:   # a swing drawn by the VFX layer brought its own impact
                     self.spark(art2.combat_fx("hit"), x, y - lift * 0.5)
             elif v2:
                 self.spark(art2.combat_fx("crit" if ev.get("c") else "hit"), x, y - lift * 0.5)
