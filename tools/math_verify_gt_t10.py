@@ -37,7 +37,7 @@ n_, m_, x_, y_ = Symbol("n", positive=True, integer=True), Symbol("m", positive=
 
 
 def _frac(v) -> Fraction:
-    v = sp.nsimplify(sp.simplify(sp.sympify(v)))
+    v = sp.simplify(sp.sympify(v))                       # (exact: no nsimplify, which can rewrite a big Rational)
     if not isinstance(v, sp.Rational):
         raise ValueError(f"{v} is not a rational number")
     return Fraction(int(v.p), int(v.q))

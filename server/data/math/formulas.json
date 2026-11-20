@@ -369,6 +369,12 @@
    "w": 38.75,
    "h": 8.12
   },
+  "34cf332e511b5356": {
+   "tex": "|x_n - x^*| \\le \\frac{b - a}{2^{n+1}}",
+   "alt": "|x_n - x^*| <= (b - a)/(2^(n+1))",
+   "w": 79.62,
+   "h": 21.28
+  },
   "3520196003733e18": {
    "tex": "\\frac{S - n\\mu}{\\sigma\\sqrt{n}} \\approx N(0, 1)",
    "alt": "(S - nmu)/(sigmacan(n)) xap xi N(0, 1)",
@@ -494,6 +500,12 @@
    "alt": "rho(X, Y) = (Cov(X, Y))/(sigma(X) sigma(Y)), -1 <= rho <= 1",
    "w": 174.33,
    "h": 24.64
+  },
+  "3f9eaca6d8a6a08a": {
+   "tex": "\\Delta_{xy} \\approx |y|\\,\\Delta_x + |x|\\,\\Delta_y, \\qquad \\Delta_{f(x)} \\approx |f'(x)|\\,\\Delta_x",
+   "alt": "Delta_(xy) xap xi |y| Delta_x + |x| Delta_y, Delta_(f(x)) xap xi |f'(x)| Delta_x",
+   "w": 199.81,
+   "h": 11.83
   },
   "409abd28080d8a48": {
    "tex": "n^2, \\qquad n(n-1), \\qquad C_n^2 = \\frac{n(n-1)}{2}",
@@ -1071,6 +1083,12 @@
    "w": 191.43,
    "h": 12.21
   },
+  "90e7ce80c95a27cf": {
+   "tex": "|x_n - x^*| \\le \\frac{q^n}{1 - q}\\,|x_1 - x_0|, \\qquad |x_n - x^*| \\le \\frac{q}{1 - q}\\,|x_n - x_{n-1}|",
+   "alt": "|x_n - x^*| <= (q^n)/(1 - q) |x_1 - x_0|, |x_n - x^*| <= q/(1 - q) |x_n - x_(n-1)|",
+   "w": 275.49,
+   "h": 22.72
+  },
   "93b6e491b648f5fd": {
    "tex": "E(X_{tb}) = \\mu, \\qquad E(s^2) = \\sigma^2, \\qquad E(f) = p",
    "alt": "E(X_(tb)) = mu, E(s^2) = sigma^2, E(f) = p",
@@ -1160,6 +1178,12 @@
    "alt": "f_(xy) = d/(d y) ((d f)/(d x)), f_(xy) = f_(yx)",
    "w": 135.93,
    "h": 23.23
+  },
+  "9a74e624c58b5353": {
+   "tex": "\\Delta_a \\le 0.5 \\cdot 10^{s}",
+   "alt": "Delta_a <= 0.5 . 10^s",
+   "w": 61.48,
+   "h": 8.99
   },
   "9b76fde074b9deae": {
    "tex": "C_n^k = C_n^{n-k}",
@@ -1520,6 +1544,12 @@
    "alt": "m + n (chon mot phuong an), m . n (lam ca hai buoc)",
    "w": 268.83,
    "h": 10.18
+  },
+  "cbee2998b285565b": {
+   "tex": "x_{n+1} = x_n - \\frac{f(x_n)}{f'(x_n)}",
+   "alt": "x_(n+1) = x_n - (f(x_n))/(f'(x_n))",
+   "w": 89.55,
+   "h": 24.64
   },
   "cc0d357ee7706d3a": {
    "tex": "a \\sim b \\iff n \\mid (a - b)",

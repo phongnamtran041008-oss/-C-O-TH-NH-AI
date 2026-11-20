@@ -30,7 +30,7 @@ ITEM_FILE = ROOT / "server" / "data" / "math" / "items" / "xac_suat_thong_ke.t10
 
 
 def _frac(v) -> Fraction:
-    v = sp.nsimplify(sp.simplify(sp.sympify(v)))
+    v = sp.simplify(sp.sympify(v))                       # (exact: no nsimplify, which can rewrite a big Rational)
     if not isinstance(v, sp.Rational):
         raise ValueError(f"{v} is not a rational number")
     return Fraction(int(v.p), int(v.q))
