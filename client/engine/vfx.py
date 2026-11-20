@@ -27,7 +27,8 @@ spawn options (all optional): delay (s), life (s; default the sheet's one-shot l
 (world px of hump) for travel, scale (or scale=(a, b) grown over the life), size=(w, h) screen
 px (stretch), angle (screen degrees the art's +x points to: 0 right, 90 down), fade_in /
 fade_out (s), peak (0..1 brightness), fps (speed factor), frames=(a, b) (loop that range), hold
-(one frame), flip (mirror left-right about the pivot: a swing facing left), start (skip the first frames of a one-shot: the ring of a burst without its disc), trail=(n, gap) (afterimages n x `gap` seconds behind), layer, tag, follow, heavy
+(one frame), shade (0..1: a dark plate under an additive sheet, so it keeps its colour on bright
+grass), flip (mirror left-right about the pivot: a swing facing left), start (skip the first frames of a one-shot: the ring of a burst without its disc), trail=(n, gap) (afterimages n x `gap` seconds behind), layer, tag, follow, heavy
 (dropped by "reduce effects" and first to go over the budget).
 
 Coordinates are world pixels; the view (engine/view.py) puts them on screen. Positions, damage,
@@ -115,6 +116,20 @@ def _premul(img: pygame.Surface) -> pygame.Surface:
     return s
 
 
+def _shadow(img: pygame.Surface, alpha: int) -> pygame.Surface:
+    """The drawn area of `img` in black at `alpha` (0..255), cached."""
+    a = max(0, min(255, alpha)) // 8 * 8
+    key = ("shadow", img, a)
+    s = _cache.get(key)
+    if s is None:
+        s = img.copy()
+        s.fill((0, 0, 0, a), special_flags=pygame.BLEND_RGBA_MULT)
+        _cache[key] = s
+        while len(_cache) > _cache_max:
+            _cache.popitem(last=False)
+    return s
+
+
 def _ease(k: float, kind: str) -> float:
     k = max(0.0, min(1.0, k))
     if kind == "out":
@@ -129,7 +144,7 @@ def _ease(k: float, kind: str) -> float:
 class Inst:
     __slots__ = ("fid", "img", "pivot", "flags", "x", "y", "lift", "to", "lift1", "ease", "arc", "t0", "life",
                  "scale", "size", "angle", "fade_in", "fade_out", "peak", "fps", "frames", "hold", "trail",
-                 "layer", "tag", "follow", "heavy", "ox", "oy", "start", "flip")
+                 "layer", "tag", "follow", "heavy", "ox", "oy", "start", "flip", "shade")
 
     def __init__(self):
         self.fid = None
@@ -147,6 +162,7 @@ class Inst:
         self.layer, self.tag, self.follow, self.heavy = "over", None, None, False
         self.ox = self.oy = 0.0           # offset from a followed thing
         self.flip = False                 # mirrored left-right about its pivot (a swing facing left)
+        self.shade = 0.0                  # a dark plate under an additive sheet (bright ground)
 
     # where it is `t` seconds into its life (world px; z = lift)
     def pos(self, t: float, resolve) -> tuple[float, float, float]:
@@ -226,6 +242,7 @@ class Vfx:
         it.hold = kw.get("hold")
         it.start = int(kw.get("start", 0))
         it.flip = bool(kw.get("flip", False))
+        it.shade = float(kw.get("shade", 0.0))
         it.trail = kw.get("trail") if not self.reduced else None
         it.layer = kw.get("layer", "over")
         it.tag = kw.get("tag")
@@ -396,6 +413,8 @@ class Vfx:
             py = out.get_height() / 2 + dx * math.sin(r) + dy * math.cos(r)
         x, y, z = it.pos(tt, self.resolve)
         sx, sy = view.to_screen(x, y - z)
+        if it.shade > 0 and additive:     # on bright grass additive light washes to white: a dark plate first
+            surf.blit(_shadow(out, int(it.shade * level * 16)), (int(sx - px), int(sy - py)))
         surf.blit(out, (int(sx - px), int(sy - py)), special_flags=flags)
         return 1
 

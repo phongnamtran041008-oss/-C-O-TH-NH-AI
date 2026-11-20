@@ -180,6 +180,8 @@ def _feel(v: Vfx, t: int, at: float, el: str, mine: bool) -> None:
 # crescent wave and kiem_no_1; the impact star and ring only from T4; at any moment one bright
 # core on the target, and the sheets' own colours (flame T8, frost T9, cosmic T10) carry the tier.
 TIER_TINT = {8: (255, 140, 60), 9: (140, 200, 255), 10: (170, 120, 255)}
+# how dark a plate goes under a tier's sheets: the colour of high tiers survives bright grass
+SHADE = (0, 0.0, 0.0, 0.15, 0.25, 0.3, 0.35, 0.45, 0.5, 0.55, 0.6)
 HAND = {"right": (6.5, 12.0), "left": (-6.5, 12.0), "up": (3.0, 15.0), "down": (-3.0, 9.0)}
 IMPACT_SCALE = {2: 0.72, 3: 0.62, 4: 0.55}   # kiem_no_g: a ring about the monster's width, its body still reads
 
@@ -204,7 +206,8 @@ def _real_impact(v: Vfx, t: int, x: float, y: float, lift: float, delay: float) 
         v.spawn("hit_spark", x, y, delay, lift=lift, scale=0.42 if t == 1 else 0.55, peak=0.6 if t == 1 else 0.8)
         return
     fid = "kiem_no_1" if t == 3 else f"kiem_no_{group(t)}"
-    if not v.spawn(fid, x, y, delay, lift=lift, scale=0.6 if t == 3 else IMPACT_SCALE[group(t)], peak=0.85):
+    if not v.spawn(fid, x, y, delay, lift=lift, scale=0.6 if t == 3 else IMPACT_SCALE[group(t)], peak=0.85,
+                   shade=SHADE[t] * 0.7):
         v.spawn("hit_spark", x, y, delay, lift=lift, scale=0.7)
 
 
@@ -228,7 +231,8 @@ def _blade_real(v, t, src, dst, strike, dst_lift, follow, mine, z, garnish) -> f
     face = _face(ux, uy)
     ang, flip = _pose(face)
     hx, hy = HAND[face]
-    v.spawn(f"kiem_khi_{t}", src[0] + hx, src[1], strike, lift=hy, angle=ang, flip=flip, follow=follow)
+    v.spawn(f"kiem_khi_{t}", src[0] + hx, src[1], strike, lift=hy, angle=ang, flip=flip, follow=follow,
+            shade=SHADE[t])
     land = strike + 0.05
     if t >= 2 and has(f"kiem_song_{t}"):
         launch = strike + 0.1
@@ -244,7 +248,8 @@ def _blade_real(v, t, src, dst, strike, dst_lift, follow, mine, z, garnish) -> f
             ex, ey = sx + wx * (span + over), sy + wy * (span + over)
             v.spawn(f"kiem_song_{t}", sx, sy, launch + i * 0.05, life=travel, to=(ex, ey), lift=hy,
                     lift1=dst_lift, angle=deg + off, scale=0.7 if t == 2 else 1.0, peak=1.0 if i == 0 else 0.45,
-                    fade_in=0.03, fade_out=min(0.1, travel * 0.4) if over else 0.04, heavy=i > 0)
+                    fade_in=0.03, fade_out=min(0.1, travel * 0.4) if over else 0.04, heavy=i > 0,
+                    shade=SHADE[t] if i == 0 else 0.0)
     _real_impact(v, t, dst[0], dst[1], dst_lift, land)
     _real_scar(v, t, dst[0], dst[1], land)
     _real_feel(v, t, land, mine)
