@@ -101,6 +101,7 @@ class Config:
     fullscreen: bool = False
     music_volume: float = 0.6
     sfx_volume: float = 0.8
+    reduce_effects: bool = False       # the settings switch: no shake, no hit-stop, no heavy VFX layers
     extra: dict = field(default_factory=dict)
 
     # Where save() writes. None = do not write anything (e.g. a Config built in code by

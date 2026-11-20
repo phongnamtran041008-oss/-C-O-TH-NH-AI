@@ -352,6 +352,9 @@ class Game:
             c.update({"xp": info["xp"], "need": info["need"], "label": info["label"],
                       "realm": info["realm"], "stage": info["stage"]})
         if info.get("stage_up"):
+            ch_realm = (self.state.character or {}).get("realm")
+            self.celebrate("breakthrough" if ch_realm and info.get("realm") not in (None, ch_realm) else "stage_up",
+                           (info.get("realm"), info.get("stage")))
             self.toast(T.STAGE_UP.format(label=info["label"]), "#C99A3A")
             self.audio.play("discover")
             self.refresh_cult()
@@ -359,6 +362,17 @@ class Game:
             self._bottleneck_said = self.now    # once in a while, not after every right answer
             self.toast(T.BOTTLENECK.format(pill=c["pill_name"], realm=T.REALMS.get(c.get("next_realm"), "")),
                        "#C99A3A")
+
+    def celebrate(self, kind: str, key) -> None:
+        """A stage climbed or a realm broken through: the world scene plays it (once per new
+        stage, whichever message says it first)."""
+        if key == getattr(self, "_celebrated", None):
+            return
+        self._celebrated = key
+        for sc in self.scenes:
+            if hasattr(sc, "celebrate"):
+                sc.celebrate(kind)
+                break
 
     def refresh_pets(self) -> None:
         def ok(d):
@@ -531,7 +545,11 @@ class Game:
             self._on_realm(m)
         elif t == "stats":
             ch = self.state.character
+            before = (ch.get("realm"), ch.get("realm_stage"))
             ch.update({"realm": m.get("realm"), "realm_stage": m.get("stage")})
+            if before[0] and before != (m.get("realm"), m.get("stage")):
+                self.celebrate("breakthrough" if before[0] != m.get("realm") else "stage_up",
+                               (m.get("realm"), m.get("stage")))
             if self.state.cult is not None:
                 self.state.cult["stats"] = m.get("stats", {})
             self.refresh_cult()

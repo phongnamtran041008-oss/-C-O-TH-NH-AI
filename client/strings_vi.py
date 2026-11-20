@@ -88,6 +88,7 @@ SCALE = "Phóng to"
 SCALE_AUTO = "Tự động"
 FULLSCREEN = "Toàn màn hình"
 SFX_VOLUME = "Âm lượng hiệu ứng"
+REDUCE_FX = "Giảm hiệu ứng"
 LOGOUT = "Đăng xuất"
 SAVE = "Lưu"
 

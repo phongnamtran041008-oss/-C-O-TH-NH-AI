@@ -124,7 +124,7 @@ Câu trả lời của `q` gửi qua REST `POST /quiz/answer` như mọi câu h�
 ```json
 {"t": "snap", "st": 1290.15, "ack": 41, "me": [452.0, 512.3, 1, 88.0, 120.0, 40.0, 60.0],
  "add": [{"id": "p9", "k": "p", "uid": 9, "n": "Lão Mai", "ap": {"hair_color": "#8E8E8E", "hair_style": "ngan", "body": "nam"},
-          "realm": "pham_nhan", "x": 470.0, "y": 500.0, "f": 0, "m": 0, "hp": 100, "wp": "brush"},
+          "realm": "pham_nhan", "stage": 3, "x": 470.0, "y": 500.0, "f": 0, "m": 0, "hp": 100, "wp": "brush"},
          {"id": "m1_3", "k": "m", "type": "ink_slime", "n": "Mực Con", "rank": "normal",
           "x": 300.5, "y": 260.1, "f": 2, "m": 1, "hp": 100, "sh": 1, "alive": 1}],
  "e": [["p12", 520.25, 410.0, 3, 1, 100], ["m1_3", 301.0, 262.4, 2, 1, 64, 0, 1]],
@@ -134,6 +134,8 @@ Câu trả lời của `q` gửi qua REST `POST /quiz/answer` như mọi câu h�
 
 - `me` = `[x, y, hướng, máu, máu tối đa, linh lực, linh lực tối đa, ong]`; `ong` (bản 4) là danh sách ong hộ vệ của
   mình `[id, loài, máu, máu tối đa, giây còn nghỉ trong tổ, id quái đang chích]`.
+- Người chơi trong `add` có `stage` = tầng của cảnh giới `realm` (0 khi không có tầng): client dùng `realm` + `stage`
+  để vẽ kiếm khí theo tu vi của người ấy (chỉ là hình ảnh; client cũ bỏ qua khóa này).
 - Trong `e`, người chơi là `[id, x, y, hướng, đang đi, %máu, ong]` với `ong` = `[[loài, %máu, id quái đang chích hoặc "", đang nghỉ 0/1], …]`
   (cũng có trong `add` dưới khóa `bees`); quái là `[id, x, y, hướng, đang đi, %máu, khiên, còn sống]`.
 - `fx` (chỉ có khi có chuyện xảy ra, lọc trong bán kính `event_radius`): `hit` (quái trúng đòn, `c` = chí mạng),
