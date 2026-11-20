@@ -7,7 +7,8 @@
     {"item": "truc_diep_thao", "price": 8, "daily": 30},
     {"item": "muc_tinh", "price": 15, "daily": 20},
     {"item": "giun_dat", "price": 5, "daily": 40},
-    {"item": "phong_an_phu", "price": 60, "daily": 3}
+    {"item": "phong_an_phu", "price": 60, "daily": 3},
+    {"item": "tay_linh_thao", "price": 30, "daily": 6}
   ],
   "equipment": {
     "items": ["but_long_go", "kiem_go_dao", "quat_giay", "gay_truc", "ao_truc_van", "non_la", "giay_co", "ngoc_muc", "nhan_dong"],

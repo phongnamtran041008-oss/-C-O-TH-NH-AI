@@ -139,8 +139,10 @@ async def equipped(db: AsyncSession, user_id: int) -> list[EquipmentInstance]:
 
 
 async def current_stats(db: AsyncSession, ch: Character) -> dict:
-    from . import pets
-    return stats_for(ch.realm, ch.realm_stage, await equipped(db, ch.user_id), await pets.worn_stats(db, ch.user_id))
+    from . import linh_can, pets   # the linh căn last: its % effects apply to the whole (lc, lc_fx)
+    return linh_can.apply_stats(stats_for(ch.realm, ch.realm_stage, await equipped(db, ch.user_id),
+                                          await pets.worn_stats(db, ch.user_id)),
+                                await linh_can.root_of(db, ch.user_id))
 
 
 async def push_to_world(db: AsyncSession, ch: Character) -> None:

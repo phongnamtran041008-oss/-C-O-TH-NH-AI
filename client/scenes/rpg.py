@@ -195,6 +195,21 @@ class CharacterScene(Scene):
             if ui.button("ch_pets", x + 14, py_ + 18, 70, 14, T.HUD_PETS + " (O)", size=7):
                 self.game.open_pets()
                 return
+            lc = c.get("linh_can")         # the linh căn carried, after a chip in the colour of its giai
+            if lc:
+                chip = T.LC_SHORT.get(lc["giai"], lc["giai_vi"])
+                cw = ui.text_size(chip, 6)[0] + 6
+                ui.fill(x + 14, y + 114, cw, 9, lc["color"])
+                ui.border(x + 14, y + 114, cw, 9, "#2B2B2B")
+                ui.text(chip, x + 14 + cw / 2, y + 118.5, 6, "#1D1A22", anchor="center")
+                ui.text(T.LC_SHEET.format(name=lc["name_vi"]), x + 18 + cw, y + 115, 7, "#2B2B2B", max_w=200 - cw)
+            else:
+                ui.text(T.LC_SHEET_NONE, x + 14, y + 115, 7, "#8E877A")
+            if lc and ui.hover(x + 14, y + 114, 210, 9):
+                ui.set_tooltip("\n".join([lc["giai_vi"], *(lc.get("effects_vi") or [])]))
+            if ui.button("ch_linh_can", x + 14, py_ + 34, 74, 14, T.HUD_LINH_CAN + " (C)", size=7):
+                self.game.open_linh_can()
+                return
             if c.get("buffs"):
                 ui.text(T.ALCHEMY_BUFFS.format(b=", ".join(f"{b['name_vi']} {b['seconds_left'] // 60 + 1}'"
                                                             for b in c["buffs"])), x + 90, py_ + 21, 7, "#6A994E")

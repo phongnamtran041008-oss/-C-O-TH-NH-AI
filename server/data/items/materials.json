@@ -179,5 +179,65 @@
   "kind": "material",
   "sell_price": 5,
   "desc_vi": "Lá bùa phong ấn linh thú. Khi linh thú đã chịu phục (đủ số lần Phản Đòn), đứng gần nó bấm E để thu. Mở ở Luyện Khí tầng 3 trên Đạo Thụ; bán ở Sạp Tạp Hóa."
+ },
+ "tay_linh_thao": {
+  "name_vi": "Tẩy Linh Thảo",
+  "kind": "herb",
+  "sell_price": 4,
+  "desc_vi": "Cỏ mọc ven suối linh khí, lá trong như nước. Vân Xà, Tri Chu Tinh, Đầu Tử Oa và Tâm Ma hay giữ; Bà Chủ Sạp có bán ít. Nguyên liệu chính của Tẩy Linh Đan."
+ },
+ "linh_tuy_tinh": {
+  "name_vi": "Linh Tủy Tinh",
+  "kind": "material",
+  "sell_price": 10,
+  "desc_vi": "Tinh tủy đọng trong xương yêu thú tinh anh (Phong Lang, Hồ Lô Tinh, Mộc Yêu, Ma Trận Thú). Dùng luyện Tẩy Tủy Đan và các đan tẩy linh cao hơn."
+ },
+ "thien_linh_qua": {
+  "name_vi": "Thiên Linh Quả",
+  "kind": "herb",
+  "sell_price": 25,
+  "desc_vi": "Quả trăm năm mới chín một lần, Cơ Quan Nhân và Tâm Ma Chấp Niệm hay giữ. Nguyên liệu của Thiên Linh Đan trở lên."
+ },
+ "loi_kiep_tinh_hach": {
+  "name_vi": "Lôi Kiếp Tinh Hạch",
+  "kind": "material",
+  "sell_price": 60,
+  "desc_vi": "Lõi sét đông lại trong thân Thiên Kiếp Lôi Long. Nguyên liệu của Tạo Hóa Đan và Hỗn Độn Khai Thiên Đan."
+ },
+ "hon_don_thach": {
+  "name_vi": "Hỗn Độn Thạch",
+  "kind": "material",
+  "sell_price": 150,
+  "desc_vi": "Hòn đá xám không phản chiếu ánh sáng, hiếm khi rơi ra từ Thiên Kiếp Lôi Long. Chỉ Hỗn Độn Khai Thiên Đan dùng tới."
+ },
+ "dp_tay_linh": {
+  "name_vi": "Đan phương: Tẩy Linh Đan",
+  "kind": "recipe",
+  "recipe": "tay_linh_dan",
+  "desc_vi": "Ghi cách luyện Tẩy Linh Đan để trắc linh lại ở Trắc Linh Đài. Giữ trong túi là luyện được mãi, không mất."
+ },
+ "dp_tay_tuy": {
+  "name_vi": "Đan phương: Tẩy Tủy Đan",
+  "kind": "recipe",
+  "recipe": "tay_tuy_dan",
+  "desc_vi": "Ghi cách luyện Tẩy Tủy Đan để trắc linh lại ở Trắc Linh Đài. Giữ trong túi là luyện được mãi, không mất."
+ },
+ "dp_thien_linh": {
+  "name_vi": "Đan phương: Thiên Linh Đan",
+  "kind": "recipe",
+  "recipe": "thien_linh_dan",
+  "desc_vi": "Ghi cách luyện Thiên Linh Đan để trắc linh lại ở Trắc Linh Đài. Cần Trúc Cơ mới luyện được. Giữ trong túi là luyện được mãi, không mất."
+ },
+ "dp_tao_hoa": {
+  "name_vi": "Đan phương: Tạo Hóa Đan",
+  "kind": "recipe",
+  "recipe": "tao_hoa_dan",
+  "desc_vi": "Ghi cách luyện Tạo Hóa Đan để trắc linh lại ở Trắc Linh Đài. Cần Kết Đan mới luyện được. Giữ trong túi là luyện được mãi, không mất."
+ },
+ "dp_khai_thien": {
+  "name_vi": "Đan phương: Hỗn Độn Khai Thiên Đan",
+  "kind": "recipe",
+  "recipe": "khai_thien_dan",
+  "desc_vi": "Ghi cách luyện Hỗn Độn Khai Thiên Đan để trắc linh lại ở Trắc Linh Đài. Cần Hóa Thần mới luyện được. Giữ trong túi là luyện được mãi, không mất."
  }
 }

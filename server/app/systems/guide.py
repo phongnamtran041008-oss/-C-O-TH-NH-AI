@@ -88,6 +88,7 @@ CHECKS: dict[str, tuple[frozenset, frozenset]] = {
     "code_solved": (frozenset({"count"}), frozenset()),
     "skills_unlocked": (frozenset({"count"}), frozenset()),
     "realm": (frozenset({"target"}), frozenset()),
+    "linh_can": (frozenset(), frozenset()),          # the first test at the Trắc Linh Thạch is done
 }
 STEP_KEYS = {"id", "title_vi", "desc_vi", "how_vi", "check", "goto", "help", "optional", "rewards"}
 TEMPLATE_KEYS = {"title_vi", "desc_vi", "how_vi", "goto", "help"}
@@ -465,6 +466,10 @@ class Facts:
             return int(have in ids and c["target"] in ids and ids.index(have) >= ids.index(c["target"])), 1
         if kind == "tree_stage":
             return self._tree_stage(c["realm"], c["stage"])
+        if kind == "linh_can":
+            from ..models import LinhCan
+            row = await self.db.get(LinhCan, self.user_id)
+            return int(row is not None and row.root_id is not None), 1
         n = await self.count(c)
         return min(n, c["count"]), c["count"]
 

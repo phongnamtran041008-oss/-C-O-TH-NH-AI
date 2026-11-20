@@ -90,7 +90,8 @@ async def create_session(db: AsyncSession, user: User, context: str, question: Q
         raise LookupError(f"no grader registered for question type {question.qtype!r}")
     now = clock.now()
     from ..systems import buffs
-    extra = buffs.extra_seconds(user, now)        # Ngộ Tính Đan (stage 8): more time to think
+    from ..systems import linh_can                # and a linh căn of the calm mind (q_time)
+    extra = buffs.extra_seconds(user, now) + await linh_can.value_db(db, user.id, "q_time")
     if extra and question.time_limit:
         question.time_limit = float(question.time_limit) + extra
     grace = balance.quiz()["network_grace"]
@@ -129,8 +130,9 @@ async def answer(db: AsyncSession, user: User, session_id: str, given: dict | No
     if correct:  # Tu Vi: right answers anywhere are the main source (spec 7.3)
         from ..systems import buffs, cultivation, quests
         amount = base_xp(s)
-        if amount:   # Tụ Linh Đan (stage 8)
-            amount = int(round(amount * buffs.xp_mult(user, now)))
+        if amount:   # Tụ Linh Đan (stage 8), and the linh căn's xp_pct
+            from ..systems import linh_can
+            amount = int(round(amount * buffs.xp_mult(user, now) * (1 + await linh_can.value_db(db, user.id, "xp_pct"))))
         info = await cultivation.add_xp(db, user.id, amount, s.context) if amount else None
         if info:
             extra["xp"] = info

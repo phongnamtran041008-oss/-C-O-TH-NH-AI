@@ -621,6 +621,24 @@ Thu rồi linh thú là một Linh Thú như con giáp: `GET /pets` liệt kê n
 Phong Ấn Phù (`phong_an_phu`) bán ở Sạp Tạp Hóa (`GET /shop`). Thần thông (pháp trận, Đạp Kiếm Lướt, cưỡi) đi
 qua WebSocket: `docs/PROTOCOL.md`.
 
+### Linh căn và Trắc Linh Đài
+
+Dữ liệu `server/data/linh_can.json`, luật `server/app/systems/linh_can.py`, thiết kế và bảng đầy đủ ở
+`docs/LINH_CAN.md`. Một gốc linh căn (`root`) có dạng `{id, name_vi, short_vi, giai, giai_index (1..9), giai_vi,
+color, he[], he_vi[], loai, loai_vi, effects[{type, value, text_vi}], effects_vi[], desc_vi, lore_vi}`.
+
+| | Đường | Gửi | Trả về |
+|---|---|---|---|
+| GET | `/linh-can` | — | `{awakened, root, pending, pending_pill, rolls, cap{giai, index, name_vi}, giai[], pills[], awaken_odds[], book[], discovered, total}`. `root`/`pending`: gốc đang mang / gốc vừa trắc chờ chọn (`null` nếu không có). `giai`: chín giai `{id, index, name_vi, color, open, need_vi, count}`; `open` = nằm trong trần của cảnh giới, `need_vi` = tu vi mở giai ấy. `pills`: `{id, name_vi, desc_vi, have, odds[{giai, p}], base_odds[], pity{every, floor, floor_vi, count, left}, recipe_item, recipe_vi, know_recipe}`; `odds` là tỉ lệ thật khi dùng (đã cắt theo trần), `base_odds` là tỉ lệ gốc của đan. `book`: mọi linh căn `{id, giai, giai_index, discovered}`, linh căn đã gặp có thêm toàn bộ trường của `root` |
+| POST | `/linh-can/awaken` | — | lần trắc linh đầu, miễn phí: `{root, first: true, view}` (`view` = như `GET`). Lỗi `already_awakened` (400), `no_character` (404) |
+| POST | `/linh-can/roll` | `{pill}` | dùng một viên đan tẩy linh: `{rolled, same, pity_hit, old, view}`. Ra đúng gốc đang mang thì `same: true`, giữ luôn; khác thì gốc mới nằm ở `pending`. Lỗi (400): `not_awakened`, `pending_choice` (còn gốc chờ chọn, không tốn đan), `no_pill` (không có đan, hoặc tên đan lạ: 404) |
+| POST | `/linh-can/choose` | `{keep}` | `keep: true` giữ gốc cũ, `false` nhận gốc mới: `{root, took, view}`. Lỗi `no_pending` (400) |
+
+`GET /cultivation` có thêm `linh_can`: `{id, name_vi, giai, giai_index, giai_vi, color, effects_vi[]}` hoặc `null`;
+`stats` có thêm `lc` (chỉ số giai, 0 = chưa trắc) và `lc_fx` (`{type: value}` các hiệu ứng không phải chỉ số; công,
+thủ, sinh lực, linh lực, bạo kích đã cộng thẳng vào `stats`). Đan tẩy linh không dùng ở túi: `POST /inventory/use`
+trả `linh_can_pill` (400), `GET /inventory` ghi `usable: false`.
+
 ## M10 — Cơ duyên (sự kiện ngẫu nhiên sau câu đúng)
 
 Dữ liệu: `server/data/math/fortune.json` (`_comment` giải thích từng trường). Mã: `app/systems/math_fortune.py`.

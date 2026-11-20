@@ -1439,3 +1439,25 @@ Chủ dự án: binh khí rơi từ quái phải phát sáng nhẹ, mỗi phẩm
   Hình vào thì chỉ đổi `status` (test `test_flipping_the_status_is_the_only_change_needed`). Riêng client:
   `client/scenes/world.py` `PLAN_WEAPON_RANGE` / `PLAN_WEAPON_LOOK` (ngắm tự động, hình vẽ bằng code khi tắt v2) do
   người làm hiệu ứng giữ, cần thêm sáu dòng; thiếu thì loại ấy ngắm với tầm mặc định.
+## 2026-11-20: linh căn và đan tẩy linh
+
+Tác giả: làm linh căn thật nhiều loại, mỗi loại một công dụng, chia giai từ Phàm tới các giai cao nhất của
+truyện tu tiên; quay bằng đan dược, đan phải cần nguyên liệu. Chi tiết: `docs/LINH_CAN.md`.
+
+- **Chín giai, 52 linh căn, 31 loại hiệu ứng.** Phàm, Hoàng, Huyền, Địa, Thiên, Thánh, Tiên, Thần, Hỗn Độn
+  (9/8/8/7/6/5/4/3/2 linh căn). Mỗi loại hiệu ứng có chỗ áp dụng thật ở máy chủ (`linh_can.SITES`) và một test;
+  `validate()` từ chối loại không có chỗ áp dụng. Hiệu ứng đầu của một linh căn là hiệu ứng chính, trong một
+  giai không trùng nhau. Số nhỏ ở giai thấp (2-6%), giai cao nhất mỗi dòng khoảng 10-26%, nhưng nhiều dòng hơn.
+- **Hiệu ứng vào thế giới qua `stats`**: `cultivation.current_stats` gọi `linh_can.apply_stats` sau trang bị và
+  Linh Thú, nên mọi chỗ đang đọc chỉ số (máu tối đa, công, client) tự thấy; các hiệu ứng còn lại đi trong
+  `stats.lc_fx`. Không cần trường mới trên `Player`.
+- **Trần theo cảnh giới tu luyện** (trục của `loot.py`, không phải Đạo Thụ): Phàm Nhân tới Luyện Khí 3 tối đa
+  Huyền, tầng 4-6 Địa, 7-9 Thiên, Trúc Cơ Thánh, Kết Đan Tiên, Nguyên Anh Thần, Hóa Thần trở lên Hỗn Độn. Quay
+  vượt trần thì quay lại trong trần (chia lại tỉ lệ). Bảo hiểm tính riêng cho từng đan, sàn bị cắt theo trần.
+- **Lần đầu miễn phí**, bước tuỳ chọn `g_linh_can` của chương Thực Chiến trong Lộ Trình. Đan tẩy linh chỉ dùng ở
+  Trắc Linh Đài (phím C); ra đúng linh căn đang mang thì giữ luôn, không hỏi.
+- **Năm viên đan** (Tẩy Linh, Tẩy Tủy, Thiên Linh, Tạo Hóa, Hỗn Độn Khai Thiên) luyện ở lò đan; đan phương bán ở
+  kệ Tàng Thư Các (300 tới 30000 linh thạch), nguyên liệu mới rơi từ quái các vùng đất (mọi món có mốc trong
+  `loot_tiers.json`, không vượt trần của vùng); Tẩy Linh Thảo bán thêm ở Sạp Tạp Hóa (30 linh thạch, 6 mỗi ngày).
+- **Hình**: ba họ FX `linh_can_<1..9>`, `linh_can_tru_<1..9>`, `trac_linh_thach` đang được dựng; khi chưa có thì
+  dùng `dot_pha`, hào quang cảnh giới và hai đạo cụ (bệ đá, tinh thạch). Chưa ghi tên chúng vào `wiring.json`.

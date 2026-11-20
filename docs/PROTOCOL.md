@@ -252,6 +252,10 @@ trong vòng tick.
   chạy theo sau người đó (hình lấy từ `looks` của `GET /pets`). Đổi pet thì máy chủ gửi lại `add` của người đó cho mọi
   người đang nhìn thấy. Phiên bản giao thức không đổi (trường mới, client cũ bỏ qua).
 - Thông báo bạn bè mới: `{t: "friend", event: "gift", item, name_vi, qty, user{uid, name}}`.
+- **Linh căn (2026-11-20):** thực thể người chơi trong `snap.add` có thêm `"lc"`: chỉ số giai của linh căn đang
+  mang (1 Phàm … 9 Hỗn Độn, 0 = chưa trắc linh) để client vẽ một dấu theo màu giai (màu ở `GET /linh-can` →
+  `giai[].color`). Đổi linh căn thì máy chủ gửi lại `add` của người đó cho mọi người đang nhìn thấy, và gửi
+  `stats` cho chính người đó; `stats.stats` có `lc` và `lc_fx` (`docs/API.md`). Phiên bản giao thức không đổi.
 - Kháng Mực Đan đang có hiệu lực làm Mặc Kích nhẹ đi ngay (máy chủ giữ hạn của bùa theo đồng hồ của vòng thế giới).
 
 ## Giai đoạn 9 — Tổ đội và bí cảnh (giao thức bản 5)

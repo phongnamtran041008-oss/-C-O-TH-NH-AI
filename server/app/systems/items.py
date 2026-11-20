@@ -108,7 +108,7 @@ async def inventory_view(db: AsyncSession, user: User) -> dict:
         items.append({"item_id": iid, "qty": qty, "name_vi": info.get("name_vi", iid), "kind": info.get("kind"),
                       "desc_vi": info.get("desc_vi", ""),
                       "usable": info.get("kind") == "note" or (info.get("kind") == "pill"
-                      and info.get("effect") not in ("breakthrough", "bee_food")),
+                      and info.get("effect") not in ("breakthrough", "bee_food", "linh_can")),
                       "sell_price": info.get("sell_price")})
     eq = (await db.execute(select(EquipmentInstance).where(EquipmentInstance.user_id == user.id)
                            .order_by(EquipmentInstance.id))).scalars().all()
@@ -209,6 +209,8 @@ async def use(db: AsyncSession, user: User, item_id: str) -> dict:
         return await _take_buff(db, user, item_id, info)
     if info.get("kind") == "pill" and info.get("effect") == "bee_food":
         raise ItemError(400, "bee_food", "Đan này để cho ong ăn: mở Linh Phong Sào, chọn ong rồi cho ăn.")
+    if info.get("kind") == "pill" and info.get("effect") == "linh_can":
+        raise ItemError(400, "linh_can_pill", "Đan tẩy linh dùng ở Trắc Linh Đài: bấm phím C rồi chọn đan để trắc linh lại.")
     raise ItemError(400, "not_usable", "Vật phẩm này không dùng trực tiếp được.")
 
 

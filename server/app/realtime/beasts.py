@@ -120,7 +120,8 @@ def on_parry(ch: "ChannelZone", m, p: "Player", now: float) -> dict | None:
     """A Phản Đòn against a beast: count it; at the plan's number the beast yields to this player."""
     if not isinstance(m, Beast) or not m.alive:
         return None
-    need = m.need
+    from ..systems import linh_can   # a linh căn of the beast-taming path needs fewer (tame)
+    need = max(1, m.need - int(linh_can.fx(p, "tame")))
     n = m.parries.get(p.user_id, 0) + 1
     done = n >= need
     if done:

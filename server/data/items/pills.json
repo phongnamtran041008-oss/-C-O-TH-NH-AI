@@ -25,5 +25,15 @@
   "dai_thua_dan": {"name_vi": "Đại Thừa Đan", "effect": "breakthrough", "realm": "dai_thua", "sell_price": 1400,
                    "desc_vi": "Cần để đột phá Đại Thừa. Chỉ mất khi vượt Thiên Kiếp thành công."},
   "phong_vuong_dan": {"name_vi": "Phong Vương Đan", "effect": "bee_food", "sell_price": 12,
-                      "desc_vi": "Cho một con ong ăn ở tổ: rất nhiều kinh nghiệm và thân thiết."}
+                      "desc_vi": "Cho một con ong ăn ở tổ: rất nhiều kinh nghiệm và thân thiết."},
+  "tay_linh_dan": {"name_vi": "Tẩy Linh Đan", "effect": "linh_can", "sell_price": 4,
+                  "desc_vi": "Gột rửa linh căn một lần ở Trắc Linh Đài (phím C). Phần lớn ra Phàm, Hoàng, Huyền giai; mười lần chưa ra Huyền giai thì lần thứ mười chắc chắn ra."},
+  "tay_tuy_dan": {"name_vi": "Tẩy Tủy Đan", "effect": "linh_can", "sell_price": 12,
+                 "desc_vi": "Tẩy cả tủy cốt rồi trắc linh lại ở Trắc Linh Đài (phím C). Hay ra Hoàng, Huyền, Địa giai; mười lần chắc có một lần Địa giai."},
+  "thien_linh_dan": {"name_vi": "Thiên Linh Đan", "effect": "linh_can", "sell_price": 40,
+                    "desc_vi": "Đan của nội môn, dùng ở Trắc Linh Đài (phím C). Không còn ra Phàm giai; mười lần chắc có một lần Thiên giai."},
+  "tao_hoa_dan": {"name_vi": "Tạo Hóa Đan", "effect": "linh_can", "sell_price": 120,
+                 "desc_vi": "Mượn tay tạo hóa nặn lại linh căn, dùng ở Trắc Linh Đài (phím C). Thấp nhất Huyền giai; mười lần chắc có một lần Thánh giai."},
+  "khai_thien_dan": {"name_vi": "Hỗn Độn Khai Thiên Đan", "effect": "linh_can", "sell_price": 400,
+                    "desc_vi": "Đan của truyền thuyết, dùng ở Trắc Linh Đài (phím C). Thấp nhất Địa giai, có cơ hội chạm Hỗn Độn; tám lần chắc có một lần Tiên giai."}
 }

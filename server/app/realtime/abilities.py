@@ -151,8 +151,14 @@ def request_glide(p: "Player | None", seq: int, x: float, y: float, now: float) 
     if not p.channel.queue_special(p, seq, None if code else ("glide", float(x), float(y))):
         return "cannot"
     if code is None:
-        p.glide_ready = now + float(glide_cfg().get("cooldown_seconds", 2.5))
+        p.glide_ready = now + glide_cooldown(p)
     return code
+
+
+def glide_cooldown(p: "Player") -> float:
+    """Đạp Kiếm Lướt's cooldown, less the linh căn's glide_cd."""
+    from ..systems import linh_can
+    return float(glide_cfg().get("cooldown_seconds", 2.5)) * (1 - linh_can.fx(p, "glide_cd"))
 
 
 def check_glide(ch: "ChannelZone", x0: float, y0: float, x1: float, y1: float) -> str | None:
@@ -210,7 +216,8 @@ def place_formation(p: "Player | None", now: float) -> str | None:
     c = formation_cfg()
     ch = p.channel
     ch.formations = [f for f in ch.formations if f["until"] > now and f["by"] != p.eid]
-    secs = float(c.get("seconds", 20))
+    from ..systems import linh_can   # a linh căn of the formation path keeps it standing longer
+    secs = float(c.get("seconds", 20)) * (1 + linh_can.fx(p, "tran_time"))
     ch.formations.append({"x": p.x, "y": p.y, "r": float(c.get("radius_px", 56)), "until": now + secs,
                           "by": p.eid, "mult": float(c.get("windup_mult", 1.5))})
     p.tran_ready = now + float(c.get("cooldown_seconds", 30))
@@ -245,7 +252,7 @@ def view(p: "Player", now: float) -> dict | None:
         out[uid] = {"ok": is_open(p, uid), "name_vi": u.get("name_vi", uid),
                     "unlock": {"realm": u.get("realm"), "stage": int(u.get("stage", 0))}}
     out[GLIDE].update(max_px=float(g.get("max_px", 80)), min_px=float(g.get("min_px", 0)),
-                      ms=float(g.get("ms", 450)), cooldown=float(g.get("cooldown_seconds", 2.5)),
+                      ms=float(g.get("ms", 450)), cooldown=glide_cooldown(p),
                       over=list(g.get("over_tiles", [])), sheet=g.get("sheet", ""))
     out[FORMATION].update(radius=float(f.get("radius_px", 56)), seconds=float(f.get("seconds", 20)),
                           cooldown=float(f.get("cooldown_seconds", 30)), fx=f.get("fx", ""))

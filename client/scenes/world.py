@@ -2646,6 +2646,7 @@ class WorldScene(Scene):
                                       ("hud_char", T.HUD_CHAR, pygame.K_k, g.open_char),
                                       ("hud_book", T.HUD_BOOK, pygame.K_b, g.open_book),
                                       ("hud_pets", T.HUD_PETS, pygame.K_o, g.open_pets),
+                                      ("hud_linh_can", T.HUD_LINH_CAN, pygame.K_c, g.open_linh_can),
                                       ("hud_bag", T.HUD_BAG, pygame.K_TAB, g.open_bag),
                                       ("hud_party", T.HUD_PARTY, pygame.K_y, g.open_party)]:
             w = ui.text_size(lbl, 8)[0] + 10

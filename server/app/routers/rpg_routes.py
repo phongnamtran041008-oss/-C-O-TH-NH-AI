@@ -69,6 +69,8 @@ async def cultivation_view(user: User = Depends(current_user), db: AsyncSession 
     out["buffs"] = buffs.view(user, clock.now())          # stage 8: pill buffs and the worn Linh Thú
     worn = await pets.worn(db, user.id)
     out["pet"] = pets.view(worn) if worn else None
+    from ..systems import linh_can                         # the root carried (Trắc Linh Đài), or None
+    out["linh_can"] = linh_can.brief(await linh_can.root_of(db, user.id))
     await db.commit()
     return out
 

@@ -47,7 +47,7 @@ from .. import db as dbm
 from ..config import DATA_DIR
 from ..learning import math_items, math_path, math_tree, quiz
 from ..models import MathAnswer, QuizSession, User
-from . import math_combat, math_practice, math_tree_progress
+from . import linh_can, math_combat, math_practice, math_tree_progress
 
 if TYPE_CHECKING:
     from ..realtime.zone import ChannelZone, Player
@@ -251,10 +251,22 @@ def is_fast(answer_ms: int | None, limit: float) -> bool:
     return answer_ms is not None and answer_ms <= c["fast_answer_fraction"] * limit * 1000
 
 
-def damage(base: float, sk: dict, streak_before: int, fast: bool) -> float:
-    """base_damage x power x combo x fast-answer crit (skills.json _comment)."""
+def damage(base: float, sk: dict, streak_before: int, fast: bool, p=None) -> float:
+    """base_damage x power x combo x fast-answer crit (skills.json _comment), x the caster's
+    linh căn bonus for the chiêu's element (chieu_<element>) when the caster is given."""
     crit = float(balance.load("combat")["fast_answer_crit_mult"]) if fast else 1.0
-    return base * float(sk["power"]) * combo_mult(streak_before) * crit
+    elem = linh_can.chieu_mult(p, sk.get("element")) if p is not None else 1.0
+    return base * float(sk["power"]) * combo_mult(streak_before) * crit * elem
+
+
+def qi_cost(p, sk: dict) -> float:
+    """The linh lực of a cast: the chiêu's own, less the linh căn's qi_cost."""
+    return float(sk["qi"]) * (1 - linh_can.fx(p, "qi_cost"))
+
+
+def cooldown(p, sk: dict) -> float:
+    """The cooldown of a cast: the chiêu's own, less the linh căn's chieu_cd."""
+    return float(sk["cooldown"]) * (1 - linh_can.fx(p, "chieu_cd"))
 
 
 # ------------------------------------------------------------------ which question
@@ -347,7 +359,7 @@ def _ready_code(p: "Player", k: str, eid: str | None, now: float) -> str | None:
     sk = skills()[k]
     if now < p.mskill_ready.get(k, 0.0):
         return "cooldown"
-    if p.qi < sk["qi"]:
+    if p.qi < qi_cost(p, sk):
         return "no_qi"
     return _target_code(p, sk, eid)[1]
 
@@ -413,8 +425,8 @@ async def _cast_free(p: "Player", ch: "ChannelZone", k: str, eid: str | None) ->
         return
     from ..realtime import combat
     m = _target_code(p, sk, eid)[0]
-    p.qi -= sk["qi"]
-    p.mskill_ready[k] = now + float(sk["cooldown"])
+    p.qi -= qi_cost(p, sk)
+    p.mskill_ready[k] = now + cooldown(p, sk)
     if m is not None:
         dx, dy = m.x - p.x, m.y - p.y
         p.facing = ("right" if dx > 0 else "left") if abs(dx) > abs(dy) else ("down" if dy > 0 else "up")
@@ -426,7 +438,7 @@ async def _cast_free(p: "Player", ch: "ChannelZone", k: str, eid: str | None) ->
     if sk["effect"] in ("area", "ward"):
         ev["r"] = sk["radius"]
     out = _land(p, ch, k, sk, m, ev, now, streak=p.mcombo, fast=False, combo=p.mcombo, may_break=False)
-    p.session.send({"t": "mcast", "k": k, "ok": True, "ready_in": float(sk["cooldown"]), "qi": round(p.qi, 1),
+    p.session.send({"t": "mcast", "k": k, "ok": True, "ready_in": cooldown(p, sk), "qi": round(p.qi, 1),
                     "free": True, "result": out})
 
 
@@ -480,8 +492,8 @@ async def _create(p: "Player", ch: "ChannelZone", k: str, eid: str | None) -> No
         refuse(p, k, code)
         return   # the question is never shown; it simply expires
     m = ch.monster(mid) if mid else None
-    p.qi -= sk["qi"]
-    p.mskill_ready[k] = now + float(sk["cooldown"])
+    p.qi -= qi_cost(p, sk)
+    p.mskill_ready[k] = now + cooldown(p, sk)
     limit = float(question.time_limit)
     deadline = now + limit + balance.quiz()["network_grace"]
     p.question = {"sid": out["session_id"], "mid": mid, "deadline": deadline, "asked": now, "limit": limit,
@@ -493,7 +505,7 @@ async def _create(p: "Player", ch: "ChannelZone", k: str, eid: str | None) -> No
         dx, dy = m.x - p.x, m.y - p.y
         p.facing = ("right" if dx > 0 else "left") if abs(dx) > abs(dy) else ("down" if dy > 0 else "up")
         combat.engage(ch, m, p, now)
-    p.session.send({"t": "mcast", "k": k, "ok": True, "ready_in": float(sk["cooldown"]),
+    p.session.send({"t": "mcast", "k": k, "ok": True, "ready_in": cooldown(p, sk),
                     "qi": round(p.qi, 1)})
     p.session.send({"t": "q", "mid": mid, "q": out, "first_meet": False,
                     "cast": {"k": k, "name_vi": sk["name_vi"]}})
@@ -566,7 +578,7 @@ def _land(p: "Player", ch: "ChannelZone", k: str, sk: dict, m, ev: dict, now: fl
         combat.break_shield(ch, m, p, now)
     if sk["effect"] == "area":
         m.slow_until, m.slow_mult = now + sk["duration"], sk["slow"]
-    dealt = combat.hurt_monster(ch, m, p, damage(combat.base_damage(p, m), sk, streak, fast), fast, now)
+    dealt = combat.hurt_monster(ch, m, p, damage(combat.base_damage(p, m), sk, streak, fast, p), fast, now)
     if sk["effect"] == "area":
         cx, cy = ev["tx"], ev["ty"]
         for o in list(ch.monsters):
@@ -574,7 +586,7 @@ def _land(p: "Player", ch: "ChannelZone", k: str, sk: dict, m, ev: dict, now: fl
                 continue
             o.slow_until, o.slow_mult = now + sk["duration"], sk["slow"]
             combat.engage(ch, o, p, now)
-            combat.hurt_monster(ch, o, p, damage(combat.base_damage(p, o), sk, streak, fast), fast, now)
+            combat.hurt_monster(ch, o, p, damage(combat.base_damage(p, o), sk, streak, fast, p), fast, now)
     ch.event(**ev)
     return _block(k, correct=True, damage=int(round(dealt)), crit=fast, combo=combo, combo_mult=mult,
                   shield_broken=broke, monster_hp=max(0, m.hp_pct()), killed=not m.alive)

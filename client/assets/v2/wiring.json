@@ -234,7 +234,17 @@
       "tinh_so_phuc": ["misc", "linh_thach_3"],
       "loi_ma_tran": ["misc", "linh_thach_3"],
       "an_ruong_de": ["misc", "chia_khoa"],
-      "phong_an_phu": ["misc", "phong_an_phu"]
+      "phong_an_phu": ["misc", "phong_an_phu"],
+      "tay_linh_dan": ["dan_duoc", "binh_4"],
+      "tay_tuy_dan": ["dan_duoc", "binh_5"],
+      "thien_linh_dan": ["dan_duoc", "dan_7"],
+      "tao_hoa_dan": ["dan_duoc", "binh_7"],
+      "khai_thien_dan": ["dan_duoc", "binh_8"],
+      "tay_linh_thao": ["linh_thao", "lan_nguyet"],
+      "linh_tuy_tinh": ["linh_thao", "sen_ngoc"],
+      "thien_linh_qua": ["linh_thao", "qua_tinh"],
+      "loi_kiep_tinh_hach": ["linh_thao", "day_loi"],
+      "hon_don_thach": ["misc", "linh_thach_3"]
     },
     "by_weapon": {
       "sword": ["weapons_a", "kiem_1"], "brush": ["weapons_b", "truong_1"], "staff": ["weapons_b", "truong_1"],
