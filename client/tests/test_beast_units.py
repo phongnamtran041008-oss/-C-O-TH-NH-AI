@@ -42,7 +42,7 @@ def test_the_client_picks_the_landing_the_server_accepts():
 
 def test_every_built_beast_has_its_own_sheet_with_the_fight_clips():
     built = [b for b in PLAN["beasts"] if b["status"] == "co"]
-    assert len(built) == 5
+    assert len(built) == 11      # the five of Thien Dia Do + the six of the bestiary (2026-11-20)
     for b in built:
         s = petfollow.sheet(b["id"])
         assert s is not None and s.id == b["id"], b["id"]
