@@ -484,10 +484,10 @@
         "Đeo nó ở bảng Linh Thú (phím O). Linh Hồ đánh hơi binh khí ở gần, Huyền Quy đỡ bớt đòn khi trả lời sai.",
         "Bạch Hạc làm Né Đòn hồi nhanh hơn, Hỏa Tước thêm lửa vào đòn phản, Tiểu Long cho con cưỡi.",
         "Tầng 5, Bày pháp trận (phím T): quái đứng trong trận ra đòn chậm lại, dễ né và dễ Phản Đòn hơn.",
-        "Tầng 6, Đạp Kiếm Lướt (phím G): lướt trên kiếm qua vực và mặt nước, theo hướng con đang đi.",
-        "Có binh khí nằm sau vực, trên thác: chỉ lướt mới tới. Hỏa Tước cũng làm tổ ở một nơi như thế.",
+        "Tầng 6, Đạp Kiếm Lướt (phím G): chạm G để lướt qua vực; giữ G để ngự kiếm bay, phím hướng để lái.",
+        "Bay tới khi cạn kiếm khí, G lần nữa để hạ. Binh khí, tổ Hỏa Tước sau vực, trên thác: lướt hay bay mới tới.",
         "Tầng 8, Cưỡi linh thú (phím R): đeo Tiểu Long rồi bấm R để cưỡi và đi nhanh hơn; bấm lại để xuống.",
-        "Trong bí cảnh không có linh thú và không dùng được thần thông."
+        "Trên không không đánh được, đòn quái cũng trượt. Trong bí cảnh không có linh thú, không dùng thần thông."
       ]
     },
     {
@@ -515,7 +515,7 @@
         "Đọc Tàng Thư: Trái, Phải đổi mục; PageUp, PageDown, Space hoặc mũi tên lên xuống để cuộn; Esc đóng.",
         "Trong Đạo Thụ: Trái, Phải đổi thẻ nhánh; lên, xuống hoặc lăn chuột để cuộn danh sách nút.",
         "Ngoài làng: Space đánh quái gần nhất, phím 1 đến 6 ra chiêu thức, Shift để Né Đòn.",
-        "Thần thông khi đã mở: T bày pháp trận, G Đạp Kiếm Lướt, R cưỡi linh thú, E để phong ấn linh thú.",
+        "Thần thông: T bày pháp trận, G lướt (giữ G: ngự kiếm bay), R cưỡi linh thú, E phong ấn linh thú.",
         "Muốn xuống Trúc Lâm Thôn: đi xuống phía nam Động Phủ tới cổng tre rồi bấm E."
       ]
     },

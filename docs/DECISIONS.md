@@ -1486,3 +1486,33 @@ truyện tu tiên; quay bằng đan dược, đan phải cần nguyên liệu. C
 - **Chỗ tác dụng của quà**, mỗi chỗ một lời gọi: `combat.parry_heal` trong `_parry`, `beasts.loot_gift` cuối
   `combat._loot_bonus`, `beasts.stat_gift` trong `cultivation.current_stats` (sau `stats_for`), nhánh `xp_bonus`
   trong `pets.on_math_answer`, `abilities.glide_max_px` cho lướt và cho số gửi client.
+
+## 2026-11-20: ngự kiếm phi hành - bay thật trên kiếm
+
+- **Hai bậc của một thần thông**, số trong khối `flight` của `dap_kiem_luot` (bậc 1) và `ngu_kiem_phi_hanh`
+  (bậc 2). Bậc 1: ×1,5 tốc độ đi, cao 18 px, kiếm khí 4 giây, hồi đầy 6 giây trên đất, cần 1 giây để bay. Bậc 2:
+  ×2,1, cao 30 px, không cạn. Kim Sí Điểu (`glide_range`) dài thanh thêm 40%; linh căn `glide_cd` hồi nhanh hơn
+  (cùng tỉ lệ rút ngắn hồi lướt).
+- **Phím**: chạm G = cú lướt cũ (nay vẽ thành một cú nhảy có bóng); giữ G 0,22 giây = bay lên (thời gian giữ
+  là nhịp "ngồi thụp" của nhân vật); đang bay, G = hạ. Giữ được phím G quen thuộc, không thêm phím mới.
+- **Máy chủ quyết**: bay lên / hạ xuống đi trong dòng `in` như lướt và cưỡi; mỗi bước bay kiểm bằng
+  `glide.fly_step` (bản chép ở client, test so từng dòng). Chỉ hạ xuống ô đứng được; cạn kiếm khí trên nước thì
+  đưa về điểm đất cuối cùng vừa bay qua (không phải chỗ cất cánh: công bằng hơn khi đã bay dài trên đất).
+  Kiếm khí trừ theo đồng hồ máy chủ, không theo bước gửi lên, nên client không treo trên nước được bằng cách
+  ngừng gửi.
+- **Giữa trận**: trên không không đánh, không chiêu, không Né Đòn, không bày trận, không cưỡi, không phong ấn;
+  đòn quái trượt qua và quái không nhắm người bay. Để bay không thành lối thoát miễn phí: không bay khi đang có
+  câu hỏi (cốt lõi "trả lời dưới áp lực" giữ nguyên), khoá 1,5 giây sau khi trúng đòn, và 0,3 giây đầu (bậc 2:
+  0,4) vẫn ở tầm đòn - trúng lúc ấy thì rơi khỏi kiếm và câu hỏi vẫn tới. Phải thấy vùng đỏ sớm, như Né Đòn.
+- **Ở đâu**: mọi vùng đất và làng (người khác xem được); không trong bí cảnh. Nói chuyện, nhặt binh khí, câu cá
+  cần hạ kiếm (client chặn; phong ấn máy chủ chặn). Đổi vùng qua cổng khi đang bay: tới nơi đứng trên đất. Rớt
+  mạng, đổi kênh: hạ xuống (về bờ nếu đang trên nước); vị trí lưu luôn là đất dưới chân.
+- **Ngự Kiếm Phi Hành `co` trước vùng đất của nó**: bộ kiểm cho hai mở khoá ngự kiếm `co` sớm (`FLIGHT_UNLOCKS`).
+  Ba chỗ `truong_2_*` vẫn đóng vì `weapons.missing` nay nói vùng đất chưa dựng; Kỳ Lân Con vẫn `chua_co`.
+- **Phi kiếm theo cảnh giới** (`flight.swords`): `phi_kiem_1` tới hết Trúc Cơ, `phi_kiem_2` từ Kết Đan,
+  `phi_kiem_3` từ Hóa Thần; máy chủ gửi tên phi kiếm trong bản ghi người bay (`fs`) và sự kiện (`sw`).
+- **Hình** (client `engine/flight.py`, trên `engine/vfx.py`): bóng `phi_bong` trên đất nhỏ và nhạt dần theo độ
+  cao (vẽ hai lớp cho đọc được trên nước, đá; trên mực và đá thêm vòng sáng kiếm mờ), `phi_vet` từ đuôi kiếm khi
+  di chuyển (dài theo tốc độ, ngắn lại khi bay lên/xuống màn hình), `phi_gio` sau lưng khi nhanh, `phi_may` dưới
+  kiếm, đốm linh quang, bọt nước khi bay trên mặt nước, vòng `phi_cat_canh` / `phi_ha_canh`, máy quay dẫn trước
+  hướng bay và nhún nhẹ khi đáp. Người bay sắp xếp theo hàng đất cộng độ cao nên bay ngang qua đầu quái.
