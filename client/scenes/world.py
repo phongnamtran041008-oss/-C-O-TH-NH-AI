@@ -179,9 +179,10 @@ def weapon_icon_ref(row: dict) -> tuple | None:
 
 
 def weapon_spots_from(data, land: str | None) -> list[WeaponSpot]:
-    """The spots of this land in a GET /weapons answer (a list, or {"weapons": [...]}); anything
-    malformed is skipped, so a weapon system still being written cannot break the world."""
-    rows = data.get("weapons", []) if isinstance(data, dict) else data
+    """The spots of this land in a GET /weapons answer: its "placed" list (the weapons lying in the
+    lands; "weapons" is the player's own), or a bare list; anything malformed is skipped, so a
+    weapon system still being written cannot break the world."""
+    rows = (data.get("placed") or []) if isinstance(data, dict) else data
     out = []
     for w in rows if isinstance(rows, list) else []:
         pos = w.get("pos") if isinstance(w, dict) else None
@@ -605,7 +606,7 @@ class WorldScene(Scene):
             msg = getattr(e, "message_vi", "") if getattr(e, "status", 0) not in (404, 405) else ""
             if msg:
                 g.toast(msg, "#BC4749")
-        g.api.post("/weapons/claim", {"id": spot.id}, ok, err)
+        g.api.post("/weapons/claim", {"id": spot.id, "land": spot.land}, ok, err)
 
     def weapon_drawables(self, v) -> list:
         """(foot y, image, screen position) of the weapon spots in the v2 world: the weapon's

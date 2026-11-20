@@ -50,7 +50,7 @@ STATUSES = ("chinh", "phu")
 CONTENT = ("co", "dang_viet", "chua_co")
 KINDS = ("toan", "code", "thuc_chien", "du_an", "hoc_may", "hoc_sau", "he_thong", "nghien_cuu", "dan_dat")
 QUESTION_RULES = ("on_hit",)
-WIREABLE_SECTIONS = ("combat", "lands")   # the parts of world_plan.json the game can run on by themselves
+WIREABLE_SECTIONS = ("combat", "lands", "weapons")   # the parts of world_plan.json the game can run on by themselves
 TELEGRAPH_SHAPES = ("circle", "cone", "line")
 RANKS = ("normal", "elite", "boss")
 
