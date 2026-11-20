@@ -1561,3 +1561,25 @@ Tác giả: "Mình muốn có thành tựu", làm kỹ, làm đẹp. Chi tiết 
 - **Hình**: mọi chiêu theo `charge (tu_khi_<hệ>) → xuất → bay → trúng → dư âm`; sáu chiêu cũ dùng hình anh hùng
   (`pha_me_kiem`, `hoa_cau_lon/no`, `thien_loi_giang`, `tu_khi_*`). Vòng trận của vùng lớn bị giới hạn cỡ để không
   che quái và vùng báo đòn.
+
+## 2026-11-20 — Rà soát giáo trình: đo bằng số, sửa chỗ hỏng, vá ô mỏng
+
+- **Công cụ đo** `tools/audit_curriculum.py` (Python thuần, chạy lại được) sinh `docs/GIAO_TRINH_RA_SOAT_SO_LIEU.md`: từng nút
+  và vi kỹ năng x bậc có bao nhiêu câu viết tay, bộ sinh và câu khác nhau; nút không bao giờ được hỏi; tiên quyết; khối
+  lượng từng tầng; lập trình có chạy song song với toán không; liên kết giữa các nhánh và ôn tập cuốn chiếu; tài liệu
+  và nguồn; nút nào trong game chạm tới. Báo cáo cho chủ dự án: `docs/GIAO_TRINH_RA_SOAT.md`.
+- **Ô mỏng** = vi kỹ năng ở một bậc có dưới 10 câu khác nhau (câu viết tay tính 1, bộ sinh tính số câu khác nhau của 40 hạt
+  giống). Trước: 72 ô trên đường chính; sau 41 bộ sinh mới: 31. Bộ sinh mới ở `math_gen/rs{dstt,gt,tr,xs}_floor1.py`, id
+  `*_gx_*`, khai báo trong `items/<môn>.rasoat.json`, đáp án tính lại bằng sympy ở `tools/math_verify_rasoat.py`. Chưa duyệt.
+- **Luật mới trong `math_tree.validate()`**: cờ `content` của nút phải khớp thực tế (có câu hỏi hoặc bài tập thì `co`; `co`
+  mà trống thì lỗi), và một bài tập chỉ thuộc một nút. 38 nút Luyện Khí ghi `dang_viet` đã được đổi sang `co`.
+- **`lt_numpy` có nội dung, không cần NumPy**: năm bài trên danh sách (hình dạng và phát sóng, tổng theo trục, cộng vectơ vào
+  mọi hàng, chấm điểm cả lô `X @ w + b`, `X.T @ X`) và nút nói rõ game chạy bằng Python thuần. Hệ quả: nút không còn "đang
+  biên soạn", nên bốn nút `ud_*` cần nó giờ chờ năm bài ấy. Các bài kiểm thử lấy `lt_numpy` làm ví dụ nút trống chuyển sang
+  `tc_python_nang_cao`. Hai nút `ud_*` nhắc NumPy trong chữ đã sửa.
+- **Ba cạnh `reinforces` chéo nhánh** (`tr_thuat_toan` ôn `xs_dem_su_kien`, `tr_tim_kiem` ôn `ds_vecto_ma_tran`, `xs_tin_cay`
+  ôn `gt_tich_phan_ung_dung`): ba nút có tổ tiên ở môn khác mà chưa ôn nó. Không đổi thứ tự mở nút.
+- **Để chủ dự án quyết** (khuyến nghị trong báo cáo): 18 câu chứng minh còn trên đường chính trái luật "không chứng minh";
+  mười một vi kỹ năng tầng 10 đã cắt (giữ cắt); cảnh giới sau Luyện Khí bắt đầu từ Trúc Cơ; mười bốn nút toán chưa có bài
+  code nào dùng trực tiếp; ôn cuốn chiếu hẹp (47% tổ tiên, 10/35 nút ôn môn khác).
+- **Không đụng**: mã client (ngoài một hằng số trong bài kiểm thử), hệ chiêu, quái, thành tựu, nghệ thuật.

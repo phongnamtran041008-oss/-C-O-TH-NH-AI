@@ -604,47 +604,50 @@ không có.
 
 Nguồn câu ôn của từng nút toán chính (vi kỹ năng có câu hỏi, lấy từ các nút trong `reinforces`; nếu rỗng thì lấy từ tổ tiên đã xong): `nguồn khác môn` là số vi kỹ năng thuộc môn khác.
 
-| Nút | Số vi kỹ năng ôn | Khác môn | Dùng tổ tiên thay thế |
-|---|---|---|---|
-| `ds_ngon_ngu` | 0 | 0 | có |
-| `ds_vecto_ma_tran` | 6 | 0 |  |
-| `ds_nhan_ma_tran` | 6 | 0 |  |
-| `ds_he_gauss` | 6 | 0 |  |
-| `ds_dinh_thuc_nghich_dao` | 12 | 0 |  |
-| `ds_khong_gian` | 11 | 0 |  |
-| `ds_truc_giao_chieu` | 12 | 0 |  |
-| `ds_anh_xa_tuyen_tinh` | 18 | 0 |  |
-| `ds_tri_rieng` | 11 | 0 |  |
-| `ds_pca_svd` | 4 | 0 |  |
-| `gt_ham_so` | 0 | 0 | có |
-| `gt_gioi_han` | 4 | 0 |  |
-| `gt_dao_ham` | 9 | 0 |  |
-| `gt_cuc_tri` | 4 | 0 |  |
-| `gt_taylor` | 8 | 0 |  |
-| `gt_tich_phan` | 4 | 0 |  |
-| `gt_tich_phan_ung_dung` | 10 | 0 |  |
-| `gt_nhieu_bien` | 12 | 6 |  |
-| `gt_gradient` | 13 | 6 |  |
-| `xs_dem_su_kien` | 0 | 0 | có |
-| `xs_xac_suat` | 5 | 0 |  |
-| `xs_dieu_kien` | 10 | 0 |  |
-| `xs_bayes` | 5 | 0 |  |
-| `xs_bnn_roi_rac` | 10 | 0 |  |
-| `xs_bnn_lien_tuc` | 8 | 5 |  |
-| `xs_ky_vong_phan_phoi` | 7 | 2 |  |
-| `xs_mau_uoc_luong` | 9 | 4 |  |
-| `xs_tuong_quan_hoi_quy` | 16 | 6 |  |
-| `xs_tin_cay` | 10 | 0 |  |
-| `xs_kiem_dinh` | 5 | 0 |  |
-| `tr_logic_dem` | 0 | 0 | có |
-| `tr_dem` | 9 | 5 |  |
-| `tr_liet_ke_quay_lui` | 4 | 0 |  |
-| `tr_thuat_toan` | 7 | 0 |  |
-| `tr_do_thi` | 10 | 6 |  |
-| `tr_tim_kiem` | 8 | 0 |  |
-| `tr_cay_duong_di` | 7 | 0 |  |
-| `tr_toi_uu_loi` | 11 | 7 |  |
-| `tr_gradient_descent` | 8 | 3 |  |
+| Nút | Số vi kỹ năng ôn | Khác môn | Dùng tổ tiên thay thế | Tổ tiên có câu hỏi | Nhìn lại bao nhiêu tầng |
+|---|---|---|---|---|---|
+| `ds_ngon_ngu` | 0 | 0 | có | 0 | 0 |
+| `ds_vecto_ma_tran` | 6 | 0 |  | 6 | 1 |
+| `ds_nhan_ma_tran` | 6 | 0 |  | 12 | 1 |
+| `ds_he_gauss` | 6 | 0 |  | 18 | 1 |
+| `ds_dinh_thuc_nghich_dao` | 12 | 0 |  | 24 | 2 |
+| `ds_khong_gian` | 11 | 0 |  | 29 | 2 |
+| `ds_truc_giao_chieu` | 12 | 0 |  | 35 | 4 |
+| `ds_anh_xa_tuyen_tinh` | 18 | 0 |  | 35 | 6 |
+| `ds_tri_rieng` | 11 | 0 |  | 41 | 3 |
+| `ds_pca_svd` | 4 | 0 |  | 45 | 2 |
+| `gt_ham_so` | 0 | 0 | có | 0 | 0 |
+| `gt_gioi_han` | 4 | 0 |  | 4 | 1 |
+| `gt_dao_ham` | 9 | 0 |  | 9 | 2 |
+| `gt_cuc_tri` | 4 | 0 |  | 13 | 1 |
+| `gt_taylor` | 8 | 0 |  | 13 | 4 |
+| `gt_tich_phan` | 4 | 0 |  | 13 | 2 |
+| `gt_tich_phan_ung_dung` | 10 | 0 |  | 18 | 4 |
+| `gt_nhieu_bien` | 12 | 6 |  | 27 | 4 |
+| `gt_gradient` | 13 | 6 |  | 40 | 4 |
+| `xs_dem_su_kien` | 0 | 0 | có | 0 | 0 |
+| `xs_xac_suat` | 5 | 0 |  | 5 | 1 |
+| `xs_dieu_kien` | 10 | 0 |  | 10 | 2 |
+| `xs_bayes` | 5 | 0 |  | 15 | 1 |
+| `xs_bnn_roi_rac` | 10 | 0 |  | 15 | 3 |
+| `xs_bnn_lien_tuc` | 8 | 5 |  | 36 | 1 |
+| `xs_ky_vong_phan_phoi` | 7 | 2 |  | 40 | 2 |
+| `xs_mau_uoc_luong` | 9 | 4 |  | 49 | 4 |
+| `xs_tuong_quan_hoi_quy` | 16 | 6 |  | 72 | 5 |
+| `xs_tin_cay` | 10 | 0 |  | 54 | 7 |
+| `xs_kiem_dinh` | 5 | 0 |  | 59 | 0 |
+| `tr_logic_dem` | 0 | 0 | có | 0 | 0 |
+| `tr_dem` | 9 | 5 |  | 9 | 1 |
+| `tr_liet_ke_quay_lui` | 4 | 0 |  | 4 | 2 |
+| `tr_thuat_toan` | 7 | 0 |  | 16 | 2 |
+| `tr_do_thi` | 10 | 6 |  | 16 | 3 |
+| `tr_tim_kiem` | 8 | 0 |  | 24 | 2 |
+| `tr_cay_duong_di` | 7 | 0 |  | 40 | 2 |
+| `tr_toi_uu_loi` | 11 | 7 |  | 54 | 3 |
+| `tr_gradient_descent` | 8 | 3 |  | 68 | 1 |
+
+Câu ôn chỉ lấy từ các nút trong `reinforces`, không lấy từ mọi tổ tiên: trung bình một nút ôn lại 47% số vi kỹ năng của tổ tiên (thấp nhất 8%); nhìn lại tối đa 7 tầng, trung vị 2 tầng. Chỉ 10/35 nút toán có câu ôn lấy từ môn khác.
+Tên môn khác ở đây là môn toán khác (Đại Số, Giải Tích, Xác Suất, Thuật Toán).
 
 Nút toán chính không có nguồn câu ôn nào (ôn tập im lặng): ['ds_ngon_ngu', 'gt_ham_so', 'xs_dem_su_kien', 'tr_logic_dem']. Nút có ít hơn 3 vi kỹ năng để ôn: không.
 

@@ -265,7 +265,11 @@ def analyse() -> dict:
             pool = [s for a in t.ancestors(n.id) for s in t.nodes[a].skills if s not in cut and s in have]
             fallback = True
         other = [s for s in pool if sub.get(s) != sub[n.skills[0]]]
-        review[n.id] = {"pool": len(pool), "other": len(other), "fallback": fallback}
+        anc_skills = [s for a in t.ancestors(n.id) for s in t.nodes[a].skills if s not in cut and s in have]
+        stages = [t.nodes[r].stage for r in n.reinforces if t.nodes[r].stage and n.stage]
+        review[n.id] = {"pool": len(pool), "other": len(other), "fallback": fallback,
+                        "ancestors": len(anc_skills),
+                        "reach": (n.stage - min(stages)) if stages else 0}      # how many stages back it looks
     out["review"] = review
     out["isolated"] = [n for n in t.main_nodes("luyen_khi")
                        if not any(t.nodes[r].branch != n.branch for r in n.requires + n.reinforces)
@@ -484,8 +488,17 @@ def render(a: dict) -> str:
     rv = a["review"]
     lines += ["Nguồn câu ôn của từng nút toán chính (vi kỹ năng có câu hỏi, lấy từ các nút trong `reinforces`; "
               "nếu rỗng thì lấy từ tổ tiên đã xong): `nguồn khác môn` là số vi kỹ năng thuộc môn khác.", ""]
-    lines += md_table(["Nút", "Số vi kỹ năng ôn", "Khác môn", "Dùng tổ tiên thay thế"],
-                      [[f"`{k}`", v["pool"], v["other"], "có" if v["fallback"] else ""] for k, v in rv.items()])
+    lines += md_table(["Nút", "Số vi kỹ năng ôn", "Khác môn", "Dùng tổ tiên thay thế", "Tổ tiên có câu hỏi",
+                       "Nhìn lại bao nhiêu tầng"],
+                      [[f"`{k}`", v["pool"], v["other"], "có" if v["fallback"] else "", v["ancestors"], v["reach"]]
+                       for k, v in rv.items()])
+    with_pool = [v for v in rv.values() if v["pool"]]
+    share = [v["pool"] / v["ancestors"] for v in with_pool if v["ancestors"]]
+    lines += ["", f"Câu ôn chỉ lấy từ các nút trong `reinforces`, không lấy từ mọi tổ tiên: trung bình một nút ôn lại "
+              f"{statistics.mean(share):.0%} số vi kỹ năng của tổ tiên (thấp nhất {min(share):.0%}); nhìn lại tối đa "
+              f"{max(v['reach'] for v in with_pool)} tầng, trung vị {statistics.median(v['reach'] for v in with_pool):g} "
+              f"tầng. Chỉ {sum(1 for v in with_pool if v['other'])}/{len(with_pool)} nút toán có câu ôn lấy từ môn khác.",
+              "Tên môn khác ở đây là môn toán khác (Đại Số, Giải Tích, Xác Suất, Thuật Toán)."]
     empty = [k for k, v in rv.items() if v["pool"] == 0]
     lines += ["", f"Nút toán chính không có nguồn câu ôn nào (ôn tập im lặng): {empty or 'không'}. "
               f"Nút có ít hơn 3 vi kỹ năng để ôn: {[k for k, v in rv.items() if 0 < v['pool'] < 3] or 'không'}.", ""]
