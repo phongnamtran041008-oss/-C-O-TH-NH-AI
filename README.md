@@ -27,7 +27,7 @@ mạng LAN, hoặc chạy một máy chủ riêng.
   của Thủ Thư (phải đứng cạnh bà mới mua được). Phím B mở riêng kệ phổ.
 - **Bài tập lập trình**: đề trong game, bài làm chạy trên máy người chơi, máy chủ chấm bằng test ẩn
   (AC / WA / TLE / RE / CE).
-- **Luận Đạo Đài** (bài tự luận, chứng minh): bản thiết kế, chưa nối vào game — [`docs/LUAN_DAO_DAI.md`](docs/LUAN_DAO_DAI.md).
+- **Luận Đạo Đài** (bài tự luận, chứng minh): đã gác lại (bỏ chấm bằng API, 2026-11-20); đề còn làm dữ liệu — [`docs/LUAN_DAO_DAI.md`](docs/LUAN_DAO_DAI.md).
 
 **Tu luyện và chiến đấu**
 - **Tu Vi và cảnh giới** (Phàm Nhân → Luyện Khí → Trúc Cơ → ... → Đại Thừa). Đả tọa trên bồ đoàn: cứ một lúc

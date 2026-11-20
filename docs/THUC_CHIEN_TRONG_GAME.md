@@ -25,7 +25,7 @@ Từ đó có ba bậc.
 |---|---|---|---|---|
 | 1 | **Xạ Trường** | Ngay trên máy người chơi, do game khởi chạy | Dự đoán của mô hình trên bia ẩn | Luyện Khí, đầu Trúc Cơ |
 | 2 | **Ngoại Giới Bí Cảnh** | Sổ tay Colab/Kaggle hoặc máy riêng | File nộp: dự đoán trên bia ẩn + nhật ký huấn luyện | Trúc Cơ tới Hóa Thần |
-| 3 | **Công Trình** | Ngoài đời thật: kho mã, bài viết, sản phẩm | Bằng chứng + thang điểm (Luận Đạo Đài) | Luyện Hư trở lên |
+| 3 | **Công Trình** | Ngoài đời thật: kho mã, bài viết, sản phẩm | Bằng chứng + thang điểm | Luyện Hư trở lên |
 
 ## 2. Bậc 1 — Xạ Trường: huấn luyện ngay trong game
 
@@ -156,8 +156,8 @@ giữ sổ**, không phải giám khảo:
 - Mỗi nút có **thang điểm** viết sẵn, cùng định dạng với đề ở Luận Đạo Đài (`rubric`, tổng 10), ví dụ cho
   "tái lập một công trình": có số của bài gốc và số của mình đặt cạnh nhau; chạy lại được từ một lệnh; nêu
   rõ chỗ lệch và giả thuyết vì sao; có ít nhất một thí nghiệm bài gốc không có.
-- Chấm bằng **đúng ba cách của Luận Đạo Đài**: tự chấm theo thang, giám khảo AI bằng khoá của người chơi
-  (đọc báo cáo, không đọc được kho mã riêng tư), hoặc đồng đạo thẩm định. Thiên kiếp ở các cảnh giới này
+- Chấm bằng **hai cách**: tự chấm theo thang, hoặc đồng đạo thẩm định. (Chấm bằng giám khảo AI với khoá
+  của người chơi đã bị bỏ ngày 2026-11-20: game không gọi mô hình nào.) Thiên kiếp ở các cảnh giới này
   qua khi người chơi chốt bản khai và thang điểm đạt ngưỡng — game tin người chơi, vì tới đây phần thưởng
   thật nằm ngoài game.
 
@@ -169,7 +169,7 @@ giữ sổ**, không phải giám khảo:
   và game không phải gánh PyTorch.
 - Bậc 3 thừa nhận rằng "dẫn đầu" không chấm tự động được, và dùng lại hạ tầng thang điểm thay vì bày thêm
   một hệ thống.
-- Cả ba dùng lại thứ đã có: bộ chạy M6, định dạng đề của Luận Đạo Đài, vùng đất Linh Xạ Nguyên.
+- Cả ba dùng lại thứ đã có: bộ chạy M6, định dạng thang điểm của đề tự luận (`rubric`), vùng đất Linh Xạ Nguyên.
 
 ## 6. Từng nút làm ở bậc nào
 
@@ -240,7 +240,7 @@ cầu trích dẫn) và mọi dữ liệu cuộc thi Kaggle (theo điều khoả
 3. **Bàn chỉnh cung** cho hạ gradient và quá khớp (mục 2.4).
 4. Các bài Xạ Trường còn lại của Luyện Khí và thiên kiếp nhận dạng chữ số.
 5. Định dạng `nop_bai.json`, màn nộp file, điểm lộ/điểm ẩn; quyển trục đầu tiên (thiên kiếp Trúc Cơ).
-6. Bản khai và thang điểm cho bậc 3 (dùng chung với Luận Đạo Đài).
+6. Bản khai và thang điểm cho bậc 3 (cùng định dạng `rubric` với đề tự luận đã gác).
 
 Bước 1-4 chỉ cần phiên viết câu hỏi ghi xong phần của mình (cùng đụng `math_problems.py` và
 `check_all.py`). Bước 5-6 nên làm sau khi cây được nối vào game.

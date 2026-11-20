@@ -88,7 +88,8 @@ Màn Bí Cảnh Toán (`client/scenes/math_practice.py`, `client/scenes/math_tre
   nào dùng (`"wired": false`).
 - **Nội dung cho nút lập trình, thực chiến, dự án** và mọi cảnh giới sau Luyện Khí. Thiết kế cách làm ở
   `docs/THUC_CHIEN_TRONG_GAME.md`.
-- **Luận Đạo Đài** (bài tự luận) có bộ máy chấm nhưng chưa có màn hình (`docs/LUAN_DAO_DAI.md`).
+- **Luận Đạo Đài** (bài tự luận) đã gác lại: chủ dự án bỏ việc chấm bằng API (2026-11-20). Đề vẫn còn làm
+  dữ liệu tham khảo, không có màn hình (`docs/LUAN_DAO_DAI.md`).
 - **Bài tập của nút lập trình** hiện trên thẻ nút nhưng chỉ làm được từ nút "Bài tập" ở thẻ Đại Số; thẻ
   nút chưa có nút "Làm bài".
 - **Câu ôn** trên thẻ câu hỏi vẫn ghi "Ôn xoắn ốc: tầng N"; nay câu ôn có thể đến từ môn khác, nên ghi tên
