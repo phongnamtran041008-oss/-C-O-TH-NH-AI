@@ -11,7 +11,7 @@
  "type": "map",
  "version": "1.10",
  "nextlayerid": 4,
- "nextobjectid": 355,
+ "nextobjectid": 357,
  "properties": [
   {
    "name": "zone",
@@ -6315,6 +6315,52 @@
      "rotation": 0,
      "visible": true,
      "properties": []
+    },
+    {
+     "id": 355,
+     "name": "thiet_giap_thu_suon_dong",
+     "type": "monster_area",
+     "x": 784,
+     "y": 416,
+     "width": 96,
+     "height": 192,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "monster",
+       "type": "string",
+       "value": "thiet_giap_thu"
+      },
+      {
+       "name": "count",
+       "type": "string",
+       "value": "3"
+      }
+     ]
+    },
+    {
+     "id": 356,
+     "name": "vong_hon_vach_tay",
+     "type": "monster_area",
+     "x": 16,
+     "y": 32,
+     "width": 80,
+     "height": 192,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "monster",
+       "type": "string",
+       "value": "vong_hon_kiem_si"
+      },
+      {
+       "name": "count",
+       "type": "string",
+       "value": "1"
+      }
+     ]
     }
    ]
   },

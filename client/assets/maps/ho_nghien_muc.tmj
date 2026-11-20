@@ -11,7 +11,7 @@
  "type": "map",
  "version": "1.10",
  "nextlayerid": 4,
- "nextobjectid": 322,
+ "nextobjectid": 324,
  "properties": [
   {
    "name": "zone",
@@ -5575,6 +5575,52 @@
      "rotation": 0,
      "visible": true,
      "properties": []
+    },
+    {
+     "id": 322,
+     "name": "u_minh_dang_bac",
+     "type": "monster_area",
+     "x": 16,
+     "y": 32,
+     "width": 144,
+     "height": 192,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "monster",
+       "type": "string",
+       "value": "u_minh_dang"
+      },
+      {
+       "name": "count",
+       "type": "string",
+       "value": "3"
+      }
+     ]
+    },
+    {
+     "id": 323,
+     "name": "huyet_ngac_dam_nam",
+     "type": "monster_area",
+     "x": 448,
+     "y": 416,
+     "width": 224,
+     "height": 144,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "monster",
+       "type": "string",
+       "value": "huyet_ngac"
+      },
+      {
+       "name": "count",
+       "type": "string",
+       "value": "1"
+      }
+     ]
     }
    ]
   },

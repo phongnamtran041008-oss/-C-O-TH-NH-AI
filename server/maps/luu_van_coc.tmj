@@ -11,7 +11,7 @@
  "type": "map",
  "version": "1.10",
  "nextlayerid": 4,
- "nextobjectid": 342,
+ "nextobjectid": 344,
  "properties": [
   {
    "name": "zone",
@@ -6105,6 +6105,52 @@
      "rotation": 0,
      "visible": true,
      "properties": []
+    },
+    {
+     "id": 342,
+     "name": "van_diep_dong_co",
+     "type": "monster_area",
+     "x": 448,
+     "y": 192,
+     "width": 160,
+     "height": 224,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "monster",
+       "type": "string",
+       "value": "van_diep"
+      },
+      {
+       "name": "count",
+       "type": "string",
+       "value": "4"
+      }
+     ]
+    },
+    {
+     "id": 343,
+     "name": "loi_ung_cao_nguyen",
+     "type": "monster_area",
+     "x": 16,
+     "y": 32,
+     "width": 240,
+     "height": 112,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "monster",
+       "type": "string",
+       "value": "loi_ung"
+      },
+      {
+       "name": "count",
+       "type": "string",
+       "value": "1"
+      }
+     ]
     }
    ]
   },
