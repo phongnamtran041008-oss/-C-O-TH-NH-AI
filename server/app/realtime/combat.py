@@ -67,6 +67,7 @@ DODGE_REFUSALS_VI = {
     "answering": "Con đang trả lời câu hỏi.",
     "locked": "Né Đòn mở ở Luyện Khí tầng 1.",
     "cooldown": "Né Đòn chưa hồi xong.",
+    "flying": "Đang ngự kiếm trên không: hạ kiếm xuống đã.",
 }
 
 
@@ -184,6 +185,8 @@ def dodge(p: "Player", seq: int, dx: int, dy: int, now: float) -> str | None:
         code = "cannot"
     elif p.protected(now) or p.q_pending or p.question is not None:
         code = "answering"
+    elif p.fly:
+        code = "flying"
     elif not dodge_unlocked(p):
         code = "locked"
     elif now < p.dodge_ready:
@@ -229,12 +232,19 @@ def land_blow(ch: "ChannelZone", m: "Monster", p: "Player", dmg: float, now: flo
     """A telegraphed blow of `m` reached `p` (open-world rule). Returns what happened:
     dodged | paused | rest | asked."""
     c = plan()
+    from . import abilities
+    if abilities.airborne(p, now):   # ngự kiếm: the blow passes under the sword
+        ch.event(k="soar", id=p.eid, by=m.eid, x=round(p.x, 1), y=round(p.y, 1))
+        return "flown"
     if now < p.dodge_until:
         ch.event(k="dodged", id=p.eid, by=m.eid, x=round(p.x, 1), y=round(p.y, 1))
         return "dodged"
     if p.protected(now) or p.q_pending or p.question is not None:
         return "paused"          # already answering one: the fight is paused for them
     engage(ch, m, p, now)        # a blow from a monster you never touched still makes it your fight
+    p.struck_at = now
+    if p.fly:                    # caught while still rising: knocked off the sword
+        abilities.land_down(ch, p, "knocked")
     if now < p.rest_until:
         amount = dmg * float(c["hit_during_cooldown"]["damage_taken"])
         if amount > 0:
@@ -396,6 +406,7 @@ def hurt_player(ch: "ChannelZone", p: "Player", dmg: float, now: float, kind: st
     dmg = max(1.0, dmg)
     p.hp -= dmg
     p.last_combat = now
+    p.struck_at = now
     ch.event(k=kind, id=p.eid, v=int(round(dmg)), by=by, x=p.x, y=p.y)
     if p.hp <= 0:
         die(ch, p, now)
@@ -641,6 +652,8 @@ def attack(p: "Player", eid: str, now: float, rng: random.Random) -> str | None:
         return "cannot"
     if p.protected(now):
         return "answering"
+    if p.fly:                    # ngự kiếm: no blow from up on the sword
+        return "flying"
     if now < p.next_attack_at:
         return "cooldown"
     m = ch.monster(eid)
@@ -887,6 +900,7 @@ def _respawn_monster(ch: "ChannelZone", m: "Monster") -> None:
 
 
 def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float) -> None:
+    from . import abilities
     c = cfg()
     info = m.info
     col = ch.map.collider
@@ -915,7 +929,8 @@ def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float) -> Non
     if not m.engaged and info.get("aggressive"):
         r = info.get("aggro_radius", 0)
         near = [p for p in ch.players.values() if not p.dead and dist(p.x, p.y, m.x, m.y) <= r
-                and not (m.on_hit and (p.protected(now) or p.q_pending)) and m.fights(p)]
+                and not (m.on_hit and (p.protected(now) or p.q_pending)) and m.fights(p)
+                and not abilities.airborne(p, now)]       # (a flyer overhead is out of its reach)
         if near:
             engage(ch, m, min(near, key=lambda p: dist(p.x, p.y, m.x, m.y)), now)
     if not m.engaged:
@@ -934,6 +949,7 @@ def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float) -> Non
     targets = [ch.players[u] for u in m.engaged if u in ch.players and m.fights(ch.players[u])]
     if m.on_hit:   # the fight is paused for whoever is answering: nobody swings at them
         targets = [p for p in targets if not p.protected(now) and not p.q_pending]
+    targets = [p for p in targets if not abilities.airborne(p, now)]    # nor at a flyer: it waits below
     if m.tele is not None:
         tele = m.tele
         if now >= tele["land"]:
@@ -948,7 +964,7 @@ def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float) -> Non
                 tgt = min(targets, key=lambda p: dist(p.x, p.y, m.x, m.y))
                 dmg = max(1.0, info.get("atk", 5) - tgt.stats.get("def", 0) * c["defense_factor"])
                 for p in list(ch.players.values()):
-                    if not p.dead and in_tele(tele, p.x, p.y):
+                    if not p.dead and in_tele(tele, p.x, p.y) and not abilities.airborne(p, now):
                         hurt_player(ch, p, dmg, now, by=m.eid)
             from . import guard
             guard.hit_bees(ch, m, now)

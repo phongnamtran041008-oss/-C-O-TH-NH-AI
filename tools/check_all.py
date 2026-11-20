@@ -584,12 +584,16 @@ def check_beasts(v2: Path | None = None) -> list[str]:
             if clip not in clips:
                 out.append(f"beast {b['id']}: its sheet {sid} has no {clip!r} clip")
     unlocks = {u["id"]: u for u in plan.get("unlocks", [])}
-    sword = ((unlocks.get("dap_kiem_luot") or {}).get("glide") or {}).get("sheet")
-    if not sword or "fly" not in ((_json(v2 / "weapons" / f"{sword}.json").get("clips") or {})
-                                  if (v2 / "weapons" / f"{sword}.json").exists() else {}):
-        out.append(f"dap_kiem_luot: the flying sword {sword!r} has no v2 sheet with a fly clip")
+    swords = [((unlocks.get("dap_kiem_luot") or {}).get("glide") or {}).get("sheet")]
+    swords += [s.get("sheet") for s in (((unlocks.get("dap_kiem_luot") or {}).get("flight") or {}).get("swords") or [])]
+    for sword in dict.fromkeys(swords):       # the hop's sword and ngự kiếm's sword of every realm
+        if not sword or "fly" not in ((_json(v2 / "weapons" / f"{sword}.json").get("clips") or {})
+                                      if (v2 / "weapons" / f"{sword}.json").exists() else {}):
+            out.append(f"dap_kiem_luot: the flying sword {sword!r} has no v2 sheet with a fly clip")
     tran = ((unlocks.get("phap_tran") or {}).get("formation") or {}).get("fx")
-    for fid in (tran, "capture_seal", "burst_hoa"):
+    # ...and ngự kiếm's shadow, wake, wind, mist, take-off and landing (client/engine/flight.py)
+    for fid in (tran, "capture_seal", "burst_hoa", "phi_bong", "phi_vet", "phi_gio", "phi_may", "phi_cat_canh",
+                "phi_ha_canh"):
         if not fid or not (v2 / "fx" / f"{fid}.json").exists():
             out.append(f"thần thông: no v2 effect fx/{fid}")
     talisman = (plan.get("beast_taming") or {}).get("talisman")

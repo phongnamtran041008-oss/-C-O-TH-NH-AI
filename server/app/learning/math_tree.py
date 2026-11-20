@@ -68,6 +68,10 @@ SMALL_GIFT_MAX = 0.5
 BEAST_STATUSES = ("co", "cho_hinh", "chua_co")
 BEAST_CHECKED = ("co", "cho_hinh")
 ABILITY_BLOCKS = {"phap_tran": "formation", "dap_kiem_luot": "glide", "cuoi_linh_thu": "ride"}
+# ngự kiếm, its two rungs in order (realtime/abilities.py): each unlock carries a 'flight' block. The
+# game runs them, so they may be 'co' before their realm has a built land (Ngự Kiếm Phi Hành is
+# there the day a player reaches Trúc Cơ, before Vân Hải Thiên Đảo exists)
+FLIGHT_UNLOCKS = ("dap_kiem_luot", "ngu_kiem_phi_hanh")
 TELEGRAPH_SHAPES = ("circle", "cone", "line")
 RANKS = ("normal", "elite", "boss")
 
@@ -585,9 +589,10 @@ def _wired_abilities_problems(plan: dict, math_dir: Path) -> list[str]:
     built_realms = {l.get("realm") for l in lands.values() if l.get("status") == "co"}
     unlocks = {u.get("id"): u for u in plan.get("unlocks", [])}
     for uid, u in unlocks.items():
+        ahead = uid in FLIGHT_UNLOCKS and u.get("status") == "co" and isinstance(u.get("flight"), dict)
         if u.get("status") not in CONTENT[::2]:
             errs.append(f"unlock {uid}: status must be 'co' or 'chua_co'")
-        elif (u.get("status") == "co") != (u.get("realm") in built_realms):
+        elif (u.get("status") == "co") != (u.get("realm") in built_realms) and not ahead:
             want = "co" if u.get("realm") in built_realms else "chua_co"
             errs.append(f"unlock {uid}: status must be '{want}' (realm {u.get('realm')} "
                         f"{'has' if want == 'co' else 'has no'} built land)")
@@ -622,6 +627,7 @@ def _wired_abilities_problems(plan: dict, math_dir: Path) -> list[str]:
                       and (b.get("gift") or {}).get("type") == c.get("gift")]
             if c.get("gift") != "mount" or not mounts:
                 errs.append(f"unlock {uid}: ride.gift must be 'mount' and some built beast must have it")
+    errs += _flight_problems(unlocks, set(rmaps.TILE_NAMES))
     glide = (unlocks.get("dap_kiem_luot") or {}).get("glide", {})
     if (unlocks.get("dap_kiem_luot") or {}).get("status") == "co" and isinstance(glide, dict) and _num(glide.get("max_px")):
         for p in plan.get("weapons_placed", []):
@@ -637,6 +643,71 @@ def _wired_abilities_problems(plan: dict, math_dir: Path) -> list[str]:
             if not glide_reaches(zmap, foot, _walk_region(zmap, tuple(p["pos"])), glide):
                 errs.append(f"weapons_placed {p.get('weapon')} {p.get('quality')}: needs Đạp Kiếm Lướt, "
                             f"but no glide from where a player walks reaches pos {p['pos']}")
+    return errs
+
+
+def _flight_problems(unlocks: dict, tile_names: set) -> list[str]:
+    """The 'flight' blocks of the two rungs of ngự kiếm (FLIGHT_UNLOCKS), once they are 'co': rung
+    1 has a gauge (it drains in the air, refills on the ground), rung 2 none; the high rung is
+    faster and higher than the low one; flyers pass only over ground tiles; the swords by realm
+    start at the first rung's realm and climb."""
+    errs: list[str] = []
+    rungs = []
+    for level, uid in enumerate(FLIGHT_UNLOCKS, 1):
+        u = unlocks.get(uid)
+        if u is None:
+            errs.append(f"unlock {uid}: missing (the game runs it: ngự kiếm)")
+            continue
+        if u.get("status") != "co":
+            continue
+        c = u.get("flight")
+        where = f"unlock {uid}: flight"
+        if not isinstance(c, dict):
+            errs.append(f"{where} numbers are missing")
+            continue
+        if c.get("level") != level:
+            errs.append(f"{where}.level must be {level}")
+        if not _num(c.get("speed_mult")) or not 1 < c["speed_mult"] <= 3:
+            errs.append(f"{where}.speed_mult must be above 1 and at most 3")
+        if not _num(c.get("lift_px")) or not 0 < c["lift_px"] <= 48:
+            errs.append(f"{where}.lift_px must be above 0 and at most 48 (px above the ground)")
+        if not _num(c.get("rise_ms")) or not 0 < c["rise_ms"] <= 1000:
+            errs.append(f"{where}.rise_ms must be above 0 and at most 1000")
+        if not _num(c.get("hit_lock_seconds")) or c["hit_lock_seconds"] < 0:
+            errs.append(f"{where}.hit_lock_seconds must be a number >= 0")
+        for key in ("gauge_seconds", "refill_seconds", "min_gauge_seconds"):
+            if not _num(c.get(key)) or c[key] < 0:
+                errs.append(f"{where}.{key} must be a number >= 0")
+        if level == 1 and _num(c.get("gauge_seconds")) and _num(c.get("refill_seconds")) \
+                and _num(c.get("min_gauge_seconds")):
+            if c["gauge_seconds"] <= 0 or c["refill_seconds"] <= 0:
+                errs.append(f"{where}: the low rung needs a gauge (gauge_seconds, refill_seconds > 0)")
+            elif c["min_gauge_seconds"] >= c["gauge_seconds"]:
+                errs.append(f"{where}.min_gauge_seconds must be below gauge_seconds")
+        if level > 1 and _num(c.get("gauge_seconds")) and c["gauge_seconds"] != 0:
+            errs.append(f"{where}: free flight has no gauge (gauge_seconds 0)")
+        over = c.get("over_tiles")
+        if not isinstance(over, list) or not over or any(t not in tile_names for t in over):
+            errs.append(f"{where}.over_tiles must name ground tiles out of {sorted(tile_names)}")
+        rungs.append((u, c))
+    for (ua, a), (ub, b) in zip(rungs, rungs[1:]):
+        for key in ("speed_mult", "lift_px"):
+            if _num(a.get(key)) and _num(b.get(key)) and b[key] <= a[key]:
+                errs.append(f"unlock {ub['id']}: flight.{key} must be above {ua['id']}'s (higher and faster)")
+    if rungs:
+        swords = rungs[0][1].get("swords")
+        order = tree().realm_order
+        if not isinstance(swords, list) or not swords:
+            errs.append(f"unlock {FLIGHT_UNLOCKS[0]}: flight.swords must list the flying sword by realm")
+        else:
+            seen = []
+            for s in swords:
+                if not isinstance(s, dict) or s.get("from") not in order or not isinstance(s.get("sheet"), str):
+                    errs.append(f"unlock {FLIGHT_UNLOCKS[0]}: flight.swords: each needs a known realm 'from' and a 'sheet'")
+                    continue
+                seen.append(order[s["from"]])
+            if seen and (seen != sorted(set(seen)) or swords[0].get("from") != rungs[0][0].get("realm")):
+                errs.append(f"unlock {FLIGHT_UNLOCKS[0]}: flight.swords must start at its realm and climb")
     return errs
 
 

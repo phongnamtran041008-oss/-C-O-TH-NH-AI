@@ -434,6 +434,9 @@ class World:
             p.moving = False
             p.inputs.clear()
             p.queued_ms = 0
+            if p.fly and p.channel is not None:      # ngự kiếm: the body comes down on solid ground
+                from . import abilities
+                abilities.land_down(p.channel, p, "gone")
             # spec 14.3: inside a bí cảnh the party waits longer for someone to come back
             linger = balance.load("realm")["reconnect_seconds"] if isinstance(p.channel, RealmInstance) \
                 else cfg()["linger_seconds"]
@@ -470,7 +473,7 @@ class World:
         elif isinstance(msg, protocol.Attack):
             p = s.player
             err = combat.attack(p, msg.id, self.mono(), self.rng) if p else "cannot"
-            if err in ("too_far", "no_target"):
+            if err in ("too_far", "no_target", "flying"):
                 s.send({"t": "act_fail", "code": err})
         elif isinstance(msg, protocol.Dodge):
             p = s.player
@@ -480,7 +483,7 @@ class World:
             else:
                 s.send({"t": "dodge", "ok": False, "code": err,
                         "message_vi": combat.DODGE_REFUSALS_VI.get(err, combat.DODGE_REFUSALS_VI["cannot"])})
-        elif isinstance(msg, (protocol.Glide, protocol.Ride, protocol.Formation)):
+        elif isinstance(msg, (protocol.Glide, protocol.Ride, protocol.Formation, protocol.Fly)):
             self._ability(s, msg)
         elif isinstance(msg, protocol.MathCast):
             from ..systems import math_skills   # chiêu thức gắn câu hỏi (M9)
@@ -508,6 +511,8 @@ class World:
             t, err = "glide", abilities.request_glide(p, msg.s, msg.x, msg.y, now)
         elif isinstance(msg, protocol.Ride):
             t, err = "ride", abilities.request_ride(p, msg.s, msg.on, now)
+        elif isinstance(msg, protocol.Fly):
+            t, err = "fly", abilities.request_fly(p, msg.s, msg.on, now)
         else:
             t, err = "tran", abilities.place_formation(p, now)
             if err is None:
@@ -648,7 +653,9 @@ class World:
         if number == p.channel.number or p.channel.instance:
             self._send_zone(s, p)
             return
-        if not self._place(s, p.channel.zone_id, p.x, p.y, p.facing, channel=number):
+        from . import abilities
+        x, y = abilities.safe_xy(p)        # a flyer arrives in the other channel on the ground under it
+        if not self._place(s, p.channel.zone_id, x, y, p.facing, channel=number):
             return
 
     def _leave_world(self, p: Player, to_abode: bool = False) -> None:
@@ -660,6 +667,9 @@ class World:
             p.channel.remove(p)
         elif p.channel is not None:
             zone_id = p.channel.zone_id
+            if p.fly:
+                from . import abilities
+                abilities.land_down(p.channel, p, "gone")
             p.channel.remove(p)
         else:
             zone_id = ABODE
@@ -688,8 +698,10 @@ class World:
                                          "facing": "down", "hp": max(1, int(p.hp)), "qi": int(p.qi)}
             p.dirty = False
         elif p.channel is not None:
-            self._save_now[p.user_id] = {"user_id": p.user_id, "zone_id": p.channel.zone_id, "x": p.x,
-                                         "y": p.y, "facing": p.facing, "hp": max(1, int(p.hp)), "qi": int(p.qi)}
+            from . import abilities
+            x, y = abilities.safe_xy(p)          # a flyer is saved on the ground under it, never over water
+            self._save_now[p.user_id] = {"user_id": p.user_id, "zone_id": p.channel.zone_id, "x": x,
+                                         "y": y, "facing": p.facing, "hp": max(1, int(p.hp)), "qi": int(p.qi)}
             p.dirty = False
 
     async def flush_saves(self, periodic: bool = False) -> int:

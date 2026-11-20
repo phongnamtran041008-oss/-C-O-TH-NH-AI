@@ -1,4 +1,5 @@
-"""Đạp Kiếm Lướt (world_plan.json, unlock dap_kiem_luot): the geometry of a glide on the sword.
+"""Đạp Kiếm Lướt and Ngự Kiếm Phi Hành (world_plan.json, unlocks dap_kiem_luot and
+ngu_kiem_phi_hanh): the geometry of a glide and of a flight on the sword.
 
 Shared by the server, which decides, and the client, which predicts and picks where to land:
 client/engine/glide.py is a copy of this file, line for line (client/tests check they agree).
@@ -18,6 +19,7 @@ import math
 TILE = 16
 STEP = 2.0               # px between two points looked at along a glide
 FOOT_W, FOOT_H = 10, 6   # the collision box above the feet (realtime/movement.py)
+DIAG = 0.7071            # a diagonal step, as realtime/movement.py
 
 
 def _foot(x: float, y: float) -> tuple[int, int, int, int]:
@@ -48,6 +50,24 @@ def land_ok(col, tile_at, over, x: float, y: float) -> bool:
     if col.blocked(x, y):
         return False
     return tile_at(int(x // TILE), int((y - 1) // TILE)) not in over
+
+
+def fly_step(col, tile_at, over, x: float, y: float, dx: int, dy: int, ms: int,
+             speed: float) -> tuple[float, float]:
+    """One step of flight on the sword (Ngự kiếm, held under the player's own keys): exactly
+    movement.step, except that a flyer may be where a glide may pass (over_ok) - over water and
+    chasms, never through a wall, a tree or a house, never off the map."""
+    fx, fy = float(dx), float(dy)
+    if dx and dy:
+        fx, fy = fx * DIAG, fy * DIAG
+    dt = ms / 1000.0
+    nx = x + fx * speed * dt
+    if over_ok(col, tile_at, over, nx, y):
+        x = nx
+    ny = y + fy * speed * dt
+    if over_ok(col, tile_at, over, x, ny):
+        y = ny
+    return x, y
 
 
 def check(col, tile_at, over, x0: float, y0: float, x1: float, y1: float, max_px: float,
