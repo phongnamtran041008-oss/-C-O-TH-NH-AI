@@ -341,7 +341,9 @@ def unlock_of(p: dict, uid: str) -> dict:
 
 def test_the_beasts_and_thanthong_of_luyen_khi_are_built_and_later_ones_wait(plan):
     built = [b for b in plan["beasts"] if b["status"] == "co"]
-    assert {b["id"] for b in built} == {"linh_ho", "huyen_quy", "bach_hac", "hoa_tuoc", "tieu_long"}
+    assert {b["id"] for b in built} == {"linh_ho", "huyen_quy", "bach_hac", "hoa_tuoc", "tieu_long",
+                                        "ngoc_tho", "tam_bao_thu", "kim_thiem", "bach_ho_con",
+                                        "cuu_vi_ho", "kim_si_dieu"}
     assert all(b["requires"]["realm"] == "luyen_khi" and b["pos"] and b["gift"] for b in built)
     assert beast_of(plan, "ky_lan_con")["status"] == "chua_co" and "pos" not in beast_of(plan, "ky_lan_con")
     for u in plan["unlocks"]:     # (Ngự Kiếm Phi Hành is built ahead of its land: test_flight)

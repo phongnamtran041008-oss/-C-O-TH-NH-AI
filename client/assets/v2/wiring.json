@@ -148,7 +148,9 @@
   "spirit_beasts": {
     "_comment": "Linh thú of Thiên Địa Đồ (world_plan.json 'beasts') -> beasts/<id>: idle, walk, windup, attack, hit, die, happy, sleep. Drawn wild in its land and, once tamed, following its owner like a pet (client/engine/petfollow.py)",
     "linh_ho": "linh_ho", "huyen_quy": "huyen_quy", "bach_hac": "bach_hac", "hoa_tuoc": "hoa_tuoc", "tieu_long": "tieu_long",
-    "ky_lan_con": "ky_lan_con"
+    "ky_lan_con": "ky_lan_con",
+    "ngoc_tho": "ngoc_tho", "tam_bao_thu": "tam_bao_thu", "kim_thiem": "kim_thiem", "bach_ho_con": "bach_ho_con",
+    "cuu_vi_ho": "cuu_vi_ho", "kim_si_dieu": "kim_si_dieu"
   },
   "bees": {
     "_comment": "Linh Phong species (server/data/creatures/bees.json) -> beasts/bee_<id> (fly, sting; facings right/left)",

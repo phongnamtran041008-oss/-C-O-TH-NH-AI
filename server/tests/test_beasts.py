@@ -77,12 +77,12 @@ async def own(uid: int) -> list[str]:
 BESTIARY = {"ngoc_tho", "tam_bao_thu", "kim_thiem", "bach_ho_con", "cuu_vi_ho", "kim_si_dieu"}
 
 
-def test_the_five_beasts_of_luyen_khi_are_built_and_the_sky_one_waits():
+def test_the_eleven_beasts_of_luyen_khi_are_built_and_the_sky_one_waits():
     built = beasts.built()
-    assert set(built) == {"linh_ho", "huyen_quy", "bach_hac", "hoa_tuoc", "tieu_long"}
+    assert set(built) == {"linh_ho", "huyen_quy", "bach_hac", "hoa_tuoc", "tieu_long"} | BESTIARY
     assert bplan("ky_lan_con")["status"] == "chua_co" and "ky_lan_con" not in built
-    # the six of the bestiary wait for their art (test_bestiary.py plays them with the status flipped)
-    assert all(bplan(b)["status"] == "cho_hinh" for b in BESTIARY) and not BESTIARY & set(built)
+    # the six of the bestiary have their art since 2026-11-20 (test_bestiary.py also plays them waiting)
+    assert all(bplan(b)["status"] == "co" for b in BESTIARY)
     assert math_tree.section_wired("beasts") and math_tree.section_wired("abilities")
     for bid, b in built.items():
         assert lands.zone_of(b["land"]) is not None, bid

@@ -1,9 +1,10 @@
 """The bestiary (2026-11-20): thirteen new creatures of the Luyện Khí lands (data/math/monsters.json,
 spawned by the land maps) and six new linh thú with six new gifts (world_plan.json `beasts`).
 
-The six beasts ship with `status` "cho_hinh" (waiting for their art, like a weapon type): they are
-validated as data, absent from the live game, and their gifts read 0. Here they are played with the
-status flipped to "co" (the `live` fixture) - the one change needed once the art is in.
+The six beasts shipped with `status` "cho_hinh" (waiting for their art, like a weapon type): such a
+beast is validated as data, absent from the live game, and its gift reads 0 (the `waiting` fixture
+plays that). Their art arrived on 2026-11-20 and they are "co": the `live` fixture is now a no-op
+kept for the tests that were written against the flip.
 """
 import copy
 import json
@@ -43,6 +44,30 @@ def flipped_plan() -> dict:
         if b["id"] in BESTIARY:
             b["status"] = "co"
     return plan
+
+
+def waiting_plan() -> dict:
+    plan = copy.deepcopy(math_tree.world_plan())
+    for b in plan["beasts"]:
+        if b["id"] in BESTIARY:
+            b["status"] = "cho_hinh"
+    return plan
+
+
+@pytest.fixture
+def waiting(monkeypatch):
+    """The six beasts back to 'cho_hinh': how a new beast waits for its art."""
+    real = beasts._data()
+    every = copy.deepcopy(real["all"])
+    for bid in BESTIARY:
+        every[bid]["status"] = "cho_hinh"
+    patched = {**real, "all": every, "built": {k: b for k, b in every.items() if b.get("status") == "co"}}
+    monkeypatch.setattr(beasts, "_data", lambda: patched)
+    beasts.land_nodes.cache_clear()
+    beasts.fight_info.cache_clear()
+    yield patched
+    beasts.land_nodes.cache_clear()
+    beasts.fight_info.cache_clear()
 
 
 @pytest.fixture
@@ -140,9 +165,16 @@ def test_every_new_creature_has_a_picture_today():
 
 
 # ------------------------------------------------------------------ the six beasts, as data
-def test_the_six_beasts_wait_for_their_art_and_are_nowhere():
+def test_the_six_beasts_are_in_the_game():
     for bid, gtype in GIFTS.items():
         b = bplan(bid)
+        assert b["status"] == "co" and b["gift"]["type"] == gtype and gtype in math_tree.GIFT_TYPES
+        assert bid in beasts.built() and bid in pets.species()
+
+
+def test_a_beast_waiting_for_its_art_is_nowhere(waiting):
+    for bid, gtype in GIFTS.items():
+        b = waiting["all"][bid]
         assert b["status"] == "cho_hinh" and b["gift"]["type"] == gtype and gtype in math_tree.GIFT_TYPES
         assert bid not in beasts.built() and bid not in pets.species()
         assert beasts.gift_value(bid, gtype) == 0, "a beast waiting for its art gives nothing"
@@ -189,13 +221,26 @@ def check_all():
 
 
 def test_flipping_the_status_is_the_only_change_needed_for_the_art_check(check_all, monkeypatch, tmp_path):
-    assert check_all.check_beasts() == []
+    assert check_all.check_beasts() == [], "with the artists' sheets in, the check passes"
+    # without their art (the tree as it was before the artists delivered) the check names the six...
+    real = ROOT / "client" / "assets" / "v2"
+    bare = tmp_path / "bare"
+    shutil.copytree(real / "beasts", bare / "beasts")
+    wiring = json.loads((real / "wiring.json").read_text("utf-8"))
+    for bid in BESTIARY:
+        wiring["spirit_beasts"].pop(bid, None)
+        for f in (bare / "beasts").glob(f"{bid}.*"):
+            f.unlink()
+    (bare / "wiring.json").write_text(json.dumps(wiring), "utf-8")
+    missing = [e for e in check_all.check_beasts(bare) if e.startswith("beast ")]
+    assert {e.split()[1].rstrip(":") for e in missing} == BESTIARY
+    # ...and is quiet about them while they wait
+    plan = waiting_plan()
+    monkeypatch.setattr(math_tree, "world_plan", lambda *a, **k: plan)
+    assert [e for e in check_all.check_beasts(bare) if e.startswith("beast ")] == []
     plan = flipped_plan()
     monkeypatch.setattr(math_tree, "world_plan", lambda *a, **k: plan)
-    missing = [e for e in check_all.check_beasts() if e.startswith("beast ")]
-    assert {e.split()[1].rstrip(":") for e in missing} == BESTIARY
     # the artists' files: a sheet with every clip and the spirit_beasts line
-    real = ROOT / "client" / "assets" / "v2"
     v2 = tmp_path / "v2"
     shutil.copytree(real / "beasts", v2 / "beasts")
     wiring = json.loads((real / "wiring.json").read_text("utf-8"))
