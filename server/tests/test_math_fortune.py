@@ -18,7 +18,7 @@ from app import clock
 from app import db as dbm
 from app.learning import math_path
 from app.learning import quiz
-from app.models import AuditLog, MathAnswer, QuizSession, User
+from app.models import AuditLog, Character, MathAnswer, QuizSession, User
 from app.systems import items, math_ask, math_combat, math_fortune
 from tests.helpers import answer_key, register
 from tests.test_math_ask import open_tier_2
@@ -100,6 +100,18 @@ async def wallet(uid: int) -> tuple[int, dict]:
     async with dbm.SessionLocal() as db:
         user = await db.get(User, uid)
         return user.spirit_stones, dict(await items.stacks(db, uid))
+
+
+async def cultivator(client, h, uid: int, realm: str = "truc_co", stage: int = 1) -> None:
+    """Give the player a character high enough for every reward of fortune.json (rơi đồ theo tu
+    vi, app/systems/loot.py: Ngọc Giản Lão Nhân opens at Trúc Cơ); a bare account is Phàm Nhân."""
+    from tests.test_combat import LOOK
+    r = await client.post("/character/create", json={"display_name": f"Tu {uid}", "appearance": LOOK}, headers=h)
+    assert r.status_code == 200, r.text
+    async with dbm.SessionLocal() as db:
+        ch = await db.get(Character, uid)
+        ch.realm, ch.realm_stage = realm, stage
+        await db.commit()
 
 
 async def hear(uid: int, n: int = 1, context: str = "math", correct: bool = True) -> list[dict]:
@@ -442,6 +454,7 @@ async def test_rewards_really_land_in_the_inventory(client, monkeypatch):
     ev["rewards"]["rare"]["chance"] = 1.0               # the rare one is certain, so it can be checked
     h, me = await register(client, "fort_reward")
     uid = me["user_id"]
+    await cultivator(client, h, uid)
     await force(uid, ev["id"])
     stones0, bag0 = await wallet(uid)
     math_fortune.seed(2)
@@ -495,6 +508,7 @@ async def test_the_bot_plays_cleanly_and_keeps_the_daily_limit(client, frozen, m
     math_fortune.seed(seed)
     h, me = await register(client, f"fort_bot{seed}")
     uid = me["user_id"]
+    await cultivator(client, h, uid)
     stones0, bag0 = await wallet(uid)
     events = math_fortune.events()
     total = {"stones": 0, "items": {}}

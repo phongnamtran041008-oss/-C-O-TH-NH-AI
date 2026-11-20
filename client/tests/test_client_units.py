@@ -214,3 +214,12 @@ def test_bee_sprites_and_flight():
     assert abs(b.x - 200) < 25 and abs(b.y - 150) < 20
     flock.prune(10.0)
     assert not flock.bees
+
+
+def test_locked_loot_line():
+    """Rơi đồ theo tu vi: the drops a loot payload lists under `locked` become one short line."""
+    from client import strings_vi as T
+    assert T.locked_text(None) == "" and T.locked_text([]) == ""
+    line = T.locked_text([{"name_vi": "Trúc Cơ Đan", "need_vi": "Luyện Khí tầng 7"},
+                          {"name_vi": "Mảnh Bảo Vật", "need_vi": "Kết Đan sơ kỳ"}])
+    assert line == "Tu vi chưa đủ: Trúc Cơ Đan (cần Luyện Khí tầng 7), Mảnh Bảo Vật (cần Kết Đan sơ kỳ)"

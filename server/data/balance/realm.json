@@ -34,20 +34,22 @@
                   "items": [{"item": "manh_tap_hop", "chance": 0.5, "qty": [1, 2]},
                             {"item": "tinh_so_phuc", "chance": 0.3, "qty": [1, 1]}]}
   },
-  "_chest_comment": "The final chest of a won run, rolled by every player on their own. A math bí cảnh pays no xp, no jade and no Mảnh Bảo Vật (fragments 0): Linh Thạch and data/math/drops.json materials only.",
+  "_chest_comment": "The final chest of a won run, rolled by every player on their own. A math bí cảnh pays no xp and no jade: Linh Thạch, data/math/drops.json materials and Linh Quả (its only source since the garden went). Mảnh Bảo Vật (fragments + flawless_fragments per flawless puzzle room, the same count for the whole team) come back in Mặc Ảnh Động only (2026-11-20); like every item of a table they are paid only to a player whose tu vi has unlocked them (data/loot_tiers.json), the others see them as locked.",
   "chest": {
     "khe_nut_muc": {"stones": [40, 80], "xp": 0, "jade": [0, 0], "fragments": 0, "flawless_fragments": 0, "rolls": 1,
                     "table": [{"item": "manh_tap_hop", "weight": 45, "qty": [1, 2]},
                               {"item": "tinh_so_phuc", "weight": 35, "qty": [1, 2]},
                               {"item": "loi_ma_tran", "weight": 20, "qty": [1, 1]}]},
-    "mac_anh_dong": {"stones": [100, 180], "xp": 0, "jade": [0, 0], "fragments": 0, "flawless_fragments": 0, "rolls": 3,
+    "mac_anh_dong": {"stones": [100, 180], "xp": 0, "jade": [0, 0], "fragments": 4, "flawless_fragments": 1, "rolls": 3,
                      "table": [{"item": "manh_tap_hop", "weight": 35, "qty": [1, 3]},
                                {"item": "tinh_so_phuc", "weight": 35, "qty": [1, 3]},
-                               {"item": "loi_ma_tran", "weight": 30, "qty": [1, 2]}]},
+                               {"item": "loi_ma_tran", "weight": 30, "qty": [1, 2]},
+                               {"item": "linh_qua", "weight": 10, "qty": [1, 2]}]},
     "toan_tran": {"stones": [60, 110], "xp": 0, "jade": [0, 0], "fragments": 0, "flawless_fragments": 0, "rolls": 2,
                   "table": [{"item": "manh_tap_hop", "weight": 40, "qty": [1, 3]},
                             {"item": "tinh_so_phuc", "weight": 35, "qty": [1, 2]},
-                            {"item": "loi_ma_tran", "weight": 25, "qty": [1, 2]}]}
+                            {"item": "loi_ma_tran", "weight": 25, "qty": [1, 2]},
+                            {"item": "linh_qua", "weight": 4, "qty": [1, 1]}]}
   },
   "fast_fraction": 0.5,
   "fast_bonus": {"stones_mult": 1.5, "extra_rolls": 1},

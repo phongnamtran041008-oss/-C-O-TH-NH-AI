@@ -243,7 +243,8 @@ async def test_three_bots_clear_the_scheduled_realm_together(client, gw):
     assert done, stuck_report(gw, inst, bots)
     assert inst.result == "won", inst.result
     end = msgs(s0, "realm", "end")[-1]
-    assert end["puzzles"] == 3 and end["fragments"] == 0
+    # Mảnh Bảo Vật came back to this realm (2026-11-20): the team's count is shown to everyone
+    assert end["puzzles"] == 3 and end["fragments"] >= balance.load("realm")["chest"][SCHEDULED]["fragments"] > 0
     # after each move to a new room the others are sent again in full (the client forgets them on `zone`)
     zones = [i for i, m in enumerate(s0.sent) if m.get("t") == "zone" and m.get("zone") == "bi_canh"]
     assert len(zones) == 4
@@ -270,6 +271,10 @@ async def test_three_bots_clear_the_scheduled_realm_together(client, gw):
             assert sorted(r.stage for r in rows) == sorted([f"room{i}" for i in range(4)] + ["chest"])
             for r in rows:
                 assert {i["item"] for i in r.loot.get("items", [])} <= materials and not r.loot.get("equipment")
+            # these heroes are Trúc Cơ: the fragments (Kết Đan) are shown as locked, not paid
+            chest = next(r for r in rows if r.stage == "chest")
+            assert "manh_bao_vat" not in {i["item"] for i in chest.loot.get("items", [])}
+            assert {"name_vi": "Mảnh Bảo Vật", "need_vi": "Kết Đan sơ kỳ"} in chest.loot.get("locked", [])
             m = await db.get(RealmMember, (inst.run_id, uid))
             assert m.result == "won" and m.left_at is not None
     # asking again pays nothing (spec 14.3: no loot twice)

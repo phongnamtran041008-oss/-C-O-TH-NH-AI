@@ -103,6 +103,14 @@ def test_validate_catches_what_breaks_the_rules():
     out = "\n".join(math_realm.validate(bad, c))
     for bit in ("min_realm", "nowhere", "boss_question.prefer", "muc_tinh", "no xp"):
         assert bit in out, (bit, out)
+    # since 2026-11-20 Mảnh Bảo Vật and Linh Quả may come from a math bí cảnh (gated by tu vi,
+    # app/systems/loot.py); Tu Vi and Tiên Ngọc from loot are still refused
+    ok = copy.deepcopy(balance.load("realm"))
+    ok["chest"][REALM].update({"fragments": 2, "flawless_fragments": 1})
+    ok["chest"][REALM]["table"].append({"item": "linh_qua", "weight": 1})
+    assert math_realm.validate(raw, ok) == []
+    ok["chest"][REALM]["jade"] = [0, 2]
+    assert any("no xp nor jade" in e for e in math_realm.validate(raw, ok))
 
 
 async def test_the_gate_lists_the_math_realm_open_and_alone(client, gw):

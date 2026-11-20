@@ -208,6 +208,18 @@ LOOT_STONES = "+{n} Linh Thạch"
 LOOT_XP = "+{n} Tu Vi"
 LOOT_ITEM = "Nhận {name} ×{qty}"
 LOOT_GEAR = "Nhặt được {name} ({rarity})"
+LOOT_LOCKED = "Tu vi chưa đủ: {items}"
+LOOT_LOCKED_ONE = "{name} (cần {need})"
+
+
+def locked_text(locked: list | None) -> str:
+    """One short line for the drops a loot payload lists under `locked` (rơi đồ theo tu vi);
+    "" when there are none."""
+    if not locked:
+        return ""
+    return LOOT_LOCKED.format(items=", ".join(LOOT_LOCKED_ONE.format(name=x.get("name_vi", ""),
+                                                                      need=x.get("need_vi", ""))
+                                              for x in locked[:3]))
 QUEST_DONE = "Nhiệm vụ hoàn thành: {title} — mở Nhiệm vụ (J) để nhận thưởng"
 STAGE_UP = "Đột phá: {label}!"
 BOTTLENECK = "Tu Vi đã đầy. Cần {pill} và vượt Thiên Kiếp để vào {realm}."

@@ -47,6 +47,9 @@ Exit code 0 when every check passes, 1 otherwise. The list grows with each miles
     question type exists, every effect is drawn by client/art/skill_fx.py and every
     animation is a clip of every Đạo Sĩ sheet; each chiêu unlocked on floors 1-3 has a
     question that casts it there, and only the documented one may have none anywhere
+  * rơi đồ theo tu vi (2026-11-20): app/systems/loot.py validate() - every item of a loot
+    table has a tu vi tier in data/loot_tiers.json, no wild zone or bí cảnh lists anything
+    above its cap (its monsters included), and no breakthrough pill unlocks too late
   * Đạo Thụ: tree.json and world_plan.json pass math_tree.validate_all(), every part of a
     node names real micro-skills of its floor, and every main-path node with content can be
     reached from an empty save by finishing open nodes (vacant nodes count as done)
@@ -637,6 +640,7 @@ CHECKS = [
      _mode_check("math_fortune")),
     ("thủ thành toán: towers, their areas of mathematics and the level are sound",
      _mode_check("math_td")),
+    ("rơi đồ: mỗi món có mốc tu vi, không nguồn nào vượt trần", _mode_check("loot")),
     ("Đạo Thụ: the tree is sound, every part names real micro-skills, every main node can be reached",
      check_tree),
     ("fonts: every string the game shows can be drawn", check_fonts),

@@ -661,9 +661,10 @@ bậc của chính người trả lời, không bao giờ theo tầng của quá
   không bao giờ là một Thiên kiếp (M11 đợt 2: một câu 8-12 phút không hợp với bí cảnh 15-20 phút).
 - Người chơi mà ngân hàng không có câu: `{"t": "error", "code": "no_math_question"}`; phòng và khiên boss không
   chờ người đó.
-- Thưởng: như bí cảnh cũ (`realm loot`), nhưng chỉ Linh Thạch và vật liệu của `data/math/drops.json`
-  (`room_loot_by_realm.<id>`, `chest.<id>` trong `balance/realm.json`, cho cả ba bí cảnh), không Tu Vi, không Ngọc,
-  không Mảnh Bảo Vật.
+- Thưởng: như bí cảnh cũ (`realm loot`), nhưng chỉ Linh Thạch, vật liệu của `data/math/drops.json` và Linh Quả
+  (`room_loot_by_realm.<id>`, `chest.<id>` trong `balance/realm.json`, cho cả ba bí cảnh), không Tu Vi, không Ngọc.
+  Mảnh Bảo Vật được phép lại từ 2026-11-20 (rương Mặc Ảnh Động). Mọi món đều theo mốc tu vi
+  (`data/loot_tiers.json`): món chưa mở không trao mà nằm trong `locked: [{name_vi, need_vi}]` của gói loot.
 - Tin `ract` (đánh đồ vật trong phòng câu đố chữ) đã bỏ khỏi giao thức (2026-11-20).
 
 ## M11 — Sảnh toán bốn bí cảnh, bài kiểm tra đầu vào (agent HUB)

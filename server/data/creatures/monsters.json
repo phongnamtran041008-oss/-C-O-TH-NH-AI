@@ -192,14 +192,6 @@
         ]
       },
       {
-        "item": "truc_co_dan",
-        "chance": 0.15,
-        "qty": [
-          1,
-          1
-        ]
-      },
-      {
         "equipment": [
           "gay_truc",
           "ao_truc_van",
@@ -215,14 +207,6 @@
         "qty": [
           1,
           2
-        ]
-      },
-      {
-        "item": "dp_truc_co",
-        "chance": 0.08,
-        "qty": [
-          1,
-          1
         ]
       }
     ]

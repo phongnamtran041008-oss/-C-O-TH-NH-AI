@@ -383,6 +383,8 @@ class RealmView:
                 g.state.me["spirit_stones"] = lt["spirit_stones"]
             if lt.get("stage", "").startswith("room"):
                 self.note(T.REALM_ROOM_LOOT.format(i=int(lt["stage"][4:]) + 1, n=lt.get("stones", 0)), "#E9C46A")
+            if lt.get("locked"):
+                self.note(T.locked_text(lt["locked"]), "#B8AE9A")
             g.refresh_inv()
         elif ev == "seal":      # someone answered a Trận Nhãn seal
             self.note((T.REALM_SEAL_OK if m.get("ok") else T.REALM_SEAL_BAD).format(by=m.get("by", "")),

@@ -144,8 +144,31 @@ async def _claim(user_id: int, run_id: int, stage: str, roll) -> dict | None:
     return loot
 
 
+def _open_entries(entries: list[dict], realm: str, stage: int) -> list[dict]:
+    """The entries of a weighted table this player may get (loot.py): items they have
+    unlocked, equipment whose lowest rarity is within their cap."""
+    from . import loot
+    cap = loot.rarity_cap(realm, stage)
+    order = items.RARITY_ORDER
+    out = []
+    for e in entries:
+        if "item" in e:
+            if loot.unlocked(e["item"], realm, stage):
+                out.append(e)
+        elif cap is not None and order.index(e.get("min_rarity") or order[0]) <= order.index(cap):
+            out.append(e)
+    return out
+
+
 async def _grant_table(db: AsyncSession, uid: int, rng: random.Random, entries: list[dict], ref: str,
-                       out: dict) -> None:
+                       out: dict, tier: tuple[str, int] = ("pham_nhan", 0), realm_id: str | None = None) -> None:
+    """One roll of a weighted table: what the player has not unlocked is taken out first, then
+    the rest is weighed; nothing left, nothing paid. Equipment also stays within the cap of
+    the bí cảnh `realm_id`."""
+    from . import loot
+    entries = _open_entries(entries, *tier)
+    if not entries:
+        return
     total = sum(e["weight"] for e in entries)
     x = rng.uniform(0, total)
     for e in entries:
@@ -156,7 +179,8 @@ async def _grant_table(db: AsyncSession, uid: int, rng: random.Random, entries: 
         qty = rng.randint(*e.get("qty", [1, 1]))
         out["items"] += await items.grant_items(db, uid, [{"item": e["item"], "qty": qty}], "realm", ref)
     else:
-        rar = items.roll_rarity(rng, e.get("min_rarity"))
+        rar = loot.roll_equipment_rarity(rng, e.get("min_rarity"), *tier,
+                                         within=loot.source_cap(realm_id) if realm_id else None)
         out["equipment"].append(await items.grant_equipment(db, uid, rng.choice(e["equipment"]), rar, "realm", ref))
 
 
@@ -167,14 +191,19 @@ async def claim_room(run_id: int, user_id: int, room_index: int, room_kind: str,
     ref = f"run{run_id}:room{room_index}"
 
     async def roll(db, rng):
+        from . import loot
         out = {"stage": f"room{room_index}", "room": room_kind, "items": [], "equipment": []}
         stones = rng.randint(*c["stones"])
         out["spirit_stones"] = await inventory.change_currency(db, user_id, "spirit_stones", stones, "realm", ref)
         out["stones"] = stones
+        realm, stage = await loot.player_tier(db, user_id)
         for d in c["items"]:
             if rng.random() < d["chance"]:
-                out["items"] += await items.grant_items(
-                    db, user_id, [{"item": d["item"], "qty": rng.randint(*d.get("qty", [1, 1]))}], "realm", ref)
+                qty = rng.randint(*d.get("qty", [1, 1]))
+                if not loot.unlocked(d["item"], realm, stage):   # rolled but above this player's tu vi
+                    loot.note_locked(out, d["item"])
+                    continue
+                out["items"] += await items.grant_items(db, user_id, [{"item": d["item"], "qty": qty}], "realm", ref)
         if c["xp"]:
             out["xp"] = await cultivation.add_xp(db, user_id, c["xp"], "realm")
         return out
@@ -183,13 +212,16 @@ async def claim_room(run_id: int, user_id: int, room_index: int, room_kind: str,
 
 async def claim_chest(run_id: int, user_id: int, realm_id: str, fragments: int, fast: bool) -> dict | None:
     """The final chest (spec 14.3): every player rolls on their own; the Mảnh Bảo Vật count is
-    the same for the whole team. Finishing fast adds stones and a roll."""
+    the same for the whole team, but only a player whose tu vi has unlocked them gets them
+    (loot.py; the others see them under `locked`). Finishing fast adds stones and a roll."""
     c = cfg()
     chest = c["chest"][realm_id]
     ref = f"run{run_id}:chest"
 
     async def roll(db, rng):
+        from . import loot
         out = {"stage": "chest", "items": [], "equipment": [], "fast": fast}
+        tier = await loot.player_tier(db, user_id)
         stones = rng.randint(*chest["stones"])
         if fast:
             stones = int(round(stones * c["fast_bonus"]["stones_mult"]))
@@ -199,11 +231,13 @@ async def claim_chest(run_id: int, user_id: int, realm_id: str, fragments: int, 
         if jade:
             out["immortal_jade"] = await inventory.change_currency(db, user_id, "immortal_jade", jade, "realm", ref)
             out["jade"] = jade
-        if fragments:
+        if fragments and not loot.unlocked("manh_bao_vat", *tier):
+            loot.note_locked(out, "manh_bao_vat")      # the team's count, but not for this tu vi yet
+        elif fragments:
             out["items"] += await items.grant_items(db, user_id, [{"item": "manh_bao_vat", "qty": fragments}],
                                                     "realm", ref)
         for _ in range(chest["rolls"] + (c["fast_bonus"]["extra_rolls"] if fast else 0)):
-            await _grant_table(db, user_id, rng, chest["table"], ref, out)
+            await _grant_table(db, user_id, rng, chest["table"], ref, out, tier, realm_id)
         if chest["xp"]:
             out["xp"] = await cultivation.add_xp(db, user_id, chest["xp"], "realm")
         from . import quests

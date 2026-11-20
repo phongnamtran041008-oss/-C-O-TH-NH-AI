@@ -178,6 +178,8 @@ class MathFortuneScene(Scene):
         for i in r.get("items", []):
             line = T.FORTUNE_ITEM.format(n=i["qty"], name=i["name_vi"]) + (f" {T.FORTUNE_RARE}" if i["rare"] else "")
             cy += ui.text(line, x + 14, cy, 9, UICOL["accent"] if i["rare"] else "#2B2B2B").h + 2
+        if r.get("locked"):
+            cy += ui.text(T.locked_text(r["locked"]), x + 14, cy, 8, GREY, max_w=w - 28).h + 2
 
     def draw_log(self, ui, x, y, w):
         ui.text(T.FORTUNE_LOG, x + 14, y, 8, "#2B2B2B")

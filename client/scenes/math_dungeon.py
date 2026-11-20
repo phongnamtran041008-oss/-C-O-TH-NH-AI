@@ -73,6 +73,9 @@ class DungeonQuizScene(MathQuizScene):
         elif d.get("room_cleared"):
             reward = d.get("reward") or {}
             notes.append(f"{T.DG_ROOM_CLEARED} {loot_text(reward.get('stones', 0), reward.get('items', []))}")
+        got = d.get("chest") or d.get("reward") or {}
+        if got.get("locked"):
+            notes.append(T.locked_text(got["locked"]))
         if d.get("heart_lost"):
             notes.append(T.DG_HEART_LOST)
             colour = RED

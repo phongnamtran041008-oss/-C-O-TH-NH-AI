@@ -119,6 +119,51 @@ Thiên) và **Cần Thiên Tơ** (12 Thiên Tằm Ti + 30 Vảy + 6.000 Linh Th�
 — bán đi là bỏ phí: một món Thiên ghép từ 12 mảnh (120 nếu bán) đáng giá hơn nhiều. Chia Tu Vi trong tổ đội không cho
 Linh Thạch.
 
+## Rơi đồ theo tu vi
+
+(2026-11-20, `server/data/loot_tiers.json`, luật ở `server/app/systems/loot.py`.) Đồ tốt từ quái, bí cảnh, hầm ngục
+và cơ duyên chỉ rơi cho người có tu vi (cảnh giới + tầng) từ mốc của món ấy trở lên; món đã rơi mà chưa tới mốc thì
+không nhận, chỉ hiện một dòng "Tu vi chưa đủ: … (cần …)". Rương bí cảnh rút thăm theo trọng số thì bỏ các món chưa
+mở trước rồi mới rút. Món nào trong bảng rơi đồ mà quên ghi mốc thì `check_all` báo lỗi, và khi chạy thì coi như khoá
+tới tầng cao nhất. Ghi chú lỗi sai (`kind: note`) không bao giờ bị khoá. Không khoá: cửa hàng, thưởng nhiệm vụ, gacha,
+chế tạo, câu cá, luyện đan, thưởng sao thủ thành.
+
+| Mốc tu vi | Món |
+|---|---|
+| Phàm Nhân | Mực Tinh, Gỗ Linh Mộc, Trúc Diệp Thảo, Hồi Huyết Đan, Mảnh Tập Hợp |
+| Luyện Khí tầng 1 | Hồi Khí Đan |
+| Luyện Khí tầng 2 | Tinh Số Phức |
+| Luyện Khí tầng 3 | Mặc Linh Chi |
+| Luyện Khí tầng 4 | Lõi Ma Trận |
+| Luyện Khí tầng 5 | Kháng Mực Đan, Đan phương: Kháng Mực Đan, Thiên Tằm Ti |
+| Luyện Khí tầng 6 | Ấn Rương Đề |
+| Luyện Khí tầng 7 | Trúc Cơ Đan, Đan phương: Trúc Cơ Đan |
+| Trúc Cơ sơ kỳ | Linh Quả, Ngọc Giản Lão Nhân, Tụ Linh Đan, Ngộ Tính Đan |
+| Trúc Cơ hậu kỳ | Kết Đan Đan |
+| Kết Đan sơ kỳ | Mảnh Bảo Vật |
+| Kết Đan hậu kỳ … Hợp Thể hậu kỳ | Nguyên Anh Đan, Hóa Thần Đan, Luyện Hư Đan, Hợp Thể Đan, Đại Thừa Đan (mỗi viên ở tầng cuối của cảnh giới nó phá ra) |
+
+Phẩm trang bị rơi được: Phàm từ Phàm Nhân, Linh từ Luyện Khí tầng 1, Huyền từ Luyện Khí tầng 6, Địa từ Trúc Cơ sơ kỳ,
+Thiên từ Kết Đan sơ kỳ (Thiên có trọng số 0 nên thực tế chỉ có ở Ghép Bảo Vật). Một món có phẩm tối thiểu cao hơn mốc
+của người chơi thì bỏ qua.
+
+Trần của từng nguồn (tính cả quái sinh ra ở đó): không nguồn nào được ghi món cao hơn trần của nó. Phẩm trang
+bị rơi ra cũng không vượt trần của nơi hạ quái hay của bí cảnh mở rương: ở Rừng Mực Loang chỉ ra Phàm và Linh
+dù người đánh đã Đại Thừa.
+
+| Nguồn | Trần |
+|---|---|
+| Rừng Mực Loang | Luyện Khí tầng 5 |
+| Hồ Nghiên Mực, Loạn Số Cốc | Luyện Khí tầng 9 |
+| Khe Nứt Mực (khe nứt) | Luyện Khí tầng 9 |
+| Toán Trận Bí Cảnh | Trúc Cơ hậu kỳ |
+| Mặc Ảnh Động (theo giờ) | không trần |
+
+Vì trần Rừng Mực Loang, Trúc Cơ Đan (15%) và Đan phương: Trúc Cơ Đan (8%) chuyển từ Mặc Hồ (tinh anh của rừng) sang
+Đối Xứng Ma (tinh anh tầng 3 của Loạn Số Cốc, nguồn Luyện Khí khó nhất). Mảnh Bảo Vật trở lại rương Mặc Ảnh Động
+(4 mảnh + 1 cho mỗi gian câu đố không sai, cùng số cho cả đội, chỉ người từ Kết Đan sơ kỳ nhận). Linh Quả có nguồn lại:
+rương Mặc Ảnh Động (trọng số 10/110, 1-2 quả) và rương Toán Trận (4/104, 1 quả), từ Trúc Cơ sơ kỳ.
+
 ## Khi chỉnh số liệu
 
 1. Sửa file JSON.

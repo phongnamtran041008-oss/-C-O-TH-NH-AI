@@ -14,7 +14,7 @@ from sqlalchemy import select
 
 from app import db as dbm
 from app.learning import math_items, math_path
-from app.models import MathAnswer, MathDungeonRun, User
+from app.models import Character, MathAnswer, MathDungeonRun, User
 from app.systems import items, math_combat, math_dungeon, math_practice
 from tests.helpers import answer_key, register
 from tests.test_combat import LOOK
@@ -30,17 +30,24 @@ FLOORS = (1, 2, 3)
 # the floors a player delves on in the API tests: Đạo Thụ's main path of Đại Số (floor 2 holds only an
 # optional node, and a dungeon is only ever on a floor with an open or passed main-path node)
 PLAYED = (1, 3, 4)
+HIGH = ("luyen_khi", 9)     # unlocks every material a dungeon chest pays (data/loot_tiers.json)
 
 
-async def make(client, name: str, floor: int = 1):
+async def make(client, name: str, floor: int = 1, tu_vi: tuple[str, int] | None = None):
     """A player with a character (Tu Vi needs one) whose own floor is `floor` (the floors
-    below it cleared)."""
+    below it cleared). `tu_vi` (realm, stage): a cultivator high enough for the materials a
+    chest pays (rơi đồ theo tu vi, app/systems/loot.py); a new character is Phàm Nhân."""
     h, me = await register(client, name)
     r = await client.post("/character/create", json={"display_name": name.replace("_", " "), "appearance": LOOK},
                           headers=h)
     assert r.status_code == 200, r.text
     for n in range(1, floor):
         await clear_floor(me["user_id"], n)
+    if tu_vi:
+        async with dbm.SessionLocal() as db:
+            ch = await db.get(Character, me["user_id"])
+            ch.realm, ch.realm_stage = tu_vi
+            await db.commit()
     return h, me["user_id"]
 
 
@@ -340,7 +347,7 @@ async def test_a_run_can_be_abandoned_and_a_question_answered_after_that_only_co
 # ------------------------------------------------------------------ rewards
 @pytest.mark.asyncio
 async def test_a_cleared_dungeon_pays_every_room_and_the_chest_and_tu_vi_by_tier(client):
-    h, uid = await make(client, "dg_chest", floor=3)
+    h, uid = await make(client, "dg_chest", floor=3, tu_vi=HIGH)
     before_stones, before_items = await stones(uid), await held(uid)
     out = await bot.play_dungeon(client, h, answer_key, seed=777)
     run = out["run"]
@@ -382,7 +389,7 @@ async def test_the_bot_plays_many_seeds_on_every_floor_and_every_run_ends_cleanl
     rates = (0.0, 0.2, 0.45, 0.8)
     states = set()
     for floor in PLAYED:
-        h, uid = await make(client, f"dg_bot{floor}", floor)
+        h, uid = await make(client, f"dg_bot{floor}", floor, tu_vi=HIGH)
         start_stones, start_items = await stones(uid), await held(uid)
         paid_stones, paid_items, rewarded_runs = 0, {}, 0
         for n in range(20):

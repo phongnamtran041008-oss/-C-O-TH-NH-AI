@@ -385,13 +385,21 @@ async def grant(db: AsyncSession, user: User, ev: dict) -> dict:
     rare = r.get("rare")
     if rare and _rng.random() < rare["chance"]:
         got.append({"item": rare["item"], "qty": int(rare["qty"]), "rare": True})
+    from . import loot   # rơi đồ theo tu vi: what the player has not unlocked is shown, not paid
+    realm, stage = await loot.player_tier(db, user.id)
+    out: dict = {}
+    paid = []
     for g in got:
+        if not loot.unlocked(g["item"], realm, stage):
+            loot.note_locked(out, g["item"])
+            continue
         await inventory.change_item(db, user.id, g["item"], g["qty"], "math_fortune", ev["id"])
         g["name_vi"] = (catalog.stack_item(g["item"]) or {}).get("name_vi", g["item"])
+        paid.append(g)
     if stones:
         await db.flush()
         await db.refresh(user, ["spirit_stones"])
-    return {"spirit_stones": stones, "items": got}
+    return {"spirit_stones": stones, "items": paid, **out}
 
 
 def _block(ev: dict, step: int, *, done: bool, won: bool = False, rewards: dict | None = None,

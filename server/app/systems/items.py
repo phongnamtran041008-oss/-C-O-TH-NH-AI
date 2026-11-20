@@ -22,10 +22,15 @@ class ItemError(Exception):
 RARITY_ORDER = ["pham", "linh", "huyen", "dia", "thien"]
 
 
-def roll_rarity(rng: random.Random, min_rarity: str | None = None) -> str:
+def roll_rarity(rng: random.Random, min_rarity: str | None = None, max_rarity: str | None = None) -> str:
+    """A rarity by weight among min_rarity..max_rarity (loot.roll_equipment_rarity passes the
+    player's cap as max_rarity)."""
     rar = catalog.equipment()["rarities"]
     lo = RARITY_ORDER.index(min_rarity) if min_rarity else 0
-    choices = [(r, rar[r]["weight"]) for r in RARITY_ORDER[lo:] if rar[r]["weight"] > 0]
+    hi = RARITY_ORDER.index(max_rarity) if max_rarity else len(RARITY_ORDER) - 1
+    choices = [(r, rar[r]["weight"]) for r in RARITY_ORDER[lo:hi + 1] if rar[r]["weight"] > 0]
+    if not choices:      # every rarity in range weighs 0: the lowest one allowed
+        return RARITY_ORDER[lo]
     total = sum(w for _, w in choices)
     x = rng.uniform(0, total)
     for r, w in choices:

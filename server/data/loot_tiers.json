@@ -1,0 +1,46 @@
+{
+  "_comment": "Rơi đồ theo tu vi (2026-11-20): good loot unlocks only as the player climbs. Read by app/systems/loot.py and checked by loot.validate() (tools/check_all.py). A tier is a cultivation realm of realms_cultivation.json, optionally ':stage' ('luyen_khi:4', 'truc_co:1'); a realm without a stage means its first stage. items: the tu vi at which an item starts dropping for a player from monsters, bí cảnh, hầm ngục and cơ duyên (shop, quests, gacha, crafting, fishing and alchemy are not gated). Every item of a loot table must be listed here (the ghi chú lỗi sai of math/drops.json, kind note, are never gated); an unlisted item counts as locked below the top tier. equipment_rarity: the tu vi at which each rarity of equipment may drop. source_caps: the highest tier a wild zone (zones.json) or a bí cảnh (realms.json) may list at all, counting the monsters that spawn there; null = no cap. A breakthrough pill and everything it is brewed from unlock no later than the last stage of the realm it breaks out of.",
+  "items": {
+    "muc_tinh": "pham_nhan",
+    "go_linh_moc": "pham_nhan",
+    "truc_diep_thao": "pham_nhan",
+    "hoi_huyet_dan": "pham_nhan",
+    "manh_tap_hop": "pham_nhan",
+    "hoi_khi_dan": "luyen_khi:1",
+    "tinh_so_phuc": "luyen_khi:2",
+    "mac_linh_chi": "luyen_khi:3",
+    "loi_ma_tran": "luyen_khi:4",
+    "khang_muc_dan": "luyen_khi:5",
+    "dp_khang_muc": "luyen_khi:5",
+    "thien_tam_ti": "luyen_khi:5",
+    "an_ruong_de": "luyen_khi:6",
+    "truc_co_dan": "luyen_khi:7",
+    "dp_truc_co": "luyen_khi:7",
+    "linh_qua": "truc_co:1",
+    "ngoc_gian_lao_nhan": "truc_co:1",
+    "tu_linh_dan": "truc_co:1",
+    "ngo_tinh_dan": "truc_co:1",
+    "kim_dan_dan": "truc_co:3",
+    "manh_bao_vat": "kim_dan:1",
+    "nguyen_anh_dan": "kim_dan:3",
+    "hoa_than_dan": "nguyen_anh:3",
+    "luyen_hu_dan": "hoa_than:3",
+    "hop_the_dan": "luyen_hu:3",
+    "dai_thua_dan": "hop_the:3"
+  },
+  "equipment_rarity": {
+    "pham": "pham_nhan",
+    "linh": "luyen_khi:1",
+    "huyen": "luyen_khi:6",
+    "dia": "truc_co:1",
+    "thien": "kim_dan:1"
+  },
+  "source_caps": {
+    "rung_muc_loang": "luyen_khi:5",
+    "ho_nghien_muc": "luyen_khi:9",
+    "loan_so_coc": "luyen_khi:9",
+    "khe_nut_muc": "luyen_khi:9",
+    "toan_tran": "truc_co:3",
+    "mac_anh_dong": null
+  }
+}

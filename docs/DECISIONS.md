@@ -1274,3 +1274,23 @@ Quyết định khi gỡ chữ khỏi luyện đan, Pháp Chữ và Khắc Văn:
 - **Để nguyên, có lý do:** tên trường `word` trong `td_sim.py` (bản sao y hệt ở client, là id loại tháp) và
   `td_runs.questions`; id các gian của bản đồ bí cảnh (`compose`, `sentence`, `tone`...) dùng chung với
   client và `realms.json`; mã tín hiệu LAN `khuvuon-lan` (đổi là máy cũ và mới không thấy nhau).
+
+## 2026-11-20: rơi đồ theo tu vi
+
+Tác giả: "từ quái và các bí cảnh đồ xịn thì càng đi lên cao ms càng mở khóa nhé k p tống hết con nào cx rơi ra đc
+thì chết tôi".
+
+- **Một mốc tu vi cho mỗi món rơi** (`server/data/loot_tiers.json`, `server/app/systems/loot.py`): "cao" là tu vi
+  (cảnh giới + tầng), không phải tầng toán. Mốc được kiểm tra ở chỗ trao đồ: quái (`realtime/combat.py::_reward`,
+  từng người trong tổ đội), bí cảnh (`secret_realm.claim_room`, `claim_chest`, số Mảnh Bảo Vật), hầm ngục
+  (`math_dungeon._grant`), cơ duyên (`math_fortune.grant`). Món đã rơi mà chưa tới mốc không mất trong im lặng:
+  gói loot có `locked` (tối đa 3) và client hiện một dòng "Tu vi chưa đủ: … (cần …)". Món quên ghi mốc: lỗi ở
+  `check_all`, và khi chạy thì khoá tới tầng cao nhất (thà khoá nhầm còn hơn thả nhầm). Ghi chú lỗi sai không khoá.
+- **Không phải con nào cũng rơi mọi thứ:** mỗi vùng hoang và mỗi bí cảnh có trần; `loot.validate()` (dòng mới của
+  `check_all`) từ chối mọi bảng vượt trần, tính cả quái sinh ra ở đó. Trúc Cơ Đan và đan phương của nó rời Mặc Hồ
+  (Rừng Mực Loang, trần Luyện Khí tầng 5) sang Đối Xứng Ma (Loạn Số Cốc).
+- **Hai món mồ côi có nguồn lại, có khoá:** Mảnh Bảo Vật (Kết Đan sơ kỳ) ở rương Mặc Ảnh Động với số cũ (4 + 1 mỗi
+  gian không sai); Linh Quả (Trúc Cơ sơ kỳ) ở rương Mặc Ảnh Động và Toán Trận, nên Cá Chép Hóa Long câu được lại. Luật 7
+  của bí cảnh toán (`math_realm.validate`) nới đúng phần này: được trả Mảnh Bảo Vật và Linh Quả; vẫn không Tu Vi,
+  không Tiên Ngọc từ rương.
+- Không khoá: cửa hàng, thưởng nhiệm vụ và mốc sưu tập, gacha, chế tạo, câu cá, luyện đan, thưởng sao thủ thành.

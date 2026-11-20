@@ -279,7 +279,9 @@
   "drops": [
    {"item": "loi_ma_tran", "chance": 0.85, "qty": [2, 3]},
    {"item": "muc_tinh", "chance": 0.4, "qty": [1, 3]},
-   {"equipment": ["kiem_go_dao", "ao_truc_van"], "chance": 0.1}
+   {"equipment": ["kiem_go_dao", "ao_truc_van"], "chance": 0.1},
+   {"item": "truc_co_dan", "chance": 0.15, "qty": [1, 1]},
+   {"item": "dp_truc_co", "chance": 0.08, "qty": [1, 1]}
   ]
  }
 }

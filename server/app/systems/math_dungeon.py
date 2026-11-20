@@ -504,12 +504,18 @@ async def _grant(db: AsyncSession, user_id: int, run: MathDungeonRun, reward: di
     if reward["stones"]:
         await inventory.change_currency(db, user_id, "spirit_stones", int(reward["stones"]), REASON, ref)
         run.stones_gained += int(reward["stones"])
-    items = dict(run.items_gained or {})
+    from . import loot   # rơi đồ theo tu vi: a material above the player's tu vi is shown, not paid
+    realm, stage = await loot.player_tier(db, user_id)
+    items, paid, out = dict(run.items_gained or {}), {}, {}
     for item, qty in reward["items"].items():
+        if not loot.unlocked(item, realm, stage):
+            loot.note_locked(out, item)
+            continue
         await inventory.change_item(db, user_id, item, int(qty), REASON, ref)
         items[item] = items.get(item, 0) + int(qty)
+        paid[item] = int(qty)
     run.items_gained = items          # (a new dict, so the JSON column sees the change)
-    return {"stones": int(reward["stones"]), "items": _items_view(reward["items"]), "withheld": False}
+    return {"stones": int(reward["stones"]), "items": _items_view(paid), "withheld": False, **out}
 
 
 async def _after_answer(db: AsyncSession, user_id: int, run: MathDungeonRun, correct: bool,

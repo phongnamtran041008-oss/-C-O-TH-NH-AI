@@ -41,6 +41,7 @@ if TYPE_CHECKING:
 CONTEXT = "math_realm"
 ASKERS = ("monster", "seal", "boss")
 QUICK_TYPES = tuple(t for t in math_items.PLAYABLE_TYPES if t != "tribulation")    # what a bí cảnh asks
+REALM_EXTRA_LOOT = ("linh_qua",)    # besides the M7 materials: Linh Quả, whose only source is a bí cảnh
 
 
 # ------------------------------------------------------------------ which question
@@ -193,16 +194,16 @@ def validate(realms_data: dict | None = None, realm_cfg: dict | None = None) -> 
                 out.append(f"{here}: unknown room monster {kind!r}")
         if not puzzles.get("boss"):
             out.append(f"{here}: puzzles.boss missing")
-        # rule 7: Linh Thạch, Tu Vi through the answers, and the M7 materials only
+        # rule 7: Linh Thạch, Tu Vi through the answers, the M7 materials and Linh Quả only; Mảnh
+        # Bảo Vật are allowed again since 2026-11-20, gated by tu vi like all loot (loot.py)
         chest = c.get("chest", {}).get(rid)
         loot = c.get("room_loot_by_realm", {}).get(rid)
         if chest is None or loot is None:
             out.append(f"{here}: balance/realm.json needs chest.{rid} and room_loot_by_realm.{rid}")
             continue
-        if chest.get("xp") or loot.get("xp") or chest.get("fragments") or chest.get("flawless_fragments", 1) \
-                or any(chest.get("jade", [0, 0])):
-            out.append(f"{here}: its loot pays no xp, jade nor Mảnh Bảo Vật (Tu Vi comes from the answers)")
+        if chest.get("xp") or loot.get("xp") or any(chest.get("jade", [0, 0])):
+            out.append(f"{here}: its loot pays no xp nor jade (Tu Vi comes from the answers)")
         for e in list(chest.get("table", [])) + list(loot.get("items", [])):
-            if e.get("item") not in materials:
-                out.append(f"{here}: loot {e} is not a material of data/math/drops.json")
+            if e.get("item") not in materials and e.get("item") not in REALM_EXTRA_LOOT:
+                out.append(f"{here}: loot {e} is not a material of data/math/drops.json nor Linh Quả")
     return out

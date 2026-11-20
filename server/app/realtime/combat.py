@@ -364,7 +364,8 @@ def kill(ch: "ChannelZone", m: "Monster", now: float) -> None:
             if p.next_q and p.next_q[0] == m.eid:
                 p.next_q = None
             if not p.dead:
-                _world().spawn(_reward(p.user_id, m.kind, _loot_bonus(p, m)))
+                _world().spawn(_reward(p.user_id, m.kind, _loot_bonus(p, m),
+                                       source=getattr(ch, "realm_id", None) or ch.zone_id))
     _party_share(ch, m)
     for uid, ids in m.bee_assist.items():  # guard bees that helped grow a little
         if ids:
@@ -434,10 +435,15 @@ async def _bee_xp(uid: int, bee_ids: list[int]) -> None:
         log.exception("bee xp failed")
 
 
-async def _reward(uid: int, kind: str, loot: dict | None = None) -> None:
+async def _reward(uid: int, kind: str, loot: dict | None = None, rng: random.Random | None = None,
+                  source: str | None = None) -> None:
+    """The kill's loot for one player (party members each come through here): stones, then the
+    monster's drop table gated by this player's tu vi (systems/loot.py) - a drop rolled but
+    not yet unlocked is listed under `locked`, never granted."""
     from ..systems import catalog, codex, cultivation, inventory, items, quests
+    from ..systems import loot as gate
     info = catalog.monsters()[kind]
-    rng = random.Random()
+    rng = rng or random.Random()
     loot = loot or {"stones_pct": 0.0, "drop_mult": 1.0}
     out = {"t": "loot", "monster": info["name_vi"], "items": [], "equipment": []}
     try:
@@ -447,15 +453,27 @@ async def _reward(uid: int, kind: str, loot: dict | None = None) -> None:
             if stones:
                 out["spirit_stones"] = await inventory.change_currency(db, uid, "spirit_stones", stones, "kill", kind)
                 out["stones"] = stones
+            realm, stage = await gate.player_tier(db, uid)
+            # gear stays within the cap of the place of the kill (the wild zone or the bí cảnh);
+            # with no place given, within the most generous cap of where this monster lives
+            within = gate.source_cap(source) if source in gate.data().get("source_caps", {}) \
+                else gate.monster_cap(kind)
             for d in info.get("drops", []):
                 if rng.random() >= min(1.0, d["chance"] * loot["drop_mult"]):
                     continue
                 if "item" in d:
                     qty = rng.randint(*d.get("qty", [1, 1]))
+                    if not gate.unlocked(d["item"], realm, stage):
+                        gate.note_locked(out, d["item"])
+                        continue
                     out["items"] += await items.grant_items(db, uid, [{"item": d["item"], "qty": qty}], "drop", kind)
                 else:
                     item_id = rng.choice(d["equipment"])
-                    rar = items.roll_rarity(rng, d.get("min_rarity"))
+                    rar = gate.roll_equipment_rarity(rng, d.get("min_rarity"), realm, stage,
+                                                     within=within)
+                    if rar is None:
+                        gate.note_locked_gear(out, item_id, d.get("min_rarity"))
+                        continue
                     out["equipment"].append(await items.grant_equipment(db, uid, item_id, rar, "drop", kind))
             out["kills"] = await codex.monster_killed(db, uid, kind)
             out["quests"] = await quests.on_event(db, uid, "kill", kind)
