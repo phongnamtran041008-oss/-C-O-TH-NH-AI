@@ -69,17 +69,24 @@ def test_kỳ_binh_only_drop_and_are_never_placed():
         assert t["why_vi"] and t["clip"] in weapons.CLIPS
 
 
-def test_a_type_waiting_for_its_art_never_drops_and_is_not_equipment():
+def test_the_six_kỳ_binh_are_in_the_game():
     d = weapons.data()
-    waiting = [k for k, t in d["types"].items() if t["status"] == "cho_hinh"]
-    assert set(waiting) == {"kich", "roi", "am_khi", "luan", "phu", "cam"}, "shipped waiting for the art"
+    assert {k for k, t in d["types"].items() if t["status"] == "cho_hinh"} == set(), "their art is in"
+    items = catalog.equipment()["items"]
+    for k in ("kich", "roi", "am_khi", "luan", "phu", "cam"):
+        assert d["types"][k]["status"] == "co"
+        assert f"{k}_1" in items and f"{k}_1" in weapons.droppable_weapons()
+
+
+def test_a_type_waiting_for_its_art_never_drops_and_is_not_equipment(kich_waiting):
+    waiting = ["kich"]
     items = catalog.equipment()["items"]
     for k in waiting:
         assert not any(w.startswith(k + "_") for w in weapons.droppable_weapons())
         assert not any(i.startswith(k + "_") for i in items)
         assert weapons.is_weapon(f"{k}_1"), "still a weapon of the plan, as data"
     seen = set()
-    for kind in (ELITE, BOSS, "phong_lang", "ho_lo_tinh", "moc_yeu", "co_quan_nhan_dau_dan", "tam_ma_chap_niem"):
+    for kind in (ELITE, BOSS):
         grants, _ = rolls(kind, 200, mult=FORCED)
         seen |= {weapons.split(g["weapon"])[0] for gs in grants for g in gs}
     assert not seen & set(waiting)
@@ -88,10 +95,14 @@ def test_a_type_waiting_for_its_art_never_drops_and_is_not_equipment():
 def test_a_land_drops_its_own_type_at_its_realms_grade():
     for kind in (NORMAL, ELITE, "van_xa", "dau_tu_oa", "tri_chu_tinh", "co_quan_nhan", "tam_ma"):
         land = catalog.monsters()[kind]["land"]
-        own = {k for k, t in weapons.data()["types"].items() if t.get("land") == land and not t.get("drop_only")}
+        types = weapons.data()["types"]
+        own = {k for k, t in types.items() if t.get("land") == land and not t.get("drop_only")}
+        rare = {k for k, t in types.items() if t.get("land") == land and t.get("drop_only")}
+        if catalog.monsters()[kind]["rank"] == "normal":
+            rare = set()          # the kỳ binh of a land only from its elites and bosses
         grants, _ = rolls(kind, 50, mult=FORCED)
         got = {g["weapon"] for gs in grants for g in gs}
-        assert got == {f"{k}_1" for k in own}, (kind, got)
+        assert got == {f"{k}_1" for k in own | rare}, (kind, got)
     assert weapons.roll_drops(random.Random(1), "ink_slime", *TOP, drop_mult=FORCED) == ([], []), "no land"
 
 
@@ -100,7 +111,9 @@ def test_a_land_drops_its_own_type_at_its_realms_grade():
 def test_the_drop_chance_follows_the_rank(kind, rank):
     n = 4000
     grants, _ = rolls(kind, n)
-    rate = sum(1 for g in grants if g) / n
+    types = weapons.data()["types"]       # the main type's chance: a kỳ binh rolls on its own
+    rate = sum(1 for gs in grants
+               if any(not types[weapons.split(g["weapon"])[0]].get("drop_only") for g in gs)) / n
     want = by_rank(rank)["chance"]
     assert abs(rate - want) < max(0.02, want * 0.25), (rank, rate, want)
 
@@ -240,15 +253,43 @@ def check_all():
         sys.path.remove(str(ROOT / "tools"))
 
 
-@pytest.fixture
-def kich_live(monkeypatch):
-    """Kích flipped to 'co' - the one change the plan needs once its art is in."""
+def _kich(monkeypatch, status: str):
     patched = copy.deepcopy(weapons.data())
-    patched["types"]["kich"]["status"] = "co"
+    patched["types"]["kich"]["status"] = status
     monkeypatch.setattr(weapons, "data", lambda: patched)
     catalog.equipment.cache_clear()
-    yield patched
+    return patched
+
+
+@pytest.fixture
+def kich_live(monkeypatch):
+    """Kích as 'co' - the one change the plan needed once its art was in (it is, since 2026-11-20)."""
+    yield _kich(monkeypatch, "co")
     catalog.equipment.cache_clear()
+
+
+@pytest.fixture
+def kich_waiting(monkeypatch):
+    """Kích back to 'cho_hinh': how a new type waits for its art."""
+    yield _kich(monkeypatch, "cho_hinh")
+    catalog.equipment.cache_clear()
+
+
+def without_art(tmp: Path, kind: str) -> Path:
+    """A copy of the v2 weapon art with one type's art taken out again."""
+    real = ROOT / "client" / "assets" / "v2"
+    v2 = tmp / "v2_without"
+    (v2 / "icons").mkdir(parents=True)
+    shutil.copytree(real / "weapons", v2 / "weapons")
+    wiring = json.loads((real / "wiring.json").read_text("utf-8"))
+    for atlas in {v for k, v in wiring["item_icons"]["by_weapon_type"].items() if not k.startswith("_")}:
+        shutil.copy(real / "icons" / f"{atlas}.json", v2 / "icons" / f"{atlas}.json")
+    wiring["weapons"].pop(kind, None)
+    wiring["item_icons"]["by_weapon_type"].pop(kind, None)
+    for f in (v2 / "weapons").glob(f"{kind}_*"):
+        f.unlink()
+    (v2 / "wiring.json").write_text(json.dumps(wiring), "utf-8")
+    return v2
 
 
 def fake_art(tmp: Path, extra_types: dict[str, str]) -> Path:
@@ -275,7 +316,7 @@ def fake_art(tmp: Path, extra_types: dict[str, str]) -> Path:
     return v2
 
 
-def test_today_the_art_check_passes_and_skips_the_waiting_types(check_all):
+def test_today_the_art_check_passes(check_all):
     assert check_all.check_weapons() == []
 
 
@@ -293,7 +334,8 @@ def test_flipping_the_status_is_the_only_change_needed(kich_live, check_all, tmp
     grants, _ = rolls(ELITE, 6000)
     got = Counter(weapons.split(g["weapon"])[0] for gs in grants for g in gs)
     assert 0 < got["kich"] < got["kiem"]
-    # the art check now demands its art, and passes once the artist's files are in
-    missing = check_all.check_weapons()
+    # the art check demands its art: it passes with the artist's files, and names Kích without them
+    assert check_all.check_weapons() == []
+    missing = check_all.check_weapons(without_art(tmp_path, "kich"))
     assert missing and all("kich" in m for m in missing)
     assert check_all.check_weapons(fake_art(tmp_path, {"kich": "slash"})) == []
