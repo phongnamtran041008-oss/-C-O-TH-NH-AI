@@ -437,6 +437,8 @@ class AbodeScene(Scene):
         guide.draw_tracker(ui, self.game, 476 - guide.TRACKER_W, 4, top)
         if top and not typing and ui.key(pygame.K_o):
             self.game.open_pets()
+        if top and not typing and ui.key(pygame.K_c):     # Trắc Linh Đài (scenes/linh_can.py)
+            self.game.open_linh_can()
         if not top or typing:
             return
         mx, my = ui.inp.mouse

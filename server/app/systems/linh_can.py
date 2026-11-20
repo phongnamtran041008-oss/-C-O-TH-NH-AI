@@ -33,6 +33,7 @@ from . import catalog, inventory, items
 FILE = DATA_DIR / "linh_can.json"
 PILL_EFFECT = "linh_can"
 MIN_ROOTS = 48
+SHORT_MAX = 20          # the label of a root in the đồ giám grid (two short lines)
 STAT_PCT = {"atk_pct": "atk", "def_pct": "def", "hp_pct": "max_hp", "qi_pct": "max_qi"}
 STAT_FLAT = {"crit": "crit"}
 CHIEU = ("kim", "moc", "thuy", "hoa", "tho", "loi")
@@ -146,7 +147,8 @@ def root_view(root_id: str | None) -> dict | None:
         return None
     g = giai_info(r["giai"])
     d = data()
-    return {"id": root_id, "name_vi": r["name_vi"], "giai": r["giai"], "giai_index": giai_index(r["giai"]),
+    return {"id": root_id, "name_vi": r["name_vi"], "short_vi": r.get("short_vi") or r["name_vi"],
+            "giai": r["giai"], "giai_index": giai_index(r["giai"]),
             "giai_vi": g["name_vi"], "color": g["color"], "he": list(r["he"]),
             "he_vi": [d["he_vi"][h] for h in r["he"]], "loai": r["loai"], "loai_vi": d["loai_vi"][r["loai"]],
             "effects": [{"type": e["type"], "value": e["value"], "text_vi": effect_text(e["type"], e["value"])}
@@ -184,7 +186,8 @@ def apply_stats(out: dict, root_id: str | None) -> dict:
             out[key] = int(round(out[key] * (1 + eff[etype])))
     for etype, key in STAT_FLAT.items():
         if eff.get(etype):
-            out[key] = round(out.get(key, 0) + eff[etype], 1)
+            v = round(out.get(key, 0) + eff[etype], 1)
+            out[key] = int(v) if float(v).is_integer() else v
     r = roots().get(root_id or "")
     out["lc"] = giai_index(r["giai"]) if r else 0
     out["lc_fx"] = {k: v for k, v in eff.items() if k not in STAT_PCT and k not in STAT_FLAT}
@@ -491,6 +494,8 @@ def validate(raw: dict | None = None) -> list[str]:
             out.append(f"{where}: loại {r.get('loai')!r} unknown")
         if not r.get("desc_vi") or not r.get("lore_vi"):
             out.append(f"{where}: desc_vi and lore_vi are needed")
+        if "short_vi" in r and not (isinstance(r["short_vi"], str) and 0 < len(r["short_vi"]) <= SHORT_MAX):
+            out.append(f"{where}: short_vi (the đồ giám label) must be 1..{SHORT_MAX} characters")
         effs = r.get("effects") or []
         if not effs:
             out.append(f"{where}: no effect")

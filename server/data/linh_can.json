@@ -354,6 +354,7 @@
  "roots": {
   "ngu_hanh_tap": {
    "name_vi": "Ngũ Hành Tạp Linh Căn",
+   "short_vi": "Ngũ Hành Tạp",
    "giai": "pham",
    "he": [
     "kim",
@@ -375,6 +376,7 @@
   },
   "tu_linh_can": {
    "name_vi": "Tứ Linh Căn",
+   "short_vi": "Tứ Linh",
    "giai": "pham",
    "he": [
     "kim",
@@ -395,6 +397,7 @@
   },
   "phe_linh_can": {
    "name_vi": "Phế Linh Căn",
+   "short_vi": "Phế",
    "giai": "pham",
    "he": [],
    "loai": "phe",
@@ -410,6 +413,7 @@
   },
   "kim_tho_tap": {
    "name_vi": "Kim Thổ Tạp Linh Căn",
+   "short_vi": "Kim Thổ Tạp",
    "giai": "pham",
    "he": [
     "kim",
@@ -428,6 +432,7 @@
   },
   "thuy_moc_tap": {
    "name_vi": "Thủy Mộc Tạp Linh Căn",
+   "short_vi": "Thủy Mộc Tạp",
    "giai": "pham",
    "he": [
     "thuy",
@@ -446,6 +451,7 @@
   },
   "hoa_tho_tap": {
    "name_vi": "Hỏa Thổ Tạp Linh Căn",
+   "short_vi": "Hỏa Thổ Tạp",
    "giai": "pham",
    "he": [
     "hoa",
@@ -464,6 +470,7 @@
   },
   "vi_hoa_linh_can": {
    "name_vi": "Vi Hỏa Linh Căn",
+   "short_vi": "Vi Hỏa",
    "giai": "pham",
    "he": [
     "hoa"
@@ -480,6 +487,7 @@
   },
   "vi_thuy_linh_can": {
    "name_vi": "Vi Thủy Linh Căn",
+   "short_vi": "Vi Thủy",
    "giai": "pham",
    "he": [
     "thuy"
@@ -496,6 +504,7 @@
   },
   "hau_tho_pham_can": {
    "name_vi": "Hậu Thổ Phàm Căn",
+   "short_vi": "Hậu Thổ",
    "giai": "pham",
    "he": [
     "tho"
@@ -512,6 +521,7 @@
   },
   "kim_moc_thuy_tam": {
    "name_vi": "Kim Mộc Thủy Tam Linh Căn",
+   "short_vi": "Kim Mộc Thủy",
    "giai": "hoang",
    "he": [
     "kim",
@@ -535,6 +545,7 @@
   },
   "hoa_tho_kim_tam": {
    "name_vi": "Hỏa Thổ Kim Tam Linh Căn",
+   "short_vi": "Hỏa Thổ Kim",
    "giai": "hoang",
    "he": [
     "hoa",
@@ -558,6 +569,7 @@
   },
   "moc_hoa_tho_tam": {
    "name_vi": "Mộc Hỏa Thổ Tam Linh Căn",
+   "short_vi": "Mộc Hỏa Thổ",
    "giai": "hoang",
    "he": [
     "moc",
@@ -581,6 +593,7 @@
   },
   "thuy_moc_tho_tam": {
    "name_vi": "Thủy Mộc Thổ Tam Linh Căn",
+   "short_vi": "Thủy Mộc Thổ",
    "giai": "hoang",
    "he": [
     "thuy",
@@ -600,6 +613,7 @@
   },
   "vi_loi_linh_can": {
    "name_vi": "Vi Lôi Linh Căn",
+   "short_vi": "Vi Lôi",
    "giai": "hoang",
    "he": [
     "loi"
@@ -616,6 +630,7 @@
   },
   "vi_kim_linh_can": {
    "name_vi": "Vi Kim Linh Căn",
+   "short_vi": "Vi Kim",
    "giai": "hoang",
    "he": [
     "kim"
@@ -636,6 +651,7 @@
   },
   "tu_tai_linh_can": {
    "name_vi": "Tụ Tài Linh Căn",
+   "short_vi": "Tụ Tài",
    "giai": "hoang",
    "he": [
     "tho",
@@ -653,6 +669,7 @@
   },
   "tinh_tam_linh_can": {
    "name_vi": "Tĩnh Tâm Linh Căn",
+   "short_vi": "Tĩnh Tâm",
    "giai": "hoang",
    "he": [
     "thuy"
@@ -669,6 +686,7 @@
   },
   "thuy_moc_song": {
    "name_vi": "Thủy Mộc Song Linh Căn",
+   "short_vi": "Thủy Mộc Song",
    "giai": "huyen",
    "he": [
     "thuy",
@@ -691,6 +709,7 @@
   },
   "kim_hoa_song": {
    "name_vi": "Kim Hỏa Song Linh Căn",
+   "short_vi": "Kim Hỏa Song",
    "giai": "huyen",
    "he": [
     "kim",
@@ -713,6 +732,7 @@
   },
   "tho_kim_song": {
    "name_vi": "Thổ Kim Song Linh Căn",
+   "short_vi": "Thổ Kim Song",
    "giai": "huyen",
    "he": [
     "tho",
@@ -735,6 +755,7 @@
   },
   "moc_hoa_song": {
    "name_vi": "Mộc Hỏa Song Linh Căn",
+   "short_vi": "Mộc Hỏa Song",
    "giai": "huyen",
    "he": [
     "moc",
@@ -757,6 +778,7 @@
   },
   "thuy_tho_song": {
    "name_vi": "Thủy Thổ Song Linh Căn",
+   "short_vi": "Thủy Thổ Song",
    "giai": "huyen",
    "he": [
     "thuy",
@@ -779,6 +801,7 @@
   },
   "tam_bao_linh_can": {
    "name_vi": "Tầm Bảo Linh Căn",
+   "short_vi": "Tầm Bảo",
    "giai": "huyen",
    "he": [
     "tho",
@@ -800,6 +823,7 @@
   },
   "khinh_than_linh_can": {
    "name_vi": "Khinh Thân Linh Căn",
+   "short_vi": "Khinh Thân",
    "giai": "huyen",
    "he": [
     "moc"
@@ -820,6 +844,7 @@
   },
   "ngu_thu_linh_can": {
    "name_vi": "Ngự Thú Linh Căn",
+   "short_vi": "Ngự Thú",
    "giai": "huyen",
    "he": [
     "moc"
@@ -840,6 +865,7 @@
   },
   "canh_kim_linh_can": {
    "name_vi": "Canh Kim Linh Căn",
+   "short_vi": "Canh Kim",
    "giai": "dia",
    "he": [
     "kim"
@@ -860,6 +886,7 @@
   },
   "at_moc_linh_can": {
    "name_vi": "Ất Mộc Linh Căn",
+   "short_vi": "Ất Mộc",
    "giai": "dia",
    "he": [
     "moc"
@@ -880,6 +907,7 @@
   },
   "nham_thuy_linh_can": {
    "name_vi": "Nhâm Thủy Linh Căn",
+   "short_vi": "Nhâm Thủy",
    "giai": "dia",
    "he": [
     "thuy"
@@ -900,6 +928,7 @@
   },
   "binh_hoa_linh_can": {
    "name_vi": "Bính Hỏa Linh Căn",
+   "short_vi": "Bính Hỏa",
    "giai": "dia",
    "he": [
     "hoa"
@@ -920,6 +949,7 @@
   },
   "mau_tho_linh_can": {
    "name_vi": "Mậu Thổ Linh Căn",
+   "short_vi": "Mậu Thổ",
    "giai": "dia",
    "he": [
     "tho"
@@ -944,6 +974,7 @@
   },
   "dan_tam_linh_can": {
    "name_vi": "Đan Tâm Linh Căn",
+   "short_vi": "Đan Tâm",
    "giai": "dia",
    "he": [
     "hoa",
@@ -965,6 +996,7 @@
   },
   "tran_dao_linh_can": {
    "name_vi": "Trận Đạo Linh Căn",
+   "short_vi": "Trận Đạo",
    "giai": "dia",
    "he": [
     "tho"
@@ -985,6 +1017,7 @@
   },
   "thien_loi_linh_can": {
    "name_vi": "Thiên Lôi Linh Căn",
+   "short_vi": "Thiên Lôi",
    "giai": "thien",
    "he": [
     "loi"
@@ -1009,6 +1042,7 @@
   },
   "huyen_bang_linh_can": {
    "name_vi": "Huyền Băng Linh Căn",
+   "short_vi": "Huyền Băng",
    "giai": "thien",
    "he": [
     "bang"
@@ -1033,6 +1067,7 @@
   },
   "thanh_phong_linh_can": {
    "name_vi": "Thanh Phong Linh Căn",
+   "short_vi": "Thanh Phong",
    "giai": "thien",
    "he": [
     "phong"
@@ -1057,6 +1092,7 @@
   },
   "liet_hoa_thien_linh_can": {
    "name_vi": "Liệt Hỏa Thiên Linh Căn",
+   "short_vi": "Liệt Hỏa Thiên",
    "giai": "thien",
    "he": [
     "hoa"
@@ -1081,6 +1117,7 @@
   },
   "tien_thien_kiem_cot": {
    "name_vi": "Tiên Thiên Kiếm Cốt",
+   "short_vi": "Kiếm Cốt",
    "giai": "thien",
    "he": [
     "kim"
@@ -1105,6 +1142,7 @@
   },
   "ngo_dao_tue_can": {
    "name_vi": "Ngộ Đạo Tuệ Căn",
+   "short_vi": "Ngộ Đạo",
    "giai": "thien",
    "he": [],
    "loai": "tue",
@@ -1123,6 +1161,7 @@
   },
   "thanh_quang_linh_can": {
    "name_vi": "Thánh Quang Linh Căn",
+   "short_vi": "Thánh Quang",
    "giai": "thanh",
    "he": [
     "quang"
@@ -1147,6 +1186,7 @@
   },
   "u_minh_am_linh_can": {
    "name_vi": "U Minh Ám Linh Căn",
+   "short_vi": "U Minh Ám",
    "giai": "thanh",
    "he": [
     "am"
@@ -1171,6 +1211,7 @@
   },
   "van_thu_thanh_can": {
    "name_vi": "Vạn Thú Thánh Căn",
+   "short_vi": "Vạn Thú",
    "giai": "thanh",
    "he": [
     "moc",
@@ -1196,6 +1237,7 @@
   },
   "thien_dan_thanh_the": {
    "name_vi": "Thiên Đan Thánh Thể",
+   "short_vi": "Thiên Đan Thể",
    "giai": "thanh",
    "he": [
     "hoa",
@@ -1221,6 +1263,7 @@
   },
   "bat_diet_kim_than": {
    "name_vi": "Bất Diệt Kim Thân",
+   "short_vi": "Bất Diệt Kim Thân",
    "giai": "thanh",
    "he": [
     "kim",
@@ -1246,6 +1289,7 @@
   },
   "khong_gian_linh_can": {
    "name_vi": "Không Gian Linh Căn",
+   "short_vi": "Không Gian",
    "giai": "tien",
    "he": [
     "khong_gian"
@@ -1274,6 +1318,7 @@
   },
   "thoi_gian_linh_can": {
    "name_vi": "Thời Gian Linh Căn",
+   "short_vi": "Thời Gian",
    "giai": "tien",
    "he": [
     "thoi_gian"
@@ -1302,6 +1347,7 @@
   },
   "tien_thien_dao_the": {
    "name_vi": "Tiên Thiên Đạo Thể",
+   "short_vi": "Tiên Thiên Đạo Thể",
    "giai": "tien",
    "he": [],
    "loai": "dao",
@@ -1328,6 +1374,7 @@
   },
   "van_kiem_kiem_cot": {
    "name_vi": "Vạn Kiếm Quy Tông Kiếm Cốt",
+   "short_vi": "Vạn Kiếm Cốt",
    "giai": "tien",
    "he": [
     "kim"
@@ -1356,6 +1403,7 @@
   },
   "tu_tieu_than_loi_can": {
    "name_vi": "Tử Tiêu Thần Lôi Căn",
+   "short_vi": "Tử Tiêu Thần Lôi",
    "giai": "than",
    "he": [
     "loi"
@@ -1388,6 +1436,7 @@
   },
   "am_duong_than_can": {
    "name_vi": "Âm Dương Thần Căn",
+   "short_vi": "Âm Dương",
    "giai": "than",
    "he": [
     "quang",
@@ -1421,6 +1470,7 @@
   },
   "ngu_hanh_than_can": {
    "name_vi": "Ngũ Hành Thần Căn",
+   "short_vi": "Ngũ Hành Thần",
    "giai": "than",
    "he": [
     "kim",
@@ -1461,6 +1511,7 @@
   },
   "hon_don_linh_can": {
    "name_vi": "Hỗn Độn Linh Căn",
+   "short_vi": "Hỗn Độn",
    "giai": "hon_don",
    "he": [
     "hon_don"
@@ -1505,6 +1556,7 @@
   },
   "hong_mong_dao_can": {
    "name_vi": "Hồng Mông Đạo Căn",
+   "short_vi": "Hồng Mông",
    "giai": "hon_don",
    "he": [
     "hon_don"

@@ -401,6 +401,11 @@ class Game:
         from .scenes.rpg import CharacterScene
         self.push(CharacterScene(self))
 
+    def open_linh_can(self) -> None:
+        from .scenes.linh_can import LinhCanScene
+        if not any(isinstance(s, LinhCanScene) for s in self.scenes):
+            self.push(LinhCanScene(self))
+
     def open_quests(self) -> None:
         from .scenes.rpg import QuestScene
         self.push(QuestScene(self))

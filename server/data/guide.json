@@ -270,18 +270,6 @@
           "rewards": {"spirit_stones": 60, "xp": 30}
         },
         {
-          "id": "g_linh_can",
-          "title_vi": "Trắc linh căn",
-          "desc_vi": "Đặt tay lên Trắc Linh Thạch để biết linh căn của con. Lần đầu miễn phí; mỗi linh căn mạnh một đường riêng.",
-          "how_vi": [
-            "Bấm phím C hoặc nút Linh Căn ở dải nút dưới màn hình, rồi bấm Trắc linh.",
-            "Muốn đổi linh căn thì luyện Tẩy Linh Đan ở lò đan; đan phương bán ở Tàng Thư Các."
-          ],
-          "check": {"type": "linh_can"},
-          "optional": true,
-          "rewards": {"spirit_stones": 40, "xp": 20}
-        },
-        {
           "id": "g_fortune",
           "title_vi": "Gặp một Cơ Duyên",
           "desc_vi": "Trả lời đúng nhiều câu thì đôi khi lão nhân hay rương đề hiện ra. Giải đúng hết là có quà.",
@@ -307,6 +295,18 @@
           "help": "lap_trinh",
           "optional": true,
           "rewards": {"spirit_stones": 100, "xp": 50}
+        },
+        {
+          "id": "g_linh_can",
+          "title_vi": "Trắc linh căn",
+          "desc_vi": "Đặt tay lên Trắc Linh Thạch để biết linh căn của con. Lần đầu miễn phí; mỗi linh căn mạnh một đường riêng.",
+          "how_vi": [
+            "Bấm phím C hoặc nút Linh Căn ở dải nút dưới màn hình, rồi bấm Trắc linh.",
+            "Muốn đổi linh căn thì luyện Tẩy Linh Đan ở lò đan; đan phương bán ở Tàng Thư Các."
+          ],
+          "check": {"type": "linh_can"},
+          "optional": true,
+          "rewards": {"spirit_stones": 40, "xp": 20}
         }
       ]
     },
