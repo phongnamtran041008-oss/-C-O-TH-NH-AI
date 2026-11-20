@@ -288,3 +288,25 @@ Sáu linh thú mới, mỗi con một quà mới, đều `"status": "cho_hinh"` 
   dữ liệu tham khảo, không có màn hình (`docs/LUAN_DAO_DAI.md`).
 - **Vi kỹ năng "Hiệp phương sai, tương quan và hồi quy"** (nút chính đạo tầng 8) nằm ở tầng ẩn 10 của Xác
   Suất, chưa có câu hỏi: hiện là nút "đang biên soạn".
+
+## Chiêu Thức II: học xong nút nào thì lĩnh ngộ chiêu nào (2026-11-20)
+
+Sức mạnh đến từ việc học: ngoài sáu chiêu cũ (mở theo tầng), mười một chiêu mới chỉ lĩnh ngộ khi **xong** các nút
+Đạo Thụ dưới đây (và đã tu tới tầng ghi bên cạnh). Chỉ dùng nút có nội dung thật (`co`), không nhánh ml/dl;
+`math_skills.validate()` (chạy trong `tools/check_all.py`) kiểm tra mọi yêu cầu đều với tới được. Thẻ của nút trên
+màn Đạo Thụ ghi "Lĩnh ngộ chiêu thức"; học xong nút cuối cùng thì game báo "Lĩnh ngộ chiêu mới" và chiêu tự vào thanh
+Công Pháp (phím U hoặc bấm vào thanh để xếp lại sáu ô 1-6).
+
+| Chiêu | Hệ | Hiệu ứng | Tầng | Phải học xong | Vì sao |
+|---|---|---|---|---|---|
+| Ngự Kiếm Thuật | Kim | đường thẳng, xuyên 4 | 2 | Vectơ và ma trận (ĐSTT) | phi kiếm bay theo một vectơ |
+| Băng Phong Thuật | Thủy | vùng, đóng băng (chậm còn 0.25) 5 giây | 2 | Giới hạn và liên tục (Giải Tích) | tiến dần tới giới hạn, đứng yên |
+| Chưởng Tâm Lôi | Lôi | xích lôi 3 bước, mỗi bước ×0.75, chọn ngẫu nhiên | 3 | Xác suất có điều kiện và độc lập | sét nhảy theo xác suất |
+| Phong Nhận Thuật | Mộc | hình quạt 60° | 3 | Liệt kê và quay lui (Thuật Toán) | liệt kê mọi nhánh rồi chém hết |
+| Kim Chung Tráo | Kim | chuông hộ thể: −65% sát thương 6 giây | 4 | Hàm, đệ quy và chia nhỏ bài toán (Lập Trình) | chuông trong chuông, như đệ quy |
+| Hồi Xuân Thuật | Mộc | hồi 25% máu cho mình và tổ đội gần | 4 | Mô hình đầu tiên: k láng giềng gần nhất | mô hình đầu tiên tự tay dựng |
+| Địa Liệt Trảm | Thổ | khe nứt thẳng, xuyên 5 | 5 | Đạo hàm số và hạ gradient một biến (Lập Trình) | khe nứt chạy theo độ dốc |
+| Thanh Đằng Triền | Mộc | trói tại chỗ 3.5 giây (tinh anh nửa) | 6 | Đồ thị bằng code | dây leo nối như cạnh đồ thị |
+| Hỏa Long Thuật | Hỏa | đường thẳng xuyên 6 + dải đất cháy 2 giây | 6 | Khớp đường thẳng bằng hạ gradient | hỏa long lao theo từng bước gradient |
+| Vạn Kiếm Quy Tông (tuyệt kỹ) | Kim | mưa kiếm vùng r70, sức 4.2; 45 linh lực, hồi 75 giây | 7 | Bình phương tối thiểu bằng phương trình chuẩn, Nhân ma trận và khử Gauss bằng code, và 50% nhánh ĐSTT | vạn kiếm như vạn hàng của ma trận |
+| Kiếm Vực (tuyệt kỹ) | Kim | kiếm vực r60 theo người, 12 nhịp ×0.55; 50 linh lực, hồi 90 giây | 9 | Mạng nơ-ron hai lớp tự viết, Thí nghiệm A/B, Đồ thị bằng code | đại thành của Luyện Khí, nhiều nhánh hợp lại |

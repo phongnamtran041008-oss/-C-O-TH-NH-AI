@@ -464,7 +464,8 @@ như Vấn Đạo và dùng chung một ô câu hỏi (mỗi lúc chỉ một c�
 
 | Method | Đường dẫn | Body | Ghi chú |
 |---|---|---|---|
-| GET | `/math/skills` | — | `{combo{per_streak, max_mult}, open_floor, skills[]}`, theo đúng thứ tự trong `skills.json`. Mỗi chiêu: `{id, name_vi, kind_vi, element, qtypes[], qtype_vi, min_tier, qi, cooldown, range, effect, power, anim, fx, desc_vi, unlock{floor}, unlocked, locked_vi}`, cộng `radius, slow, duration` (chiêu `area`) hoặc `radius, duration, reduce, heal_pct` (chiêu `ward`) |
+| GET | `/math/skills` | — | `{combo{per_streak, max_mult}, open_floor, stage, skills[], loadout[6], slots, new[]}`, theo đúng thứ tự trong `skills.json`. Mỗi chiêu: `{id, name_vi, kind_vi, element, qtypes[], qtype_vi, min_tier, qi, cooldown, range, effect, power, anim, fx, icon, icon_variant, desc_vi, unlock{floor, nodes[{id, name_vi, branch, stage, done}], share?{branch, at_least, name_vi, done, total}}, unlocked, locked_vi, missing_nodes[]}`, cộng các số của hiệu ứng (`radius, slow, duration` cho `area`; `width, pierce, burn?` cho `line`; ...). `locked_vi` nói đúng cái còn thiếu ("Còn thiếu nút: …", phần trăm nhánh, tầng). `loadout`: sáu ô Công Pháp (id hoặc null). `new`: chiêu vừa lĩnh ngộ từ lần xem trước, báo đúng một lần (lần xem đầu của bản lưu cũ chỉ ghi nhớ lặng lẽ); chiêu mới tự vào ô trống, hoặc ô đang giữ một chiêu chưa lĩnh ngộ |
+| POST | `/math/skills/loadout` | `{slots: [6 × id \| null]}` | xếp thanh Công Pháp; trả về như GET. Lỗi 400: `bad_slots` (không đủ sáu ô), `unknown`, `twice` (một chiêu hai ô), `locked` (chưa lĩnh ngộ) |
 
 **Mở khoá chỉ theo lộ trình học**: `open_floor` là tầng chính thấp nhất chưa qua Thiên kiếp nhỏ (tầng cuối
 nếu đã qua hết), lấy cao nhất giữa các môn; chiêu mở khi `open_floor >= unlock.floor`. Không gắn với cảnh
@@ -491,12 +492,40 @@ nhóm của boss bí cảnh nó chỉ tính là câu đúng của **một** ngư
 - `ward`: không cần mục tiêu; người thi triển và đồng đội tổ đội đứng trong `radius` chịu ít hơn `reduce`
   sát thương trong `duration` giây và hồi `heal_pct`% máu tối đa.
 
+**Chiêu Thức II** (mười một chiêu lĩnh ngộ trên Đạo Thụ; số liệu trong `skills.json`, luật trong `_comment` của nó):
+
+- `line` (`width`, `pierce`, tuỳ chọn `burn{power, every, duration}`): đường thẳng dài `range` từ người thi triển
+  qua mục tiêu; trúng `pierce` con đầu tiên mà đường gặp, cách đường không quá `width/2` (mục tiêu luôn trúng).
+  `burn`: dải đất cháy, mỗi `every` giây mọi quái trong dải mất `base × burn.power × combo × crit × linh căn`, trong
+  `duration` giây (Hỏa Long Thuật).
+- `chain` (`hops`, `hop_range`, `falloff`): mục tiêu rồi tối đa `hops` bước nhảy, mỗi bước chọn **ngẫu nhiên** một
+  con chưa trúng trong `hop_range` của con trước, sát thương nhân thêm `falloff` mỗi bước (Chưởng Tâm Lôi).
+- `cone` (`angle`): mọi quái trong `range` và trong hình quạt `angle` độ quay về mục tiêu (Phong Nhận Thuật).
+- `root` (`radius`, `duration`): như `area` nhưng quái bị **trói tại chỗ** `duration × root_rank_mult[rank]` giây
+  (tinh anh 0.5, thủ lĩnh 0.25). Quái bị trói vẫn báo đòn và đánh trúng ai đứng trong tầm của nó.
+- `shield` (`duration`, `reduce`): chỉ người thi triển, không mục tiêu, `power` 0 (Kim Chung Tráo).
+- `heal` (`radius`, `heal_pct`): người thi triển và đồng đội tổ đội trong `radius` hồi máu (Hồi Xuân Thuật).
+- `domain` (`radius`, `every`, `duration`): không mục tiêu; một vòng bán kính `radius` đi theo người thi triển,
+  mỗi `every` giây chém mọi quái bên trong `base × power × combo × crit × linh căn`, tổng `duration / every` nhịp;
+  tắt sớm khi người thi triển ngã hoặc rời kênh (Kiếm Vực).
+
+Với mọi hiệu ứng trúng nhiều con, chỉ khiên của **mục tiêu đã chọn** vỡ khi trả lời đúng ở bí cảnh; con khác còn
+khiên chỉ bị trầy. Linh căn nhân sát thương theo `element` như sáu chiêu cũ.
+
+**Mở khoá bằng Đạo Thụ**: `unlock` = `{floor, nodes?, share?}`. `nodes` là các nút Luyện Khí phải **xong**
+(chỉ nút có nội dung `co`, không thuộc nhánh ml/dl); `share` = `{branch, at_least}`: tỉ lệ nút chính Luyện Khí
+của nhánh (không tính nút "Đang biên soạn") đã xong. Mọi phần đều phải đạt. Bảng chiêu ↔ nút:
+`docs/DAO_THU_TRONG_GAME.md`.
+
+**Công Pháp**: chỉ sáu chiêu trên thanh (`Character.hotbar.chieu`, mặc định sáu chiêu đầu của `skills.json`)
+mới thi triển được; chiêu khác bị từ chối với mã `not_slotted`.
+
 WebSocket, client → server:
 
     {"t": "mskill", "k": "<id chiêu>", "id": "<eid quái>" | null}
 
 Bị từ chối (không mất gì): `{"t": "mcast", "k", "ok": false, "code", "message_vi"}`, `code` ∈ `unknown`,
-`locked`, `cooldown`, `no_qi`, `no_target`, `too_far`, `answering`, `cannot`, `tier_low` (bậc đã mở thấp
+`locked`, `not_slotted` (chiêu không nằm trên thanh Công Pháp), `cooldown`, `no_qi`, `no_target`, `too_far`, `answering`, `cannot`, `tier_low` (bậc đã mở thấp
 hơn `min_tier` hoặc chỉ có câu ở bậc cao hơn), `no_question` (chưa có câu loại này). `unknown`, `cannot`,
 `answering` trả về ngay; các mã khác đến sau khi máy chủ đọc lộ trình và soạn câu.
 
@@ -524,7 +553,11 @@ Sự kiện kênh (trong `fx` của `snap`, ai ở gần cũng thấy):
 
 - `{"k": "mcast", "by", "s", "anim", "x", "y"}`: bắt đầu vận chiêu (câu hỏi vừa mở).
 - `{"k": "mskill", "by", "s", "fx", "anim", "ok": 1|0, "x", "y", "tx", "ty", "r", "combo"}`: chiêu trúng
-  (`ok: 1`) hoặc hụt (`ok: 0`); `tx, ty` khi có mục tiêu, `r` với `area`/`ward`. Đòn đánh vẫn đi kèm
+  (`ok: 1`) hoặc hụt (`ok: 0`); `tx, ty` khi có mục tiêu, `r` với hiệu ứng có `radius`. Chiêu Thức II thêm:
+  `hits[[eid, x, y], ...]` (mọi con trúng, theo thứ tự trúng: dọc đường thẳng, theo bước nhảy của xích lôi; có cả
+  ở `area`), `ex, ey, w` (điểm cuối và bề rộng của `line`), `d` (bao lâu cái nó để lại còn: băng, trói, dải cháy,
+  chuông, kiếm vực). Kết quả `combat` thêm `hits` (số con trúng), `shield{duration, reduce}`, `heal{players, heal}`,
+  `domain{duration, radius}` theo hiệu ứng. Đòn đánh vẫn đi kèm
   các sự kiện `hit`, `shield`, `gshield`, `heal`, `die` như cũ.
 
 Tất cả những điều trên (chiêu ra bằng một câu hỏi, chiêu hụt, combo theo câu chiêu đúng) nay chỉ còn ở **bí

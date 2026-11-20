@@ -1540,3 +1540,24 @@ Tác giả: "Mình muốn có thành tựu", làm kỹ, làm đẹp. Chi tiết 
   di chuyển (dài theo tốc độ, ngắn lại khi bay lên/xuống màn hình), `phi_gio` sau lưng khi nhanh, `phi_may` dưới
   kiếm, đốm linh quang, bọt nước khi bay trên mặt nước, vòng `phi_cat_canh` / `phi_ha_canh`, máy quay dẫn trước
   hướng bay và nhún nhẹ khi đáp. Người bay sắp xếp theo hàng đất cộng độ cao nên bay ngang qua đầu quái.
+## 2026-11-20 — Chiêu Thức II: mười một chiêu lĩnh ngộ trên Đạo Thụ, thanh Công Pháp
+
+- **Sức mạnh đến từ việc học.** Mười một chiêu mới (tên và hình theo bộ `art/src/fx_chieu`) mở bằng `unlock.nodes`
+  (nút Đạo Thụ phải xong) và có thể `unlock.share` (tỉ lệ nhánh), cộng tầng như cũ. Sáu chiêu cũ giữ tầng. Chỉ nút có
+  nội dung `co`; tầng của chiêu không thấp hơn tầng của nút. Bảng: `docs/DAO_THU_TRONG_GAME.md`.
+- **Hiệu ứng mới, tối thiểu**: `line` (+`burn`), `chain`, `cone`, `root`, `shield`, `heal`, `domain`. Con trúng phụ
+  chỉ bị trầy khi còn Mặc Thuẫn, như `area`; chỉ khiên mục tiêu vỡ khi trả lời đúng ở bí cảnh. Dải cháy và kiếm vực
+  đếm theo nhịp (`duration / every` lần), không theo đồng hồ, nên số nhịp luôn đúng.
+- **Trói không làm vòng "trả lời khi bị đánh" thành vô nghĩa**: quái bị trói không đi được nhưng vẫn báo đòn và
+  đánh ai đứng trong tầm; tinh anh bị trói nửa thời gian, thủ lĩnh một phần tư (`root_rank_mult`); chiêu ở vùng hoang
+  vẫn không phá Mặc Thuẫn nên thả diều một con tinh anh bị trói chẳng giết được nó.
+- **Xích lôi chọn ngẫu nhiên** trong các con gần (lý do để gắn với Xác Suất); máy chủ quyết định, client vẽ theo
+  `hits` của sự kiện.
+- **Công Pháp** lưu trong `Character.hotbar` (cột JSON có sẵn, không cần migration): `chieu` (sáu ô) và `known`
+  (chiêu đã báo). Bản lưu cũ: sáu chiêu cũ, và lần xem đầu chỉ ghi nhớ lặng lẽ. Chiêu mới tự vào ô trống hoặc ô
+  của chiêu chưa lĩnh ngộ. Phím **U** (còn trống) hoặc bấm vào thanh mở màn xếp. Máy chủ từ chối chiêu không có
+  trên thanh (`not_slotted`).
+- **Thành tựu** `chieu_learned` (sự kiện `chieu_unlock`, đếm số chiêu đã lĩnh ngộ): 5 / 10 / 17.
+- **Hình**: mọi chiêu theo `charge (tu_khi_<hệ>) → xuất → bay → trúng → dư âm`; sáu chiêu cũ dùng hình anh hùng
+  (`pha_me_kiem`, `hoa_cau_lon/no`, `thien_loi_giang`, `tu_khi_*`). Vòng trận của vùng lớn bị giới hạn cỡ để không
+  che quái và vùng báo đòn.

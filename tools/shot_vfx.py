@@ -71,6 +71,7 @@ class Cell:
         self.loot = None          # a ground_loot.GroundLoot to draw, at loot_t
         self.loot_t = 0.0
         self.spots: list = []     # [draw(surf, view, ground)] weapon spots
+        self.more: list = []      # more monsters (a chiêu that strikes several)
 
     def run_to(self, t: float) -> None:
         while self.vfx.t + 1e-6 < t and self.vfx.wall < t + 0.5:
@@ -110,8 +111,9 @@ class Cell:
             m = art2.monster(MONSTER)
             if m is not None:
                 n = m.index(mon_clip, mon_t, "left")
-                mx, my = v.to_screen(*self.dst)
-                bodies.append((self.dst[1], m.frame(n), (int(mx - m.pivot[0]), int(my - m.pivot[1])), 0))
+                for at in [self.dst] + list(self.more):
+                    mx, my = v.to_screen(*at)
+                    bodies.append((at[1], m.frame(n), (int(mx - m.pivot[0]), int(my - m.pivot[1])), 0))
         for _y, img, pos, flags in sorted(bodies, key=lambda b: b[0]):
             surf.blit(img, pos, special_flags=flags)
         if self.loot is not None:
@@ -216,39 +218,77 @@ def weapon_rows() -> list:
     return rows
 
 
-CHIEU = [("chem", "Thường Quyền", "slash", 0.0), ("kiem_khi", "Phá Mê Kiếm Quyết", "slash", 0.0),
-         ("hoa_cau", "Hỏa Cầu Thuật", "cast", 0.0), ("tran_do", "Ngũ Hành Trận", "cast", 80.0),
-         ("ho_tran", "Hộ Thân Trận", "cast", 120.0), ("thien_loi", "Thiên Lôi Tuyệt Kỹ", "cast", 0.0)]
+# (fx, name, clip, radius, layout): layout "one" a single target near, "far" one far, "self" no
+# target, "line" three on a line, "chain" three hopping, "area" a target and one more in its area
+CHIEU = [("chem", "Thường Quyền", "slash", 0.0, "one"), ("kiem_khi", "Phá Mê Kiếm Quyết", "slash", 0.0, "one"),
+         ("hoa_cau", "Hỏa Cầu Thuật", "cast", 0.0, "far"), ("tran_do", "Ngũ Hành Trận", "cast", 80.0, "far"),
+         ("ho_tran", "Hộ Thân Trận", "cast", 120.0, "self"), ("thien_loi", "Thiên Lôi Tuyệt Kỹ", "cast", 0.0, "far"),
+         ("ngu_kiem", "Ngự Kiếm Thuật", "cast", 0.0, "line"), ("van_kiem", "Vạn Kiếm Quy Tông", "cast", 70.0, "area"),
+         ("bang_phong", "Băng Phong Thuật", "cast", 50.0, "area"), ("loi_xich", "Chưởng Tâm Lôi", "cast", 0.0, "chain"),
+         ("hoa_long", "Hỏa Long Thuật", "cast", 0.0, "line"), ("dia_liet", "Địa Liệt Trảm", "slash", 0.0, "line"),
+         ("thanh_dang", "Thanh Đằng Triền", "cast", 45.0, "area"), ("phong_nhan", "Phong Nhận Thuật", "cast", 0.0, "chain"),
+         ("kim_chung", "Kim Chung Tráo", "cast", 0.0, "self"), ("kiem_vuc", "Kiếm Vực", "cast", 60.0, "self"),
+         ("hoi_xuan", "Hồi Xuân Thuật", "cast", 120.0, "self")]
+SRC = (28.0, 52.0)
+LAYOUT = {   # dst, more monsters, line end, how long it lingers (seconds)
+    "one": ((60.0, 52.0), [], None, None),
+    "far": ((96.0, 52.0), [], None, None),
+    "self": ((96.0, 52.0), [], None, None),
+    "line": ((66.0, 52.0), [(96.0, 50.0), (124.0, 54.0)], (146.0, 52.0), 2.0),
+    "chain": ((72.0, 50.0), [(100.0, 62.0), (126.0, 46.0)], None, None),
+    "area": ((96.0, 50.0), [(118.0, 58.0)], None, 4.0),
+}
+FX_D = {"kim_chung": 6.0, "kiem_vuc": 6.0, "van_kiem": 1.5, "bang_phong": 5.0, "thanh_dang": 3.5, "hoa_long": 2.0}
+
+
+def chieu_ex(fx: str, layout: str) -> dict:
+    dst, more, end, d = LAYOUT[layout]
+    ex = {"hits": [dst] + more}
+    if end is not None:
+        ex["end"] = end
+    if FX_D.get(fx) or d:
+        ex["d"] = FX_D.get(fx) or d
+    return ex
+
+
+def chieu_cell(fx: str, layout: str, t: int, r: float) -> tuple:
+    dst, more, _end, _d = LAYOUT[layout]
+    cell = Cell(320, 150, SRC, dst)
+    cell.more = list(more)
+    target = None if layout == "self" else dst
+    land = C.chieu(cell.vfx, fx, SRC, target, t, radius=r, follow="me", ex=chieu_ex(fx, layout))
+    return cell, land
 
 
 def chieu_rows(t: int = 5, realm: str = "kim_dan") -> list:
+    only = os.environ.get("SHOT_CHIEU")
     rows = []
-    for fx, name, clip, r in CHIEU:
-        far = fx in ("hoa_cau", "tran_do", "thien_loi")
-        src, dst = (34.0, 52.0), ((96.0, 52.0) if far else (66.0, 52.0))
-        probe = Cell(300, 150, src, dst)
-        land = C.chieu(probe.vfx, fx, src, None if fx == "ho_tran" else dst, t, radius=r, follow="me")
+    for fx, name, clip, r, layout in CHIEU:
+        if only and fx not in only.split(","):
+            continue
+        _probe, land = chieu_cell(fx, layout, t, r)
         charge = 0.1 if fx == "chem" else C.CHARGE[fx]
-        moments = [("tụ lực", charge * 0.6), ("xuất chiêu", charge + 0.04), ("bay", (charge + land) / 2 + 0.02),
-                   ("trúng", land + 0.05), ("dư âm", land + 0.4)]
+        linger = 1.2 if fx in ("kim_chung", "kiem_vuc", "bang_phong", "thanh_dang", "hoa_long") else 0.45
+        moments = [("tụ lực", charge * 0.6), ("xuất chiêu", charge + 0.05), ("bay", (charge + land) / 2 + 0.03),
+                   ("trúng", land + 0.06), ("dư âm", land + linger)]
         cells = []
         for cap, m in moments:
-            cell = Cell(300, 150, src, dst)
-            C.chieu(cell.vfx, fx, src, None if fx == "ho_tran" else dst, t, radius=r, follow="me")
+            cell, _land = chieu_cell(fx, layout, t, r)
             cell.run_to(m)
-            cells.append((f"{cap} {m:.2f}s", cell.picture(realm, "kiem_4", clip, m, monster=fx != "ho_tran")))
+            cells.append((f"{cap} {m:.2f}s", cell.picture(realm, "kiem_4", clip, m, monster=layout != "self")))
         # the miss: the grey code-drawn fizzle, drawn at 1x and scaled up as the world does
-        cell = Cell(300, 150, src, dst)
-        C.fizzle(cell.vfx, fx, src, dst, follow="me")
+        dst = LAYOUT[layout][0]
+        cell = Cell(320, 150, SRC, dst)
+        C.fizzle(cell.vfx, fx, SRC, dst, follow="me")
         p = 0.35
         cell.run_to(p * skill_fx.duration(fx, False))
 
-        def fizzle(surf, v, fx=fx, p=p, src=src, dst=dst, r=r):
+        def fizzle(surf, v, fx=fx, p=p, dst=dst, r=r):
             z = 2
             layer = pygame.Surface((surf.get_width() // z + 1, surf.get_height() // z + 1), pygame.SRCALPHA)
-            skill_fx.draw(layer, fx, p, src, dst, ok=False, radius=r)
+            skill_fx.draw(layer, fx, p, SRC, dst, ok=False, radius=r)
             surf.blit(pygame.transform.scale(layer, (layer.get_width() * z, layer.get_height() * z)), (0, 0))
-        cells.append(("hụt", cell.picture(realm, "kiem_4", clip, 0.3, monster=fx != "ho_tran", extra=fizzle)))
+        cells.append(("hụt", cell.picture(realm, "kiem_4", clip, 0.3, monster=layout != "self", extra=fizzle)))
         rows.append((name, cells))
     return rows
 
@@ -474,7 +514,7 @@ def main() -> int:
     only = os.environ.get("SHOT_ONLY")
     for name, rows, title in (("vfx_kiem_khi", kiem_khi_rows, "Kiếm khí theo tu vi (T1-T10), * = đòn chạm"),
                               ("vfx_weapons", weapon_rows, "Các loại binh khí theo nhóm cảnh giới"),
-                              ("vfx_chieu", chieu_rows, "Chiêu thức (Kết Đan): tụ lực, xuất chiêu, bay, trúng, dư âm, hụt"),
+                              ("vfx_chieu", chieu_rows, "Mười bảy chiêu thức (Kết Đan, trên cỏ): tụ lực, xuất chiêu, bay, trúng, dư âm, hụt"),
                               ("vfx_hits", hit_rows, "Đòn trúng, hạ quái, Phản Đòn, Né Đòn, lên tầng, đột phá"),
                               ("vfx_roi_do", loot_rows, "Đồ rơi phát sáng theo phẩm (trên cỏ)"),
                               ("vfx_kiem_khi_co", kiem_khi_rows, "Kiếm khí trên cỏ (T1-T10)"),
@@ -483,7 +523,7 @@ def main() -> int:
         if only and only != name:
             continue
         global GRASS
-        GRASS = name in ("vfx_roi_do", "vfx_kiem_khi_co") or os.environ.get("SHOT_GROUND") == "grass"
+        GRASS = name in ("vfx_roi_do", "vfx_kiem_khi_co", "vfx_chieu") or os.environ.get("SHOT_GROUND") == "grass"
         img = sheet(rows(), title)
         p = out / f"{name}.png"
         pygame.image.save(img, str(p))

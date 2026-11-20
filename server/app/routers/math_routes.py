@@ -30,7 +30,7 @@ class RunIn(BaseModel):
 async def _run(db: AsyncSession, coro):
     try:
         out = await coro
-    except (math_practice.MathError, math_craft.CraftError) as e:
+    except (math_practice.MathError, math_craft.CraftError, math_skills.LoadoutError) as e:
         await db.rollback()
         raise api_error(e.status, e.code, e.message_vi)
     await db.commit()
@@ -194,6 +194,16 @@ async def math_skills_view(user: User = Depends(current_user), db: AsyncSession 
     """Chiêu thức gắn câu hỏi (M9): every chiêu in data order, and which this player has
     unlocked on the learning path."""
     return await _run(db, math_skills.view(db, user))
+
+
+class LoadoutIn(BaseModel):
+    slots: list[str | None] = Field(min_length=1, max_length=12)
+
+
+@router.post("/math/skills/loadout")
+async def math_skills_loadout(body: LoadoutIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
+    """Công Pháp (Chiêu Thức II): the six chiêu on the hotbar, keys 1-6 (learned ones only)."""
+    return await _run(db, math_skills.save_loadout(db, user, body.slots))
 
 
 @router.get("/math/library/{doc_id}")

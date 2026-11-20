@@ -183,7 +183,18 @@
     "hoa_cau":   {"kind": "bolt",   "fx": "bolt_hoa",  "impact": "burst_hoa"},
     "tran_do":   {"kind": "circle", "fx": "tran_3",    "impact": "burst_moc"},
     "ho_tran":   {"kind": "ward",   "fx": "tran_2",    "impact": "linh_thuan"},
-    "thien_loi": {"kind": "strike", "fx": "loi_kiep",  "impact": "burst_loi"}
+    "thien_loi": {"kind": "strike", "fx": "loi_kiep",  "impact": "burst_loi"},
+    "ngu_kiem":   {"kind": "bolt",   "fx": "ngu_kiem",      "impact": "ngu_kiem_xuyen"},
+    "van_kiem":   {"kind": "circle", "fx": "van_kiem_vong", "impact": "van_kiem_roi"},
+    "bang_phong": {"kind": "strike", "fx": "bang_phong",    "impact": "bang_ket"},
+    "loi_xich":   {"kind": "bolt",   "fx": "loi_xich",      "impact": "loi_cham"},
+    "hoa_long":   {"kind": "bolt",   "fx": "hoa_long",      "impact": "hoa_cau_no"},
+    "dia_liet":   {"kind": "strike", "fx": "dia_liet_no",   "impact": "hit_spark"},
+    "thanh_dang": {"kind": "strike", "fx": "thanh_dang",    "impact": "thanh_dang_troi"},
+    "phong_nhan": {"kind": "bolt",   "fx": "phong_nhan",    "impact": "phong_xoay"},
+    "kim_chung":  {"kind": "ward",   "fx": "tran_5",        "impact": "kim_chung"},
+    "kiem_vuc":   {"kind": "ward",   "fx": "kiem_vuc",      "impact": "kiem_vuc_xoay"},
+    "hoi_xuan":   {"kind": "ward",   "fx": "tran_6",        "impact": "hoi_xuan"}
   },
   "combat_fx": {
     "hit": "hit_spark",
@@ -208,7 +219,18 @@
     "hoa_cau_thuat": ["weapons_b", "phien_6"],
     "ngu_hanh_tran": ["cong_phap", "gian_3"],
     "ho_than_tran": ["misc", "phong_an_phu"],
-    "thien_loi_tuyet_ky": ["cong_phap", "cuon_5"]
+    "thien_loi_tuyet_ky": ["cong_phap", "cuon_5"],
+    "ngu_kiem_thuat": ["weapons_a", "kiem_6"],
+    "bang_phong_thuat": ["linh_thao", "sen_bang"],
+    "chuong_tam_loi": ["linh_thao", "day_loi"],
+    "phong_nhan_thuat": ["weapons_b", "phien_3"],
+    "kim_chung_trao": ["trang_bi", "mu_7"],
+    "hoi_xuan_thuat": ["linh_thao", "sen_ngoc"],
+    "dia_liet_tram": ["weapons_a", "chuy_6"],
+    "thanh_dang_trien": ["linh_thao", "chuong_xanh"],
+    "hoa_long_thuat": ["weapons_b", "truong_7"],
+    "van_kiem_quy_tong": ["misc", "ngu_kiem_lenh"],
+    "kiem_vuc": ["weapons_a", "kiem_8"]
   },
   "item_icons": {
     "_comment": "an item gets its icon by id first, then weapon kind, then stack kind, then gear slot; anything else keeps the old picture",

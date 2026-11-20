@@ -27,12 +27,28 @@ import math
 
 import pygame
 
-FX_IDS = ("chem", "kiem_khi", "hoa_cau", "tran_do", "ho_tran", "thien_loi")
+OLD_IDS = ("chem", "kiem_khi", "hoa_cau", "tran_do", "ho_tran", "thien_loi")
+# Chiêu Thức II: the eleven chiêu earned on Đạo Thụ. In the game they are drawn from their own
+# Blender sheets (engine/combat_vfx.py); here each one is the old effect of the same shape,
+# washed in its element's colour, so a checkout without the v2 art still shows something fitting
+NEW_IDS = ("ngu_kiem", "van_kiem", "bang_phong", "loi_xich", "hoa_long", "dia_liet", "thanh_dang", "phong_nhan",
+           "kim_chung", "kiem_vuc", "hoi_xuan")
+FX_IDS = OLD_IDS + NEW_IDS
+# new id -> (the old effect of its shape, the colour it is washed in)
+BASE = {"ngu_kiem": ("kiem_khi", (255, 236, 170)), "van_kiem": ("tran_do", (255, 226, 140)),
+        "bang_phong": ("tran_do", (150, 210, 255)), "loi_xich": ("thien_loi", (200, 150, 255)),
+        "hoa_long": ("hoa_cau", (255, 150, 90)), "dia_liet": ("chem", (220, 160, 90)),
+        "thanh_dang": ("tran_do", (130, 230, 130)), "phong_nhan": ("kiem_khi", (150, 240, 210)),
+        "kim_chung": ("ho_tran", (255, 220, 120)), "kiem_vuc": ("ho_tran", (255, 250, 200)),
+        "hoi_xuan": ("ho_tran", (150, 255, 150))}
 
 # seconds each effect lasts; the world scene keeps one for this long after the chiêu lands
-DURATION = {"chem": 0.45, "kiem_khi": 0.7, "hoa_cau": 0.9, "tran_do": 1.4, "ho_tran": 1.6, "thien_loi": 0.9}
+DURATION = {"chem": 0.45, "kiem_khi": 0.7, "hoa_cau": 0.9, "tran_do": 1.4, "ho_tran": 1.6, "thien_loi": 0.9,
+            "ngu_kiem": 1.4, "van_kiem": 1.8, "bang_phong": 1.2, "loi_xich": 0.8, "hoa_long": 1.4, "dia_liet": 0.9,
+            "thanh_dang": 1.2, "phong_nhan": 0.8, "kim_chung": 1.4, "kiem_vuc": 2.0, "hoi_xuan": 1.2}
 MISS_DURATION = 0.8
-DEFAULT_RADIUS = {"tran_do": 60.0, "ho_tran": 40.0}      # when the event carries no `r`
+DEFAULT_RADIUS = {"tran_do": 60.0, "ho_tran": 40.0, "van_kiem": 70.0, "bang_phong": 50.0, "thanh_dang": 45.0,
+                  "kim_chung": 30.0, "kiem_vuc": 46.0, "hoi_xuan": 36.0}      # when the event carries no `r`
 
 # the five elements of the array: kim, mộc, thủy, hỏa, thổ
 FIVE = ((236, 232, 208), (106, 153, 78), (74, 124, 200), (229, 83, 61), (201, 154, 58))
@@ -291,9 +307,13 @@ def _dashed_ring(layer, c, centre, rx: float, ry: float, phase: float) -> None:
 
 
 def _fizzle(layer, fx_id, p, src, dst, radius):
-    """The same chiêu, but it sputters: grey, it loses strength half way, smoke where it dies."""
+    """The same chiêu, but it sputters: grey, it loses strength half way, smoke where it dies.
+    A chiêu of Chiêu Thức II sputters like the old one of its shape, its smoke drifting its own way."""
+    salt = NEW_IDS.index(fx_id) + 1 if fx_id in NEW_IDS else 0
+    own = fx_id
+    fx_id = BASE[fx_id][0] if fx_id in BASE else fx_id
     if fx_id in _AREA:
-        r = (radius or DEFAULT_RADIUS[fx_id])
+        r = (radius or DEFAULT_RADIUS.get(own) or DEFAULT_RADIUS[fx_id])
         centre = (dst[0], dst[1]) if fx_id == "tran_do" else (src[0], src[1])
         grow = math.sin(_clamp(p / 0.7) * math.pi) * 0.6 + 0.15 * (1 - p)
         a = _fade(p, 0.1, 0.4)
@@ -345,9 +365,10 @@ def _fizzle(layer, fx_id, p, src, dst, radius):
                 _polyline(layer, _rgba((235, 235, 235), 1 - t * 2.5),
                           [(ex + math.cos(th) * d, ey + math.sin(th) * d), (ex + math.cos(th) * (d + 3), ey + math.sin(th) * (d + 3))])
         for i in range(4):
-            drift = (i - 1.5) * 4
+            drift = (i - 1.5) * 4 + salt * 1.5
             pygame.draw.circle(layer, _rgba(SMOKE, min(1.0, (1 - t) * 1.1)),
-                               (int(ex + drift + _noise(i) * 2), int(ey - t * 14 - i * 2)), int(3 + t * 4 + i % 2))
+                               (int(ex + drift + _noise(i, salt) * 2), int(ey - t * 14 - i * 2 - salt)),
+                               int(3 + t * 4 + i % 2))
         if fx_id == "kiem_khi":                            # the broken crescent falls in shards
             ang0 = math.atan2(dst[1] - src[1], dst[0] - src[0])
             for i in range(3):
@@ -377,9 +398,13 @@ def draw(surf: pygame.Surface, fx_id: str, p: float, src, dst=None, ok: bool = T
     if dst is None:
         dst = (src[0] + 28, src[1])
     layer = pygame.Surface(surf.get_size(), pygame.SRCALPHA)
-    if ok:
+    if ok and fx_id in BASE:                       # Chiêu Thức II: the old shape in its own colour
+        base, tint = BASE[fx_id]
+        _EFFECTS[base](layer, p, src, dst, radius or DEFAULT_RADIUS.get(fx_id, 0.0))
+        layer.fill((*tint, 255), special_flags=pygame.BLEND_RGBA_MULT)
+    elif ok:
         _EFFECTS.get(fx_id, _chem)(layer, p, src, dst, radius)
     else:
-        _fizzle(layer, fx_id if fx_id in _EFFECTS else "chem", p, src, dst, radius)
+        _fizzle(layer, fx_id if (fx_id in _EFFECTS or fx_id in BASE) else "chem", p, src, dst, radius)
     surf.blit(layer, (0, 0))
     return True
