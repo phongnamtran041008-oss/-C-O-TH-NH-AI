@@ -11,7 +11,7 @@
  "type": "map",
  "version": "1.10",
  "nextlayerid": 4,
- "nextobjectid": 296,
+ "nextobjectid": 298,
  "properties": [
   {
    "name": "zone",
@@ -6018,6 +6018,52 @@
      "rotation": 0,
      "visible": true,
      "properties": []
+    },
+    {
+     "id": 296,
+     "name": "thao_nhan_bai_tap",
+     "type": "monster_area",
+     "x": 704,
+     "y": 400,
+     "width": 288,
+     "height": 128,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "monster",
+       "type": "string",
+       "value": "thao_nhan"
+      },
+      {
+       "name": "count",
+       "type": "string",
+       "value": "3"
+      }
+     ]
+    },
+    {
+     "id": 297,
+     "name": "xich_diem_ma_dong_bac",
+     "type": "monster_area",
+     "x": 704,
+     "y": 32,
+     "width": 288,
+     "height": 128,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "monster",
+       "type": "string",
+       "value": "xich_diem_ma"
+      },
+      {
+       "name": "count",
+       "type": "string",
+       "value": "1"
+      }
+     ]
     }
    ]
   },

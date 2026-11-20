@@ -74,10 +74,15 @@ async def own(uid: int) -> list[str]:
 
 
 # ------------------------------------------------------------------ the plan
+BESTIARY = {"ngoc_tho", "tam_bao_thu", "kim_thiem", "bach_ho_con", "cuu_vi_ho", "kim_si_dieu"}
+
+
 def test_the_five_beasts_of_luyen_khi_are_built_and_the_sky_one_waits():
     built = beasts.built()
     assert set(built) == {"linh_ho", "huyen_quy", "bach_hac", "hoa_tuoc", "tieu_long"}
     assert bplan("ky_lan_con")["status"] == "chua_co" and "ky_lan_con" not in built
+    # the six of the bestiary wait for their art (test_bestiary.py plays them with the status flipped)
+    assert all(bplan(b)["status"] == "cho_hinh" for b in BESTIARY) and not BESTIARY & set(built)
     assert math_tree.section_wired("beasts") and math_tree.section_wired("abilities")
     for bid, b in built.items():
         assert lands.zone_of(b["land"]) is not None, bid
@@ -88,9 +93,10 @@ def test_each_land_spawns_its_own_beast_in_every_channel_and_a_bi_canh_none(gw):
     for bid, b in beasts.built().items():
         ch = gw._pick_channel(lands.zone_of(b["land"]))
         mine = [m for m in ch.monsters if getattr(m, "beast", False)]
-        assert [m.kind for m in mine] == [bid]
+        assert sorted(m.kind for m in mine) == sorted(k for k, o in beasts.built().items() if o["land"] == b["land"])
+        m = next(x for x in mine if x.kind == bid)
         tx, ty = b["pos"]
-        assert (mine[0].x, mine[0].y) == (tx * 16 + 8, ty * 16 + 12) and mine[0].on_hit and not mine[0].shield
+        assert (m.x, m.y) == (tx * 16 + 8, ty * 16 + 12) and m.on_hit and not m.shield
     assert not [m for m in gw._pick_channel("truc_lam_thon").monsters if getattr(m, "beast", False)]
 
 

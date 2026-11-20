@@ -558,15 +558,16 @@ def check_weapons(v2: Path | None = None) -> list[str]:
 BEAST_CLIPS = ("idle", "walk", "windup", "attack", "hit", "die", "happy")
 
 
-def check_beasts() -> list[str]:
+def check_beasts(v2: Path | None = None) -> list[str]:
     """Linh thú and thần thông of Thiên Địa Đồ: the rules are checked with the world plan
     (app/learning/math_tree.py); here the client art they are drawn with - every built beast has
     its own v2 sheet wired in spirit_beasts with the clips its fight and its following play, the
     flying sword of Đạp Kiếm Lướt has its fly clip, the formation and the seal their effects, and
-    the Phong Ấn Phù its icon."""
+    the Phong Ấn Phù its icon. A beast waiting for its art (status "cho_hinh") is skipped until
+    its status is flipped to "co"."""
     from app.learning import math_tree
     plan = math_tree.world_plan()
-    v2 = ROOT / "client" / "assets" / "v2"
+    v2 = v2 or ROOT / "client" / "assets" / "v2"
     wiring = _json(v2 / "wiring.json")
     out: list[str] = []
     wired = wiring.get("spirit_beasts") or {}

@@ -46,7 +46,12 @@
     "van_xa": "van_xa", "phong_lang": "phong_lang_di", "dau_tu_oa": "dau_tu_oa_di", "ho_lo_tinh": "ho_lo_tinh_di",
     "tri_chu_tinh": "tri_chu_tinh", "moc_yeu": "moc_yeu_di", "co_quan_nhan": "co_quan_nhan",
     "co_quan_nhan_dau_dan": "co_quan_nhan_di", "tam_ma": "tam_ma", "tam_ma_chap_niem": "tam_ma_di",
-    "loi_long": "loi_long_di"
+    "loi_long": "loi_long_di",
+    "_bestiary": "the thirteen creatures of the bestiary (2026-11-20) borrow the closest existing sheet until the artists' own monsters/<id> (+ <id>_di) arrive; the hovering ones (van_diep, loi_ung, u_minh_dang, loi_linh) borrow floating sheets",
+    "thiet_giap_thu": "thach_khoi", "vong_hon_kiem_si": "kiem_linh_di", "van_diep": "kiem_linh", "loi_ung": "tam_ma_di",
+    "u_minh_dang": "tam_ma", "huyet_ngac": "dau_tu_oa_di", "hoa_yeu": "moc_yeu", "bach_vien": "thach_khoi_di",
+    "co_quan_thu": "co_quan_nhan", "lo_linh": "co_quan_nhan_di", "thao_nhan": "co_quan_nhan", "xich_diem_ma": "phong_lang_di",
+    "loi_linh": "kiem_linh_di"
   },
   "monster_subjects": {
     "_comment": "a monster type not listed above goes by its subject (and rank)",

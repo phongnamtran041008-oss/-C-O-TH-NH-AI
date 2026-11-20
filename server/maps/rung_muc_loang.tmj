@@ -11,7 +11,7 @@
  "type": "map",
  "version": "1.10",
  "nextlayerid": 4,
- "nextobjectid": 360,
+ "nextobjectid": 362,
  "properties": [
   {
    "name": "zone",
@@ -6453,6 +6453,52 @@
        "name": "count",
        "type": "string",
        "value": "3"
+      }
+     ]
+    },
+    {
+     "id": 360,
+     "name": "hoa_yeu_nam",
+     "type": "monster_area",
+     "x": 128,
+     "y": 480,
+     "width": 256,
+     "height": 128,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "monster",
+       "type": "string",
+       "value": "hoa_yeu"
+      },
+      {
+       "name": "count",
+       "type": "string",
+       "value": "3"
+      }
+     ]
+    },
+    {
+     "id": 361,
+     "name": "bach_vien_dong",
+     "type": "monster_area",
+     "x": 800,
+     "y": 208,
+     "width": 144,
+     "height": 160,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "monster",
+       "type": "string",
+       "value": "bach_vien"
+      },
+      {
+       "name": "count",
+       "type": "string",
+       "value": "1"
       }
      ]
     }

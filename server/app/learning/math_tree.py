@@ -56,7 +56,17 @@ QUESTION_RULES = ("on_hit",)
 # taming rule (beast_taming), 'abilities' the thần thông of the unlocks that have content
 WIREABLE_SECTIONS = ("combat", "lands", "weapons", "beasts", "abilities", "weapon_drops")
 WEAPON_STATUSES = ("co", "cho_hinh")     # a weapon type in the game, or waiting for its art
-GIFT_TYPES = ("sniff", "wrong_guard", "dodge_cooldown", "parry_fire", "mount")
+GIFT_TYPES = ("sniff", "wrong_guard", "dodge_cooldown", "parry_fire", "mount",
+              "heal_on_right", "stone_bonus", "drop_luck", "atk_bonus", "xp_bonus", "glide_range")
+# the gifts that are one small share (`value`): the first three act on a fight, the bestiary's
+# six on rewards, Công and the glide (systems/beasts.py says where each one acts)
+FRACTION_GIFTS = ("wrong_guard", "dodge_cooldown", "parry_fire")
+SMALL_GIFTS = ("heal_on_right", "stone_bonus", "drop_luck", "atk_bonus", "xp_bonus", "glide_range")
+SMALL_GIFT_MAX = 0.5
+# a beast in the game ('co'), validated in full but waiting for its art ('cho_hinh', like a weapon
+# type), or only planned ('chua_co')
+BEAST_STATUSES = ("co", "cho_hinh", "chua_co")
+BEAST_CHECKED = ("co", "cho_hinh")
 ABILITY_BLOCKS = {"phap_tran": "formation", "dap_kiem_luot": "glide", "cuoi_linh_thu": "ride"}
 TELEGRAPH_SHAPES = ("circle", "cone", "line")
 RANKS = ("normal", "elite", "boss")
@@ -402,6 +412,12 @@ def _wired_lands_problems(plan: dict, t: Tree, math_dir: Path) -> list[str]:
         for d in m.get("drops", []):
             if not isinstance(d.get("chance"), (int, float)) or not 0 < d["chance"] <= 1:
                 errs.append(f"{where}: a drop chance must be in (0, 1]")
+        # its own blow: one telegraph shape, or a rhythm of them in turn (realtime/combat.py next_shape)
+        shape = m.get("attack_shape")
+        known = plan.get("combat", {}).get("telegraph_shapes", [])
+        if shape is not None and not (shape in known if isinstance(shape, str) else
+                                      isinstance(shape, list) and shape and all(s in known for s in shape)):
+            errs.append(f"{where}: attack_shape must be a shape of {known} or a non-empty list of them")
 
     # where the weapons lie
     for i, p in enumerate(plan.get("weapons_placed", [])):
@@ -488,16 +504,23 @@ def _wired_beasts_problems(plan: dict, math_dir: Path) -> list[str]:
     abilities = unlocks
     glide = (abilities.get("dap_kiem_luot") or {}).get("glide", {})
     zmaps: dict[str, object] = {}
+    spots: dict[tuple, str] = {(p.get("land"), tuple(p["pos"])): f"weapon {p.get('weapon')} {p.get('quality')}"
+                               for p in plan.get("weapons_placed", []) if isinstance(p.get("pos"), list)}
     for b in plan.get("beasts", []):
         where = f"beast {b.get('id')}"
-        if b.get("status") not in CONTENT[::2]:
-            errs.append(f"{where}: status must be 'co' or 'chua_co'")
+        if b.get("status") not in BEAST_STATUSES:
+            errs.append(f"{where}: status must be one of {BEAST_STATUSES}")
             continue
         land = lands.get(b.get("land"), {})
-        if b["status"] != "co":
+        if b["status"] not in BEAST_CHECKED:
             if b.get("pos") is not None:
                 errs.append(f"{where}: has a pos but is not built")
             continue
+        if isinstance(b.get("pos"), list):
+            key = (b.get("land"), tuple(b["pos"]))
+            if key in spots:
+                errs.append(f"{where}: pos {b['pos']} is already the spot of {spots[key]}")
+            spots[key] = where
         if land.get("status") != "co" or not land.get("map"):
             errs.append(f"{where}: built, but its land {b.get('land')} is not")
             continue
@@ -519,9 +542,11 @@ def _wired_beasts_problems(plan: dict, math_dir: Path) -> list[str]:
             gt = gift["type"]
             if gt == "sniff" and (not _num(gift.get("radius_tiles")) or gift["radius_tiles"] <= 0):
                 errs.append(f"{where}: gift sniff needs a positive radius_tiles")
-            if gt in ("wrong_guard", "dodge_cooldown", "parry_fire") and \
-                    (not _num(gift.get("value")) or not 0 < gift["value"] < 1):
+            if gt in FRACTION_GIFTS and (not _num(gift.get("value")) or not 0 < gift["value"] < 1):
                 errs.append(f"{where}: gift {gt} needs a value between 0 and 1 (a small effect)")
+            if gt in SMALL_GIFTS and (not _num(gift.get("value")) or not 0 < gift["value"] <= SMALL_GIFT_MAX):
+                errs.append(f"{where}: gift {gt} needs a value above 0 and at most {SMALL_GIFT_MAX} "
+                            f"(a permanent passive stays modest)")
             if gt == "mount" and (not _num(gift.get("speed_mult")) or not 1 < gift["speed_mult"] <= 2.5):
                 errs.append(f"{where}: gift mount needs a speed_mult above 1 and at most 2.5")
         pos = b.get("pos")

@@ -14,7 +14,17 @@ the gacha pool leaves out) and its skill: the plan's `gift`, a small effect read
   wrong_guard (Huyền Quy)    - realtime/combat.py _parry: a wrong answer's blow is lighter;
   dodge_cooldown (Bạch Hạc)  - realtime/combat.py dodge: Né Đòn comes back sooner;
   parry_fire (Hỏa Tước)      - realtime/combat.py _parry: the counter hits harder, with fire;
-  mount (Tiểu Long)          - realtime/abilities.py: Cưỡi linh thú, faster on the ground.
+  mount (Tiểu Long)          - realtime/abilities.py: Cưỡi linh thú, faster on the ground;
+  heal_on_right (Ngọc Thố)   - realtime/combat.py _parry: every Phản Đòn heals a share of max HP;
+  stone_bonus (Tầm Bảo Thử)  - realtime/combat.py _loot_bonus: more linh thạch from kills;
+  drop_luck (Kim Thiềm)      - realtime/combat.py _loot_bonus: better drop chances (still gated);
+  atk_bonus (Bạch Hổ Con)    - cultivation.current_stats: more Công;
+  xp_bonus (Cửu Vĩ Hồ)       - pets.on_math_answer: more tu vi from right answers;
+  glide_range (Kim Sí Điểu)  - realtime/abilities.py: Đạp Kiếm Lướt flies farther.
+
+A beast with `status` 'cho_hinh' waits for its art (like a weapon type): math_tree validates it in
+full, but it is not `built()` - it never shows itself, cannot be tamed and its gift reads 0 - so
+flipping it to 'co' is the only change once client/assets/v2/beasts/<id> is wired.
 
 "Tu vi" in the plan is the player's place in Đạo Thụ (lands.TreePos), never the cultivation realm.
 """
@@ -87,6 +97,22 @@ def gift_value(pet_type: str | None, gtype: str, key: str = "value") -> float:
     if not g or g.get("type") != gtype:
         return 0.0
     return float(g.get(key, 0) or 0)
+
+
+def loot_gift(pet_type: str | None, loot: dict) -> dict:
+    """Tầm Bảo Thử and Kim Thiềm: the kill's loot bonus (realtime/combat._loot_bonus) with the worn
+    beast's gift on top. Drop luck only raises chances; the tu vi gate still decides (systems/loot.py)."""
+    loot["stones_pct"] += gift_value(pet_type, "stone_bonus") * 100
+    loot["drop_mult"] *= 1 + gift_value(pet_type, "drop_luck")
+    return loot
+
+
+def stat_gift(stats: dict, pet_type: str | None) -> dict:
+    """Bạch Hổ Con: Công of the character's stats (cultivation.current_stats) times (1 + value)."""
+    bonus = gift_value(pet_type, "atk_bonus")
+    if bonus > 0 and stats.get("atk"):
+        stats["atk"] = int(round(stats["atk"] * (1 + bonus)))
+    return stats
 
 
 def species() -> dict[str, dict]:
