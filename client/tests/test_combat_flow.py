@@ -114,7 +114,8 @@ def beat(drv: Driver, ws, m, server: ServerProcess | None = None) -> None:
 
 
 def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
-    server = ServerProcess(workdir)
+    # every drop roll succeeds (a dev server only): the kill below surely leaves gear on the ground
+    server = ServerProcess(workdir, env={"DEV_DROP_MULT": "1000"})
     try:
         url = server.url
         token, uid = make_account(url, "detu_c", "Chiến Sĩ")     # no word learned: none is needed
@@ -158,6 +159,28 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait(lambda: any("Linh Thạch" in t or "Nhận" in t for t in drv.toast_log) or
                  any(f.text.startswith("+") for f in ws.fx.texts), 6, "loot")
         drv.shot("loot")
+
+        # the gear of that kill lies where the monster fell, glowing in its rarity colour; it is
+        # already in the bag, but its toast waits until the player walks to it - and shows once
+        from client.engine import art2
+        if art2.on():
+            drv.wait(lambda: any(d.state == "lie" for d in ws.ground_loot.drops), 6, "gear on the ground")
+            d = next(x for x in ws.ground_loot.drops if x.state == "lie")
+            said = d.toast[0]
+            assert said not in drv.toast_log, "the toast waits for the pickup"
+            drv.step(6)
+            drv.shot("loot_on_the_ground")
+            for _ in range(4):                      # a bystander's blow may open a card on the way
+                while drv.top_is(CARD):
+                    answer_math(drv, server, correct=True)
+                    drv.wait(lambda: not drv.top_is(CARD), 6, "the card closes")
+                walk_to(drv, d.x, d.y, near=4)
+                drv.step(int(1 + 0.4 * 60))
+                if said in drv.toast_log:
+                    break
+            drv.wait(lambda: said in drv.toast_log, 6, "the pickup toast")
+            drv.step(20)
+            assert drv.toast_log.count(said) == 1 and d not in ws.ground_loot.drops
 
         # a wrong answer: the blow lands in full, red flash, and the solution on the card
         rest_until = time.time() + res["combat"]["rest"] + 0.5     # past the rest window of the last answer

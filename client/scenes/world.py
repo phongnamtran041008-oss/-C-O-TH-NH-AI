@@ -27,6 +27,7 @@ from ..engine import petfollow
 from ..engine import sprites
 from ..engine.beeflock import Flock
 from ..engine.effects import Effects
+from ..engine.ground_loot import GroundLoot
 from ..engine.tilemap import load_map
 from ..engine.vfx import Vfx
 from ..net.interpolation import Interpolator
@@ -88,6 +89,7 @@ class Ent:
     need: int = 0                              # Phản Đòn it takes to tame this beast
     ride: bool = False
     stage: int = 0                             # a player's realm stage (its kiếm khí tier)
+    lc: int = 0                                # a player's linh căn giai (1-9; 0 = none)
     kick: tuple | None = None                  # a struck body's recoil (combat_vfx.recoil)
     dissolve: bool = False                     # its death turns to light (the VFX layer took it over)
 
@@ -283,9 +285,11 @@ _WEAPONS: dict = {}
 # client test checks the two agree), and with the v2 art off each type is drawn as the nearest
 # code-drawn weapon.
 PLAN_WEAPON_RANGE = {"kiem": 26, "dao": 28, "ho_lo": 40, "thuong": 38, "chuy": 24, "cung": 60,
-                     "truong": 46, "phien": 32}
+                     "truong": 46, "phien": 32, "kich": 34, "roi": 44, "am_khi": 52, "luan": 48, "phu": 22,
+                     "cam": 50}
 PLAN_WEAPON_LOOK = {"kiem": "sword", "dao": "sabre", "ho_lo": "gourd", "thuong": "spear", "chuy": "hammer",
-                    "cung": "bow", "truong": "staff", "phien": "fan"}
+                    "cung": "bow", "truong": "staff", "phien": "fan", "kich": "spear", "roi": "sabre",
+                    "am_khi": "sword", "luan": "fan", "phu": "hammer", "cam": "staff"}
 
 
 def plan_weapon_type(kind: str | None) -> str | None:
@@ -347,6 +351,16 @@ def face_to(dx: float, dy: float, default: str = "down") -> str:
     return ("right" if dx > 0 else "left") if abs(dx) > abs(dy) else ("down" if dy > 0 else "up")
 
 
+# the colours of the nine linh căn giai (server/data/linh_can.json `giai[].color`; a test keeps them equal)
+LC_COLORS = ("#C9C4B8", "#C9A44A", "#4F8FD8", "#9B5FD0", "#F2C230", "#FFE9A8", "#5CE1E6", "#FF6A3D", "#A77BFF")
+# a weapon spot's id ends in its phẩm; the phẩm glows in its rarity (world_plan.json `qualities`)
+QUALITY_RARITY = {"ha": "pham", "trung": "linh", "thuong": "huyen", "cuc": "dia", "tuyet": "thien"}
+
+
+def spot_rarity(spot_id: str) -> str:
+    return QUALITY_RARITY.get(str(spot_id).rpartition("_")[2], "pham")
+
+
 V2_HEAD = 55                       # a v2 character's name tag sits this far above the feet
 V2_TELE_RELEASE = 0.25             # how long the hit zone flashes after the blow lands
 
@@ -398,6 +412,8 @@ class WorldScene(Scene):
         self.vfx_held: dict[str, float] = {}      # monster eid -> until when (its death waits too)
         self.vfx_late: list[tuple[float, dict]] = []   # events waiting for the blow to land on screen
         self.vfx_bodies: dict[str, tuple] = {}    # eid -> its last drawn layers (for afterimages)
+        self.ground_loot = GroundLoot()            # gear lying where monsters died, glowing by phẩm
+        self.parried: dict[str, tuple] = {}       # monster eid -> (who parried it, when): a Phản Đòn kill
         self.frozen: pygame.Surface | None = None  # the world's picture held through a hit-stop
         self.target = None
         self.land_id: str | None = None           # Thiên Địa Đồ: the land this zone is (from the zone message)
@@ -478,6 +494,7 @@ class WorldScene(Scene):
             self.batch = []
         elif t == "zone":
             z = m.get("zone")
+            self.collect_loot()                    # leaving (or re-entering): what lies here goes to the bag
             if z == "abode":
                 self.game.enter_abode(m.get("x"), m.get("y"), m.get("f", "up"))
             elif z != self.zone_id:
@@ -738,6 +755,7 @@ class WorldScene(Scene):
             ent.ghost = bool(e.get("gh"))
             ent.beast, ent.need, ent.ride = bool(e.get("beast")), int(e.get("need") or 0), bool(e.get("rd"))
             ent.stage = int(e.get("stage") or 0)
+            ent.lc = int(e.get("lc") or 0)
             if e["k"] == "r":
                 ent.realm_id, ent.left, ent.seen = e.get("realm", ""), float(e.get("left", 0)), self.game.now
             self.entities[e["id"]] = ent
@@ -908,7 +926,7 @@ class WorldScene(Scene):
                     ent.kick = CV.recoil((x, y), src, now, 3.5 if crit else 2.0)
                 if crit:
                     CV.crit(vf, x, y, lift * 0.5, mine=by == me)
-                else:
+                elif by not in self.vfx_hold:   # a swing drawn by the VFX layer brought its own impact
                     self.spark(art2.combat_fx("hit"), x, y - lift * 0.5)
             elif v2:
                 self.spark(art2.combat_fx("crit" if ev.get("c") else "hit"), x, y - lift * 0.5)
@@ -980,6 +998,7 @@ class WorldScene(Scene):
                 ent.hurt_t = 0.25
                 ent.kick = CV.recoil((x, y), (px, py), now, 6.0)
             by = ev.get("by")
+            self.parried[ev.get("id")] = (by, now)
             if vf is not None:
                 weapon = (self.game.state.cult or {}).get("stats", {}).get("weapon") if by == me else \
                     getattr(self.entities.get(by or ""), "weapon", None)
@@ -1434,6 +1453,10 @@ class WorldScene(Scene):
         ent.dissolve = True
         CV.death(vf, x, y, lift, (sheet.frame(n), sheet.white(n), sheet.pivot), after=sheet.seconds("die"),
                  mine=getattr(ent, "hit_by", None) == me)
+        by, when = getattr(self, "parried", {}).get(ent.id, (None, -9.0))
+        pos = self.vfx_where(by) if by and self.game.now - when < 1.5 else None
+        if pos is not None:                        # a Phản Đòn kill: the pressure of the realm spreads out
+            CV.uy_ap(vf, pos[0], pos[1])
         self.fx.restyle(x, "kill")
 
     def afterimage(self, eid: str) -> None:
@@ -1469,6 +1492,60 @@ class WorldScene(Scene):
             CV.breakthrough(vf, p.x, p.y, follow=me, garnish=self.garnish)
         else:
             CV.stage_up(vf, p.x, p.y, follow=me)
+
+    # ------------------------------------------------------------ loot on the ground, weapon spots, linh căn
+    def drop_loot(self, entry: dict, toast) -> bool:
+        """A piece of gear of a `loot` message lands where its monster died (False: no place, or
+        no v2 art - the caller toasts it at once as before)."""
+        if not art2.on() or getattr(self, "ground_loot", None) is None:
+            return False
+        return self.ground_loot.add(entry, self.game.now, toast)
+
+    def collect_loot(self) -> None:
+        if getattr(self, "ground_loot", None) is not None:
+            self.ground_loot.collect_all(self.game.toast)
+
+    def draw_spot_glow(self, surf, v, ground: bool) -> None:
+        """The weapon spots of Thiên Địa Đồ glow in the colour of their phẩm's rarity: the ring on
+        the ground, the column over it; a locked spot only a dim ring, a taken one nothing."""
+        for sp in self.weapon_spots:
+            if sp.state == "taken":
+                continue
+            rarity = spot_rarity(sp.id)
+            sx, sy = v.to_screen(sp.x, sp.y)
+            if ground:
+                if sp.state == "available":
+                    art2.draw_fx(surf, f"roi_vong_{rarity}", self.t, sx, sy, scale=0.75)
+                else:
+                    s = art2.fx(f"roi_vong_{rarity}")
+                    if s is not None:
+                        img = art2.alpha_copy(art2.scaled(s.frame(0), int(s.fw * 0.75), int(s.fh * 0.75)), 70)
+                        if s.additive:
+                            img = img.copy()
+                            img.fill((90, 90, 90, 255), special_flags=pygame.BLEND_RGBA_MULT)
+                        surf.blit(img, (int(sx - img.get_width() / 2), int(sy - img.get_height() / 2)),
+                                  special_flags=s.flags)
+            elif sp.state == "available":
+                art2.draw_fx(surf, f"roi_cot_{rarity}", self.t + sp.tx * 0.1, sx, sy, scale=0.8)
+
+    def linh_can_of(self, eid: str | None) -> int:
+        if not eid:
+            return 0
+        if eid == f"p{self.game.state.me.get('id')}":
+            return int(((self.game.state.cult or {}).get("stats") or {}).get("lc") or 0)
+        e = self.entities.get(eid)
+        return int(getattr(e, "lc", 0) or 0) if e is not None and e.kind == "p" else 0
+
+    @staticmethod
+    def draw_lc_mark(ui, x: float, y: float, giai: int) -> None:
+        """A 5 px diamond in the giai's colour (from 6 up, a bright heart): nothing that clutters a crowd."""
+        col = LC_COLORS[max(1, min(9, giai)) - 1]
+        ui.fill(x - 1, y - 3, 3, 7, "#1A1A1A")
+        ui.fill(x - 3, y - 1, 7, 3, "#1A1A1A")
+        for dy, w in ((-2, 1), (-1, 3), (0, 5), (1, 3), (2, 1)):
+            ui.fill(x - w // 2, y + dy, w, 1, col)
+        if giai >= 6:
+            ui.fill(x, y, 1, 1, "#FFFFFF")
 
     def ent_sheet(self, e: Ent):
         """The v2 sheet an entity is drawn from (cached on first use), or None."""
@@ -1887,6 +1964,9 @@ class WorldScene(Scene):
         self.t += dt
         guide.hud_update(self.game, self)
         self.update_vfx(dt)
+        if getattr(self, "ground_loot", None) is not None:
+            self.ground_loot.update(self.game.now, self.player.x, self.player.y, self.game.toast,
+                                    getattr(self, "vfx", None))
         self.fx.update(dt)
         self.update_bees(dt)
         self.update_pets(dt)
@@ -2579,6 +2659,8 @@ class WorldScene(Scene):
         vf = getattr(self, "vfx", None)
         if vf is not None:                         # scars and rings on the ground, under the hit zones
             vf.draw(surf, v, "ground")
+        self.ground_loot.draw_ground(surf, v, self.t, now)
+        self.draw_spot_glow(surf, v, ground=True)
         self.draw_teles_v2(surf)
         self.draw_skill_fx(surf, ground=True)      # formation circles lie on the ground
         self.draw_sparks(surf, ground=True)
@@ -2610,6 +2692,7 @@ class WorldScene(Scene):
                     else sprites.npc(look)[("down", 0)]
                 drawables.append((o.foot_y, v.img(img), v.to_screen(o.x, o.y)))
         drawables += self.weapon_drawables(v)
+        drawables += self.ground_loot.drawables(v, now, self.player.x, self.player.y)
         bars = []
         for e in self.entities.values():
             s = self.interp.sample(e.id, now)
@@ -2688,6 +2771,8 @@ class WorldScene(Scene):
                               v.to_screen(fb.x - 4, fb.y - fb.z - 4)))
         for d in sorted(drawables, key=lambda d: d[0]):
             surf.blit(d[1], d[2], None, d[3] if len(d) > 3 else 0)
+        self.ground_loot.draw_over(surf, v, self.t, now)     # the columns of light over the pieces
+        self.draw_spot_glow(surf, v, ground=False)
         if vf is not None:                         # kiếm khí, chiêu and hits over the bodies...
             vf.draw(surf, v, "over")
         self.draw_teles_v2(surf, over=True)        # ...and the zone's rim over them: gameplay first
@@ -2774,6 +2859,8 @@ class WorldScene(Scene):
             else:
                 lift = 25 if e.kind == "p" else 22
             heads.append((e.pos[0], e.pos[1], name, col, e.id, lift))
+        for d in self.ground_loot.near(self.player.x, self.player.y) if v2 else ():
+            heads.append((d.x, d.y, d.name, d.color, None, 34))
         for o in self.map.objects:
             if o.type == "npc":
                 lift = 25
@@ -2796,6 +2883,9 @@ class WorldScene(Scene):
                 placed.append((bx, by, tw))
             ui.text(name, bx + 0.5, by + 0.5, 7, "#1A1A1A", anchor="midbottom")
             ui.text(name, bx, by, 7, col, anchor="midbottom")
+            giai = self.linh_can_of(eid)
+            if giai and v2:                        # a small diamond in the colour of the root's giai
+                self.draw_lc_mark(ui, bx - (tw if v2 else 0) / 2 - 5, by - 4, giai)
             b = self.bubbles.get(eid) if eid else None
             if b and b[1] > now:
                 self._bubble(ui, b[0], bx, by - 9)

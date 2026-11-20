@@ -30,7 +30,7 @@ class Particle:
 
 # style -> (font size, pop: how much bigger it starts, rise in px, life in s, outline)
 STYLES = {
-    "hit": (7, 0.6, 16, 1.0, False),
+    "hit": (7, 0.6, 16, 1.0, True),
     "dim": (7, 0.0, 10, 0.9, False),
     "crit": (9, 1.1, 20, 1.2, True),
     "kill": (10, 1.3, 24, 1.4, True),

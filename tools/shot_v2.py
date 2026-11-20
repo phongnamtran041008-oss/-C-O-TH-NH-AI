@@ -434,6 +434,19 @@ def perf(drv: Driver, ws) -> None:
         print(f"draw_world {label}: {ms:.2f} ms/frame (up to {live} live instances)")
     ws.vfx.clear()
     ws.vfx.reduced = False
+    # a dozen pieces of gear lying round the player, every rarity, rings, icons and columns
+    rar = ("pham", "linh", "huyen", "dia", "thien")
+    for i in range(12):
+        ws.ground_loot.add({"item": f"kiem_{1 + i % 8}", "name_vi": "x", "rarity": rar[i % 5], "color": "#FFFFFF",
+                            "x": p.x - 60 + (i % 6) * 24, "y": p.y + (-30 if i < 6 else 30)}, drv.game.now - 2, None)
+    ws.ground_loot.update(drv.game.now, -999, -999, None)
+    ws.draw_world(surf)
+    t0 = time.perf_counter()
+    for _ in range(200):
+        ws.draw_world(surf)
+    ms = (time.perf_counter() - t0) / 200 * 1000
+    print(f"draw_world with 12 drops on the ground: {ms:.2f} ms/frame")
+    ws.ground_loot.drops.clear()
     for label, on in (("v2", True), ("old", False)):
         real = art2.on
         if not on:

@@ -9,6 +9,9 @@ writes into art/preview/ (3x nearest-neighbour, dark ground, labels):
     vfx_weapons.png    the five weapon families at the four tier groups, at the moment of the blow
     vfx_chieu.png      each chiêu thức at charge / release / travel / impact, and its miss
     vfx_hits.png       crit, kill and dissolve, Phản Đòn, Né Đòn, stage-up, breakthrough
+    vfx_roi_do.png     gear dropped by a monster: the hop out, lying in the five rarity colours on
+                       grass, the name when near, the pickup; the weapon spots, open and locked
+    vfx_kiem_khi_co.png  the kiếm khí sheet again on grass (bright ground washes additive light out)
 
 Every cell is the world at the game's 2x zoom, cropped to the action; a monster's wind-up ring
 is drawn under the player (with its bright rim over everything, as the game does) so you can
@@ -47,6 +50,7 @@ TIERS = [("pham_nhan", 1, "Phàm Nhân"), ("luyen_khi", 5, "Luyện Khí 5"), ("
          ("hoa_than", 1, "Hóa Thần"), ("luyen_hu", 1, "Luyện Hư"), ("hop_the", 1, "Hợp Thể"),
          ("dai_thua", 1, "Đại Thừa")]
 MONSTER = "dau_tu_oa"
+GRASS = os.environ.get("SHOT_GROUND") == "grass"
 
 
 def text(s: str, size: int = 8, color="#E9E4D8") -> pygame.Surface:
@@ -64,6 +68,9 @@ class Cell:
         self.vfx = Vfx()
         self.vfx.resolve = lambda key: self.src if key == "me" else None
         self.tele = None
+        self.loot = None          # a ground_loot.GroundLoot to draw, at loot_t
+        self.loot_t = 0.0
+        self.spots: list = []     # [draw(surf, view, ground)] weapon spots
 
     def run_to(self, t: float) -> None:
         while self.vfx.t + 1e-6 < t and self.vfx.wall < t + 0.5:
@@ -73,11 +80,21 @@ class Cell:
                 monster: bool = True, mon_clip: str = "idle", mon_t: float = 0.0, extra=None) -> pygame.Surface:
         surf = pygame.Surface((self.w, self.h))
         surf.fill(BG)
-        for x in range(0, self.w, 32):
-            pygame.draw.line(surf, GRID, (x, 0), (x, self.h))
-        for y in range(0, self.h, 32):
-            pygame.draw.line(surf, GRID, (0, y), (self.w, y))
+        ts = art2.tileset32() if GRASS else None
+        if ts is not None:                    # the real grass of the world, as bright as the game's
+            for ty in range(0, self.h, 32):
+                for tx in range(0, self.w, 32):
+                    surf.blit(ts.pick(0, tx // 32, ty // 32), (tx, ty))
+        else:
+            for x in range(0, self.w, 32):
+                pygame.draw.line(surf, GRID, (x, 0), (x, self.h))
+            for y in range(0, self.h, 32):
+                pygame.draw.line(surf, GRID, (0, y), (self.w, y))
         v = self.view
+        if self.loot is not None:
+            self.loot.draw_ground(surf, v, self.loot_t, self.loot_t)
+        for sp in self.spots:
+            sp(surf, v, True)
         if self.tele is not None:
             self.draw_tele(surf, False)
         self.vfx.draw(surf, v, "ground")
@@ -86,6 +103,9 @@ class Cell:
         sx, sy = v.to_screen(*self.src)
         for img, (ox, oy), flags in layers or ():
             bodies.append((self.src[1], img, (sx + ox, sy + oy), flags))
+        if self.loot is not None:
+            for d in self.loot.drawables(v, self.loot_t, *self.src):
+                bodies.append((d[0], d[1], d[2], 0))
         if monster:
             m = art2.monster(MONSTER)
             if m is not None:
@@ -94,6 +114,10 @@ class Cell:
                 bodies.append((self.dst[1], m.frame(n), (int(mx - m.pivot[0]), int(my - m.pivot[1])), 0))
         for _y, img, pos, flags in sorted(bodies, key=lambda b: b[0]):
             surf.blit(img, pos, special_flags=flags)
+        if self.loot is not None:
+            self.loot.draw_over(surf, v, self.loot_t, self.loot_t)
+        for sp in self.spots:
+            sp(surf, v, False)
         if extra is not None:
             extra(surf, v)
         if self.tele is not None:
@@ -182,10 +206,10 @@ def weapon_rows() -> list:
             weapon = f"{wtype}_{max(1, min(8, g * 2))}"
             clip = art2.weapon_for(weapon)[1]
             strike = C.strike_delay(realm, weapon)
-            for label, when in (("blow", 0.04), ("land", None)):
+            for label, when in (("blow", 0.06), ("land", None), ("after", 0.15)):
                 cell = Cell(220, 100, src=(30.0, 36.0), dst=(70.0, 36.0) if fam in ("shot", "spell") else (56.0, 36.0))
                 land = C.swing(cell.vfx, weapon, t, cell.src, cell.dst, strike=strike, dst_lift=11, follow="me")
-                m = strike + when if when is not None else land + 0.03
+                m = (strike + when if label == "blow" else land + when) if when is not None else land + 0.03
                 cell.run_to(m)
                 cells.append((f"g{g} T{t} {label}", cell.picture(realm, weapon, clip, m)))
         rows.append((FAMILY_NAME[fam], cells))
@@ -288,6 +312,64 @@ def hit_rows() -> list:
     return rows
 
 
+def loot_rows() -> list:
+    """Gear dropped where a monster died: the hop, the five rarities lying on the ground, the name
+    tag when the player is near, the pickup; then the weapon spots of Thiên Địa Đồ."""
+    from client.engine import ground_loot as G
+    from client.engine.text import Fonts as _F  # noqa: F401
+    rows = []
+    items = [("pham", "kiem_1", "#7D7468"), ("linh", "dao_2", "#6A994E"), ("huyen", "thuong_3", "#4A7CC8"),
+             ("dia", "cung_4", "#8E5AC8"), ("thien", "truong_6", "#C99A3A")]
+    cells = []
+    for r, item, col in items:
+        cell = Cell(110, 100, src=(14.0, 44.0), dst=(30.0, 40.0))
+        g = G.GroundLoot()
+        g.add({"item": item, "name_vi": item, "rarity": r, "color": col, "x": 30.0, "y": 40.0}, 0.0, None)
+        g.update(2.0, 900.0, 900.0, None)
+        cell.loot, cell.loot_t = g, 2.0
+
+        def tag(surf, v, r=r, col=col, item=item):
+            sx, sy = v.to_screen(30.0, 40.0)
+            img = FONTS.render(item, 7, col, 1)
+            surf.blit(img, (int(sx - img.get_width() / 2), int(sy - 70)))
+        cells.append((r, cell.picture("kim_dan", "kiem_4", "idle", 0.0, monster=False, extra=tag)))
+    rows.append(("Năm phẩm trên cỏ", cells))
+    cells = []
+    for label, t, px in (("rơi ra", 0.35, 900.0), ("nằm", 1.2, 900.0), ("lại gần", 1.6, 44.0),
+                         ("nhặt", 1.6 + 0.12, 34.0), ("vào túi", 1.6 + 0.26, 34.0)):
+        cell = Cell(150, 100, src=(min(px, 120.0), 44.0), dst=(60.0, 40.0))
+        g = G.GroundLoot()
+        g.add({"item": "kiem_3", "name_vi": "Thanh Phong Kiếm", "rarity": "dia", "color": "#8E5AC8",
+               "x": 60.0, "y": 44.0}, 0.0, None)
+        if label != "rơi ra":
+            g.update(1.0, 900.0, 900.0, None)
+        if label in ("nhặt", "vào túi"):
+            g.update(1.6, 62.0, 44.0, None)
+        cell.loot, cell.loot_t = g, t
+        cells.append((label, cell.picture("kim_dan", "kiem_4", "idle", 0.0, monster=label == "rơi ra",
+                                          mon_clip="die", mon_t=0.5)))
+    rows.append(("Rơi, nằm, nhặt", cells))
+    from client.scenes import world as W
+    cells = []
+    for q, state in (("ha", "available"), ("trung", "available"), ("thuong", "available"), ("cuc", "available"),
+                     ("tuyet", "available"), ("cuc", "locked")):
+        cell = Cell(110, 100, src=(14.0, 44.0))
+        sp = W.WeaponSpot(f"kiem_2_{q}", "x", 2, 2, state, icon=None)
+        ws = W.WorldScene.__new__(W.WorldScene)
+        ws.weapon_spots, ws.t = [sp], 1.0
+        cell.spots = [ws.draw_spot_glow]
+        icon = art2.weapon_icon("kiem_2")
+
+        def ic(surf, v, sp=sp, icon=icon):
+            if icon is not None:
+                sx, sy = v.to_screen(sp.x, sp.y)
+                img = icon if sp.state == "available" else art2.alpha_copy(icon, 120)
+                surf.blit(img, (int(sx - img.get_width() / 2), int(sy - img.get_height() - 2)))
+        cells.append((f"{q} {state}", cell.picture("kim_dan", "kiem_4", "idle", 0.0, monster=False, extra=ic)))
+    rows.append(("Chỗ đặt binh khí", cells))
+    return rows
+
+
 def main() -> int:
     out = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "art" / "preview"
     out.mkdir(parents=True, exist_ok=True)
@@ -298,9 +380,13 @@ def main() -> int:
     for name, rows, title in (("vfx_kiem_khi", kiem_khi_rows, "Kiếm khí theo tu vi (T1-T10), * = đòn chạm"),
                               ("vfx_weapons", weapon_rows, "Các loại binh khí theo nhóm cảnh giới"),
                               ("vfx_chieu", chieu_rows, "Chiêu thức (Kết Đan): tụ lực, xuất chiêu, bay, trúng, dư âm, hụt"),
-                              ("vfx_hits", hit_rows, "Đòn trúng, hạ quái, Phản Đòn, Né Đòn, lên tầng, đột phá")):
+                              ("vfx_hits", hit_rows, "Đòn trúng, hạ quái, Phản Đòn, Né Đòn, lên tầng, đột phá"),
+                              ("vfx_roi_do", loot_rows, "Đồ rơi phát sáng theo phẩm (trên cỏ)"),
+                              ("vfx_kiem_khi_co", kiem_khi_rows, "Kiếm khí trên cỏ (T1-T10)")):
         if only and only != name:
             continue
+        global GRASS
+        GRASS = name in ("vfx_roi_do", "vfx_kiem_khi_co") or os.environ.get("SHOT_GROUND") == "grass"
         img = sheet(rows(), title)
         p = out / f"{name}.png"
         pygame.image.save(img, str(p))
