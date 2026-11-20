@@ -116,10 +116,15 @@ def run_tame_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.step(6)
         drv.shot("beast_yielded")
 
-        # ---- a click on it with the talisman in the bag: Phong Ấn Phù
+        # ---- E beside it, with the talisman in the bag: Phong Ấn Phù
         assert ws.action_of(("ent", e)) == "seal"
-        walk_to(drv, e.pos[0], e.pos[1] + 10, near=12, timeout=4)
-        drv.click_at(drv.game.display.to_window(*ws.world_to_screen(e.pos[0], e.pos[1] - 8)))
+        end = time.time() + 15
+        while not (ws.target is not None and ws.target[0] == "ent" and ws.target[1] is e):
+            assert time.time() < end, "never stood facing the beast"
+            walk_to(drv, e.pos[0], e.pos[1] + 9, near=3, timeout=1.0)
+            ws.player.facing = "up"
+            drv.step(3)
+        drv.press(pygame.K_e)
         drv.wait(lambda: any("thu phục" in t for t in drv.toast_log), 10, "the seal")
         rows = server.sql("select pet_type, equipped from pets where user_id=?", (uid,))
         assert rows == [(TAME, 0)], rows
