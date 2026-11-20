@@ -266,6 +266,18 @@ NO_WEAPON = "Tay không"
 
 BAG_ITEMS = "Vật phẩm"
 BAG_GEAR = "Trang bị"
+# Binh khí của Thiên Địa Đồ: tab Binh Khí trong túi đồ
+BAG_WEAPONS = "Binh Khí"
+WPN_MINE = "Binh khí của con"
+WPN_NONE = "Chưa có binh khí nào. Học trên Đạo Thụ rồi đi nhặt ở các vùng đất."
+WPN_PLACED = "Rải rác ở các vùng đất"
+WPN_LINE = "{type} · bậc {grade} · {quality} · Công {atk}"
+WPN_TIP = "{name} · {quality}\n{effect}\nNhánh {branch}.\n{why}"
+WPN_STATE = {"available": "Nhặt được", "taken": "Đã nhặt", "locked": "Chưa mở"}
+WPN_WHERE = "{land}: {spot}"
+WPN_HAND = "Trong tay"
+WPN_EQUIPPED = "Đang cầm"
+WPN_TU_VI = "Đạo Thụ: {realm} tầng {stage}"
 USE = "Dùng"
 EQUIP = "Mặc"
 UNEQUIP = "Tháo"
@@ -838,6 +850,14 @@ CRAFT_DONE = "Rèn xong: {name}!"
 CRAFT_HAVE = "{have}/{need}"
 CRAFT_SLOT = {"weapon": "Vũ khí", "body": "Áo", "hat": "Mũ", "shoes": "Giày", "jade": "Ngọc Bội",
               "ring": "Nhẫn"}
+CRAFT_TAB_RECIPES = "Rèn đồ"
+CRAFT_TAB_UPGRADE = "Nâng phẩm"
+UPG_TITLE = "{name}: {frm} → {to}"
+UPG_NONE = "Chưa có binh khí {frm} nào. Nhặt binh khí ở các vùng đất rồi quay lại."
+UPG_LOCKED = "Chưa mở. {why}"
+UPG_DO = "Nâng phẩm"
+UPG_DONE = "Nâng phẩm xong: {name} thành {quality}!"
+UPG_ATK = "Công {a} → {b}"
 NOTE_READ = "Đọc ghi chú"
 
 # M9: chiêu thức gắn câu hỏi (thanh chiêu, thẻ câu hỏi) và hai kiểu câu mới

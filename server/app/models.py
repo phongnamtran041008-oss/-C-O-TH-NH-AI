@@ -108,6 +108,20 @@ class EquipmentInstance(Base):
     equipped_slot: Mapped[str | None] = mapped_column(String(16), nullable=True)
 
 
+class WeaponClaim(Base):
+    """A weapon of Thiên Địa Đồ picked up from its spot (systems/weapons.py). One row per
+    player and spot (`placed_id` = '<weapon>_<quality>'), so a spot gives its weapon once,
+    whatever later happens to the piece (`instance_id` is the piece it gave, kept for the
+    record only: a sold piece leaves it pointing at nothing)."""
+    __tablename__ = "weapon_claims"
+    __table_args__ = (UniqueConstraint("user_id", "placed_id"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(UserFK(), index=True)
+    placed_id: Mapped[str] = mapped_column(String(48))
+    instance_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    claimed_at: Mapped[dt.datetime] = mapped_column(DateTime)
+
+
 class Bee(Base):
     __tablename__ = "bees"
     id: Mapped[int] = mapped_column(primary_key=True)

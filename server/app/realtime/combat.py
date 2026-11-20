@@ -274,8 +274,10 @@ def _parry(ch: "ChannelZone", p: "Player", q: dict, m: "Monster | None", correct
         m.stun_until = max(m.stun_until, now + stun)
         ch.event(k="parry", id=m.eid, by=p.eid, x=round(m.x, 1), y=round(m.y, 1), px=round(p.x, 1),
                  py=round(p.y, 1), st=stun)
-        dealt = hurt_monster(ch, m, p, base_damage(p, m) * float(right["counter_multiplier"]), False, now)
-        return {**out, "damage": int(round(dealt)), "shield_broken": broke, "stun": stun,
+        from ..systems import weapons   # a Phản Đòn on a question of the weapon's own branch hits harder
+        wmult = weapons.parry_mult(p.weapon, q.get("subject"))
+        dealt = hurt_monster(ch, m, p, base_damage(p, m) * float(right["counter_multiplier"]) * wmult, False, now)
+        return {**out, "damage": int(round(dealt)), "weapon_bonus": wmult > 1.0, "shield_broken": broke, "stun": stun,
                 "monster_hp": max(0, m.hp_pct()), "killed": not m.alive}
     p.mcombo = 0
     amount = float(q["hit"]) * float(c["wrong_answer"]["damage_taken"])
@@ -288,7 +290,10 @@ def _parry(ch: "ChannelZone", p: "Player", q: dict, m: "Monster | None", correct
 def weapon_profile(p: "Player") -> dict:
     c = cfg()
     w = p.weapon
-    return c["weapon_kinds"].get(w, c["unarmed"]) if w else c["unarmed"]
+    if not w:
+        return c["unarmed"]
+    from ..systems import weapons   # a weapon of Thiên Địa Đồ: its type's own attack (world_plan.json)
+    return c["weapon_kinds"].get(w) or weapons.fight_profile(w) or c["unarmed"]
 
 
 def base_damage(p: "Player", m: "Monster") -> float:
@@ -497,7 +502,7 @@ async def _create_question(ch: "ChannelZone", p: "Player", mid: str, kind: str, 
     limit = float(question.time_limit)
     deadline = now + limit + balance.quiz()["network_grace"]
     p.question = {"sid": out["session_id"], "mid": mid, "deadline": deadline, "asked": now, "limit": limit,
-                  "timeout_sent": False}
+                  "timeout_sent": False, "subject": (getattr(question, "meta", None) or {}).get("subject")}
     msg = {"t": "q", "mid": mid, "q": out, "first_meet": first}
     if hit is not None:
         p.question["hit"] = round(float(hit), 2)

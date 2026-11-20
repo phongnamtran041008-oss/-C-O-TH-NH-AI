@@ -42,5 +42,19 @@
    ],
    "desc_vi": "Mặt nhẫn là một bảng vuông nhỏ; lật ngược vẫn đúng chỗ ấy, vì nó đối xứng thật."
   }
+ },
+ "upgrades": {
+  "_comment": "Rèn nâng phẩm (world_plan.json, unlock nang_pham, Luyện Khí tầng 4 trên Đạo Thụ): một binh khí của Thiên Địa Đồ lên một phẩm, giữ nguyên bậc và cường hóa. 'from'/'to' là id phẩm của world_plan.json (qualities). Nguyên liệu phải là thứ quái thật sự rớt ra, và mốc tu vi của nó trong loot_tiers.json không cao hơn mốc mở công thức: tools/check_all.py kiểm cả hai.",
+  "nang_pham": {
+   "name_vi": "Rèn nâng phẩm",
+   "from": "ha",
+   "to": "trung",
+   "fee": 40,
+   "ingredients": [
+    {"item": "loi_ma_tran", "qty": 4},
+    {"item": "muc_tinh", "qty": 3}
+   ],
+   "desc_vi": "Nung lại lưỡi binh khí với Lõi Ma Trận: hạ phẩm thành trung phẩm, Công tăng theo phẩm."
+  }
  }
 }

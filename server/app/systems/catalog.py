@@ -15,7 +15,11 @@ def _load(rel: str) -> dict:
 
 @lru_cache(maxsize=1)
 def equipment() -> dict:
-    return _load("items/equipment.json")
+    """equipment.json, plus every weapon of Thiên Địa Đồ that lies somewhere (systems/weapons.py):
+    one equipment model for both."""
+    from . import weapons
+    eq = _load("items/equipment.json")
+    return {**eq, "items": {**eq["items"], **weapons.equipment_items()}}
 
 
 @lru_cache(maxsize=1)

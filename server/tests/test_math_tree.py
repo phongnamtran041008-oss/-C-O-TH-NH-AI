@@ -267,7 +267,7 @@ def test_the_combat_and_lands_sections_are_wired(plan):
     """The owner's waves: the fight rule and the lands of Luyện Khí run in the game, weapons and
     beasts do not yet."""
     assert plan["wired"] is False
-    assert plan["wired_sections"] == ["combat", "lands"]
+    assert plan["wired_sections"] == ["combat", "lands", "weapons"]
     assert mt.wired_sections(plan) == ("combat", "lands")
     assert mt.section_wired("combat", plan) and mt.section_wired("lands", plan)
     assert mt.wired_sections({"wired": False}) == ()

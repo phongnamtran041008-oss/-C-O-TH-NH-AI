@@ -362,6 +362,10 @@ def item_icon(row: dict) -> pygame.Surface | None:
         ref = (rules.get(table) or {}).get(key) if key else None
         if ref:
             return _icon_ref(ref)
+        if table == "by_weapon" and kind:            # a weapon of Thiên Địa Đồ: its own icon
+            own = weapon_icon(kind)
+            if own is not None:
+                return own
     return None
 
 
@@ -651,11 +655,28 @@ def td_monster(kind: str) -> tuple[Sheet | None, float]:
 
 
 def weapon_for(kind: str | None) -> tuple[Sheet | None, str]:
-    """(layer sheet, attack clip) for an equipped weapon kind."""
-    e = _w("weapons").get(kind or "") if (kind and on()) else None
-    if not isinstance(e, dict):
+    """(layer sheet, attack clip) for an equipped weapon kind. A weapon of Thiên Địa Đồ is sent
+    as its own id, '<type>_<grade>' (kiem_3): its layer is the sheet of that name and its clip
+    the one wired for its type."""
+    if not (kind and on()):
         return None, "slash"
+    table = _w("weapons")
+    e = table.get(kind)
+    if not isinstance(e, dict):
+        kind_type, _, grade = kind.rpartition("_")
+        e = table.get(kind_type) if grade.isdigit() else None
+        if not isinstance(e, dict):
+            return None, "slash"
+        return weapon(kind) or weapon(e.get("layer")), e.get("clip") or "slash"
     return weapon(e.get("layer")), e.get("clip") or "slash"
+
+
+def weapon_icon(weapon_id: str | None) -> pygame.Surface | None:
+    """The 32 px icon of a weapon of Thiên Địa Đồ ('<type>_<grade>'): the icon of that id in
+    the atlas wired for its type (wiring.item_icons.by_weapon_type)."""
+    kind_type, _, grade = str(weapon_id or "").rpartition("_")
+    atlas = (_w("item_icons").get("by_weapon_type") or {}).get(kind_type) if grade.isdigit() else None
+    return icon(atlas, weapon_id) if atlas else None
 
 
 def beast_for(pet_kind: str | None) -> Sheet | None:

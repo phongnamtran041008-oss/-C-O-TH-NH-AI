@@ -460,6 +460,44 @@ def check_math_crafting() -> list[str]:
     return out
 
 
+def check_weapons() -> list[str]:
+    """Binh khí của Thiên Địa Đồ: the rules' own check (app/systems/weapons.py validate():
+    numbers, quality rarities, real nodes, a forge upgrade made of things that drop by the time
+    it opens), plus the client art: every placed weapon has its icon in the atlas wired for its
+    type and its own in-hand layer, and each type's clip in wiring.json is the plan's."""
+    try:
+        from app.systems import weapons
+        out = list(weapons.validate())
+    except Exception as e:      # noqa: BLE001 - a broken file or module must fail the check, not crash the run
+        return [f"app/systems/weapons.py: validate() raised {type(e).__name__}: {e}"]
+    v2 = ROOT / "client" / "assets" / "v2"
+    wiring = _json(v2 / "wiring.json")
+    atlases = (wiring.get("item_icons") or {}).get("by_weapon_type") or {}
+    layers = wiring.get("weapons") or {}
+    icons: dict[str, set] = {}
+    for kind, t in weapons.data()["types"].items():
+        entry = layers.get(kind)
+        if not isinstance(entry, dict):
+            out.append(f"wiring.json weapons: no entry for weapon type {kind!r}")
+        elif entry.get("clip") != t["clip"]:
+            out.append(f"wiring.json weapons.{kind}: clip {entry.get('clip')!r}, the plan says {t['clip']!r}")
+    for p in weapons.data()["placed"]:
+        wid = p["weapon"]
+        kind = wid.rpartition("_")[0]
+        atlas = atlases.get(kind)
+        if atlas is None:
+            out.append(f"weapon {p['id']}: no icon atlas wired for type {kind!r}")
+        else:
+            if atlas not in icons:
+                doc = _json(v2 / "icons" / f"{atlas}.json") if (v2 / "icons" / f"{atlas}.json").exists() else {}
+                icons[atlas] = set((doc or {}).get("icons") or {})
+            if wid not in icons[atlas]:
+                out.append(f"weapon {p['id']}: no icon {wid!r} in the {atlas} atlas")
+        if not (v2 / "weapons" / f"{wid}.json").exists() or not (v2 / "weapons" / f"{wid}.png").exists():
+            out.append(f"weapon {p['id']}: no in-hand layer weapons/{wid}")
+    return out
+
+
 MIN_CHIEU = 5                      # the M9 milestone: at least five chiêu from data
 # chiêu that may not be castable yet, and why (the only one allowed: contract M9 section 2). The
 # exception lasts only while NO question anywhere casts the chiêu: the day a Thiên kiếp of tier 4+
@@ -646,6 +684,8 @@ CHECKS = [
      check_mistake_monsters),
     ("Lò Toán: every recipe makes real equipment from things that really drop",
      check_math_crafting),
+    ("binh khí: every placed weapon has requirements, an icon, an in-hand layer and a forge path",
+     check_weapons),
     ("chiêu thức: fields, question types, FX, animation, and a question that casts each one",
      check_chieu),
     ("bí cảnh toán: the math realm, its Trận Nhãn rooms and its boss can be played",
