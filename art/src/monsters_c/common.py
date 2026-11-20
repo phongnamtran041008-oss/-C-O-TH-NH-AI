@@ -36,6 +36,18 @@ TAU = 2 * math.pi
 FPS = {"idle": 6, "walk": 10, "windup": 8, "attack": 14, "hit": 12, "die": 10}
 
 
+def hx(code: str):
+    """A palette colour '#rrggbb' as the *linear* RGB Blender wants in Base Color. The kit
+    converts base colours to sRGB before snapping them to the palette, so giving the hex
+    of the wanted palette entry here lands exactly on that entry (it then becomes the
+    base tone; the cel shadow and light take its ramp neighbours)."""
+    def lin(c):
+        c /= 255.0
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    code = code.lstrip("#")
+    return tuple(lin(int(code[i:i + 2], 16)) for i in (0, 2, 4))
+
+
 def S(i, n, ph=0.0):
     return math.sin(TAU * i / n + ph)
 

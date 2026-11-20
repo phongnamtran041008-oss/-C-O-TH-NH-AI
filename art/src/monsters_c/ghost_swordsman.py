@@ -18,28 +18,28 @@ import math
 
 from mathutils import Vector
 
-from common import (C, S, aim, armature, att, ball, box, cone, hover_shadow, lerp_pose,
+from common import (hx, C, S, aim, armature, att, ball, box, cone, hover_shadow, lerp_pose,
                     material, merge, plate, skin, tube, use_collection, write_clips)
 
-BLADE = [(-0.034, 0.075), (0.034, 0.075), (0.034, 0.36), (0.014, 0.41), (0.0, 0.375),
-         (-0.016, 0.43), (-0.034, 0.34)]
+BLADE = [(-0.034, 0.075), (0.034, 0.075), (0.034, 0.31), (0.014, 0.355), (0.0, 0.325),
+         (-0.016, 0.37), (-0.034, 0.295)]
 GUARD = [(-0.085, 0.0), (0.085, 0.0), (0.10, 0.03), (0.06, 0.045), (-0.06, 0.045), (-0.10, 0.03)]
 GRIP = [(-0.017, -0.13), (0.017, -0.13), (0.017, 0.0), (-0.017, 0.0)]
 
 
 def build_vong_hon_kiem_si():
     use_collection("COL_vong_hon_kiem_si")
-    steel = material("MAT_vh_steel", (0.36, 0.43, 0.53), (0.18, 0.16, 0.20), ramp=("steel", "hair"), metal=True)
-    steel_dk = material("MAT_vh_steel_dark", (0.21, 0.25, 0.35), (0.11, 0.10, 0.13), ramp=("steel", "hair"))
-    gold = material("MAT_vh_gold", (0.73, 0.51, 0.10), (0.73, 0.51, 0.10), ramp="gold", metal=True)
-    cloth = material("MAT_vh_cloth", (0.36, 0.10, 0.11), (0.23, 0.13, 0.38), ramp=("red", "purple"))
-    plume = material("MAT_vh_plume", (0.58, 0.19, 0.16), (0.36, 0.21, 0.56), ramp=("red", "purple"))
-    void = material("MAT_vh_socket", (0.06, 0.05, 0.07), (0.06, 0.05, 0.07), ramp="hair")
+    steel = material("MAT_vh_steel", hx("#5d6e86"), hx("#2e2834"), ramp=("steel", "hair"), metal=True)
+    steel_dk = material("MAT_vh_steel_dark", hx("#34405a"), hx("#1d1922"), ramp=("steel", "hair"))
+    gold = material("MAT_vh_gold", hx("#b9821a"), hx("#b9821a"), ramp="gold", metal=True)
+    cloth = material("MAT_vh_cloth", hx("#5c1a1c"), hx("#3a2160"), ramp=("red", "purple"))
+    plume = material("MAT_vh_plume", hx("#94302a"), hx("#5c3690"), ramp=("red", "purple"))
+    void = material("MAT_vh_socket", hx("#1d1922"), hx("#1d1922"), ramp="hair")
     eye = material("MAT_vh_eye", (0.85, 0.97, 1.0), (1.0, 0.89, 0.48), emit=7.0, glow=("ice", "holy"))
     ghost = material("MAT_vh_ghost", (0.35, 0.88, 0.96), (1.0, 0.45, 0.20), emit=1.6, glow=("spirit", "flame"))
-    blade = material("MAT_vh_blade", (0.58, 0.65, 0.73), (0.58, 0.65, 0.73), ramp="steel", metal=True)
-    grip = material("MAT_vh_grip", (0.18, 0.16, 0.20), (0.36, 0.10, 0.11), ramp=("hair", "red"))
-    cloth["kit_light"] = 0.86          # deep faded red, lit only along the top folds
+    blade = material("MAT_vh_blade", hx("#94a6ba"), hx("#94a6ba"), ramp="steel", metal=True)
+    grip = material("MAT_vh_grip", hx("#2e2834"), hx("#5c1a1c"), ramp=("hair", "red"))
+    cloth["kit_light"] = 0.8           # deep faded red, lit only along the top folds
     steel_dk["kit_light"] = 0.6
 
     arm = armature("vong_hon_kiem_si", [
@@ -49,6 +49,7 @@ def build_vong_hon_kiem_si():
         ("chest", (0, 0, 0.76), (0, 0, 0.98), "waist"),
         ("head", (0, 0, 0.99), (0, 0, 1.2), "chest"),
         ("eyes", (0, -0.12, 1.07), (0, -0.12, 1.12), "head"),
+        ("soul", (0, 0, 0.97), (0, 0, 1.02), "chest"),
         ("plume", (0, 0.07, 1.22), (0, 0.17, 1.10), "head"),
         ("cape1", (0, 0.11, 0.96), (0, 0.15, 0.74), "chest"),
         ("cape2", (0, 0.15, 0.74), (0, 0.22, 0.50), "cape1"),
@@ -83,7 +84,7 @@ def build_vong_hon_kiem_si():
     att(arm, "plume", aim("vh_plume1", plume, (0, 0.05, 1.25), (0, 0.15, 1.17), 0.04, 0.022, seg=8),
         aim("vh_plume2", plume, (0, 0.15, 1.17), (0, 0.19, 1.05), 0.024, 0.008, seg=8))
     # --- hollow neck: only the spirit shows between helmet and cuirass
-    att(arm, "chest", ball("vh_neck", (0.075, 0.075, 0.05), (0, 0.0, 0.99), ghost, seg=10, rings=6))
+    att(arm, "soul", ball("vh_neck", (0.075, 0.075, 0.05), (0, 0.0, 0.99), ghost, seg=10, rings=6))
     # --- cuirass: lamellar bands, gold heart-mirror, layered pauldrons
     att(arm, "chest",
         cone("vh_torso", 0.145, 0.175, 0.26, (0, 0.0, 0.86), steel, seg=14),
@@ -203,11 +204,11 @@ def _clips(arm):
     # attack: the whole body lunges along the line, sword arm driving straight through
     # (f1 = hit, arm fully extended), held a beat (f2), drawn back (f3)
     thrust = {
-        "hover": {"l": (0, -0.12, -0.01)},
-        "waist": {"r": (14, 0, 0)},
-        "chest": {"r": (6, 0, 26)},
+        "hover": {"l": (0, -0.03, -0.01)},
+        "waist": {"r": (10, 0, 0)},
+        "chest": {"r": (4, 0, 8)},
         "head": {"r": (-4, 0, -22)}, "eyes": {"s": 1.3},
-        "arm_r": {"r": (-84, 6, 0)}, "fore_r": {"r": (-4, 0, 0)}, "hand_r": {"r": (44, 0, 0)},
+        "arm_r": {"r": (-66, 6, 0)}, "fore_r": {"r": (-14, 0, 0)}, "hand_r": {"r": (36, 0, 0)},
         "arm_l": {"r": (36, -26, 0)}, "fore_l": {"r": (-20, 0, 0)},
         "plume": {"r": (50, 0, 0)},
         "cape1": {"r": (40, 0, -6)}, "cape2": {"r": (30, 0, -6)},
@@ -216,7 +217,7 @@ def _clips(arm):
     }
     attack = [lerp_pose(stance, thrust, 0.55),
               thrust,
-              merge(thrust, {"hover": {"l": (0, -0.11, -0.005)}, "cape2": {"r": (40, 0, 4)},
+              merge(thrust, {"hover": {"l": (0, -0.025, -0.005)}, "cape2": {"r": (40, 0, 4)},
                              "wisp3": {"r": (34, 0, 6)}, "plume": {"r": (36, 0, 8)}}),
               lerp_pose(thrust, idle[0], 0.65)]
 
@@ -236,17 +237,28 @@ def _clips(arm):
         merge(base(1, 4), {"hover": {"l": (0, 0.02, -0.08)}, "waist": {"r": (18, 0, 6)},
                            "head": {"r": (26, 0, 10)}, "eyes": {"s": 0.8},
                            "wisp1": {"s": 0.7}, "arm_l": {"r": (10, -10, 0)}, "arm_r": {"r": (10, 10, 0)}}),
-        {"hover": {"l": (0, 0.0, -0.22)}, "waist": {"r": (30, 0, 10)}, "head": {"r": (30, 0, 14)},
-         "eyes": {"s": 0.5}, "wisp1": {"s": 0.4}, "arm_l": {"r": (20, -20, 0)}, "arm_r": {"r": (20, 20, 0)},
-         "cape1": {"r": (-20, 0, 0)}},
-        {"hover": {"l": (0, 0.04, -0.40)}, "waist": {"r": (55, 0, 14)}, "head": {"r": (24, 0, 30), "l": (0, -0.02, -0.02)},
-         "eyes": {"s": 0.25}, "wisp1": {"s": 0.15}, "arm_l": {"r": (-30, -40, 0)}, "arm_r": {"r": (-30, 40, 0)},
-         "cape1": {"r": (-40, 0, 0)}, "tab_f": {"r": (-40, 0, 0)}},
-        {"hover": {"l": (0, 0.06, -0.47)}, "waist": {"r": (70, 0, 18)}, "head": {"r": (14, 0, 40), "l": (0.04, -0.02, -0.06)},
-         "eyes": {"s": 0.05}, "wisp1": {"s": 0.02}, "arm_l": {"r": (-50, -60, 0)}, "arm_r": {"r": (-40, 60, 0)},
-         "cape1": {"r": (-60, 0, 0)}, "cape2": {"r": (-30, 0, 0)}, "tab_f": {"r": (-60, 0, 0)}},
-        {"hover": {"l": (0, 0.06, -0.48)}, "waist": {"r": (72, 0, 18)}, "head": {"r": (12, 0, 44), "l": (0.05, -0.02, -0.07)},
-         "eyes": {"s": 0.001}, "wisp1": {"s": 0.001}, "arm_l": {"r": (-52, -62, 0)}, "arm_r": {"r": (-42, 62, 0)},
-         "cape1": {"r": (-62, 0, 0)}, "cape2": {"r": (-32, 0, 0)}, "tab_f": {"r": (-62, 0, 0)}},
+        {"hover": {"l": (0, 0.0, -0.22)}, "waist": {"r": (14, 0, 6)}, "head": {"r": (20, 0, 14)},
+         "eyes": {"s": 0.5}, "wisp1": {"s": 0.4}, "arm_l": {"r": (14, -16, 0)}, "arm_r": {"r": (14, 16, 0)},
+         "cape1": {"r": (-10, 0, 0)}},
+        # the empty armour drops straight down into a pile: the cuirass sinks into the
+        # skirt, the helmet tips off onto the heap, the cape drapes over it, and the broken
+        # sword is left standing point-down in the earth beside it, a grave marker
+        {"hover": {"l": (0, 0.0, -0.40)}, "waist": {"r": (10, 0, 8)}, "chest": {"l": (0, 0, -0.06)},
+         "head": {"r": (10, 30, 20), "l": (0.04, 0.0, -0.08)}, "soul": {"s": 0.4},
+         "eyes": {"s": 0.25}, "wisp1": {"s": 0.15}, "arm_l": {"r": (10, 10, 0), "l": (-0.06, 0, 0)},
+         "arm_r": {"r": (-10, -6, 0), "l": (0.08, 0, 0.04)}, "hand_r": {"r": (44, 0, 0)},
+         "cape1": {"r": (-30, 0, 0)}, "tab_f": {"r": (-30, 0, 0)}, "tab_b": {"r": (30, 0, 0)}},
+        {"hover": {"l": (0, 0.0, -0.50)}, "waist": {"r": (8, 0, 10)}, "chest": {"l": (0, 0, -0.12)},
+         "head": {"r": (14, 70, 30), "l": (0.10, 0.0, -0.17)}, "soul": {"s": 0.05},
+         "eyes": {"s": 0.05}, "wisp1": {"s": 0.02}, "arm_l": {"r": (8, 14, 0), "l": (-0.1, 0, -0.06)},
+         "arm_r": {"r": (-8, -10, 0), "l": (0.13, 0.0, 0.08)}, "hand_r": {"r": (52, 0, 0)},
+         "cape1": {"r": (-62, 0, 0)}, "cape2": {"r": (-40, 0, 0)}, "tab_f": {"r": (-60, 0, 0)},
+         "tab_b": {"r": (60, 0, 0)}},
+        {"hover": {"l": (0, 0.0, -0.51)}, "waist": {"r": (8, 0, 10)}, "chest": {"l": (0, 0, -0.13)},
+         "head": {"r": (14, 80, 32), "l": (0.11, 0.0, -0.18)}, "soul": {"s": 0.001},
+         "eyes": {"s": 0.001}, "wisp1": {"s": 0.001}, "arm_l": {"r": (8, 14, 0), "l": (-0.1, 0, -0.07)},
+         "arm_r": {"r": (-8, -10, 0), "l": (0.13, 0.0, 0.07)}, "hand_r": {"r": (54, 0, 0)},
+         "cape1": {"r": (-64, 0, 0)}, "cape2": {"r": (-42, 0, 0)}, "tab_f": {"r": (-62, 0, 0)},
+         "tab_b": {"r": (62, 0, 0)}},
     ]
     write_clips(arm, idle, walk, windup, attack, hit, die, hit_frame=1)

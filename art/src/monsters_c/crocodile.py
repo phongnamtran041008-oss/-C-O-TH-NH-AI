@@ -19,7 +19,7 @@ import math
 
 from mathutils import Vector
 
-from common import (C, S, about, aim, att, ball, box, cone, lerp_pose, material, merge,
+from common import (hx, C, S, about, aim, att, ball, box, cone, lerp_pose, material, merge,
                     plate, set_root_offset, skin, tube, use_collection, write_clips)
 from quadrupeds import Legs, gait, quad_armature
 
@@ -27,17 +27,17 @@ from quadrupeds import Legs, gait, quad_armature
 def build_huyet_ngac():
     use_collection("COL_huyet_ngac")
     set_root_offset((0, 0.0, 0))
-    hide = material("MAT_hn_hide", (0.58, 0.19, 0.16), (0.27, 0.24, 0.30), ramp=("red", "hair"))
-    scute = material("MAT_hn_scute", (0.36, 0.10, 0.11), (0.58, 0.19, 0.16), ramp=("red", "red"))
+    hide = material("MAT_hn_hide", hx("#94302a"), hx("#2e2834"), ramp=("red", "hair"))
+    scute = material("MAT_hn_scute", hx("#5c1a1c"), hx("#94302a"), ramp=("red", "red"))
     scute["kit_shadow"] = 0.45
-    belly = material("MAT_hn_belly", (0.79, 0.50, 0.36), (0.60, 0.58, 0.64), ramp=("skin", "bone"))
-    tooth = material("MAT_hn_tooth", (0.81, 0.80, 0.83), (0.81, 0.80, 0.83), ramp="bone")
-    mouth = material("MAT_hn_mouth", (0.91, 0.54, 0.65), (0.91, 0.54, 0.65), ramp="pink")
+    belly = material("MAT_hn_belly", hx("#c9805c"), hx("#9894a2"), ramp=("skin", "bone"))
+    tooth = material("MAT_hn_tooth", hx("#cfcbd3"), hx("#cfcbd3"), ramp="bone")
+    mouth = material("MAT_hn_mouth", hx("#e88aa6"), hx("#e88aa6"), ramp="pink")
     eye = material("MAT_hn_eye", (1.0, 0.89, 0.48), (0.48, 0.93, 0.60), emit=6.0, glow=("holy", "verdant"))
-    brow = material("MAT_hn_brow", (0.20, 0.06, 0.07), (0.11, 0.10, 0.13), ramp=("red", "hair"))
-    moss = material("MAT_hn_moss", (0.23, 0.42, 0.15), (0.23, 0.42, 0.15), ramp="leaf")
+    brow = material("MAT_hn_brow", hx("#5c1a1c"), hx("#1d1922"), ramp=("red", "hair"))
+    moss = material("MAT_hn_moss", hx("#3a6a26"), hx("#3a6a26"), ramp="leaf")
     for m in (hide, scute):
-        m["kit_light"] = 0.86          # mostly base and shadow: a deep blood red, lit only on top
+        m["kit_light"] = 0.8           # mostly base and shadow: a deep blood red, lit along the top
 
     P = {"h": 0.24, "yf": -0.14, "yb": 0.15, "x": 0.15, "knee": 0.12,
          "head": (-0.26, 0.25), "hlen": 0.1, "jaw": (-0.26, 0.175),
@@ -47,7 +47,8 @@ def build_huyet_ngac():
           (0.31, 0.55, 0.242), (0.40, 0.545, 0.244)]
     arm = quad_armature("huyet_ngac", P, extra=[
         ("tc1", tp[0], tp[1], "pelvis"), ("tc2", tp[1], tp[2], "tc1"),
-        ("tc3", tp[2], tp[3], "tc2"), ("tc4", tp[3], tp[5], "tc3")])
+        ("tc3", tp[2], tp[3], "tc2"), ("tc4", tp[3], tp[5], "tc3"),
+        ("ripple", (0, 0, 0.0), (0, 0, 0.1), "root")])
 
     # --- body: chunky, flat-bellied, two rows of dark scutes and moss on the back
     att(arm, "chest", ball("hn_chest", (0.162, 0.18, 0.115), (0, -0.10, 0.225), hide),
@@ -136,12 +137,19 @@ def build_huyet_ngac():
                               0.013, 0.0, seg=5))
             att(arm, f"{leg}{side_}3", *ft)
 
+    # mud ripples for its death, sinking into the marsh (scaled away in every other pose)
+    mud = material("MAT_hn_ripple", hx("#1b5040"), hx("#1b5040"), ramp="jade")
+    for k, (rx, ry) in enumerate(((0.22, 0.15), (0.30, 0.21))):
+        pts = [(rx * math.cos(2 * math.pi * i / 24), ry * math.sin(2 * math.pi * i / 24) - 0.02, 0.012)
+               for i in range(25)]
+        att(arm, "ripple", tube(f"hn_ripple{k}", pts, [0.018 - 0.004 * k] * 25, mud, seg=6, up=(0, 0, 1)))
     arm.scale = (0.8, 0.8, 0.8)       # after parenting: attach/skin keep world size
     _clips(arm, P)
     return arm
 
 
-LIFT = -25.0      # the head is carried raised: crocodile on the high walk, alert
+LIFT = -25.0
+TINY = 0.001      # the head is carried raised: crocodile on the high walk, alert
 
 
 def _clips(arm, P):
@@ -217,17 +225,19 @@ def _clips(arm, P):
                  {"root": {"l": (0, 0.01, 0)}, "pelvis": {"l": (0, 0, -0.005)}, "chest": {"r": (-2, 0, 3)},
                   "head": H(-5, 0, 5), "jaw": {"r": (8, 0, 0)}})]
 
-    sag = merge(L.plant(drop=0.08, pitch=4),
-                {"pelvis": {"l": (0, 0, -0.08)}, "chest": {"r": (4, 0, 0)}, "head": H(4, 0, 14),
-                 "jaw": {"r": (16, 0, 0)}, "tc1": {"r": (-4, 0, 10)}, "tc2": {"r": (0, 0, 12)}})
-    up = Legs.air((-40, 40), (-50, 30), (40, -10), (30, -20))
-    roll1 = merge(up, {"root": about((0, 0.0, 0.18), (0, 70, 0), extra=(0, 0, -0.03)),
-                       "head": H(10, 0, 10), "jaw": {"r": (20, 0, 0)},
-                       "tc1": {"r": (0, 0, -6)}, "tc2": {"r": (0, 0, -8)}})
-    belly_up = merge(up, {"root": about((0, 0.0, 0.18), (0, 100, 0), extra=(0, 0, -0.05)),
-                          "head": H(30, 0, 6), "jaw": {"r": (26, 0, 0)},
-                          "tc1": {"r": (0, 0, -10)}, "tc2": {"r": (0, 0, -10)}, "tc3": {"r": (0, 0, -8)}})
-    twitch = merge(belly_up, {"fl1": {"r": (-60, 0, 0)}, "br1": {"r": (60, 0, 0)}, "jaw": {"r": (30, 0, 0)}})
-    sag2 = merge(sag, {"head": H(6, 0, 20), "jaw": {"r": (24, 0, 0)}, "tc3": {"r": (0, 0, -10)}})
-    die = [hit[0], sag, sag2, roll1, belly_up, twitch]
+    # die: a last thrash with the jaws thrown up, then it sinks into the marsh (the
+    # holdout ground cuts what goes under), jaws to the sky, in a ring of mud ripples
+    def sink(z, head, jaw, rip, tl=1.0):
+        p = L.plant(drop=0.04, pitch=-6)
+        p.update({"root": {"l": (0, 0.45 * z, -z)}, "pelvis": {"l": (0, 0, -0.04)}, "chest": {"r": (-6, 0, 0)},
+                  "head": H(head), "jaw": {"r": (jaw, 0, 0)}, "ripple": {"l": (0, -0.45 * z, z), "s": rip}})
+        p.update(tail(0, 4, 0, bias=-4, lift=-50))   # the tail goes under first
+        p["tc1"]["s"] = tl
+        return p
+    thrash = merge(hit[0], {"head": H(-36, 0, 20), "jaw": {"r": (40, 0, 0)}})
+    die = [hit[0], thrash, sink(0.06, -40, 40, 0.7, 0.4), sink(0.16, -50, 32, 0.9, 0.15),
+           sink(0.26, -56, 22, 1.0, TINY), sink(0.34, -58, 12, 1.0, TINY)]
+    for clip_poses in (idle, walk, windup, attack, hit, die):
+        for p in clip_poses:
+            p.setdefault("ripple", {"s": TINY})
     write_clips(arm, idle, walk, windup, attack, hit, die, hit_frame=1)

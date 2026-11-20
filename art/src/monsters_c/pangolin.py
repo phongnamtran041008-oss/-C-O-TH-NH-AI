@@ -22,7 +22,7 @@ import math
 
 from mathutils import Vector
 
-from common import (C, S, about, aim, att, ball, lerp_pose, material, merge, plate,
+from common import (hx, C, S, about, aim, att, ball, lerp_pose, material, merge, plate,
                     set_root_offset, skin, tube, use_collection, write_clips)
 from quadrupeds import Legs, gait, quad_armature
 
@@ -62,17 +62,17 @@ def _shard(name, mat, p, n, back, lift=18.0, size=1.0, outline=SHARD):
 def build_thiet_giap_thu():
     use_collection("COL_thiet_giap_thu")
     set_root_offset((0, 0.03, 0))
-    skin_m = material("MAT_tg_skin", (0.42, 0.35, 0.28), (0.18, 0.16, 0.20), ramp=("earth", "hair"))
-    belly = material("MAT_tg_belly", (0.58, 0.50, 0.40), (0.27, 0.24, 0.30), ramp=("earth", "hair"))
-    sh_a = material("MAT_tg_shard_a", (0.36, 0.43, 0.53), (0.73, 0.51, 0.10), ramp=("steel", "gold"), metal=True)
-    sh_b = material("MAT_tg_shard_b", (0.37, 0.39, 0.44), (0.48, 0.30, 0.05), ramp=("stone", "gold"), metal=True)
-    stub_m = material("MAT_tg_stub", (0.58, 0.65, 0.73), (0.81, 0.80, 0.83), ramp=("steel", "bone"), metal=True)
-    claw = material("MAT_tg_claw", (0.81, 0.80, 0.83), (0.81, 0.80, 0.83), ramp="bone")
+    skin_m = material("MAT_tg_skin", hx("#6c5a47"), hx("#2e2834"), ramp=("earth", "hair"))
+    belly = material("MAT_tg_belly", hx("#958065"), hx("#463c4c"), ramp=("earth", "hair"))
+    sh_a = material("MAT_tg_shard_a", hx("#5d6e86"), hx("#b9821a"), ramp=("steel", "gold"), metal=True)
+    sh_b = material("MAT_tg_shard_b", hx("#5e636f"), hx("#7a4c0e"), ramp=("stone", "gold"), metal=True)
+    stub_m = material("MAT_tg_stub", hx("#94a6ba"), hx("#cfcbd3"), ramp=("steel", "bone"), metal=True)
+    claw = material("MAT_tg_claw", hx("#cfcbd3"), hx("#cfcbd3"), ramp="bone")
     eye = material("MAT_tg_eye", (1.0, 0.89, 0.48), (1.0, 0.45, 0.2), emit=6.0, glow=("holy", "flame"))
-    nose = material("MAT_tg_nose", (0.11, 0.10, 0.13), (0.11, 0.10, 0.13), ramp="hair")
-    tongue = material("MAT_tg_tongue", (0.91, 0.54, 0.65), (0.91, 0.54, 0.65), ramp="pink")
-    grip = material("MAT_tg_grip", (0.34, 0.20, 0.13), (0.58, 0.19, 0.16), ramp=("wood", "red"))
-    guard = material("MAT_tg_guard", (0.73, 0.51, 0.10), (0.27, 0.24, 0.30), ramp=("gold", "hair"), metal=True)
+    nose = material("MAT_tg_nose", hx("#1d1922"), hx("#1d1922"), ramp="hair")
+    tongue = material("MAT_tg_tongue", hx("#e88aa6"), hx("#e88aa6"), ramp="pink")
+    grip = material("MAT_tg_grip", hx("#573420"), hx("#94302a"), ramp=("wood", "red"))
+    guard = material("MAT_tg_guard", hx("#b9821a"), hx("#2e2834"), ramp=("gold", "hair"), metal=True)
 
     P = {"h": 0.22, "yf": -0.06, "yb": 0.06, "x": 0.09, "knee": 0.105,
          "head": (-0.19, 0.235), "hlen": 0.12, "jaw": (-0.33, 0.21),
@@ -177,7 +177,7 @@ def build_thiet_giap_thu():
     # the tail wrapped over the ball, from the back-bottom over the top to above the eyes
     for k in range(9):
         u = k / 8
-        phi = math.radians(-150 + 205 * u)
+        phi = math.radians(-105 + 160 * u)
         n = Vector((0, -math.sin(phi), math.cos(phi)))
         tang = Vector((0, -math.cos(phi), -math.sin(phi)))
         rr = BALL_R + 0.05 - 0.02 * u
@@ -201,7 +201,7 @@ def _walking(p):
     return p
 
 
-def _rolled(rock=0.0, roll=0.0, fwd=0.0, shiver=0.0, squash=1.0, lift=0.0, eyes=1.0, tip=0.0):
+def _rolled(rock=0.0, roll=0.0, fwd=0.0, shiver=0.0, squash=1.0, lift=0.05, eyes=1.0, tip=0.0):
     """The rolled ball (walking body hidden): rocked back by `rock`, rolled forward by
     `roll` degrees, moved `fwd` m forward, tipped onto its side by `tip` degrees."""
     s = (1.0 / squash ** 0.5, squash, 1.0 / squash ** 0.5)
@@ -245,22 +245,22 @@ def _clips(arm, P):
 
     # windup: hunches (head tucked, back arched, tail swinging under), then it is a ball of
     # blades, rocked back on its heel and shivering - held while the hit zone fills
-    hunch = L.plant(drop=0.03, front=(0.02, 0.02), back=(-0.02, -0.02), pitch=18)
-    hunch.update({"pelvis": {"l": (0, 0, -0.03), "r": (-8, 0, 0)}, "chest": {"r": (18, 0, 0)},
-                  "head": {"r": (50, 0, 0)}, "jaw": {"s": (1, TINY, 1)},
+    hunch = L.plant(drop=0.015, front=(0.02, 0.02), back=(-0.02, -0.02), pitch=8)
+    hunch.update({"pelvis": {"l": (0, 0, -0.015), "r": (-8, 0, 0)}, "chest": {"r": (8, 0, 0)},
+                  "head": {"r": (14, 0, 0)}, "jaw": {"s": (1, TINY, 1)},
                   "tail1": {"r": (14, 0, 0)}, "tail2": {"r": (10, 0, 0)}, "tail3": {"r": (8, 0, 0)}})
-    windup = [_walking(hunch), _rolled(rock=16), _rolled(rock=19, shiver=6), _rolled(rock=17, shiver=-6)]
+    windup = [_walking(hunch), _rolled(rock=9), _rolled(rock=11, shiver=7), _rolled(rock=10, shiver=-7)]
 
     # attack: the ball rolls forward (f0), slams into the target squashed flat (f1 = hit),
     # bursts open into a low ram stance, head up and shards bristling (f2), settles (f3)
     open_ = L.plant(drop=0.03, front=(-0.02, -0.02), back=(0.02, 0.02), pitch=10)
-    open_.update({"root": {"l": (0, -0.05, 0)}, "pelvis": {"l": (0, 0, -0.03)},
+    open_.update({"root": {"l": (0, -0.02, 0)}, "pelvis": {"l": (0, 0, -0.03)},
                   "chest": {"r": (10, 0, 0)}, "head": {"r": (-16, 0, 0)}, "jaw": {"s": (1, TINY, 1)},
                   "tail1": {"r": (26, 0, 0)}, "tail2": {"r": (22, 0, 10)}, "tail3": {"r": (16, 0, 16)}})
     settle = lerp_pose(open_, idle[0], 0.6)
     settle.update(L.plant(drop=0.012, pitch=4))
     settle["root"] = {"l": (0, -0.02, 0)}
-    attack = [_rolled(roll=150, fwd=0.04), _rolled(roll=300, fwd=0.075, squash=0.86),
+    attack = [_rolled(roll=120, fwd=0.01, lift=0.06), _rolled(roll=360, fwd=0.015, squash=0.92, lift=0.06),
               _walking(open_), _walking(settle)]
 
     hit = [_walking(merge(L.plant(drop=0.012, front=(0.025, 0.025), back=(0.0, 0.0), pitch=-8),
@@ -274,9 +274,9 @@ def _clips(arm, P):
                            "jaw": {"s": (1, TINY, 1)}}))]
 
     # die: staggers, rolls up, tips onto its side, then lies uncurled and limp, eyes shut
-    slump = merge(L.plant(drop=0.06, pitch=12),
-                  {"pelvis": {"l": (0, 0, -0.06)}, "chest": {"r": (12, 0, 0)},
-                   "head": {"r": (36, 0, 18)}, "jaw": {"s": (1, 1.0, 1)}, "eyes": {"s": (1, 0.3, 1)},
+    slump = merge(L.plant(drop=0.04, pitch=6),
+                  {"pelvis": {"l": (0, 0, -0.04)}, "chest": {"r": (6, 0, 0)},
+                   "head": {"r": (6, 0, 24)}, "jaw": {"s": (1, TINY, 1)}, "eyes": {"s": (1, 0.3, 1)},
                    "tail1": {"r": (-16, 0, 18)}, "tail2": {"r": (-10, 0, 18)}})
     limp = Legs.air((-40, 30), (-20, 20), (30, 10), (40, 0))
     limp.update({"root": about((0, 0.03, 0.10), (0, 84, 0), extra=(0, 0, -0.03)),
@@ -285,5 +285,5 @@ def _clips(arm, P):
                  "tail1": {"r": (-20, 0, 24)}, "tail2": {"r": (-12, 0, 20)}, "tail3": {"r": (-8, 0, 10)}})
     limp2 = merge(limp, {"fl1": {"r": (-55, 0, 0)}, "fr1": {"r": (-10, 0, 0)}, "head": {"r": (30, 0, 26)}})
     die = [hit[0], _walking(slump), _rolled(eyes=0.3), _rolled(tip=45, eyes=0.15),
-           _rolled(tip=85, lift=-0.012, eyes=0.08), _rolled(tip=88, lift=-0.015, eyes=0.08, rock=-8)]
+           _rolled(tip=85, lift=0.02, eyes=0.08), _rolled(tip=88, lift=0.02, eyes=0.08, rock=-8)]
     write_clips(arm, idle, walk, windup, attack, hit, die, hit_frame=1)
