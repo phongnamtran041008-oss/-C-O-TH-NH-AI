@@ -732,3 +732,44 @@ câu viết tay bậc 5, xem `server/app/learning/math_items.py`). Bảng mới 
   trước; tầng nhảy qua nằm trong `skipped[]`.
 - Câu Thiên kiếp (`tribulation`) không bao giờ là câu kiểm tra đầu vào; tầng chỉ có câu Thiên kiếp không tính là
   tầng có câu.
+
+## Lộ trình tân thủ (guide)
+
+Dữ liệu: `server/data/guide.json` (chương → bước, Cẩm nang, lời chào của Trúc Lão). Mã: `app/systems/guide.py`,
+`app/routers/guide_routes.py`. Kiểm: `python tools/check_guide.py` (cũng chạy trong `tools/check_all.py`).
+Tiến độ của mọi bước **suy ra từ dữ liệu đã có** (câu trả lời, buổi luyện, Thiên kiếp nhỏ, vị trí trên Đạo Thụ,
+hầm ngục, thủ thành, cơ duyên, bài tập, cảnh giới); máy khách chỉ báo vài việc "đã xem". Trạng thái riêng của
+người chơi nằm trong `users.flags["guide"] = {claimed: [id], seen: [key]}`. Bước không bao giờ bị khoá: bản lưu
+cũ có thể thấy nhiều bước đã xong và nhận hết. Kiểu kiểm tra: `seen`, `math_answers`, `practice_runs`,
+`trials_passed`, `nodes_done`, `node_done`, `tree_stage`, `placement_done`, `mistakes_cleared`,
+`dungeon_cleared`, `td_wins`, `fortune_won`, `code_solved`, `skills_unlocked`, `realm` (tham số và ý nghĩa: docstring
+và `CHECKS` của `guide.py`).
+
+- `GET /guide` -> `{title_vi, welcome: {seen, speaker_vi, lines_vi[]}, chapters[{id, title_vi, intro_vi, done,
+  total, state: "active" | "done" | "claimed", rewards_vi[], steps[{id, chapter_id, title_vi, desc_vi, how_vi[],
+  goto: "math" | "library" | "dungeon" | "td" | "fortune" | "char" | null, help: <id trang Cẩm nang> | null,
+  optional, state: "active" | "done" | "claimed", progress, count, rewards_vi[], nodes[]}]}], current: {chapter_id,
+  step_id, title_vi, hint_vi, progress, count, goto} | null, claimable, study: {action: "resume" | "practice" |
+  "trial" | "code", node_id, name_vi, branch_vi, floor, text_vi} | null, stage: {realm, realm_name_vi, stage,
+  stages}, handbook[{id, title_vi, lines_vi[]}]}`.
+  - Bước `done` = đã đạt, chưa nhận thưởng. Chương `done` = mọi bước bắt buộc đã xong, chưa nhận thưởng chương;
+    chương không có thưởng đi thẳng từ `active` sang `claimed`. `done`/`total` của chương chỉ đếm bước bắt buộc.
+  - Bước `optional` không chặn `current` và thưởng chương. `current` = bước bắt buộc đầu tiên (theo thứ tự
+    file) còn `active`; `hint_vi` = dòng đầu của `how_vi`. `claimable` = số bước + chương đang `done`.
+  - Chương sinh từ Đạo Thụ (`"generated": "tree_stages"`): một bước mỗi tầng của cảnh giới, id
+    `<id chương>_s<k>`; xong khi tầng đạt được trên cây >= k; `progress/count` = số nút chính đạo có nội dung
+    đã xong / tổng số nút ấy của các tầng 1..k (nút "đang biên soạn" không tính); `nodes[] = [{id, name_vi,
+    branch, branch_vi, state: "open" | "done" | "locked" | "vacant"}]` = các nút chính đạo của đúng tầng k. Bước
+    thường: `nodes: []`.
+  - `study` = học gì trên Đạo Thụ lúc này: buổi luyện / Thiên kiếp nhỏ đang dở -> `resume`; không thì nút chính
+    đạo đang mở đầu tiên (thứ tự cây), phần đầu tiên chưa vượt: `trial` nếu cổng thuần thục của phần ấy đã mở,
+    không thì `practice`; nút chỉ còn bài tập lập trình -> `code` (`floor` = tầng của bài đầu tiên chưa giải).
+    Không có nút nào mở: `null`.
+- `POST /guide/claim {id}` (id bước hoặc chương) -> `{claimed, rewards: {spirit_stones?, immortal_jade? (số dư
+  mới), xp?: <kết quả add_xp>, items[{item, name_vi, qty, total}], equipment: []}, guide: <như GET /guide>}`.
+  Lỗi `no_step` (404), `not_done` (400), `already_claimed` (400), `busy` (409, hiếm: cờ bị đổi liên tục, thử lại).
+  Mỗi lần nhận để lại một dòng `audit_log` (`reason: "guide"`, `ref_id` = id); cờ được ghi bằng so-sánh-rồi-đổi
+  trên cả cột `flags`, nên hai yêu cầu cùng lúc chỉ trả thưởng một lần.
+- `POST /guide/seen {key}` -> `{guide: <như GET /guide>}`. Khoá nhận: `welcome`, `board`, và mọi `key` mà một
+  bước `seen` của guide.json dùng (máy khách gửi `math_hub`, `library_doc`, `village`); khoá khác: `bad_key`
+  (400). Gửi lại không sao.

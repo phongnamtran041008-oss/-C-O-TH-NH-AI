@@ -53,6 +53,9 @@ Exit code 0 when every check passes, 1 otherwise. The list grows with each miles
   * Đạo Thụ: tree.json and world_plan.json pass math_tree.validate_all(), every part of a
     node names real micro-skills of its floor, and every main-path node with content can be
     reached from an empty save by finishing open nodes (vacant nodes count as done)
+  * Lộ Trình Tu Tiên: guide.json passes app/systems/guide.py validate() - known check types,
+    GOTO ids, seen keys and handbook pages, unique ids, real items, one reward per stage of
+    the generated Đạo Thụ chapter, the text-length limits (also tools/check_guide.py)
 """
 from __future__ import annotations
 
@@ -149,7 +152,8 @@ def displayed_strings() -> list[tuple[str, str]]:
     return out
 
 
-M10_TEXT_FILES = ("math/dungeon.json", "math/fortune.json", "math/td.json", "math/drops.json", "realms.json")
+M10_TEXT_FILES = ("math/dungeon.json", "math/fortune.json", "math/td.json", "math/drops.json", "realms.json",
+                  "guide.json")
 
 
 def _vi_strings(node, where: str = "") -> list[tuple[str, str]]:
@@ -594,6 +598,16 @@ def check_tree() -> list[str]:
     return out
 
 
+def check_guide() -> list[str]:
+    """Lộ Trình Tu Tiên: guide.json passes app/systems/guide.py validate() (tools/check_guide.py;
+    its strings go through the font check below with the other data files)."""
+    try:
+        from app.systems import guide
+        return list(guide.validate())
+    except Exception as e:      # noqa: BLE001 - a broken file or module must fail the check, not crash the run
+        return [f"app/systems/guide.py: validate() raised {type(e).__name__}: {e}"]
+
+
 def check_generated_answers() -> list[str]:
     if math_path.validate_all() or math_items.validate_all():
         return ["skipped: the checks above must pass first"]
@@ -643,6 +657,7 @@ CHECKS = [
     ("rơi đồ: mỗi món có mốc tu vi, không nguồn nào vượt trần", _mode_check("loot")),
     ("Đạo Thụ: the tree is sound, every part names real micro-skills, every main node can be reached",
      check_tree),
+    ("Lộ Trình: guide.json chapters, steps, checks, rewards and text lengths are sound", check_guide),
     ("fonts: every string the game shows can be drawn", check_fonts),
 ]
 

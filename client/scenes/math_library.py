@@ -47,6 +47,7 @@ class DocScene(Scene):
     def loaded(self, doc: dict) -> None:
         self.doc = doc
         self.built_for = None
+        self.game.guide_seen("library_doc")
 
     # ------------------------------------------------------------ layout
     def content_box(self) -> tuple[float, float, float, float]:

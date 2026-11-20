@@ -14,6 +14,7 @@ from ..engine.beeflock import Flock
 from ..engine.effects import Effects
 from ..engine.tilemap import load_map
 from ..ui.dialog import DialogScene
+from . import guide
 from .base import Scene
 
 SPEED = 74.0
@@ -110,8 +111,12 @@ class AbodeScene(Scene):
         self.api.get("/hive", ok, self.game.api_error)
 
     # ------------------------------------------------------------ update
+    def on_resume(self):
+        guide.resume_refresh(self.game)
+
     def update(self, dt, top):
         self.t += dt
+        guide.hud_update(self.game, self)
         self.fx.update(dt)
         self.update_bees(dt)
         self.update_pet(dt)
@@ -426,6 +431,9 @@ class AbodeScene(Scene):
                 action()
         if top and not typing and ui.key(pygame.K_l):
             self.game.open_library()
+        if top and not typing and ui.key(pygame.K_F1):
+            self.game.open_guide()
+        guide.draw_tracker(ui, self.game, 476 - guide.TRACKER_W, 4, top)
         if top and not typing and ui.key(pygame.K_o):
             self.game.open_pets()
         if not top or typing:

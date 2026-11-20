@@ -26,6 +26,7 @@ from ..engine.effects import Effects
 from ..engine.tilemap import load_map
 from ..net.interpolation import Interpolator
 from ..ui.dialog import DialogScene
+from . import guide
 from .abode import Player
 from .base import Scene
 
@@ -996,8 +997,13 @@ class WorldScene(Scene):
     def _typing(self) -> bool:
         return self.game.chatbox.typing
 
+    def on_resume(self):
+        if self.realm is None:
+            guide.resume_refresh(self.game)
+
     def update(self, dt, top):
         self.t += dt
+        guide.hud_update(self.game, self)
         self.fx.update(dt)
         self.update_bees(dt)
         self.update_pets(dt)
@@ -1832,6 +1838,7 @@ class WorldScene(Scene):
             tw = ui.text_size(line, 7)[0] + 8
             ui.fill(476 - tw, my + mh + 4, tw, 11, (20, 18, 15, 150))
             ui.text(line, 472, my + mh + 9.5, 7, col, anchor="midright")
+        guide.draw_tracker(ui, g, 476 - guide.TRACKER_W, my + mh + (18 if quests else 5), top)
         # hotbar: the chiêu thức 1-6 and the healing pill (spec 18)
         self.draw_hotbar(ui, top and not g.chatbox.typing)
         # chat (before hotkeys, so typing never triggers them)
@@ -1858,6 +1865,8 @@ class WorldScene(Scene):
                 action()
         if top and not typing and ui.key(pygame.K_l):
             g.open_library()
+        if top and not typing and self.realm is None and ui.key(pygame.K_F1):
+            g.open_guide()
 
     def entity_at(self, wx: float, wy: float) -> Ent | None:
         """The entity whose picture covers a world point (mouse picking). Its box is the picture on

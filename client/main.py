@@ -54,6 +54,10 @@ class State:
     pets: dict = field(default_factory=dict)       # /pets (stage 8): owned Linh Thú, the worn one, the book
     party: dict | None = None                      # tổ đội (stage 9), kept current by the WebSocket
     realm_queue: dict | None = None                # the bí cảnh matchmaking queue we wait in
+    guide: dict | None = None                      # /guide: the Lộ Trình (None until it has arrived)
+    guide_sent: set = field(default_factory=set)   # "seen" keys already sent this session
+    guide_welcome: bool = False                    # Trúc Lão's welcome was started this session
+    guide_at: float = -1e9                         # game time of the last /guide request
 
 
 class Game:
@@ -243,6 +247,8 @@ class Game:
             self.refresh_cult()
             self.refresh_inv()
             self.refresh_quests()
+            self.state.guide, self.state.guide_sent, self.state.guide_welcome = None, set(), False
+            self.refresh_guide()
             self.refresh_bee_species()
             self.refresh_pets()
             zone = ch.get("zone_id")
@@ -271,6 +277,7 @@ class Game:
 
     def go_village(self) -> None:
         from .scenes.world import WorldScene
+        self.guide_seen("village")
         self.replace_all(WorldScene(self, "truc_lam_thon", via="abode"))
 
     def enter_abode(self, x=None, y=None, facing: str = "up") -> None:
@@ -299,6 +306,38 @@ class Game:
 
     def refresh_quests(self) -> None:
         self.api.get("/quests", lambda d: setattr(self.state, "quests", d), lambda e: None)
+
+    def set_guide(self, view: dict | None, announce: bool = True) -> None:
+        """Keeps a /guide view; a step that went from active to done since the last one is announced."""
+        if not isinstance(view, dict):
+            return
+        from .scenes.guide import newly_done
+        old, self.state.guide = self.state.guide, view
+        for title in newly_done(old, view) if announce else []:
+            self.toast(T.GUIDE_STEP_DONE_TOAST.format(title=title), "#C99A3A", 4.0)
+            self.audio.play("discover")
+
+    def refresh_guide(self, min_gap: float = 0.0) -> None:
+        if self.now - self.state.guide_at < min_gap:
+            return
+        self.state.guide_at = self.now
+        self.api.get("/guide", self.set_guide, lambda e: None)
+
+    def guide_seen(self, key: str) -> None:
+        """Tell the server a "seen" fact (once per key per session; it keeps the rest)."""
+        st = self.state
+        if key in st.guide_sent or (key == "welcome" and (st.guide or {}).get("welcome", {}).get("seen")):
+            return
+        st.guide_sent.add(key)
+        self.api.post("/guide/seen", {"key": key},
+                      lambda r: self.set_guide(r.get("guide"), announce=key not in ("welcome", "board")),
+                      lambda e: st.guide_sent.discard(key))
+
+    def open_guide(self) -> None:
+        from .scenes.guide import GuideScene
+        if not any(isinstance(s, GuideScene) for s in self.scenes):
+            self.push(GuideScene(self))
+            self.refresh_guide(min_gap=2.0)
 
     def on_xp(self, info: dict | None) -> None:
         """Tu Vi news from any answer, kill or quest (spec 7.3)."""
@@ -444,6 +483,7 @@ class Game:
     def open_math(self) -> None:
         """Bí Cảnh Toán (M2): the math question loop; also the M key in the abode."""
         from .scenes.math_practice import MathPracticeScene
+        self.guide_seen("math_hub")
         self.push(MathPracticeScene(self))
 
     def open_bag(self) -> None:
