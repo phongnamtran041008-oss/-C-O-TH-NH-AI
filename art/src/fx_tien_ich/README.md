@@ -55,6 +55,15 @@ The last `linh_can_<n>` frame equals the `linh_can_tru_<n>` steady state (hand o
    shorter (rays also touched the frame edge). `uy_ap`, `trac_linh_thach`: stele got a band and a finial so it is less a gravestone.
 QC: `qc.py client/assets/v2/fx` -> OK (0 problems).
 
+## Lead review round (4th look-fix)
+- `trac_linh_thach`: rebuilt as a tall faceted spirit crystal (3 facets, edge highlight, pointed top) on a ROUND altar with an abstract
+  rune ring, 3 orbiting shards, glow from veins and a core at hand height (1.2 u above the pivot); no arched window. All 18 `linh_can*`
+  sheets now rise from that core (`Y0 = 1.2`), columns re-capped so nothing touches the frame top.
+- `phi_vet`: thin tapering ribbon, 8 px at the tail, gone within ~50 px, 4 small sparks (was a 18 px laser).
+- `phi_may`: six thin flat translucent mist streaks (2-4 px) instead of cotton clouds; name_vi now "Gió mây dưới kiếm".
+- `roi_cot_dia` / `roi_vong_dia` are now `blend: "alpha"` (additive purple turned white-lavender on grass): clear purple body, small bright
+  core, blades about half as wide. `roi_cot_thien`: outer ray wedges halved, ground bloom and ring disc one step dimmer.
+
 ## Known weak points
 - The stele is flat-shaded stone with a glowing face; it still reads a little like a tombstone. `hon_don` has no true black (additive
   sheets cannot subtract): it is dark violet, rings and stars instead.

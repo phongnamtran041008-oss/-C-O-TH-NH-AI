@@ -15,80 +15,80 @@ def reg(id):
 
 
 # ------------------------------------------------------------------------------ trac_linh_thach
-def arch_pts(w0, w1, y0, y1, r, n=14, grow=0.0):
-    """outline of an arched stele: bottom width w0, shoulder width w1, flat bottom at y0, arch centre at y1."""
-    pts = [(-w0 / 2 - grow, y0 - grow), (-w1 / 2 - grow, y1)]
-    rr = w1 / 2 + grow
-    for k in range(1, n):
-        a = PI - PI * k / n
-        pts.append((rr * math.cos(a), y1 + (r + grow) * math.sin(a)))
-    pts += [(w1 / 2 + grow, y1), (w0 / 2 + grow, y0 - grow)]
-    return pts
+CORE_Y = 1.2          # height of the glowing core = hand-print height; the linh can lights rise from here (ti_linh.Y0)
 
 
 @reg("trac_linh_thach")
 def trac_linh_thach():
     fx = FxP("trac_linh_thach", frames=6, fps=6, loop=True, mode="alpha", px=96, pivot=(48, 84), alpha_levels=3,
              name_vi="Trắc Linh Thạch",
-             where="the spirit-testing stone: carved stele on two plinth steps, rune face glowing gently (pivot = base centre)")
+             where="the spirit-testing stone: a tall faceted spirit crystal on a round rune altar, floating shards; core at hand height (pivot = altar centre, base)")
     M = lambda n, c, **kw: fx.mat(n, c, **kw)
-    ink, shade, base, lit, hi = M("ink", "#0b0a10"), M("shade", "#3a3d48"), M("base", "#5e636f"), M("lit", "#888e98"), M("hi", "#b8bdc3")
-    pan, pan2 = M("pan", "#262a34"), M("pan2", "#3a3d48")
-    cy_lo, cy_mid, cy_hi = M("c1", "#18a0c8"), M("c2", "#5ae0f4"), M("c3", "#d8fcff")
-    halo = M("halo", "#5ae0f4", grad=dict(src="attr", pow=1.2), opacity=0.55)
+    ink, ssh, sbs, slt = M("ink", "#0b0a10"), M("ssh", "#3a3d48"), M("sbs", "#5e636f"), M("slt", "#888e98")
+    tsh, tbs, tlt, thi = M("tsh", "#1f6e70"), M("tbs", "#2f9c9a"), M("tlt", "#4cc2b6"), M("thi", "#9ae6d6")
+    c2, c3 = M("c2", "#5ae0f4"), M("c3", "#d8fcff")
+    halo = M("halo", "#5ae0f4", grad=dict(src="attr", pow=1.2), opacity=0.5)
     pulse = lambda t, ph=0.0: 0.5 + 0.5 * math.sin(TAU * t + ph)
 
-    def box(name, mat, x0, x1, y0, y1):
-        return MB().poly([(x0, y0), (x1, y0), (x1, y1), (x0, y1)]).build(fx, name, mat)
+    def ell(name, mat, rx, ry, cy):
+        return MB().disc(0, cy, rx, 44, ky=ry / rx).build(fx, name, mat)
 
-    G = 0.04
-    # outline first (one dark silhouette under everything)
-    sil = MB()
-    sil.poly([(-0.95 - G, -G), (0.95 + G, -G), (0.95 + G, 0.28), (-0.95 - G, 0.28)])
-    sil.poly([(-0.75 - G, 0.2), (0.75 + G, 0.2), (0.75 + G, 0.56), (-0.75 - G, 0.56)])
-    sil.poly(arch_pts(1.1, 0.96, 0.5, 1.78, 0.5, grow=G))
-    sil.build(fx, "outline", ink)
-    # plinth steps: front face shade, top-lit strip
-    box("s1", base, -0.95, 0.95, 0.0, 0.28)
-    box("s1t", lit, -0.95, 0.95, 0.2, 0.28)
-    box("s1s", shade, 0.55, 0.95, 0.0, 0.2)
-    box("s2", base, -0.75, 0.75, 0.28, 0.56)
-    box("s2t", lit, -0.75, 0.75, 0.48, 0.56)
-    box("s2s", shade, 0.4, 0.75, 0.28, 0.48)
-    # the stele: base body, lit left edge, shaded right edge, top highlight
-    MB().poly(arch_pts(1.1, 0.96, 0.52, 1.78, 0.5)).build(fx, "body", base)
-    le = [(-0.55, 0.55), (-0.48, 1.78)] + [(-0.48 * math.cos(PI * k / 14), 1.78 + 0.5 * math.sin(PI * k / 14)) for k in range(0, 8)]
-    MB().strip(le, 0.17).build(fx, "litedge", lit)
-    re = [(0.55, 0.55), (0.48, 1.78)] + [(0.48 * math.cos(PI * k / 14), 1.78 + 0.5 * math.sin(PI * k / 14)) for k in range(0, 6)]
-    MB().strip(re, 0.22).build(fx, "shadeedge", shade)
-    MB().strip([(-0.34, 2.18), (-0.2, 2.25), (-0.05, 2.28)], 0.05).build(fx, "tophi", hi)
-    MB().strip([(-0.3, 1.72), (0.3, 1.72)], 0.035).build(fx, "band", shade)
-    # recessed rune panel
-    MB().poly(arch_pts(0.74, 0.7, 0.78, 1.62, 0.36, n=12)).build(fx, "panel", pan)
-    MB().strip([(-0.35, 0.8), (0.35, 0.8)], 0.04).build(fx, "panelsill", pan2)
-    # cracks and chips
-    MB().strip([(0.38, 0.6), (0.33, 0.75), (0.4, 0.9)], 0.03).build(fx, "crack1", ink)
-    MB().strip([(-0.5, 1.45), (-0.43, 1.35), (-0.46, 1.2)], 0.03).build(fx, "crack2", ink)
-    # glowing face: soft halo behind the orb, ring, 4 strokes, 3 small marks
-    h = glow_disc(0.62, 28).build(fx, "glow", halo)
-    fx.track(h, lambda t, i: dict(y=1.28, s=0.9 + 0.2 * pulse(t), op=0.5 + 0.5 * pulse(t)))
-    ring_a = MB().ring(0, 0, 0.3, 0.05, seg=36).build(fx, "ring", cy_mid)
-    fx.track(ring_a, lambda t, i: dict(y=1.28, op=1.0))
-    ring_b = MB().ring(0, 0, 0.3, 0.05, seg=36).build(fx, "ringlit", cy_hi)
-    fx.track(ring_b, lambda t, i: dict(y=1.28, op=1.0, show=pulse(t) > 0.62))
-    rn = MB()
-    rr = random.Random(11)
-    runes(rn, 0, 0, 0.3, 4, 0.2, rr, 0.03, tangent=False, rot0=PI / 4)
-    fx.pose(rn.build(fx, "runes", cy_mid), None, y=1.28)
-    orb = MB().disc(0, 0, 0.12, 16).build(fx, "orb", cy_hi)
-    fx.track(orb, lambda t, i: dict(y=1.28, s=0.8 + 0.4 * pulse(t, 0.5)))
-    mk = MB()
-    for q in range(3):
-        runes(mk, (q - 1) * 0.2, 0.98, 0.0, 1, 0.13, random.Random(30 + q), 0.026, tangent=False)
-    mk.build(fx, "marks", cy_lo)
-    # two motes of spirit light rising off the stone
-    for j, (x0, ph) in enumerate(((-0.28, 0.0), (0.3, 0.5))):
-        mote(fx, "m%d" % j, cy_hi, "disc", 0.045, rising(x0, 1.7, 0.5, ph, 0.04, 1.0, 0.8))
+    G = 0.045
+    # ---- one dark silhouette under everything (outline)
+    crystal = [(-0.32, 0.42), (-0.42, 1.1), (-0.28, 1.95), (0.0, 2.45), (0.28, 1.95), (0.42, 1.1), (0.32, 0.42)]
+    out = MB()
+    out.poly([(x * 1.0 + (G if x > 0 else -G if x < 0 else 0.0), y + (G if y > 2 else -G * 0.2)) for x, y in crystal])
+    out.build(fx, "outline_c", ink)
+    ell("outline_a", ink, 1.1 + G, 0.3 + G, 0.36)
+    MB().poly([(-1.1 - G, 0.16), (1.1 + G, 0.16), (1.1 + G, 0.36), (-1.1 - G, 0.36)]).build(fx, "outline_s", ink)
+    ell("outline_b", ink, 1.1 + G, 0.3 + G, 0.16)
+    # ---- round altar: lower rim, drum, top disc, inset with rune ring
+    ell("rim", ssh, 1.1, 0.3, 0.16)
+    MB().poly([(-1.1, 0.16), (1.1, 0.16), (1.1, 0.36), (-1.1, 0.36)]).build(fx, "drum", sbs)
+    MB().poly([(-1.1, 0.16), (-0.6, 0.16), (-0.6, 0.36), (-1.1, 0.36)]).build(fx, "drum_l", slt)
+    MB().poly([(0.6, 0.16), (1.1, 0.16), (1.1, 0.36), (0.6, 0.36)]).build(fx, "drum_r", ssh)
+    ell("top", slt, 1.1, 0.3, 0.36)
+    ell("inset", sbs, 0.9, 0.24, 0.38)
+    rn = runes(MB(), 0, 0.38, 0.72, 8, 0.15, random.Random(21), 0.024, ky=0.24)
+    fx.track(rn.build(fx, "altar_runes", c2), lambda t, i: dict(op=0.6 + 0.4 * pulse(t, PI)))
+    MB().ring(0, 0.38, 0.9, 0.03, seg=44, ky=0.24 / 0.9).build(fx, "altar_ring", c2)
+    ell("seat", ssh, 0.5, 0.13, 0.42)
+    # ---- the crystal: three facets (lit / body / shade), edge highlight, setting
+    facets = (("fl", tlt, [(-0.32, 0.42), (-0.1, 0.42), (-0.1, 1.1), (-0.06, 1.95), (0.0, 2.45), (-0.28, 1.95), (-0.42, 1.1)]),
+              ("fm", tbs, [(-0.1, 0.42), (0.12, 0.42), (0.12, 1.1), (0.08, 1.95), (0.0, 2.45), (-0.06, 1.95), (-0.1, 1.1)]),
+              ("fr", tsh, [(0.12, 0.42), (0.32, 0.42), (0.42, 1.1), (0.28, 1.95), (0.0, 2.45), (0.08, 1.95), (0.12, 1.1)]))
+    for nm, mt, pts in facets:
+        MB().poly(pts).build(fx, nm, mt)
+    MB().strip([(-0.36, 0.7), (-0.4, 1.1), (-0.27, 1.9), (-0.04, 2.38)], 0.045).build(fx, "edge_hi", thi)
+    MB().strip([(0.02, 2.4), (0.06, 1.9), (0.09, 1.1)], 0.025).build(fx, "ridge", thi)
+    MB().poly([(-0.44, 0.4), (0.44, 0.4), (0.4, 0.58), (-0.4, 0.58)]).build(fx, "collar", slt)
+    MB().strip([(-0.42, 0.42), (0.42, 0.42)], 0.04).build(fx, "collar_sh", ssh)
+    # ---- veins and the core at hand height
+    veins = [[(0, CORE_Y), (-0.09, 1.55), (0.05, 1.95), (0.0, 2.3)], [(0, CORE_Y), (0.11, 0.85), (-0.04, 0.55)], [(0, 1.45), (0.2, 1.72)],
+             [(0, 1.0), (-0.2, 0.8)]]
+    vm = MB()
+    for v in veins:
+        vm.strip(v, 0.035)
+    fx.track(vm.build(fx, "veins", c2), lambda t, i: dict(op=0.7 + 0.3 * pulse(t)))
+    vm2 = MB()
+    for v in veins[:2]:
+        vm2.strip(v, 0.016)
+    fx.track(vm2.build(fx, "veins_hi", c3), lambda t, i: dict(show=pulse(t) > 0.55))
+    h = glow_disc(0.6, 28).build(fx, "glow", halo)
+    fx.track(h, lambda t, i: dict(y=CORE_Y, s=0.85 + 0.25 * pulse(t), op=0.35 + 0.35 * pulse(t)))
+    orb = MB().disc(0, 0, 0.13, 16).build(fx, "orb", c3)
+    fx.track(orb, lambda t, i: dict(y=CORE_Y, s=0.8 + 0.4 * pulse(t, 0.5)))
+    ring = MB().ring(0, 0, 0.2, 0.025, seg=24).build(fx, "orbring", c2)
+    fx.track(ring, lambda t, i: dict(y=CORE_Y, s=0.9 + 0.2 * pulse(t, 1.0)))
+    # ---- three shards orbiting the crystal (smaller when behind it), two spirit motes off the tip
+    for j in range(3):
+        def f(t, j=j):
+            a = TAU * (t + j / 3.0)
+            depth = -math.sin(a)
+            return (0.82 * math.cos(a), 1.5 + 0.16 * math.sin(a) + 0.12 * math.sin(a * 2 + j), 0.7 + 0.3 * depth, PI / 2 + 0.25 * math.cos(a))
+        mote(fx, "shard%d" % j, thi if j % 2 else tlt, "diamond", 0.12, f)
+    for j, (x0, ph) in enumerate(((-0.12, 0.0), (0.14, 0.5))):
+        mote(fx, "m%d" % j, c3, "disc", 0.04, rising(x0, 2.15, 0.5, ph, 0.04, 1.0, 0.8))
     return fx
 
 

@@ -14,6 +14,6 @@
  "frames": 8,
  "fps": 8,
  "loop": true,
- "blend": "add",
+ "blend": "alpha",
  "ground": false
 }

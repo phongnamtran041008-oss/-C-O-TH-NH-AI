@@ -30,46 +30,35 @@ def phi_bong():
 # ------------------------------------------------------------------------------ phi_vet
 @reg("phi_vet")
 def phi_vet():
-    fx = FxP("phi_vet", frames=6, fps=12, loop=True, px=96, pivot=(80, 48), halo=0.85,
+    fx = FxP("phi_vet", frames=6, fps=12, loop=True, px=96, pivot=(80, 48), halo=0.6, levels=4,
              name_vi="Vệt kiếm quang",
-             where="wake of light streaming behind the flying sword (trails to the LEFT, pivot = the sword's tail)")
-    L = 2.25
+             where="thin tapering ribbon of light behind the flying sword (trails LEFT, pivot = the sword's tail, fades out in ~50 px)")
+    L = 1.75
     N = 16
-    glow = fx.mat("glow", "#18a0c8", grad=dict(src="attr", pow=0.9), opacity=0.9)
-    mid = fx.mat("mid", "#5ae0f4", grad=dict(src="attr", pow=0.35))
-    core = fx.mat("core", "#e8fdff")
-    silk = fx.mat("silk", "#5ae0f4", grad=dict(src="attr", pow=0.6), opacity=0.8)
+    glow = fx.mat("glow", "#18a0c8", grad=dict(src="attr", pow=0.9), opacity=0.6)
+    mid = fx.mat("mid", "#5ae0f4", grad=dict(src="attr", pow=0.4), opacity=0.9)
+    core = fx.mat("core", "#d8fcff")
+    silk = fx.mat("silk", "#5ae0f4", grad=dict(src="attr", pow=0.6), opacity=0.6)
 
-    def ribbon(L_, amp, w0, ph, freq, y0=0.0, soft=True, wpow=0.85):
+    def ribbon(L_, amp, w0, ph, freq, y0=0.0, soft=True, wpow=1.1):
         def b(t, i):
             pts, ws = [], []
             for k in range(N + 1):
                 s = k / N
-                x = -s * L_
-                y = y0 + amp * s * math.sin(TAU * (freq * s - t) + ph)
-                pts.append((x, y))
-                ws.append(w0 * (1 - s) ** wpow * (0.35 + 0.65 * (1 - math.exp(-6 * (1 - s)))) * (0.4 + 0.6 * min(1.0, s / 0.1)) + 0.01)
+                pts.append((-s * L_, y0 + amp * s * math.sin(TAU * (freq * s - t) + ph)))
+                ws.append(w0 * (1 - s) ** wpow * (0.5 + 0.5 * min(1.0, s / 0.12)) + 0.006)
             return MB().strip(pts, ws, soft=soft)
         return b
 
-    fx.per_frame("glow", glow, ribbon(L, 0.10, 0.62, 0.0, 1.0))
-    fx.per_frame("mid", mid, ribbon(L * 0.92, 0.09, 0.26, 0.0, 1.0))
-    fx.per_frame("core", core, ribbon(L * 0.62, 0.07, 0.085, 0.0, 1.0, soft=False))
-    fx.per_frame("silk_a", silk, ribbon(L * 0.72, 0.22, 0.12, 1.2, 1.5, y0=0.2))
-    fx.per_frame("silk_b", silk, ribbon(L * 0.62, 0.2, 0.1, 3.4, 1.5, y0=-0.2))
-    # speed lines sliding left and a few sparks
-    stk = fx.mat("stk", "#b0f0ff", grad=dict(src="attr", pow=0.5), opacity=0.8)
-    for j, (y, ll, w, ph) in enumerate(((0.36, 0.7, 0.04, 0.0), (-0.38, 0.8, 0.045, 0.5), (0.08, 0.5, 0.03, 0.75))):
-        mb = MB().strip([(0.3 - ll * k / 6, y) for k in range(7)], [w * (1 - k / 6) + 0.004 for k in range(7)], soft=True)
-        ob = mb.build(fx, "stk%d" % j, stk)
-        fx.track(ob, lambda t, i, ph=ph: dict(x=-0.1 - 1.6 * ((t + ph) % 1), sx=math.sin(PI * ((t + ph) % 1)) ** 0.6 + 0.001))
-    for j in range(5):
-        mote(fx, "sp%d" % j, core, "star" if j % 2 else "diamond", 0.065,
-             (lambda ph, y: lambda t: (-0.25 - 1.7 * ((t + ph) % 1), y + 0.05 * math.sin(TAU * (t + ph)),
-                                       math.sin(PI * ((t + ph) % 1)) ** 0.6))(j / 5.0, (-0.22, 0.25, -0.08, 0.14, -0.3)[j]))
-    # glint at the tail of the sword
-    g = MB().star(0, 0, 4, 0.34, 0.06, PI / 2).build(fx, "glint", core)
-    fx.track(g, lambda t, i: dict(x=0.05, s=0.55 + 0.35 * math.sin(TAU * t) ** 2, rot=0.0))
+    fx.per_frame("glow", glow, ribbon(L, 0.05, 0.27, 0.0, 1.0))
+    fx.per_frame("mid", mid, ribbon(L * 0.85, 0.045, 0.12, 0.0, 1.0))
+    fx.per_frame("core", core, ribbon(L * 0.55, 0.03, 0.04, 0.0, 1.0, soft=False))
+    fx.per_frame("silk_a", silk, ribbon(L * 0.5, 0.1, 0.05, 1.2, 1.5, y0=0.1))
+    fx.per_frame("silk_b", silk, ribbon(L * 0.4, 0.09, 0.045, 3.4, 1.5, y0=-0.1))
+    for j in range(4):
+        mote(fx, "sp%d" % j, core, "star" if j % 2 else "diamond", 0.045,
+             (lambda ph, y: lambda t: (-0.2 - 1.3 * ((t + ph) % 1), y * (1 + 0.8 * ((t + ph) % 1)),
+                                       math.sin(PI * ((t + ph) % 1)) ** 0.6))(j / 4.0, (-0.1, 0.12, -0.05, 0.08)[j]))
     return fx
 
 
@@ -113,27 +102,23 @@ def cloud(mb_lo, mb_hi, w, h):
 
 @reg("phi_may")
 def phi_may():
-    fx = FxP("phi_may", frames=6, fps=8, loop=True, mode="alpha", px=96, pivot=(48, 56), alpha_levels=4,
-             name_vi="Mây dưới chân", where="small cloud wisps drifting LEFT under the flyer's feet (pivot = feet)")
-    lo = fx.mat("lo", "#94a6ba", opacity=0.9)
-    hi = fx.mat("hi", "#f2fbff", opacity=0.95)
-    spec = ((-0.42, 1.2, 0.55, 0.0), (-0.95, 0.9, 0.42, 0.34), (-0.62, 0.7, 0.34, 0.67))
-    for j, (y, w, h, ph) in enumerate(spec):
-        a, b = MB(), MB()
-        cloud(a, b, w, h)
-        oa = a.build(fx, "lo%d" % j, lo)
-        ob = b.build(fx, "hi%d" % j, hi)
-        for o in (oa, ob):
-            def f(t, i, y=y, ph=ph):
-                s = (t + ph) % 1.0
-                e = min(1.0, 1.6 * math.sin(PI * s) ** 0.8)
-                return dict(x=1.0 - 2.0 * s, y=y, sx=e + 0.001, sy=0.55 + 0.45 * e, show=e > 0.25)
-            fx.track(o, f)
-    wp = fx.mat("wp", "#cfdbe8", opacity=0.75)
-    for j, (y, ph, L) in enumerate(((-0.15, 0.5, 0.8), (-0.78, 0.0, 0.7))):
-        mb = MB().strip([(-L / 2 + L * k / 6, y) for k in range(7)], [0.02 + 0.07 * math.sin(PI * k / 6) for k in range(7)], soft=True)
-        ob = mb.build(fx, "wisp%d" % j, wp)
-        fx.track(ob, lambda t, i, ph=ph: dict(x=1.05 - 2.1 * ((t + ph) % 1), sx=math.sin(PI * ((t + ph) % 1)) ** 0.6 + 0.001))
+    fx = FxP("phi_may", frames=6, fps=8, loop=True, mode="alpha", px=96, pivot=(48, 56), alpha_levels=3,
+             name_vi="Gió mây dưới kiếm", where="thin flat wisps of mist streaking LEFT under the flying sword (pivot = feet)")
+    mist = fx.mat("mist", "#cfdbe8", grad=dict(src="attr", pow=0.7), opacity=0.55)
+    lite = fx.mat("lite", "#f2fbff", grad=dict(src="attr", pow=0.5), opacity=0.6)
+    # (y, length, thickness, phase, passes per loop, light?)
+    spec = ((-0.1, 1.2, 0.1, 0.0, 1, 0), (-0.26, 0.7, 0.075, 0.4, 2, 1), (-0.38, 1.3, 0.11, 0.7, 1, 0),
+            (-0.52, 0.8, 0.07, 0.2, 2, 1), (-0.2, 0.5, 0.06, 0.65, 2, 0), (-0.66, 0.95, 0.09, 0.5, 1, 0))
+    for j, (y, L, th, ph, m, lt) in enumerate(spec):
+        pts = [(-L / 2 + L * k / 8, y) for k in range(9)]
+        mb = MB().strip(pts, [th * (0.25 + 0.75 * math.sin(PI * (k + 0.5) / 9.0) ** 0.8) for k in range(9)], soft=True)
+        ob = mb.build(fx, "w%d" % j, lite if lt else mist)
+
+        def f(t, i, y=y, ph=ph, m=m):
+            s = (t * m + ph) % 1.0
+            e = min(1.0, 1.7 * math.sin(PI * s) ** 0.8)
+            return dict(x=1.0 - 2.0 * s, sx=e + 0.001, show=e > 0.2)
+        fx.track(ob, f)
     return fx
 
 

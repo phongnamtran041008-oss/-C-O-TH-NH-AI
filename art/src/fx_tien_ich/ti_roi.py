@@ -17,7 +17,7 @@ C = {  # body (glow edge), mid, core -> all are glow-ramp colours; the palette s
     "pham": dict(vi="Phàm", body="#8a8f9c", mid="#b8bdc3", core="#e8ecf0"),
     "linh": dict(vi="Linh", body="#22b05a", mid="#7aec9a", core="#e4ffe8"),
     "huyen": dict(vi="Huyền", body="#6aa8e8", mid="#b0dcff", core="#f2fbff"),
-    "dia": dict(vi="Địa", body="#8a3ce0", mid="#c88cff", core="#f6e6ff"),
+    "dia": dict(vi="Địa", body="#8456be", mid="#a878dc", core="#e4d0fa"),   # clearly purple; alpha sheets (additive washes to lavender on grass)
     "thien": dict(vi="Thiên", body="#e8b02a", mid="#ffe27a", core="#fffbe4"),
 }
 HEIGHT = dict(pham=0.9, linh=1.4, huyen=1.85, dia=2.25, thien=2.6)
@@ -38,17 +38,19 @@ def sliver(fx, name, fm, x0, h, ph, size=0.1, y0=0.1):  # noqa
 
 def make_cot(r):
     c = C[r]
-    fx = FxP("roi_cot_" + r, frames=8, fps=8, loop=True, px=96, pivot=(48, 84), halo=0.5,
+    fx = FxP("roi_cot_" + r, frames=8, fps=8, loop=True, px=96, pivot=(48, 84), halo=0.5, mode="alpha" if r == "dia" else "add", alpha_levels=4,
              name_vi="Ánh quang rơi đồ " + c["vi"],
              where="soft column of light standing on a dropped weapon of grade %s (pivot = base of the column)" % c["vi"])
     rng = fx.rng
     H, W = HEIGHT[r], WIDTH[r]
-    body = fx.mat("body", c["body"], grad=dict(src="attr", pow=1.0, cpow=2.2), core=c["mid"])
+    body = fx.mat("body", c["body"], grad=dict(src="attr", pow=0.55 if r == "dia" else 1.0, cpow=2.2), core=c["mid"])
     core = fx.mat("core", c["core"], grad=dict(src="attr", pow=0.6))
     solid = fx.mat("solid", c["core"])
     midm = fx.mat("mid", c["mid"], grad=dict(src="attr", pow=0.7))
-    bloom = fx.mat("bloom", c["body"], grad=dict(src="attr", pow=1.3))
+    bloom = fx.mat("bloom", c["mid"] if r == "dia" else c["body"], grad=dict(src="attr", pow=0.6 if r == "dia" else 1.3))
     pulse = lambda t, ph=0.0: 0.5 + 0.5 * math.sin(TAU * t + ph)
+    KB = dict(dia=0.85, thien=0.6).get(r, 1.0)      # ground bloom brightness
+    KC = 0.85                   # column alpha (dia is an alpha sheet)
 
     if r == "pham":
         # a faint haze and two twinkling glints: a shimmer, no pillar
@@ -63,13 +65,13 @@ def make_cot(r):
     # ground bloom under the item
     bl = MB().disc(0, 0, 0.8, 28, 1.0, 0.0).xform(sy=0.3)
     ob = bl.build(fx, "bloom", bloom)
-    fx.track(ob, lambda t, i: dict(op=0.55 + 0.2 * pulse(t, 1.0)))
+    fx.track(ob, lambda t, i: dict(op=(0.55 + 0.2 * pulse(t, 1.0)) * KB))
 
     # the column: wide soft body + thin bright core
     cb = column(W, H, taper=0.5, p=0.85, base=0.35).build(fx, "col", body)
-    fx.track(cb, lambda t, i: dict(sx=1.0 + 0.06 * math.sin(TAU * t + 0.5), op=0.8 + 0.2 * math.sin(TAU * t + 1.0)))
+    fx.track(cb, lambda t, i: dict(sx=1.0 + 0.06 * math.sin(TAU * t + 0.5), op=(0.8 + 0.2 * math.sin(TAU * t + 1.0)) * KC))
     if r != "linh":
-        cc = column(W * 0.26, H * 0.86 - 0.85, taper=0.7, p=1.0, y0=0.85).build(fx, "core", core)
+        cc = column(W * (0.16 if r == "dia" else 0.26), H * 0.86 - 0.85, taper=0.7, p=1.0, y0=0.85).build(fx, "core", core)
         fx.track(cc, lambda t, i: dict(op=0.75 + 0.25 * math.sin(TAU * t)))
     else:
         cc = column(W * 0.22, 0.45, taper=0.7, p=1.0, y0=0.8).build(fx, "core", core)
@@ -88,13 +90,13 @@ def make_cot(r):
 
     if r in ("dia", "thien"):
         # two long blades crossing behind the column (a wing-like V)
-        bm = fx.mat("blade", c["body"], grad=dict(src="attr", pow=0.8), core=c["mid"])
+        bm = fx.mat("blade", c["body"], grad=dict(src="attr", pow=0.4 if r == "dia" else 0.8), core=c["mid"])
         for sgn in (-1, 1):
             L = 1.7 if r == "dia" else 2.1
-            mb = MB().strip([(0.42, 0.0), (0.42 + 0.45 * L * math.sin(0.34), 0.45 * L), (0.42 + L * math.sin(0.34), L * 0.97)], [0.3, 0.2, 0.02], soft=True)
+            mb = MB().strip([(0.42, 0.0), (0.42 + 0.45 * L * math.sin(0.34), 0.45 * L), (0.42 + L * math.sin(0.34), L * 0.97)], [0.17, 0.11, 0.02] if r == "dia" else [0.15, 0.1, 0.02], soft=True)
             mb.xform(sx=sgn)
             o = mb.build(fx, "blade%d" % sgn, bm)
-            fx.track(o, lambda t, i: dict(sy=1.0 + 0.05 * math.sin(TAU * t), op=0.38 + 0.12 * math.sin(TAU * t + 2.0)))
+            fx.track(o, lambda t, i: dict(sy=1.0 + 0.05 * math.sin(TAU * t), op=(0.8 if r == "dia" else 0.38) + 0.12 * math.sin(TAU * t + 2.0)))
 
     if r == "thien":
         # slow orbiting halo above the column's waist, crown star on top, flat star burst on the ground
@@ -111,7 +113,7 @@ def make_cot(r):
             mote(fx, "bead%d" % j, solid, "diamond", 0.09, f)
         crown = MB().star(0, 0, 4, 0.34, 0.06, PI / 2).build(fx, "crown", solid)
         fx.track(crown, lambda t, i: dict(y=H * 0.96, s=0.65 + 0.35 * pulse(t, 0.3)))
-        sm = fx.mat("star", c["mid"], opacity=0.8)
+        sm = fx.mat("star", c["mid"], opacity=0.5)
         fx.per_frame("burst", sm, lambda t, i: MB().star(0, 0, 8, 0.95, 0.12, TAU * t / 8.0).xform(sy=0.3))
     return fx
 
@@ -127,17 +129,18 @@ RING_R = dict(pham=0.58, linh=0.66, huyen=0.72, dia=0.78, thien=0.8)
 def make_vong(r):
     c = C[r]
     R = RING_R[r]
-    fx = FxP("roi_vong_" + r, view="ground", frames=6, fps=8, loop=True, px=64, ground=True, halo=0.75,
+    fx = FxP("roi_vong_" + r, view="ground", frames=6, fps=8, loop=True, px=64, ground=True, halo=0.75, mode="alpha" if r == "dia" else "add", alpha_levels=4,
              name_vi="Vòng sáng rơi đồ " + c["vi"],
              where="pulsing ring of light on the ground under an item of grade %s" % c["vi"])
     body = fx.mat("body", c["body"], grad=dict(src="attr", pow=1.0), opacity=0.9)
     mid = fx.mat("mid", c["mid"])
     core = fx.mat("core", c["core"])
-    glow = fx.mat("glow", c["body"], grad=dict(src="attr", pow=1.4), opacity={"pham": 0.2, "linh": 0.35, "huyen": 0.45, "dia": 0.5, "thien": 0.55}[r])
+    glow = fx.mat("glow", c["mid"] if r == "dia" else c["body"], grad=dict(src="attr", pow=0.7 if r == "dia" else 1.4), opacity={"pham": 0.2, "linh": 0.35, "huyen": 0.45, "dia": 0.5, "thien": 0.55}[r])
     pulse = lambda t, ph=0.0: math.sin(TAU * t + ph)
 
     gd = glow_disc(R * 0.98, 36).build(fx, "glow", glow)
-    fx.track(gd, lambda t, i: dict(s=1.0 + 0.05 * pulse(t), op=0.85 + 0.15 * pulse(t, 1.0)))
+    GO = dict(dia=0.7, thien=0.55).get(r, 0.9)
+    fx.track(gd, lambda t, i: dict(s=1.0 + 0.05 * pulse(t), op=GO * (0.9 + 0.1 * pulse(t, 1.0))))
 
     def spin(ob, sym, rev=1.0, **kw):
         fx.track(ob, lambda t, i: dict(rot=rev * TAU * t / sym, s=1.0 + 0.045 * pulse(t, 0.4), **kw))

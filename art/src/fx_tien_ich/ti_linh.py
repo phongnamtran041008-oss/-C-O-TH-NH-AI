@@ -13,7 +13,7 @@ import math
 from tilib import *
 
 REG = {}
-Y0 = 1.0
+Y0 = 1.2          # = ti_khac.CORE_Y, the crystal's core at hand height
 VI = ["", "Phàm", "Hoàng", "Huyền", "Địa", "Thiên", "Thánh", "Tiên", "Thần", "Hỗn Độn"]
 ID = ["", "pham", "hoang", "huyen", "dia", "thien", "thanh", "tien", "than", "hon_don"]
 # colours: body (glow edge), mid, core; snapped to the glow ramps by the post step
@@ -22,11 +22,11 @@ CFG = {
     2: dict(c=("#c8861a", "#ffae3a", "#fff2b0"), TH=0.95, W=0.55, fl=0.6, rings=1, rr=1.1, rays=0, rl=0.0, motes=4, kind="disc"),
     3: dict(c=("#4a86d0", "#b0dcff", "#f2fbff"), TH=1.5, W=0.7, fl=0.75, rings=2, rr=1.35, rays=6, rl=0.7, motes=6, kind="diamond"),
     4: dict(c=("#8a3ce0", "#c88cff", "#f6e6ff"), TH=1.95, W=0.82, fl=0.9, rings=2, rr=1.55, rays=8, rl=1.0, motes=8, kind="star"),
-    5: dict(c=("#e8b02a", "#ffe27a", "#fffbe4"), TH=2.5, p=0.5, W=0.95, fl=1.05, rings=3, rr=1.62, rays=10, rl=1.4, motes=9, kind="star"),
-    6: dict(c=("#ffd45a", "#fff2b0", "#ffffff"), TH=2.55, p=0.45, W=1.2, fl=1.2, rings=3, rr=1.68, rays=12, rl=1.7, motes=10, kind="star8"),
-    7: dict(c=("#18a0c8", "#7aec9a", "#e4fffa"), TH=2.55, p=0.45, W=0.9, fl=1.0, rings=3, rr=1.68, rays=0, rl=0.0, motes=10, kind="diamond"),
-    8: dict(c=("#e0601a", "#ffae3a", "#fff2b0"), TH=2.5, p=0.6, W=1.0, fl=1.05, rings=3, rr=1.68, rays=10, rl=1.5, motes=10, kind="diamond"),
-    9: dict(c=("#8a3ce0", "#c88cff", "#f6e6ff"), TH=2.55, p=0.45, W=1.1, fl=1.2, rings=3, rr=1.68, rays=0, rl=0.0, motes=8, kind="star"),
+    5: dict(c=("#e8b02a", "#ffe27a", "#fffbe4"), TH=2.3, p=0.5, W=0.95, fl=1.05, rings=3, rr=1.62, rays=10, rl=1.4, motes=9, kind="star"),
+    6: dict(c=("#ffd45a", "#fff2b0", "#ffffff"), TH=2.3, p=0.45, W=1.2, fl=1.2, rings=3, rr=1.68, rays=12, rl=1.7, motes=10, kind="star8"),
+    7: dict(c=("#18a0c8", "#7aec9a", "#e4fffa"), TH=2.3, p=0.45, W=0.9, fl=1.0, rings=3, rr=1.68, rays=0, rl=0.0, motes=10, kind="diamond"),
+    8: dict(c=("#e0601a", "#ffae3a", "#fff2b0"), TH=2.3, p=0.6, W=1.0, fl=1.05, rings=3, rr=1.68, rays=10, rl=1.5, motes=10, kind="diamond"),
+    9: dict(c=("#8a3ce0", "#c88cff", "#f6e6ff"), TH=2.3, p=0.45, W=1.1, fl=1.2, rings=3, rr=1.68, rays=0, rl=0.0, motes=8, kind="star"),
 }
 # burst timeline (11 frames)
 HF = [0.0, 0.2, 0.8, 1.2, 1.15, 1.08, 1.04, 1.02, 1.0, 1.0, 1.0]
@@ -52,7 +52,7 @@ def build_fx(gi, burst):
                     else "linh can giai %d (%s): looping pillar / aura left after the reveal") % (gi, VI[gi]))
     rng = fx.rng
     TH, W = cfg["TH"], cfg["W"]
-    k = max(0.0, min(1.0, (2.55 / max(TH, 0.1) - 1) / 0.2))
+    k = max(0.0, min(1.0, ((3.5 - Y0) / max(TH, 0.1) - 1) / 0.2))
 
     def hf(i, t):
         if burst:
