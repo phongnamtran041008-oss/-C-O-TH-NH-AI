@@ -56,6 +56,7 @@ Mỗi gói tin là **một object JSON**, trường `t` cho biết loại. Phiê
 | `channel` | `n` | đổi kênh trong vùng hiện tại (`n` = số kênh có sẵn, hoặc số lớn nhất + 1 để mở kênh mới) |
 | `chat` | `ch`: `world` \| `zone` \| `friend` \| `party`, `text`, `to` (đạo hiệu của bạn, khi `friend`) | chat |
 | `atk` | `id` (quái) | đánh thường (giai đoạn 4); server kiểm tra tầm vũ khí và thời gian hồi |
+| `dodge` | `s` (số thứ tự kế tiếp của dòng `in`), `dx`, `dy` (-1/0/1) | **Né Đòn** (luật vùng hoang, xem dưới): một cú lướt xếp vào hàng di chuyển dưới số `s` |
 
 ### Vào vùng (`join`)
 
@@ -89,7 +90,7 @@ và client tự kéo về vị trí đúng nhờ snapshot. Gói trùng hoặc s�
 | `t` | Trường | Khi nào |
 |---|---|---|
 | `welcome` | xem trên | sau `hello` |
-| `zone` | `zone`, `name_vi`, `safe`, `channel`, `channels` [`{n, players, cap}`], `x`, `y`, `f`, `ack`, `st`, `day` | vừa vào vùng / đổi kênh / về động phủ |
+| `zone` | `zone`, `name_vi`, `safe`, `channel`, `channels` [`{n, players, cap}`], `x`, `y`, `f`, `ack`, `st`, `day`, `combat` | vừa vào vùng / đổi kênh / về động phủ. `combat` = luật vùng hoang (xem dưới) hoặc `null` (bí cảnh, động phủ) |
 | `snap` | `st`, `ack`, `me` [`x`, `y`, `facing`, …, ong], `add`, `e`, `rm`, `fx` | 10 lần/giây khi đang ở trong vùng |
 | `chat` | `ch`, `from` {`uid`, `id`, `name`}, `text`, `ts`, `to` (friend), `zone`/`channel` (zone) | tin nhắn |
 | `chat_history` | `ch` (`world` \| `zone`), `items` [chat] | sau `welcome` và khi vào vùng |
@@ -99,12 +100,13 @@ và client tự kéo về vị trí đúng nhờ snapshot. Gói trùng hoặc s�
 | `kicked` | `reason` (`elsewhere`, `timeout`, `flood`, `banned`, `admin`), `message_vi` | sắp bị ngắt |
 | `notice` | `text`, `kind` (`announce` \| `maintenance`, chỉ khi quản trị viên gửi) | thông báo |
 | `admin` | `ok`, `lines` [chuỗi] | trả lời lệnh `/admin` (giai đoạn 10) |
-| `q` | `mid` (quái), `q` (câu hỏi như REST, `context: "combat"`), `first_meet` | **Vấn Đạo**: câu hỏi phá Mặc Thuẫn. Từ lúc gửi tới hạn trả lời nhân vật có **Hộ Thể** (không bị đánh, không di chuyển) |
+| `q` | `mid` (quái), `q` (câu hỏi như REST, `context: "combat"`), `first_meet`, `hit` | **Vấn Đạo** (bí cảnh): câu hỏi phá Mặc Thuẫn. Ở vùng hoang: câu của **một đòn vừa trúng**, `hit` = `{dmg, monster_vi, rest}`. Từ lúc gửi tới hạn trả lời nhân vật có **Hộ Thể** (không bị đánh, không di chuyển) |
+| `dodge` | `ok`, `ready_in` hoặc `code` (`cannot` \| `answering` \| `locked` \| `cooldown`), `message_vi` | trả lời gói `dodge` |
 | `q_end` | `sid`, `reason`: `broken` (người khác vừa phá khiên) \| `killed` \| `gone` \| `dead` | câu hỏi không cần trả lời nữa |
 | `dead` | `respawn_in` | hết máu; sau đó server tự đưa về điểm hồi sinh (một gói `zone` mới) |
 | `xp_lost` | `lost` | Tu Vi mất do chết |
 | `loot` | `monster`, `stones`, `spirit_stones` (số dư mới), `items`, `equipment` [trang bị], `kills`, `xp`, `quests` | phần thưởng khi hạ quái (gửi cho mọi người đã đánh trúng) |
-| `stats` | `realm`, `stage`, `stats`, `stage_up`, `hp`, `max_hp` | chỉ số đổi (lên tầng, đổi trang bị) |
+| `stats` | `realm`, `stage`, `stats`, `stage_up`, `hp`, `max_hp`, `combat` | chỉ số đổi (lên tầng, đổi trang bị); `combat` như trong `zone` (Né Đòn có thể vừa mở) |
 | `quest` | `event: "done"`, `quest` | một nhiệm vụ vừa đủ điều kiện |
 | `act_fail` | `code`: `too_far` \| `no_target` | đòn đánh bị từ chối (đang hồi chiêu thì bỏ qua im lặng) |
 
@@ -134,6 +136,33 @@ Câu trả lời của `q` gửi qua REST `POST /quiz/answer` như mọi câu h�
   `die`. Bản 4 thêm: `hit` có `b` = loài ong khi ong hộ vệ chích (`by` là chủ ong), `ink` (Ong Thư Pháp viết chữ,
   `s` = loài), `stun` (quái bị choáng `d` giây), `bee_down` (ong của `id` bị hạ, bay về tổ 60 giây), `heal` có `b` = 1
   khi ong hồi máu cho chủ.
+- Luật vùng hoang thêm: `tele` có `sh` (`circle` \| `cone` \| `line`); với `cone`/`line` thì `x, y` là gốc (chỗ con
+  quái), `a` là hướng (độ, trục x sang phải, y xuống), `r` là tầm, `deg` là độ mở của hình quạt, `w` là bề ngang
+  của đường thẳng. Client cũ không biết `sh` vẫn vẽ được một vòng tròn. `struck` (`id` = người vừa trúng đòn,
+  `by` = quái: thẻ câu hỏi sắp tới), `parry` (Phản Đòn: `id` = quái, `by` = người, `px, py` = chỗ người ấy, `st` =
+  giây choáng), `gb` (trả lời sai: đòn trúng thẳng vào người `id`, `v` máu mất), `dodge` (`id` bắt đầu lướt theo
+  `dx, dy`), `dodged` (khoảnh khắc bất khả xâm phạm của Né Đòn đỡ được một đòn).
+
+### Luật vùng hoang: chỉ hỏi khi bị quái đánh trúng
+
+Phần `combat` của `server/data/math/world_plan.json` (nối vào game qua `wired_sections`); mọi con số đọc từ đó.
+Bí cảnh vẫn theo Vấn Đạo ở trên.
+
+- `zone.combat` = `{"rule": "on_hit", "rest": giây nghỉ, "dodge": {"ok", "unlock": {"realm", "stage"}, "dash_px",
+  "dash_ms", "cooldown", "iframes", "step_ms"}}`. Client dùng đúng các số này để đoán trước cú lướt.
+- Đánh thường (`atk`) và chiêu thức (`mskill`) không hỏi gì. Quái thường không có Mặc Thuẫn; tinh anh và thủ
+  lĩnh có, và khiên chỉ vỡ khi Phản Đòn.
+- Quái ra đòn có báo trước (`tele`). Đòn rơi xuống người đang đứng trong vùng: trong lúc Né Đòn còn bất khả xâm
+  phạm thì `dodged`; trong thời gian nghỉ (sau mỗi câu) thì mất nửa máu, không hỏi; còn lại thì `struck`, rồi gói
+  `q` có `hit`. Trả lời qua `POST /quiz/answer` như mọi câu.
+- **"Trận đấu dừng lại" chỉ dừng cho người bị hỏi.** Từ lúc trúng đòn tới khi trả lời (hoặc hết giờ) người ấy có Hộ
+  Thể: không mất máu, không đi, không đánh, không né, không ra chiêu, và không con quái nào chọn họ làm mục tiêu.
+  Thế giới không dừng: người khác trong vùng vẫn đánh tiếp, kể cả đánh chính con quái ấy, và nó quay sang đánh họ.
+  Đòn đang báo trước vẫn rơi xuống những người khác đứng trong vùng. Không ai trả lời hộ ai: câu đúng của người
+  này không đóng câu của người kia.
+- `dodge` đi cùng dòng `in`: client gửi hết bước đang gom rồi gửi `{"t": "dodge", "s": <số kế tiếp>, ...}` và tự
+  đi trước cú lướt (các bước `step_ms` mili giây, tốc độ `dash_px / dash_ms`). Bị từ chối thì số `s` vẫn được
+  nhận (một bước rỗng) nên các bước sau không lệch.
 
 ### Ong hộ vệ (bản 4, giai đoạn 5)
 

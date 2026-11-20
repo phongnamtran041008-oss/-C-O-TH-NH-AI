@@ -439,6 +439,9 @@ chơi khá lên. Câu trả lời được ghi vào `math_answers` với `run_id
 Khi chưa có câu nào cho vi kỹ năng ấy ở bậc của người chơi, máy chủ gửi `{"t": "error", "code":
 "no_math_question"}` và con quái giữ khiên.
 
+Từ luật vùng hoang (mục "Luật vùng hoang" bên dưới), câu của quái lỗi sai đến khi **đòn của nó trúng người
+chơi**, không còn đến khi đánh nó; câu hỏi và cách chọn bậc thì giữ nguyên.
+
 | Method | Đường dẫn | Body | Ghi chú |
 |---|---|---|---|
 | GET | `/math/craft` | — | `{recipes[], spirit_stones}`. Mỗi công thức: `{id, name_vi, floor, fee, rarity, desc_vi, makes{item_id, name_vi, slot, stats}, ingredients[{item_id, name_vi, qty, have, enough}], notes[{...}], can}` |
@@ -523,6 +526,34 @@ Sự kiện kênh (trong `fx` của `snap`, ai ở gần cũng thấy):
 - `{"k": "mskill", "by", "s", "fx", "anim", "ok": 1|0, "x", "y", "tx", "ty", "r", "combo"}`: chiêu trúng
   (`ok: 1`) hoặc hụt (`ok: 0`); `tx, ty` khi có mục tiêu, `r` với `area`/`ward`. Đòn đánh vẫn đi kèm
   các sự kiện `hit`, `shield`, `gshield`, `heal`, `die` như cũ.
+
+Tất cả những điều trên (chiêu ra bằng một câu hỏi, chiêu hụt, combo theo câu chiêu đúng) nay chỉ còn ở **bí
+cảnh**. Ở vùng hoang chiêu ra tự do: xem mục dưới.
+
+### Luật vùng hoang: chỉ hỏi khi bị quái đánh trúng
+
+Phần `combat` của `server/data/math/world_plan.json` (`"wired_sections": ["combat"]`; `"wired"` vẫn là `false`
+vì vùng đất, binh khí, linh thú chưa nối). Mọi con số đọc từ đó. Giao thức WebSocket: `docs/PROTOCOL.md`.
+
+- **Đánh thường và chiêu thức không hỏi gì.** `mskill` ở vùng hoang được nhận rồi trúng ngay:
+  `{"t": "mcast", "k", "ok": true, "free": true, "ready_in", "qi", "result": <khối combat như trên>}`, kèm sự
+  kiện `mskill` (`ok: 1`). Từ chối như trên (`locked` luôn được nói trước `cooldown`/`no_qi`/`no_target`), mọi mã
+  đến sau khi máy chủ đọc lộ trình. Sát thương = `base_damage × power × combo_mult(n)`, n = số **Phản Đòn liên
+  tiếp** (về 0 khi trả lời sai, hết giờ, chết, rời thế giới); không có chí mạng "trả lời nhanh". Chiêu không phá
+  Mặc Thuẫn của tinh anh: chỉ Phản Đòn phá được. Mở khoá chiêu vẫn theo Đạo Thụ như M9.
+- **Câu hỏi của một đòn trúng** đến như gói `q` có `hit` = `{dmg, monster_vi, rest}`, context `math_combat`, chọn
+  đúng như M7: quái lỗi sai hỏi vi kỹ năng của nó ở bậc người chơi đã mở (không vượt trần của tầng), Mặc Quái
+  hỏi ở phần Đạo Thụ của chính người chơi. Câu trả lời ghi vào `math_answers` (`run_id = NULL`), nên tính vào bậc
+  đã mở, cổng thuần thục và lịch ôn xoắn ốc. Kết quả của `POST /quiz/answer`:
+
+      đúng (Phản Đòn): "combat": {"parry": true, "correct": true, "damage", "shield_broken", "stun",
+                                  "qi_gain", "combo", "rest", "monster_hp", "killed"}   (+ "gone": true khi quái đã chết)
+      sai / hết giờ:   "combat": {"parry": false, "correct": false, "damage_taken", "hp", "dead",
+                                  "shows_solution": true, "rest"}
+
+  Tu vi của câu đúng đến qua `xp` như mọi câu (theo bậc). Trả lời sai không còn là Mặc Kích (`mac_kich_pct`): đòn
+  của con quái trúng nguyên vẹn. Hết giờ được vòng tick chấm là sai. Không có câu nào để hỏi
+  (`no_math_question`): đòn trúng nửa máu và bắt đầu thời gian nghỉ.
 
 ## M10 — Cơ duyên (sự kiện ngẫu nhiên sau câu đúng)
 

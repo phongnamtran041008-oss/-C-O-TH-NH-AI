@@ -156,6 +156,13 @@
     "hit": "hit_spark",
     "crit": "hit_crit",
     "shield_broken": "guard_break",
+    "guard_break": "guard_break",
+    "parry": "parry",
+    "dodge_trail": "dash_trail",
+    "telegraph_cone": "warn_cone_charge",
+    "telegraph_cone_land": "warn_cone_release",
+    "telegraph_line": "warn_line_charge",
+    "telegraph_line_land": "warn_line_release",
     "heal": "heal",
     "telegraph": "warn_circle_charge",
     "telegraph_land": "warn_circle_release"

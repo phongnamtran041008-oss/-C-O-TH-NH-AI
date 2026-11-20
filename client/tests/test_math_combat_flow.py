@@ -1,5 +1,5 @@
 """M7 through the real client UI: walk into Loạn Số Cốc, pick a fight with a quái lỗi sai,
-answer the math question it asks on the combat card, break its Mặc Thuẫn and kill it, read
+let it land a blow and answer the math question it asks on the card (a Phản Đòn), kill it, read
 the ghi chú lỗi sai it leaves behind (which opens the right part of Tàng Thư Các), then
 forge at Lò Toán - which refuses until the note is in the bag."""
 from __future__ import annotations
@@ -13,7 +13,7 @@ from pathlib import Path
 import pygame
 
 from client.tests.driver import ROOT, Driver, ServerProcess, fill_math_answer
-from client.tests.test_combat_flow import nearest, walk_to, world
+from client.tests.test_combat_flow import CARD, nearest, walk_to, world
 from client.tests.test_world_flow import make_account
 
 sys.path.insert(0, str(ROOT / "server"))        # the test reads the map the server ships
@@ -27,16 +27,15 @@ RECIPE = "but_tap_hop"
 
 
 def engage_mistake(drv: Driver, server: ServerProcess, kind: str = MA):
-    """Walk to the nearest mistake-monster and keep attacking until its card opens.
-
-    The same shape as test_combat_flow.engage: a weapon has a cooldown and the server
-    silently drops an attack sent inside it, so one click is not reliably one attack.
-    """
+    """Walk to the nearest mistake-monster, hit it so it fights back and wait for its blow to
+    land and its card to open (the same shape as test_combat_flow.engage)."""
     import time
     ws = world(drv)
     drv.wait(lambda: nearest(ws, kind) is not None, 10, f"a {kind}")
-    end = time.time() + 20
+    end = time.time() + 25
     while time.time() < end:
+        if drv.top_is(CARD):
+            return ws.entities.get(getattr(drv.game.top, "monster_id", "")) or nearest(ws, kind)
         m = nearest(ws, kind)
         if m is None:
             break
@@ -45,9 +44,9 @@ def engage_mistake(drv: Driver, server: ServerProcess, kind: str = MA):
             drv.step(5)
             continue
         drv.click_at(drv.game.display.to_window(*ws.world_to_screen(m.pos[0], m.pos[1] - 8)))
-        for _ in range(40):
+        for _ in range(100):                # its windup and its blow, then attack again
             drv.step(3)
-            if drv.top_is("MathCombatQuizScene"):
+            if drv.top_is(CARD):
                 return ws.entities.get(getattr(drv.game.top, "monster_id", "")) or m
     open_q = server.sql("select ref, created_at from quiz_sessions where answered_at is null")
     raise AssertionError(f"no card after attacking a {kind}; open questions: {open_q}; "
@@ -55,12 +54,14 @@ def engage_mistake(drv: Driver, server: ServerProcess, kind: str = MA):
 
 
 def answer_card(drv: Driver, server: ServerProcess, correct: bool) -> dict:
-    """Answer the math question on the combat card, reading the key from the database."""
-    q = drv.game.top.q
+    """Answer the math question on the combat card on top (a ParryCard in the wild, the Vấn Đạo
+    card in a bí cảnh), reading the key from the database."""
+    card = drv.game.top
+    q = card.q
     key = json.loads(server.sql("select answer_key from quiz_sessions where id=?", (q["session_id"],))[0][0])
     fill_math_answer(drv, q, key, correct)
-    drv.wait(lambda: drv.top_is("MathCombatQuizScene") and drv.game.top.result, 10, "the result")
-    return drv.game.top.result
+    drv.wait(lambda: drv.game.top is card and card.result, 10, "the result")
+    return card.result
 
 
 def give(server: ServerProcess, uid: int, item_id: str, qty: int = 1) -> None:
@@ -86,9 +87,9 @@ def trek(drv: Driver, server: ServerProcess, tx: float, ty: float, near: float =
     col = maps.load(VALLEY).collider
     end = time.time() + 60
     while time.time() < end:
-        if drv.top_is("MathCombatQuizScene"):
+        if drv.top_is(CARD):
             answer_card(drv, server, correct=True)
-            drv.wait(lambda: not drv.top_is("MathCombatQuizScene"), 6, "the card closes")
+            drv.wait(lambda: not drv.top_is(CARD), 6, "the card closes")
             continue
         ws = world(drv)
         if math.hypot(tx - ws.player.x, ty - ws.player.y) < near:
@@ -98,7 +99,7 @@ def trek(drv: Driver, server: ServerProcess, tx: float, ty: float, near: float =
             raise AssertionError(f"no way from ({ws.player.x:.0f}, {ws.player.y:.0f}) "
                                  f"to ({tx:.0f}, {ty:.0f}) on the map at all")
         for wx, wy in route[5::6] + [(tx, ty)]:        # every sixth cell: ~24 px apart
-            if drv.top_is("MathCombatQuizScene"):
+            if drv.top_is(CARD):
                 break                                  # answer it first, then plan again
             walk_to(drv, wx, wy, near=10, timeout=4)
     raise AssertionError(f"could not reach ({tx:.0f}, {ty:.0f}) in 60 s; standing at "
@@ -127,7 +128,7 @@ def run_math_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait_api()
         assert world(drv).zone_id == VALLEY
 
-        # ---- the fight: a mistake asks a math question, not a word question
+        # ---- the fight: its blow lands and the mistake asks a math question about itself
         m = engage_mistake(drv, server)
         drv.shot("mistake_question")
         card = drv.game.top
@@ -137,10 +138,10 @@ def run_math_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         assert meta["mistake_vi"] and meta["monster_vi"] == "Phần Tử Ma", meta
         assert card.q["math"]["doc"]["id"] == "dstt_lib_t1", card.q["math"]["doc"]
         res = answer_card(drv, server, correct=True)
-        assert res["correct"] and res["combat"]["shield_broken"], res
+        assert res["correct"] and res["combat"]["parry"], res
         assert res["math"]["skill"] == "dstt_t1_tap_hop" if "skill" in res["math"] else True
-        drv.shot("shield_broken")
-        drv.wait(lambda: not drv.top_is("MathCombatQuizScene"), 6, "the card closes itself")
+        drv.shot("parry")
+        drv.wait(lambda: not drv.top_is(CARD), 6, "the card closes itself")
 
         # the answer counted towards the learning path, with no sitting open
         rows = server.sql("select skill_id, tier, correct, run_id from math_answers where user_id=?", (uid,))
@@ -151,9 +152,9 @@ def run_math_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         for _ in range(80):
             if m.id not in ws.entities or not m.alive:
                 break
-            if drv.top_is("MathCombatQuizScene"):          # a neighbour may ask its own question
+            if drv.top_is(CARD):          # a neighbour may ask its own question
                 answer_card(drv, server, correct=True)
-                drv.wait(lambda: not drv.top_is("MathCombatQuizScene"), 6, "the card closes")
+                drv.wait(lambda: not drv.top_is(CARD), 6, "the card closes")
                 continue
             drv.press(pygame.K_SPACE)
             drv.step(20)

@@ -2,7 +2,8 @@
 
 The same machinery as test_combat (a real database, a world on a fake clock whose tick is
 called by hand), but in Loạn Số Cốc, where every monster stands for a mistake and asks a
-math question about the micro-skill that mistake belongs to.
+math question about the micro-skill that mistake belongs to - since the open-world rule
+(world_plan.json "combat"), when it lands a blow on the player.
 """
 import pytest
 import pytest_asyncio
@@ -17,7 +18,7 @@ from app.realtime.world import World
 from app.systems import catalog, math_combat
 from tests.helpers import answer_key
 from tests.test_math_loop import right_answer, wrong_answer
-from tests.test_combat import FakeMono, fighter, last, settle  # noqa: F401  (fixtures/helpers)
+from tests.test_combat import FakeMono, fighter, last, run, settle  # noqa: F401  (fixtures/helpers)
 
 VALLEY = "loan_so_coc"
 SLIME_MA = "dstt_phan_tu_ma"          # floor 1, tập hợp: the gentlest of them
@@ -48,6 +49,17 @@ async def hit(w: World, p, m) -> None:
     w.mono.t += 1.0
     assert combat.attack(p, m.eid, w.mono(), w.rng) is None
     await settle(w)
+
+
+async def blow(w: World, s, p, m) -> dict | None:
+    """Hit it so it fights back, then stand still and let its telegraphed blow land: the
+    question that decides the blow (Phản Đòn or not)."""
+    await hit(w, p, m)
+    s.sent.clear()
+    m.atk_ready = 0.0
+    run(w, combat.windup() + 0.2)
+    await settle(w)
+    return last(s, "q")
 
 
 async def answer(client, h, s, right: bool):
@@ -99,9 +111,8 @@ def test_the_valley_spawns_only_mistake_monsters():
 async def test_a_mistake_monster_asks_about_its_own_micro_skill(client, gw):
     h, uid, s = await fighter(client, gw, "toan_1", "Toán Một")
     p, m = at_math_monster(gw, s)
-    await hit(gw, p, m)
-    q = last(s, "q")
-    assert q and q["mid"] == m.eid
+    q = await blow(gw, s, p, m)
+    assert q and q["mid"] == m.eid and q["hit"]["dmg"] > 0
     assert q["q"]["context"] == "math_combat"
     assert "answer_key" not in q["q"]
     meta = q["q"]["math"]
@@ -112,12 +123,14 @@ async def test_a_mistake_monster_asks_about_its_own_micro_skill(client, gw):
     assert p.protected(gw.mono())
 
 
-async def test_a_right_answer_breaks_the_shield_and_is_written_to_the_learning_log(client, gw):
+async def test_a_right_answer_is_a_parry_and_is_written_to_the_learning_log(client, gw):
     h, uid, s = await fighter(client, gw, "toan_2", "Toán Hai")
     p, m = at_math_monster(gw, s)
-    await hit(gw, p, m)
+    m.max_hp = m.hp = 10000.0
+    hp = p.hp
+    await blow(gw, s, p, m)
     res = await answer(client, h, s, True)
-    assert res["correct"] and res["combat"]["shield_broken"] and not m.shield
+    assert res["correct"] and res["combat"]["parry"] and res["combat"]["damage"] > 0 and p.hp == hp
     info = catalog.monsters()[SLIME_MA]
     assert res["xp"]["gained"] == math_path.xp_for_tier(1)
     async with dbm.SessionLocal() as db:
@@ -131,11 +144,12 @@ async def test_a_right_answer_breaks_the_shield_and_is_written_to_the_learning_l
 async def test_a_wrong_answer_hurts_and_is_logged_as_wrong(client, gw):
     h, uid, s = await fighter(client, gw, "toan_3", "Toán Ba")
     p, m = at_math_monster(gw, s)
+    m.max_hp = m.hp = 10000.0
+    await blow(gw, s, p, m)
     hp_before = p.hp
-    await hit(gw, p, m)
     res = await answer(client, h, s, False)
-    assert not res["correct"] and m.shield                     # Mặc Thuẫn stays up
-    assert p.hp < hp_before                                     # Mặc Kích
+    assert not res["correct"] and not res["combat"]["parry"]
+    assert p.hp < hp_before                                     # the blow lands in full
     async with dbm.SessionLocal() as db:
         a = (await db.execute(select(MathAnswer).where(MathAnswer.user_id == uid))).scalars().one()
         assert not a.correct and a.run_id is None
@@ -171,8 +185,7 @@ async def test_killing_one_drops_its_note_and_its_material(client, gw, monkeypat
     monkeypatch.setitem(catalog.monsters(), SLIME_MA, info)
     h, uid, s = await fighter(client, gw, "toan_5", "Toán Năm")
     p, m = at_math_monster(gw, s)
-    await hit(gw, p, m)
-    await answer(client, h, s, True)
+    assert not m.shield, "out in the wild a normal monster falls to plain hits"
     for _ in range(60):
         if not m.alive:
             break

@@ -1,9 +1,12 @@
 """M9 through the real client UI: in Loạn Số Cốc, cast the chiêu thức by their keys on a quái
-lỗi sai. A right answer makes the chiêu land (its effect flies, damage, a combo), a wrong one
-makes it miss (a fizzle, no damage, no Mặc Kích), and a chiêu the player has not unlocked is
-refused by the server with the reason. Then the first floor is cleared, which opens the
-Trận pháp: the ward is cast with a matching question and the area chiêu with an ordering
-question, both answered through the new inputs.
+lỗi sai. Out in the wild a chiêu is cast freely (world_plan.json "combat": questions only
+when a monster hits you): the key makes it land at once - its effect flies, the damage, the
+Linh Lực and the cooldown - and a chiêu the player has not unlocked is refused by the server
+with the reason. Then the first floor is cleared, which opens the Trận pháp: the ward and the
+area chiêu land the same way. A monster that lands a blow meanwhile asks its own question,
+which is answered. (Casting by answering a question is the rule of a bí cảnh now; its cards,
+matching and ordering included, are covered by server/tests/test_math_skills.py and the card
+tests.)
 
     python -m client.tests.test_math_skill_flow <dir>     # leaves numbered screenshots in <dir>
 """
@@ -20,7 +23,7 @@ import pygame
 
 from client import strings_vi as T
 from client.tests.driver import ROOT, Driver, ServerProcess, fill_tribulation
-from client.tests.test_combat_flow import nearest, walk_to, world
+from client.tests.test_combat_flow import CARD, nearest, walk_to, world
 from client.tests.test_math_combat_flow import MA, VALLEY, answer_card
 from client.tests.test_world_flow import make_account
 
@@ -60,9 +63,9 @@ def me_eid(drv) -> str:
 
 
 def settle(drv: Driver, server: ServerProcess) -> None:
-    """Close whatever card is open: a neighbouring quái lỗi sai may ask its own question."""
+    """Close whatever card is open: a quái lỗi sai whose blow landed asks its own question."""
     for _ in range(40):
-        if not drv.top_is("MathCombatQuizScene"):
+        if not drv.top_is(CARD):
             return
         card = drv.game.top
         if not card.result:
@@ -87,29 +90,29 @@ def approach(drv: Driver, server: ServerProcess, near: float = 24.0):
     raise AssertionError(f"no {MA} to stand next to; scenes={drv.scene_names()}")
 
 
-def cast(drv: Driver, server: ServerProcess, skill: str, near: bool = True):
-    """Press the chiêu's key (next to a monster, unless it is a ward) and wait for its card."""
+def cast(drv: Driver, server: ServerProcess, spy: "Spy", skill: str, near: bool = True) -> dict:
+    """Press the chiêu's key (next to a monster, unless it is a ward) and wait for it to land.
+    Returns the server's `mcast` answer is not needed: the landing event is what counts."""
     ws = world(drv)
     sid = skill
     if near:
         approach(drv, server)
     drv.wait(lambda: ws.mskill_ready.get(sid, 0) < drv.game.now, 10, "the cooldown")
+    before = len(spy.landed(sid))
     for attempt in range(6):
-        # a monster next to us may ask its own question at any moment (and the client now always
-        # shows it): answer that one first, then press again
+        # a monster's blow may land at any moment and open its card: answer that, then press again
         settle(drv, server)
+        if near:
+            approach(drv, server)
         drv.press(KEYS[sid])
         try:
-            drv.wait(lambda: drv.top_is("MathCombatQuizScene"), 5, f"a card after pressing {sid}")
+            drv.wait(lambda: len(spy.landed(sid)) > before, 4, f"{sid} lands")
         except AssertionError:
             continue
-        if getattr(drv.game.top, "cast", None):
-            break
-    assert drv.top_is("MathCombatQuizScene") and getattr(drv.game.top, "cast", None), \
-        f"no card of {sid}; scenes={drv.scene_names()}; toasts={drv.toast_log[-3:]}"
-    card = drv.game.top
-    assert card.cast["k"] == sid and card.cast["name_vi"]
-    return card
+        break
+    assert len(spy.landed(sid)) > before, f"{sid} never landed; scenes={drv.scene_names()}; toasts={drv.toast_log[-3:]}"
+    assert not (drv.top_is(CARD) and getattr(drv.game.top, "cast", None)), "a chiêu asks nothing in the wild"
+    return spy.landed(sid)[-1]
 
 
 def key_of(server: ServerProcess, q: dict) -> dict:
@@ -141,14 +144,14 @@ def answer(drv: Driver, server: ServerProcess, correct: bool) -> dict:
         fill_tribulation(drv, q, key_of(server, q), correct)
     else:
         return answer_card(drv, server, correct)
-    drv.wait(lambda: drv.top_is("MathCombatQuizScene") and drv.game.top.result, 10, "the result")
+    drv.wait(lambda: drv.top_is(CARD) and drv.game.top.result, 10, "the result")
     return drv.game.top.result
 
 
 def finish(drv: Driver) -> None:
     """Wait for the card that is up to close. Another one may open right behind it - the
     question of a monster standing next to us - which is not this card's business."""
-    card = drv.game.top if drv.top_is("MathCombatQuizScene") else None
+    card = drv.game.top if drv.top_is(CARD) else None
     drv.wait(lambda: card is None or card not in drv.game.scenes, 8, "the card closes")
 
 
@@ -201,58 +204,30 @@ def run_math_skill_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.shot("hotbar_locked_chieu_tooltip")
         pygame.mouse.set_pos((5, 5))
 
-        # ---- Thường Quyền (đúng/sai): a right answer lands
-        approach(drv, server)
-        card = cast(drv, server, "thuong_quyen")
-        assert card.q["input"] == "truefalse"
-        drv.shot("card_of_the_chieu")
-        res = answer(drv, server, True)
-        c = res["combat"]
-        assert c["cast"] == "thuong_quyen" and c["correct"] and not c["missed"] and c["damage"] > 0, c
-        drv.wait(lambda: spy.landed("thuong_quyen"), 6, "the chiêu lands")
-        ev = spy.landed("thuong_quyen")[-1]
+        # ---- Thường Quyền: the key, and it lands at once - no card
+        asked = server.sql("select count(*) from quiz_sessions where user_id=? and context='math_skill'", (uid,))[0][0]
+        ev = cast(drv, server, spy, "thuong_quyen")
         assert ev["ok"] == 1 and ev["fx"] == "chem" and ev["by"] == me_eid(drv), ev
-        assert any(e["k"] == "mcast" and e["s"] == "thuong_quyen" for e in spy.events), "no channel event"
         assert ws.mskill_ready["thuong_quyen"] > drv.game.now - 5
-        finish(drv)
         see_effect(drv, "chieu_lands_slash")
-        rows = server.sql("select qtype, correct, run_id from math_answers where user_id=? order by id", (uid,))
-        assert rows[-1] == ("true_false", 1, None), rows
 
-        # ---- Phá Mê Kiếm Quyết (trắc nghiệm): a wrong answer misses - no damage, no Mặc Kích
-        card = cast(drv, server, "kiem_quyet")
-        assert card.q["input"] == "choice"
-        res = answer(drv, server, False)
-        c = res["combat"]
-        assert c["cast"] == "kiem_quyet" and c["missed"] and c["damage"] == 0 and not c.get("mac_kich"), c
-        assert c["combo"] == 0
-        drv.wait(lambda: spy.landed("kiem_quyet"), 6, "the chiêu misses")
-        ev = spy.landed("kiem_quyet")[-1]
-        assert ev["ok"] == 0, ev
-        drv.wait(lambda: T.MSKILL_MISS in spy.texts, 3, "the 'Chiêu hụt!' text")
-        finish(drv)
-        see_effect(drv, "chieu_misses_fizzle", ok=False)
-        rows = server.sql("select qtype, correct from math_answers where user_id=? order by id", (uid,))
-        assert rows[-1] == ("multiple_choice", 0), rows
-
-        # ---- Hỏa Cầu Thuật (điền số, costs Linh Lực): right, and the qi is spent
+        # ---- Phá Mê Kiếm Quyết and Hỏa Cầu Thuật: the Linh Lực is spent, the fireball flies
+        ev = cast(drv, server, spy, "kiem_quyet")
+        assert ev["ok"] == 1, ev
         qi_before = drv.game.state.character["qi"]
-        card = cast(drv, server, "hoa_cau_thuat")
-        assert card.q["input"] == "number"
+        ev = cast(drv, server, spy, "hoa_cau_thuat")
+        assert ev["ok"] == 1 and ev["fx"] == "hoa_cau", ev
         drv.wait(lambda: drv.game.state.character["qi"] < qi_before, 5, "the qi is spent")
-        res = answer(drv, server, True)
-        c = res["combat"]
-        assert c["cast"] == "hoa_cau_thuat" and c["correct"] and c["damage"] > 0, c
-        drv.wait(lambda: spy.landed("hoa_cau_thuat"), 6, "the fireball lands")
-        assert spy.landed("hoa_cau_thuat")[-1]["fx"] == "hoa_cau"
-        finish(drv)
         see_effect(drv, "chieu_lands_fireball")
+        assert server.sql("select count(*) from quiz_sessions where user_id=? and context='math_skill'",
+                          (uid,))[0][0] == asked, "no chiêu asked a question"
 
         # ---- locked chiêu are refused by the server, with the reason, and spend nothing
         for sid in ("ngu_hanh_tran", "thien_loi_tuyet_ky"):
             want = next(s["locked_vi"] for s in ws.mskills if s["id"] == sid)
             assert want
-            for _ in range(6):         # a monster that is mid-question makes the server say "answering" first
+            for _ in range(6):         # a card that is up makes the server say "answering" first
+                settle(drv, server)
                 approach(drv, server)
                 drv.press(KEYS[sid])
                 try:
@@ -261,8 +236,7 @@ def run_math_skill_flow(workdir: Path, shots: Path | None = None) -> None:
                 except AssertionError:
                     continue
             assert want in drv.toast_log, (sid, want, drv.toast_log[-4:])
-            # a locked chiêu opens no card (a neighbour's own question may be up, that is not a chiêu's)
-            assert not (drv.top_is("MathCombatQuizScene") and drv.game.top.cast)
+            assert not spy.landed(sid)
         drv.shot("locked_chieu_refused")
 
         # ---- finish Luyện Khí tầng 1 of Đạo Thụ: the Trận pháp open (a chiêu's "floor 2" is the stage
@@ -276,27 +250,12 @@ def run_math_skill_flow(workdir: Path, shots: Path | None = None) -> None:
         ws.load_mskills()
         drv.wait(lambda: all(s["unlocked"] for s in ws.mskills[3:5]), 10, "the Trận pháp unlock")
 
-        # ---- Hộ Thân Trận (ghép cặp, a ward: no target)
-        card = cast(drv, server, "ho_than_tran", near=False)
-        assert card.q["input"] == "matching" and len(card.q["prompt"]["left"]) >= 3
-        drv.shot("matching_card")
-        res = answer(drv, server, True)
-        assert res["combat"]["cast"] == "ho_than_tran" and res["combat"]["correct"], res["combat"]
-        drv.wait(lambda: spy.landed("ho_than_tran"), 6, "the ward")
-        ev = spy.landed("ho_than_tran")[-1]
+        # ---- Hộ Thân Trận (a ward: no target) and Ngũ Hành Trận (an area around the target)
+        ev = cast(drv, server, spy, "ho_than_tran", near=False)
         assert ev["ok"] == 1 and ev["fx"] == "ho_tran" and ev.get("r"), ev
-        finish(drv)
         see_effect(drv, "ward_dome")
-
-        # ---- Ngũ Hành Trận (sắp xếp bước, an area around the target)
-        card = cast(drv, server, "ngu_hanh_tran")
-        assert card.q["input"] == "ordering" and len(card.q["prompt"]["steps"]) >= 3
-        drv.shot("ordering_card")
-        res = answer(drv, server, True)
-        assert res["combat"]["cast"] == "ngu_hanh_tran" and res["combat"]["correct"], res["combat"]
-        drv.wait(lambda: spy.landed("ngu_hanh_tran"), 6, "the array")
-        assert spy.landed("ngu_hanh_tran")[-1]["fx"] == "tran_do"
-        finish(drv)
+        ev = cast(drv, server, spy, "ngu_hanh_tran")
+        assert ev["ok"] == 1 and ev["fx"] == "tran_do", ev
         see_effect(drv, "array_on_the_ground")
         drv.close()
     finally:

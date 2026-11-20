@@ -261,3 +261,48 @@ def test_the_world_checker_bites(plan):
     bad = copy.deepcopy(plan)
     bad["combat"]["question_rule"] = "always"
     assert any("question_rule" in e for e in mt.validate_world(bad, t))
+
+
+def test_only_the_combat_section_is_wired_for_now(plan):
+    """The owner's wave: the fight rule runs in the game, lands/weapons/beasts do not yet."""
+    assert plan["wired"] is False
+    assert plan["wired_sections"] == ["combat"]
+    assert mt.wired_sections(plan) == ("combat",)
+    assert mt.section_wired("combat", plan)
+    assert mt.wired_sections({"wired": False}) == ()
+    assert mt.wired_sections({"wired": True}) == mt.WIREABLE_SECTIONS
+    unlocks = {u["id"]: u for u in plan["unlocks"]}
+    dodge = unlocks[plan["combat"]["dodge"]["unlock"]]
+    assert (dodge["id"], dodge["realm"], dodge["stage"], dodge["status"]) == ("ne_don", "luyen_khi", 1, "co")
+
+
+@pytest.mark.parametrize("change, message", [
+    (lambda p: p.__setitem__("wired_sections", ["lands"]), "wired_sections"),
+    (lambda p: p.__setitem__("wired_sections", ["combat", "combat"]), "wired_sections"),
+    (lambda p: p["combat"]["dodge"].pop("dash_px"), "dodge.dash_px"),
+    (lambda p: p["combat"]["dodge"].__setitem__("invulnerable_seconds", 2), "shorter than cooldown"),
+    (lambda p: p["combat"]["dodge"].__setitem__("unlock", "bay"), "unknown ability"),
+    (lambda p: p["combat"]["right_answer"].__setitem__("counter_multiplier", 0.5), "counter_multiplier"),
+    (lambda p: p["combat"]["right_answer"].__setitem__("gives_tu_vi", False), "gives_tu_vi"),
+    (lambda p: p["combat"]["wrong_answer"].__setitem__("damage_taken", 1.5), "wrong_answer.damage_taken"),
+    (lambda p: p["combat"]["hit_during_cooldown"].__setitem__("question", True), "hit_during_cooldown.question"),
+    (lambda p: p["combat"]["telegraph"]["by_rank"].__setitem__("elite", ["spiral"]), "by_rank.elite"),
+    (lambda p: p["combat"]["telegraph"]["by_rank"].pop("boss"), "by_rank"),
+    (lambda p: p["combat"]["telegraph"].__setitem__("cone_degrees", 270), "cone_degrees"),
+    (lambda p: p["combat"].__setitem__("shielded_ranks", ["normal", "elite"]), "shielded_ranks"),
+    (lambda p: p["combat"].pop("question_wait_seconds"), "question_wait_seconds"),
+])
+def test_a_wired_combat_section_is_checked_number_by_number(plan, change, message):
+    t = mt.tree()
+    bad = copy.deepcopy(plan)
+    change(bad)
+    assert any(message in e for e in mt.validate_world(bad, t)), mt.validate_world(bad, t)
+
+
+def test_an_unwired_combat_section_is_only_a_design(plan):
+    """Without `wired_sections` the numbers the game would read are not demanded yet."""
+    t = mt.tree()
+    loose = copy.deepcopy(plan)
+    loose.pop("wired_sections")
+    loose["combat"]["dodge"].pop("dash_px")
+    assert mt.validate_world(loose, t) == []

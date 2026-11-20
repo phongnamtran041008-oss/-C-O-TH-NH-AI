@@ -1,6 +1,22 @@
-"""Combat and Vấn Đạo (spec 8.1), all decided by the server.
+"""Combat, all decided by the server. Two rules live here.
 
-Every monster wears a Mặc Thuẫn. While it is up, hits do 1 damage and can never kill it.
+**The open world: questions only when a monster hits you** (the `combat` section of
+data/math/world_plan.json, wired through `wired_sections`; every number is read from there).
+The player attacks and casts chiêu freely. A monster's blow is telegraphed: a circle, cone or
+line fills on the ground during the windup. Out of it in time (or inside the invulnerability
+of a Né Đòn dash) - nothing happens. Caught by it - the fight pauses *for that player*: Hộ Thể
+(no damage, no moving, no acting, no monster picks them as a target) while one math question
+is written and answered, on the micro-skill that monster stands for, through the same
+question pipeline as before (math_combat.question_for / math_ask.pick_own). Right = Phản Đòn:
+no damage, the monster takes a counter hit (x counter_multiplier) and is stunned, the player
+gains tu vi (the quiz service's xp rule) and linh lực. Wrong or out of time = the blow lands in
+full and the card shows the solution. After either, a rest window: a blow landing then does
+half damage and asks nothing. Normal monsters have no Mặc Thuẫn out here (plain hits kill
+them); an elite's or a boss's shield breaks only on a Phản Đòn. Other players in the zone are
+not paused: they keep fighting, the same monster included.
+
+**Vấn Đạo (spec 8.1), still the rule of a bí cảnh** (an instance, realtime/realm.py): every
+monster wears a Mặc Thuẫn. While it is up, hits do 1 damage and can never kill it.
 Engaging a monster (hitting it, or an aggressive one coming at you) brings a question;
 while answering you have Hộ Thể (no damage, no moving, no attacking). Right: the shield
 breaks and a "Ngộ Đạo" strike lands (x2, more when fast). Wrong or too late: Mặc Kích, a
@@ -40,6 +56,232 @@ def _world() -> "World":
 
 def dist(ax: float, ay: float, bx: float, by: float) -> float:
     return math.hypot(ax - bx, ay - by)
+
+
+# ------------------------------------------------------------------ the open-world rule
+HIT_SLACK = 5          # px: a blow reaches a little past its drawn edge (the feet are a box)
+DASH_STEP_MS = 10      # a dash is applied in small steps so it never jumps through a wall
+
+DODGE_REFUSALS_VI = {
+    "cannot": "Lúc này không né được.",
+    "answering": "Con đang trả lời câu hỏi.",
+    "locked": "Né Đòn mở ở Luyện Khí tầng 1.",
+    "cooldown": "Né Đòn chưa hồi xong.",
+}
+
+
+def plan() -> dict:
+    """The `combat` section of world_plan.json: every number of the open-world rule."""
+    from ..learning import math_tree
+    return math_tree.world_plan()["combat"]
+
+
+def on_hit_rule(ch) -> bool:
+    """Is this channel fought by "questions only when a monster hits you"? Every wild zone once
+    world_plan.json wires its combat section; a bí cảnh (an instance) keeps Vấn Đạo."""
+    if ch is None or getattr(ch, "instance", False):
+        return False
+    from ..learning import math_tree
+    return math_tree.section_wired("combat")
+
+
+def shielded_rank(info: dict) -> bool:
+    """Out in the wild only these ranks wear a Mặc Thuẫn (it breaks only on a Phản Đòn)."""
+    return info.get("rank", "normal") in plan()["shielded_ranks"]
+
+
+def windup() -> float:
+    """How long a blow is telegraphed: never shorter than the plan's minimum."""
+    return max(float(plan()["telegraph_min_seconds"]), float(cfg()["telegraph_seconds"]))
+
+
+def next_shape(m: "Monster") -> str:
+    """The shape of this monster's next blow: its own `attack_shape` if the data gives one,
+    else its rank's list in turn."""
+    if m.info.get("attack_shape") in plan()["telegraph_shapes"]:
+        return m.info["attack_shape"]
+    shapes = plan()["telegraph"]["by_rank"].get(m.info.get("rank", "normal")) or ["circle"]
+    shape = shapes[m.shape_i % len(shapes)]
+    m.shape_i += 1
+    return shape
+
+
+def make_tele(m: "Monster", tx: float, ty: float, reach: float, land: float, shape: str = "circle") -> dict:
+    """A telegraphed blow. circle: around the target point; cone and line: from the monster
+    towards it (`a` = direction in radians, `r` = reach, `w` = width of a line)."""
+    tele = {"shape": shape, "x": tx, "y": ty, "r": float(reach), "land": land, "a": 0.0, "w": 0.0, "half": 0.0}
+    if shape == "circle":
+        return tele
+    t = plan()["telegraph"]
+    a = math.atan2(ty - m.y, tx - m.x)
+    tele.update(x=m.x, y=m.y, a=a)
+    if shape == "cone":
+        tele.update(r=reach * float(t["cone_reach_mult"]), half=math.radians(float(t["cone_degrees"]) / 2))
+    else:
+        tele.update(r=reach * float(t["line_reach_mult"]), w=float(t["line_width"]))
+    return tele
+
+
+def in_tele(tele: dict, x: float, y: float) -> bool:
+    """Does this blow reach a player standing (feet) at (x, y)?"""
+    dx, dy = x - tele["x"], y - tele["y"]
+    d = math.hypot(dx, dy)
+    if tele["shape"] == "circle":
+        return d <= tele["r"] + HIT_SLACK
+    if tele["shape"] == "cone":
+        if d > tele["r"] + HIT_SLACK:
+            return False
+        if d <= HIT_SLACK * 2:
+            return True
+        off = abs((math.atan2(dy, dx) - tele["a"] + math.pi) % (2 * math.pi) - math.pi)
+        return off <= tele["half"] + math.asin(min(1.0, HIT_SLACK / d))
+    ca, sa = math.cos(tele["a"]), math.sin(tele["a"])
+    along, across = dx * ca + dy * sa, -dx * sa + dy * ca
+    return -HIT_SLACK <= along <= tele["r"] + HIT_SLACK and abs(across) <= tele["w"] / 2 + HIT_SLACK
+
+
+def tele_event(m: "Monster", tele: dict, dur: float) -> dict:
+    """The `tele` effect: x, y, r and d as ever (an old client draws a circle), plus the shape."""
+    ev = {"k": "tele", "id": m.eid, "x": round(tele["x"], 1), "y": round(tele["y"], 1), "r": round(tele["r"], 1),
+          "d": round(dur, 2), "sh": tele["shape"]}
+    if tele["shape"] != "circle":
+        ev["a"] = round(math.degrees(tele["a"]), 1)
+    if tele["shape"] == "cone":
+        ev["deg"] = round(math.degrees(tele["half"]) * 2, 1)
+    if tele["shape"] == "line":
+        ev["w"] = round(tele["w"], 1)
+    return ev
+
+
+def dodge_unlocked(p: "Player") -> bool:
+    """Né Đòn opens at the realm and stage its world_plan unlock names (Luyện Khí tầng 1)."""
+    from ..learning import math_tree
+    from .world import realm_index
+    uid = plan()["dodge"]["unlock"]
+    u = next(x for x in math_tree.world_plan()["unlocks"] if x["id"] == uid)
+    have, need = realm_index(p.realm), realm_index(u["realm"])
+    return have > need or (have == need and p.stage >= int(u["stage"]))
+
+
+def dodge(p: "Player", seq: int, dx: int, dy: int, now: float) -> str | None:
+    """Né Đòn: a short dash with a moment of invulnerability. Returns a refusal code or None.
+
+    The dash rides in the movement queue at its own sequence number, so the server moves the
+    player exactly where the client predicted, after the steps sent before it. A refused dash
+    still takes its place in the queue as an empty step, so the client's later steps line up."""
+    ch = p.channel
+    code = None
+    if ch is None or p.dead or p.ghost or not on_hit_rule(ch) or not (dx or dy):
+        code = "cannot"
+    elif p.protected(now) or p.q_pending or p.question is not None:
+        code = "answering"
+    elif not dodge_unlocked(p):
+        code = "locked"
+    elif now < p.dodge_ready:
+        code = "cooldown"
+    if ch is None:
+        return code
+    d = plan()["dodge"]
+    if code is not None:
+        ch.queue_dash(p, seq, [], 0.0)
+        return code
+    total = float(d["dash_ms"])
+    speed = float(d["dash_px"]) / (total / 1000.0)
+    steps, left = [], int(round(total))
+    while left > 0:
+        part = min(DASH_STEP_MS, left)
+        steps.append((dx, dy, part))
+        left -= part
+    if not ch.queue_dash(p, seq, steps, speed):
+        return "cannot"
+    p.dodge_ready = now + float(d["cooldown_seconds"])
+    p.dodge_until = now + float(d["invulnerable_seconds"])
+    p.last_combat = now
+    ch.event(k="dodge", id=p.eid, x=round(p.x, 1), y=round(p.y, 1), dx=dx, dy=dy)
+    return None
+
+
+def rule_view(p: "Player") -> dict | None:
+    """What the client needs to play the open-world rule (sent with the zone), or None when
+    this channel keeps Vấn Đạo."""
+    if not on_hit_rule(p.channel):
+        return None
+    from ..learning import math_tree
+    c = plan()
+    u = next(x for x in math_tree.world_plan()["unlocks"] if x["id"] == c["dodge"]["unlock"])
+    return {"rule": c["question_rule"], "rest": float(c["question_cooldown_seconds"]),
+            "dodge": {"ok": dodge_unlocked(p), "unlock": {"realm": u["realm"], "stage": int(u["stage"])},
+                      "dash_px": float(c["dodge"]["dash_px"]),
+                      "dash_ms": float(c["dodge"]["dash_ms"]), "cooldown": float(c["dodge"]["cooldown_seconds"]),
+                      "iframes": float(c["dodge"]["invulnerable_seconds"]), "step_ms": DASH_STEP_MS}}
+
+
+def land_blow(ch: "ChannelZone", m: "Monster", p: "Player", dmg: float, now: float) -> str:
+    """A telegraphed blow of `m` reached `p` (open-world rule). Returns what happened:
+    dodged | paused | rest | asked."""
+    c = plan()
+    if now < p.dodge_until:
+        ch.event(k="dodged", id=p.eid, by=m.eid, x=round(p.x, 1), y=round(p.y, 1))
+        return "dodged"
+    if p.protected(now) or p.q_pending or p.question is not None:
+        return "paused"          # already answering one: the fight is paused for them
+    engage(ch, m, p, now)        # a blow from a monster you never touched still makes it your fight
+    if now < p.rest_until:
+        amount = dmg * float(c["hit_during_cooldown"]["damage_taken"])
+        if amount > 0:
+            hurt_player(ch, p, amount, now, by=m.eid)
+        return "rest"
+    p.q_pending = True
+    p.protect_until = now + float(c["question_wait_seconds"])   # held still while it is written
+    p.last_combat = now
+    ch.event(k="struck", id=p.eid, by=m.eid, x=round(p.x, 1), y=round(p.y, 1))
+    _world().spawn(_create_question(ch, p, m.eid, m.kind, hit=dmg))
+    return "asked"
+
+
+def _unasked_blow(ch: "ChannelZone", p: "Player", mid: str, dmg: float) -> None:
+    """No question could be written for a blow that landed (nothing open for this player, or
+    an error): it counts as a blow during the rest window, and the rest window starts."""
+    now = _world().mono()
+    p.protect_until = 0.0
+    c = plan()
+    p.rest_until = now + float(c["question_cooldown_seconds"])
+    amount = dmg * float(c["hit_during_cooldown"]["damage_taken"])
+    if amount > 0 and p.channel is ch and not p.dead:
+        hurt_player(ch, p, amount, now, by=mid)
+
+
+def _parry(ch: "ChannelZone", p: "Player", q: dict, m: "Monster | None", correct: bool, now: float) -> dict:
+    """The question of a blow was answered (or ran out): Phản Đòn, or the blow lands."""
+    c = plan()
+    rest = float(c["question_cooldown_seconds"])
+    p.rest_until = now + rest
+    if correct:
+        right = c["right_answer"]
+        p.mcombo += 1          # right answers in a row: the chiêu combo of the open world
+        gain = float(right["linh_luc_gain"])
+        p.qi = min(p.max_qi, p.qi + gain)
+        out = {"parry": True, "correct": True, "rest": rest, "combo": p.mcombo, "qi_gain": gain,
+               "damage": 0, "shield_broken": False, "stun": 0.0, "monster_hp": 0, "killed": False}
+        if m is None or not m.alive:
+            return {**out, "gone": True}
+        broke = m.shield
+        if broke:                                     # elite_shield_breaks_on: parry
+            break_shield(ch, m, p, now)
+        stun = float(right["stun_seconds"])
+        m.tele = None
+        m.moving = False
+        m.stun_until = max(m.stun_until, now + stun)
+        ch.event(k="parry", id=m.eid, by=p.eid, x=round(m.x, 1), y=round(m.y, 1), px=round(p.x, 1),
+                 py=round(p.y, 1), st=stun)
+        dealt = hurt_monster(ch, m, p, base_damage(p, m) * float(right["counter_multiplier"]), False, now)
+        return {**out, "damage": int(round(dealt)), "shield_broken": broke, "stun": stun,
+                "monster_hp": max(0, m.hp_pct()), "killed": not m.alive}
+    p.mcombo = 0
+    amount = float(q["hit"]) * float(c["wrong_answer"]["damage_taken"])
+    taken = hurt_player(ch, p, amount, now, kind="gb", by=q["mid"], ignore_protect=True) if amount > 0 else 0.0
+    return {"parry": False, "correct": False, "rest": rest, "damage_taken": int(round(taken)),
+            "hp": max(0, int(round(p.hp))), "dead": p.dead, "shows_solution": True}
 
 
 # ------------------------------------------------------------------ damage
@@ -89,7 +331,7 @@ def hurt_monster(ch: "ChannelZone", m: "Monster", p: "Player | None", dmg: float
         m.shield = True
         m.group_hits = set()
         ch.event(k="shield", id=m.eid, on=1, x=m.x, y=m.y)
-        for uid in m.engaged:
+        for uid in m.engaged if not m.on_hit else ():   # open world: only a Phản Đòn breaks it again
             pl = ch.players.get(uid)
             if pl is not None and pl.question is None and not pl.dead:
                 pl.next_q = (m.eid, now + 0.3)
@@ -137,6 +379,8 @@ def engage(ch: "ChannelZone", m: "Monster", p: "Player", now: float) -> None:
             m.target = None
             m.idle = 0
     p.last_combat = now
+    if m.on_hit:   # open world: nothing is asked until the monster lands a blow (land_blow)
+        return
     if m.shield and p.question is None and not p.q_pending and p.next_q is None:
         request_question(ch, p, m, now)
 
@@ -146,8 +390,8 @@ def disengage(ch: "ChannelZone", m: "Monster", uid: int, now: float) -> None:
     p = ch.players.get(uid)
     if p is None:
         return
-    if p.question and p.question["mid"] == m.eid:
-        end_question(p, "gone")
+    if p.question and p.question["mid"] == m.eid and p.question.get("hit") is None:
+        end_question(p, "gone")   # (the question of a blow that landed is still answered)
     if p.next_q and p.next_q[0] == m.eid:
         p.next_q = None
 
@@ -201,7 +445,11 @@ async def _math_question(db, user, p: "Player", info: dict, rng: random.Random):
     return math_combat.CONTEXT, question
 
 
-async def _create_question(ch: "ChannelZone", p: "Player", mid: str, kind: str) -> None:
+async def _create_question(ch: "ChannelZone", p: "Player", mid: str, kind: str, hit: float | None = None) -> None:
+    """Write the question this monster asks and open it. `hit`: the open-world rule - a blow of
+    that much damage landed and this question decides it (Phản Đòn or not). The question
+    itself is chosen the same way under both rules: a mistake monster's own micro-skill at the
+    player's tier (math_combat.question_for), else the player's own floor (math_ask.pick_own)."""
     from ..learning import quiz
     from ..models import User
     from ..systems import codex, math_combat
@@ -221,6 +469,8 @@ async def _create_question(ch: "ChannelZone", p: "Player", mid: str, kind: str) 
                 built = await _own_floor_question(db, user, p, info, rng)
             if built is None:
                 p.q_pending = False
+                if hit is not None:
+                    _unasked_blow(ch, p, mid, hit)
                 return
             context, question = built
             out = await quiz.create_session(db, user, context, question, ref=f"{ch.key}|{mid}")
@@ -229,21 +479,34 @@ async def _create_question(ch: "ChannelZone", p: "Player", mid: str, kind: str) 
     except Exception:
         log.exception("could not create a combat question")
         p.q_pending = False
+        if hit is not None:
+            _unasked_blow(ch, p, mid, hit)
         return
     p.q_pending = False
     now = w.mono()
     m = ch.monster(mid)
-    if (m is None or not m.alive or not m.shield or p.dead or p.channel is not ch or p.session is None
+    if hit is not None:
+        if (m is None or not m.alive or p.dead or p.channel is not ch or p.session is None
+                or p.question is not None):
+            if p.question is None:      # the monster fell (or we left) while it was written: no blow
+                p.protect_until = 0.0
+            return
+    elif (m is None or not m.alive or not m.shield or p.dead or p.channel is not ch or p.session is None
             or p.user_id not in m.engaged or p.question is not None):
         return  # the fight moved on while the question was being written; it simply expires
     limit = float(question.time_limit)
     deadline = now + limit + balance.quiz()["network_grace"]
     p.question = {"sid": out["session_id"], "mid": mid, "deadline": deadline, "asked": now, "limit": limit,
                   "timeout_sent": False}
+    msg = {"t": "q", "mid": mid, "q": out, "first_meet": first}
+    if hit is not None:
+        p.question["hit"] = round(float(hit), 2)
+        msg["hit"] = {"dmg": int(round(hit)), "monster_vi": m.info.get("name_vi", ""),
+                      "rest": float(plan()["question_cooldown_seconds"])}
     p.protect_until = deadline
     p.inputs.clear()
     p.queued_ms = 0
-    p.session.send({"t": "q", "mid": mid, "q": out, "first_meet": first})
+    p.session.send(msg)
 
 
 def on_answer(p: "Player", sid: str, correct: bool, answer_ms: int | None) -> dict:
@@ -258,6 +521,8 @@ def on_answer(p: "Player", sid: str, correct: bool, answer_ms: int | None) -> di
     p.question = None
     p.protect_until = 0.0
     m = ch.monster(q["mid"])
+    if q.get("hit") is not None:     # the open-world rule: a blow that landed
+        return _parry(ch, p, q, m, correct, now)
     if m is None or not m.alive:
         return {"gone": True}
     c = cfg()
@@ -300,7 +565,8 @@ def break_shield(ch: "ChannelZone", m: "Monster", p: "Player | None", now: float
     for uid in list(m.engaged):  # whoever is right first breaks it for everyone (spec 8.1)
         other = ch.players.get(uid)
         if (other is not None and other is not p and other.question and other.question["mid"] == m.eid
-                and not other.question.get("cast")):   # a chiêu being channelled (M9) still lands
+                and not other.question.get("cast")      # a chiêu being channelled (M9) still lands
+                and other.question.get("hit") is None):  # and a blow that landed is still decided
             end_question(other, "broken")
 
 
@@ -359,7 +625,7 @@ def kill(ch: "ChannelZone", m: "Monster", now: float) -> None:
     for uid in list(m.engaged):
         p = ch.players.get(uid)
         if p is not None:
-            if p.question and p.question["mid"] == m.eid:
+            if p.question and p.question["mid"] == m.eid and p.question.get("hit") is None:
                 end_question(p, "killed")
             if p.next_q and p.next_q[0] == m.eid:
                 p.next_q = None
@@ -576,7 +842,8 @@ def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float) -> Non
             m.engaged.discard(uid)
     if not m.engaged and info.get("aggressive"):
         r = info.get("aggro_radius", 0)
-        near = [p for p in ch.players.values() if not p.dead and dist(p.x, p.y, m.x, m.y) <= r]
+        near = [p for p in ch.players.values() if not p.dead and dist(p.x, p.y, m.x, m.y) <= r
+                and not (m.on_hit and (p.protected(now) or p.q_pending))]
         if near:
             engage(ch, m, min(near, key=lambda p: dist(p.x, p.y, m.x, m.y)), now)
     if not m.engaged:
@@ -593,28 +860,45 @@ def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float) -> Non
         return
     m.mode = "chase"
     targets = [ch.players[u] for u in m.engaged if u in ch.players]
-    tgt = min(targets, key=lambda p: dist(p.x, p.y, m.x, m.y))
+    if m.on_hit:   # the fight is paused for whoever is answering: nobody swings at them
+        targets = [p for p in targets if not p.protected(now) and not p.q_pending]
     if m.tele is not None:
-        tx, ty, r, land = m.tele
-        if now >= land:
+        tele = m.tele
+        if now >= tele["land"]:
             m.tele = None
             m.atk_ready = now + c["monster_attack_cooldown"]
-            dmg = max(1.0, info.get("atk", 5) - tgt.stats.get("def", 0) * c["defense_factor"])
-            for p in list(ch.players.values()):
-                if not p.dead and dist(p.x, p.y, tx, ty) <= r + 5:
-                    hurt_player(ch, p, dmg, now, by=m.eid)
+            if m.on_hit:
+                for p in list(ch.players.values()):
+                    if not p.dead and not p.ghost and in_tele(tele, p.x, p.y):
+                        dmg = max(1.0, info.get("atk", 5) - p.stats.get("def", 0) * c["defense_factor"])
+                        land_blow(ch, m, p, dmg, now)
+            elif targets:
+                tgt = min(targets, key=lambda p: dist(p.x, p.y, m.x, m.y))
+                dmg = max(1.0, info.get("atk", 5) - tgt.stats.get("def", 0) * c["defense_factor"])
+                for p in list(ch.players.values()):
+                    if not p.dead and in_tele(tele, p.x, p.y):
+                        hurt_player(ch, p, dmg, now, by=m.eid)
             from . import guard
             guard.hit_bees(ch, m, now)
         m.moving = False
         return
+    if not targets:      # its only foes are answering a question: it waits
+        m.moving = False
+        return
+    tgt = min(targets, key=lambda p: dist(p.x, p.y, m.x, m.y))
     d = dist(tgt.x, tgt.y, m.x, m.y)
     reach = info.get("attack_radius", 20)
     if d <= reach + 6:
         m.moving = False
         if now >= m.atk_ready and not tgt.protected(now):
-            land = now + c["telegraph_seconds"]
-            m.tele = (tgt.x, tgt.y, reach, land)
-            ch.event(k="tele", id=m.eid, x=round(tgt.x, 1), y=round(tgt.y, 1), r=reach, d=c["telegraph_seconds"])
+            if m.on_hit:
+                dur = windup()
+                m.tele = make_tele(m, tgt.x, tgt.y, reach, now + dur, next_shape(m))
+                ch.event(**tele_event(m, m.tele, dur))
+            else:
+                dur = c["telegraph_seconds"]
+                m.tele = make_tele(m, tgt.x, tgt.y, reach, now + dur)
+                ch.event(k="tele", id=m.eid, x=round(tgt.x, 1), y=round(tgt.y, 1), r=reach, d=dur)
         return
     _move_monster(m, tgt.x, tgt.y, info["speed"] * c["chase_speed_mult"] * slow, dt, col)
 

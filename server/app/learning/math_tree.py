@@ -11,8 +11,12 @@ This module only reads and checks those two files and answers questions about th
 functions. The **tree is wired** (`"wired": true` in tree.json, approved by the author on
 2026-11-19): systems/math_tree_progress.py reads it to decide which nodes a player has open
 and done, and the question loop (systems/math_practice.py) sits down on the parts of a node
-(a floor of math_path.py is still the address of the questions). The world plan is not wired
-yet (`"wired": false` in world_plan.json): its combat rule, weapons and beasts are a design.
+(a floor of math_path.py is still the address of the questions). The world plan as a whole is
+not wired yet (`"wired": false` in world_plan.json): its lands, weapons and beasts are a design.
+One part of it is: `"wired_sections": ["combat"]` names the sections the game already runs on
+although the whole plan is not (the combat rule "questions only when a monster hits you",
+realtime/combat.py). A wired section is checked harder - every number the game reads must be
+there and make sense - because a typo in it is a bug in the game, not in a design document.
 
 What `validate()` guarantees, because a wrong tree would teach things in the wrong order:
 
@@ -46,6 +50,9 @@ STATUSES = ("chinh", "phu")
 CONTENT = ("co", "dang_viet", "chua_co")
 KINDS = ("toan", "code", "thuc_chien", "du_an", "hoc_may", "hoc_sau", "he_thong", "nghien_cuu", "dan_dat")
 QUESTION_RULES = ("on_hit",)
+WIREABLE_SECTIONS = ("combat",)    # the parts of world_plan.json the game can run on by themselves
+TELEGRAPH_SHAPES = ("circle", "cone", "line")
+RANKS = ("normal", "elite", "boss")
 
 
 # ------------------------------------------------------------------ data
@@ -193,6 +200,82 @@ def tree() -> Tree:
 @lru_cache(maxsize=1)
 def world_plan() -> dict:
     return _read(WORLD_FILE, MATH_DIR)
+
+
+def wired_sections(plan: dict | None = None) -> tuple[str, ...]:
+    """The sections of the world plan the game runs on: all of them once `wired` is true,
+    else only the ones named in `wired_sections`."""
+    plan = world_plan() if plan is None else plan
+    if plan.get("wired") is True:
+        return WIREABLE_SECTIONS
+    named = plan.get("wired_sections", [])
+    return tuple(s for s in named if s in WIREABLE_SECTIONS) if isinstance(named, list) else ()
+
+
+def section_wired(name: str, plan: dict | None = None) -> bool:
+    return name in wired_sections(plan)
+
+
+def _num(v) -> bool:
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+
+def _wired_combat_problems(combat: dict, unlocks: dict) -> list[str]:
+    """Everything realtime/combat.py reads from the combat section, checked once it is wired."""
+    errs: list[str] = []
+
+    def number(where: str, v, lo: float, hi: float | None = None, lo_ok: bool = False) -> None:
+        if not _num(v) or v < lo or (v == lo and not lo_ok) or (hi is not None and v > hi):
+            span = f"{'>=' if lo_ok else '>'} {lo}" + (f" and <= {hi}" if hi is not None else "")
+            errs.append(f"combat.{where} must be a number {span}")
+
+    shapes = combat.get("telegraph_shapes")
+    if not isinstance(shapes, list) or not shapes or any(x not in TELEGRAPH_SHAPES for x in shapes):
+        errs.append(f"combat.telegraph_shapes must be a non-empty list out of {TELEGRAPH_SHAPES}")
+        shapes = []
+    tele = combat.get("telegraph")
+    if not isinstance(tele, dict):
+        errs.append("combat.telegraph must be an object")
+    else:
+        number("telegraph.cone_degrees", tele.get("cone_degrees"), 0, 180)
+        for key in ("cone_reach_mult", "line_width", "line_reach_mult"):
+            number(f"telegraph.{key}", tele.get(key), 0)
+        by_rank = tele.get("by_rank")
+        if not isinstance(by_rank, dict) or set(by_rank) != set(RANKS):
+            errs.append(f"combat.telegraph.by_rank must name every rank: {RANKS}")
+        else:
+            for rank, used in by_rank.items():
+                if not isinstance(used, list) or not used or any(x not in shapes for x in used):
+                    errs.append(f"combat.telegraph.by_rank.{rank} must be a non-empty list of telegraph_shapes")
+    number("question_wait_seconds", combat.get("question_wait_seconds"), 0)
+    right = combat.get("right_answer", {})
+    number("right_answer.counter_multiplier", right.get("counter_multiplier"), 1, lo_ok=True)
+    number("right_answer.stun_seconds", right.get("stun_seconds"), 0, lo_ok=True)
+    number("right_answer.linh_luc_gain", right.get("linh_luc_gain"), 0, lo_ok=True)
+    if right.get("gives_tu_vi") is not True:
+        errs.append("combat.right_answer.gives_tu_vi must be true: a Phản Đòn is a right answer")
+    wrong = combat.get("wrong_answer", {})
+    number("wrong_answer.damage_taken", wrong.get("damage_taken"), 0, 1)
+    if wrong.get("shows_solution") is not True:
+        errs.append("combat.wrong_answer.shows_solution must be true: a wrong answer shows its solution")
+    rest = combat.get("hit_during_cooldown", {})
+    number("hit_during_cooldown.damage_taken", rest.get("damage_taken"), 0, 1, lo_ok=True)
+    if rest.get("question") is not False:
+        errs.append("combat.hit_during_cooldown.question must be false")
+    dodge = combat.get("dodge", {})
+    for key in ("invulnerable_seconds", "cooldown_seconds", "dash_px", "dash_ms"):
+        number(f"dodge.{key}", dodge.get(key), 0)
+    if dodge.get("unlock") not in unlocks:
+        errs.append(f"combat.dodge.unlock: unknown ability {dodge.get('unlock')!r}")
+    if _num(dodge.get("invulnerable_seconds")) and _num(dodge.get("cooldown_seconds")) \
+            and dodge["invulnerable_seconds"] >= dodge["cooldown_seconds"]:
+        errs.append("combat.dodge: invulnerable_seconds must be shorter than cooldown_seconds")
+    if combat.get("elite_shield_breaks_on") != "parry":
+        errs.append("combat.elite_shield_breaks_on must be 'parry'")
+    ranks = combat.get("shielded_ranks")
+    if not isinstance(ranks, list) or any(r not in RANKS for r in ranks) or "normal" in ranks:
+        errs.append("combat.shielded_ranks must list elite and/or boss only: a normal monster falls to plain hits")
+    return errs
 
 
 def subject_skills(math_dir: Path = MATH_DIR) -> dict[str, tuple[str, ...]]:
@@ -395,6 +478,12 @@ def validate_world(plan: dict, t: Tree) -> list[str]:
             errs.append(f"combat.{key} must be a positive number")
     if combat.get("right_answer", {}).get("damage_taken") != 0:
         errs.append("combat.right_answer.damage_taken must be 0: a right answer is a parry")
+    named = plan.get("wired_sections", [])
+    if not isinstance(named, list) or any(s not in WIREABLE_SECTIONS for s in named) \
+            or len(set(named)) != len(named):
+        errs.append(f"wired_sections must be a list of distinct sections out of {WIREABLE_SECTIONS}")
+    if section_wired("combat", plan):
+        errs += _wired_combat_problems(combat, {u.get("id"): u for u in plan.get("unlocks", [])})
 
     grades = {g["grade"]: g for g in plan.get("grades", [])}
     if sorted(grades) != list(range(1, len(t.realm_order) + 1)):

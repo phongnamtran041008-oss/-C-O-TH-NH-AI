@@ -1,4 +1,9 @@
-"""Chiêu thức gắn câu hỏi (M9, kế hoạch 4.4): a chiêu is cast by answering one math question.
+"""Chiêu thức gắn câu hỏi (M9, kế hoạch 4.4): a chiêu is cast by answering one math question -
+in a bí cảnh. Out in the wild (world_plan.json "combat": questions only when a monster hits
+you) a chiêu is cast freely (`_cast_free`): the same unlock, qi, cooldown, range and formula,
+no question, no fast-answer crit, it never breaks an elite's Mặc Thuẫn (only a Phản Đòn does),
+and its combo is the run of Phản Đòn in a row (`p.mcombo`, kept by realtime/combat.py).
+Everything below describes the question rule of a bí cảnh.
 
 The chiêu live in data/math/skills.json. Pressing one (`{"t": "mskill"}` on the WebSocket)
 does not hit anything yet: it asks the caster one question of the chiêu's type, through the
@@ -363,9 +368,66 @@ def request(p: "Player", k: str, eid: str | None, now: float) -> str | None:
         return "cannot"
     if p.question is not None or p.q_pending or p.protected(now):
         return "answering"
+    from ..realtime import combat
+    if combat.on_hit_rule(p.channel):     # the wild: a chiêu is cast freely, no question
+        # (cooldown, qi and target are checked after the unlock, so a locked chiêu always says so)
+        if k in p.free_casting:
+            return "cooldown"
+        p.free_casting.add(k)
+        _world().spawn(_cast_free(p, p.channel, k, eid))
+        return None
     p.q_pending = True
     _world().spawn(_create(p, p.channel, k, eid))
     return None
+
+
+async def _cast_free(p: "Player", ch: "ChannelZone", k: str, eid: str | None) -> None:
+    """The open-world rule (world_plan.json "combat"): the chiêu lands at once. Only its unlock
+    needs the database (the learning path); qi, cooldown and target are checked again after.
+    The damage multiplier is the combo of Phản Đòn in a row (p.mcombo), no fast-answer crit, and
+    a chiêu never breaks an elite's Mặc Thuẫn here - only a Phản Đòn does."""
+    w = _world()
+    sk = skills()[k]
+    try:
+        async with dbm.SessionLocal() as db:
+            reason = locked_reason(sk, await working_position(db, p.user_id))
+    except Exception:
+        log.exception("could not check a chiêu's unlock")
+        p.free_casting.discard(k)
+        refuse(p, k, "cannot")
+        return
+    p.free_casting.discard(k)
+    if reason is not None:
+        refuse(p, k, "locked", reason)
+        return
+    now = w.mono()
+    code = None
+    if p.dead or p.ghost or p.channel is not ch or p.session is None or w.players.get(p.user_id) is not p:
+        code = "cannot"
+    elif p.question is not None or p.q_pending or p.protected(now):
+        code = "answering"
+    else:
+        code = _ready_code(p, k, eid, now)
+    if code is not None:
+        refuse(p, k, code)
+        return
+    from ..realtime import combat
+    m = _target_code(p, sk, eid)[0]
+    p.qi -= sk["qi"]
+    p.mskill_ready[k] = now + float(sk["cooldown"])
+    if m is not None:
+        dx, dy = m.x - p.x, m.y - p.y
+        p.facing = ("right" if dx > 0 else "left") if abs(dx) > abs(dy) else ("down" if dy > 0 else "up")
+        combat.engage(ch, m, p, now)
+    p.last_combat = now
+    ev = {"k": "mskill", "by": p.eid, "s": k, "fx": sk["fx"], "anim": sk["anim"], "x": p.x, "y": p.y}
+    if m is not None:
+        ev.update(tx=m.x, ty=m.y)
+    if sk["effect"] in ("area", "ward"):
+        ev["r"] = sk["radius"]
+    out = _land(p, ch, k, sk, m, ev, now, streak=p.mcombo, fast=False, combo=p.mcombo, may_break=False)
+    p.session.send({"t": "mcast", "k": k, "ok": True, "ready_in": float(sk["cooldown"]), "qi": round(p.qi, 1),
+                    "free": True, "result": out})
 
 
 async def _create(p: "Player", ch: "ChannelZone", k: str, eid: str | None) -> None:
@@ -476,21 +538,30 @@ def resolve(p: "Player", sid: str, correct: bool, answer_ms: int | None, timed_o
         return _block(k, missed=True, timed_out=bool(timed_out),
                       monster_hp=max(0, m.hp_pct()) if m is not None else 0)
     streak = p.mcombo
-    mult = combo_mult(streak)
     p.mcombo = streak + 1
     fast = is_fast(answer_ms, q["limit"])
-    ev.update(ok=1, combo=p.mcombo)
+    return _land(p, ch, k, sk, m, ev, now, streak=streak, fast=fast, combo=p.mcombo, may_break=True)
+
+
+def _land(p: "Player", ch: "ChannelZone", k: str, sk: dict, m, ev: dict, now: float, *, streak: int,
+          fast: bool, combo: int, may_break: bool) -> dict:
+    """A chiêu lands: damage x power x combo_mult(streak) (x the fast crit), the area's slow,
+    or the ward. `may_break`: Vấn Đạo - a landed chiêu breaks the target's Mặc Thuẫn like a
+    right answer; in the open world it does not (only a Phản Đòn does)."""
+    from ..realtime import combat
+    mult = combo_mult(streak)
+    ev.update(ok=1, combo=combo)
     if sk["effect"] == "ward":
         healed = _ward(ch, p, sk, now)
         ch.event(**ev)
-        return _block(k, correct=True, crit=fast, combo=p.mcombo, combo_mult=mult, ward=healed)
-    if m.shield and m.info.get("group_shield"):
+        return _block(k, correct=True, crit=fast, combo=combo, combo_mult=mult, ward=healed)
+    if may_break and m.shield and m.info.get("group_shield"):
         progress = combat.group_hit(ch, m, p)
         if progress is not None:   # the others still have to answer: the boss's shield holds
             ch.event(**ev)
-            return _block(k, correct=True, crit=fast, combo=p.mcombo, combo_mult=mult,
+            return _block(k, correct=True, crit=fast, combo=combo, combo_mult=mult,
                           shield_progress=list(progress), monster_hp=max(0, m.hp_pct()))
-    broke = m.shield
+    broke = may_break and m.shield
     if broke:
         combat.break_shield(ch, m, p, now)
     if sk["effect"] == "area":
@@ -505,7 +576,7 @@ def resolve(p: "Player", sid: str, correct: bool, answer_ms: int | None, timed_o
             combat.engage(ch, o, p, now)
             combat.hurt_monster(ch, o, p, damage(combat.base_damage(p, o), sk, streak, fast), fast, now)
     ch.event(**ev)
-    return _block(k, correct=True, damage=int(round(dealt)), crit=fast, combo=p.mcombo, combo_mult=mult,
+    return _block(k, correct=True, damage=int(round(dealt)), crit=fast, combo=combo, combo_mult=mult,
                   shield_broken=broke, monster_hp=max(0, m.hp_pct()), killed=not m.alive)
 
 
