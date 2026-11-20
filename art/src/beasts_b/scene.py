@@ -98,8 +98,11 @@ def main():
         for o in [o for o in bpy.data.objects if any(h in o.name for h in hide)]:
             bpy.data.objects.remove(o)
     clips = clips_from_actions(only)
+    big = {}
+    if only and os.environ.get("BEASTS_B_BIG"):     # look-round debugging: 2x resolution WIP
+        big = {"frame": (96, 96), "pivot": (48, 84), "ppm": 76.0}
     kit.render_animated(arm, a.id, clips, WIP if only else OUT, name_vi=name_vi, kind="beast",
-                        holdout=hold or None)
+                        holdout=hold or None, **big)
 
 
 main()
