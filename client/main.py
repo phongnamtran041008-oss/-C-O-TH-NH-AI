@@ -564,10 +564,14 @@ class Game:
                 self.state.me["spirit_stones"] = m["spirit_stones"]
             for it in m.get("items", []):
                 self.toast(T.LOOT_ITEM.format(name=it["name_vi"], qty=it["qty"]), "#4A7CC8")
+            ws = self.world_scene()
             for e in m.get("equipment", []):
                 # a weapon of Thiên Địa Đồ says its phẩm (Cực phẩm), other gear its rarity
-                self.toast(T.LOOT_GEAR.format(name=e["name_vi"], rarity=e.get("quality_vi") or e["rarity_vi"]),
-                           e.get("color", "#6A994E"))
+                toast = (T.LOOT_GEAR.format(name=e["name_vi"], rarity=e.get("quality_vi") or e.get("rarity_vi", "")),
+                         e.get("color", "#6A994E"))
+                # a piece with a place lies on the ground until the player walks to it: its toast then
+                if ws is None or not ws.drop_loot(e, toast):
+                    self.toast(*toast)
             if m.get("locked"):
                 self.toast(T.locked_text(m["locked"]), "#8C8C8C")
             if m.get("items") or m.get("equipment"):

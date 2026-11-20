@@ -729,7 +729,18 @@ def _loot_bonus(p: "Player", m: "Monster") -> dict:
     from ..systems import linh_can   # the linh căn: drop_luck, stones_pct
     best["drop_mult"] *= 1 + linh_can.fx(p, "drop_luck")
     best["stones_pct"] += linh_can.fx(p, "stones_pct") * 100
+    best["drop_mult"] *= _dev_drop_mult()
     return best
+
+
+def _dev_drop_mult() -> float:
+    """DEV_DROP_MULT: flow tests and screenshots force a drop (a dev server only; 1 otherwise)."""
+    import os
+    from ..config import settings
+    try:
+        return max(1.0, float(os.environ.get("DEV_DROP_MULT") or 1)) if settings.env == "dev" else 1.0
+    except ValueError:
+        return 1.0
 
 
 async def _bee_xp(uid: int, bee_ids: list[int]) -> None:

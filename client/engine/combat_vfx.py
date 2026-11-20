@@ -862,6 +862,11 @@ def dodged(v: Vfx, x: float, y: float, mine: bool) -> None:
         v.tint((160, 220, 255), 0.14, 0.3)
 
 
+def uy_ap(v: Vfx, x: float, y: float, k: float = 1.0) -> None:
+    """Uy áp: the pressure of a cultivator's realm runs out over the ground (a Phản Đòn kill)."""
+    _shockwave(v, x, y, 0.05, 1.6 * k, "kim")
+
+
 def struck(v: Vfx, x: float, y: float, heavy: bool) -> None:
     """The player is hit (a Mặc Kích when `heavy`): the camera takes it."""
     v.shake(0.45 if heavy else 0.25)
