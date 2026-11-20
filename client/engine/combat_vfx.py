@@ -487,6 +487,12 @@ def _smash(v, t, src, dst, strike, dst_lift, follow, mine, z, garnish) -> float:
     return land
 
 
+def _ground_ring(v, x, y, delay, k, el) -> None:
+    """A flat ring of light running out over the ground (a burst's ring frames squashed flat)."""
+    v.spawn("burst_" + el, x, y, delay, size=(64 * 1.6 * k, 64 * 0.7 * k), scale=(0.6, 1.4), start=3, peak=0.45,
+            fade_out=0.1, layer="ground", heavy=True)
+
+
 def _shockwave(v, x, y, delay, k, el) -> None:
     """The flat ring of pressure on the ground: uy_ap, else a burst squashed onto the ground."""
     if has("uy_ap"):
@@ -832,11 +838,11 @@ def parry(v: Vfx, mx: float, my: float, px: float, py: float, t: int, weapon: st
     ground, and the player's own kiếm khí of their tier answers into the monster."""
     cx, cy = (mx + px) / 2, (my + py) / 2
     # the clash: a compact core (the world freezes on it), then rings running out of it
-    v.spawn("parry", cx, cy, 0.0, lift=CHEST + 2, scale=(1.05, 1.35))
-    v.spawn("hit_crit", cx, cy, 0.0, lift=CHEST + 2, scale=(0.8, 0.6), peak=0.85)
-    v.spawn("parry", cx, cy, 0.08, lift=CHEST + 2, scale=(1.5, 2.6), start=3, peak=0.6, fade_out=0.12, heavy=True)
-    v.spawn("burst_kim", cx, cy, 0.05, lift=CHEST + 2, scale=(1.0, 2.0), start=3, peak=0.8, fade_out=0.1)
-    _shockwave(v, px, py, 0.04, 1.4, "kim")
+    v.spawn("parry", cx, cy, 0.0, lift=CHEST + 2, scale=(0.8, 1.0), start=1, shade=0.35)
+    v.spawn("hit_crit", cx, cy, 0.0, lift=CHEST + 2, scale=(0.6, 0.45), peak=0.7)
+    v.spawn("parry", cx, cy, 0.08, lift=CHEST + 2, scale=(1.2, 2.0), start=3, peak=0.45, fade_out=0.12, heavy=True,
+            shade=0.3)
+    _ground_ring(v, px, py, 0.04, 1.4, "kim")
     # the riposte: the player's own sword qi, at their tier, from them into the monster
     land = swing(v, weapon, max(2, t), (px, py), (mx, my), strike=0.14, dst_lift=m_lift, mine=mine, garnish=garnish)
     if mine:
