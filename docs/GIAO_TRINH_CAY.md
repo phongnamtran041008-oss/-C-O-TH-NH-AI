@@ -45,7 +45,7 @@ Trong 215 vi kỹ năng của bốn bí cảnh: **159 chính đạo**, 45 bàng 
 | **Hàm, đệ quy và chia nhỏ bài toán** | Lập trình | Lập Trình | Hàm gọi hàm, Đệ quy và điều kiện dừng, Giai thừa, Fibonacci, tháp số, Sinh hoán vị bằng quay lui | Python nhập môn, Logic mệnh đề và quy tắc đếm | Logic mệnh đề và quy tắc đếm | đã có câu hỏi |
 | **Vectơ và ma trận bằng code** | Lập trình | Lập Trình | Vectơ là list, Tích vô hướng, độ dài, Ma trận là list của list, Chuyển vị | Danh sách, tập hợp và từ điển, Vectơ và ma trận | Vectơ và ma trận | đã có câu hỏi |
 | **Liệt kê và quay lui** | Toán | Thuật Toán và Tối Ưu | Thứ tự từ điển, Phương pháp sinh, Thuật toán quay lui | Logic mệnh đề và quy tắc đếm | Logic mệnh đề và quy tắc đếm | đã có câu hỏi |
-| **Mô hình đầu tiên: k láng giềng gần nhất** | Thực chiến AI | Thực Chiến AI | Khoảng cách giữa hai vectơ, Tìm k điểm gần nhất, Bỏ phiếu, Đo độ chính xác trên dữ liệu chưa thấy | Vectơ và ma trận bằng code | Vectơ và ma trận, Vectơ và ma trận bằng code | chưa có |
+| **Mô hình đầu tiên: k láng giềng gần nhất** | Thực chiến AI | Thực Chiến AI | Khoảng cách giữa hai vectơ, Tìm k điểm gần nhất, Bỏ phiếu, Đo độ chính xác trên dữ liệu chưa thấy | Vectơ và ma trận bằng code | Vectơ và ma trận, Vectơ và ma trận bằng code | đã có câu hỏi |
 | **Xác suất có điều kiện và độc lập** | Toán | Xác Suất và Thống Kê | Công thức cộng xác suất, Xác suất có điều kiện, Công thức nhân xác suất, Sự kiện độc lập, Công thức Bernoulli | Xác suất | Xác suất, Sự kiện và phép đếm | đã có câu hỏi |
 
 ### Luyện Khí tầng 4 — mở khoá: Rèn nâng phẩm
@@ -71,8 +71,8 @@ Trong 215 vi kỹ năng của bốn bí cảnh: **159 chính đạo**, 45 bàng 
 | **Đạo hàm số và hạ gradient một biến** | Lập trình | Lập Trình | Đạo hàm bằng sai phân, So với đạo hàm tính tay, Vòng lặp hạ gradient, Tốc độ học quá lớn và quá nhỏ | Danh sách, tập hợp và từ điển, Đơn điệu, cực trị, lồi lõm | Đạo hàm và quy tắc dây chuyền, Đơn điệu, cực trị, lồi lõm | đã có câu hỏi |
 | **Đo độ phức tạp, tìm kiếm và sắp xếp** | Lập trình | Lập Trình | Đếm phép toán, Tìm kiếm tuyến tính và nhị phân, Sắp xếp, So thời gian chạy khi n tăng | Hàm, đệ quy và chia nhỏ bài toán, Duyệt, tham lam và ký hiệu O lớn | Duyệt, tham lam và ký hiệu O lớn, Đếm và hệ thức truy hồi | đã có câu hỏi |
 | **Tìm kiếm theo chiều rộng và chiều sâu** | Toán | Thuật Toán và Tối Ưu | Tìm kiếm theo chiều rộng, Tìm kiếm theo chiều sâu, Ứng dụng của tìm kiếm | Đồ thị và cách biểu diễn, Liệt kê và quay lui | Đồ thị và cách biểu diễn, Liệt kê và quay lui | đang viết |
-| **Khớp đường thẳng bằng hạ gradient** | Thực chiến AI | Thực Chiến AI | Sai số bình phương, Đạo hàm của mất mát theo hai tham số, Vòng huấn luyện, Vẽ mất mát giảm dần | Đạo hàm số và hạ gradient một biến | Đạo hàm và quy tắc dây chuyền, Đơn điệu, cực trị, lồi lõm, Đạo hàm số và hạ gradient một biến | chưa có |
-| **Lọc thư rác bằng Bayes** | Thực chiến AI | Thực Chiến AI | Đếm từ theo nhãn, Xác suất có điều kiện của từng từ, Áp dụng Bayes, Vì sao gọi là 'ngây thơ' | Xác suất đầy đủ và Bayes, Danh sách, tập hợp và từ điển | Xác suất đầy đủ và Bayes, Xác suất có điều kiện và độc lập, Danh sách, tập hợp và từ điển | chưa có |
+| **Khớp đường thẳng bằng hạ gradient** | Thực chiến AI | Thực Chiến AI | Sai số bình phương, Đạo hàm của mất mát theo hai tham số, Vòng huấn luyện, Vẽ mất mát giảm dần | Đạo hàm số và hạ gradient một biến | Đạo hàm và quy tắc dây chuyền, Đơn điệu, cực trị, lồi lõm, Đạo hàm số và hạ gradient một biến | đã có câu hỏi |
+| **Lọc thư rác bằng Bayes** | Thực chiến AI | Thực Chiến AI | Đếm từ theo nhãn, Xác suất có điều kiện của từng từ, Áp dụng Bayes, Vì sao gọi là 'ngây thơ' | Xác suất đầy đủ và Bayes, Danh sách, tập hợp và từ điển | Xác suất đầy đủ và Bayes, Xác suất có điều kiện và độc lập, Danh sách, tập hợp và từ điển | đã có câu hỏi |
 | **Biến ngẫu nhiên rời rạc** | Toán | Xác Suất và Thống Kê | Biến ngẫu nhiên rời rạc và liên tục, Bảng phân phối xác suất, Hàm phân phối F(x) | Xác suất có điều kiện và độc lập | Xác suất có điều kiện và độc lập, Xác suất | đang viết |
 
 ### Luyện Khí tầng 6 — mở khoá: Đạp Kiếm Lướt
@@ -94,7 +94,7 @@ Trong 215 vi kỹ năng của bốn bí cảnh: **159 chính đạo**, 45 bàng 
 | **Trực giao và phép chiếu** | Toán | Đại Số Tuyến Tính | Không gian Euclide và trực giao hóa, Phép chiếu trực giao | Không gian vectơ: bao tuyến tính, cơ sở, số chiều | Tích vô hướng và nhân ma trận, Không gian vectơ: bao tuyến tính, cơ sở, số chiều | đang viết |
 | **Gradient, Jacobian và lan truyền ngược** | Toán | Giải Tích | Cực trị của hàm hai biến, Cực trị có điều kiện, Gradient, Jacobian và lan truyền ngược | Hàm nhiều biến và đạo hàm riêng, Đơn điệu, cực trị, lồi lõm, Tích vô hướng và nhân ma trận | Hàm nhiều biến và đạo hàm riêng, Đơn điệu, cực trị, lồi lõm, Tích vô hướng và nhân ma trận | đang viết |
 | **Bài toán tối ưu, tập lồi và hàm lồi** | Toán | Thuật Toán và Tối Ưu | Phát biểu bài toán tối ưu, Tập lồi, Hàm lồi, Điều kiện tối ưu không ràng buộc, Bài toán tối ưu lồi | Duyệt, tham lam và ký hiệu O lớn, Đơn điệu, cực trị, lồi lõm, Hàm nhiều biến và đạo hàm riêng | Duyệt, tham lam và ký hiệu O lớn, Đơn điệu, cực trị, lồi lõm, Hàm nhiều biến và đạo hàm riêng | đang viết |
-| **Bình phương tối thiểu bằng phương trình chuẩn** | Thực chiến AI | Thực Chiến AI | Viết bài toán dưới dạng Ax gần bằng b, Phương trình chuẩn, Giải bằng NumPy, So với kết quả hạ gradient | Trực giao và phép chiếu, NumPy: mảng và vector hoá, Nhân ma trận và khử Gauss bằng code, Khớp đường thẳng bằng hạ gradient | Trực giao và phép chiếu, Hệ phương trình và khử Gauss, NumPy: mảng và vector hoá | chưa có |
+| **Bình phương tối thiểu bằng phương trình chuẩn** | Thực chiến AI | Thực Chiến AI | Viết bài toán dưới dạng Ax gần bằng b, Phương trình chuẩn, Giải bằng NumPy, So với kết quả hạ gradient | Trực giao và phép chiếu, NumPy: mảng và vector hoá, Nhân ma trận và khử Gauss bằng code, Khớp đường thẳng bằng hạ gradient | Trực giao và phép chiếu, Hệ phương trình và khử Gauss, NumPy: mảng và vector hoá | đã có câu hỏi |
 | **Kỳ vọng, phương sai và các phân phối quen thuộc** | Toán | Xác Suất và Thống Kê | Kỳ vọng, Phương sai và độ lệch chuẩn, Phân phối nhị thức và Poisson, Phân phối đều và phân phối mũ, Phân phối chuẩn | Biến ngẫu nhiên liên tục và hàm mật độ, Diện tích và tích phân cận vô hạn | Biến ngẫu nhiên liên tục và hàm mật độ, Biến ngẫu nhiên rời rạc, Diện tích và tích phân cận vô hạn | đang viết |
 
 ### Luyện Khí tầng 8 — mở khoá: Cưỡi linh thú
@@ -103,7 +103,7 @@ Trong 215 vi kỹ năng của bốn bí cảnh: **159 chính đạo**, 45 bàng 
 |---|---|---|---|---|---|---|
 | **Giá trị riêng và chéo hoá** | Toán | Đại Số Tuyến Tính | Giá trị riêng và vectơ riêng, Chéo hóa ma trận | Ánh xạ tuyến tính và đổi cơ sở | Định thức, hạng và nghịch đảo, Ánh xạ tuyến tính và đổi cơ sở | đang viết |
 | **Hạ gradient và nhân tử Lagrange** | Toán | Thuật Toán và Tối Ưu | Hạ gradient và hàm mất mát, Nhân tử Lagrange và điều kiện KKT | Bài toán tối ưu, tập lồi và hàm lồi, Gradient, Jacobian và lan truyền ngược | Bài toán tối ưu, tập lồi và hàm lồi, Gradient, Jacobian và lan truyền ngược | đang viết |
-| **Mạng nơ-ron hai lớp tự viết** | Thực chiến AI | Thực Chiến AI | Lan truyền xuôi là nhân ma trận, Gradient của từng lớp bằng quy tắc dây chuyền, Kiểm gradient bằng sai phân, Huấn luyện trên bài XOR | Gradient, Jacobian và lan truyền ngược, Hạ gradient và nhân tử Lagrange, NumPy: mảng và vector hoá | Gradient, Jacobian và lan truyền ngược, Tích vô hướng và nhân ma trận, Hạ gradient và nhân tử Lagrange | chưa có |
+| **Mạng nơ-ron hai lớp tự viết** | Thực chiến AI | Thực Chiến AI | Lan truyền xuôi là nhân ma trận, Gradient của từng lớp bằng quy tắc dây chuyền, Kiểm gradient bằng sai phân, Huấn luyện trên bài XOR | Gradient, Jacobian và lan truyền ngược, Hạ gradient và nhân tử Lagrange, NumPy: mảng và vector hoá | Gradient, Jacobian và lan truyền ngược, Tích vô hướng và nhân ma trận, Hạ gradient và nhân tử Lagrange | đã có câu hỏi |
 | **Mẫu, ước lượng và hợp lý cực đại** | Toán | Xác Suất và Thống Kê | Tổng thể và mẫu ngẫu nhiên, Trung bình mẫu và phương sai mẫu, Phân phối của trung bình mẫu, Ước lượng điểm không chệch, Ước lượng hợp lý cực đại | Kỳ vọng, phương sai và các phân phối quen thuộc, Đơn điệu, cực trị, lồi lõm | Kỳ vọng, phương sai và các phân phối quen thuộc, Đơn điệu, cực trị, lồi lõm | đang viết |
 | **Hiệp phương sai, tương quan và hồi quy** | Toán | Xác Suất và Thống Kê | Vectơ ngẫu nhiên hai chiều, Hiệp phương sai và hệ số tương quan, Hồi quy tuyến tính đơn | Mẫu, ước lượng và hợp lý cực đại, Tích vô hướng và nhân ma trận | Kỳ vọng, phương sai và các phân phối quen thuộc, Xác suất có điều kiện và độc lập, Tích vô hướng và nhân ma trận | đã có câu hỏi |
 
@@ -112,10 +112,10 @@ Trong 215 vi kỹ năng của bốn bí cảnh: **159 chính đạo**, 45 bàng 
 | Nút | Loại | Nhánh | Học gì | Cần xong trước | Ôn lại | Câu hỏi |
 |---|---|---|---|---|---|---|
 | **Dạng toàn phương, PCA và SVD** | Toán | Đại Số Tuyến Tính | Dạng toàn phương, Làm quen PCA và SVD | Giá trị riêng và chéo hoá, Trực giao và phép chiếu | Giá trị riêng và chéo hoá, Trực giao và phép chiếu | đang viết |
-| **Thiên kiếp Luyện Khí: nhận dạng chữ số viết tay** | Dự án | Thực Chiến AI | Dữ liệu ảnh là ma trận, Nén bằng PCA, Huấn luyện mạng nơ-ron tự viết, Đo độ chính xác kèm khoảng tin cậy | Mạng nơ-ron hai lớp tự viết, Hồi quy logistic, PCA: nén dữ liệu, Thí nghiệm A/B: mô hình nào thật sự tốt hơn, Bình phương tối thiểu bằng phương trình chuẩn, Lọc thư rác bằng Bayes, Mô hình đầu tiên: k láng giềng gần nhất, Đồ thị bằng code, Cây và đường đi ngắn nhất | Mạng nơ-ron hai lớp tự viết, PCA: nén dữ liệu, Thí nghiệm A/B: mô hình nào thật sự tốt hơn | chưa có |
-| **Thí nghiệm A/B: mô hình nào thật sự tốt hơn** | Thực chiến AI | Thực Chiến AI | So hai tỉ lệ đúng, Khoảng tin cậy của hiệu, Mô phỏng để thấy sai lầm loại một, Cần bao nhiêu mẫu | Kiểm định giả thuyết, Mô phỏng xác suất | Kiểm định giả thuyết, Khoảng tin cậy và định lý giới hạn trung tâm, Mô phỏng xác suất | chưa có |
-| **Hồi quy logistic** | Thực chiến AI | Thực Chiến AI | Sigmoid và xác suất, Mất mát log, Gradient của mất mát, Ngưỡng quyết định | Mẫu, ước lượng và hợp lý cực đại, Hạ gradient và nhân tử Lagrange, NumPy: mảng và vector hoá | Mẫu, ước lượng và hợp lý cực đại, Hàm số, hàm hợp, mũ và logarit, Hạ gradient và nhân tử Lagrange | chưa có |
-| **PCA: nén dữ liệu** | Thực chiến AI | Thực Chiến AI | Ma trận hiệp phương sai, Vectơ riêng lớn nhất, Chiếu dữ liệu xuống ít chiều, Giữ lại bao nhiêu phần trăm thông tin | Dạng toàn phương, PCA và SVD, Hiệp phương sai, tương quan và hồi quy, NumPy: mảng và vector hoá | Dạng toàn phương, PCA và SVD, Giá trị riêng và chéo hoá, Hiệp phương sai, tương quan và hồi quy | chưa có |
+| **Thiên kiếp Luyện Khí: nhận dạng chữ số viết tay** | Dự án | Thực Chiến AI | Dữ liệu ảnh là ma trận, Nén bằng PCA, Huấn luyện mạng nơ-ron tự viết, Đo độ chính xác kèm khoảng tin cậy | Mạng nơ-ron hai lớp tự viết, Hồi quy logistic, PCA: nén dữ liệu, Thí nghiệm A/B: mô hình nào thật sự tốt hơn, Bình phương tối thiểu bằng phương trình chuẩn, Lọc thư rác bằng Bayes, Mô hình đầu tiên: k láng giềng gần nhất, Đồ thị bằng code, Cây và đường đi ngắn nhất | Mạng nơ-ron hai lớp tự viết, PCA: nén dữ liệu, Thí nghiệm A/B: mô hình nào thật sự tốt hơn | đã có câu hỏi |
+| **Thí nghiệm A/B: mô hình nào thật sự tốt hơn** | Thực chiến AI | Thực Chiến AI | So hai tỉ lệ đúng, Khoảng tin cậy của hiệu, Mô phỏng để thấy sai lầm loại một, Cần bao nhiêu mẫu | Kiểm định giả thuyết, Mô phỏng xác suất | Kiểm định giả thuyết, Khoảng tin cậy và định lý giới hạn trung tâm, Mô phỏng xác suất | đã có câu hỏi |
+| **Hồi quy logistic** | Thực chiến AI | Thực Chiến AI | Sigmoid và xác suất, Mất mát log, Gradient của mất mát, Ngưỡng quyết định | Mẫu, ước lượng và hợp lý cực đại, Hạ gradient và nhân tử Lagrange, NumPy: mảng và vector hoá | Mẫu, ước lượng và hợp lý cực đại, Hàm số, hàm hợp, mũ và logarit, Hạ gradient và nhân tử Lagrange | đã có câu hỏi |
+| **PCA: nén dữ liệu** | Thực chiến AI | Thực Chiến AI | Ma trận hiệp phương sai, Vectơ riêng lớn nhất, Chiếu dữ liệu xuống ít chiều, Giữ lại bao nhiêu phần trăm thông tin | Dạng toàn phương, PCA và SVD, Hiệp phương sai, tương quan và hồi quy, NumPy: mảng và vector hoá | Dạng toàn phương, PCA và SVD, Giá trị riêng và chéo hoá, Hiệp phương sai, tương quan và hồi quy | đã có câu hỏi |
 | **Kiểm định giả thuyết** | Toán | Xác Suất và Thống Kê | Giả thuyết, mức ý nghĩa và hai loại sai lầm, Kiểm định trung bình một tổng thể, Kiểm định tỷ lệ một tổng thể, So sánh hai trung bình, So sánh hai tỷ lệ | Khoảng tin cậy và định lý giới hạn trung tâm | Khoảng tin cậy và định lý giới hạn trung tâm | đang viết |
 | **Khoảng tin cậy và định lý giới hạn trung tâm** | Toán | Xác Suất và Thống Kê | Khoảng tin cậy cho trung bình, Khoảng tin cậy cho tỷ lệ, Chọn cỡ mẫu theo độ chính xác, Luật số lớn, Định lý giới hạn trung tâm | Mẫu, ước lượng và hợp lý cực đại | Mẫu, ước lượng và hợp lý cực đại, Xác suất | đang viết |
 
@@ -449,17 +449,17 @@ Bị loại khỏi lộ trình: nội dung hệ tài năng, thiên về chứng 
 
 ## Vùng đất, và binh khí riêng của từng vùng
 
-| Vùng đất | Nhánh giáo trình | Binh khí | Mô tả |
-|---|---|---|---|
-| **Trúc Lâm Thôn** | — | — | Thôn tre: nơi bắt đầu, có Tàng Thư Các, lò rèn và động phủ. |
-| **Kiếm Trủng Sơn** | Đại Số Tuyến Tính | Kiếm | Núi mộ kiếm: kiếm gãy cắm đầy sườn đá. Quái: Kiếm Linh, Thạch Khôi; tinh anh: Ma Trận Thú. |
-| **Lưu Vân Cốc** | Giải Tích | Đao | Thung lũng mây trôi: suối uốn lượn, gió không ngừng. Quái: Vân Xà, Phong Lang. |
-| **Vạn Tượng Trạch** | Xác Suất và Thống Kê | Hồ Lô | Đầm vạn tượng: sương mù, mỗi bước một điều chưa chắc. Quái: Đầu Tử Oa, Hồ Lô Tinh. |
-| **Mê Đồ Lâm** | Thuật Toán và Tối Ưu | Thương | Rừng mê cung: lối đi chằng chịt như một đồ thị. Quái: Tri Chu Tinh, Mộc Yêu. |
-| **Thiên Công Phường** | Lập Trình | Chùy | Phường thợ bỏ hoang: lò rèn, bánh răng và những cơ quan nhân còn chạy. Quái: Cơ Quan Nhân. |
-| **Linh Xạ Nguyên** | Thực Chiến AI | Cung | Thảo nguyên bia bắn: nơi luyện Thực Chiến AI. Quái: Tâm Ma của chính mình. |
-| **Lôi Kiếp Đài** | — | — | Đài độ kiếp: nơi đối mặt Thiên Kiếp Lôi Long để lên Trúc Cơ. |
-| **Vân Hải Thiên Đảo** | Học Máy | Trượng | Quần đảo trên biển mây: chỉ tới được bằng ngự kiếm phi hành. |
+| Vùng đất | Nhánh giáo trình | Binh khí | Kỳ binh (chỉ rơi từ tinh anh, trùm) | Mô tả |
+|---|---|---|---|---|
+| **Trúc Lâm Thôn** | — | — | — | Thôn tre: nơi bắt đầu, có Tàng Thư Các, lò rèn và động phủ. |
+| **Kiếm Trủng Sơn** | Đại Số Tuyến Tính | Kiếm | Kích | Núi mộ kiếm: kiếm gãy cắm đầy sườn đá. Quái: Kiếm Linh, Thạch Khôi; tinh anh: Ma Trận Thú. |
+| **Lưu Vân Cốc** | Giải Tích | Đao | Roi | Thung lũng mây trôi: suối uốn lượn, gió không ngừng. Quái: Vân Xà; tinh anh: Phong Lang. |
+| **Vạn Tượng Trạch** | Xác Suất và Thống Kê | Hồ Lô | Ám Khí | Đầm vạn tượng: sương mù, mỗi bước một điều chưa chắc. Quái: Đầu Tử Oa; tinh anh: Hồ Lô Tinh. |
+| **Mê Đồ Lâm** | Thuật Toán và Tối Ưu | Thương | Luân | Rừng mê cung: lối đi chằng chịt như một đồ thị. Quái: Tri Chu Tinh; tinh anh: Mộc Yêu. |
+| **Thiên Công Phường** | Lập Trình | Chùy | Phủ | Phường thợ bỏ hoang: lò rèn, bánh răng và những cơ quan nhân còn chạy. Quái: Cơ Quan Nhân; tinh anh: Cơ Quan Nhân Đầu Đàn. |
+| **Linh Xạ Nguyên** | Thực Chiến AI | Cung | Cầm | Thảo nguyên bia bắn: nơi luyện Thực Chiến AI. Quái: Tâm Ma của chính mình; tinh anh: Tâm Ma Chấp Niệm. |
+| **Lôi Kiếp Đài** | — | — | — | Đài độ kiếp: nơi đối mặt Thiên Kiếp Lôi Long để lên Trúc Cơ. |
+| **Vân Hải Thiên Đảo** | Học Máy | Trượng | — | Quần đảo trên biển mây: chỉ tới được bằng ngự kiếm phi hành. |
 
 - **Kiếm** (Đại Số Tuyến Tính): Vectơ là mũi tên thẳng: kiếm là binh khí của Đại Số Tuyến Tính.
 - **Đao** (Giải Tích): Lưỡi đao là một đường cong: binh khí của Giải Tích.
@@ -469,6 +469,14 @@ Bị loại khỏi lộ trình: nội dung hệ tài năng, thiên về chứng 
 - **Cung** (Thực Chiến AI): Nhắm vào đích và chỉnh dần cho trúng: đó chính là huấn luyện một mô hình.
 - **Trượng** (Học Máy): Pháp trượng của người điều khiển mô hình, từ Trúc Cơ.
 - **Phiến** (Học Sâu): Quạt nhiều nan xếp lớp như mạng nhiều tầng, từ Nguyên Anh.
+- **Kích** (Đại Số Tuyến Tính) *(chờ hình vẽ)*: Cán dài cộng lưỡi sắc, mỗi phần một hệ số: kích là tổ hợp tuyến tính, binh khí của Đại Số Tuyến Tính.
+- **Roi** (Giải Tích) *(chờ hình vẽ)*: Sợi roi quất ra vẽ một đường cong liền mạch: binh khí của Giải Tích.
+- **Ám Khí** (Xác Suất và Thống Kê) *(chờ hình vẽ)*: Phi đao ném ra, trúng hay trật là một phép thử ngẫu nhiên: binh khí của Xác Suất.
+- **Luân** (Thuật Toán và Tối Ưu) *(chờ hình vẽ)*: Vòng luân bay ra rồi quay về tay như một vòng lặp: binh khí của Thuật Toán.
+- **Phủ** (Lập Trình) *(chờ hình vẽ)*: Một nhát búa rìu bổ đôi khúc gỗ lớn: chia để trị, cách người lập trình xẻ một bài toán.
+- **Cầm** (Thực Chiến AI) *(chờ hình vẽ)*: Đàn lên dây từng sợi cho đúng âm, như tinh chỉnh một mô hình: binh khí của Thực Chiến AI.
+
+Phẩm của binh khí, thấp đến cao: Hạ phẩm, Trung phẩm, Thượng phẩm, Cực phẩm, Tuyệt phẩm.
 
 ## Binh khí rải trong thế giới
 

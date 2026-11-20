@@ -44,17 +44,61 @@
   }
  },
  "upgrades": {
-  "_comment": "Rèn nâng phẩm (world_plan.json, unlock nang_pham, Luyện Khí tầng 4 trên Đạo Thụ): một binh khí của Thiên Địa Đồ lên một phẩm, giữ nguyên bậc và cường hóa. 'from'/'to' là id phẩm của world_plan.json (qualities). Nguyên liệu phải là thứ quái thật sự rớt ra, và mốc tu vi của nó trong loot_tiers.json không cao hơn mốc mở công thức: tools/check_all.py kiểm cả hai.",
+  "_comment": "Rèn nâng phẩm (world_plan.json, unlock nang_pham, Luyện Khí tầng 4 trên Đạo Thụ): một binh khí của Thiên Địa Đồ lên một phẩm, giữ nguyên bậc và cường hóa. 'from'/'to' là id phẩm của world_plan.json (qualities). Các bước nối thành một chuỗi hạ → trung → thượng → cực → tuyệt, mỗi bước lên đúng một phẩm, phí tăng dần. Bước đầu mở bằng unlock nang_pham; các bước sau mở ở 'requires' (cảnh giới và tầng trên Đạo Thụ). 'tu_vi' là mốc cảnh giới tu luyện của nhân vật (như loot_tiers.json) mà bước ấy cần. Nguyên liệu phải là thứ quái thật sự rớt ra, và mốc tu vi của nó trong loot_tiers.json không cao hơn mốc mở công thức: tools/check_all.py kiểm cả hai.",
   "nang_pham": {
    "name_vi": "Rèn nâng phẩm",
    "from": "ha",
    "to": "trung",
    "fee": 40,
+   "tu_vi": "pham_nhan",
    "ingredients": [
     {"item": "loi_ma_tran", "qty": 4},
     {"item": "muc_tinh", "qty": 3}
    ],
    "desc_vi": "Nung lại lưỡi binh khí với Lõi Ma Trận: hạ phẩm thành trung phẩm, Công tăng theo phẩm."
+  },
+  "nang_pham_thuong": {
+   "name_vi": "Tôi luyện thượng phẩm",
+   "from": "trung",
+   "to": "thuong",
+   "fee": 150,
+   "requires": {"realm": "luyen_khi", "stage": 7},
+   "tu_vi": "luyen_khi:6",
+   "ingredients": [
+    {"item": "loi_ma_tran", "qty": 8},
+    {"item": "thien_tam_ti", "qty": 2},
+    {"item": "mac_linh_chi", "qty": 3}
+   ],
+   "desc_vi": "Quấn Thiên Tằm Ti quanh cán rồi tôi lửa ba lần: trung phẩm thành thượng phẩm."
+  },
+  "nang_pham_cuc": {
+   "name_vi": "Đúc lại cực phẩm",
+   "from": "thuong",
+   "to": "cuc",
+   "fee": 500,
+   "requires": {"realm": "truc_co", "stage": 1},
+   "tu_vi": "truc_co:1",
+   "ingredients": [
+    {"item": "loi_ma_tran", "qty": 12},
+    {"item": "thien_tam_ti", "qty": 8},
+    {"item": "an_ruong_de", "qty": 2}
+   ],
+   "desc_vi": "Nấu chảy rồi đúc lại cả thân binh khí, khắc Ấn Rương Đề vào lõi: thượng phẩm thành cực phẩm."
+  },
+  "nang_pham_tuyet": {
+   "name_vi": "Luyện thành tuyệt phẩm",
+   "from": "cuc",
+   "to": "tuyet",
+   "fee": 1500,
+   "requires": {"realm": "ket_dan", "stage": 1},
+   "tu_vi": "kim_dan:1",
+   "ingredients": [
+    {"item": "loi_ma_tran", "qty": 20},
+    {"item": "thien_tam_ti", "qty": 16},
+    {"item": "an_ruong_de", "qty": 5},
+    {"item": "tinh_so_phuc", "qty": 10}
+   ],
+   "desc_vi": "Bốn mươi chín ngày trong lò, Tinh Số Phức hòa vào lưỡi: cực phẩm thành tuyệt phẩm, binh khí có linh tính."
   }
  }
 }

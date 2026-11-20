@@ -122,16 +122,21 @@ def build_doc() -> str:
         w(f"| {when} | **{u['name_vi']}** | {u['desc_vi']} |")
     w("")
     w("## Vùng đất, và binh khí riêng của từng vùng\n")
-    wtype = {x["land"]: x for x in plan["weapon_types"] if x["land"]}
-    w("| Vùng đất | Nhánh giáo trình | Binh khí | Mô tả |")
-    w("|---|---|---|---|")
+    wtype = {x["land"]: x for x in plan["weapon_types"] if x["land"] and not x.get("drop_only")}
+    ky = {x["land"]: x for x in plan["weapon_types"] if x["land"] and x.get("drop_only")}
+    w("| Vùng đất | Nhánh giáo trình | Binh khí | Kỳ binh (chỉ rơi từ tinh anh, trùm) | Mô tả |")
+    w("|---|---|---|---|---|")
     for l in plan["lands"]:
         b = branch[l["branch"]]["name_vi"] if l["branch"] else "—"
-        wt = wtype.get(l["id"])
-        w(f"| **{l['name_vi']}** | {b} | {wt['name_vi'] if wt else '—'} | {l['desc_vi']} |")
+        wt, kb = wtype.get(l["id"]), ky.get(l["id"])
+        w(f"| **{l['name_vi']}** | {b} | {wt['name_vi'] if wt else '—'} | {kb['name_vi'] if kb else '—'} "
+          f"| {l['desc_vi']} |")
     w("")
     for x in plan["weapon_types"]:
-        w(f"- **{x['name_vi']}** ({branch[x['branch']]['name_vi']}): {x['why_vi']}")
+        wait = " *(chờ hình vẽ)*" if x.get("status") != "co" else ""
+        w(f"- **{x['name_vi']}** ({branch[x['branch']]['name_vi']}){wait}: {x['why_vi']}")
+    w("")
+    w("Phẩm của binh khí, thấp đến cao: " + ", ".join(q["name_vi"] for q in plan["qualities"]) + ".")
     w("")
     w("## Binh khí rải trong thế giới\n")
     grade = {g["grade"]: g for g in plan["grades"]}

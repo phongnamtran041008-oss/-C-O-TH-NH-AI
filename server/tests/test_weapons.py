@@ -14,8 +14,9 @@ from app.models import EquipmentInstance, WeaponClaim
 from app.realtime import combat
 from app.realtime import world as wmod
 from app.realtime.world import World
-from app.systems import catalog, cultivation, inventory, weapons
+from app.systems import catalog, cultivation, inventory, loot, weapons
 from tests.helpers import register
+from tests.test_loot import set_tier
 from tests.test_combat import LOOK, FakeMono, fighter, settle
 from tests.test_combat_on_hit import (SLIME_MA, VALLEY, answer, plan, provoke, stand_at,
                                       take_blow)
@@ -318,10 +319,12 @@ async def test_the_forge_raises_ha_to_trung_from_stage_four(client, monkeypatch)
     assert out["stats"]["atk"] > 0 and out["spirit_stones"] == stones - r["fee"]
     inv = {i["item_id"]: i["qty"] for i in (await client.get("/inventory", headers=h)).json()["items"]}
     assert all(inv.get(i["item"], 0) == 0 for i in r["ingredients"]), "the materials are spent"
-    # once trung phẩm it cannot be raised again by this recipe
-    await stock(uid, r)
+    # once trung phẩm the next step of the chain takes over, and it opens later on Đạo Thụ
+    nxt = weapons.step_for(r["to"])
+    await stock(uid, nxt)
     res = await client.post("/weapons/upgrade", json={"instance_id": piece["id"]}, headers=h)
-    assert res.status_code == 400 and err(res) == "wrong_quality"
+    assert res.status_code == 400 and err(res) == "locked"
+    assert f"tầng {nxt['requires']['stage']}" in res.json()["error"]["message_vi"]
 
 
 async def test_the_forge_needs_the_materials(client, monkeypatch):
@@ -342,3 +345,71 @@ async def test_the_forge_needs_the_materials(client, monkeypatch):
 
 def test_the_upgrade_materials_really_drop_by_the_time_it_opens():
     assert weapons._validate_upgrade() == []
+
+
+def test_the_forge_is_a_chain_from_ha_to_tuyet():
+    steps = weapons.upgrade_steps()
+    order = list(weapons.data()["qualities"])
+    assert [(s["from"], s["to"]) for s in steps] == list(zip(order, order[1:]))
+    assert steps[0]["id"] == weapons.data()["cfg"]["upgrade_unlock"] == weapons.upgrade_recipe()["id"]
+    fees = [s["fee"] for s in steps]
+    assert fees == sorted(fees) and len(set(fees)) == len(fees), "each step costs more"
+    tiers = [loot.parse(s["tu_vi"]) for s in steps]
+    assert tiers == sorted(tiers) and tiers[-1] > tiers[0]
+    assert weapons.step_for(order[-1]) is None, "nothing above tuyệt phẩm"
+
+
+def test_a_broken_chain_is_refused(monkeypatch):
+    real = catalog.math_crafting()
+    ups = {k: dict(v) if isinstance(v, dict) else v for k, v in real["upgrades"].items()}
+    ups["nang_pham_cuc"]["to"] = "tuyet"            # skips a quality
+    monkeypatch.setattr(catalog, "math_crafting", lambda: {**real, "upgrades": ups})
+    assert any("exactly one quality" in e for e in weapons._validate_upgrade())
+    ups = {k: v for k, v in real["upgrades"].items() if k != "nang_pham_thuong"}       # a gap
+    monkeypatch.setattr(catalog, "math_crafting", lambda: {**real, "upgrades": ups})
+    assert any("one step from each quality" in e for e in weapons._validate_upgrade())
+
+
+async def test_the_forge_raises_a_weapon_all_the_way_to_tuyet(client, monkeypatch):
+    h, uid = await player(client, "binh_tuyet")
+    d = weapons.data()
+    at(monkeypatch, 1, done={"ds_ngon_ngu"}, realm="ket_dan")
+    await set_tier(uid, "kim_dan", 1)
+    piece = (await claim(client, h, STARTER)).json()["equipment"]
+    view = (await client.get("/weapons/upgrade", headers=h)).json()
+    assert [s["id"] for s in view["steps"]] == [s["id"] for s in weapons.upgrade_steps()]
+    assert all(s["open"] for s in view["steps"])
+    rar = catalog.equipment()["rarities"]
+    for s in view["steps"]:
+        assert s["to_color"] == rar[d["qualities"][s["to"]]["rarity"]]["color"]
+    for step in weapons.upgrade_steps():
+        await stock(uid, step)
+        res = await client.post("/weapons/upgrade", json={"instance_id": piece["id"]}, headers=h)
+        assert res.status_code == 200, res.text
+        assert res.json()["step"] == step["id"] and res.json()["item"]["weapon"]["quality"] == step["to"]
+    item = res.json()["item"]
+    assert item["rarity"] == "thien" and item["stats"]["atk"] == int(round(d["grades"][1]["atk"] * d["qualities"]["tuyet"]["power"]))
+    assert not item["weapon"]["upgradable"]
+    res = await client.post("/weapons/upgrade", json={"instance_id": piece["id"]}, headers=h)
+    assert res.status_code == 400 and err(res) == "wrong_quality" and "tuyệt phẩm" in res.json()["error"]["message_vi"]
+
+
+async def test_a_step_waits_for_the_cultivation_tu_vi(client, monkeypatch):
+    """Đạo Thụ far enough is not enough: the thượng phẩm step also asks the character's tu vi."""
+    h, uid = await player(client, "binh_tu_vi")
+    at(monkeypatch, 9, done={"ds_ngon_ngu"})
+    piece = (await claim(client, h, STARTER)).json()["equipment"]
+    first, second = weapons.upgrade_steps()[:2]
+    await stock(uid, first)
+    assert (await client.post("/weapons/upgrade", json={"instance_id": piece["id"]}, headers=h)).status_code == 200
+    await stock(uid, second)
+    res = await client.post("/weapons/upgrade", json={"instance_id": piece["id"]}, headers=h)
+    need = loot.label(loot.parse(second["tu_vi"]))
+    assert res.status_code == 400 and err(res) == "locked" and need in res.json()["error"]["message_vi"]
+    view = (await client.get("/weapons/upgrade", headers=h)).json()
+    shut = next(s for s in view["steps"] if s["id"] == second["id"])
+    assert not shut["open"] and not shut["can"] and need in shut["reason_vi"]
+    assert [c["id"] for c in shut["candidates"]] == [piece["id"]], "it still shows what it would raise"
+    await set_tier(uid, *second["tu_vi"].split(":")[:1], int(second["tu_vi"].split(":")[1]))
+    res = await client.post("/weapons/upgrade", json={"instance_id": piece["id"]}, headers=h)
+    assert res.status_code == 200, res.text

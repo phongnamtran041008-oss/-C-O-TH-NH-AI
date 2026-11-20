@@ -54,7 +54,8 @@ KINDS = ("toan", "code", "thuc_chien", "du_an", "hoc_may", "hoc_sau", "he_thong"
 QUESTION_RULES = ("on_hit",)
 # the parts of world_plan.json the game can run on by themselves: 'beasts' is the beasts with their
 # taming rule (beast_taming), 'abilities' the thần thông of the unlocks that have content
-WIREABLE_SECTIONS = ("combat", "lands", "weapons", "beasts", "abilities")
+WIREABLE_SECTIONS = ("combat", "lands", "weapons", "beasts", "abilities", "weapon_drops")
+WEAPON_STATUSES = ("co", "cho_hinh")     # a weapon type in the game, or waiting for its art
 GIFT_TYPES = ("sniff", "wrong_guard", "dodge_cooldown", "parry_fire", "mount")
 ABILITY_BLOCKS = {"phap_tran": "formation", "dap_kiem_luot": "glide", "cuoi_linh_thu": "ride"}
 TELEGRAPH_SHAPES = ("circle", "cone", "line")
@@ -853,6 +854,33 @@ def validate_world(plan: dict, t: Tree, math_dir: Path = MATH_DIR) -> list[str]:
             errs.append(f"weapon type {w['id']}: unknown branch {w.get('branch')!r}")
         if w.get("land") is not None and w["land"] not in lands:
             errs.append(f"weapon type {w['id']}: unknown land {w['land']!r}")
+        if w.get("status") not in WEAPON_STATUSES:
+            errs.append(f"weapon type {w['id']}: status must be one of {WEAPON_STATUSES}")
+        if not isinstance(w.get("drop_only", False), bool):
+            errs.append(f"weapon type {w['id']}: drop_only must be true or false")
+        if w.get("drop_only") and w.get("land") is None:
+            errs.append(f"weapon type {w['id']}: a kỳ binh (drop_only) belongs to a land")
+    if len(types) != len(plan.get("weapon_types", [])):
+        errs.append("weapon_types: two types share an id")
+    drops = plan.get("weapon_drops")
+    if section_wired("weapon_drops", plan) and not isinstance(drops, dict):
+        errs.append("weapon_drops is wired but missing")
+    elif isinstance(drops, dict):
+        for rank, r in drops.get("by_rank", {}).items():
+            if rank not in RANKS:
+                errs.append(f"weapon_drops.by_rank: unknown rank {rank!r}")
+            for q in (r.get("qualities") or {}) if isinstance(r, dict) else ():
+                if q not in qualities:
+                    errs.append(f"weapon_drops.by_rank.{rank}: unknown quality {q!r}")
+        for land_id, over in drops.get("lands", {}).items():
+            if land_id not in lands:
+                errs.append(f"weapon_drops.lands: unknown land {land_id!r}")
+            for k in list(over.get("types", [])) + list(over.get("ky_binh", [])):
+                if k not in types:
+                    errs.append(f"weapon_drops.lands.{land_id}: unknown weapon type {k!r}")
+            for g in over.get("grades", []):
+                if g.get("grade") not in grades:
+                    errs.append(f"weapon_drops.lands.{land_id}: unknown grade {g.get('grade')!r}")
 
     seen = set()
     for i, p in enumerate(plan.get("weapons_placed", [])):
@@ -863,6 +891,10 @@ def validate_world(plan: dict, t: Tree, math_dir: Path = MATH_DIR) -> list[str]:
             continue
         if p.get("quality") not in qualities:
             errs.append(f"{where}: unknown quality {p.get('quality')!r}")
+        if types[kind].get("drop_only"):
+            errs.append(f"{where}: {kind} is a kỳ binh (drop_only): it drops, it is never placed")
+        if types[kind].get("status") != "co":
+            errs.append(f"{where}: {kind} waits for its art (status {types[kind].get('status')!r}), so it lies nowhere")
         if p.get("land") not in lands:
             errs.append(f"{where}: unknown land {p.get('land')!r}")
         if p.get("needs") and p["needs"] not in unlocks:

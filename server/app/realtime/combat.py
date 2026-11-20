@@ -660,7 +660,7 @@ def kill(ch: "ChannelZone", m: "Monster", now: float) -> None:
                 p.next_q = None
             if not p.dead:
                 _world().spawn(_reward(p.user_id, m.kind, _loot_bonus(p, m),
-                                       source=getattr(ch, "realm_id", None) or ch.zone_id))
+                                       source=getattr(ch, "realm_id", None) or ch.zone_id, x=m.x, y=m.y))
     _party_share(ch, m)
     for uid, ids in m.bee_assist.items():  # guard bees that helped grow a little
         if ids:
@@ -731,11 +731,13 @@ async def _bee_xp(uid: int, bee_ids: list[int]) -> None:
 
 
 async def _reward(uid: int, kind: str, loot: dict | None = None, rng: random.Random | None = None,
-                  source: str | None = None) -> None:
+                  source: str | None = None, x: float | None = None, y: float | None = None) -> None:
     """The kill's loot for one player (party members each come through here): stones, then the
     monster's drop table gated by this player's tu vi (systems/loot.py) - a drop rolled but
-    not yet unlocked is listed under `locked`, never granted."""
-    from ..systems import catalog, codex, cultivation, inventory, items, quests
+    not yet unlocked is listed under `locked`, never granted - then the weapons of its land
+    (systems/weapons.py roll_drops, same gate). Every piece of gear carries where it lies
+    (x, y: the spot the monster died) for the client to draw on the ground."""
+    from ..systems import catalog, codex, cultivation, inventory, items, quests, weapons
     from ..systems import loot as gate
     info = catalog.monsters()[kind]
     rng = rng or random.Random()
@@ -769,7 +771,9 @@ async def _reward(uid: int, kind: str, loot: dict | None = None, rng: random.Ran
                     if rar is None:
                         gate.note_locked_gear(out, item_id, d.get("min_rarity"))
                         continue
-                    out["equipment"].append(await items.grant_equipment(db, uid, item_id, rar, "drop", kind))
+                    piece = await items.grant_equipment(db, uid, item_id, rar, "drop", kind)
+                    out["equipment"].append(weapons.ground_entry(piece, x, y, len(out["equipment"])))
+            await weapons.grant_drops(db, uid, kind, realm, stage, within, rng, loot["drop_mult"], out, x, y)
             out["kills"] = await codex.monster_killed(db, uid, kind)
             out["quests"] = await quests.on_event(db, uid, "kill", kind)
             out["xp"] = await cultivation.add_xp(db, uid, info.get("xp", 0), "kill")

@@ -16,9 +16,12 @@ def plan() -> dict:
 
 
 def test_the_reach_of_every_weapon_type_agrees_with_the_server():
-    types = {t["id"]: t for t in plan()["weapon_types"]}
-    assert W.PLAN_WEAPON_RANGE == {k: t["range"] for k, t in types.items()}
-    assert set(W.PLAN_WEAPON_LOOK) == set(types)
+    every = {t["id"]: t for t in plan()["weapon_types"]}
+    types = {k: t for k, t in every.items() if t["status"] == "co"}      # cho_hinh: waiting for its art
+    assert {k: v for k, v in W.PLAN_WEAPON_RANGE.items() if k in types} == {k: t["range"] for k, t in types.items()}
+    assert set(types) <= set(W.PLAN_WEAPON_LOOK) <= set(every)
+    for k, r in W.PLAN_WEAPON_RANGE.items():        # a type added early must still agree with the plan
+        assert k in every and r == every[k]["range"], k
     assert W.plan_weapon_type("kiem_3") == "kiem" and W.plan_weapon_type("ho_lo_1") == "ho_lo"
     assert W.plan_weapon_type("sword") is None and W.plan_weapon_type(None) is None
     assert W.plan_weapon_type("nothing_2") is None

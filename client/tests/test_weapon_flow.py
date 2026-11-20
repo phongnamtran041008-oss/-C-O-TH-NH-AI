@@ -3,7 +3,8 @@ picks up Mộc Kiếm hạ phẩm through the API (the lands session's spot call
 finds it in the bag's Binh Khí tab with its type, grade, quality and effect next to the
 locked spots and why they are locked, equips it there - and the character then holds it: the
 stats the world draws from name it, and the v2 layer drawn in the hand is its own sheet. Then
-Lò Toán raises it from hạ phẩm to trung phẩm (Rèn nâng phẩm).
+Lò Toán raises it from hạ phẩm to trung phẩm (Rèn nâng phẩm) and lists the rest of the chain, up
+to tuyệt phẩm, with the sword waiting at the next step until Đạo Thụ climbs.
 
 Run as a script with a folder to keep the screenshots:
     python -m client.tests.test_weapon_flow art/preview/weapon_flow
@@ -95,6 +96,9 @@ def run_weapon_flow(workdir: Path, shots: Path | None = None) -> None:
         assert [w["id"] for w in mine] == [piece["id"]]
         wv = mine[0]["weapon"]
         assert (wv["type"], wv["grade"], wv["quality"]) == ("kiem", 1, "ha") and wv["effect_vi"], wv
+        assert [q["id"] for q in bag.wpn["qualities"]] == ["ha", "trung", "thuong", "cuc", "tuyet"]
+        from client import strings_vi as T
+        assert T.gear_grade(mine[0]) == ("Hạ phẩm", bag.wpn["qualities"][0]["color"])
         drv.shot("weapon_bag_before_equip")
         drv.click(f"weq_{piece['id']}")
         drv.wait_api()
@@ -133,6 +137,13 @@ def run_weapon_flow(workdir: Path, shots: Path | None = None) -> None:
         rarity = server.sql("select rarity from equipment_instances where id=?", (piece["id"],))[0][0]
         assert rarity == "linh", rarity
         drv.wait(lambda: forge.up is not None and not forge.up["candidates"], 5, "nothing left to raise")
+        # the whole chain is listed: the sword now waits at the next step, shut until Đạo Thụ climbs
+        steps = forge.up["steps"]
+        assert [(s["from"], s["to"]) for s in steps] == [("ha", "trung"), ("trung", "thuong"),
+                                                         ("thuong", "cuc"), ("cuc", "tuyet")]
+        assert [c["id"] for c in steps[1]["candidates"]] == [piece["id"]] and not steps[1]["open"]
+        assert steps[1]["reason_vi"] and steps[-1]["to_color"] == "#C99A3A"
+        assert [k for k, _, _ in forge.upgrade_rows()].count("step") == 4
         drv.shot("weapon_forge_done")
         drv.close()
     finally:
