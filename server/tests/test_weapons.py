@@ -102,6 +102,7 @@ async def test_pos_is_copied_from_the_plan_when_present(client, monkeypatch):
     d = weapons.data()
     monkeypatch.setitem(d["by_id"][STARTER], "pos", [120, 64])
     assert (await placed(client, h, STARTER))["pos"] == [120, 64]
+    monkeypatch.delitem(d["by_id"][LATER], "pos", raising=False)      # a spot the lands have not placed yet
     assert (await placed(client, h, LATER))["pos"] is None
 
 

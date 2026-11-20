@@ -263,13 +263,13 @@ def test_the_world_checker_bites(plan):
     assert any("question_rule" in e for e in mt.validate_world(bad, t))
 
 
-def test_the_combat_and_lands_sections_are_wired(plan):
-    """The owner's waves: the fight rule and the lands of Luyện Khí run in the game, weapons and
+def test_the_combat_lands_and_weapons_sections_are_wired(plan):
+    """The owner's waves: the fight rule, the lands of Luyện Khí and the weapons run in the game,
     beasts do not yet."""
     assert plan["wired"] is False
     assert plan["wired_sections"] == ["combat", "lands", "weapons"]
-    assert mt.wired_sections(plan) == ("combat", "lands")
-    assert mt.section_wired("combat", plan) and mt.section_wired("lands", plan)
+    assert mt.wired_sections(plan) == ("combat", "lands", "weapons")
+    assert all(mt.section_wired(s, plan) for s in ("combat", "lands", "weapons"))
     assert mt.wired_sections({"wired": False}) == ()
     assert mt.wired_sections({"wired": True}) == mt.WIREABLE_SECTIONS
     unlocks = {u["id"]: u for u in plan["unlocks"]}
