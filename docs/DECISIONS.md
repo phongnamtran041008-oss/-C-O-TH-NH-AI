@@ -1197,6 +1197,39 @@ một lần, lần sau chỉ đăng nhập, dùng Firebase (dự án và API key
 - **Quái lỗi sai (M7) và bài tập lập trình (M6) chưa có cho ba môn mới.**
 - **Xưng hô:** game gọi người chơi là "con" ở mọi nơi, kể cả phần kiểm tra đầu vào.
 
+## Nhánh `toan-tu-tien` — tầng ẩn 10 của bốn môn (Tài Năng)
+
+Viết nội dung cho tầng ẩn 10 của Đại Số, Giải Tích, Xác Suất và Tối Ưu - Rời Rạc (19 vi kỹ năng), theo cùng cách viết
+tầng 4-9. Những chỗ phải tự quyết:
+
+- **Số lượng.** Mỗi vi kỹ năng có 8-12 câu viết tay (tầng 7-9 có 6-7) và mỗi môn có 6-10 bộ sinh câu: Xác Suất 49
+  câu + 6 bộ sinh, Đại Số 48 + 10, Giải Tích 53 + 7, Tối Ưu - Rời Rạc 43 + 10. Tầng 10 chỉ có bậc 5 (cấu hình), nên
+  mọi câu viết tay đều có thang (luật 8) hai rung bậc 3-4 của cùng môn, ở tầng không cao hơn 10. Vì tầng 1-2 chỉ có
+  bậc 1-2 nên rung luôn lấy từ tầng 3-8; chúng gần chủ đề nhất có thể nhưng có lúc chỉ là "việc dễ hơn cùng kiểu"
+  (ví dụ nhóm và vành thang bằng ma trận khả nghịch và không gian con của tầng 6-7).
+- **Đạo Thụ quyết điều gì được hỏi.** Cả năm vi kỹ năng tầng 10 của Đại Số và cả năm của Giải Tích nằm trong danh
+  sách `cut` của `tree.json` (hệ tài năng thiên về chứng minh): câu có trong kho, qua kiểm tra, nhưng không chế độ
+  nào hỏi (`math_practice._templates` bỏ chúng). Vi kỹ năng "Tiên đề xác suất" của Xác Suất cũng bị cắt. Bốn vi kỹ
+  năng còn lại của Xác Suất và bốn của Tối Ưu - Rời Rạc được hỏi.
+- **Nút "Hiệp phương sai, tương quan và hồi quy" (Xác Suất, tầng 8 chính đạo) hết "đang biên soạn".** Nút nay có
+  câu hỏi nên **bắt buộc**: muốn qua tầng 8 phải qua Thiên kiếp nhỏ của phần này. Phần có 3 vi kỹ năng nên 3 câu
+  bậc 5, và `trial_allowed` cho sai tối đa 3 // 4 = 0 câu: phải đúng cả ba. Nút bàng môn "Hàm của biến ngẫu nhiên"
+  và "Phương pháp tính" cũng có câu, không chặn gì. Cờ `"content"` trong `tree.json` của ba nút này vẫn ghi
+  `chua_co` (file đó không thuộc phần việc này): game đọc số câu thật nên chạy đúng, chỉ `tools/check_tree.py` và
+  `docs/GIAO_TRINH_CAY.md` còn ghi "chưa có".
+- **Quy ước nêu trong đề.** "Chữ số đáng tin" là chữ số hàng 10^s có sai số tuyệt đối <= 0.5 . 10^s; chia đôi: sau
+  n lần đoạn nghiệm dài (b - a)/2^n và sai số của trung điểm không quá (b - a)/2^(n+1); sai số lan truyền theo công
+  thức bậc nhất (tổng, hiệu cộng sai số tuyệt đối; tích, thương cộng sai số tương đối; hàm: |f'| Delta). Ký hiệu ASCII
+  như các tầng trước: `~` cho "xấp xỉ", `A'` cho sự kiện đối, `B \ A` cho hiệu hai tập, bảng phân phối đồng thời vẽ
+  bằng ma trận `P` (hàng ứng với X, cột ứng với Y).
+- **Kiểm đáp án.** Ngoài phép tính lại của bộ sinh câu (`EXPECTED`), mỗi `tools/math_verify_<môn>_t10.py` có bảng
+  `HAND` tính lại bằng sympy mọi đáp số của câu viết tay (và các mệnh đề, đáp án trắc nghiệm mà máy quyết được);
+  `tests/test_math_<môn>_t10.py` thử cả việc bảng đó bắt được một đáp án bị sửa sai. Việc "metric hay không" chỉ
+  được kiểm bằng tìm phản ví dụ trên một lưới số hữu tỉ (không chứng minh được khẳng định đúng), nên các mệnh đề
+  đúng còn dựa vào lý do một dòng trong lời giải.
+- **Bảng duyệt.** `tools/reports/math_review_*.md` ở bản trước chỉ có tầng 1-3 (chưa ai dựng lại sau M11); bản
+  mới dựng lại cả tầng 4-10, nên khác biệt rất lớn.
+
 ## 2026-11-20: the Chinese-vocabulary game is removed
 
 Tác giả quyết định xoá hẳn mọi thứ của trò học chữ Hán cũ ("Khu Vườn Tu Tiên") và xoá hẳn khu vườn; game bây

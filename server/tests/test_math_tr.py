@@ -89,9 +89,9 @@ def test_every_written_floor_mixes_all_six_types(floor):
     assert all(i.tier >= 2 for i in items if i.qtype == "find_mistake")
 
 
-def test_floors_not_written_yet_have_no_templates():
-    for floor in range(10, 11):
-        assert mi.floor_templates(SUBJECT, floor, allow_unreviewed=True) == []
+def test_the_optional_floor_ten_is_written_too():
+    """Floor 10 (phương pháp tính) has its own bank now: tests/test_math_tr_t10.py."""
+    assert mi.floor_templates(SUBJECT, 10, allow_unreviewed=True)
 
 
 def test_find_mistake_items_point_at_one_line_and_explain_it():
@@ -181,7 +181,7 @@ async def test_a_fresh_player_practises_floor_1_right_and_wrong(client):
     h, _ = await make(client, "roi_rac_1")
     subjects = (await client.get("/math/path", headers=h)).json()["subjects"]
     mine = next(s for s in subjects if s["id"] == SUBJECT)
-    assert [f["has_questions"] for f in mine["floors"]] == [True] * 9 + [False]
+    assert [f["has_questions"] for f in mine["floors"]] == [True] * 10   # floor 10 too
     assert mine["floors"][0]["playable"]
     assert mine["floors"][0]["questions"] == len(mi.floor_templates(SUBJECT, 1, True))
     run_id = await start(client, h, floor=1, subject=SUBJECT)

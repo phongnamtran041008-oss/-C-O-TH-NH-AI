@@ -23,6 +23,14 @@ và lời giải đều tự soạn, không chép đề bài hay lời giải t�
 các bộ sinh câu được tính lại bằng SymPy; mọi câu **cần người duyệt** (cờ `reviewed`, bảng duyệt
 `tools/reports/math_review_<bí cảnh>.md`).
 
+Tầng ẩn 10 của bốn môn cũng do AI viết, từng câu một: Đại Số (cấu trúc đại số, dạng song tuyến tính; theo tên mục của
+MI1141), Giải Tích (số thực, khả tích, hàm lồi, không gian metric; MI1111), Xác Suất và Thống Kê (hàm của biến ngẫu
+nhiên, tương quan, hồi quy; MI3030, MI3350) và Tối Ưu - Rời Rạc (phương pháp tính; MI2044). Chỉ tên mục và tên khái
+niệm được lấy từ các đề cương đó; định nghĩa và định lý nền (tiên đề cận trên đúng, tổng Darboux, bất đẳng thức
+Jensen, định lý Lagrange về nhóm con, bình phương tối thiểu, quy tắc lan truyền sai số, phép lặp Newton) là kiến thức
+chuẩn của môn, được viết lại bằng lời và ví dụ riêng, không chép văn bản của sách nào. Ngoài các bộ sinh câu, mọi đáp
+số của câu viết tay ở tầng này cũng được SymPy tính lại (`tools/math_verify_<môn>_t10.py`).
+
 ## Phần mềm
 
 FastAPI, SQLAlchemy, Alembic, bcrypt, PyJWT, Uvicorn, websockets, httpx, pygame-ce, pytest (các giấy phép
