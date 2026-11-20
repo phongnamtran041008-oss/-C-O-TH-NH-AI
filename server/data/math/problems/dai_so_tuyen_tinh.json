@@ -1346,7 +1346,7 @@
       "id": "xt_knn_khoang_cach",
       "skill": "dstt_t3_vecto_rn",
       "tier": 2,
-      "title_vi": "Xạ Trường: đo khoảng cách tới bia",
+      "title_vi": "K láng giềng: đo khoảng cách",
       "statement_vi": [
         "Bước đầu của mọi mô hình láng giềng: đo xem hai điểm cách nhau bao xa. Với hai vectơ p và q trong R^d, khoảng cách Euclid là căn bậc hai của tổng (p_i - q_i)^2.",
         "Cho một điểm hỏi q và n điểm, hãy in khoảng cách từ q tới từng điểm, rồi chỉ số của điểm gần q nhất. Nếu nhiều điểm gần nhất bằng nhau, chọn điểm đứng trước."
@@ -1401,7 +1401,7 @@
       "id": "xt_knn_bo_phieu",
       "skill": "dstt_t3_vecto_rn",
       "tier": 3,
-      "title_vi": "Xạ Trường: k láng giềng bỏ phiếu",
+      "title_vi": "K láng giềng: bỏ phiếu",
       "statement_vi": [
         "Một tu sĩ lạc vào bãi săn, chưa biết chỗ mình đứng thuộc lãnh địa của bầy linh thú nào. Cách của k láng giềng gần nhất: nhìn k con thú đứng gần mình nhất, bầy nào có nhiều con nhất trong số ấy thì nhiều khả năng đây là đất của bầy ấy.",
         "Cho n con thú (tọa độ nguyên và nhãn bầy) và điểm hỏi q. Sắp các con thú theo khoảng cách tới q tăng dần; hai con cách đều thì con đứng trước trong dữ liệu đi trước. Lấy k con đầu.",
@@ -1457,7 +1457,7 @@
       "id": "xt_knn_phan_loai",
       "skill": "dstt_t3_vecto_rn",
       "tier": 3,
-      "title_vi": "Xạ Trường: bản đồ lãnh địa linh thú",
+      "title_vi": "Xạ Trường: lãnh địa linh thú",
       "statement_vi": [
         "Bãi săn hình vuông 10 x 10 chia cho ba bầy linh thú (nhãn 0, 1, 2). Ranh giới không phải đường thẳng: mỗi bầy giữ vài hang rải rác, đất thuộc về bầy có hang gần nhất, và thỉnh thoảng một con đi lạc sang đất bầy khác.",
         "Bạn có các điểm đã biết nhãn (dữ liệu huấn luyện) và các điểm cần đoán (bia). Hãy dùng k láng giềng gần nhất để đoán nhãn từng bia. Chọn k bao nhiêu là việc của bạn: thử vài giá trị trên bộ bia tập rồi quyết.",
@@ -1499,7 +1499,7 @@
       "id": "xt_bptt_phuong_trinh_chuan",
       "skill": "dstt_t9_phep_chieu",
       "tier": 5,
-      "title_vi": "Bình phương tối thiểu: lập phương trình chuẩn",
+      "title_vi": "Phương trình chuẩn: lập hệ",
       "statement_vi": [
         "Hệ Ax = b có nhiều phương trình hơn ẩn (m > n) thường vô nghiệm. Nghiệm bình phương tối thiểu là x làm |Ax - b| nhỏ nhất: Ax là hình chiếu trực giao của b lên không gian cột của A, tức là phần dư b - Ax vuông góc với mọi cột của A.",
         "Viết điều kiện vuông góc ấy ra: A^T (b - Ax) = 0, tức là (A^T A) x = A^T b: phương trình chuẩn. Bài này chỉ yêu cầu lập nó: in ma trận A^T A và vectơ A^T b."
@@ -1554,7 +1554,7 @@
       "id": "xt_bptt_giai_nghiem",
       "skill": "dstt_t9_phep_chieu",
       "tier": 5,
-      "title_vi": "Bình phương tối thiểu: giải phương trình chuẩn",
+      "title_vi": "Phương trình chuẩn: giải hệ",
       "statement_vi": [
         "Giải (A^T A) x = A^T b bằng khử Gauss (nên chọn phần tử trội: đổi lên hàng có trị tuyệt đối lớn nhất ở cột đang khử) để được nghiệm bình phương tối thiểu x. Các cột của A độc lập tuyến tính nên nghiệm duy nhất.",
         "In x và độ dài phần dư |Ax - b|: con số này bằng 0 chỉ khi b nằm hẳn trong không gian cột."
@@ -1609,7 +1609,7 @@
       "id": "xt_bptt_du_doan",
       "skill": "dstt_t9_phep_chieu",
       "tier": 5,
-      "title_vi": "Xạ Trường: dự đoán sản lượng linh điền",
+      "title_vi": "Xạ Trường: sản lượng linh điền",
       "statement_vi": [
         "Sản lượng một mẫu linh điền phụ thuộc gần như tuyến tính vào bốn thứ đo được: y gần bằng w1*x1 + w2*x2 + w3*x3 + w4*x4 + c, cộng nhiễu. Bốn đặc trưng có thang đo rất khác nhau (khoảng 1, 10, 100 và 0.1) và hai cái đầu tương quan với nhau.",
         "Hãy học w và c từ các mẫu đã biết rồi đoán y cho các mẫu mới. Cách gọn nhất: thêm một cột toàn 1 vào A cho hệ số tự do, giải phương trình chuẩn như bài trước. Hạ gradient trên dữ liệu thô sẽ bò rất chậm vì thang đo lệch nhau; muốn dùng thì phải chuẩn hóa trước. Đó chính là bài học của nút này.",
@@ -1651,7 +1651,7 @@
       "id": "xt_pca_hiep_phuong_sai",
       "skill": "dstt_t9_pca_svd",
       "tier": 5,
-      "title_vi": "PCA: ma trận hiệp phương sai",
+      "title_vi": "PCA: hiệp phương sai",
       "statement_vi": [
         "Dữ liệu là n điểm trong R^d. Vectơ trung bình mu có thành phần j là trung bình của tọa độ j. Ma trận hiệp phương sai mẫu C có C_ab = (1/(n - 1)) * tổng (x_a - mu_a)(x_b - mu_b) qua các điểm: đường chéo là phương sai từng tọa độ, ngoài chéo cho biết hai tọa độ cùng tăng (dương) hay ngược nhau (âm).",
         "Chia cho n - 1 chứ không phải n: đó là ước lượng không chệch của phương sai tổng thể."
@@ -1803,7 +1803,7 @@
       "id": "xt_da_doc_anh",
       "skill": "dstt_t3_vecto_rn",
       "tier": 3,
-      "title_vi": "Thiên kiếp Luyện Khí 1: ảnh là một vectơ",
+      "title_vi": "Thiên kiếp 1: ảnh là vectơ",
       "statement_vi": [
         "Thiên kiếp lên Trúc Cơ là tự tay xây một bộ nhận dạng chữ số. Bước một: hiểu dữ liệu. Một ảnh 8 x 8 là 64 số, đọc theo từng hàng từ trên xuống, mỗi hàng từ trái sang phải; với máy, nó chỉ là một vectơ trong R^64.",
         "Các chữ số ở đây là chữ số tổng hợp: game tự vẽ từng nét bằng code rồi nghiêng, xoay, co giãn, dịch, đổi độ đậm và rắc nhiễu, theo đúng định dạng 8 x 8 điểm ảnh, mỗi điểm 0 đến 16, của bộ chữ số 8 x 8 hay dùng để dạy. Không phải chữ viết tay thật của người nào.",

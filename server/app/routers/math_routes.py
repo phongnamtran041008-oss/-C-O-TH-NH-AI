@@ -135,10 +135,12 @@ class JudgeIn(BaseModel):
 
 
 @router.get("/math/problems")
-async def math_problems_list(subject_id: str, floor: int | None = None,
+async def math_problems_list(subject_id: str, floor: int | None = None, ids: str = "",
                              user: User = Depends(current_user), db: AsyncSession = Depends(get_db)):
-    """Bài tập lập trình of a subject, floor by floor; `floor` narrows it to one (M6)."""
-    return await _run(db, math_code.list_view(db, user, subject_id, floor))
+    """Bài tập lập trình of a subject, floor by floor; `floor` narrows it to one (M6). `ids`
+    (comma separated, the exercises of one node) lists only those, from every subject."""
+    wanted = [i for i in ids.split(",") if i][:50]
+    return await _run(db, math_code.list_view(db, user, subject_id, floor, wanted or None))
 
 
 @router.get("/math/problem/{problem_id}")

@@ -370,7 +370,7 @@
       "id": "xt_nb_dem_tu",
       "skill": "xs_t4_bayes_ung_dung",
       "tier": 2,
-      "title_vi": "Lọc thư rác: đếm từ theo loại",
+      "title_vi": "Lọc thư rác: đếm từ",
       "statement_vi": [
         "Truyền âm phù gửi tới động phủ ngày càng nhiều thư rác: hứa tặng pháp bảo, mời vay linh thạch. Muốn lọc bằng Bayes, việc đầu tiên là đếm.",
         "Thư viết không dấu như tin nhắn thường gặp. Hãy đếm: số thư rác, số thư thường, tổng số từ trong các thư rác, tổng số từ trong các thư thường. Rồi với mỗi từ được hỏi, đếm số lần nó xuất hiện trong thư rác và trong thư thường (một từ lặp hai lần trong một thư thì tính hai lần)."
@@ -425,7 +425,7 @@
       "id": "xt_nb_xac_suat_tu",
       "skill": "xs_t4_bayes_ung_dung",
       "tier": 3,
-      "title_vi": "Lọc thư rác: công thức Bayes cho một thư",
+      "title_vi": "Lọc thư rác: công thức Bayes",
       "statement_vi": [
         "Bayes ngây thơ coi các từ của một thư như được rút độc lập từ túi từ của loại thư ấy. Với mỗi loại c (rác hoặc thường): P(c) = số thư loại c / n, và P(từ | c) = (số lần từ xuất hiện trong loại c + 1) / (tổng số từ của loại c + V), trong đó V là số từ khác nhau trong toàn bộ dữ liệu huấn luyện. Số 1 cộng thêm (làm trơn Laplace) để một từ chưa gặp không làm cả tích bằng 0.",
         "Điểm của loại c là P(c) nhân với tích P(từ | c) qua mọi từ của thư (từ lặp lại thì nhân lặp lại). Theo công thức Bayes, P(rác | thư) = điểm(rác) / (điểm(rác) + điểm(thường)).",
@@ -523,7 +523,7 @@
       "id": "xt_lg_mat_mat_log",
       "skill": "xs_t7_hop_ly_cuc_dai",
       "tier": 4,
-      "title_vi": "Hồi quy logistic: mất mát log và gradient",
+      "title_vi": "Logistic: mất mát log",
       "statement_vi": [
         "Hồi quy logistic cho mỗi mẫu xác suất p = sigmoid(w . x + b) là nhãn 1. Hợp lý của cả bộ dữ liệu là tích p^y (1 - p)^(1 - y) qua các mẫu; lấy âm logarit rồi chia n được mất mát log L = -(1/n) tổng [y log p + (1 - y) log(1 - p)]. Cực đại hợp lý chính là cực tiểu L.",
         "Đạo hàm đẹp bất ngờ: dL/dw = (1/n) tổng (p - y) x, dL/db = (1/n) tổng (p - y). Hãy tính L và gradient tại (w, b) cho trước."
@@ -578,7 +578,7 @@
       "id": "xt_lg_linh_thao",
       "skill": "xs_t7_hop_ly_cuc_dai",
       "tier": 5,
-      "title_vi": "Xạ Trường: phân biệt linh thảo thật giả",
+      "title_vi": "Xạ Trường: linh thảo thật giả",
       "statement_vi": [
         "Chợ phường thị bán hai loại thảo dược trông như nhau: linh thảo thật (nhãn 1) và cỏ giả (nhãn 0). Mỗi cây được đo năm chỉ số, mỗi chỉ số một thang đo và một gốc khác nhau. Hai loại chồng lấn một phần, nên không cách nào đúng 100%; quy tắc tốt nhất có thể đúng khoảng 92%.",
         "Hãy huấn luyện hồi quy logistic bằng hạ gradient trên mất mát log (bài trước) và đoán nhãn các bia. Chuẩn hóa từng chỉ số (trừ trung bình, chia độ lệch chuẩn, tính trên dữ liệu huấn luyện) trước khi học sẽ giúp rất nhiều.",
@@ -620,7 +620,7 @@
       "id": "xt_ab_khoang_tin_cay",
       "skill": "xs_t8_tin_cay_ty_le",
       "tier": 4,
-      "title_vi": "Thí nghiệm A/B: khoảng tin cậy của một tỉ lệ",
+      "title_vi": "A/B: khoảng tin cậy một tỉ lệ",
       "statement_vi": [
         "Một mô hình đoán đúng k trong n bia. Tỉ lệ mẫu p = k/n chỉ là một lần đo: bắn bộ bia khác sẽ ra số khác. Khoảng tin cậy 95% xấp xỉ chuẩn cho tỉ lệ thật là p +- 1.96 * căn(p(1 - p)/n).",
         "Hãy in p và hai đầu của khoảng; đầu nào ra ngoài [0, 1] thì cắt về 0 hoặc 1. Để ý độ rộng khoảng co lại theo căn n: muốn hẹp đi một nửa phải bắn gấp bốn số bia."
@@ -675,7 +675,7 @@
       "id": "xt_ab_hieu_hai_ty_le",
       "skill": "xs_t9_so_sanh_ty_le",
       "tier": 5,
-      "title_vi": "Thí nghiệm A/B: hiệu hai tỉ lệ",
+      "title_vi": "A/B: hiệu hai tỉ lệ",
       "statement_vi": [
         "Hai phương án A và B, mỗi bên thử trên một nhóm riêng: A thành công kA trong nA lần, B thành công kB trong nB lần. Hiệu d = pB - pA. Khoảng tin cậy 95% cho hiệu thật: d +- 1.96 * căn(pA(1 - pA)/nA + pB(1 - pB)/nB): phương sai của hiệu hai đại lượng độc lập là tổng hai phương sai.",
         "Kiểm định giả thuyết không \"A và B như nhau\": dưới giả thuyết ấy hai nhóm chung một tỉ lệ p = (kA + kB)/(nA + nB), nên z = d / căn(p(1 - p)(1/nA + 1/nB)). Kết luận ở mức 5%: B nếu z > 1.96, A nếu z < -1.96, còn lại 0 (chưa đủ bằng chứng)."
@@ -730,7 +730,7 @@
       "id": "xt_ab_ket_luan",
       "skill": "xs_t9_so_sanh_ty_le",
       "tier": 5,
-      "title_vi": "Xạ Trường: trăm cuộc thí nghiệm A/B",
+      "title_vi": "Xạ Trường: trăm cuộc A/B",
       "statement_vi": [
         "Tông môn chạy một trăm cuộc thí nghiệm A/B, mỗi cuộc cỡ khác nhau (từ 200 tới 5000 lần thử mỗi bên) và tỉ lệ nền khác nhau. Game biết sự thật của từng cuộc: hoặc A và B thật sự như nhau (đáp án 0), hoặc một bên tốt hơn hẳn (đáp án A hoặc B).",
         "Với mỗi cuộc, bạn chỉ thấy một lần chạy: nA kA nB kB. Hãy kết luận A, B hoặc 0. Kẻ ngây thơ thấy bên nào cao hơn là tuyên bố bên ấy thắng: với các cuộc không có khác biệt thật, kẻ ấy sai hết, nên chỉ đúng khoảng một nửa. Ngưỡng chênh lệch cố định (\"hơn 2% là thắng\") cũng hỏng, vì cỡ mẫu mỗi cuộc một khác.",
@@ -772,7 +772,7 @@
       "id": "xt_da_bao_cao",
       "skill": "xs_t8_tin_cay_ty_le",
       "tier": 5,
-      "title_vi": "Thiên kiếp Luyện Khí 2: báo cáo cho đàng hoàng",
+      "title_vi": "Thiên kiếp 2: báo cáo",
       "statement_vi": [
         "Một con số độ chính xác trơ trọi chưa phải là kết quả. Báo cáo của người làm nghề có ba thứ: độ chính xác, khoảng tin cậy của nó (bia ít thì khoảng rộng), và mô hình hay nhầm ở đâu.",
         "Cho nhãn thật và nhãn đoán của n ảnh. In độ chính xác p, khoảng tin cậy 95% p +- 1.96 * căn(p(1 - p)/n) (cắt về [0, 1]), rồi lỗi hay gặp nhất: cặp (nhãn thật a, nhãn đoán b) với a khác b xuất hiện nhiều lần nhất. Hòa thì chọn a nhỏ hơn, rồi b nhỏ hơn. Không có lỗi nào thì in -1 -1 0."

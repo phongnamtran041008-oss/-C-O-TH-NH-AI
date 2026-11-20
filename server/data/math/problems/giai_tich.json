@@ -266,7 +266,7 @@
       "id": "xt_hq_mat_mat",
       "skill": "gt_t6_cuc_tri",
       "tier": 3,
-      "title_vi": "Khớp đường thẳng: mất mát và hai đạo hàm",
+      "title_vi": "Khớp đường thẳng: mất mát",
       "statement_vi": [
         "Muốn đường y = a*x + b đi sát các điểm, ta đo độ lệch bằng sai số bình phương trung bình L(a, b) = (1/n) * tổng (a*x_i + b - y_i)^2. Đường khớp nhất là chỗ L nhỏ nhất, tức là chỗ cả hai đạo hàm riêng bằng 0.",
         "Đặt e_i = a*x_i + b - y_i. Theo quy tắc dây chuyền: dL/da = (2/n) * tổng e_i * x_i và dL/db = (2/n) * tổng e_i. Hãy tính L và hai đạo hàm tại (a, b) cho trước."
@@ -321,7 +321,7 @@
       "id": "xt_hq_vong_lap",
       "skill": "gt_t6_cuc_tri",
       "tier": 4,
-      "title_vi": "Khớp đường thẳng: vòng huấn luyện",
+      "title_vi": "Khớp đường thẳng: vòng lặp",
       "statement_vi": [
         "Hạ gradient: bắt đầu từ (a, b), lặp T lần: tính dL/da và dL/db tại (a, b) hiện tại, rồi bước ngược hướng gradient một đoạn tỉ lệ với tốc độ học lr: a = a - lr * dL/da, b = b - lr * dL/db.",
         "Chú ý: cả hai đạo hàm phải tính tại cùng một điểm cũ, rồi mới cập nhật cả hai. Cập nhật a xong rồi dùng a mới để tính đạo hàm cho b là một lỗi hay gặp.",
@@ -377,7 +377,7 @@
       "id": "xt_hq_khop_duong_thang",
       "skill": "gt_t6_cuc_tri",
       "tier": 4,
-      "title_vi": "Xạ Trường: khớp đường thẳng bằng hạ gradient",
+      "title_vi": "Xạ Trường: khớp đường thẳng",
       "statement_vi": [
         "Một trận pháp tỏa linh khí theo khoảng cách: y gần bằng a*x + b, cộng nhiễu. Bạn có n lần đo (x, y) để học, rồi phải đoán y tại m vị trí x mới. Game giữ các y thật của những vị trí ấy (cũng có nhiễu, như mọi phép đo).",
         "Hãy huấn luyện a, b bằng hạ gradient như bài trước. x ở đây chạy từ 0 tới 10: nếu b học chậm quá, thử trừ trung bình của x trước khi học (rồi nhớ trừ đúng như thế khi đoán).",
@@ -574,7 +574,7 @@
       "id": "xt_da_nhan_dang",
       "skill": "gt_t9_gradient_lan_truyen",
       "tier": 5,
-      "title_vi": "Thiên kiếp Luyện Khí 3: nhận dạng chữ số",
+      "title_vi": "Thiên kiếp 3: đọc chữ số",
       "statement_vi": [
         "Trận cuối. Bạn có 600 ảnh chữ số có nhãn để học, rồi phải đọc 150 ảnh bia. Game chấm trên năm bộ bia, mỗi bộ sinh từ một hạt giống khác: mô hình chỉ gặp may một lần thì không qua.",
         "Các chữ số ở đây là chữ số tổng hợp: game tự vẽ từng nét bằng code rồi nghiêng, xoay, co giãn, dịch, đổi độ đậm và rắc nhiễu, theo đúng định dạng 8 x 8 điểm ảnh, mỗi điểm 0 đến 16, của bộ chữ số 8 x 8 hay dùng để dạy. Không phải chữ viết tay thật của người nào.",

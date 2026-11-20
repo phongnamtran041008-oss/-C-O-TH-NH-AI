@@ -103,9 +103,14 @@ def _best_view(best: MathSubmission | None, problem: Problem | None = None) -> d
     return out
 
 
-async def list_view(db: AsyncSession, user: User, subject_id: str, floor: int | None = None) -> dict:
+async def list_view(db: AsyncSession, user: User, subject_id: str, floor: int | None = None,
+                    ids: list[str] | None = None) -> dict:
     """The exercises of a subject, floor by floor, with how the player has done on each.
-    An exercise whose node is still shut keeps to itself (R10), so only open ones are listed."""
+    An exercise whose node is still shut keeps to itself (R10), so only open ones are listed.
+
+    With `ids` (the exercises of one node of Đạo Thụ) the list holds those exercises only,
+    from every subject they belong to: the realm project mixes three. The floors of another
+    subject than `subject_id` carry that subject's name in their title."""
     try:
         subject = math_path.subject(subject_id)
         if floor is not None:
@@ -113,20 +118,26 @@ async def list_view(db: AsyncSession, user: User, subject_id: str, floor: int | 
     except KeyError:
         raise MathError(404, "no_floor", "Không có tầng này.")
     st = await math_tree_progress.state(db, user.id)
+    wanted = set(ids or [])
+    subjects = [subject] if not wanted else [subject] + [
+        s for s in math_path.subjects() if s.id != subject.id
+        and any(p.subject == s.id for pid, p in math_problems.bank().items() if pid in wanted)]
     floors = []
-    for f in subject.floors:
-        if floor is not None and f.number != floor:
-            continue
-        problems = [p for p in math_problems.floor_problems(subject_id, f.number, settings.allow_unreviewed)
-                    if problem_open(st, p)]
-        if not problems:
-            continue
-        out = []
-        for p in problems:
-            brief = p.brief()
-            brief["best"] = _best_view(await _best(db, user.id, p.id), p)
-            out.append(brief)
-        floors.append({"floor": f.number, "title_vi": f.title_vi, "problems": out})
+    for subj in subjects:
+        for f in subj.floors:
+            if floor is not None and f.number != floor:
+                continue
+            problems = [p for p in math_problems.floor_problems(subj.id, f.number, settings.allow_unreviewed)
+                        if problem_open(st, p) and (not wanted or p.id in wanted)]
+            if not problems:
+                continue
+            out = []
+            for p in problems:
+                brief = p.brief()
+                brief["best"] = _best_view(await _best(db, user.id, p.id), p)
+                out.append(brief)
+            title = f.title_vi if subj.id == subject.id else f"{subj.name_vi}: {f.title_vi}"
+            floors.append({"floor": f.number, "title_vi": title, "problems": out})
     return {"subject_id": subject_id, "name_vi": subject.name_vi, "floors": floors}
 
 
