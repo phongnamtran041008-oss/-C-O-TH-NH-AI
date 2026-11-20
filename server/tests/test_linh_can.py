@@ -21,7 +21,7 @@ from app.realtime import abilities, combat
 from app.realtime import beasts as wild
 from app.realtime import world as wmod
 from app.realtime.world import World
-from app.systems import alchemy, catalog, cultivation, linh_can, loot, math_skills
+from app.systems import catalog, cultivation, linh_can, loot, math_skills
 from tests.econ_helpers import give, player, qty
 from tests.test_alchemy import perfect_timings
 from tests.test_combat import FakeMono, fighter, last, run, settle
