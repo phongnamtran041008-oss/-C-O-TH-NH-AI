@@ -234,15 +234,16 @@ async def test_first_right_answer_breaks_for_everyone(client, gw):
 
 
 async def test_a_forest_monster_asks_math_at_the_players_own_floor_and_logs_it_once(client, gw):
-    """A Mặc Quái of the forest is no quái lỗi sai: it asks a quick question at the player's
-    own floor (math_ask.pick_own), and the answer is written to the learning log once."""
+    """A Mặc Quái of the forest is no quái lỗi sai: it asks a quick question where the player is
+    learning in the branch of the land the forest is (Mê Đồ Lâm: Thuật Toán và Tối Ưu, see
+    realtime/lands.py), and the answer is written to the learning log once."""
     from app.systems import math_ask, math_combat
     h, uid, s = await fighter(client, gw, "kiem_8", "Kiếm Chín")
     p, m = at_monster(gw, s)
     await hit(gw, p, m)
     q = last(s, "q")["q"]
     async with dbm.SessionLocal() as db:
-        own = await math_ask.own_floor(db, uid)
+        own = await math_ask.own_floor(db, uid, "toi_uu_roi_rac")
     assert (q["math"]["subject"], q["math"]["floor"]) == own
     assert q["qtype"] in math_combat.QUICK_TYPES and q["math"]["monster_vi"] == "Mực Con"
     assert q["math"]["tier"] <= await math_combat_tier(uid, q["math"])

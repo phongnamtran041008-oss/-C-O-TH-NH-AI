@@ -39,6 +39,10 @@
     "rung_muc_loang": "luyen_khi:5",
     "ho_nghien_muc": "luyen_khi:9",
     "loan_so_coc": "luyen_khi:9",
+    "luu_van_coc": "luyen_khi:9",
+    "thien_cong_phuong": "luyen_khi:9",
+    "linh_xa_nguyen": "luyen_khi:9",
+    "loi_kiep_dai": "luyen_khi:9",
     "khe_nut_muc": "luyen_khi:9",
     "toan_tran": "truc_co:3",
     "mac_anh_dong": null

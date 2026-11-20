@@ -107,11 +107,19 @@ MASTER_IDLE = ["Trà nguội rồi... con có thấy cái chén của ta đâu k
 
 
 # ---------------------------------------------------------------- stage 3: the shared world
-ZONE_NAMES = {"abode": "Động Phủ", "truc_lam_thon": "Trúc Lâm Thôn", "rung_muc_loang": "Rừng Mực Loang",
-              "ho_nghien_muc": "Hồ Nghiên Mực", "loan_so_coc": "Loạn Số Cốc",
+ZONE_NAMES = {"abode": "Động Phủ", "truc_lam_thon": "Trúc Lâm Thôn", "rung_muc_loang": "Mê Đồ Lâm",
+              "ho_nghien_muc": "Vạn Tượng Trạch", "loan_so_coc": "Kiếm Trủng Sơn",
+              "luu_van_coc": "Lưu Vân Cốc", "thien_cong_phuong": "Thiên Công Phường",
+              "linh_xa_nguyen": "Linh Xạ Nguyên", "loi_kiep_dai": "Lôi Kiếp Đài",
               "bi_canh": "Bí Cảnh"}
 # where a player may be standing when they log out, so the game sends them back there
-WORLD_ZONES = ("truc_lam_thon", "rung_muc_loang", "ho_nghien_muc", "loan_so_coc")
+WORLD_ZONES = ("truc_lam_thon", "rung_muc_loang", "ho_nghien_muc", "loan_so_coc",
+               "luu_van_coc", "thien_cong_phuong", "linh_xa_nguyen", "loi_kiep_dai")
+# Thiên Địa Đồ: the weapons lying in the lands (GET /weapons, the weapon system draws the rest)
+WEAPON_SPOT = "Binh khí"
+WEAPON_SPOT_TAKEN = "Binh khí này đã có chủ."
+WEAPON_SPOT_LOCKED = "Chưa đủ tu vi để cầm binh khí này."
+WEAPON_SPOT_CLAIMED = "Đã nhặt {name}."
 ENTERING = "Đang đến {zone}..."
 CONNECTING_WORLD = "Đang kết nối thế giới..."
 CHANNEL = "Kênh {n}"
@@ -132,14 +140,16 @@ COMING = {
     "monster": "{name} lườm con một cái rồi lẩn vào sương mực. Vấn Đạo (đánh quái bằng câu đố) sẽ mở ở bản cập nhật tới.",
 }
 MASTER_VILLAGE = ["Ồ, con xuống làng rồi à? Trúc Lâm Thôn đông vui lắm, đạo hữu khắp nơi kéo về.",
-                  "Phía đông là Rừng Mực Loang. Mặc Quái ở đó chưa dám làm gì ai, nhưng đừng đi một mình lúc tối nhé.",
-                  "Ra cổng Tây là Hồ Nghiên Mực. Lão Ngư Ông ở đó câu cá từ hồi ta còn trẻ.",
+                  "Phía đông là Mê Đồ Lâm, rừng của Thuật Toán. Lối đi ở đó chằng chịt, đừng đi một mình lúc tối nhé.",
+                  "Ra cổng Tây là Vạn Tượng Trạch. Lão Ngư Ông câu cá ở Hồ Nghiên Mực trong đầm từ hồi ta còn trẻ.",
+                  "Mỗi vùng đất quanh làng luyện một nhánh toán. Lôi Kiếp Đài ở góc tây bắc chỉ mở khi con xong cả Luyện Khí.",
                   "Về động phủ thì nhớ ngồi bàn đả tọa. Bài không ôn là bài bay mất!"]
 GUIDE_NAME = "Tiểu Lan"
 GUIDE_LINES = ["Chào đạo hữu! Ta là Tiểu Lan, chuyên chỉ đường cho người mới.",
                "Bấm Enter để chat. Thế giới là nói với mọi người, Khu vực thì chỉ người trong kênh này nghe.",
                "Mỗi vùng có nhiều kênh, mỗi kênh tối đa 40 người. Bấm vào tên kênh trên đầu màn hình để đổi.",
-               "Cổng phía đông dẫn tới Rừng Mực Loang, cổng phía tây ra Hồ Nghiên Mực. Đường phía nam đưa con về động phủ.",
+               "Cổng phía đông dẫn tới Mê Đồ Lâm, cổng phía tây ra Vạn Tượng Trạch, cổng phía bắc lên Kiếm Trủng Sơn. Đường phía nam đưa con về động phủ.",
+               "Cổng đông bắc ra Lưu Vân Cốc. Thiên Công Phường và Linh Xạ Nguyên chỉ mở khi Đạo Thụ của con đủ tầng.",
                "Kết bạn rồi thì nhắn riêng được, lại rủ nhau lập tổ đội (phím Y) cùng vào bí cảnh."]
 LIBRARIAN_NAME = "Thủ Thư"
 LIBRARIAN_LINES = ["Chào mừng con tới Tàng Thư Các. Ở đây cất kinh thư toán của mọi tầng Đạo Thụ: công thức, "

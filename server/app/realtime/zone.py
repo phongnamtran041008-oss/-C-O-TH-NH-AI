@@ -147,6 +147,10 @@ class ChannelZone:
         self.events: list[dict] = []          # combat effects since the last snapshot
         self.extras: list = []                # other things seen in the AOI: Khe Nứt Mực rifts (stage 9)
         self.safe = False                     # set by the world from zones.json
+        from . import lands                   # Thiên Địa Đồ: a land asks the math of its own branch
+        asker = lands.asker_for(zone_id)
+        if asker is not None:                 # (a bí cảnh is no land: it keeps its own source)
+            self.question_source = asker
 
     def monster(self, eid: str):
         return next((m for m in self.monsters if m.eid == eid), None)

@@ -13,9 +13,9 @@ functions. The **tree is wired** (`"wired": true` in tree.json, approved by the 
 and done, and the question loop (systems/math_practice.py) sits down on the parts of a node
 (a floor of math_path.py is still the address of the questions). The world plan as a whole is
 not wired yet (`"wired": false` in world_plan.json): its lands, weapons and beasts are a design.
-One part of it is: `"wired_sections": ["combat"]` names the sections the game already runs on
-although the whole plan is not (the combat rule "questions only when a monster hits you",
-realtime/combat.py). A wired section is checked harder - every number the game reads must be
+Parts of it are: `"wired_sections": ["combat", "lands"]` names the sections the game already
+runs on although the whole plan is not (the combat rule "questions only when a monster hits you",
+realtime/combat.py; the lands of Luyện Khí - their maps, creatures and doors, realtime/lands.py). A wired section is checked harder - every number the game reads must be
 there and make sense - because a typo in it is a bug in the game, not in a design document.
 
 What `validate()` guarantees, because a wrong tree would teach things in the wrong order:
@@ -50,7 +50,7 @@ STATUSES = ("chinh", "phu")
 CONTENT = ("co", "dang_viet", "chua_co")
 KINDS = ("toan", "code", "thuc_chien", "du_an", "hoc_may", "hoc_sau", "he_thong", "nghien_cuu", "dan_dat")
 QUESTION_RULES = ("on_hit",)
-WIREABLE_SECTIONS = ("combat",)    # the parts of world_plan.json the game can run on by themselves
+WIREABLE_SECTIONS = ("combat", "lands")   # the parts of world_plan.json the game can run on by themselves
 TELEGRAPH_SHAPES = ("circle", "cone", "line")
 RANKS = ("normal", "elite", "boss")
 
@@ -278,6 +278,146 @@ def _wired_combat_problems(combat: dict, unlocks: dict) -> list[str]:
     return errs
 
 
+TILE = 16
+MATH_BRANCHES = ("ds", "gt", "xs", "tr")
+
+
+def _tile_walkable(zmap, x: int, y: int) -> bool:
+    """Can a character stand on tile (x, y)? Its feet at the middle of the tile, a little low,
+    the collision box of realtime/movement.py."""
+    return not zmap.collider.blocked(x * TILE + TILE / 2, y * TILE + 12)
+
+
+def _wired_lands_problems(plan: dict, t: Tree, math_dir: Path) -> list[str]:
+    """What realtime/lands.py, the world and the client read about a built land (`status: co`),
+    checked once the lands section is wired: a zone of zones.json is that land, its map is on
+    disk for the server and the client, every creature named spawns there and stands for real
+    nodes of the land's own branch, and every weapon lying in it has a `pos` on a walkable tile."""
+    from ..realtime import maps as rmaps   # reads Tiled files only (no world, no database)
+    errs: list[str] = []
+    data_dir = math_dir.parent
+    maps_dir = data_dir.parent / "maps"
+    client_maps = data_dir.parents[1] / "client" / "assets" / "maps"
+    try:
+        zones = {k: v for k, v in _read("zones.json", data_dir).items() if not k.startswith("_")}
+        creatures = {k: v for k, v in _read("monsters.json", math_dir).items() if not k.startswith("_")}
+        creatures.update({k: v for k, v in _read("monsters.json", data_dir / "creatures").items()
+                          if not k.startswith("_")})
+    except (OSError, ValueError) as e:
+        return [f"lands: cannot read zones or monsters: {e}"]
+    branches = {b["id"]: b for b in t.raw.get("branches", [])}
+    lands = {l["id"]: l for l in plan.get("lands", [])}
+    built: dict[str, object] = {}
+    for lid, l in lands.items():
+        if l.get("status") != "co":
+            continue
+        where = f"land {lid}"
+        if not l.get("map"):
+            errs.append(f"{where}: built but has no map")
+            continue
+        zids = [zid for zid, z in zones.items() if z.get("land") == lid]
+        if len(zids) != 1:
+            errs.append(f"{where}: {len(zids)} zones of zones.json are this land (one is needed)")
+            continue
+        z = zones[zids[0]]
+        if z.get("map") != l["map"]:
+            errs.append(f"{where}: its zone {zids[0]} draws map {z.get('map')!r}, the plan says {l['map']!r}")
+        if (l.get("kind") == "hub") != (z.get("kind") == "hub"):
+            errs.append(f"{where}: kind {l.get('kind')!r} but its zone is {z.get('kind')!r}")
+        path = maps_dir / f"{l['map']}.tmj"
+        if not path.is_file():
+            errs.append(f"{where}: no map file server/maps/{l['map']}.tmj")
+            continue
+        if not (client_maps / f"{l['map']}.tmj").is_file():
+            errs.append(f"{where}: the client has no client/assets/maps/{l['map']}.tmj")
+        zmap = rmaps.parse(path)
+        built[lid] = zmap
+        if l.get("kind") == "hub":
+            continue
+        spawned = {a.props.get("monster") for a in zmap.monster_areas}
+        for kind in l.get("monsters", []):
+            if kind not in creatures:
+                errs.append(f"{where}: monster {kind!r} does not exist")
+            elif kind not in spawned:
+                errs.append(f"{where}: monster {kind} never spawns on map {l['map']}")
+        for kind in sorted(k for k in spawned if k in creatures and creatures[k].get("land")):
+            if creatures[kind]["land"] != lid:
+                errs.append(f"{where}: {kind} belongs to land {creatures[kind]['land']!r} but spawns here")
+        for kind in sorted(k for k in spawned if k and k not in creatures):
+            errs.append(f"{where}: map {l['map']} spawns {kind!r}, which is no monster")
+    zone_lands = {z.get("land") for z in zones.values() if z.get("land")}
+    for lid in sorted(zone_lands - set(lands)):
+        errs.append(f"zones.json: land {lid!r} is not a land of the plan")
+    for lid in sorted(zone_lands & set(lands)):
+        if lands[lid].get("status") != "co":
+            errs.append(f"land {lid}: a zone is this land but the plan still says {lands[lid].get('status')!r}")
+
+    # the creatures of the lands: real nodes of the land's own branch
+    for kind, m in sorted(creatures.items()):
+        if not m.get("land"):
+            continue
+        where = f"monster {kind}"
+        l = lands.get(m["land"])
+        if l is None:
+            errs.append(f"{where}: unknown land {m['land']!r}")
+            continue
+        if m.get("branch") != l.get("branch"):
+            errs.append(f"{where}: branch {m.get('branch')!r}, its land is of {l.get('branch')!r}")
+        if m.get("rank", "normal") not in RANKS:
+            errs.append(f"{where}: unknown rank {m.get('rank')!r}")
+        nodes = m.get("nodes") or []
+        if not nodes:
+            errs.append(f"{where}: stands for no node, so it has nothing of its own to ask")
+        bad = [n for n in nodes if n not in t.nodes or not t.nodes[n].main or t.nodes[n].realm != l.get("realm")]
+        if bad:
+            errs.append(f"{where}: {', '.join(bad)} are not main-path nodes of {l.get('realm')}")
+            continue
+        if any(not t.nodes[n].skills for n in nodes):
+            errs.append(f"{where}: a node without questions ({', '.join(n for n in nodes if not t.nodes[n].skills)})")
+        branch = l.get("branch")
+        if m.get("ask") == "branches":
+            have = {t.nodes[n].branch for n in nodes}
+            if not set(MATH_BRANCHES) <= have:
+                errs.append(f"{where}: asks the four math branches in turn but has no node of "
+                            f"{', '.join(sorted(set(MATH_BRANCHES) - have))}")
+        elif m.get("ask", "nodes") != "nodes":
+            errs.append(f"{where}: ask must be 'nodes' or 'branches'")
+        elif branch in branches and branches[branch].get("subject"):
+            other = [n for n in nodes if t.nodes[n].branch != branch]
+            if other:
+                errs.append(f"{where}: {', '.join(other)} are not of its land's branch {branch}")
+        elif branch in branches:
+            # a branch of exercises: its creatures ask the math its nodes reinforce
+            fed = {r for n in t.nodes.values() if n.branch == branch for r in n.reinforces}
+            other = [n for n in nodes if n not in fed]
+            if other:
+                errs.append(f"{where}: {', '.join(other)} are reinforced by no node of {branch}")
+        for d in m.get("drops", []):
+            if not isinstance(d.get("chance"), (int, float)) or not 0 < d["chance"] <= 1:
+                errs.append(f"{where}: a drop chance must be in (0, 1]")
+
+    # where the weapons lie
+    for i, p in enumerate(plan.get("weapons_placed", [])):
+        where = f"weapons_placed[{i}] {p.get('weapon')} {p.get('quality')}"
+        lid = p.get("land")
+        pos = p.get("pos")
+        if lid not in built:
+            if pos is not None and lands.get(lid, {}).get("status") != "co":
+                errs.append(f"{where}: has a pos but land {lid} is not built")
+            continue
+        if not (isinstance(pos, list) and len(pos) == 2 and all(isinstance(v, int) and not isinstance(v, bool)
+                                                                for v in pos)):
+            errs.append(f"{where}: needs a pos [x, y] (a tile of map {lands[lid]['map']})")
+            continue
+        zmap = built[lid]
+        x, y = pos
+        if not (0 <= x < zmap.width_px // TILE and 0 <= y < zmap.height_px // TILE):
+            errs.append(f"{where}: pos {pos} is off the map")
+        elif not _tile_walkable(zmap, x, y):
+            errs.append(f"{where}: pos {pos} is not a walkable tile")
+    return errs
+
+
 def subject_skills(math_dir: Path = MATH_DIR) -> dict[str, tuple[str, ...]]:
     """Every micro-skill id of the four subject files -> its prerequisites."""
     out: dict[str, tuple[str, ...]] = {}
@@ -468,7 +608,7 @@ def _req_problems(t: Tree, where: str, req: dict) -> list[str]:
     return errs
 
 
-def validate_world(plan: dict, t: Tree) -> list[str]:
+def validate_world(plan: dict, t: Tree, math_dir: Path = MATH_DIR) -> list[str]:
     errs: list[str] = []
     combat = plan.get("combat", {})
     if combat.get("question_rule") not in QUESTION_RULES:
@@ -484,6 +624,8 @@ def validate_world(plan: dict, t: Tree) -> list[str]:
         errs.append(f"wired_sections must be a list of distinct sections out of {WIREABLE_SECTIONS}")
     if section_wired("combat", plan):
         errs += _wired_combat_problems(combat, {u.get("id"): u for u in plan.get("unlocks", [])})
+    if section_wired("lands", plan):
+        errs += _wired_lands_problems(plan, t, math_dir)
 
     grades = {g["grade"]: g for g in plan.get("grades", [])}
     if sorted(grades) != list(range(1, len(t.realm_order) + 1)):
@@ -567,4 +709,4 @@ def validate_all(math_dir: Path = MATH_DIR) -> list[str]:
     errs = validate_tree(raw, subject_skills(math_dir), problem_ids(math_dir))
     if errs:
         return errs
-    return validate_world(plan, build(raw))
+    return validate_world(plan, build(raw), math_dir)

@@ -136,6 +136,75 @@ def ghostly(img: pygame.Surface) -> pygame.Surface:
     return _GHOST[key]
 
 
+@dataclass
+class WeaponSpot:
+    """A weapon lying in a land (Thiên Địa Đồ), as GET /weapons of the weapon system lists it:
+    `pos` is a tile of this map; state available / taken / locked (with `reason_vi`)."""
+    id: str
+    land: str
+    tx: int
+    ty: int
+    state: str = "available"
+    reason_vi: str = ""
+    name_vi: str = ""
+    icon: tuple | None = None          # (icon set, icon id) of client/assets/v2/icons
+
+    @property
+    def x(self) -> float:
+        return self.tx * 16 + 8
+
+    @property
+    def y(self) -> float:
+        return self.ty * 16 + 12
+
+    @property
+    def pos(self) -> tuple[float, float]:
+        return self.x, self.y
+
+
+def weapon_icon_ref(row: dict) -> tuple | None:
+    """The weapon icon of a GET /weapons row: its `weapon`/`icon` id, else its id without the
+    quality (kiem_1_ha -> kiem_1), looked up in the two weapon icon sets."""
+    rid = str(row.get("id", ""))
+    for cand in (row.get("weapon"), row.get("icon"), rid, rid.rsplit("_", 1)[0]):
+        if not cand:
+            continue
+        for set_id in ("weapons_a", "weapons_b"):
+            try:
+                if cand in art2.icon_ids(set_id):
+                    return set_id, cand
+            except Exception:
+                return None
+    return None
+
+
+def weapon_spots_from(data, land: str | None) -> list[WeaponSpot]:
+    """The spots of this land in a GET /weapons answer (a list, or {"weapons": [...]}); anything
+    malformed is skipped, so a weapon system still being written cannot break the world."""
+    rows = data.get("weapons", []) if isinstance(data, dict) else data
+    out = []
+    for w in rows if isinstance(rows, list) else []:
+        pos = w.get("pos") if isinstance(w, dict) else None
+        if not land or w.get("land") != land or not isinstance(pos, (list, tuple)) or len(pos) != 2:
+            continue
+        try:
+            tx, ty = int(pos[0]), int(pos[1])
+        except (TypeError, ValueError):
+            continue
+        out.append(WeaponSpot(str(w.get("id", "")), land, tx, ty, str(w.get("state", "available")),
+                              str(w.get("reason_vi") or ""), str(w.get("name_vi") or ""), weapon_icon_ref(w)))
+    return out
+
+
+def old_prop(name: str, variant: int, frame: int):
+    """The code-drawn sprite of a map prop, or None for the props that only exist in the v2 art
+    (boulder, crystal, cloud_puff... used by the lands of Thiên Địa Đồ)."""
+    try:
+        return sprites.prop(name, variant, frame)
+    except KeyError:
+        return None
+
+
 def map_collider(tmap) -> mv.Collider:
     solids = [(r.x, r.y, r.w, r.h) for r in tmap.solids]
     return mv.Collider(tmap.px_w, tmap.px_h, solids)
@@ -279,6 +348,10 @@ class WorldScene(Scene):
         self.fx = Effects()
         self.fx.stack_texts = art2.on()
         self.target = None
+        self.land_id: str | None = None           # Thiên Địa Đồ: the land this zone is (from the zone message)
+        self.weapon_spots: list[WeaponSpot] = []  # the weapons lying here (GET /weapons; none without it)
+        self.portal_refused: str | None = None    # a land's door said no: not again until we step out
+        self.portal_target: str | None = None
         self.minimap = self._build_minimap()
         self.teles: list[list] = []          # [x, y, r, time_left, total]
         self.hurt_flash = 0.0
@@ -351,9 +424,11 @@ class WorldScene(Scene):
             self.apply_snapshot(m)
         elif t == "error":
             code = m.get("code")
-            if code in ("not_at_portal", "realm_too_low", "zone_full", "not_in_zone"):
+            if code in ("not_at_portal", "realm_too_low", "zone_full", "not_in_zone", "land_locked"):
                 self.waiting_zone = None
                 self.portal_cool = 2.0
+            if code == "land_locked":         # Thiên Địa Đồ: the reason names what is missing
+                self.portal_refused = self.portal_target
             if not self.joined and m.get("zone") == "abode":  # cannot return to where we were
                 self.game.enter_abode(None, None, "down")
                 return
@@ -481,12 +556,73 @@ class WorldScene(Scene):
         self.channels = m.get("channels", [])
         self.rule = m.get("combat")
         self.zone_name = m.get("name_vi") or self.zone_name
+        if m.get("land") != self.land_id or not self.weapon_spots:
+            self.land_id = m.get("land")
+            self.load_weapon_spots()
         self.joined = True
         self.waiting_zone = None
         ch = self.game.state.character
         ch.update({"zone_id": self.zone_id, "x": p.x, "y": p.y, "facing": p.facing})
         if m.get("day") is not None:
             self.game.set_day(m["day"])
+
+    def load_weapon_spots(self) -> None:
+        """The weapons lying in this land, from the weapon system (GET /weapons). A server
+        without it answers 404 or nothing: then no spot is drawn and nothing else changes."""
+        land = self.land_id
+        if not land:
+            self.weapon_spots = []
+            return
+
+        def ok(d):
+            if self.land_id == land:
+                self.weapon_spots = weapon_spots_from(d, land)
+        try:
+            self.game.api.get("/weapons", ok, lambda e: None)
+        except Exception:
+            self.weapon_spots = []
+
+    def claim_weapon(self, spot: WeaponSpot) -> None:
+        g = self.game
+        if spot.state == "taken":
+            g.toast(T.WEAPON_SPOT_TAKEN, "#BC4749")
+            return
+        if spot.state != "available":
+            g.toast(spot.reason_vi or T.WEAPON_SPOT_LOCKED, "#BC4749")
+            return
+
+        def ok(r):
+            r = r if isinstance(r, dict) else {}
+            g.toast(r.get("message_vi") or T.WEAPON_SPOT_CLAIMED.format(name=spot.name_vi or T.WEAPON_SPOT),
+                    "#6A994E")
+            for name in ("refresh_inv", "refresh_me"):
+                fn = getattr(g, name, None)
+                if callable(fn):
+                    fn()
+            self.load_weapon_spots()
+
+        def err(e):
+            msg = getattr(e, "message_vi", "") if getattr(e, "status", 0) not in (404, 405) else ""
+            if msg:
+                g.toast(msg, "#BC4749")
+        g.api.post("/weapons/claim", {"id": spot.id}, ok, err)
+
+    def weapon_drawables(self, v) -> list:
+        """(foot y, image, screen position) of the weapon spots in the v2 world: the weapon's
+        icon standing on its tile, bobbing; a locked one is dimmed, a taken one is gone."""
+        out = []
+        for sp in self.weapon_spots:
+            if sp.state == "taken":
+                continue
+            img = art2.icon(*sp.icon) if sp.icon else None
+            if img is None:
+                continue
+            if sp.state != "available":
+                img = art2.alpha_copy(img, 120)
+            sx, sy = v.to_screen(sp.x, sp.y)
+            bob = int(math.sin(self.t * 3 + sp.tx) * 2)
+            out.append((sp.y, img, (int(sx - img.get_width() / 2), int(sy - img.get_height() - 2 + bob))))
+        return out
 
     def apply_snapshot(self, m: dict) -> None:
         st = m["st"]
@@ -1230,16 +1366,20 @@ class WorldScene(Scene):
         if self.waiting_zone is not None or self.portal_cool > 0:
             return
         p = self.player
-        for o in self.map.objects:
-            if o.type == "portal" and o.x <= p.x <= o.x + o.w and o.y <= p.y <= o.y + o.h:
-                target = o.props.get("target")
-                if not target:
-                    continue
-                self.flush_inputs()
-                self.net.send({"t": "join", "zone": target, "via": "portal"})
-                self.waiting_zone = self.game.now
-                self.game.toast(T.ENTERING.format(zone=T.ZONE_NAMES.get(target, target)))
-                return
+        inside = [o for o in self.map.objects
+                  if o.type == "portal" and o.x <= p.x <= o.x + o.w and o.y <= p.y <= o.y + o.h]
+        if self.portal_refused and not any(o.props.get("target") == self.portal_refused for o in inside):
+            self.portal_refused = None        # stepped out of the gate whose land said no
+        for o in inside:
+            target = o.props.get("target")
+            if not target or target == self.portal_refused:
+                continue
+            self.portal_target = target
+            self.flush_inputs()
+            self.net.send({"t": "join", "zone": target, "via": "portal"})
+            self.waiting_zone = self.game.now
+            self.game.toast(T.ENTERING.format(zone=T.ZONE_NAMES.get(target, target)))
+            return
 
     # ------------------------------------------------------------ interaction
     def find_target(self):
@@ -1253,6 +1393,12 @@ class WorldScene(Scene):
                 d = math.hypot(cx - fx, cy - fy)
                 if d < best_d:
                     best, best_d = ("object", o), d
+        for sp in self.weapon_spots:                 # Thiên Địa Đồ: a weapon lying here
+            if sp.state == "taken":
+                continue
+            d = math.hypot(sp.x - fx, sp.y - fy)
+            if d < best_d:
+                best, best_d = ("weapon", sp), d
         for e in self.entities.values():
             if not e.alive:
                 continue
@@ -1303,6 +1449,8 @@ class WorldScene(Scene):
 
     def action_of(self, target) -> str:
         kind, obj = target
+        if kind == "weapon":
+            return "weapon"
         if kind == "ent":
             return "player" if obj.kind == "p" else ("rift" if obj.kind == "r" else "monster")
         if obj.type == "sign":
@@ -1311,6 +1459,9 @@ class WorldScene(Scene):
 
     def interact(self, target) -> None:
         kind, obj = target
+        if kind == "weapon":
+            self.claim_weapon(obj)
+            return
         if kind == "object":
             self.talking_to = obj          # v2: that NPC plays its talk clip while the dialog is up
         action = self.action_of(target)
@@ -1508,9 +1659,10 @@ class WorldScene(Scene):
                 continue
             name = o.props.get("sprite")
             if name:
-                img = sprites.prop(name, int(o.props.get("variant", 0) or 0),
-                                   frame if name in sprites.ANIMATED_PROPS else 0)
-                drawables.append((o.foot_y, img, (int(o.x) - cx, int(o.y) - cy)))
+                img = old_prop(name, int(o.props.get("variant", 0) or 0),
+                               frame if name in sprites.ANIMATED_PROPS else 0)
+                if img is not None:
+                    drawables.append((o.foot_y, img, (int(o.x) - cx, int(o.y) - cy)))
             elif o.type == "char":      # M8: a character rendered out of Blender
                 img, pos = self._char_frame(o, cx, cy)
                 if img is not None:
@@ -1594,6 +1746,8 @@ class WorldScene(Scene):
             kind, obj = self.target
             if kind == "object":
                 tx, ty = obj.x + obj.w / 2, obj.y
+            elif kind == "weapon":
+                tx, ty = obj.x, obj.y - 20
             else:
                 tx, ty = obj.pos[0], obj.pos[1] - 26
             bob = int(math.sin(self.t * 6) * 2)
@@ -1796,9 +1950,10 @@ class WorldScene(Scene):
                 drawables.append(d)
             elif o.props.get("sprite"):
                 name = o.props["sprite"]
-                img = sprites.prop(name, int(o.props.get("variant", 0) or 0),
-                                   frame if name in sprites.ANIMATED_PROPS else 0)
-                drawables.append((o.foot_y, v.img(img), v.to_screen(o.x, o.y)))
+                img = old_prop(name, int(o.props.get("variant", 0) or 0),
+                               frame if name in sprites.ANIMATED_PROPS else 0)
+                if img is not None:
+                    drawables.append((o.foot_y, v.img(img), v.to_screen(o.x, o.y)))
             elif o.type == "char":      # M8: a character rendered out of Blender
                 img, _pos = self._char_frame(o, 0, 0)
                 if img is not None:
@@ -1812,6 +1967,7 @@ class WorldScene(Scene):
                 img = sprites.truc_lao()[1 if int(self.t * 10) % 37 == 0 else 0] if look == "truc_lao" \
                     else sprites.npc(look)[("down", 0)]
                 drawables.append((o.foot_y, v.img(img), v.to_screen(o.x, o.y)))
+        drawables += self.weapon_drawables(v)
         bars = []
         for e in self.entities.values():
             s = self.interp.sample(e.id, now)
@@ -1890,6 +2046,9 @@ class WorldScene(Scene):
             if kind == "object":
                 tx, ty = v.to_screen(obj.x + obj.w / 2, obj.y + obj.h)
                 ty -= art2.object_height(obj, v)
+            elif kind == "weapon":
+                tx, ty = v.to_screen(obj.x, obj.y)
+                ty -= 36
             else:
                 tx, ty = v.to_screen(obj.pos[0], obj.pos[1])
                 ty -= self.ent_extent(obj)[1] + (8 if obj.kind == "m" else 2)
@@ -2118,7 +2277,8 @@ class WorldScene(Scene):
         if self.rule is not None and (ui.key(pygame.K_LSHIFT) or ui.key(pygame.K_RSHIFT)):
             self.dodge()                             # Né Đòn (the open-world rule)
         if self.target:
-            label = T.WORLD_ACTIONS.get(self.action_of(self.target), T.SIGN_READ)
+            act = self.action_of(self.target)
+            label = T.WEAPON_SPOT if act == "weapon" else T.WORLD_ACTIONS.get(act, T.SIGN_READ)
             ui.text(T.PRESS_E.format(action=label), 240, 216, 9, "#FFFFFF", anchor="center")
             if ui.key(pygame.K_e):
                 self.interact(self.target)

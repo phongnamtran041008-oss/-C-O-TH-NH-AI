@@ -77,6 +77,44 @@ Màn Bí Cảnh Toán (`client/scenes/math_practice.py`, `client/scenes/math_tre
   khác (`review_node_vi` trong thông tin câu hỏi). Chỉ buổi luyện cũ không có nút mới còn ghi "Ôn xoắn ốc: tầng N".
 - Qua Thiên kiếp nhỏ của một nút thì màn kết quả nói nút nào vừa mở, kể cả nút của nhánh khác.
 
+## Vùng đất Luyện Khí (Thiên Địa Đồ, nối ngày 2026-11-20)
+
+Phần `lands` của `server/data/math/world_plan.json` đã nối vào game (`"wired_sections": ["combat", "lands"]`).
+Tám vùng đất của Luyện Khí có thật; Vân Hải Thiên Đảo (Trúc Cơ, đảo trên mây) vẫn `chua_co`.
+
+| Vùng đất | Nhánh | Bản đồ (zone) | Cổng từ Trúc Lâm Thôn | Mở khi |
+|---|---|---|---|---|
+| Kiếm Trủng Sơn | Đại Số | `loan_so_coc` (bản đồ cũ) | Bắc | Ngay từ đầu |
+| Lưu Vân Cốc | Giải Tích | `luu_van_coc` (mới) | Đông Bắc | Ngay từ đầu |
+| Vạn Tượng Trạch | Xác Suất | `ho_nghien_muc` (bản đồ cũ) | Tây | Ngay từ đầu |
+| Mê Đồ Lâm | Thuật Toán | `rung_muc_loang` (bản đồ cũ) | Đông | Ngay từ đầu |
+| Thiên Công Phường | Lập Trình | `thien_cong_phuong` (mới) | Tây, phía trên | Tầng 1 và xong Python nhập môn |
+| Linh Xạ Nguyên | Thực Chiến | `linh_xa_nguyen` (mới) | Đông, phía dưới | Tầng 2, xong Cấu trúc dữ liệu và Vectơ, ma trận |
+| Lôi Kiếp Đài | (cả bốn nhánh toán) | `loi_kiep_dai` (mới) | Tây Bắc | Tầng 9 và xong dự án Luyện Khí |
+
+- **Cửa vào**: máy chủ kiểm (`server/app/realtime/lands.py`, gọi từ `world.join`), cả khi đi qua cổng lẫn khi
+  vào lại sau mất mạng. "Tu vi" ở đây là tầng trên Đạo Thụ và các nút đã xong; cảnh giới nhân vật không đổi
+  gì. Chưa đủ thì không đi được và thấy một dòng tiếng Việt nói còn thiếu gì, ví dụ "Chưa vào được Linh Xạ
+  Nguyên: cần tu vi Luyện Khí tầng 2 (con đang ở tầng 1) và học xong Vectơ và ma trận."
+- **Quái của vùng nào hỏi toán của nhánh ấy.** Mỗi quái của vùng (`server/data/math/monsters.json`, khoá
+  `land`, `branch`, `nodes`) đứng cho vài nút của Đạo Thụ; khi nó đánh trúng, câu hỏi lấy từ phần của các
+  nút ấy mà người chơi đã mở hoặc đã xong, ở đúng bậc của người chơi. Chưa mở nút nào của nó thì hỏi chỗ
+  người chơi đang học trong nhánh của vùng. Quái lỗi sai cũ ở Kiếm Trủng Sơn vẫn hỏi đúng vi kỹ năng của nó;
+  Mực Con, Lân Hỏa Yêu, Mặc Hồ ở Mê Đồ Lâm nay hỏi Thuật Toán.
+- **Thiên Kiếp Lôi Long** ở Lôi Kiếp Đài là thủ lĩnh: khiên chỉ vỡ khi Phản Đòn, khiên mọc lại ở 66% và 33%
+  máu; mỗi đòn trúng hỏi lần lượt Đại Số, Giải Tích, Xác Suất, Thuật Toán, mỗi lần là câu khó nhất người chơi
+  được hỏi ở nhánh đó. Thắng thì được ghi vào Yêu Quái Phổ (số lần hạ) và nhận thưởng theo luật rơi đồ (Trúc
+  Cơ Đan chỉ rơi khi tu vi nhân vật đủ Luyện Khí tầng 7). Thắng không đổi cảnh giới nhân vật.
+- **Chỗ đặt binh khí**: mỗi mục `weapons_placed` của vùng đã dựng có `"pos": [x, y]` (một ô đi được trên bản
+  đồ, đúng chỗ `spot_vi` tả). Hai chỗ cần Đạp Kiếm Lướt (đỉnh núi bên kia vực ở Kiếm Trủng Sơn, mỏm đá trong
+  mây trên thác ở Lưu Vân Cốc) đứng được nhưng chưa đi tới được. Hệ thống binh khí (đợt khác) cho `GET /weapons`
+  và `POST /weapons/claim`; game vẽ binh khí từ danh sách ấy và bấm E để nhặt; máy chủ chưa có hai đường ấy thì
+  game không vẽ gì và không báo lỗi.
+- Bộ kiểm (`server/app/learning/math_tree.py`, chạy trong `tools/check_all.py`) đòi: mỗi vùng đã dựng có đúng
+  một zone, bản đồ có ở máy chủ và máy khách, mọi quái được nêu có sinh ra ở đó, quái của vùng chỉ đứng cho nút
+  chính đạo của Luyện Khí thuộc nhánh của vùng (vùng Lập Trình, Thực Chiến: nút toán mà nhánh ấy ôn lại), và mọi
+  `pos` là ô đi được.
+
 ## Tôi tự quyết — bạn đổi được
 
 | Việc | Tôi chọn | Vì sao | Muốn khác thì |
@@ -90,12 +128,17 @@ Màn Bí Cảnh Toán (`client/scenes/math_practice.py`, `client/scenes/math_tre
 | Tháp Số Phức (thủ thành) | Mở khi người chơi xong nút bàng môn Số phức | Tầng 2 của Đại Số chỉ còn nút bàng môn, nên theo luật 6 và 12 tháp ấy sẽ không bao giờ mở | — |
 | Bài kiểm tra đầu vào | Giữ nguyên: vẫn hỏi theo cả tầng, kể cả vi kỹ năng bàng môn | Đổi cách hỏi là viết lại bài kiểm tra | Làm thành một việc riêng |
 | Quái lỗi sai | Vẫn hỏi đúng vi kỹ năng của nó, kể cả khi nút ấy chưa mở | Nó không đọc vị trí của người chơi; vi kỹ năng bị loại thì vẫn không bao giờ hỏi | — |
+| Ba vùng đất dùng lại bản đồ cũ | Giữ mã zone cũ (`loan_so_coc`, `ho_nghien_muc`, `rung_muc_loang`), chỉ đổi tên hiện ra; zones.json ghi `land` | Đổi mã thì mất chỗ đứng đã lưu của người chơi và gãy câu cá, nhiệm vụ, bí cảnh đang trỏ tới mã cũ | Đổi mã cùng lúc với một bước chuyển dữ liệu |
+| Quái cũ ở vùng đất mới | Quái lỗi sai ở Kiếm Trủng Sơn và Mực Con, Lân Hỏa Yêu, Mặc Hồ ở Mê Đồ Lâm ở lại (nhiệm vụ đang đòi chúng); Mực Con, Lân Hỏa Yêu ở Vạn Tượng Trạch nhường chỗ cho Đầu Tử Oa, Hồ Lô Tinh | Giữ nhiệm vụ và các bài kiểm cũ chạy được; mọi quái trong vùng đều hỏi toán của nhánh vùng | Bỏ hẳn quái cũ: sửa nhiệm vụ rồi xoá vùng sinh của chúng trong `tools/gen_maps.py` |
+| Quái vùng Lập Trình, Thực Chiến hỏi gì | Phần toán mà các nút của nhánh ấy ôn lại (`reinforces`) | Nút của hai nhánh này là bài code, không có câu hỏi trắc nghiệm | Cho quái ra một đoạn code ngắn để đọc, khi có loại câu ấy |
+| Mỗi nhánh một tinh anh | Phong Lang, Hồ Lô Tinh, Mộc Yêu, Ma Trận Thú, Cơ Quan Nhân Đầu Đàn (mới), Tâm Ma Chấp Niệm (mới) là tinh anh, có khiên chỉ vỡ khi Phản Đòn | Mỗi vùng có chỗ "do ... canh" trong `spot_vi` của binh khí | Đổi `rank` trong monsters.json |
+| Trần rơi đồ | Bốn vùng mới trần Luyện Khí tầng 9; Mê Đồ Lâm giữ trần tầng 5 của Rừng Mực Loang | Không đổi cân bằng đã có | Đổi `source_caps` trong `server/data/loot_tiers.json` |
 
 ## Chưa làm
 
-- **Binh khí, vùng đất, linh thú và các mở khoá theo tu vi khác** trong `world_plan.json`: chưa có dòng code
-  nào dùng (`"wired": false`). **Luật đánh quái mới thì đã nối** (`"wired_sections": ["combat"]`, ngày
-  2026-11-20): ở mọi vùng hoang chỉ hỏi khi bị quái đánh trúng, có Phản Đòn, thời gian nghỉ, vùng đánh tròn /
+- **Binh khí, linh thú và các mở khoá theo tu vi khác** trong `world_plan.json`: chưa nối (`"wired": false`).
+  **Vùng đất Luyện Khí đã nối** (xem phần trên); Vân Hải Thiên Đảo chờ Trúc Cơ. **Luật đánh quái mới cũng đã
+  nối** (`"wired_sections": ["combat", "lands"]`, ngày 2026-11-20): ở mọi vùng hoang chỉ hỏi khi bị quái đánh trúng, có Phản Đòn, thời gian nghỉ, vùng đánh tròn /
   quạt / thẳng và Né Đòn (mở ở Luyện Khí tầng 1). Bí cảnh, hầm ngục, thủ thành và cơ duyên giữ luật cũ. Còn
   thiếu của phần này: `phap_tran` (pháp trận làm quái ra đòn chậm) và việc thuần phục linh thú bằng Phản Đòn
   (`parries_to_tame`) chờ đợt linh thú; số đòn Phản Đòn chưa được đếm ở đâu cả.

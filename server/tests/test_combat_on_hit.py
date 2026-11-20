@@ -403,12 +403,14 @@ async def test_other_players_keep_fighting_while_one_answers(client, gw):
 
 # ------------------------------------------------------------------ the learning path holds
 async def test_a_forest_monster_asks_at_the_players_own_floor(client, gw):
+    """The forest is Mê Đồ Lâm, a land of Thuật Toán và Tối Ưu (realtime/lands.py): its old
+    creatures ask where the player is learning in that branch."""
     h, uid, s = await fighter(client, gw, "nd_17", "Né Mười Tám")
     p, m = stand_at(gw, s, FOREST, "ink_slime")
     await provoke(gw, p, m)
     q = await take_blow(gw, s, p, m)
     async with dbm.SessionLocal() as db:
-        own = await math_ask.own_floor(db, uid)
+        own = await math_ask.own_floor(db, uid, "toi_uu_roi_rac")
     assert (q["q"]["math"]["subject"], q["q"]["math"]["floor"]) == own
     assert q["q"]["qtype"] in math_combat.QUICK_TYPES
 

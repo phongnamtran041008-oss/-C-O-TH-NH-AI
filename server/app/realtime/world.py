@@ -104,6 +104,7 @@ class Session:
         self.pet: str | None = None              # worn Linh Thú (stage 8)
         self.buffs: dict[str, int] = {}          # pill buffs: kind -> seconds left when loaded
         self.last_mark = -1e9                    # party ping icons (stage 9)
+        self.tree = None                         # lands.TreePos: the doors of the lands (Thiên Địa Đồ)
 
     def send(self, msg: dict) -> None:
         if self.closed:
@@ -403,7 +404,19 @@ class World:
             s.buffs = buffs.active(user, clock.now()) if user else {}
             from ..systems import bees
             s.bees = await bees.guard_loadout(db, s.user_id)
+            from . import lands
+            s.tree = await lands.load_pos(db, s.user_id)
             await db.commit()
+
+    async def refresh_tree(self, s: Session) -> None:
+        """Read the player's place in Đạo Thụ again (a node may have been done since): before a
+        walk into a land whose door depends on it."""
+        from . import lands
+        try:
+            async with dbm.SessionLocal() as db:
+                s.tree = await lands.load_pos(db, s.user_id)
+        except Exception:   # keep what we had: the door decides on the last known place
+            log.exception("could not read the tree of user %s", s.user_id)
 
     def disconnect(self, s: Session) -> None:
         if self.sessions.get(s.user_id) is s:
@@ -443,6 +456,9 @@ class World:
             if p is not None and p.facing != msg.f:
                 p.facing, p.dirty = msg.f, True
         elif isinstance(msg, protocol.Join):
+            from . import lands
+            if lands.gated(msg.zone):
+                await self.refresh_tree(s)
             self.join(s, msg.zone, msg.via)
         elif isinstance(msg, protocol.Channel):
             self.switch_channel(s, msg.n)
@@ -499,6 +515,11 @@ class World:
             if not may_enter(s.realm, zone_id):
                 s.send(protocol.error("realm_too_low", "Cảnh giới của bạn chưa đủ để vào nơi này.", zone=ABODE))
                 return False
+            from . import lands
+            why = lands.refusal(zone_id, s.tree)
+            if why:   # Thiên Địa Đồ: the land's door holds on a reconnect too
+                s.send(protocol.error("land_locked", why, zone=ABODE))
+                return False
             zmap = maps.load(defs[zone_id]["map"])
             x, y, f = s.saved_pos or (*zmap.spawn("spawn"), "down")
             if zmap.collider.blocked(x, y):
@@ -534,6 +555,11 @@ class World:
             return True
         if not may_enter(s.realm, zone_id) or defs[zone_id].get("kind") == "instance":
             s.send(protocol.error("realm_too_low", "Cảnh giới của bạn chưa đủ để vào nơi này."))
+            return False
+        from . import lands
+        why = lands.refusal(zone_id, s.tree)
+        if why:   # Thiên Địa Đồ: the land opens at a stage of Đạo Thụ with some nodes done
+            s.send(protocol.error("land_locked", why, land=lands.zone_land_id(zone_id)))
             return False
         tx, ty = maps.load(defs[zone_id]["map"]).spawn(portal.props.get("target_spawn"))
         return self._place(s, zone_id, tx, ty, p.facing)
@@ -585,7 +611,8 @@ class World:
         s.send({"t": "zone", "zone": ch.zone_id, "name_vi": z["name_vi"], "safe": bool(z.get("safe")),
                 "channel": ch.number, "channels": [] if ch.instance else self.channel_list(ch.zone_id),
                 "x": p.x, "y": p.y, "f": p.facing, "ack": p.ack, "st": round(self.server_time(), 3),
-                "day": self.day_phase(), "combat": combat.rule_view(p)})
+                "day": self.day_phase(), "combat": combat.rule_view(p),
+                "land": None if ch.instance else z.get("land")})
         self.chat.send_history(s, "zone")
 
     def switch_channel(self, s: Session, number: int) -> None:

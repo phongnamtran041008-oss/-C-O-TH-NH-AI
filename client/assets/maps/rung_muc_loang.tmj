@@ -11,7 +11,7 @@
  "type": "map",
  "version": "1.10",
  "nextlayerid": 4,
- "nextobjectid": 337,
+ "nextobjectid": 360,
  "properties": [
   {
    "name": "zone",
@@ -21,7 +21,7 @@
   {
    "name": "name_vi",
    "type": "string",
-   "value": "Rừng Mực Loang"
+   "value": "Mê Đồ Lâm"
   },
   {
    "name": "music",
@@ -4777,29 +4777,6 @@
      ]
     },
     {
-     "id": 206,
-     "name": "rock",
-     "type": "prop",
-     "x": 832,
-     "y": 160,
-     "width": 16,
-     "height": 12,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "rock"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "2"
-      }
-     ]
-    },
-    {
      "id": 208,
      "name": "rock",
      "type": "prop",
@@ -5076,29 +5053,6 @@
      ]
     },
     {
-     "id": 227,
-     "name": "tree",
-     "type": "prop",
-     "x": 776,
-     "y": 88,
-     "width": 32,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "ink_tree"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "569"
-      }
-     ]
-    },
-    {
      "id": 229,
      "name": "tree",
      "type": "prop",
@@ -5118,29 +5072,6 @@
        "name": "variant",
        "type": "string",
        "value": "845"
-      }
-     ]
-    },
-    {
-     "id": 231,
-     "name": "tree",
-     "type": "prop",
-     "x": 600,
-     "y": 56,
-     "width": 32,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "ink_tree"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "563"
       }
      ]
     },
@@ -5398,29 +5329,6 @@
      ]
     },
     {
-     "id": 255,
-     "name": "tree",
-     "type": "prop",
-     "x": 904,
-     "y": 168,
-     "width": 32,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "ink_tree"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "448"
-      }
-     ]
-    },
-    {
      "id": 257,
      "name": "tree",
      "type": "prop",
@@ -5509,29 +5417,6 @@
        "name": "variant",
        "type": "string",
        "value": "301"
-      }
-     ]
-    },
-    {
-     "id": 265,
-     "name": "tree",
-     "type": "prop",
-     "x": 872,
-     "y": 8,
-     "width": 32,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "ink_tree"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "710"
       }
      ]
     },
@@ -5812,29 +5697,6 @@
      ]
     },
     {
-     "id": 291,
-     "name": "tree",
-     "type": "prop",
-     "x": 808,
-     "y": 24,
-     "width": 32,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "ink_tree"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "796"
-      }
-     ]
-    },
-    {
      "id": 293,
      "name": "tree",
      "type": "prop",
@@ -5973,29 +5835,6 @@
      ]
     },
     {
-     "id": 305,
-     "name": "tree",
-     "type": "prop",
-     "x": 568,
-     "y": 120,
-     "width": 32,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "tree"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "933"
-      }
-     ]
-    },
-    {
      "id": 307,
      "name": "tree",
      "type": "prop",
@@ -6130,29 +5969,6 @@
        "name": "variant",
        "type": "string",
        "value": "988"
-      }
-     ]
-    },
-    {
-     "id": 319,
-     "name": "tree",
-     "type": "prop",
-     "x": 648,
-     "y": 56,
-     "width": 32,
-     "height": 40,
-     "rotation": 0,
-     "visible": true,
-     "properties": [
-      {
-       "name": "sprite",
-       "type": "string",
-       "value": "tree"
-      },
-      {
-       "name": "variant",
-       "type": "string",
-       "value": "24"
       }
      ]
     },
@@ -6340,6 +6156,305 @@
      "rotation": 0,
      "visible": true,
      "properties": []
+    },
+    {
+     "id": 337,
+     "name": "Ngã ba",
+     "type": "sign",
+     "x": 640,
+     "y": 384,
+     "width": 16,
+     "height": 20,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "sign"
+      },
+      {
+       "name": "text",
+       "type": "string",
+       "value": "Ngã ba: mỗi lối là một cạnh của đồ thị"
+      }
+     ]
+    },
+    {
+     "id": 339,
+     "name": "tree",
+     "type": "prop",
+     "x": 840,
+     "y": 56,
+     "width": 32,
+     "height": 40,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "tree"
+      },
+      {
+       "name": "variant",
+       "type": "string",
+       "value": "623"
+      }
+     ]
+    },
+    {
+     "id": 341,
+     "name": "tree",
+     "type": "prop",
+     "x": 792,
+     "y": 56,
+     "width": 32,
+     "height": 40,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "ink_tree"
+      },
+      {
+       "name": "variant",
+       "type": "string",
+       "value": "88"
+      }
+     ]
+    },
+    {
+     "id": 343,
+     "name": "tree",
+     "type": "prop",
+     "x": 808,
+     "y": 24,
+     "width": 32,
+     "height": 40,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "ink_tree"
+      },
+      {
+       "name": "variant",
+       "type": "string",
+       "value": "275"
+      }
+     ]
+    },
+    {
+     "id": 345,
+     "name": "tree",
+     "type": "prop",
+     "x": 872,
+     "y": 24,
+     "width": 32,
+     "height": 40,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "ink_tree"
+      },
+      {
+       "name": "variant",
+       "type": "string",
+       "value": "752"
+      }
+     ]
+    },
+    {
+     "id": 347,
+     "name": "tree",
+     "type": "prop",
+     "x": 888,
+     "y": 56,
+     "width": 32,
+     "height": 40,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "ink_tree"
+      },
+      {
+       "name": "variant",
+       "type": "string",
+       "value": "589"
+      }
+     ]
+    },
+    {
+     "id": 349,
+     "name": "tree",
+     "type": "prop",
+     "x": 888,
+     "y": 104,
+     "width": 32,
+     "height": 40,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "ink_tree"
+      },
+      {
+       "name": "variant",
+       "type": "string",
+       "value": "171"
+      }
+     ]
+    },
+    {
+     "id": 351,
+     "name": "tree",
+     "type": "prop",
+     "x": 792,
+     "y": 104,
+     "width": 32,
+     "height": 40,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "ink_tree"
+      },
+      {
+       "name": "variant",
+       "type": "string",
+       "value": "117"
+      }
+     ]
+    },
+    {
+     "id": 353,
+     "name": "tree",
+     "type": "prop",
+     "x": 808,
+     "y": 136,
+     "width": 32,
+     "height": 40,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "ink_tree"
+      },
+      {
+       "name": "variant",
+       "type": "string",
+       "value": "374"
+      }
+     ]
+    },
+    {
+     "id": 355,
+     "name": "tree",
+     "type": "prop",
+     "x": 872,
+     "y": 136,
+     "width": 32,
+     "height": 40,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "sprite",
+       "type": "string",
+       "value": "ink_tree"
+      },
+      {
+       "name": "variant",
+       "type": "string",
+       "value": "660"
+      }
+     ]
+    },
+    {
+     "id": 357,
+     "name": "moc_yeu_hoc_cay",
+     "type": "monster_area",
+     "x": 784,
+     "y": 48,
+     "width": 144,
+     "height": 144,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "monster",
+       "type": "string",
+       "value": "moc_yeu"
+      },
+      {
+       "name": "count",
+       "type": "string",
+       "value": "1"
+      }
+     ]
+    },
+    {
+     "id": 358,
+     "name": "tri_chu_bac",
+     "type": "monster_area",
+     "x": 224,
+     "y": 48,
+     "width": 192,
+     "height": 144,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "monster",
+       "type": "string",
+       "value": "tri_chu_tinh"
+      },
+      {
+       "name": "count",
+       "type": "string",
+       "value": "4"
+      }
+     ]
+    },
+    {
+     "id": 359,
+     "name": "tri_chu_nam",
+     "type": "monster_area",
+     "x": 416,
+     "y": 384,
+     "width": 160,
+     "height": 160,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "monster",
+       "type": "string",
+       "value": "tri_chu_tinh"
+      },
+      {
+       "name": "count",
+       "type": "string",
+       "value": "3"
+      }
+     ]
     }
    ]
   },
@@ -7498,17 +7613,6 @@
      "visible": true
     },
     {
-     "id": 207,
-     "name": "",
-     "type": "solid",
-     "x": 834,
-     "y": 164,
-     "width": 12,
-     "height": 8,
-     "rotation": 0,
-     "visible": true
-    },
-    {
      "id": 209,
      "name": "",
      "type": "solid",
@@ -7586,33 +7690,11 @@
      "visible": true
     },
     {
-     "id": 228,
-     "name": "",
-     "type": "solid",
-     "x": 788,
-     "y": 120,
-     "width": 9,
-     "height": 7,
-     "rotation": 0,
-     "visible": true
-    },
-    {
      "id": 230,
      "name": "",
      "type": "solid",
      "x": 420,
      "y": 552,
-     "width": 9,
-     "height": 7,
-     "rotation": 0,
-     "visible": true
-    },
-    {
-     "id": 232,
-     "name": "",
-     "type": "solid",
-     "x": 612,
-     "y": 88,
      "width": 9,
      "height": 7,
      "rotation": 0,
@@ -7740,17 +7822,6 @@
      "visible": true
     },
     {
-     "id": 256,
-     "name": "",
-     "type": "solid",
-     "x": 916,
-     "y": 200,
-     "width": 9,
-     "height": 7,
-     "rotation": 0,
-     "visible": true
-    },
-    {
      "id": 258,
      "name": "",
      "type": "solid",
@@ -7789,17 +7860,6 @@
      "type": "solid",
      "x": 740,
      "y": 168,
-     "width": 9,
-     "height": 7,
-     "rotation": 0,
-     "visible": true
-    },
-    {
-     "id": 266,
-     "name": "",
-     "type": "solid",
-     "x": 884,
-     "y": 40,
      "width": 9,
      "height": 7,
      "rotation": 0,
@@ -7938,17 +7998,6 @@
      "visible": true
     },
     {
-     "id": 292,
-     "name": "",
-     "type": "solid",
-     "x": 820,
-     "y": 56,
-     "width": 9,
-     "height": 7,
-     "rotation": 0,
-     "visible": true
-    },
-    {
      "id": 294,
      "name": "",
      "type": "solid",
@@ -8015,17 +8064,6 @@
      "visible": true
     },
     {
-     "id": 306,
-     "name": "",
-     "type": "solid",
-     "x": 580,
-     "y": 152,
-     "width": 9,
-     "height": 7,
-     "rotation": 0,
-     "visible": true
-    },
-    {
      "id": 308,
      "name": "",
      "type": "solid",
@@ -8086,17 +8124,6 @@
      "type": "solid",
      "x": 372,
      "y": 600,
-     "width": 9,
-     "height": 7,
-     "rotation": 0,
-     "visible": true
-    },
-    {
-     "id": 320,
-     "name": "",
-     "type": "solid",
-     "x": 660,
-     "y": 88,
      "width": 9,
      "height": 7,
      "rotation": 0,
@@ -8174,6 +8201,116 @@
      "type": "solid",
      "x": 356,
      "y": 120,
+     "width": 9,
+     "height": 7,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 338,
+     "name": "",
+     "type": "solid",
+     "x": 646,
+     "y": 398,
+     "width": 4,
+     "height": 6,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 340,
+     "name": "",
+     "type": "solid",
+     "x": 852,
+     "y": 88,
+     "width": 9,
+     "height": 7,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 342,
+     "name": "",
+     "type": "solid",
+     "x": 804,
+     "y": 88,
+     "width": 9,
+     "height": 7,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 344,
+     "name": "",
+     "type": "solid",
+     "x": 820,
+     "y": 56,
+     "width": 9,
+     "height": 7,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 346,
+     "name": "",
+     "type": "solid",
+     "x": 884,
+     "y": 56,
+     "width": 9,
+     "height": 7,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 348,
+     "name": "",
+     "type": "solid",
+     "x": 900,
+     "y": 88,
+     "width": 9,
+     "height": 7,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 350,
+     "name": "",
+     "type": "solid",
+     "x": 900,
+     "y": 136,
+     "width": 9,
+     "height": 7,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 352,
+     "name": "",
+     "type": "solid",
+     "x": 804,
+     "y": 136,
+     "width": 9,
+     "height": 7,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 354,
+     "name": "",
+     "type": "solid",
+     "x": 820,
+     "y": 168,
+     "width": 9,
+     "height": 7,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 356,
+     "name": "",
+     "type": "solid",
+     "x": 884,
+     "y": 168,
      "width": 9,
      "height": 7,
      "rotation": 0,
