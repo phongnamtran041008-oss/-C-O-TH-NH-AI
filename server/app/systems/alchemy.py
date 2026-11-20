@@ -221,7 +221,8 @@ async def start(db: AsyncSession, user: User, recipe_id: str, rng: random.Random
         raise AlchemyError(400, "insufficient_funds", e.message_vi)
     c = cfg()
     d = str(r["difficulty"])
-    bonus = furnace_info(level)["zone_bonus"]
+    from . import linh_can     # a linh căn of the đan path widens the zones (alchemy_zone)
+    bonus = furnace_info(level)["zone_bonus"] + int(await linh_can.value_db(db, user.id, "alchemy_zone"))
     lo, hi = c["zone_center_range"]
     zones = [{"center": rng.randint(lo, hi), "width": c["zone_width"][d] + bonus,
               "perfect": c["perfect_width"] + bonus // 2} for _ in range(c["presses"])]
@@ -273,7 +274,8 @@ async def finish(db: AsyncSession, user: User, session_id: str, timings: list,
     r = recipes()[s.recipe_id]
     made = int(r["yield"].get(q, 0))
     extra = False
-    chance = furnace_info(p["furnace_level"])["extra_chance"]
+    from . import linh_can     # and gives a chance of one more pill (alchemy_extra)
+    chance = furnace_info(p["furnace_level"])["extra_chance"] + await linh_can.value_db(db, user.id, "alchemy_extra")
     if made and chance and rng.random() < chance:
         made += 1
         extra = True

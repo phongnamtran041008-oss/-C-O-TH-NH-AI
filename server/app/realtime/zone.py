@@ -117,7 +117,8 @@ class Player:
         return {"id": self.eid, "k": "p", "uid": self.user_id, "n": self.name, "ap": self.appearance,
                 "realm": self.realm, "x": round(self.x, 2), "y": round(self.y, 2),
                 "f": FACING_CODE[self.facing], "m": int(self.moving), "hp": self.hp_pct(), "wp": self.weapon,
-                "bees": self.bee_states(), "pet": self.pet, "gh": int(self.ghost), "rd": int(self.riding)}
+                "bees": self.bee_states(), "pet": self.pet, "gh": int(self.ghost), "rd": int(self.riding),
+                "lc": int(self.stats.get("lc", 0) or 0)}     # the giai of the linh căn (0 = none)
 
     def apply_stats(self, stats: dict, heal: bool = False) -> None:
         self.stats = dict(stats)

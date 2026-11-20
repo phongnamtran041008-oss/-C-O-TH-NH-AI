@@ -77,6 +77,31 @@
       "ingredients": [{"kind": "item", "item": "muc_tinh", "qty": 30}, {"kind": "item", "item": "loi_ma_tran", "qty": 16},
                       {"kind": "item", "item": "ngoc_gian_lao_nhan", "qty": 2}, {"kind": "item", "item": "an_ruong_de", "qty": 2}],
       "yield": {"ha": 1, "trung": 1, "thuong": 1}
+    },
+    "tay_linh_dan": {
+      "item": "dp_tay_linh", "difficulty": 1, "min_realm": "luyen_khi", "fee": 30,
+      "ingredients": [{"kind": "item", "item": "tay_linh_thao", "qty": 3}, {"kind": "item", "item": "truc_diep_thao", "qty": 2}, {"kind": "item", "item": "muc_tinh", "qty": 2}],
+      "yield": {"ha": 1, "trung": 2, "thuong": 3}
+    },
+    "tay_tuy_dan": {
+      "item": "dp_tay_tuy", "difficulty": 2, "min_realm": "luyen_khi", "fee": 80,
+      "ingredients": [{"kind": "item", "item": "linh_tuy_tinh", "qty": 2}, {"kind": "item", "item": "tay_linh_thao", "qty": 3}, {"kind": "item", "item": "mac_linh_chi", "qty": 1}],
+      "yield": {"ha": 1, "trung": 1, "thuong": 2}
+    },
+    "thien_linh_dan": {
+      "item": "dp_thien_linh", "difficulty": 3, "min_realm": "truc_co", "fee": 300,
+      "ingredients": [{"kind": "item", "item": "thien_linh_qua", "qty": 3}, {"kind": "item", "item": "linh_tuy_tinh", "qty": 3}, {"kind": "item", "item": "tay_linh_thao", "qty": 4}],
+      "yield": {"ha": 1, "trung": 1, "thuong": 1}
+    },
+    "tao_hoa_dan": {
+      "item": "dp_tao_hoa", "difficulty": 3, "min_realm": "kim_dan", "fee": 1000,
+      "ingredients": [{"kind": "item", "item": "loi_kiep_tinh_hach", "qty": 2}, {"kind": "item", "item": "thien_linh_qua", "qty": 4}, {"kind": "item", "item": "linh_tuy_tinh", "qty": 4}, {"kind": "item", "item": "mac_linh_chi", "qty": 3}],
+      "yield": {"ha": 1, "trung": 1, "thuong": 1}
+    },
+    "khai_thien_dan": {
+      "item": "dp_khai_thien", "difficulty": 3, "min_realm": "hoa_than", "fee": 4000,
+      "ingredients": [{"kind": "item", "item": "hon_don_thach", "qty": 2}, {"kind": "item", "item": "loi_kiep_tinh_hach", "qty": 3}, {"kind": "item", "item": "thien_linh_qua", "qty": 6}],
+      "yield": {"ha": 1, "trung": 1, "thuong": 1}
     }
   }
 }

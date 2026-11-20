@@ -26,7 +26,22 @@
     "hoa_than_dan": "nguyen_anh:3",
     "luyen_hu_dan": "hoa_than:3",
     "hop_the_dan": "luyen_hu:3",
-    "dai_thua_dan": "hop_the:3"
+    "dai_thua_dan": "hop_the:3",
+    "tay_linh_thao": "luyen_khi:1",
+    "linh_tuy_tinh": "luyen_khi:3",
+    "thien_linh_qua": "luyen_khi:6",
+    "loi_kiep_tinh_hach": "luyen_khi:8",
+    "hon_don_thach": "luyen_khi:9",
+    "tay_linh_dan": "luyen_khi:1",
+    "tay_tuy_dan": "luyen_khi:4",
+    "thien_linh_dan": "truc_co:1",
+    "tao_hoa_dan": "kim_dan:1",
+    "khai_thien_dan": "hoa_than:1",
+    "dp_tay_linh": "luyen_khi:1",
+    "dp_tay_tuy": "luyen_khi:4",
+    "dp_thien_linh": "truc_co:1",
+    "dp_tao_hoa": "kim_dan:1",
+    "dp_khai_thien": "hoa_than:1"
   },
   "equipment_rarity": {
     "pham": "pham_nhan",

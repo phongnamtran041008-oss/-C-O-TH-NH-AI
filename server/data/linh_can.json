@@ -1,0 +1,1551 @@
+{
+ "_comment": "Linh căn (spirit roots): the giai ladder, every root and what it does, the tẩy linh pills and their odds, the caps by cultivation realm and the pity rules. Read and validated by server/app/systems/linh_can.py (tools/check_all.py); docs/LINH_CAN.md explains the design. effect_types: every effect a root may carry, its unit (pct = fraction, point = flat crit points, sec = seconds, count = whole number), the cap of one value and the text shown (v = the value). Every type is applied by the server (linh_can.SITES says where). roots: giai, he (elements), loai (kind), effects (the first is the primary one: no two roots of one giai share it), weight (how often it comes out among the roots of its giai). pills: odds over the giai (sum 1); a roll above the player's cap is drawn again inside it; pity: after every-1 rolls in a row below floor, the next one is at least floor (clipped to the cap). caps: from which cultivation tier (realm or realm:stage of realms_cultivation.json) each giai opens; the first entry must be pham_nhan. awaken: the odds of the free first test at the Trắc Linh Thạch.",
+ "giai": [
+  {
+   "id": "pham",
+   "name_vi": "Phàm giai",
+   "color": "#C9C4B8"
+  },
+  {
+   "id": "hoang",
+   "name_vi": "Hoàng giai",
+   "color": "#C9A44A"
+  },
+  {
+   "id": "huyen",
+   "name_vi": "Huyền giai",
+   "color": "#4F8FD8"
+  },
+  {
+   "id": "dia",
+   "name_vi": "Địa giai",
+   "color": "#9B5FD0"
+  },
+  {
+   "id": "thien",
+   "name_vi": "Thiên giai",
+   "color": "#F2C230"
+  },
+  {
+   "id": "thanh",
+   "name_vi": "Thánh giai",
+   "color": "#FFE9A8"
+  },
+  {
+   "id": "tien",
+   "name_vi": "Tiên giai",
+   "color": "#5CE1E6"
+  },
+  {
+   "id": "than",
+   "name_vi": "Thần giai",
+   "color": "#FF6A3D"
+  },
+  {
+   "id": "hon_don",
+   "name_vi": "Hỗn Độn giai",
+   "color": "#A77BFF"
+  }
+ ],
+ "he_vi": {
+  "kim": "Kim",
+  "moc": "Mộc",
+  "thuy": "Thủy",
+  "hoa": "Hỏa",
+  "tho": "Thổ",
+  "loi": "Lôi",
+  "bang": "Băng",
+  "phong": "Phong",
+  "quang": "Quang",
+  "am": "Ám",
+  "khong_gian": "Không Gian",
+  "thoi_gian": "Thời Gian",
+  "hon_don": "Hỗn Độn"
+ },
+ "loai_vi": {
+  "phe": "Phế linh căn",
+  "tap": "Tạp linh căn",
+  "tam": "Tam linh căn",
+  "song": "Song linh căn",
+  "don": "Đơn linh căn",
+  "thien": "Thiên linh căn",
+  "bien_di": "Biến dị linh căn",
+  "di": "Dị linh căn",
+  "the_chat": "Đặc thù thể chất",
+  "tue": "Tuệ căn",
+  "dao": "Đạo căn"
+ },
+ "effect_types": {
+  "atk_pct": {
+   "unit": "pct",
+   "cap": 0.25,
+   "text_vi": "Công +{v}"
+  },
+  "def_pct": {
+   "unit": "pct",
+   "cap": 0.25,
+   "text_vi": "Thủ +{v}"
+  },
+  "hp_pct": {
+   "unit": "pct",
+   "cap": 0.25,
+   "text_vi": "Sinh Lực tối đa +{v}"
+  },
+  "qi_pct": {
+   "unit": "pct",
+   "cap": 0.3,
+   "text_vi": "Linh Lực tối đa +{v}"
+  },
+  "crit": {
+   "unit": "point",
+   "cap": 8.0,
+   "text_vi": "Bạo kích +{v}"
+  },
+  "xp_pct": {
+   "unit": "pct",
+   "cap": 0.2,
+   "text_vi": "Tu Vi từ câu trả lời đúng +{v}"
+  },
+  "q_time": {
+   "unit": "sec",
+   "cap": 4.0,
+   "text_vi": "Mỗi câu hỏi thêm {v} để nghĩ"
+  },
+  "basic_dmg": {
+   "unit": "pct",
+   "cap": 0.3,
+   "text_vi": "Đòn thường +{v} sát thương"
+  },
+  "parry_dmg": {
+   "unit": "pct",
+   "cap": 0.3,
+   "text_vi": "Phản Đòn +{v} sát thương"
+  },
+  "stun_pct": {
+   "unit": "pct",
+   "cap": 0.4,
+   "text_vi": "Phản Đòn làm quái choáng lâu hơn {v}"
+  },
+  "qi_gain": {
+   "unit": "pct",
+   "cap": 0.6,
+   "text_vi": "Phản Đòn hồi thêm {v} Linh Lực"
+  },
+  "heal_right": {
+   "unit": "pct",
+   "cap": 0.06,
+   "text_vi": "Phản Đòn hồi {v} Sinh Lực tối đa"
+  },
+  "wrong_guard": {
+   "unit": "pct",
+   "cap": 0.3,
+   "text_vi": "Trả lời sai: đòn trúng nhẹ đi {v}"
+  },
+  "dodge_cd": {
+   "unit": "pct",
+   "cap": 0.25,
+   "text_vi": "Né Đòn hồi nhanh hơn {v}"
+  },
+  "qi_regen": {
+   "unit": "pct",
+   "cap": 0.7,
+   "text_vi": "Linh Lực tự hồi nhanh hơn {v}"
+  },
+  "death_guard": {
+   "unit": "pct",
+   "cap": 0.45,
+   "text_vi": "Tử vong mất ít Tu Vi hơn {v}"
+  },
+  "drop_luck": {
+   "unit": "pct",
+   "cap": 0.3,
+   "text_vi": "Quái rơi đồ nhiều hơn {v}"
+  },
+  "stones_pct": {
+   "unit": "pct",
+   "cap": 0.35,
+   "text_vi": "Linh thạch từ quái +{v}"
+  },
+  "chieu_kim": {
+   "unit": "pct",
+   "cap": 0.3,
+   "text_vi": "Chiêu hệ Kim +{v} sát thương"
+  },
+  "chieu_moc": {
+   "unit": "pct",
+   "cap": 0.3,
+   "text_vi": "Chiêu hệ Mộc +{v} sát thương"
+  },
+  "chieu_thuy": {
+   "unit": "pct",
+   "cap": 0.3,
+   "text_vi": "Chiêu hệ Thủy +{v} sát thương"
+  },
+  "chieu_hoa": {
+   "unit": "pct",
+   "cap": 0.3,
+   "text_vi": "Chiêu hệ Hỏa +{v} sát thương"
+  },
+  "chieu_tho": {
+   "unit": "pct",
+   "cap": 0.3,
+   "text_vi": "Chiêu hệ Thổ +{v} sát thương"
+  },
+  "chieu_loi": {
+   "unit": "pct",
+   "cap": 0.3,
+   "text_vi": "Chiêu hệ Lôi +{v} sát thương"
+  },
+  "chieu_cd": {
+   "unit": "pct",
+   "cap": 0.2,
+   "text_vi": "Chiêu thức hồi nhanh hơn {v}"
+  },
+  "qi_cost": {
+   "unit": "pct",
+   "cap": 0.25,
+   "text_vi": "Chiêu thức tốn ít Linh Lực hơn {v}"
+  },
+  "glide_cd": {
+   "unit": "pct",
+   "cap": 0.3,
+   "text_vi": "Đạp Kiếm Lướt hồi nhanh hơn {v}"
+  },
+  "tran_time": {
+   "unit": "pct",
+   "cap": 0.4,
+   "text_vi": "Pháp trận đứng lâu hơn {v}"
+  },
+  "tame": {
+   "unit": "count",
+   "cap": 2,
+   "text_vi": "Thu phục linh thú bớt {v} lần Phản Đòn"
+  },
+  "alchemy_zone": {
+   "unit": "count",
+   "cap": 6,
+   "text_vi": "Luyện đan: vùng văn hỏa rộng thêm {v}"
+  },
+  "alchemy_extra": {
+   "unit": "pct",
+   "cap": 0.15,
+   "text_vi": "Luyện đan: thêm {v} cơ hội ra dư một viên"
+  }
+ },
+ "caps": [
+  {
+   "from": "pham_nhan",
+   "giai": "huyen"
+  },
+  {
+   "from": "luyen_khi:4",
+   "giai": "dia"
+  },
+  {
+   "from": "luyen_khi:7",
+   "giai": "thien"
+  },
+  {
+   "from": "truc_co",
+   "giai": "thanh"
+  },
+  {
+   "from": "kim_dan",
+   "giai": "tien"
+  },
+  {
+   "from": "nguyen_anh",
+   "giai": "than"
+  },
+  {
+   "from": "hoa_than",
+   "giai": "hon_don"
+  }
+ ],
+ "awaken": {
+  "odds": {
+   "pham": 0.5,
+   "hoang": 0.32,
+   "huyen": 0.15,
+   "dia": 0.03
+  }
+ },
+ "pills": {
+  "tay_linh_dan": {
+   "odds": {
+    "pham": 0.4,
+    "hoang": 0.3,
+    "huyen": 0.18,
+    "dia": 0.08,
+    "thien": 0.03,
+    "thanh": 0.008,
+    "tien": 0.0015,
+    "than": 0.0004,
+    "hon_don": 0.0001
+   },
+   "pity": {
+    "every": 10,
+    "floor": "huyen"
+   }
+  },
+  "tay_tuy_dan": {
+   "odds": {
+    "pham": 0.15,
+    "hoang": 0.3,
+    "huyen": 0.28,
+    "dia": 0.16,
+    "thien": 0.07,
+    "thanh": 0.03,
+    "tien": 0.008,
+    "than": 0.0015,
+    "hon_don": 0.0005
+   },
+   "pity": {
+    "every": 10,
+    "floor": "dia"
+   }
+  },
+  "thien_linh_dan": {
+   "odds": {
+    "hoang": 0.1,
+    "huyen": 0.25,
+    "dia": 0.3,
+    "thien": 0.2,
+    "thanh": 0.1,
+    "tien": 0.04,
+    "than": 0.008,
+    "hon_don": 0.002
+   },
+   "pity": {
+    "every": 10,
+    "floor": "thien"
+   }
+  },
+  "tao_hoa_dan": {
+   "odds": {
+    "huyen": 0.1,
+    "dia": 0.25,
+    "thien": 0.3,
+    "thanh": 0.2,
+    "tien": 0.1,
+    "than": 0.04,
+    "hon_don": 0.01
+   },
+   "pity": {
+    "every": 10,
+    "floor": "thanh"
+   }
+  },
+  "khai_thien_dan": {
+   "odds": {
+    "dia": 0.1,
+    "thien": 0.25,
+    "thanh": 0.3,
+    "tien": 0.2,
+    "than": 0.11,
+    "hon_don": 0.04
+   },
+   "pity": {
+    "every": 8,
+    "floor": "tien"
+   }
+  }
+ },
+ "roots": {
+  "ngu_hanh_tap": {
+   "name_vi": "Ngũ Hành Tạp Linh Căn",
+   "giai": "pham",
+   "he": [
+    "kim",
+    "moc",
+    "thuy",
+    "hoa",
+    "tho"
+   ],
+   "loai": "tap",
+   "effects": [
+    {
+     "type": "hp_pct",
+     "value": 0.03
+    }
+   ],
+   "desc_vi": "Năm hệ đủ cả mà hệ nào cũng mỏng, linh khí vào người chỉ đủ dưỡng thân.",
+   "lore_vi": "Tông môn nhìn thấy đều lắc đầu. Nhưng thân thể nuôi bằng cả năm hệ thì bền bỉ lạ thường.",
+   "weight": 3
+  },
+  "tu_linh_can": {
+   "name_vi": "Tứ Linh Căn",
+   "giai": "pham",
+   "he": [
+    "kim",
+    "moc",
+    "thuy",
+    "tho"
+   ],
+   "loai": "tap",
+   "effects": [
+    {
+     "type": "def_pct",
+     "value": 0.03
+    }
+   ],
+   "desc_vi": "Bốn hệ chen nhau trong kinh mạch, tu chậm nhưng da thịt rắn chắc.",
+   "lore_vi": "Thiếu một hệ Hỏa nên tính tình trầm, đứng trước đòn đánh không hề lùi.",
+   "weight": 3
+  },
+  "phe_linh_can": {
+   "name_vi": "Phế Linh Căn",
+   "giai": "pham",
+   "he": [],
+   "loai": "phe",
+   "effects": [
+    {
+     "type": "xp_pct",
+     "value": 0.02
+    }
+   ],
+   "desc_vi": "Linh căn đứt đoạn, ai cũng bảo là phế. Chỉ còn cách chăm hơn người.",
+   "lore_vi": "Bao nhiêu kẻ phế linh căn đã thành tiên nhờ một chữ cần. Mỗi câu giải đúng là một bước.",
+   "weight": 3
+  },
+  "kim_tho_tap": {
+   "name_vi": "Kim Thổ Tạp Linh Căn",
+   "giai": "pham",
+   "he": [
+    "kim",
+    "tho"
+   ],
+   "loai": "tap",
+   "effects": [
+    {
+     "type": "atk_pct",
+     "value": 0.03
+    }
+   ],
+   "desc_vi": "Kim và Thổ lẫn tạp chất, ra đòn có thêm chút lực.",
+   "lore_vi": "Thổ sinh Kim nhưng sinh chẳng tới nơi, như quặng chưa luyện.",
+   "weight": 2
+  },
+  "thuy_moc_tap": {
+   "name_vi": "Thủy Mộc Tạp Linh Căn",
+   "giai": "pham",
+   "he": [
+    "thuy",
+    "moc"
+   ],
+   "loai": "tap",
+   "effects": [
+    {
+     "type": "qi_regen",
+     "value": 0.1
+    }
+   ],
+   "desc_vi": "Thủy dưỡng Mộc, linh lực tuy ít mà tự hồi khá nhanh.",
+   "lore_vi": "Như cỏ dại ven suối: chẳng ai trồng, vẫn xanh tốt.",
+   "weight": 2
+  },
+  "hoa_tho_tap": {
+   "name_vi": "Hỏa Thổ Tạp Linh Căn",
+   "giai": "pham",
+   "he": [
+    "hoa",
+    "tho"
+   ],
+   "loai": "tap",
+   "effects": [
+    {
+     "type": "wrong_guard",
+     "value": 0.03
+    }
+   ],
+   "desc_vi": "Đất nung qua lửa thành gạch, chịu đòn khá hơn người thường.",
+   "lore_vi": "Lúc trả lời sai, thân gạch nung này đỡ được đôi chút.",
+   "weight": 2
+  },
+  "vi_hoa_linh_can": {
+   "name_vi": "Vi Hỏa Linh Căn",
+   "giai": "pham",
+   "he": [
+    "hoa"
+   ],
+   "loai": "don",
+   "effects": [
+    {
+     "type": "chieu_hoa",
+     "value": 0.04
+    }
+   ],
+   "desc_vi": "Một đốm hỏa linh mỏng manh, đủ để chiêu hệ Hỏa ấm thêm một chút.",
+   "lore_vi": "Lửa nhỏ mà không tắt, nhóm mãi cũng thành lò."
+  },
+  "vi_thuy_linh_can": {
+   "name_vi": "Vi Thủy Linh Căn",
+   "giai": "pham",
+   "he": [
+    "thuy"
+   ],
+   "loai": "don",
+   "effects": [
+    {
+     "type": "chieu_thuy",
+     "value": 0.04
+    }
+   ],
+   "desc_vi": "Thủy linh như sương sớm, chiêu hệ Thủy có thêm chút sức.",
+   "lore_vi": "Nước nhỏ giọt lâu ngày cũng xuyên được đá."
+  },
+  "hau_tho_pham_can": {
+   "name_vi": "Hậu Thổ Phàm Căn",
+   "giai": "pham",
+   "he": [
+    "tho"
+   ],
+   "loai": "tap",
+   "effects": [
+    {
+     "type": "death_guard",
+     "value": 0.06
+    }
+   ],
+   "desc_vi": "Rễ cắm sâu vào đất, ngã xuống cũng giữ được phần Tu Vi.",
+   "lore_vi": "Đất dày chở được vạn vật, cũng chở được người tu vụng về."
+  },
+  "kim_moc_thuy_tam": {
+   "name_vi": "Kim Mộc Thủy Tam Linh Căn",
+   "giai": "hoang",
+   "he": [
+    "kim",
+    "moc",
+    "thuy"
+   ],
+   "loai": "tam",
+   "effects": [
+    {
+     "type": "qi_pct",
+     "value": 0.06
+    },
+    {
+     "type": "chieu_thuy",
+     "value": 0.03
+    }
+   ],
+   "desc_vi": "Ba hệ thuận dòng Kim sinh Thủy, Thủy sinh Mộc: đan điền rộng hơn hẳn.",
+   "lore_vi": "Tam linh căn là căn cơ của đa số đệ tử ngoại môn. Đi chậm mà chắc.",
+   "weight": 2
+  },
+  "hoa_tho_kim_tam": {
+   "name_vi": "Hỏa Thổ Kim Tam Linh Căn",
+   "giai": "hoang",
+   "he": [
+    "hoa",
+    "tho",
+    "kim"
+   ],
+   "loai": "tam",
+   "effects": [
+    {
+     "type": "atk_pct",
+     "value": 0.04
+    },
+    {
+     "type": "def_pct",
+     "value": 0.03
+    }
+   ],
+   "desc_vi": "Hỏa sinh Thổ, Thổ sinh Kim: công và thủ đều nhích lên.",
+   "lore_vi": "Ba hệ nối nhau như lò rèn, thợ rèn trong tông môn rất thích.",
+   "weight": 2
+  },
+  "moc_hoa_tho_tam": {
+   "name_vi": "Mộc Hỏa Thổ Tam Linh Căn",
+   "giai": "hoang",
+   "he": [
+    "moc",
+    "hoa",
+    "tho"
+   ],
+   "loai": "tam",
+   "effects": [
+    {
+     "type": "hp_pct",
+     "value": 0.04
+    },
+    {
+     "type": "chieu_moc",
+     "value": 0.03
+    }
+   ],
+   "desc_vi": "Mộc sinh Hỏa, Hỏa sinh Thổ: khí huyết dồi dào.",
+   "lore_vi": "Như rừng già sau trận cháy, đất lại càng màu mỡ.",
+   "weight": 2
+  },
+  "thuy_moc_tho_tam": {
+   "name_vi": "Thủy Mộc Thổ Tam Linh Căn",
+   "giai": "hoang",
+   "he": [
+    "thuy",
+    "moc",
+    "tho"
+   ],
+   "loai": "tam",
+   "effects": [
+    {
+     "type": "heal_right",
+     "value": 0.01
+    }
+   ],
+   "desc_vi": "Ruộng có nước có cây: mỗi lần Phản Đòn, thân thể tự lành một chút.",
+   "lore_vi": "Linh căn của người làm vườn, hiền lành mà dai sức.",
+   "weight": 2
+  },
+  "vi_loi_linh_can": {
+   "name_vi": "Vi Lôi Linh Căn",
+   "giai": "hoang",
+   "he": [
+    "loi"
+   ],
+   "loai": "bien_di",
+   "effects": [
+    {
+     "type": "chieu_loi",
+     "value": 0.06
+    }
+   ],
+   "desc_vi": "Một tia lôi nhỏ trong kinh mạch, chiêu hệ Lôi sắc hơn.",
+   "lore_vi": "Biến dị từ Kim và Mộc va nhau. Hiếm, dù chỉ là tia lửa điện."
+  },
+  "vi_kim_linh_can": {
+   "name_vi": "Vi Kim Linh Căn",
+   "giai": "hoang",
+   "he": [
+    "kim"
+   ],
+   "loai": "don",
+   "effects": [
+    {
+     "type": "chieu_kim",
+     "value": 0.06
+    },
+    {
+     "type": "crit",
+     "value": 1.0
+    }
+   ],
+   "desc_vi": "Kim khí tuy mảnh mà bén, chiêu hệ Kim và bạo kích nhỉnh hơn.",
+   "lore_vi": "Một sợi kim tuyến trong xương, mài mãi sẽ thành kiếm."
+  },
+  "tu_tai_linh_can": {
+   "name_vi": "Tụ Tài Linh Căn",
+   "giai": "hoang",
+   "he": [
+    "tho",
+    "kim"
+   ],
+   "loai": "di",
+   "effects": [
+    {
+     "type": "stones_pct",
+     "value": 0.07
+    }
+   ],
+   "desc_vi": "Linh thạch như tự tìm tới tay, đánh quái nhặt được nhiều hơn.",
+   "lore_vi": "Thương hội nào cũng mong có một đệ tử mang linh căn này."
+  },
+  "tinh_tam_linh_can": {
+   "name_vi": "Tĩnh Tâm Linh Căn",
+   "giai": "hoang",
+   "he": [
+    "thuy"
+   ],
+   "loai": "tue",
+   "effects": [
+    {
+     "type": "q_time",
+     "value": 0.5
+    }
+   ],
+   "desc_vi": "Tâm lặng như mặt hồ, trước mỗi câu hỏi có thêm chút thời gian.",
+   "lore_vi": "Người có Tĩnh Tâm Linh Căn hiếm khi hoảng, kể cả lúc Mặc Quái giáng đòn."
+  },
+  "thuy_moc_song": {
+   "name_vi": "Thủy Mộc Song Linh Căn",
+   "giai": "huyen",
+   "he": [
+    "thuy",
+    "moc"
+   ],
+   "loai": "song",
+   "effects": [
+    {
+     "type": "qi_regen",
+     "value": 0.18
+    },
+    {
+     "type": "chieu_thuy",
+     "value": 0.04
+    }
+   ],
+   "desc_vi": "Hai hệ tương sinh, linh lực hồi như suối, chiêu Thủy mạnh thêm.",
+   "lore_vi": "Song linh căn tương sinh là vốn quý: nội môn tranh nhau nhận.",
+   "weight": 2
+  },
+  "kim_hoa_song": {
+   "name_vi": "Kim Hỏa Song Linh Căn",
+   "giai": "huyen",
+   "he": [
+    "kim",
+    "hoa"
+   ],
+   "loai": "song",
+   "effects": [
+    {
+     "type": "basic_dmg",
+     "value": 0.07
+    },
+    {
+     "type": "chieu_hoa",
+     "value": 0.04
+    }
+   ],
+   "desc_vi": "Lửa luyện kim, mỗi đòn thường đều nặng tay.",
+   "lore_vi": "Hỏa khắc Kim mà cũng tôi Kim. Người mang nó đánh như búa rèn.",
+   "weight": 2
+  },
+  "tho_kim_song": {
+   "name_vi": "Thổ Kim Song Linh Căn",
+   "giai": "huyen",
+   "he": [
+    "tho",
+    "kim"
+   ],
+   "loai": "song",
+   "effects": [
+    {
+     "type": "def_pct",
+     "value": 0.05
+    },
+    {
+     "type": "wrong_guard",
+     "value": 0.03
+    }
+   ],
+   "desc_vi": "Thổ bọc Kim như núi giấu quặng, chịu đòn vững vàng.",
+   "lore_vi": "Đứng giữa trận như tảng đá, sai một câu cũng không ngã.",
+   "weight": 2
+  },
+  "moc_hoa_song": {
+   "name_vi": "Mộc Hỏa Song Linh Căn",
+   "giai": "huyen",
+   "he": [
+    "moc",
+    "hoa"
+   ],
+   "loai": "song",
+   "effects": [
+    {
+     "type": "alchemy_zone",
+     "value": 2
+    },
+    {
+     "type": "chieu_hoa",
+     "value": 0.04
+    }
+   ],
+   "desc_vi": "Có củi có lửa: canh lò luyện đan dễ trúng văn hỏa hơn.",
+   "lore_vi": "Đan sư nào cũng ước được sinh ra với Mộc Hỏa song căn.",
+   "weight": 2
+  },
+  "thuy_tho_song": {
+   "name_vi": "Thủy Thổ Song Linh Căn",
+   "giai": "huyen",
+   "he": [
+    "thuy",
+    "tho"
+   ],
+   "loai": "song",
+   "effects": [
+    {
+     "type": "hp_pct",
+     "value": 0.05
+    },
+    {
+     "type": "death_guard",
+     "value": 0.06
+    }
+   ],
+   "desc_vi": "Nước ngấm vào đất, khí huyết sâu dày, ngã xuống ít tổn tu vi.",
+   "lore_vi": "Bùn non nuôi sen. Chậm, nhưng không gì cuốn đi được.",
+   "weight": 2
+  },
+  "tam_bao_linh_can": {
+   "name_vi": "Tầm Bảo Linh Căn",
+   "giai": "huyen",
+   "he": [
+    "tho",
+    "kim"
+   ],
+   "loai": "di",
+   "effects": [
+    {
+     "type": "drop_luck",
+     "value": 0.07
+    },
+    {
+     "type": "stones_pct",
+     "value": 0.05
+    }
+   ],
+   "desc_vi": "Như có mũi đánh hơi bảo vật: quái rơi đồ nhiều hơn.",
+   "lore_vi": "Đi đâu cũng vấp phải cơ duyên. Kẻ khác gọi là vận, kẻ có nó gọi là căn."
+  },
+  "khinh_than_linh_can": {
+   "name_vi": "Khinh Thân Linh Căn",
+   "giai": "huyen",
+   "he": [
+    "moc"
+   ],
+   "loai": "di",
+   "effects": [
+    {
+     "type": "dodge_cd",
+     "value": 0.05
+    },
+    {
+     "type": "glide_cd",
+     "value": 0.04
+    }
+   ],
+   "desc_vi": "Thân nhẹ như lá, Né Đòn và Đạp Kiếm Lướt hồi nhanh.",
+   "lore_vi": "Gió chưa thổi mà người đã bay. Linh căn của kẻ du hành."
+  },
+  "ngu_thu_linh_can": {
+   "name_vi": "Ngự Thú Linh Căn",
+   "giai": "huyen",
+   "he": [
+    "moc"
+   ],
+   "loai": "the_chat",
+   "effects": [
+    {
+     "type": "tame",
+     "value": 1
+    },
+    {
+     "type": "qi_gain",
+     "value": 0.09
+    }
+   ],
+   "desc_vi": "Linh thú thấy là mến, thu phục bớt được một lần Phản Đòn.",
+   "lore_vi": "Vạn thú có linh. Người có căn này nói được cái lặng im của chúng."
+  },
+  "canh_kim_linh_can": {
+   "name_vi": "Canh Kim Linh Căn",
+   "giai": "dia",
+   "he": [
+    "kim"
+   ],
+   "loai": "don",
+   "effects": [
+    {
+     "type": "chieu_kim",
+     "value": 0.09
+    },
+    {
+     "type": "crit",
+     "value": 1.5
+    }
+   ],
+   "desc_vi": "Đơn linh căn hệ Kim thuần khiết: chiêu Kim chém sắc như gió bấc.",
+   "lore_vi": "Canh là kim của mùa thu, chủ sát phạt. Một hệ, một đường, không vướng bận."
+  },
+  "at_moc_linh_can": {
+   "name_vi": "Ất Mộc Linh Căn",
+   "giai": "dia",
+   "he": [
+    "moc"
+   ],
+   "loai": "don",
+   "effects": [
+    {
+     "type": "chieu_moc",
+     "value": 0.09
+    },
+    {
+     "type": "heal_right",
+     "value": 0.01
+    }
+   ],
+   "desc_vi": "Đơn linh căn hệ Mộc: chiêu Mộc mạnh, Phản Đòn còn hồi sinh lực.",
+   "lore_vi": "Ất là mộc của dây leo, mềm mà sống dai."
+  },
+  "nham_thuy_linh_can": {
+   "name_vi": "Nhâm Thủy Linh Căn",
+   "giai": "dia",
+   "he": [
+    "thuy"
+   ],
+   "loai": "don",
+   "effects": [
+    {
+     "type": "chieu_thuy",
+     "value": 0.09
+    },
+    {
+     "type": "qi_pct",
+     "value": 0.06
+    }
+   ],
+   "desc_vi": "Đơn linh căn hệ Thủy: đan điền như biển, chiêu Thủy cuồn cuộn.",
+   "lore_vi": "Nhâm là nước của sông lớn, chảy mãi không cạn."
+  },
+  "binh_hoa_linh_can": {
+   "name_vi": "Bính Hỏa Linh Căn",
+   "giai": "dia",
+   "he": [
+    "hoa"
+   ],
+   "loai": "don",
+   "effects": [
+    {
+     "type": "chieu_hoa",
+     "value": 0.09
+    },
+    {
+     "type": "basic_dmg",
+     "value": 0.06
+    }
+   ],
+   "desc_vi": "Đơn linh căn hệ Hỏa: chiêu Hỏa thiêu rụi, đòn thường cũng bỏng tay.",
+   "lore_vi": "Bính là lửa mặt trời, chiếu tới đâu sáng tới đó."
+  },
+  "mau_tho_linh_can": {
+   "name_vi": "Mậu Thổ Linh Căn",
+   "giai": "dia",
+   "he": [
+    "tho"
+   ],
+   "loai": "don",
+   "effects": [
+    {
+     "type": "chieu_tho",
+     "value": 0.09
+    },
+    {
+     "type": "def_pct",
+     "value": 0.04
+    },
+    {
+     "type": "hp_pct",
+     "value": 0.03
+    }
+   ],
+   "desc_vi": "Đơn linh căn hệ Thổ: chiêu Thổ nặng như núi, thân thể vững như thành.",
+   "lore_vi": "Mậu là đất của núi cao. Đứng đó ngàn năm không động."
+  },
+  "dan_tam_linh_can": {
+   "name_vi": "Đan Tâm Linh Căn",
+   "giai": "dia",
+   "he": [
+    "hoa",
+    "moc"
+   ],
+   "loai": "the_chat",
+   "effects": [
+    {
+     "type": "alchemy_extra",
+     "value": 0.05
+    },
+    {
+     "type": "alchemy_zone",
+     "value": 1
+    }
+   ],
+   "desc_vi": "Tâm hợp với lửa lò: luyện đan dễ ra thêm một viên.",
+   "lore_vi": "Đan đạo tông sư nào thuở nhỏ cũng từng ngồi canh lò thâu đêm. Người này thì lửa tự nghe lời."
+  },
+  "tran_dao_linh_can": {
+   "name_vi": "Trận Đạo Linh Căn",
+   "giai": "dia",
+   "he": [
+    "tho"
+   ],
+   "loai": "the_chat",
+   "effects": [
+    {
+     "type": "tran_time",
+     "value": 0.14
+    },
+    {
+     "type": "stun_pct",
+     "value": 0.07
+    }
+   ],
+   "desc_vi": "Nhìn đất là thấy trận nhãn: pháp trận đứng lâu, Phản Đòn choáng lâu.",
+   "lore_vi": "Trận pháp là toán của trời đất. Kẻ có căn này đếm được nhịp của nó."
+  },
+  "thien_loi_linh_can": {
+   "name_vi": "Thiên Lôi Linh Căn",
+   "giai": "thien",
+   "he": [
+    "loi"
+   ],
+   "loai": "bien_di",
+   "effects": [
+    {
+     "type": "chieu_loi",
+     "value": 0.12
+    },
+    {
+     "type": "parry_dmg",
+     "value": 0.07
+    },
+    {
+     "type": "crit",
+     "value": 1.5
+    }
+   ],
+   "desc_vi": "Biến dị linh căn hệ Lôi: chiêu Lôi xé trời, Phản Đòn như sét đánh.",
+   "lore_vi": "Sinh ra trong đêm giông, tiếng khóc đầu đời lẫn vào tiếng sấm. Thiên kiếp nhìn nó như nhìn con."
+  },
+  "huyen_bang_linh_can": {
+   "name_vi": "Huyền Băng Linh Căn",
+   "giai": "thien",
+   "he": [
+    "bang"
+   ],
+   "loai": "bien_di",
+   "effects": [
+    {
+     "type": "stun_pct",
+     "value": 0.14
+    },
+    {
+     "type": "chieu_thuy",
+     "value": 0.07
+    },
+    {
+     "type": "wrong_guard",
+     "value": 0.04
+    }
+   ],
+   "desc_vi": "Biến dị từ Thủy: Phản Đòn đóng băng quái lâu, thân như giáp băng.",
+   "lore_vi": "Nơi người ấy đứng, sương tự đọng thành hoa băng."
+  },
+  "thanh_phong_linh_can": {
+   "name_vi": "Thanh Phong Linh Căn",
+   "giai": "thien",
+   "he": [
+    "phong"
+   ],
+   "loai": "bien_di",
+   "effects": [
+    {
+     "type": "dodge_cd",
+     "value": 0.09
+    },
+    {
+     "type": "glide_cd",
+     "value": 0.07
+    },
+    {
+     "type": "chieu_moc",
+     "value": 0.06
+    }
+   ],
+   "desc_vi": "Biến dị từ Mộc: Né Đòn và Đạp Kiếm Lướt nhanh như gió.",
+   "lore_vi": "Gió không có hình, nên chẳng đòn nào chạm được."
+  },
+  "liet_hoa_thien_linh_can": {
+   "name_vi": "Liệt Hỏa Thiên Linh Căn",
+   "giai": "thien",
+   "he": [
+    "hoa"
+   ],
+   "loai": "thien",
+   "effects": [
+    {
+     "type": "chieu_hoa",
+     "value": 0.12
+    },
+    {
+     "type": "atk_pct",
+     "value": 0.05
+    },
+    {
+     "type": "qi_cost",
+     "value": 0.04
+    }
+   ],
+   "desc_vi": "Thiên linh căn hệ Hỏa: chiêu Hỏa rực trời mà tốn ít linh lực.",
+   "lore_vi": "Thiên linh căn trăm năm mới có một. Lửa trong người này cháy không cần củi."
+  },
+  "tien_thien_kiem_cot": {
+   "name_vi": "Tiên Thiên Kiếm Cốt",
+   "giai": "thien",
+   "he": [
+    "kim"
+   ],
+   "loai": "the_chat",
+   "effects": [
+    {
+     "type": "basic_dmg",
+     "value": 0.12
+    },
+    {
+     "type": "parry_dmg",
+     "value": 0.07
+    },
+    {
+     "type": "crit",
+     "value": 1.5
+    }
+   ],
+   "desc_vi": "Xương cốt sinh ra đã là kiếm: đòn thường và Phản Đòn đều bén.",
+   "lore_vi": "Kiếm tu cả đời luyện kiếm ý. Người có Kiếm Cốt thì kiếm ý tự có sẵn."
+  },
+  "ngo_dao_tue_can": {
+   "name_vi": "Ngộ Đạo Tuệ Căn",
+   "giai": "thien",
+   "he": [],
+   "loai": "tue",
+   "effects": [
+    {
+     "type": "xp_pct",
+     "value": 0.06
+    },
+    {
+     "type": "q_time",
+     "value": 1.0
+    }
+   ],
+   "desc_vi": "Tuệ căn hiếm có: hiểu nhanh, mỗi câu đúng được thêm Tu Vi.",
+   "lore_vi": "Có người tu bằng linh khí, có người tu bằng trí tuệ. Đạo của toán học thuộc về kẻ sau."
+  },
+  "thanh_quang_linh_can": {
+   "name_vi": "Thánh Quang Linh Căn",
+   "giai": "thanh",
+   "he": [
+    "quang"
+   ],
+   "loai": "di",
+   "effects": [
+    {
+     "type": "heal_right",
+     "value": 0.04
+    },
+    {
+     "type": "hp_pct",
+     "value": 0.06
+    },
+    {
+     "type": "wrong_guard",
+     "value": 0.05
+    }
+   ],
+   "desc_vi": "Dị linh căn hệ Quang: Phản Đòn tỏa sáng chữa thương, đòn sai cũng nhẹ đi.",
+   "lore_vi": "Ánh sáng ấy không chói mắt mà ấm, như đèn trong thư phòng lúc đêm khuya."
+  },
+  "u_minh_am_linh_can": {
+   "name_vi": "U Minh Ám Linh Căn",
+   "giai": "thanh",
+   "he": [
+    "am"
+   ],
+   "loai": "di",
+   "effects": [
+    {
+     "type": "crit",
+     "value": 3.5
+    },
+    {
+     "type": "parry_dmg",
+     "value": 0.09
+    },
+    {
+     "type": "death_guard",
+     "value": 0.11
+    }
+   ],
+   "desc_vi": "Dị linh căn hệ Ám: đòn ra từ bóng tối, bạo kích khó lường.",
+   "lore_vi": "Bóng tối không phải ác, chỉ là nơi ánh sáng chưa tới. Nó giữ người ấy khỏi cái chết."
+  },
+  "van_thu_thanh_can": {
+   "name_vi": "Vạn Thú Thánh Căn",
+   "giai": "thanh",
+   "he": [
+    "moc",
+    "tho"
+   ],
+   "loai": "the_chat",
+   "effects": [
+    {
+     "type": "tame",
+     "value": 1
+    },
+    {
+     "type": "qi_gain",
+     "value": 0.17
+    },
+    {
+     "type": "drop_luck",
+     "value": 0.07
+    }
+   ],
+   "desc_vi": "Muôn thú quy phục: thu phục linh thú nhanh, Phản Đòn hồi nhiều linh lực.",
+   "lore_vi": "Truyền thuyết kể có người cưỡi giao long qua biển mà chưa từng tung một đòn."
+  },
+  "thien_dan_thanh_the": {
+   "name_vi": "Thiên Đan Thánh Thể",
+   "giai": "thanh",
+   "he": [
+    "hoa",
+    "moc"
+   ],
+   "loai": "the_chat",
+   "effects": [
+    {
+     "type": "alchemy_extra",
+     "value": 0.07
+    },
+    {
+     "type": "alchemy_zone",
+     "value": 2
+    },
+    {
+     "type": "xp_pct",
+     "value": 0.04
+    }
+   ],
+   "desc_vi": "Thân thể là một lò đan: luyện đan dư viên, văn hỏa rộng.",
+   "lore_vi": "Đan thành thì trời giáng dị tượng. Với người này, chuyện ấy xảy ra mỗi tuần."
+  },
+  "bat_diet_kim_than": {
+   "name_vi": "Bất Diệt Kim Thân",
+   "giai": "thanh",
+   "he": [
+    "kim",
+    "tho"
+   ],
+   "loai": "the_chat",
+   "effects": [
+    {
+     "type": "def_pct",
+     "value": 0.11
+    },
+    {
+     "type": "hp_pct",
+     "value": 0.06
+    },
+    {
+     "type": "death_guard",
+     "value": 0.11
+    }
+   ],
+   "desc_vi": "Kim thân bất hoại: thủ cao, máu dày, ngã xuống mất rất ít Tu Vi.",
+   "lore_vi": "Đao chém để lại vệt trắng, sét đánh chỉ làm tóc dựng lên."
+  },
+  "khong_gian_linh_can": {
+   "name_vi": "Không Gian Linh Căn",
+   "giai": "tien",
+   "he": [
+    "khong_gian"
+   ],
+   "loai": "di",
+   "effects": [
+    {
+     "type": "glide_cd",
+     "value": 0.18
+    },
+    {
+     "type": "dodge_cd",
+     "value": 0.08
+    },
+    {
+     "type": "tran_time",
+     "value": 0.13
+    },
+    {
+     "type": "qi_cost",
+     "value": 0.05
+    }
+   ],
+   "desc_vi": "Gập không gian trong một bước: Đạp Kiếm Lướt và Né Đòn gần như không cần hồi.",
+   "lore_vi": "Với người ấy, khoảng cách chỉ là một con số có thể rút gọn."
+  },
+  "thoi_gian_linh_can": {
+   "name_vi": "Thời Gian Linh Căn",
+   "giai": "tien",
+   "he": [
+    "thoi_gian"
+   ],
+   "loai": "di",
+   "effects": [
+    {
+     "type": "q_time",
+     "value": 2.0
+    },
+    {
+     "type": "chieu_cd",
+     "value": 0.07
+    },
+    {
+     "type": "stun_pct",
+     "value": 0.11
+    },
+    {
+     "type": "xp_pct",
+     "value": 0.04
+    }
+   ],
+   "desc_vi": "Làm chậm dòng thời gian: thêm giây để nghĩ, chiêu thức hồi nhanh.",
+   "lore_vi": "Một khắc của người khác là một canh của kẻ này. Đề khó mấy cũng có đủ thời gian."
+  },
+  "tien_thien_dao_the": {
+   "name_vi": "Tiên Thiên Đạo Thể",
+   "giai": "tien",
+   "he": [],
+   "loai": "dao",
+   "effects": [
+    {
+     "type": "xp_pct",
+     "value": 0.09
+    },
+    {
+     "type": "qi_pct",
+     "value": 0.11
+    },
+    {
+     "type": "qi_regen",
+     "value": 0.22
+    },
+    {
+     "type": "hp_pct",
+     "value": 0.05
+    }
+   ],
+   "desc_vi": "Đạo thể bẩm sinh: tu luyện như cá về nước, mọi mặt đều hơn người.",
+   "lore_vi": "Có kẻ tu cả đời để chạm tới đạo. Kẻ này sinh ra đã đứng trong đạo."
+  },
+  "van_kiem_kiem_cot": {
+   "name_vi": "Vạn Kiếm Quy Tông Kiếm Cốt",
+   "giai": "tien",
+   "he": [
+    "kim"
+   ],
+   "loai": "the_chat",
+   "effects": [
+    {
+     "type": "basic_dmg",
+     "value": 0.18
+    },
+    {
+     "type": "parry_dmg",
+     "value": 0.11
+    },
+    {
+     "type": "crit",
+     "value": 2.0
+    },
+    {
+     "type": "chieu_kim",
+     "value": 0.07
+    }
+   ],
+   "desc_vi": "Vạn kiếm quy về một: đòn thường, Phản Đòn, chiêu Kim đều là kiếm.",
+   "lore_vi": "Kiếm trong thiên hạ nghe tiếng người này đều khẽ rung trong vỏ."
+  },
+  "tu_tieu_than_loi_can": {
+   "name_vi": "Tử Tiêu Thần Lôi Căn",
+   "giai": "than",
+   "he": [
+    "loi"
+   ],
+   "loai": "bien_di",
+   "effects": [
+    {
+     "type": "chieu_loi",
+     "value": 0.21
+    },
+    {
+     "type": "parry_dmg",
+     "value": 0.13
+    },
+    {
+     "type": "stun_pct",
+     "value": 0.13
+    },
+    {
+     "type": "crit",
+     "value": 2.0
+    },
+    {
+     "type": "atk_pct",
+     "value": 0.06
+    }
+   ],
+   "desc_vi": "Thần lôi tím của chín tầng trời: chiêu Lôi, Phản Đòn, bạo kích đều tăng vọt.",
+   "lore_vi": "Lôi kiếp giáng xuống, người ấy ngửa mặt mà uống. Thần lôi là thức ăn, không phải hình phạt."
+  },
+  "am_duong_than_can": {
+   "name_vi": "Âm Dương Thần Căn",
+   "giai": "than",
+   "he": [
+    "quang",
+    "am"
+   ],
+   "loai": "dao",
+   "effects": [
+    {
+     "type": "heal_right",
+     "value": 0.05
+    },
+    {
+     "type": "wrong_guard",
+     "value": 0.1
+    },
+    {
+     "type": "crit",
+     "value": 2.5
+    },
+    {
+     "type": "qi_regen",
+     "value": 0.21
+    },
+    {
+     "type": "death_guard",
+     "value": 0.11
+    }
+   ],
+   "desc_vi": "Âm dương tương hợp: vừa hồi phục vừa chịu đòn, khó mà ngã.",
+   "lore_vi": "Một nửa là ngày, một nửa là đêm. Ở giữa là cái vòng tròn không bao giờ vỡ."
+  },
+  "ngu_hanh_than_can": {
+   "name_vi": "Ngũ Hành Thần Căn",
+   "giai": "than",
+   "he": [
+    "kim",
+    "moc",
+    "thuy",
+    "hoa",
+    "tho"
+   ],
+   "loai": "dao",
+   "effects": [
+    {
+     "type": "chieu_kim",
+     "value": 0.13
+    },
+    {
+     "type": "chieu_moc",
+     "value": 0.13
+    },
+    {
+     "type": "chieu_thuy",
+     "value": 0.13
+    },
+    {
+     "type": "chieu_hoa",
+     "value": 0.13
+    },
+    {
+     "type": "chieu_tho",
+     "value": 0.13
+    },
+    {
+     "type": "qi_cost",
+     "value": 0.06
+    }
+   ],
+   "desc_vi": "Ngũ hành viên mãn, tương sinh không ngừng: chiêu của cả năm hệ đều mạnh.",
+   "lore_vi": "Cũng là năm hệ như Tạp Linh Căn, nhưng hệ nào cũng đầy. Kẻ bị gọi là tạp, ngày kia hóa thần."
+  },
+  "hon_don_linh_can": {
+   "name_vi": "Hỗn Độn Linh Căn",
+   "giai": "hon_don",
+   "he": [
+    "hon_don"
+   ],
+   "loai": "dao",
+   "effects": [
+    {
+     "type": "xp_pct",
+     "value": 0.13
+    },
+    {
+     "type": "atk_pct",
+     "value": 0.16
+    },
+    {
+     "type": "def_pct",
+     "value": 0.14
+    },
+    {
+     "type": "hp_pct",
+     "value": 0.12
+    },
+    {
+     "type": "qi_pct",
+     "value": 0.13
+    },
+    {
+     "type": "chieu_cd",
+     "value": 0.08
+    },
+    {
+     "type": "qi_cost",
+     "value": 0.1
+    },
+    {
+     "type": "drop_luck",
+     "value": 0.13
+    }
+   ],
+   "desc_vi": "Trước khi có trời đất đã có Hỗn Độn. Mọi đường tu đều mở rộng.",
+   "lore_vi": "Vạn cổ chỉ một. Khi linh căn này thức tỉnh, Trắc Linh Thạch vỡ làm đôi."
+  },
+  "hong_mong_dao_can": {
+   "name_vi": "Hồng Mông Đạo Căn",
+   "giai": "hon_don",
+   "he": [
+    "hon_don"
+   ],
+   "loai": "dao",
+   "effects": [
+    {
+     "type": "parry_dmg",
+     "value": 0.26
+    },
+    {
+     "type": "wrong_guard",
+     "value": 0.16
+    },
+    {
+     "type": "q_time",
+     "value": 2.5
+    },
+    {
+     "type": "death_guard",
+     "value": 0.23
+    },
+    {
+     "type": "heal_right",
+     "value": 0.03
+    },
+    {
+     "type": "stones_pct",
+     "value": 0.16
+    },
+    {
+     "type": "alchemy_extra",
+     "value": 0.07
+    },
+    {
+     "type": "tame",
+     "value": 2
+    }
+   ],
+   "desc_vi": "Khí Hồng Mông đầu tiên của vũ trụ: Phản Đòn, phòng thân, luyện đan, thu phục đều vượt người.",
+   "lore_vi": "Đạo sinh một, một sinh hai. Người mang Hồng Mông Đạo Căn đứng ở chỗ trước con số một."
+  }
+ }
+}

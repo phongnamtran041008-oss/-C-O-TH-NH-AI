@@ -165,9 +165,9 @@ def dodge_unlocked(p: "Player") -> bool:
 
 def dodge_cooldown(p: "Player") -> float:
     """Né Đòn's cooldown; the worn Bạch Hạc (gift dodge_cooldown) shortens it."""
-    from ..systems import beasts
+    from ..systems import beasts, linh_can   # and a light-footed linh căn (dodge_cd)
     return float(plan()["dodge"]["cooldown_seconds"]) * (1 - beasts.gift_value(getattr(p, "pet", None),
-                                                                                  "dodge_cooldown"))
+                                                                                  "dodge_cooldown"))         * (1 - linh_can.fx(p, "dodge_cd"))
 
 
 def dodge(p: "Player", seq: int, dx: int, dy: int, now: float) -> str | None:
@@ -266,8 +266,11 @@ def _parry(ch: "ChannelZone", p: "Player", q: dict, m: "Monster | None", correct
     if correct:
         right = c["right_answer"]
         p.mcombo += 1          # right answers in a row: the chiêu combo of the open world
-        gain = float(right["linh_luc_gain"])
+        from ..systems import linh_can as lc      # the linh căn: more qi, a heal, a longer stun, a harder counter
+        gain = float(right["linh_luc_gain"]) * (1 + lc.fx(p, "qi_gain"))
         p.qi = min(p.max_qi, p.qi + gain)
+        if lc.fx(p, "heal_right") > 0:
+            p.hp = min(p.max_hp, p.hp + p.max_hp * lc.fx(p, "heal_right"))
         out = {"parry": True, "correct": True, "rest": rest, "combo": p.mcombo, "qi_gain": gain,
                "damage": 0, "shield_broken": False, "stun": 0.0, "monster_hp": 0, "killed": False}
         if m is None or not m.alive:
@@ -275,7 +278,7 @@ def _parry(ch: "ChannelZone", p: "Player", q: dict, m: "Monster | None", correct
         broke = m.shield
         if broke:                                     # elite_shield_breaks_on: parry
             break_shield(ch, m, p, now)
-        stun = float(right["stun_seconds"])
+        stun = float(right["stun_seconds"]) * (1 + lc.fx(p, "stun_pct"))
         m.tele = None
         m.moving = False
         m.stun_until = max(m.stun_until, now + stun)
@@ -286,7 +289,8 @@ def _parry(ch: "ChannelZone", p: "Player", q: dict, m: "Monster | None", correct
         fire = beasts.gift_value(getattr(p, "pet", None), "parry_fire")      # the worn Hỏa Tước
         if fire > 0:
             ch.event(k="fire", id=m.eid, by=p.eid, x=round(m.x, 1), y=round(m.y, 1))
-        dealt = hurt_monster(ch, m, p, base_damage(p, m) * float(right["counter_multiplier"]) * wmult * (1 + fire),
+        dealt = hurt_monster(ch, m, p, base_damage(p, m) * float(right["counter_multiplier"]) * wmult * (1 + fire)
+                           * (1 + lc.fx(p, "parry_dmg")),
                              False, now)
         from . import beasts as wild     # a linh thú counts the Phản Đòn: enough of them and it yields
         tame = wild.on_parry(ch, m, p, now)
@@ -298,7 +302,8 @@ def _parry(ch: "ChannelZone", p: "Player", q: dict, m: "Monster | None", correct
     p.mcombo = 0
     from ..systems import beasts         # the worn Huyền Quy: a wrong answer's blow is lighter
     guard = beasts.gift_value(getattr(p, "pet", None), "wrong_guard")
-    amount = float(q["hit"]) * float(c["wrong_answer"]["damage_taken"]) * (1 - guard)
+    from ..systems import linh_can as lc     # and the linh căn's own guard
+    amount = float(q["hit"]) * float(c["wrong_answer"]["damage_taken"]) * (1 - guard) * (1 - lc.fx(p, "wrong_guard"))
     taken = hurt_player(ch, p, amount, now, kind="gb", by=q["mid"], ignore_protect=True) if amount > 0 else 0.0
     out = {"parry": False, "correct": False, "rest": rest, "damage_taken": int(round(taken)),
            "hp": max(0, int(round(p.hp))), "dead": p.dead, "shows_solution": True, "guarded": guard > 0}
@@ -635,7 +640,9 @@ def attack(p: "Player", eid: str, now: float, rng: random.Random) -> str | None:
     crit = roll_crit(p, rng)
     ch.event(k="atk", by=p.eid, id=m.eid, x=p.x, y=p.y, wp=p.weapon or "")
     engage(ch, m, p, now)
-    hurt_monster(ch, m, p, base_damage(p, m) * (cfg_mult("crit_mult") if crit else 1.0), crit, now)
+    from ..systems import linh_can   # a normal hit: the linh căn's basic_dmg
+    hurt_monster(ch, m, p, base_damage(p, m) * (cfg_mult("crit_mult") if crit else 1.0)
+                 * (1 + linh_can.fx(p, "basic_dmg")), crit, now)
     return None
 
 
@@ -719,6 +726,9 @@ def _loot_bonus(p: "Player", m: "Monster") -> dict:
             best["drop_mult"] *= 1 + float(sk["value"])
         elif sk.get("type") == "kill_stones":
             best["stones_pct"] += float(sk["value"]) * 100
+    from ..systems import linh_can   # the linh căn: drop_luck, stones_pct
+    best["drop_mult"] *= 1 + linh_can.fx(p, "drop_luck")
+    best["stones_pct"] += linh_can.fx(p, "stones_pct") * 100
     return best
 
 
@@ -806,7 +816,9 @@ async def _death_penalty(uid: int) -> None:
     from ..systems import cultivation
     try:
         async with dbm.SessionLocal() as db:
-            lost = await cultivation.lose_xp_pct(db, uid, cultivation.cfg()["death_xp_loss_pct"])
+            from ..systems import linh_can   # a linh căn may keep part of it (death_guard)
+            keep = 1 - await linh_can.value_db(db, uid, "death_guard")
+            lost = await cultivation.lose_xp_pct(db, uid, cultivation.cfg()["death_xp_loss_pct"] * keep)
             await db.commit()
         _world().notify(uid, {"t": "xp_lost", "lost": lost})
     except Exception:
@@ -934,6 +946,7 @@ def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float) -> Non
 
 
 def tick(ch: "ChannelZone", dt: float, now: float) -> None:
+    from ..systems.linh_can import fx as lc_fx
     c = cfg()
     w = _world()
     for m in ch.monsters:
@@ -956,4 +969,4 @@ def tick(ch: "ChannelZone", dt: float, now: float) -> None:
         if now - p.last_combat > c["out_of_combat_seconds"]:
             mult = c["safe_zone_regen_mult"] if ch.safe else 1.0
             p.hp = min(p.max_hp, p.hp + p.max_hp * c["hp_regen_pct_per_second"] / 100 * dt * mult)
-            p.qi = min(p.max_qi, p.qi + c["qi_regen_per_second"] * dt * mult)
+            p.qi = min(p.max_qi, p.qi + c["qi_regen_per_second"] * dt * mult * (1 + lc_fx(p, "qi_regen")))

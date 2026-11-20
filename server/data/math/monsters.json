@@ -362,7 +362,9 @@
   "drops": [
    {"item": "loi_ma_tran", "chance": 0.8, "qty": [2, 3]},
    {"item": "thien_tam_ti", "chance": 0.2, "qty": [1, 1]},
-   {"equipment": ["kiem_go_dao", "nhan_ma_tran"], "chance": 0.1}
+   {"equipment": ["kiem_go_dao", "nhan_ma_tran"], "chance": 0.1},
+   {"item": "linh_tuy_tinh", "chance": 0.3, "qty": [1, 1]},
+   {"item": "loi_kiep_tinh_hach", "chance": 0.04, "qty": [1, 1]}
   ]
  },
  "van_xa": {
@@ -389,7 +391,8 @@
   "drops": [
    {"item": "truc_diep_thao", "chance": 0.45, "qty": [1, 2]},
    {"item": "muc_tinh", "chance": 0.3, "qty": [1, 1]},
-   {"item": "hoi_huyet_dan", "chance": 0.1, "qty": [1, 1]}
+   {"item": "hoi_huyet_dan", "chance": 0.1, "qty": [1, 1]},
+   {"item": "tay_linh_thao", "chance": 0.25, "qty": [1, 2]}
   ]
  },
  "phong_lang": {
@@ -416,7 +419,8 @@
   "drops": [
    {"item": "mac_linh_chi", "chance": 0.4, "qty": [1, 1]},
    {"item": "thien_tam_ti", "chance": 0.2, "qty": [1, 1]},
-   {"equipment": ["quat_giay", "giay_co"], "chance": 0.1}
+   {"equipment": ["quat_giay", "giay_co"], "chance": 0.1},
+   {"item": "linh_tuy_tinh", "chance": 0.3, "qty": [1, 1]}
   ]
  },
  "dau_tu_oa": {
@@ -443,7 +447,8 @@
   "drops": [
    {"item": "muc_tinh", "chance": 0.45, "qty": [1, 2]},
    {"item": "go_linh_moc", "chance": 0.3, "qty": [1, 1]},
-   {"item": "hoi_huyet_dan", "chance": 0.1, "qty": [1, 1]}
+   {"item": "hoi_huyet_dan", "chance": 0.1, "qty": [1, 1]},
+   {"item": "tay_linh_thao", "chance": 0.25, "qty": [1, 2]}
   ]
  },
  "ho_lo_tinh": {
@@ -470,7 +475,8 @@
   "drops": [
    {"item": "mac_linh_chi", "chance": 0.4, "qty": [1, 1]},
    {"item": "hoi_khi_dan", "chance": 0.25, "qty": [1, 1]},
-   {"equipment": ["ngoc_muc", "ngoc_so_phuc"], "chance": 0.1}
+   {"equipment": ["ngoc_muc", "ngoc_so_phuc"], "chance": 0.1},
+   {"item": "linh_tuy_tinh", "chance": 0.3, "qty": [1, 1]}
   ]
  },
  "tri_chu_tinh": {
@@ -497,7 +503,8 @@
   "drops": [
    {"item": "go_linh_moc", "chance": 0.45, "qty": [1, 2]},
    {"item": "muc_tinh", "chance": 0.3, "qty": [1, 1]},
-   {"item": "hoi_huyet_dan", "chance": 0.1, "qty": [1, 1]}
+   {"item": "hoi_huyet_dan", "chance": 0.1, "qty": [1, 1]},
+   {"item": "tay_linh_thao", "chance": 0.25, "qty": [1, 2]}
   ]
  },
  "moc_yeu": {
@@ -524,7 +531,8 @@
   "drops": [
    {"item": "go_linh_moc", "chance": 0.7, "qty": [2, 3]},
    {"item": "thien_tam_ti", "chance": 0.2, "qty": [1, 1]},
-   {"equipment": ["gay_truc", "ao_truc_van"], "chance": 0.1}
+   {"equipment": ["gay_truc", "ao_truc_van"], "chance": 0.1},
+   {"item": "linh_tuy_tinh", "chance": 0.3, "qty": [1, 1]}
   ]
  },
  "co_quan_nhan": {
@@ -551,7 +559,8 @@
   "drops": [
    {"item": "muc_tinh", "chance": 0.4, "qty": [1, 2]},
    {"item": "loi_ma_tran", "chance": 0.3, "qty": [1, 1]},
-   {"item": "hoi_khi_dan", "chance": 0.1, "qty": [1, 1]}
+   {"item": "hoi_khi_dan", "chance": 0.1, "qty": [1, 1]},
+   {"item": "thien_linh_qua", "chance": 0.06, "qty": [1, 1]}
   ]
  },
  "co_quan_nhan_dau_dan": {
@@ -578,7 +587,8 @@
   "drops": [
    {"item": "loi_ma_tran", "chance": 0.7, "qty": [2, 3]},
    {"item": "thien_tam_ti", "chance": 0.2, "qty": [1, 1]},
-   {"equipment": ["but_tap_hop", "nhan_dong"], "chance": 0.1}
+   {"equipment": ["but_tap_hop", "nhan_dong"], "chance": 0.1},
+   {"item": "thien_linh_qua", "chance": 0.25, "qty": [1, 1]}
   ]
  },
  "tam_ma": {
@@ -605,7 +615,8 @@
   "drops": [
    {"item": "truc_diep_thao", "chance": 0.4, "qty": [1, 2]},
    {"item": "mac_linh_chi", "chance": 0.2, "qty": [1, 1]},
-   {"item": "hoi_huyet_dan", "chance": 0.12, "qty": [1, 1]}
+   {"item": "hoi_huyet_dan", "chance": 0.12, "qty": [1, 1]},
+   {"item": "tay_linh_thao", "chance": 0.2, "qty": [1, 2]}
   ]
  },
  "tam_ma_chap_niem": {
@@ -632,7 +643,8 @@
   "drops": [
    {"item": "thien_tam_ti", "chance": 0.3, "qty": [1, 1]},
    {"item": "an_ruong_de", "chance": 0.15, "qty": [1, 1]},
-   {"equipment": ["kiem_go_dao", "ngoc_muc"], "chance": 0.12}
+   {"equipment": ["kiem_go_dao", "ngoc_muc"], "chance": 0.12},
+   {"item": "thien_linh_qua", "chance": 0.25, "qty": [1, 1]}
   ]
  },
  "loi_long": {
@@ -660,7 +672,9 @@
    {"item": "truc_co_dan", "chance": 1.0, "qty": [1, 1]},
    {"item": "thien_tam_ti", "chance": 0.8, "qty": [1, 2]},
    {"item": "loi_ma_tran", "chance": 0.8, "qty": [2, 4]},
-   {"equipment": ["kiem_go_dao", "but_tap_hop", "quat_giay", "gay_truc"], "chance": 1.0, "min_rarity": "linh"}
+   {"equipment": ["kiem_go_dao", "but_tap_hop", "quat_giay", "gay_truc"], "chance": 1.0, "min_rarity": "linh"},
+   {"item": "loi_kiep_tinh_hach", "chance": 0.6, "qty": [1, 2]},
+   {"item": "hon_don_thach", "chance": 0.12, "qty": [1, 1]}
   ]
  }
 }

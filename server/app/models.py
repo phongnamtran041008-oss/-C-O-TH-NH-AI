@@ -122,6 +122,23 @@ class WeaponClaim(Base):
     claimed_at: Mapped[dt.datetime] = mapped_column(DateTime)
 
 
+class LinhCan(Base):
+    """A player's linh căn (systems/linh_can.py, data/linh_can.json): the root they carry, the
+    one a tẩy linh pill just revealed and that waits for the keep-or-take choice, the rolls
+    since the last one at or above each pill's pity floor ({pill: n}), how many tests in all,
+    and the đồ giám (every root id ever revealed to them). No row = chưa trắc linh."""
+    __tablename__ = "linh_can"
+    user_id: Mapped[int] = mapped_column(UserFK(), primary_key=True)
+    root_id: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    pending_id: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    pending_pill: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    pity: Mapped[dict] = mapped_column(JSON, default=dict)
+    rolls: Mapped[int] = mapped_column(Integer, default=0)
+    discovered: Mapped[list] = mapped_column(JSON, default=list)
+    awakened_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
+    updated_at: Mapped[dt.datetime | None] = mapped_column(DateTime, nullable=True)
+
+
 class Bee(Base):
     __tablename__ = "bees"
     id: Mapped[int] = mapped_column(primary_key=True)
