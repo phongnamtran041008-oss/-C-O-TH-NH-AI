@@ -175,13 +175,23 @@ def grant_luyen_khi(server: ServerProcess, uid: int) -> None:
 
 def tour_lands(workdir: Path, out: Path) -> list[Path]:
     """A player who finished Luyện Khí stands in every land in turn: art/preview/land_<id>.png.
-    One player per land: a character that just left lingers where it was for a while."""
+    One player per land (a character that just left lingers where it was for a while), and a
+    fresh server every four lands (a server lets five accounts a day come from one address)."""
+    built = [l for l in math_tree.world_plan()["lands"] if l["status"] == "co" and l["kind"] != "hub"]
+    saved = []
+    for n in range(0, len(built), 4):
+        sub = workdir / f"server_{n}"
+        sub.mkdir(parents=True, exist_ok=True)
+        saved += _tour(sub, out, built[n:n + 4], n)
+    return saved
+
+
+def _tour(workdir: Path, out: Path, built: list[dict], first: int) -> list[Path]:
     server = ServerProcess(workdir)
     saved = []
     try:
         z = zones()
-        built = [l for l in math_tree.world_plan()["lands"] if l["status"] == "co" and l["kind"] != "hub"]
-        for i, land in enumerate(built):
+        for i, land in enumerate(built, start=first):
             user = f"du_lam_{i}"
             token, uid = make_account(server.url, user, f"Du Lãm {i}")
             grant_luyen_khi(server, uid)
