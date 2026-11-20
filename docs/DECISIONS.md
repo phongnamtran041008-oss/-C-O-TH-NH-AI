@@ -1197,6 +1197,20 @@ một lần, lần sau chỉ đăng nhập, dùng Firebase (dự án và API key
 - **Quái lỗi sai (M7) và bài tập lập trình (M6) chưa có cho ba môn mới.**
 - **Xưng hô:** game gọi người chơi là "con" ở mọi nơi, kể cả phần kiểm tra đầu vào.
 
+## Nhánh `toan-tu-tien` — M12: bản web (pygbag) cho điện thoại
+Chi tiết, cách build và kết quả chạy thật: `docs/WEB_BUILD.md`.
+- **Một chỗ chọn đường mạng:** `client/net/transport.py`. Máy tính vẫn dùng httpx + websockets trên luồng
+  riêng như cũ; trình duyệt dùng `fetch` và `WebSocket` của trang (`client/net/web.py`) sau cùng giao diện
+  `Api` / `WsClient`, nên không cảnh nào phải sửa.
+- **Máy chủ phát luôn bản web ở `/web/`** khi đã build: trang và API cùng một địa chỉ. Gọi chéo cổng bị
+  Chrome mới chặn khi trang mở bằng địa chỉ Wi-Fi (quy tắc "Local Network Access", đã thấy khi thử).
+  CORS vẫn bật (`CORS_ORIGINS`, mặc định `*`, không cookie) cho ai chỉ mở trang ở chỗ khác.
+- **Bài tập lập trình chạy ngay trong trang** (không có tiến trình con): stdin/stdout giả, giới hạn thời gian
+  bằng bộ dò dòng lệnh, được gấp 3 lần thời gian vì dò làm Python chậm đi. Trang không có luồng, nên "luồng"
+  của cảnh bài tập chạy luôn tại chỗ (trang đứng trong lúc chạy).
+- **Không có thế giới LAN trên web:** trang không mở được máy chủ hay quét mạng, nên bản web luôn dùng tài
+  khoản tên + mật khẩu của máy chủ thường.
+
 ## 2026-11-20: the Chinese-vocabulary game is removed
 
 Tác giả quyết định xoá hẳn mọi thứ của trò học chữ Hán cũ ("Khu Vườn Tu Tiên") và xoá hẳn khu vườn; game bây

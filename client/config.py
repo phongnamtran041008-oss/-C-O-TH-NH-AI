@@ -11,6 +11,20 @@ from pathlib import Path
 PROTOCOL_VERSION = 5
 GAME_VERSION = "1.1.2"
 
+# M12 web build (pygbag): files written in the page vanish on reload, so config and the saved
+# login are also kept in the browser's localStorage under these keys (client/net/web.py).
+IN_BROWSER = sys.platform == "emscripten"
+WEB_CONFIG_KEY, WEB_SESSION_KEY = "toantutien_config", "toantutien_session"
+
+
+def _web_stored(key: str) -> dict:
+    from .net.web import storage_get
+    try:
+        data = json.loads(storage_get(key) or "{}")
+    except ValueError:
+        return {}
+    return data if isinstance(data, dict) else {}
+
 
 def base_dir() -> Path:
     """Folder for config.json / session.json: next to the exe when packaged."""
@@ -113,14 +127,29 @@ class Config:
             except (ValueError, TypeError):
                 pass
         cfg.path = path
+        if IN_BROWSER:
+            cfg._load_web()
         return cfg
+
+    def _load_web(self) -> None:
+        """The web build: what the player saved in this browser wins over the shipped config;
+        no server named anywhere = the machine that served the page, port 8000."""
+        for k, v in _web_stored(WEB_CONFIG_KEY).items():
+            if k in self.__dataclass_fields__ and k != "path":
+                setattr(self, k, v)
+        if not self.server_url:
+            from .net.web import default_server
+            self.server_url = default_server()
 
     def save(self, path: Path | None = None) -> None:
         path = path or self.path
         if path is None:
             return
+        data = {k: v for k, v in asdict(self).items() if k != "path"}
+        if IN_BROWSER:
+            from .net.web import storage_set
+            storage_set(WEB_CONFIG_KEY, data)
         try:
-            data = {k: v for k, v in asdict(self).items() if k != "path"}
             path.write_text(json.dumps(data, ensure_ascii=False, indent=2), "utf-8")
         except OSError:
             pass
@@ -130,6 +159,7 @@ class Session:
     """Saved token so the game logs in automatically (spec 15.5)."""
 
     def __init__(self, path: Path | None = None):
+        self.web = IN_BROWSER and path is None     # M12: kept in localStorage too
         self.path = path or data_dir() / "session.json"
         self.data: dict = {}
         if self.path.exists():
@@ -137,6 +167,8 @@ class Session:
                 self.data = json.loads(self.path.read_text("utf-8"))
             except ValueError:
                 self.data = {}
+        elif self.web:
+            self.data = _web_stored(WEB_SESSION_KEY)
 
     @property
     def token(self) -> str | None:
@@ -144,6 +176,9 @@ class Session:
 
     def save(self, **kw) -> None:
         self.data.update(kw)
+        if self.web:
+            from .net.web import storage_set
+            storage_set(WEB_SESSION_KEY, self.data)
         try:
             self.path.write_text(json.dumps(self.data, ensure_ascii=False), "utf-8")
         except OSError:

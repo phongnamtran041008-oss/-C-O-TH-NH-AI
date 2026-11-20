@@ -22,7 +22,7 @@ from .config import GAME_VERSION, PROTOCOL_VERSION, Config, Session, data_dir, n
 from .engine.audio import Audio
 from .engine.display import Display
 from .engine.text import Fonts
-from .net.rest import Api
+from .net.transport import IN_BROWSER, make_api, make_ws
 from .net.ws_client import WsClient
 from .scenes.base import MessageBox, Scene
 from .ui.chat import ChatBox, ChatLog
@@ -72,7 +72,10 @@ class Game:
         self.ui = UI(self.display, self.fonts)
         self.ui.sfx = self.audio.play
         server = self.session.data.get("server_url") or self.cfg.server_url
-        self.api = Api(server, self.session.token)
+        if IN_BROWSER:      # M12: "?server=..." in the page address wins (docs/WEB_BUILD.md)
+            from .net.web import page_query
+            server = page_query("server") or server
+        self.api = make_api(server, self.session.token)
         self.api.on_unauthorized = self._unauthorized
         self.state = State()
         self.scenes: list[Scene] = []
@@ -95,7 +98,7 @@ class Game:
         self.host = None                          # the world this game opened (client/host.py), if any
         self.update: dict | None = None           # a newer release on GitHub (client/net/updates.py)
         self._update_check = None
-        if self.cfg.update_repo:
+        if self.cfg.update_repo and not IN_BROWSER:   # a web page is always the newest build
             from .net.updates import UpdateChecker
             self._update_check = UpdateChecker(self.cfg.update_repo)
         pygame.key.set_repeat(350, 40)
@@ -169,8 +172,9 @@ class Game:
 
     @property
     def lan_mode(self) -> bool:
-        """Accounts are Firebase accounts and worlds live on players' PCs (Minecraft style)."""
-        return bool(self.cfg.firebase_api_key)
+        """Accounts are Firebase accounts and worlds live on players' PCs (Minecraft style).
+        Never in the browser: a page cannot open a world or scan the LAN (M12)."""
+        return bool(self.cfg.firebase_api_key) and not IN_BROWSER
 
     def join_world(self, url: str, on_fail) -> None:
         """LAN worlds: check the world's version, trade a Firebase ID token for its session
@@ -264,7 +268,7 @@ class Game:
     def connect_world(self) -> None:
         self.disconnect_world()
         self.chat.my_uid = self.state.me.get("id")
-        self.net = WsClient(self.api.base_url, self.api.token or "", PROTOCOL_VERSION)
+        self.net = make_ws(self.api.base_url, self.api.token or "", PROTOCOL_VERSION)
 
     def disconnect_world(self) -> None:
         if self.net is not None:
@@ -653,6 +657,32 @@ class Game:
             self.step(min(dt, 0.1))
         self.shutdown()
 
+    async def run_async(self) -> None:
+        """The web build's loop (M12): pygbag needs the frame to hand control back to the
+        browser, so each frame ends with an await. A page cannot close itself: "Thoát" (or
+        closing the tab, which never reaches us) just leaves the player on the title screen."""
+        import asyncio
+        from .scenes.menu import MenuScene
+        if not self.scenes:
+            self.push(MenuScene(self))
+        from .net.web import report_fps
+        frames, busy, since = 0, 0.0, time.perf_counter()
+        while True:
+            dt = self.clock.tick(60) / 1000.0
+            t0 = time.perf_counter()
+            self.step(min(dt, 0.1))
+            busy += time.perf_counter() - t0
+            frames += 1
+            if frames >= 60:    # window.kvtt_fps / kvtt_frame_ms in the browser console: how fast it runs
+                now = time.perf_counter()
+                report_fps(frames / max(1e-6, now - since), 1000 * busy / frames)
+                frames, busy, since = 0, 0.0, now
+            if not self.running:
+                self.running = True
+                if not isinstance(self.top, MenuScene):
+                    self.replace_all(MenuScene(self))
+            await asyncio.sleep(0)
+
     def step(self, dt: float, events: list | None = None) -> None:
         self.now += dt
         events = pygame.event.get() if events is None else events
@@ -758,6 +788,27 @@ def smoke_test(modules: list[str]) -> int:
     load_map("abode")
     pygame.quit()
     return 0
+
+
+WEB_SIZE = (960, 540)     # the canvas of the web build: the 480x270 world at x2, scaled by the page
+
+
+async def web_main() -> None:
+    """Entry of the pygbag web build (web/main.py calls it; docs/WEB_BUILD.md)."""
+    from .net import transport
+    if not transport.threads_work():
+        transport.run_threads_inline()
+    game = Game(size=WEB_SIZE)
+    # pygbag gives a RESIZABLE window a 512x512 canvas: ask again for a fixed 960x540 one (the
+    # page scales the canvas to the screen), then let the Display measure it as after a resize
+    pygame.display.set_mode(WEB_SIZE)
+    game.display.on_resize()
+    from .net.web import install_touch_controls
+    try:
+        install_touch_controls()      # phones: D-pad, action keys and a button for the keyboard
+    except Exception:
+        pass
+    await game.run_async()
 
 
 def main() -> None:

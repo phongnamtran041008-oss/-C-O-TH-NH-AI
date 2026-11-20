@@ -102,6 +102,16 @@ class Settings:
     client_download_url: str = field(default_factory=lambda: os.environ.get("CLIENT_DOWNLOAD_URL", "").strip())
     latest_client_version: str = field(default_factory=lambda: os.environ.get("LATEST_CLIENT_VERSION", "").strip()
                                        or GAME_VERSION)
+    # M12: the web build (docs/WEB_BUILD.md) is served from another address, so the browser
+    # asks for CORS. Comma separated origins, "*" = any. Logins travel as a Bearer header,
+    # never as a cookie, so no credentials are allowed and "*" gives a page no extra power.
+    cors_origins: list[str] = field(default_factory=lambda: [
+        o.strip().rstrip("/") for o in os.environ.get("CORS_ORIGINS", "*").split(",") if o.strip()])
+    # M12: the server also hands out the web build at /web/ when it has been built (python
+    # tools/build_web.py), so a phone opens the game from the same address as the API: same
+    # origin, nothing for the browser to block, one port to open.
+    web_build_dir: Path = field(default_factory=lambda: Path(
+        os.environ.get("WEB_BUILD_DIR") or SERVER_DIR.parent / "build" / "web"))
 
     def __post_init__(self):
         self.database_url = normalize_database_url(self.database_url)

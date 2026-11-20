@@ -63,6 +63,13 @@ async def lifespan(app: FastAPI):
 
 def create_app(use_lifespan: bool = True) -> FastAPI:
     app = FastAPI(title="Toán Tu Tiên", version=GAME_VERSION, lifespan=lifespan if use_lifespan else None)
+    if settings.cors_origins:   # M12: the browser build calls the API from another origin
+        from fastapi.middleware.cors import CORSMiddleware
+        app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins, allow_credentials=False,
+                           allow_methods=["*"], allow_headers=["*"], max_age=600)
+    if (settings.web_build_dir / "index.html").is_file():   # M12: the web build, same origin as the API
+        from fastapi.staticfiles import StaticFiles
+        app.mount("/web", StaticFiles(directory=settings.web_build_dir, html=True), name="web")
     app.include_router(server_routes.router)
     app.include_router(auth_routes.router)
     app.include_router(game_routes.router)

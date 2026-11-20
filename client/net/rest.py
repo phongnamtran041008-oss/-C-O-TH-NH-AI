@@ -3,13 +3,12 @@ back through a queue and their callbacks run on the game thread in `poll()`.
 Timeout 10 s, two retries on network errors, JSON errors become (code, message_vi)."""
 from __future__ import annotations
 
+import json
 import queue
 import threading
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
-
-import httpx
 
 NETWORK_ERROR = "network"
 SLEEPING = "server_starting"
@@ -45,6 +44,9 @@ class Api:
         self.offline = False
         self.on_unauthorized: Callable[[], None] | None = None
         self._stop = False
+        self._start_worker()
+
+    def _start_worker(self) -> None:
         self._thread = threading.Thread(target=self._worker, daemon=True, name="rest")
         self._thread.start()
 
@@ -67,18 +69,22 @@ class Api:
                 job, ok, payload = self._results.get_nowait()
             except queue.Empty:
                 return
-            self.pending -= 1
-            if ok:
-                self.offline = False
-                if job.on_ok:
-                    job.on_ok(payload)
-            else:
-                err: ApiError = payload
-                self.offline = err.code == NETWORK_ERROR
-                if err.status == 401 and self.on_unauthorized and job.path not in ("/auth/login", "/auth/reset_password"):
-                    self.on_unauthorized()
-                if job.on_err:
-                    job.on_err(err)
+            self._deliver(job, ok, payload)
+
+    def _deliver(self, job: _Job, ok: bool, payload) -> None:
+        """Run one finished job's callback (game thread)."""
+        self.pending -= 1
+        if ok:
+            self.offline = False
+            if job.on_ok:
+                job.on_ok(payload)
+        else:
+            err: ApiError = payload
+            self.offline = err.code == NETWORK_ERROR
+            if err.status == 401 and self.on_unauthorized and job.path not in ("/auth/login", "/auth/reset_password"):
+                self.on_unauthorized()
+            if job.on_err:
+                job.on_err(err)
 
     def close(self) -> None:
         self._stop = True
@@ -90,6 +96,7 @@ class Api:
 
     # ------------------------------------------------------------ worker
     def _worker(self) -> None:
+        import httpx    # here, not at the top: the browser build has no httpx (client/net/web.py)
         client = httpx.Client(timeout=10.0)
         while not self._stop:
             job = self._jobs.get()
@@ -99,6 +106,7 @@ class Api:
         client.close()
 
     def _run(self, client: httpx.Client, job: _Job):
+        import httpx
         headers = {"Authorization": f"Bearer {self.token}"} if self.token else {}
         last_exc = None
         for attempt in range(job.retries + 1):
@@ -111,20 +119,25 @@ class Api:
                 last_exc = e
                 time.sleep(0.4 * (attempt + 1))
                 continue
-            if r.status_code < 400:
-                return job, True, (r.content if job.raw else (r.json() if r.content else {}))
-            try:
-                e = r.json().get("error", {})
-                code = e.get("code", "error")
-                if not isinstance(code, str):   # Google APIs (Firebase): {"code": 400, "message": "EMAIL_EXISTS"}
-                    code = str(e.get("message", "error")).split(" ")[0]
-                return job, False, ApiError(r.status_code, code, e.get("message_vi", "Có lỗi xảy ra."))
-            except ValueError:
-                if r.status_code in (502, 503, 504):
-                    return job, False, ApiError(r.status_code, SLEEPING,
-                                                "Máy chủ đang khởi động, chờ khoảng 1 phút...")
-                return job, False, ApiError(r.status_code, "error", f"Lỗi máy chủ ({r.status_code}).")
+            return (job, *response_result(r.status_code, r.content, job.raw))
         msg = "Mất kết nối máy chủ, đang thử lại..."
         if isinstance(last_exc, httpx.TimeoutException):
             msg = "Máy chủ phản hồi chậm (có thể đang khởi động), chờ một chút..."
         return job, False, ApiError(0, NETWORK_ERROR, msg)
+
+
+def response_result(status: int, content: bytes, raw: bool = False) -> tuple[bool, object]:
+    """(ok, payload) for an answer that arrived: its JSON (bytes when `raw`), or an ApiError.
+    Shared by the desktop worker above and the browser transport (client/net/web.py)."""
+    if status < 400:
+        return True, (content if raw else (json.loads(content) if content else {}))
+    try:
+        e = json.loads(content).get("error", {})
+        code = e.get("code", "error")
+        if not isinstance(code, str):   # Google APIs (Firebase): {"code": 400, "message": "EMAIL_EXISTS"}
+            code = str(e.get("message", "error")).split(" ")[0]
+        return False, ApiError(status, code, e.get("message_vi", "Có lỗi xảy ra."))
+    except ValueError:
+        if status in (502, 503, 504):
+            return False, ApiError(status, SLEEPING, "Máy chủ đang khởi động, chờ khoảng 1 phút...")
+        return False, ApiError(status, "error", f"Lỗi máy chủ ({status}).")

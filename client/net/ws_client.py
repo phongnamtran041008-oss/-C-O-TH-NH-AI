@@ -131,19 +131,23 @@ class WsClient:
                 m = json.loads(raw)
             except ValueError:
                 continue
-            t = m.get("t")
-            if t == "welcome":
-                self.state = ONLINE
-                self.connected_once = True
-            elif t == "pong" and isinstance(m.get("c"), (int, float)):
-                self.rtt = time.monotonic() - m["c"]
-            elif t == "kicked":
-                self.stop_reason = m.get("reason") or "kicked"
-                if self.stop_reason == "timeout":  # our side stalled: just reconnect
-                    self.stop_reason = None
-            elif t == "error" and m.get("code") in FATAL_ERRORS:
-                self.stop_reason = m["code"]
-            self.inbox.put(m)
+            self._on_message(m)
+
+    def _on_message(self, m: dict) -> None:
+        """One message from the server (also used by the browser client, client/net/web.py)."""
+        t = m.get("t")
+        if t == "welcome":
+            self.state = ONLINE
+            self.connected_once = True
+        elif t == "pong" and isinstance(m.get("c"), (int, float)):
+            self.rtt = time.monotonic() - m["c"]
+        elif t == "kicked":
+            self.stop_reason = m.get("reason") or "kicked"
+            if self.stop_reason == "timeout":  # our side stalled: just reconnect
+                self.stop_reason = None
+        elif t == "error" and m.get("code") in FATAL_ERRORS:
+            self.stop_reason = m["code"]
+        self.inbox.put(m)
 
     async def _writer(self, ws) -> None:
         while True:
