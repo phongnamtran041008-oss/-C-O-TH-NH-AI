@@ -499,7 +499,7 @@ class WorldScene(Scene):
 
     def announce_chieu(self, n: dict) -> None:
         """A chiêu just earned on Đạo Thụ: a gold toast and the stage-up light round the player."""
-        self.game.toast(T.CHIEU_NEW.format(name=n.get("name_vi", "")), "#B8860B", life=4.0)
+        self.game.toast(T.CHIEU_NEW.format(name=n.get("name_vi", "")), "#B8860B", 4.0)
         vf = getattr(self, "vfx", None)
         if vf is not None and art2.on() and getattr(self, "player", None) is not None:
             CV.stage_up(vf, self.player.x, self.player.y, follow=f"p{self.game.state.me.get('id')}")

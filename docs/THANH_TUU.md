@@ -39,6 +39,7 @@ Kiểm: `achievements.validate()` trong `tools/check_all.py`; test `server/tests
 | `cult` | systems/cultivation.add_xp (a stage or realm up) | cult |
 | `tribulation` | systems/cultivation.tribulation_handler (Thiên Kiếp passed) | tribulation, cult |
 | `trial` | systems/math_practice._trial_after_answer (a Thiên kiếp nhỏ passed) | trial_pass, tree_nodes |
+| `chieu_unlock` | systems/math_skills.view (a chiêu learned on Đạo Thụ, announced once) | chieu_learned |
 | `code` | systems/math_code.judge (Nộp bài) | code_solved, xa_truong, xa_truong_top |
 | `gear` | systems/items.grant_equipment (every piece of equipment granted) | weapon_get (type, quality), weapon_types |
 | `weapon_claim` | systems/weapons.claim | weapon_claim |

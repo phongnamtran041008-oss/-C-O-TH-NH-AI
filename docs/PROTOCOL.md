@@ -180,6 +180,7 @@ Bí cảnh vẫn theo Vấn Đạo ở trên.
 
 - `zone.combat` = `{"rule": "on_hit", "rest": giây nghỉ, "dodge": {"ok", "unlock": {"realm", "stage"}, "dash_px",
   "dash_ms", "cooldown", "iframes", "step_ms"}}`. Client dùng đúng các số này để đoán trước cú lướt.
+- Chiêu thức chỉ ra được từ sáu ô Công Pháp (`not_slotted` nếu không). Sự kiện `mskill` của Chiêu Thức II mang thêm `hits[[eid, x, y]]`, `ex, ey, w` (đường thẳng) và `d` (thời gian băng/trói/dải cháy/chuông/kiếm vực); dải cháy và kiếm vực tiếp tục chém theo nhịp bằng các sự kiện `hit` thường (chi tiết: `docs/API.md`, mục chiêu thức).
 - Đánh thường (`atk`) và chiêu thức (`mskill`) không hỏi gì. Quái thường không có Mặc Thuẫn; tinh anh và thủ
   lĩnh có, và khiên chỉ vỡ khi Phản Đòn.
 - Quái ra đòn có báo trước (`tele`). Đòn rơi xuống người đang đứng trong vùng: trong lúc Né Đòn còn bất khả xâm

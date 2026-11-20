@@ -438,7 +438,7 @@ class Facts:
         if kind == "skills_unlocked":
             from . import math_skills
             where = tp.working_position_of(st)
-            return sum(1 for s in math_skills.skills().values() if math_skills.locked_reason(s, where) is None)
+            return sum(1 for s in math_skills.skills().values() if math_skills.locked_reason(s, where, st) is None)
         raise KeyError(kind)
 
     async def _fortune_won(self) -> int:
