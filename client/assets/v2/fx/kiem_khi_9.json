@@ -1,0 +1,19 @@
+{
+ "id": "kiem_khi_9",
+ "name_vi": "Kiếm khí bậc 9 (Hợp Thể)",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 30,
+  "y": 66
+ },
+ "sheet": "kiem_khi_9.png",
+ "cols": 7,
+ "frames": 7,
+ "fps": 20,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

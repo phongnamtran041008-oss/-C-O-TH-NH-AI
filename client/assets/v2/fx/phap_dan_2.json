@@ -1,0 +1,19 @@
+{
+ "id": "phap_dan_2",
+ "name_vi": "Pháp đạn 2",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 39,
+  "y": 32
+ },
+ "sheet": "phap_dan_2.png",
+ "cols": 6,
+ "frames": 6,
+ "fps": 12,
+ "loop": true,
+ "blend": "add",
+ "ground": false
+}

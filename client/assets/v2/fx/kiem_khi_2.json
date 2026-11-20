@@ -1,0 +1,19 @@
+{
+ "id": "kiem_khi_2",
+ "name_vi": "Kiếm khí bậc 2 (Luyện Khí trung)",
+ "frame": {
+  "w": 64,
+  "h": 64
+ },
+ "pivot": {
+  "x": 16,
+  "y": 35
+ },
+ "sheet": "kiem_khi_2.png",
+ "cols": 7,
+ "frames": 7,
+ "fps": 20,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}

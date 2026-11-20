@@ -1,0 +1,19 @@
+{
+ "id": "cung_ten_3",
+ "name_vi": "Tiễn khí 3",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 48,
+  "y": 48
+ },
+ "sheet": "cung_ten_3.png",
+ "cols": 4,
+ "frames": 4,
+ "fps": 14,
+ "loop": true,
+ "blend": "add",
+ "ground": false
+}

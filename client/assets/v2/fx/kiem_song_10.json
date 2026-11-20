@@ -1,0 +1,19 @@
+{
+ "id": "kiem_song_10",
+ "name_vi": "Kiếm sóng bậc 10 (Đại Thừa)",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 64
+ },
+ "sheet": "kiem_song_10.png",
+ "cols": 6,
+ "frames": 6,
+ "fps": 14,
+ "loop": true,
+ "blend": "add",
+ "ground": false
+}

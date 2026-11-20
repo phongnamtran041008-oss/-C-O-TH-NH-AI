@@ -1,0 +1,19 @@
+{
+ "id": "chuy_chan_4",
+ "name_vi": "Chùy chấn 4",
+ "frame": {
+  "w": 128,
+  "h": 128
+ },
+ "pivot": {
+  "x": 64,
+  "y": 64
+ },
+ "sheet": "chuy_chan_4.png",
+ "cols": 7,
+ "frames": 7,
+ "fps": 16,
+ "loop": false,
+ "blend": "add",
+ "ground": true
+}

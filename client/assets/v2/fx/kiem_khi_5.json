@@ -1,0 +1,19 @@
+{
+ "id": "kiem_khi_5",
+ "name_vi": "Kiếm khí bậc 5 (Kết Đan)",
+ "frame": {
+  "w": 96,
+  "h": 96
+ },
+ "pivot": {
+  "x": 22,
+  "y": 50
+ },
+ "sheet": "kiem_khi_5.png",
+ "cols": 7,
+ "frames": 7,
+ "fps": 20,
+ "loop": false,
+ "blend": "add",
+ "ground": false
+}
