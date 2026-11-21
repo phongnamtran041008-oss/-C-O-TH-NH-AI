@@ -22,6 +22,21 @@ bar "u_4" 0
 bar "u_5" 4
 :::
 
+:::core
+Vectơ trong R^n là một dãy n số có thứ tự. Cộng hai vectơ và nhân vectơ với một số đều làm riêng từng tọa độ.
+:::
+
+$$ u = (u_{1}, u_{2}, \ldots, u_{n}) \in \mathbb{R}^{n} $$
+
+> Lỗi thường gặp: cộng (1, 2) với (1, 2, 0) vì "thêm số 0 không đổi gì". Hai vectơ khác số chiều nằm ở hai không gian khác nhau, không cộng được.
+
+:::check
+Q: Vectơ (0, 5, -2, 1) nằm trong R^n với n bằng mấy? Tọa độ thứ ba của nó là gì?
+A: n = 4, vì nó có 4 số. Tọa độ thứ ba là -2.
+:::
+
+### Cộng và co giãn vectơ
+
 :::figure plane
 caption: Với n = 2, vectơ là mũi tên. Nối đuôi v vào ngọn u: (2, 1) + (1, 2) = (3, 3).
 size: 200 105
@@ -32,19 +47,11 @@ vector 2 1 3 3 xanh "v"
 vector 0 0 3 3 luc "u + v" pos=nw
 :::
 
-:::core
-Vectơ trong R^n là một dãy n số có thứ tự. Cộng hai vectơ và nhân vectơ với một số đều làm riêng từng tọa độ.
-:::
-
-$$ u = (u_{1}, u_{2}, \ldots, u_{n}) \in \mathbb{R}^{n} $$
-
 Ví dụ: u = (1, -2, 0) và v = (3, 1, 4). Tính 2u - v.
 
 1. Nhân mọi tọa độ của u với 2: 2u = (2, -4, 0).
 2. Trừ từng cặp cùng vị trí: (2 - 3, -4 - 1, 0 - 4).
 3. Kết quả: 2u - v = (-1, -5, -4).
-
-> Lỗi thường gặp: cộng (1, 2) với (1, 2, 0) vì "thêm số 0 không đổi gì". Hai vectơ khác số chiều nằm ở hai không gian khác nhau, không cộng được.
 
 :::check
 Q: Cho u = (2, 0, -1) và v = (1, 3, 1). Tính 2u + v.
@@ -54,13 +61,13 @@ A: (4 + 1, 0 + 3, -2 + 1) = (5, 3, -1).
 ## Kích thước ma trận và phần tử a_ij
 
 :::hook
-Một bảng dữ liệu 100 khách hàng, mỗi người 5 thông tin, là một ma trận 100 x 5: mỗi hàng là một người, mỗi cột là một loại thông tin.
+Bảng dữ liệu 100 khách hàng, mỗi người 5 thông tin, là ma trận 100 x 5: mỗi hàng một người, mỗi cột một loại thông tin.
 :::
 
 :::figure grid
-caption: Cỡ 3 x 4. Ô a_23 nằm ở chỗ hàng 2 (xanh) cắt cột 3 (đỏ): a_23 = -4.
+caption: A cỡ 3 x 4. Ô a_23 nằm ở chỗ hàng 2 (xanh) cắt cột 3 (đỏ): a_23 = -4.
 style: matrix
-table "A"
+table
 head "cột 1" "cột 2" "cột 3" "cột 4"
 side "hàng 1" "hàng 2" "hàng 3"
 row 5 -1 0 2
@@ -75,19 +82,18 @@ mark cell 2 3 vang
 Cỡ m x n nghĩa là m hàng và n cột. a_ij là ô ở hàng i, cột j: chỉ số đầu luôn là hàng.
 :::
 
-Ma trận vuông có số hàng bằng số cột; các ô a_11, a_22, ... nằm trên đường chéo chính. Có khi ma trận được cho bằng công thức thay vì bằng bảng: thay số hàng, số cột vào là ra từng ô.
+Ma trận vuông có số hàng bằng số cột; các ô a_11, a_22, ... nằm trên đường chéo chính. Ma trận cũng có thể cho bằng công thức: thay số hàng, số cột vào là ra từng ô.
 
 Ví dụ: lập ma trận B cỡ 2 x 3 với b_ij = 2i - j.
 
 1. Hàng 1 (i = 1): b_11 = 1, b_12 = 0, b_13 = -1.
-2. Hàng 2 (i = 2): b_21 = 3, b_22 = 2, b_23 = 1.
-3. Xếp hàng 1 trên, hàng 2 dưới:
+2. Hàng 2 (i = 2): b_21 = 3, b_22 = 2, b_23 = 1. Xếp hai hàng lại:
 
 :::matrix
 B = 1 0 -1 ; 3 2 1
 :::
 
-> Lỗi thường gặp: đọc a_32 là hàng 2, cột 3. Đọc ngược thì lấy nhầm ô, và với ma trận không vuông có khi ô đó không tồn tại.
+> Lỗi thường gặp: đọc a_32 là hàng 2, cột 3. Đọc ngược là lấy nhầm ô, có khi ô đó không tồn tại.
 
 :::check
 Q: Trong ma trận A ở hình trên, a_31 bằng bao nhiêu?
@@ -187,7 +193,7 @@ A: A^T cỡ 7 x 4. Không tính được A + A^T, vì 4 x 7 khác 7 x 4.
 ## Vết của ma trận vuông
 
 :::hook
-Trong thống kê, cộng phương sai của mọi thuộc tính ra tổng độ phân tán của dữ liệu. Các phương sai ấy nằm trên đường chéo một ma trận, nên tổng đó là một vết.
+Tổng phương sai của mọi thuộc tính đo độ phân tán của dữ liệu. Các phương sai ấy nằm trên đường chéo một ma trận, nên tổng đó là một vết.
 :::
 
 :::figure grid
@@ -201,10 +207,10 @@ mark diag vang
 :::
 
 :::core
-Vết của ma trận vuông là tổng các ô trên đường chéo chính, tức các ô a_ii có số hàng bằng số cột.
+Vết của ma trận vuông là tổng các ô a_ii trên đường chéo chính.
 :::
 
-Vết là tuyến tính, nên tính vết của một tổ hợp chỉ cần vết của từng ma trận, không cần lập ra ma trận tổ hợp. Lật bảng không đụng tới đường chéo, nên tr(A^T) = tr(A).
+Vết là tuyến tính: vết của một tổ hợp tính được từ vết của từng ma trận. Lật bảng không đụng tới đường chéo, nên tr(A^T) = tr(A).
 
 $$ \text{tr}(kA + B) = k \cdot \text{tr}(A) + \text{tr}(B) $$
 
@@ -252,6 +258,28 @@ Mỗi dạng đặc biệt là một luật về đường chéo chính: số 0 
 - Đối xứng: a_ij = a_ji với mọi i, j.
 - Chéo: mọi ô ngoài đường chéo bằng 0. Đơn vị I: chéo, các ô trên đường chéo bằng 1. Không O: mọi ô bằng 0.
 
+:::check
+Q: Ma trận đơn vị cấp 3 có bao nhiêu ô bằng 0, và nó nằm ở vùng nào của hình?
+A: 6 ô bằng 0. I là ma trận chéo, nên nằm ở vùng vàng: vừa tam giác trên, vừa đối xứng.
+:::
+
+### Nhận ra ma trận đối xứng
+
+:::figure grid
+caption: Hai ô đối nhau qua đường chéo cùng màu và bằng nhau, nên S^T = S.
+style: matrix
+table "S"
+row 2 7 -1
+row 7 0 4
+row -1 4 5
+mark cell 1 2 do
+mark cell 2 1 do
+mark cell 1 3 xanh
+mark cell 3 1 xanh
+mark cell 2 3 luc
+mark cell 3 2 luc
+:::
+
 Ví dụ: S = [2, 7, -1; 7, 0, 4; -1, 4, 5] có đối xứng không?
 
 1. So a_12 = 7 với a_21 = 7: bằng nhau.
@@ -263,6 +291,6 @@ $$ A^{T} = A $$
 > Lỗi thường gặp: tưởng đối xứng nghĩa là các ô ngoài đường chéo bằng 0. Đối xứng chỉ đòi hai ô đối nhau bằng nhau, chúng được phép khác 0.
 
 :::check
-Q: Ma trận đơn vị cấp 3 có bao nhiêu ô bằng 0, và nó nằm ở vùng nào của hình?
-A: 6 ô bằng 0. I là ma trận chéo, nên nằm ở vùng vàng: vừa tam giác trên, vừa đối xứng.
+Q: Ma trận [1, 3; -3, 2] có đối xứng không?
+A: Không: a_12 = 3 nhưng a_21 = -3.
 :::
