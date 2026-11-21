@@ -1269,6 +1269,12 @@
    "w": 189.39,
    "h": 8.39
   },
+  "ada0f03de02f640c": {
+   "tex": "T_{\\sin(ax+b)} = T_{\\cos(ax+b)} = \\frac{2\\pi}{|a|}, \\qquad T_{\\tan(ax+b)} = \\frac{\\pi}{|a|}",
+   "alt": "T_(sin(ax+b)) = T_(cos(ax+b)) = 2pi/(|a|), T_(tan(ax+b)) = pi/(|a|)",
+   "w": 212.57,
+   "h": 23.43
+  },
   "ada4da1d34a9ecf2": {
    "tex": "A = U \\Sigma V^{T}",
    "alt": "A = U Sigma V^T",
