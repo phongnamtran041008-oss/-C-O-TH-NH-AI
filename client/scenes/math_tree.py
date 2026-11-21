@@ -206,16 +206,19 @@ def draw_chips(ui, x: float, y: float, m: dict) -> float:
     return x
 
 
-def fit_lines(ui, text: str, width: float, sizes=(8, 7, 6), lines: int = 2) -> tuple[float, list[str]]:
+def fit_lines(ui, text: str, width: float, sizes=(8, 7, 6), lines: int = 2,
+              height: float | None = None) -> tuple[float, list[str]]:
     """The largest size of `sizes` at which `text` fits in `lines` lines of `width`, and its lines -
     so a long name is shown whole on two lines or a size smaller, never cut with "...". Only when
-    even the smallest size needs more lines is the last one cut."""
+    even the smallest size needs more lines is the last one cut. `height`: the room of a row -
+    several lines are taken only at a size where they fit in it (two lines of 8 in a 16 px row
+    would run into the next row)."""
     for size in sizes:
         if ui.text_size(text, size)[0] <= width:
             return size, [text]
     for size in sizes:
         got = ui.f.wrap(text, size, int(width * ui.s), ui.s)
-        if len(got) <= lines:
+        if len(got) <= lines and (height is None or len(got) * ui.text_size("Ag", size)[1] <= height + 0.5):
             return size, got
     size = sizes[-1]
     got = ui.f.wrap(text, size, int(width * ui.s), ui.s)[:lines]

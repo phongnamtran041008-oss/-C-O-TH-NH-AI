@@ -1246,7 +1246,8 @@ class MathPracticeScene(Scene):
             state = n["state"]
             if state == "now":
                 ui.fill(rx, ry, rw, pitch - 1, "#F6DFA0")
-            if ui.button(f"math_path_{n['id']}", rx, ry, rw, pitch - 1, "", style="ghost"):
+            # (a name too long for its row in two columns: whole on hover, and in its card)
+            if ui.button(f"math_path_{n['id']}", rx, ry, rw, pitch - 1, "", style="ghost", tooltip=n["name_vi"]):
                 node = node_by_id(self.tree, n["id"])
                 if node:
                     self.game.push(NodeCardScene(self.game, node, self.tree))
@@ -1296,26 +1297,27 @@ class MathPracticeScene(Scene):
         later = node["id"] in getattr(self, "later", ()) and kind != "locked"
         ink = INK if kind in ("part", "code") and not later else PALE
         if later:                                   # ahead on Chính đạo: reachable, but marked
-            ui.text(stage_text(node), x + 12, cy + 4, 6, GREY, anchor="midleft")
-            ui.text(T.PATH_LATER, x + 12, cy + 11, 6, "#B8862E", anchor="midleft")
+            ui.text(stage_text(node), x + 12, cy + 3.5, 6, GREY, anchor="midleft")
+            ui.text(T.PATH_LATER, x + 12, cy + 11.5, 5, "#B8862E", anchor="midleft")
         else:
             ui.text(stage_text(node), x + 12, cy + 7, 7, GREY if node.get("stage") is not None else "#C99A3A",
                     anchor="midleft")
         info = f"math_info_{node['id']}" if row.first else f"math_info_{node['id']}_{row.index}"
-        if ui.button(info, x + 50, cy, 128 if part is not None else 172, 13, "", style="ghost"):
+        if ui.button(info, x + 50, cy, 128 if part is not None else 172, self.ROW - 1, "", style="ghost"):
             self.game.push(NodeCardScene(self.game, node, self.tree))
         # (a row with no part has no tiers, so its name may use the room of the tiers column); a long
         # name goes on two lines or a size smaller, never cut
         tail = " " + T.TREE_PART.format(i=row.index, n=row.count) if row.count > 1 else ""
-        size, lines = fit_lines(ui, node["name_vi"] + tail, 124 if part is not None else 170)
-        ui.text("\n".join(lines), x + 52, cy + 7, size, ink, anchor="midleft", line_gap=1.0)
+        size, lines = fit_lines(ui, node["name_vi"] + tail, 124 if part is not None else 170, sizes=(8, 7, 6, 5),
+                                height=self.ROW - 1)
+        ui.text("\n".join(lines), x + 52, cy + (self.ROW - 1) / 2, size, ink, anchor="midleft", line_gap=1.0)
         if part is not None:
             ui.text(tiers_text(part["tier_min"], part["tier_max"]), x + 182, cy + 7, 7, GREY, anchor="midleft")
         if kind == "vacant":
             ui.text(T.TREE_VACANT, x + w - 12, cy + 7, 7, PALE, anchor="midright")
             return
         if kind == "locked":
-            size, lines = fit_lines(ui, locked_reason(node), 166, sizes=(7, 6))
+            size, lines = fit_lines(ui, locked_reason(node), 166, sizes=(7, 6, 5), height=self.ROW - 1)
             ui.text("\n".join(lines), x + w - 12, cy + 7, size, PALE, anchor="midright", line_gap=1.0)
             return
         if kind == "code":
@@ -1394,11 +1396,21 @@ class MathPracticeScene(Scene):
             if hint:
                 lines.append(hint)
         ui.text(title, x + w / 2, y + 40, 12, colour, anchor="center")
+        top = y + 64
         if r.get("node_name_vi"):                   # the node the sitting was on
-            ui.text(r["node_name_vi"], x + w / 2, y + 52, 8, GREY, anchor="midtop", max_w=w - 40)
-        pitch = 18 if len(lines) <= 6 else 15       # (seven lines still clear the button)
-        for i, line in enumerate(lines):
-            ui.text(line, x + w / 2, y + 74 + i * pitch, 9, "#2B2B2B", anchor="center", max_w=w - 40)
+            top = ui.text(r["node_name_vi"], x + w / 2, y + 52, 8, GREY, anchor="midtop", max_w=w - 40).bottom + 6
+        # the lines stack by their real height (a long one wraps), a size smaller while they would
+        # not clear the button
+        room = y + 172 - top
+        for size in (9, 8, 7, 6):
+            heights = [len(ui.f.wrap(line, size, int((w - 40) * ui.s), ui.s)) * ui.text_size("Ag", size)[1] * 1.15
+                       for line in lines]
+            gap = max(2.0, min(8.0, (room - sum(heights)) / max(1, len(lines))))
+            if sum(heights) + gap * (len(lines) - 1) <= room:
+                break
+        cy = top
+        for line in lines:
+            cy = ui.text(line, x + w / 2, cy, size, "#2B2B2B", anchor="midtop", max_w=w - 40).bottom + gap
         if ui.button("math_back", x + w / 2 - 45, y + 176, 90, 16, T.MATH_BACK, style="primary",
                      key=pygame.K_RETURN):
             self.summary = self.trial = None
