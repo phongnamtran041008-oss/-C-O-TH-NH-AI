@@ -255,6 +255,9 @@ SCENIC = {   # land -> a tile to stand on for its picture
     "me_do_lam": (50, 12), "thien_cong_phuong": (12, 7), "linh_xa_nguyen": (40, 18),
     "loi_kiep_dai": (20, 22),
 }
+# Đại Địa Đồ, the second wave: Thiên Công Phường and Linh Xạ Nguyên are giant lands, Lôi Kiếp Đài a
+# long climb (by Giếng Thợ Cả, between the lanes of Trường Bắn Bảy Bia, at the foot of the terrace)
+SCENIC.update({"thien_cong_phuong": (262, 62), "linh_xa_nguyen": (56, 64), "loi_kiep_dai": (60, 31)})
 
 
 def grant_luyen_khi(server: ServerProcess, uid: int, up_to: int | None = None) -> None:
