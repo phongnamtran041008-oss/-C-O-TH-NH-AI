@@ -29,15 +29,43 @@ Mỗi sự kiện về Y = g(X) là một sự kiện về X. Rời rạc: cộn
 
 $$ P(Y = y) = \sum_{x:\, g(x) = y} P(X = x) $$
 
-$$ f_Y(y) = \frac{1}{|a|}\, f_X\!\left(\frac{y - b}{a}\right) $$
-
-Kỳ vọng thì khỏi lập bảng: E(g(X)) = tổng g(x) P(X = x), nói chung khác g(E(X)). Liên tục: F_Y(y) = P(g(X) < y), giải ra sự kiện của X (X^2 < y là -sqrt(y) < X < sqrt(y)), đạo hàm, rồi thử tích phân bằng 1. X đều trên (-1, 1) cho Y = X^2 có F_Y = sqrt(y), f_Y = 1/(2 sqrt(y)) trên (0, 1). Công thức dưới dành cho Y = aX + b.
+Kỳ vọng thì khỏi lập bảng của Y: E(g(X)) = tổng g(x) P(X = x). Nói chung số đó khác g(E(X)).
 
 Ví dụ: X nhận -1, 0, 1, 2 với xác suất 1/8, 3/8, 1/4, 1/4; Y = X^2.
 
 1. P(Y = 1) = 1/8 + 1/4 = 3/8; P(Y = 0) = 3/8; P(Y = 4) = 1/4.
 2. E(Y) = 0 . 3/8 + 1 . 3/8 + 4 . 1/4 = 11/8.
-3. Còn (E(X))^2 = (3/8)^2 = 9/64: khác hẳn.
+3. E(X) = 5/8, nên (E(X))^2 = 25/64: khác hẳn 11/8.
+
+> Lỗi thường gặp: viết P(Y = 1) = P(X = 1), bỏ quên giá trị x = -1 cũng cho Y = 1.
+
+:::check
+Q: X nhận -2, -1, 0, 1, 2 với xác suất 1/10, 1/5, 2/5, 1/5, 1/10. Với Y = X^2, tính P(Y = 1) và E(Y).
+A: P(Y = 1) = 1/5 + 1/5 = 2/5. E(Y) = 4/10 + 1/5 + 0 + 1/5 + 4/10 = 6/5.
+:::
+
+### Biến liên tục: lập F_Y rồi đạo hàm
+
+:::figure plane
+caption: X đều trên (-1, 1), Y = X^2: mật độ 1/(2 sqrt(y)) dồn về gần 0, vì X gần 0 thì X^2 còn gần 0 hơn.
+size: 170 80
+x: 0 1.1 0.5
+y: 0 3 1
+names: y f
+curve "1/(2*sqrt(x))" 0.03 1 xanh
+:::
+
+Không cộng từng điểm được, nên đi qua hàm phân phối: F_Y(y) = P(g(X) < y), giải ra một sự kiện của X, tính xác suất, rồi đạo hàm theo y. Cuối cùng thử lại: tích phân của f_Y phải bằng 1.
+
+Ví dụ: X đều trên (-1, 1), Y = X^2, với 0 < y < 1.
+
+1. Y < y nghĩa là -sqrt(y) < X < sqrt(y): đủ cả hai phía của 0.
+2. F_Y(y) = 2 sqrt(y)/2 = sqrt(y).
+3. f_Y(y) = 1/(2 sqrt(y)); tích phân trên (0, 1) bằng 1.
+
+Với Y = aX + b có sẵn công thức:
+
+$$ f_Y(y) = \frac{1}{|a|}\, f_X\!\left(\frac{y - b}{a}\right) $$
 
 > Lỗi thường gặp: quên nhánh âm khi giải X^2 < y, hay viết f_Y(y) = f_X(sqrt(y)) mà thiếu thừa số 1/(2 sqrt(y)).
 
@@ -69,21 +97,37 @@ Cộng theo hàng được biên của X, theo cột được biên của Y. Đi
 
 $$ P(X = i) = \sum_j P(X = i, Y = j), \qquad P(Y = j \mid X = i) = \frac{P(X = i, Y = j)}{P(X = i)} $$
 
-$$ P(X = i, Y = j) = P(X = i)\,P(Y = j) \quad \forall\, i, j $$
-
-Độc lập đòi mọi ô bằng tích hai biên; một ô lệch là đủ bác bỏ. Hai biên không đủ dựng lại bảng: cùng biên có thể có nhiều bảng. Ô chưa biết tìm từ tổng các ô bằng 1.
+Ô chưa biết tìm từ tổng các ô bằng 1.
 
 Ví dụ: đọc bảng trong hình.
 
 1. P(Y = 1 | X = 0) = (1/4)/(1/2) = 1/2.
-2. Ô (0, 0): 1/6 = 1/2 . 1/3, khớp. Ô (0, 1): 1/4 khác 1/2 . 1/3 = 1/6.
-3. Có ô lệch, nên X và Y không độc lập.
+2. P(X + Y = 2) = ô (0, 2) + ô (1, 1) = 1/12 + 1/12 = 1/6.
 
-> Lỗi thường gặp: thấy một ô khớp đã kết luận độc lập, hoặc chia cho tổng cột khi điều kiện nằm ở hàng.
+> Lỗi thường gặp: chia cho tổng cột khi điều kiện nằm ở hàng.
 
 :::check
 Q: Với bảng trong hình, tính P(X = 1 | Y = 2).
 A: Điều kiện ở cột Y = 2, tổng cột 1/3: P = (1/4)/(1/3) = 3/4.
+:::
+
+### Độc lập: mọi ô bằng tích hai biên
+
+X và Y độc lập khi biết X không làm đổi phân phối của Y: mọi ô phải bằng tích biên hàng nhân biên cột. Một ô lệch là đủ bác bỏ. Hai biên cũng không đủ dựng lại bảng: cùng biên có thể có nhiều bảng.
+
+$$ P(X = i, Y = j) = P(X = i)\,P(Y = j) \quad \forall\, i, j $$
+
+Ví dụ: kiểm tra bảng trong hình.
+
+1. Ô (0, 0): 1/6 = 1/2 . 1/3, khớp.
+2. Ô (0, 1): 1/4 khác 1/2 . 1/3 = 1/6.
+3. Có ô lệch, nên X và Y không độc lập.
+
+> Lỗi thường gặp: thấy một ô khớp đã kết luận độc lập.
+
+:::check
+Q: Bảng [1/6, 1/3; 1/6, 1/3] (hàng là X = 0, 1; cột là Y = 0, 1). X và Y có độc lập không?
+A: Biên X: 1/2, 1/2; biên Y: 1/3, 2/3. Cả bốn ô bằng tích (1/6, 1/3, 1/6, 1/3): độc lập.
 :::
 
 ## Hiệp phương sai và hệ số tương quan
@@ -117,20 +161,35 @@ $$ \mathrm{Cov}(X, Y) = E\big[(X - E(X))(Y - E(Y))\big] = E(XY) - E(X)\,E(Y) $$
 
 $$ \rho(X, Y) = \frac{\mathrm{Cov}(X, Y)}{\sigma(X)\,\sigma(Y)}, \qquad -1 \le \rho \le 1 $$
 
-- V(aX + bY) = a^2 V(X) + b^2 V(Y) + 2ab Cov(X, Y); Cov(aX + b, cY + d) = ac Cov(X, Y).
-- rho = 1 hay -1 khi Y = aX + b với a > 0 hay a < 0. Độc lập thì Cov = 0, nhưng Cov = 0 chưa chắc độc lập (Y = X^2, X đều trên -1, 0, 1).
-
 Ví dụ: X, Y nhận 0, 1 với bảng [2/5, 1/10; 1/10, 2/5] (hàng là X).
 
 1. E(X) = E(Y) = 1/2; E(XY) = ô (1, 1) = 2/5.
 2. Cov = 2/5 - 1/4 = 3/20; V(X) = V(Y) = 1/2 . 1/2 = 1/4.
 3. rho = (3/20)/(1/4) = 3/5.
 
-> Lỗi thường gặp: viết E(XY) = E(X)E(Y) khi chưa biết hai biến không tương quan; coi V(-Y) = -V(Y).
+> Lỗi thường gặp: viết E(XY) = E(X)E(Y) khi chưa biết hai biến không tương quan; coi Cov = 0 là độc lập (Y = X^2 với X đều trên -1, 0, 1 có Cov = 0).
 
 :::check
-Q: V(X) = 4, V(Y) = 1, Cov(X, Y) = 1. Tính rho(X, Y) và V(X - 2Y).
-A: rho = 1/(2 . 1) = 1/2. V(X - 2Y) = 4 + 4 . 1 + 2 . 1 . (-2) . 1 = 4.
+Q: V(X) = 4, V(Y) = 9, Cov(X, Y) = -3. Tính rho(X, Y).
+A: rho = -3/(2 . 3) = -1/2: chia cho tích hai độ lệch chuẩn, không phải hai phương sai.
+:::
+
+### Phương sai của tổng và phép đổi biến
+
+Khi hai biến không độc lập, phương sai của tổng có thêm số hạng chéo; hằng số cộng thêm không đổi Cov, hệ số nhân thì kéo theo.
+
+- V(aX + bY) = a^2 V(X) + b^2 V(Y) + 2ab Cov(X, Y).
+- Cov(aX + b, cY + d) = ac Cov(X, Y); nhân một biến với số âm đổi dấu rho.
+- rho = 1 hay -1 đúng khi Y = aX + b với a > 0 hay a < 0.
+
+Ví dụ: V(X) = 3, V(Y) = 2, Cov(X, Y) = 1. Tính V(2X - Y) và Cov(2X + 1, 5 - Y).
+
+1. V(2X - Y) = 4 . 3 + 2 + 2 . 2 . (-1) . 1 = 10.
+2. Cov(2X + 1, 5 - Y) = 2 . (-1) . 1 = -2.
+
+:::check
+Q: V(X) = 4, V(Y) = 1, Cov(X, Y) = 1. Tính V(X - 2Y).
+A: 4 + 4 . 1 + 2 . 1 . (-2) . 1 = 4.
 :::
 
 ## Hồi quy tuyến tính đơn
@@ -164,15 +223,28 @@ point 2 2.6 do "TB" pos=e
 
 $$ b = \frac{S_{xy}}{S_{xx}} = \frac{\sum (x_i - x_{tb})(y_i - y_{tb})}{\sum (x_i - x_{tb})^2}, \qquad a = y_{tb} - b\,x_{tb} $$
 
-Cũng viết được b = r s_y/s_x; r^2 là phần biến thiên của y mà đường thẳng giải thích. Hồi quy x theo y là đường khác (hệ số góc S_xy/S_yy). Dự đoán xa ngoài dữ liệu kém tin cậy, và tương quan không phải nhân quả.
-
 Ví dụ: các điểm trong hình (0, 1), (1, 1), (2, 3), (3, 3), (4, 5).
 
 1. x_tb = 2, y_tb = 13/5; S_xx = 10.
 2. Độ lệch y: -8/5, -8/5, 2/5, 2/5, 12/5, nên S_xy = 16/5 + 8/5 + 0 + 2/5 + 24/5 = 10.
 3. b = 1, a = 13/5 - 2 = 3/5: y = 3/5 + x.
 
-> Lỗi thường gặp: chia ngược, b = S_xx/S_xy; hay lấy S_xy/S_yy (đường của x theo y) làm hệ số góc.
+> Lỗi thường gặp: chia ngược, b = S_xx/S_xy; hay lấy S_xy/S_yy làm hệ số góc.
+
+:::check
+Q: Đường hồi quy y = 3/5 + x ở trên dự đoán bao nhiêu tại x = 2.5?
+A: 3/5 + 2.5 = 3.1. Nằm trong khoảng dữ liệu nên dự đoán này đáng tin hơn một dự đoán ở x = 20.
+:::
+
+### Đọc đường hồi quy: r và r^2
+
+Hệ số góc còn viết được qua hệ số tương quan mẫu r: b = r s_y/s_x. r^2 là phần biến thiên của y mà đường thẳng giải thích; phần còn lại là phần dư. Hồi quy x theo y là đường khác (hệ số góc S_xy/S_yy), trừ khi các điểm thẳng hàng. Và tương quan không phải nhân quả.
+
+Ví dụ: x_tb = 10, y_tb = 20, s_x = 2, s_y = 6, r = 1/2.
+
+1. b = (1/2) . 6/2 = 3/2.
+2. a = 20 - 3/2 . 10 = 5.
+3. r^2 = 1/4: đường thẳng giải thích 25% biến thiên của y.
 
 :::check
 Q: x_tb = 4, y_tb = 10, s_x = 2, s_y = 5, r = 0.8. Tìm b, a và dự đoán y tại x = 6.
