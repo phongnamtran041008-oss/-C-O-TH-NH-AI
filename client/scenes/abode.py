@@ -384,6 +384,8 @@ class AbodeScene(Scene):
         if self.weather.rain:
             from .fishing import draw_rain
             draw_rain(surf, self.t)
+        from ..ui import nav_hud
+        nav_hud.draw_world(surf, self)             # Chỉ Đường: the arrow round the player
 
     # ------------------------------------------------------------ HUD
     def draw_ui(self, ui):
@@ -436,6 +438,8 @@ class AbodeScene(Scene):
         if top and not typing and ui.key(pygame.K_F1):
             self.game.open_guide()
         guide.draw_tracker(ui, self.game, 476 - guide.TRACKER_W, 4, top)
+        from ..ui import nav_hud
+        nav_hud.hud(ui, self, top)                 # Chỉ Đường: N opens it here (H, M are the hive, the math)
         if top and not typing and ui.key(pygame.K_o):
             self.game.open_pets()
         if top and not typing and ui.key(pygame.K_c):     # Trắc Linh Đài (scenes/linh_can.py)
