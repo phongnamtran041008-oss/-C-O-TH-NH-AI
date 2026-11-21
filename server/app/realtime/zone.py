@@ -22,6 +22,9 @@ if TYPE_CHECKING:
     from .world import Session
 
 
+SLEEP_MAP_CELLS = 5      # a map wider or taller than this many AOI cells lets far monsters sleep
+
+
 def cfg() -> dict:
     return balance.load("world")
 
@@ -170,9 +173,57 @@ class ChannelZone:
         asker = lands.asker_for(zone_id)
         if asker is not None:                 # (a bí cảnh is no land: it keeps its own source)
             self.question_source = asker
+        self._setup_sleep()
+
+    # ------------------------------------------------------------ sleeping monsters (giant maps)
+    def _setup_sleep(self) -> None:
+        """On a map larger than SLEEP_MAP_CELLS x SLEEP_MAP_CELLS cells of the area of interest
+        (the giant lands of Đại Địa Đồ; never a bí cảnh, never today's small maps) a wandering
+        monster far from every player sleeps: combat.tick does not run it. "Far" is more than
+        `wake_radius` cells from every player's cell - the cells a player sees plus one ring,
+        and never less than the reach of the widest aggro radius. Anything that is fighting,
+        chasing, winding up or going home, and every dead monster's respawn timer, runs as
+        always. Each monster of such a channel draws its wandering from a random stream of its
+        own, so the ones a player sees do exactly what they would do if nobody slept."""
+        self.wake_radius = self.radius + 1
+        widest = 0.0
+        for m in self.monsters:
+            try:
+                widest = max(widest, float(m.info.get("aggro_radius", 0) or 0))
+            except (KeyError, TypeError, ValueError):
+                pass
+        self.wake_radius = max(self.wake_radius, int(widest // self.cell_px) + 1)
+        big = max(self.map.width_px, self.map.height_px) > SLEEP_MAP_CELLS * self.cell_px
+        self.sleepy = big and not self.instance
+        self._wake_key: tuple | None = None
+        self._wake: set | None = None
+        if self.sleepy:
+            for m in self.monsters:
+                m.rng = random.Random(self.rng.getrandbits(64))
+
+    def wake_cells(self) -> set | None:
+        """The AOI cells whose wandering monsters run this tick; None: every monster runs."""
+        if not self.sleepy:
+            return None
+        key = tuple(sorted({self._cell(p.x, p.y) for p in self.players.values()}))
+        if key != self._wake_key:
+            r = self.wake_radius
+            self._wake = {(cx + dx, cy + dy) for cx, cy in key for dx in range(-r, r + 1) for dy in range(-r, r + 1)}
+            self._wake_key = key
+        return self._wake
 
     def monster(self, eid: str):
-        return next((m for m in self.monsters if m.eid == eid), None)
+        idx = getattr(self, "_by_eid", None)
+        mons = self.monsters
+        if idx is None or idx[0] is not mons or idx[1] != len(mons):
+            d: dict = {}
+            for m in reversed(mons):          # the first one of an id wins, as a scan would find it
+                d[m.eid] = m
+            idx = self._by_eid = (mons, len(mons), d)
+        m = idx[2].get(eid)
+        if m is not None and m.eid == eid:
+            return m
+        return next((m for m in mons if m.eid == eid), None)
 
     def event(self, **ev) -> None:
         self.events.append(ev)
@@ -307,12 +358,15 @@ class ChannelZone:
 
     def _rebuild_grid(self) -> None:
         g: dict[tuple[int, int], list] = {}
-        for p in self.players.values():
-            g.setdefault(self._cell(p.x, p.y), []).append(p)
-        for m in self.monsters:
-            g.setdefault(self._cell(m.x, m.y), []).append(m)
-        for e in self.extras:
-            g.setdefault(self._cell(e.x, e.y), []).append(e)
+        c = self.cell_px
+        for group in (self.players.values(), self.monsters, self.extras):
+            for e in group:
+                k = (int(e.x // c), int(e.y // c))
+                cell = g.get(k)
+                if cell is None:
+                    g[k] = [e]
+                else:
+                    cell.append(e)
         self.grid = g
 
     def visible_to(self, p: Player) -> list:
