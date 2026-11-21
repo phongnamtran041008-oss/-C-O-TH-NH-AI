@@ -24,6 +24,7 @@ ROUTE_CELLS = 900         # how far down the way the maps draw (8 px cells)
 ARRIVE_PX = 26
 EXIT_PX = 30
 REFRESH_EVERY = 20.0      # seconds between two GET /nav/destinations
+FRESH = 3.0               # the picker and the big map ask again when the answer is older than this
 HUB, HOME = "truc_lam_thon", "abode"
 
 

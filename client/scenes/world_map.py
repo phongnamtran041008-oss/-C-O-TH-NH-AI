@@ -23,6 +23,7 @@ from .base import Scene
 BAND_COLOURS = {0: (110, 170, 220), 1: (120, 190, 100), 2: (230, 180, 70), 3: (215, 85, 80)}
 GOLD = "#C99A3A"
 REC_EDGE = "#F2C14E"
+_COMPOSED: dict = {}          # the big map's picture of a zone, kept for the next opening
 GOLD_TEXT = "#8A6414"
 GREY = "#6E675C"
 RED = "#A23B3D"
@@ -79,7 +80,7 @@ class NavPicker(Scene):
         super().__init__(game)
         self.scene = scene
         self.nav = chi_duong.of(game)
-        self.nav.refresh(force=True)
+        self.nav.refresh(force=game.now - self.nav.data_at > chi_duong.FRESH)
         self.cut: list[str] = []
 
     def rows(self) -> list[tuple]:
@@ -227,7 +228,7 @@ class WorldMapScene(Scene):
         super().__init__(game)
         self.scene = scene
         self.nav = chi_duong.of(game)
-        self.nav.refresh(force=True)
+        self.nav.refresh(force=self.game.now - self.nav.data_at > chi_duong.FRESH)
         self.view = view if chi_duong.scene_zone(scene) not in (None, chi_duong.HOME) else "world"
         self.zone = chi_duong.scene_zone(scene)
         self._pic = None
@@ -278,12 +279,18 @@ class WorldMapScene(Scene):
 
     def composed(self, ui) -> pygame.Surface:
         """The zone's picture at window resolution with the khu tinted by band and outlined, the
-        recommended khu in gold: built once per opening (one blit a frame after that)."""
+        recommended khu in gold: built once per map (one blit a frame; opening the map again costs
+        nothing)."""
         pic, px, py, k = self.zone_layout()
-        key = (ui.s, id(pic), self.rec_khu())      # (the server's answer may come after the first frame)
+        tmap = self.scene.map
+        key = (getattr(tmap, "uid", id(tmap)), ui.s, pic.get_size(), self.rec_khu(),
+               len(chi_duong.khu_objects(tmap)))   # (the server's answer may come after the first frame)
         if self._composed is not None and self._composed[0] == key:
             return self._composed[1]
-        tmap = self.scene.map
+        hit = _COMPOSED.get(key)
+        if hit is not None:
+            self._composed = (key, hit)
+            return hit
         S = ui.s
         ov = MM.overview(tmap)
         surf = pygame.transform.scale(ov, (pic.get_width() * S, pic.get_height() * S))
@@ -302,6 +309,9 @@ class WorldMapScene(Scene):
                 r = pygame.Rect(round(rx * kk), round(ry * kk), round(rw * kk), round(rh * kk))
                 pygame.draw.rect(surf, pygame.Color(REC_EDGE), r, 2 * S)
         self._composed = (key, surf)
+        _COMPOSED[key] = surf
+        while len(_COMPOSED) > 3:
+            _COMPOSED.pop(next(iter(_COMPOSED)))
         return surf
 
     def rec_khu(self) -> str | None:
@@ -418,6 +428,8 @@ class WorldMapScene(Scene):
         spots = [(mx - yw / 2, my - 5 - yh), (mx - yw / 2, my + 5), (mx + 6, my - yh / 2), (mx - 6 - yw, my - yh / 2),
                  (mx + 6, my - 14 - yh), (mx - 6 - yw, my - 14 - yh), (mx + 6, my + 12), (mx - 6 - yw, my + 12),
                  (mx - yw / 2, my - 24 - yh), (mx - yw / 2, my + 22)]
+        spots = [(sx, sy) for sx, sy in spots                      # (on the map, never over the legend)
+                 if px <= sx and sx + yw <= px + pw and py <= sy and sy + yh <= py + ph] or spots
         lx, ly = next(((sx, sy) for sx, sy in spots
                        if pygame.Rect(int(sx), int(sy), int(yw), int(yh)).collidelist(taken) == -1), spots[0])
         ui.fill(lx - 1, ly, yw + 2, yh, (20, 18, 15, 150))

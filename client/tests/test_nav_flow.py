@@ -193,10 +193,18 @@ def band_mark(drv: Driver, facts: dict, shot: str) -> None:
     mons = sorted((e for e in ws.entities.values() if e.kind == "m" and e.alive and e.kv >= 2),
                   key=lambda e: abs(e.pos[0] - ws.player.x) + abs(e.pos[1] - ws.player.y))
     facts.setdefault("band_monsters_seen", []).append(len(mons))
-    mons = [e for e in mons if abs(e.pos[0] - ws.player.x) < 200 and abs(e.pos[1] - ws.player.y) < 100]
+    mons = [e for e in mons if abs(e.pos[0] - ws.player.x) < 260 and abs(e.pos[1] - ws.player.y) < 160]
     if not mons:
         return
     e = mons[0]
+    end = time.time() + 6                            # a few steps toward it, until it is on the screen
+    while time.time() < end and (abs(e.pos[0] - ws.player.x) > 90 or abs(e.pos[1] - ws.player.y) > 50):
+        if drv.game.top is not ws or not e.alive:
+            return
+        kx, ky = keys_for(e.pos[0] - ws.player.x, e.pos[1] - ws.player.y, lean=True)
+        drv.hold(KEYS.get((kx, 0), []) + KEYS.get((0, ky), []), 0.1)
+    if abs(e.pos[0] - ws.player.x) > 110 or abs(e.pos[1] - ws.player.y) > 60:
+        return
     real = pygame.mouse.get_pos
 
     def over():                                      # the mouse on its body, wherever it wanders
@@ -375,6 +383,7 @@ def run_second_land(workdir: Path, shots: Path | None = None) -> dict:
     facts: dict = {}
     try:
         drv, uid = start(server, workdir, shots, "detu_lvc", LAND2, "from_village")
+        drv.n_shots = 60                            # (numbered after the first land's pictures)
         drv.step(20)
         drv.shot("lvc_gate")
         big = open_big_map(drv)

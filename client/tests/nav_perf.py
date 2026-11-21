@@ -74,8 +74,22 @@ def measure_land(zone: str, workdir: Path, seconds: float = 40.0) -> dict:
         idle: list = []
         timed_steps(drv, 120, idle)
         facts["idle_frame_ms"] = (statistics.mean(idle) * 1000, max(idle) * 1000)
-        # ---- the farthest khu of band 3: chosen as on the big map
+        # ---- the nearest khu of band 1 (a newcomer's), the grid not built yet: the first arrow
         khus = chi_duong.khu_objects(ws.map)
+        rect, props = min((k for k in khus if k[1].get("band") == "1"),
+                          key=lambda k: abs(int(k[1]["anchor_x"]) - x) + abs(int(k[1]["anchor_y"]) - y))
+        nv._GRIDS.clear()
+        t0 = time.perf_counter()
+        nav.set_dest(chi_duong.khu_dest(zone, rect, props, ""), zone)
+        frames = []
+        while nav.status != "path" and len(frames) < 2000:
+            timed_steps(drv, 1, frames)
+        facts["first_arrow_band1_s"] = time.perf_counter() - t0
+        facts["first_arrow_band1_frames"] = len(frames)
+        while not nav.leg.ready:
+            timed_steps(drv, 1, frames)
+        facts["band1_search_frame_worst_ms"] = max(frames) * 1000
+        # ---- the farthest khu of band 3: chosen as on the big map
         rect, props = max((k for k in khus if k[1].get("band") == "3"),
                           key=lambda k: abs(int(k[1]["anchor_x"]) - x) + abs(int(k[1]["anchor_y"]) - y))
         nv._GRIDS.clear()                                  # as on the first choice after entering the land
@@ -155,7 +169,7 @@ def measure_land(zone: str, workdir: Path, seconds: float = 40.0) -> dict:
         facts["big_map_picture_kb"] = surface_bytes(big.zone_layout()[0]) / 1024
         g = nv.grid_for(ws.map)
         facts["walk_grid_kb"] = len(g.walk) / 1024
-        facts["field_kb"] = len(nav.leg.field.dist) * 8 / 1024 if nav.leg and nav.leg.field else 0
+        facts["field_kb"] = len(nav.leg.field.dist) * nav.leg.field.dist.itemsize / 1024 if nav.leg and nav.leg.field else 0
         drv.close()
     finally:
         server.stop()

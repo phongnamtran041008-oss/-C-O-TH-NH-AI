@@ -295,7 +295,7 @@ class Field:
             b.clear()
             for i in cur:
                 n += 1
-                if not n & 511:
+                if not n & 255:
                     yield
                 if dist[i] != d:
                     continue
