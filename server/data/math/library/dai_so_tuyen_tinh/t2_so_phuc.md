@@ -3,122 +3,260 @@ id: dstt_lib_t2
 title_vi: Số phức
 subject: dai_so_tuyen_tinh
 floor: 2
-summary_vi: Thêm một số mới để phương trình nào cũng có nghiệm, rồi học cách cộng, nhân, chia và quay nó trên mặt phẳng.
+format: 2
+summary_vi: Số phức là một điểm trên mặt phẳng: cộng là tịnh tiến, nhân là quay và co giãn, chia là nhân với liên hợp, và căn bậc n xếp đều trên một đường tròn.
 skills: [dstt_t2_dang_dai_so, dstt_t2_cong_nhan, dstt_t2_lien_hop_modun, dstt_t2_chia, dstt_t2_dang_luong_giac, dstt_t2_can_bac_n]
 ---
 ## Dạng đại số của số phức
 
-Không có số thực nào bình phương lên ra số âm. Vậy thì đặt thêm một số mới, gọi là đơn vị ảo i, với đúng một tính chất:
+:::hook
+x^2 = -1 không có nghiệm thực. Thêm một số i với i^2 = -1 thì phương trình đa thức nào cũng có nghiệm; phép biến đổi Fourier trong nhận dạng giọng nói tính hoàn toàn bằng số ấy.
+:::
+
+:::figure plane
+caption: Số phức a + bi là điểm (a, b). 4 nằm trên trục thực, -2i nằm trên trục ảo.
+size: 190 115
+names: Re Im
+x: -1 5 1
+y: -3 3 1
+drop 3 2
+point 3 2 do "3 + 2i" pos=ne
+point 4 0 xanh "4" pos=s
+point 0 -2 luc "-2i" pos=e
+:::
+
+:::figure plane
+caption: Nhân với i là quay 90 độ. Quay 4 lần về chỗ cũ, nên i^n lặp lại sau mỗi 4 bước.
+size: 150 115
+aspect: equal
+names: Re Im
+x: -1.6 1.6 5
+y: -1.4 1.4 5
+param "cos(t)" "sin(t)" 0 2*pi xam dash
+point 1 0 do "1" pos=ne
+point 0 1 do "i" pos=ne
+point -1 0 do "-1" pos=nw
+point 0 -1 do "-i" pos=se
+:::
+
+:::core
+Số phức a + bi là một điểm (a, b) trên mặt phẳng: a là phần thực, b là phần ảo, và b là một số thực, không kèm i.
+:::
+
+Số thực là số có b = 0, nằm trên trục thực. Số thuần ảo có a = 0 và b != 0, nằm trên trục ảo. Hai số phức bằng nhau khi là cùng một điểm: cùng phần thực và cùng phần ảo.
+
+Ví dụ: tính i^27.
+
+1. Chu kỳ là 4: i, -1, -i, 1, rồi lặp lại.
+2. 27 = 4 . 6 + 3, dư 3.
+3. Vậy i^27 = i^3 = -i.
 
 $$ i^{2} = -1 $$
 
-Số phức là số viết được dưới dạng a + bi với a và b là số thực. Số a là phần thực, số b là phần ảo. Chú ý phần ảo là số b, không kèm chữ i.
+> Lỗi thường gặp: nói phần ảo của 2 - 5i là -5i. Phần ảo là -5, chỉ là tọa độ dọc của điểm.
 
-$$ z = a + bi, \quad a \in \mathbb{R}, \quad b \in \mathbb{R} $$
-
-Vì mỗi số phức viết được theo đúng một cách như vậy, hai số phức bằng nhau khi và chỉ khi phần thực bằng nhau và phần ảo bằng nhau. Một phương trình giữa hai số phức luôn tách được thành hai phương trình thực.
-
-- Số thực là số phức có phần ảo bằng 0.
-- Số thuần ảo là số phức có phần thực bằng 0 và phần ảo khác 0.
-
-Lũy thừa của i quay vòng sau mỗi bốn bước: i, -1, -i, 1, rồi lặp lại. Muốn tính i^n, chỉ cần lấy n chia 4 rồi xem số dư.
-
-> Lỗi thường gặp: nói phần ảo của 3 - 4i là -4i. Phần ảo là -4.
+:::check
+Q: Số -7i có phần thực và phần ảo bằng bao nhiêu? Nó nằm trên trục nào?
+A: Phần thực 0, phần ảo -7. Nó là số thuần ảo, nằm trên trục ảo, tại (0, -7).
+:::
 
 ## Cộng, trừ và nhân số phức
 
-Cộng và trừ thì làm riêng từng phần, giống như cộng hai vectơ tọa độ.
+:::hook
+Trong đồ họa, cộng một số phức là dời một điểm, nhân là quay và phóng nó: hai phép biến hình gói gọn trong hai phép tính.
+:::
 
-$$ (a + bi) + (c + di) = (a + c) + (b + d)i $$
+:::figure plane
+caption: Cộng số phức là nối đuôi mũi tên: (2 + i) + (1 + 2i) = 3 + 3i.
+size: 150 115
+names: Re Im
+x: -0.5 3.5 1
+y: -0.5 3.5 1
+vector 0 0 2 1 do "2 + i" pos=se
+vector 2 1 3 3 xanh "1 + 2i" pos=e
+vector 0 0 3 3 luc "3 + 3i" pos=nw
+:::
 
-Nhân thì cứ nhân bung ra như nhân đa thức, rồi dùng i^2 = -1 để thu gọn.
+:::figure grid
+caption: (3 + 2i)(1 + 4i): nhân từng cặp. Ô đỏ 8i^2 thành -8, nên tích là -5 + 14i.
+table
+head "1" "4i"
+side "3" "2i"
+row "3" "12i"
+row "2i" "8i^2"
+mark cell 2 2 do
+:::
+
+:::core
+Cộng thì cộng riêng phần thực, riêng phần ảo; nhân thì nhân bung từng cặp như đa thức, rồi đổi i^2 thành -1.
+:::
+
+Ví dụ: tính (3 + 2i)(1 + 4i), như bảng trên.
+
+1. Bốn tích: 3, 12i, 2i, 8i^2.
+2. 8i^2 = -8 nhập vào phần thực: 3 - 8 = -5.
+3. Phần ảo: 12 + 2 = 14. Tích là -5 + 14i.
+
+Phép nhân số phức vẫn giao hoán: zw = wz.
 
 $$ (a + bi)(c + di) = (ac - bd) + (ad + bc)i $$
 
-Không cần thuộc công thức này. Chỉ cần nhớ nhân bung rồi thay i^2 = -1, công thức sẽ tự hiện ra. Ví dụ với (2 + 3i)(1 - i):
+> Lỗi thường gặp: để nguyên 8i^2 trong phần ảo, hoặc quên đổi dấu. Số hạng có i^2 là số thực, mang dấu ngược lại.
 
-1. Nhân bung: 2 . 1 + 2 . (-i) + 3i . 1 + 3i . (-i).
-2. Gom lại: 2 - 2i + 3i - 3i^2.
-3. Thay i^2 = -1: số hạng cuối thành +3.
-4. Kết quả: 5 + i.
-
-Phép cộng và phép nhân số phức giữ nguyên mọi tính chất quen thuộc: giao hoán, kết hợp, phân phối. Nhờ vậy mọi biến đổi đại số cũ vẫn dùng được.
-
-> Lỗi thường gặp: quên rằng i^2 = -1 làm số hạng chứa i^2 đổi dấu khi nhập vào phần thực.
+:::check
+Q: Tính (1 - 2i)^2.
+A: 1 - 4i + 4i^2 = 1 - 4i - 4 = -3 - 4i.
+:::
 
 ## Số phức liên hợp và môđun
 
-Số phức liên hợp giữ phần thực, đổi dấu phần ảo. Trên mặt phẳng, đó là phép lấy đối xứng qua trục thực.
+:::hook
+Một tín hiệu số phức có "độ lớn" là thứ loa phát ra to hay nhỏ. Độ lớn ấy là môđun: khoảng cách từ điểm tới gốc tọa độ.
+:::
 
-$$ \overline{z} = a - bi $$
+:::figure plane
+caption: |z| = 5 là độ dài đoạn từ gốc tới z = 3 + 4i. Liên hợp 3 - 4i là ảnh của z qua gương trục thực.
+size: 200 120
+names: Re Im
+x: -1 6 1
+y: -5 5 2
+segment 0 0 3 4 luc "|z| = 5" pos=nw
+segment 3 4 3 -4 xam dash
+point 3 4 do "z = 3 + 4i" pos=e
+point 3 -4 xanh "3 - 4i" pos=e
+:::
 
-Môđun là khoảng cách từ điểm biểu diễn z đến gốc tọa độ.
+:::core
+Liên hợp là soi z qua gương trục thực (đổi dấu phần ảo); môđun là khoảng cách từ z tới gốc, và z nhân liên hợp của nó luôn ra |z|^2.
+:::
 
-$$ |z| = \sqrt{a^{2} + b^{2}} $$
+Môđun là một khoảng cách nên luôn >= 0. Cộng z với liên hợp thì phần ảo triệt tiêu, còn 2a.
 
-Hai đại lượng này gắn với nhau bằng một đẳng thức dùng suốt:
+Ví dụ: z = -6 + 8i.
+
+1. Liên hợp: -6 - 8i.
+2. |z| = sqrt(36 + 64) = sqrt(100) = 10.
+3. z nhân liên hợp: 36 + 64 = 100 = |z|^2. Tổng của chúng: -12.
 
 $$ z \cdot \overline{z} = a^{2} + b^{2} = |z|^{2} $$
 
-Điều đáng chú ý là tích của z với liên hợp của nó luôn là một số thực không âm. Đó chính là mẹo để chia số phức ở mục sau.
+> Lỗi thường gặp: viết |z + w| = |z| + |w|. Thử z = 1, w = -1: vế trái 0, vế phải 2.
 
-Vài tính chất hay dùng:
-
-- Tổng của z và liên hợp của nó bằng 2a, một số thực.
-- Môđun của tích bằng tích các môđun.
-- Môđun của tổng nói chung nhỏ hơn hoặc bằng tổng các môđun.
-
-> Lỗi thường gặp: viết |z + w| = |z| + |w|. Lấy z = 1 và w = -1 là thấy sai ngay: vế trái bằng 0, vế phải bằng 2.
+:::check
+Q: Không tính toán: |2 - 7i| và |2 + 7i| có bằng nhau không? Vì sao?
+A: Bằng nhau: hai điểm đối xứng qua trục thực nên cách gốc như nhau (đều là sqrt(53)).
+:::
 
 ## Chia số phức
 
-Chia cho một số phức khác 0 luôn làm được, bằng một mẹo duy nhất: nhân cả tử và mẫu với số phức liên hợp của mẫu, để mẫu thành số thực.
+:::hook
+Chia cho 1 + i nghe vô nghĩa: "một phần (1 + i)" là bao nhiêu? Mẹo là đổi mẫu thành số thực trước, rồi chia như chia thường.
+:::
+
+:::figure flow
+caption: Nhân cả tử và mẫu với liên hợp 1 - i: mẫu thành (1 + i)(1 - i) = 2, một số thực.
+box "(2 + 4i) / (1 + i)"
+link "x (1 - i)"
+box "(6 + 2i) / 2" xanh
+link "chia 2"
+box "3 + i" luc
+:::
+
+:::core
+Chia số phức là làm mẫu thành số thực: nhân cả tử và mẫu với liên hợp của mẫu, vì (c + di)(c - di) = c^2 + d^2.
+:::
+
+Ví dụ: tính (4 - 3i) / i.
+
+1. Liên hợp của i là -i; mẫu thành i . (-i) = 1.
+2. Tử: (4 - 3i)(-i) = -4i + 3i^2 = -3 - 4i.
+3. Thử lại: (-3 - 4i) . i = -3i + 4 = 4 - 3i. Đúng.
 
 $$ \frac{a + bi}{c + di} = \frac{(a + bi)(c - di)}{c^{2} + d^{2}} $$
 
-Sau bước đó, chỉ còn việc chia phần thực và phần ảo của tử cho số thực c^2 + d^2.
+> Lỗi thường gặp: nhân với liên hợp của tử. Mục đích là làm mẫu hết phần ảo, nên phải dùng liên hợp của mẫu.
 
-Ví dụ tính (1 + 2i) / (3 - i):
-
-1. Liên hợp của mẫu là 3 + i.
-2. Mẫu mới: 3^2 + (-1)^2 = 10.
-3. Tử mới: (1 + 2i)(3 + i) = 3 + i + 6i + 2i^2 = 1 + 7i.
-4. Kết quả: 1/10 + (7/10)i.
-
-Trường hợp hay gặp nhất là chia cho i. Liên hợp của i là -i, nên nhân cả hai vế với -i là xong: 1/i = -i.
-
-> Lỗi thường gặp: nhân tử và mẫu với liên hợp của tử. Phải là liên hợp của mẫu, vì mục đích là làm cho mẫu hết phần ảo.
+:::check
+Q: Tính 10 / (3 + i).
+A: Nhân tử và mẫu với 3 - i: 10(3 - i) / 10 = 3 - i.
+:::
 
 ## Dạng lượng giác và công thức Moivre
 
-Thay vì mô tả z bằng hai tọa độ, mô tả nó bằng khoảng cách tới gốc và góc quay. Khoảng cách là môđun r, góc là acgumen.
+:::hook
+Quay một hình 30 độ ba lần là quay 90 độ. Số phức nhớ đúng điều đó: viết theo độ dài và góc, lũy thừa chỉ còn là nhân góc và nâng độ dài.
+:::
 
-$$ z = r(\cos \varphi + i \sin \varphi) $$
+:::figure plane
+caption: Mỗi lần nhân với z = 1 + i: quay thêm 45 độ, dài gấp sqrt(2). z^2 = 2i, z^3 = -2 + 2i.
+size: 200 120
+names: Re Im
+x: -2.5 1.5 1
+y: -0.5 2.5 2
+vector 0 0 1 1 do "z" pos=e
+vector 0 0 0 2 xanh "z^2" pos=e
+vector 0 0 -2 2 luc "z^3" pos=w
+:::
 
-Ở dạng này, phép nhân trở nên rất đơn giản: nhân hai số phức thì nhân môđun và cộng acgumen. Nói cách khác, nhân với một số phức là vừa phóng to vừa quay.
+:::core
+Dạng lượng giác ghi z bằng độ dài r và góc phi; nhân hai số phức là nhân độ dài, cộng góc, nên z^n có độ dài r^n và góc gấp n lần.
+:::
 
-Lặp lại phép nhân đó n lần cho công thức Moivre:
+Acgumen là góc đo từ trục thực dương: trục ảo dương 90 độ, trục thực âm 180, trục ảo âm 270; 3 + 3i nằm trên phân giác nên 45 độ.
+
+Ví dụ: tính (-1 + i)^4.
+
+1. Độ dài r = sqrt(2), góc 135 độ.
+2. Lũy thừa 4: r^4 = 4, góc 4 . 135 = 540, tức 180 độ.
+3. Kết quả: 4(cos 180 + i sin 180) = -4. Thử: (-1 + i)^2 = -2i, rồi (-2i)^2 = -4.
 
 $$ z^{n} = r^{n}(\cos n\varphi + i \sin n\varphi) $$
 
-Ví dụ với z = 1 + i: môđun là căn bậc hai của 2, acgumen là 45 độ. Vậy z^4 có môđun 4 và acgumen 180 độ, tức là z^4 = -4.
+> Lỗi thường gặp: nâng độ dài lên lũy thừa n mà quên nhân góc với n.
 
-Tìm acgumen thì cứ nhìn vị trí của điểm (a, b) trên mặt phẳng: trục thực dương ứng với 0 độ, trục ảo dương 90 độ, trục thực âm 180 độ, trục ảo âm 270 độ.
-
-> Lỗi thường gặp: dùng công thức Moivre mà quên nhân acgumen với n, chỉ nâng môđun lên lũy thừa.
+:::check
+Q: z có môđun 3, acgumen 20 độ; w có môđun 2, acgumen 70 độ. zw là số nào?
+A: Môđun 3 . 2 = 6, acgumen 20 + 70 = 90 độ: zw = 6i.
+:::
 
 ## Căn bậc n của số phức
 
-Trong tập số thực, số âm không có căn bậc hai. Trong tập số phức, mọi số khác 0 đều có đủ n căn bậc n khác nhau.
+:::hook
+Trong số thực, x^2 = -4 vô nghiệm và x^3 = 8 chỉ có nghiệm 2. Trong số phức, z^n = w luôn có đủ n nghiệm, xếp đều trên một đường tròn.
+:::
 
-$$ z^{n} = w \quad \Leftrightarrow \quad z \text{ la can bac } n \text{ cua } w $$
+:::figure plane
+caption: Ba căn bậc ba của 8: cùng môđun 2, cách nhau 120 độ, là ba đỉnh tam giác đều. Chỉ một căn là số thực.
+size: 230 120
+aspect: equal
+names: Re Im
+x: -5.2 2.8 10
+y: -2.4 2.4 10
+param "2*cos(t)" "2*sin(t)" 0 2*pi xam dash
+poly 2 0 -1 sqrt(3) -1 -sqrt(3) vang
+point 2 0 do "2" pos=e
+point -1 sqrt(3) do "-1 + sqrt(3)i" pos=w
+point -1 -sqrt(3) do "-1 - sqrt(3)i" pos=w
+:::
 
-Lý do nằm ở dạng lượng giác: môđun của mọi căn đều bằng căn bậc n của môđun w, còn acgumen thì có n lựa chọn, cách đều nhau 360/n độ.
+:::core
+Mọi số phức w khác 0 có đúng n căn bậc n: cùng môđun bằng căn bậc n của |w|, góc cách đều nhau 360/n độ.
+:::
 
-Vì vậy n căn bậc n của một số nằm trên cùng một đường tròn, chia đường tròn đó thành n phần bằng nhau. Với n = 2 là hai điểm đối xứng qua gốc; với n = 6 là sáu đỉnh của một lục giác đều.
+Căn bậc hai tìm được không cần lượng giác: đặt căn là x + yi, bình phương lên rồi so từng phần, thêm x^2 + y^2 = |w|.
 
-Ví dụ bốn căn bậc bốn của 16: môđun đều bằng 2, acgumen là 0, 90, 180, 270 độ. Vậy chúng là 2, 2i, -2 và -2i, trong đó hai căn là số thực.
+Ví dụ: tìm hai căn bậc hai của w = 3 + 4i.
 
-Muốn tìm căn bậc hai mà không dùng lượng giác, đặt căn cần tìm là x + yi rồi bình phương lên, so phần thực với phần thực và phần ảo với phần ảo.
+1. x^2 - y^2 = 3 và x^2 + y^2 = |w| = 5.
+2. Cộng, trừ: x^2 = 4, y^2 = 1.
+3. 2xy = 4 dương nên x, y cùng dấu: 2 + i và -2 - i.
+4. Thử: (2 + i)^2 = 4 + 4i - 1 = 3 + 4i.
 
-> Lỗi thường gặp: trả lời "phương trình z^5 = 1 có một nghiệm z = 1". Trong tập số phức nó có đúng 5 nghiệm.
+$$ x^{2} - y^{2} = a, \quad 2xy = b, \quad x^{2} + y^{2} = |w| $$
+
+> Lỗi thường gặp: nói z^5 = 1 chỉ có nghiệm z = 1. Trong số phức nó có đúng 5 nghiệm.
+
+:::check
+Q: z^6 = -1 có bao nhiêu nghiệm phức? Có nghiệm nào là số thực không?
+A: 6 nghiệm, môđun 1, góc 30 + 60k độ. Không góc nào là 0 hay 180 nên không có nghiệm thực.
+:::
