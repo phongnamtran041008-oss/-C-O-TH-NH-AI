@@ -1,0 +1,24 @@
+{
+  "_comment": "Đại Địa Đồ: các dải tu vi của những vùng đất lớn (server/app/realtime/dia_do.py, docs/DAI_DIA_DO.md). Một vùng đất lớn chia thành các khu; mỗi khu thuộc một dải (band) theo tầng của Đạo Thụ mà quái của nó đứng cho; dải 0 là chốn an toàn (trại nghỉ), không có quái. Một con quái lấy dải của monster_area sinh ra nó (thuộc tính band); quái ở bản đồ không chia dải giữ nguyên như cũ. 'mult': hệ số nhân máu (hp), công (atk), thủ (def), tu vi khi hạ (xp) và linh thạch (stones) - nhẹ thôi, vì câu hỏi đã theo bậc của chính người chơi. 'loot_cap': trần rơi đồ của dải (một mốc tu vi của loot_tiers.json): món và độ hiếm trên trần không rơi ở dải ấy, và không bao giờ vượt trần của chính vùng (source_caps). 'distribution': luật phân bố quái mà bộ sinh bản đồ và tools/check_maps.py giữ.",
+  "realms": {
+    "luyen_khi": {
+      "1": {"name_vi": "Ngoại Vi", "stage_min": 1, "stage_max": 3,
+            "mult": {"hp": 1.0, "atk": 1.0, "def": 1.0, "xp": 1.0, "stones": 1.0},
+            "loot_cap": "luyen_khi:3"},
+      "2": {"name_vi": "Trung Vực", "stage_min": 4, "stage_max": 6,
+            "mult": {"hp": 1.15, "atk": 1.1, "def": 1.1, "xp": 1.2, "stones": 1.2},
+            "loot_cap": "luyen_khi:6"},
+      "3": {"name_vi": "Thâm Xứ", "stage_min": 7, "stage_max": 9,
+            "mult": {"hp": 1.3, "atk": 1.2, "def": 1.2, "xp": 1.45, "stones": 1.45},
+            "loot_cap": "luyen_khi:9"}
+    }
+  },
+  "distribution": {
+    "min_kinds_per_khu": 2,
+    "clearance_tiles": 10,
+    "tiles_per_monster": [150, 250],
+    "max_monsters_per_land": 260,
+    "max_elites_per_khu": 8,
+    "elites_per_area": 1
+  }
+}

@@ -699,7 +699,8 @@ def kill(ch: "ChannelZone", m: "Monster", now: float) -> None:
                 if p.hp >= p.max_hp:   # Thành Tựu: a kill without a scratch
                     achievements.bump(p.user_id, "kill_flawless", rank=m.info.get("rank", "normal"))
                 _world().spawn(_reward(p.user_id, m.kind, _loot_bonus(p, m),
-                                       source=getattr(ch, "realm_id", None) or ch.zone_id, x=m.x, y=m.y))
+                                       source=getattr(ch, "realm_id", None) or ch.zone_id, x=m.x, y=m.y,
+                                       band=getattr(m, "band", 0), band_realm=getattr(m, "band_realm", None)))
     _party_share(ch, m)
     for uid, ids in m.bee_assist.items():  # guard bees that helped grow a little
         if ids:
@@ -714,7 +715,9 @@ def _party_share(ch: "ChannelZone", m: "Monster") -> None:
     touch this monster."""
     from ..systems import catalog
     rc = balance.load("realm")
-    xp = int(catalog.monsters()[m.kind].get("xp", 0) * rc["party_xp_share"])
+    from . import dia_do      # Đại Địa Đồ: the xp of its band
+    info = dia_do.scaled_info(catalog.monsters()[m.kind], getattr(m, "band", 0), getattr(m, "band_realm", None))
+    xp = int(info.get("xp", 0) * rc["party_xp_share"])
     if xp <= 0:
         return
     parties = _world().parties
@@ -785,7 +788,8 @@ async def _bee_xp(uid: int, bee_ids: list[int]) -> None:
 
 
 async def _reward(uid: int, kind: str, loot: dict | None = None, rng: random.Random | None = None,
-                  source: str | None = None, x: float | None = None, y: float | None = None) -> None:
+                  source: str | None = None, x: float | None = None, y: float | None = None,
+                  band: int = 0, band_realm: str | None = None) -> None:
     """The kill's loot for one player (party members each come through here): stones, then the
     monster's drop table gated by this player's tu vi (systems/loot.py) - a drop rolled but
     not yet unlocked is listed under `locked`, never granted - then the weapons of its land
@@ -793,7 +797,8 @@ async def _reward(uid: int, kind: str, loot: dict | None = None, rng: random.Ran
     (x, y: the spot the monster died) for the client to draw on the ground."""
     from ..systems import catalog, codex, cultivation, inventory, items, quests, weapons
     from ..systems import loot as gate
-    info = catalog.monsters()[kind]
+    from . import dia_do      # Đại Địa Đồ: a monster of a band gives that band's xp and stones
+    info = dia_do.scaled_info(catalog.monsters()[kind], band, band_realm)
     rng = rng or random.Random()
     loot = loot or {"stones_pct": 0.0, "drop_mult": 1.0}
     out = {"t": "loot", "monster": info["name_vi"], "items": [], "equipment": []}
@@ -809,9 +814,12 @@ async def _reward(uid: int, kind: str, loot: dict | None = None, rng: random.Ran
             # with no place given, within the most generous cap of where this monster lives
             within = gate.source_cap(source) if source in gate.data().get("source_caps", {}) \
                 else gate.monster_cap(kind)
+            within = gate.band_within(within, band, band_realm)    # and within its band's cap
             for d in info.get("drops", []):
                 if rng.random() >= min(1.0, d["chance"] * loot["drop_mult"]):
                     continue
+                if "item" in d and not gate.band_allows(d["item"], band, band_realm):
+                    continue          # above its band's cap: not part of what this place drops
                 if "item" in d:
                     qty = rng.randint(*d.get("qty", [1, 1]))
                     if not gate.unlocked(d["item"], realm, stage):

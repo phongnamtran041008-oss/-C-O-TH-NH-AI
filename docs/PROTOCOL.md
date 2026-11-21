@@ -160,6 +160,10 @@ Câu trả lời của `q` gửi qua REST `POST /quiz/answer` như mọi câu h�
   mình `[id, loài, máu, máu tối đa, giây còn nghỉ trong tổ, id quái đang chích]`.
 - Người chơi trong `add` có `stage` = tầng của cảnh giới `realm` (0 khi không có tầng): client dùng `realm` + `stage`
   để vẽ kiếm khí theo tu vi của người ấy (chỉ là hình ảnh; client cũ bỏ qua khóa này).
+- Đại Địa Đồ (2026-11-21): quái trong `add` đứng trong một khu chia dải tu vi của vùng đất lớn có thêm `kv` = dải của
+  nó (1 Ngoại Vi, tầng 1-3; 2 Trung Vực, tầng 4-6; 3 Thâm Xứ, tầng 7-9; xem `server/app/realtime/dia_do.py` và
+  `docs/DAI_DIA_DO.md`). Quái ở bản đồ không chia dải không có khóa này. Máu, công, thủ, tu vi và linh thạch của nó
+  đã nhân theo dải (`server/data/math/dia_do.json`); client có thể vẽ dấu dải cạnh tên, client cũ bỏ qua khóa này.
 - Trong `e`, người chơi là `[id, x, y, hướng, đang đi, %máu, ong]` với `ong` = `[[loài, %máu, id quái đang chích hoặc "", đang nghỉ 0/1], …]`
   (cũng có trong `add` dưới khóa `bees`); quái là `[id, x, y, hướng, đang đi, %máu, khiên, còn sống]`.
 - `fx` (chỉ có khi có chuyện xảy ra, lọc trong bán kính `event_radius`): `hit` (quái trúng đòn, `c` = chí mạng),

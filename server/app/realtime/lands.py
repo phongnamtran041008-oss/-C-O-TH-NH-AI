@@ -19,7 +19,9 @@ calls it, for a blow that landed or for Vấn Đạo alike):
 
 * a quái lỗi sai (data/math/monsters.json with a `skill`) keeps asking its own micro-skill;
 * a land creature stands for some nodes of the tree (`nodes`): it asks a part of those nodes
-  the player may practise (open or done), at the player's own tier;
+  the player may practise (open or done), at the player's own tier; standing in a banded khu of
+  a giant land (realtime/dia_do.py) it asks first those of its nodes whose stage lies in the
+  band, when the player may practise one of them;
 * with none of them open yet - and for the old creatures that have no nodes - it asks where
   the player is learning in the land's branch (the frontier of its subject, R9);
 * the Lập Trình and Thực Chiến nodes are programming exercises with no question: their
@@ -188,7 +190,7 @@ class LandAsker:
         if info.get("ask") == "branches" and m is not None:
             q = await self._boss(db, user, st, p, m, info, rng)
         elif info.get("nodes"):
-            q = await self._of_nodes(db, user, st, info["nodes"], rng)
+            q = await self._of_nodes(db, user, st, info["nodes"], rng, prefer=self.band_nodes(st, info["nodes"], m))
         if q is None:
             q = await self._of_branch(db, user, st, info, rng)
         if q is None:
@@ -214,9 +216,31 @@ class LandAsker:
         return [part for n in nodes if n in st.tree.nodes for part in math_tree_progress.parts(n)
                 if st.playable(part)]
 
-    async def _of_nodes(self, db, user, st, nodes, rng):
-        parts = self._playable(st, nodes)
-        rng.shuffle(parts)
+    @staticmethod
+    def band_nodes(st, nodes, m: "Monster | None") -> list:
+        """Đại Địa Đồ: of a creature's own nodes, those whose stage lies in the band of the khu it
+        stands in ([] outside any band: nothing is preferred)."""
+        from . import dia_do
+        band = getattr(m, "band", 0) if m is not None else 0
+        rng_ = dia_do.band_range(band, getattr(m, "band_realm", None)) if band else None
+        if rng_ is None:
+            return []
+        lo, hi = rng_
+        t = st.tree
+        return [n for n in nodes if n in t.nodes and lo <= int(t.nodes[n].stage or 0) <= hi]
+
+    async def _of_nodes(self, db, user, st, nodes, rng, prefer=None):
+        """A part of these nodes the player may practise; with `prefer` (the nodes of the band),
+        those first when the player may practise one of them, then the others as before."""
+        if prefer:
+            first = self._playable(st, prefer)
+            rest = self._playable(st, [n for n in nodes if n not in prefer])
+            rng.shuffle(first)
+            rng.shuffle(rest)
+            parts = first + rest
+        else:
+            parts = self._playable(st, nodes)
+            rng.shuffle(parts)
         for part in parts:
             q = await self._pick(db, user, part, rng)
             if q is not None:

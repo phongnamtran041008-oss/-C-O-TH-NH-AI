@@ -12,7 +12,10 @@ tống hết con nào cx rơi ra đc". Two sides, both read from data/loot_tiers
     An item missing from the file is locked below the top tier (fail closed), except the
     ghi chú lỗi sai (kind note of math/drops.json), which are learning aids and never gated;
   * the sources: a wild zone or a bí cảnh may not list anything above its cap, counting the
-    monsters that spawn there. validate() checks this (tools/check_all.py).
+    monsters that spawn there. validate() checks this (tools/check_all.py). On a giant land
+    (Đại Địa Đồ) every band of tu vi has its own lower cap (data/math/dia_do.json `loot_cap`,
+    band_within / band_allows): a monster of Ngoại Vi drops nothing above Luyện Khí tầng 3,
+    whatever its table lists.
 
 Not gated on purpose: shop purchases, quest and milestone rewards, gacha, crafting outputs,
 fishing catches, alchemy and the thủ thành first-clear rewards.
@@ -250,6 +253,33 @@ def _monster_caps() -> dict[str, Tier | None]:
 def monster_cap(kind: str) -> Tier | None:
     """The cap on what this monster may hand out (None: uncapped, or it lives nowhere)."""
     return _monster_caps().get(kind)
+
+
+# ------------------------------------------------------------------ the bands (Đại Địa Đồ)
+def band_cap(band: int, realm: str | None = None) -> Tier | None:
+    """The loot cap of a band of tu vi of a giant land (data/math/dia_do.json; None: no band)."""
+    from ..realtime import dia_do
+    t = dia_do.loot_cap(band, realm)
+    return parse(t) if t else None
+
+
+def band_within(within: Tier | None, band: int, realm: str | None = None) -> Tier | None:
+    """The cap of a kill in a band: the place's own cap (`within`, None = none) lowered to the
+    band's, so a band never hands out more than its cap nor more than its zone's."""
+    cap = band_cap(band, realm)
+    if cap is None:
+        return within
+    return cap if within is None else min(within, cap)
+
+
+def band_allows(item_id: str, band: int, realm: str | None = None) -> bool:
+    """May a monster of this band drop this item at all? An item above the band's cap is not
+    part of what the band drops (it is skipped, not reported as locked); a ghi chú always is."""
+    cap = band_cap(band, realm)
+    if cap is None:
+        return True
+    t = item_tier(item_id)
+    return t is None or t <= cap
 
 
 def sources() -> dict[str, dict]:

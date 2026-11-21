@@ -52,6 +52,10 @@ class Monster:
     # ---- the open-world rule (world_plan.json "combat") ----
     on_hit: bool = False                # set by its channel: questions only when it lands a blow
     shape_i: int = 0                    # which telegraph shape of its rank comes next
+    # ---- Đại Địa Đồ: the band of its monster_area (realtime/dia_do.py); 0 = no band, as before
+    band: int = 0
+    band_realm: str = "luyen_khi"
+    _banded: tuple | None = field(default=None, repr=False, compare=False)
 
     def __post_init__(self):
         self.reset()
@@ -79,7 +83,14 @@ class Monster:
 
     @property
     def info(self) -> dict:
-        return monster_types()[self.kind]
+        base = monster_types()[self.kind]
+        if not self.band:
+            return base
+        c = self._banded          # its numbers in its band, worked out once per kind table
+        if c is None or c[0] is not base:
+            from . import dia_do
+            c = self._banded = (base, dia_do.scaled_info(base, self.band, self.band_realm))
+        return c[1]
 
     @property
     def alive(self) -> bool:
@@ -98,10 +109,13 @@ class Monster:
                 self.hp_pct(), int(self.shield), int(self.alive)]
 
     def full(self) -> dict:
-        return {"id": self.eid, "k": "m", "type": self.kind, "n": self.info["name_vi"],
-                "rank": self.info.get("rank", "normal"), "x": round(self.x, 1), "y": round(self.y, 1),
-                "f": FACING_CODE[self.facing], "m": int(self.moving), "hp": self.hp_pct(),
-                "sh": int(self.shield), "alive": int(self.alive)}
+        out = {"id": self.eid, "k": "m", "type": self.kind, "n": self.info["name_vi"],
+               "rank": self.info.get("rank", "normal"), "x": round(self.x, 1), "y": round(self.y, 1),
+               "f": FACING_CODE[self.facing], "m": int(self.moving), "hp": self.hp_pct(),
+               "sh": int(self.shield), "alive": int(self.alive)}
+        if self.band:
+            out["kv"] = self.band          # Đại Địa Đồ: the band of tu vi it stands in (1..3)
+        return out
 
     @property
     def home(self) -> tuple[float, float]:
@@ -151,19 +165,22 @@ class Monster:
 
 
 def spawn_all(zmap: ZoneMap, rng: random.Random, prefix: str = "m") -> list[Monster]:
+    """Every monster of a map's monster areas; one in a banded area (Đại Địa Đồ) takes its band."""
+    from .dia_do import area_band
     out: list[Monster] = []
     types = monster_types()
     for area in zmap.monster_areas:
         kind = area.props.get("monster")
         if kind not in types:
             continue
+        band, band_realm = area_band(area.props)
         for _ in range(int(area.props.get("count", 1))):
             for _try in range(20):
                 x = rng.uniform(area.x + 8, area.x + area.w - 8)
                 y = rng.uniform(area.y + 8, area.y + area.h - 8)
                 if not zmap.collider.blocked(x, y):
                     break
-            m = Monster(f"{prefix}{len(out)}", kind, area, x, y)
+            m = Monster(f"{prefix}{len(out)}", kind, area, x, y, band=band, band_realm=band_realm)
             m.idle = rng.uniform(0, 2)
             out.append(m)
     return out
