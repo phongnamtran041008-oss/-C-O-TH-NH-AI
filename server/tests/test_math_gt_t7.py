@@ -250,7 +250,7 @@ def test_the_library_explains_every_micro_skill_of_the_floor(floor):
     assert sections == want
     notes = [b for b in doc.blocks if b["type"] == "note" and b["text"].startswith("Lỗi thường gặp")]
     assert len(notes) >= len(want)
-    assert len(doc.formulas) >= len(want)
+    assert sum(1 for b in doc.blocks if b["type"] in ("formula", "figure", "matrices")) >= len(want)   # something to look at per micro-skill
     for skill in want:
         assert ml.for_skill(skill) is doc
 

@@ -157,7 +157,7 @@ def test_the_library_covers_every_micro_skill_of_a_written_floor(floor):
     assert len(sections) == len(doc.skills)
     notes = [b for b in doc.blocks if b["type"] == "note"]
     assert len(notes) >= len(doc.skills)                         # a "Lỗi thường gặp" per section
-    assert doc.formulas
+    assert any(b["type"] in ("formula", "figure", "matrices") for b in doc.blocks)
     for sk in doc.skills:
         assert ml.for_skill(sk) is doc
     assert not [e for e in ml.validate_all() if SUBJECT in e]
