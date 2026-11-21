@@ -136,6 +136,7 @@ def run_library_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait_scene("MathPracticeScene")
 
         # ---- the answer card opens the document at the right section
+        drv.click("math_tab_ds")                        # (a node's rows are on its branch tab)
         drv.click(FLOOR_1)
         q = wait_question(drv)
         answer_math(drv, server, correct=False)

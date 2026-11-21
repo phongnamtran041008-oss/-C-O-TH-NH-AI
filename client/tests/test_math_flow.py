@@ -88,6 +88,7 @@ def reopen_floors(drv: Driver) -> dict:
     drv.wait(lambda: not drv.top_is("MathPracticeScene"), 5, "the abode")
     drv.click("hud_math")
     drv.wait(lambda: drv.top_is("MathPracticeScene") and top(drv).path is not None, 10, "the math path")
+    drv.click("math_tab_ds")            # (the rows of a node live on its branch tab; Chính đạo is a card)
     return top(drv).path["subjects"][0]
 
 
@@ -119,8 +120,12 @@ def run_math_flow(workdir: Path, shots: Path | None = None) -> None:
         assert subject["cleared"] == [] and subject["next_floor"] == 1
         assert floors[0]["node_id"] == NODE_1 and floors[2]["node_id"] is None
         assert top(drv).tab == "next" and top(drv).tree["next"][0] == NODE_1
-        assert drv.has(FLOOR_1) and not drv.has(FLOOR_3) and not drv.has(TRIAL_1)
+        # Chính đạo leads: one card, one step - read the lesson of the first node first
+        assert top(drv).tree["main"]["node_id"] == NODE_1 and top(drv).tree["main"]["step"] == "hoc"
+        assert drv.has("math_main_go") and not drv.has(FLOOR_1)
         drv.shot("math_floors")
+        drv.click("math_tab_ds")                          # the branch tab: every node of Đại Số, to browse
+        assert drv.has(FLOOR_1) and not drv.has(FLOOR_3) and not drv.has(TRIAL_1)
 
         # ---- a right answer: Tu Vi by tier
         drv.click(FLOOR_1)

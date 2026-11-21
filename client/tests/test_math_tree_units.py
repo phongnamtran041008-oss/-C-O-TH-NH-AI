@@ -55,7 +55,7 @@ def sample_tree():
 def test_tabs_are_next_then_the_branches_of_the_current_realm():
     tabs = MT.tab_list(sample_tree())
     assert [t["id"] for t in tabs] == ["next", "ds", "gt", "lt"]          # "ml" has nothing in Luyện Khí
-    assert [t["name_vi"] for t in tabs] == ["Nên học", "Đại Số", "Giải Tích", "Lập Trình"]
+    assert [t["name_vi"] for t in tabs] == ["Chính đạo", "Đại Số", "Giải Tích", "Lập Trình"]
     assert [t["subject"] for t in tabs] == [None, "dai_so", "giai_tich", None]
 
 

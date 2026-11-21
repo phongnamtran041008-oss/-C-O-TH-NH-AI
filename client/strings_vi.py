@@ -1165,7 +1165,27 @@ TREE_STAGE = "{realm} tầng {n}/{t}"
 TREE_STAGE_NONE = "{realm}: chưa qua tầng nào"
 TREE_STAGE_PROGRESS = "đã xong {d}/{t} nút của tầng {n}"     # inside the stage being worked on
 TREE_STAGE_PROGRESS_SHORT = "xong {d}/{t} nút tầng {n}"
-TREE_TAB_NEXT = "Nên học"
+TREE_TAB_NEXT = "Chính đạo"
+# ---- Chính đạo: the main quest, the card on the first tab of the hub (scenes/math_tree.py)
+PATH_HEAD = "Chính đạo · {realm} tầng {n} · nút {i}/{t}"
+PATH_GO = {"hoc": "Học bài", "luyen": "Luyện", "kiep": "Độ Thiên kiếp nhỏ", "code": "Làm bài tập"}
+PATH_RESUME = {"luyen": "Luyện tiếp", "kiep": "Độ kiếp tiếp"}
+PATH_CHIPS = ("Hiểu", "Luyện", "Vượt cổng")
+PATH_CHIP_CODE = "Bài tập {d}/{t}"
+PATH_GATE = "Cổng {d}/{t}"
+PATH_PART = "Phần {i}/{n}"
+PATH_REREAD = "Đọc lại bài"
+PATH_LIST = "Tầng {n}, theo thứ tự nên học"
+PATH_STATE = {"done": "Đã xong", "now": "Đang học", "later": "Để sau"}
+PATH_LATER = "Để sau"
+PATH_DONE_TITLE = "Con đã đi hết Chính đạo hiện có"
+PATH_DONE_BODY = "Mọi nút chính đạo có nội dung đều đã xong. Các thẻ nhánh còn bàng môn để học thêm."
+PATH_SIDE = "Luyện thêm:"
+PATH_SIDE_TIP = "Luyện thêm cho vui, có thưởng. Không thay được Chính đạo."
+PATH_HINT = {"hoc": "Hiểu trước, luyện sau: đọc bài của nút.", "luyen": "Luyện tới khi Cổng mở.",
+             "kiep": "Cổng đã mở: vượt Thiên kiếp nhỏ để xong phần này.",
+             "code": "Nút lập trình: giải các bài tập của nút."}
+PATH_STEP_SHORT = {"hoc": "Học bài", "luyen": "Luyện", "kiep": "Độ Thiên kiếp nhỏ", "code": "Làm bài tập"}
 TREE_TAB_SHORT = {"ds": "Đại Số", "gt": "Giải Tích", "xs": "Xác Suất", "tr": "Thuật Toán", "lt": "Lập Trình",
                   "ud": "Thực Chiến"}
 TREE_ROW_STAGE = "Tầng {n}"
@@ -1233,6 +1253,15 @@ GUIDE_HUD_STUDY = "Đang học · F1"
 GUIDE_HUD_CLAIM = "Nhận thưởng ({n}) · F1"
 GUIDE_HUD_ALL_DONE = "Con đã làm hết lộ trình hiện có. Cứ luyện tiếp trên Đạo Thụ nhé."
 GUIDE_STEP_DONE_TOAST = "Xong: {title}"       # short: in the world it sits beside the HUD box, which says F1
+GUIDE_HUD_MAIN = "Chính đạo {i}/{t} · F1"      # the HUD box once Chính đạo leads
+GUIDE_HUD_MAIN_CLAIM = "Nhận {n}"
+GUIDE_HUD_MAIN_DONE = "Chính đạo · F1"
+GUIDE_MAIN_CHAPTER = "Chính đạo"              # the first entry of the board: the step of the main quest
+GUIDE_MAIN_INTRO = "Nhiệm vụ chính: đi từng nút một trên Chính đạo, đúng thứ tự nên học."
+GUIDE_MAIN_SUB = "Nhiệm vụ chính"
+GUIDE_MAIN_STEP = "Việc bây giờ: {step}. {hint}"
+GUIDE_STUDY_MAIN = "{name} · {step}"
+GUIDE_MAIN_STAGE = "{realm} tầng {n}: nút {i}/{t} · cả cảnh giới {d}/{a} nút"
 
 # ---- Linh căn: Trắc Linh Đài (scenes/linh_can.py)
 HUD_LINH_CAN = "Linh Căn"

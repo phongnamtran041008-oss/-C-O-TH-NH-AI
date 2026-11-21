@@ -31,6 +31,9 @@ What `validate()` guarantees, because a wrong tree would teach things in the wro
   `waiver` drops it by name, and a main-path skill never leans on an optional one;
 * `reinforces` only names ancestors (you cannot review what you have not learned);
 * every main-path node of a realm leads to that realm's project (`du_an`), so nothing dangles;
+* `main_path` (Chính đạo) puts the main-path nodes in one total order - realm, stage, then a
+  fixed order inside the stage - with every main-path node exactly once and never before a
+  node of its stage that it requires; the game leads the player along it (`Tree.main_path`);
 * a node's `content` flag tells the truth: 'co' exactly when one of its micro-skills (not cut) has a
   question or it lists an exercise, and an exercise is listed by one node only;
 * the world plan only names real nodes, lands, weapons and unlocks, and never asks for a
@@ -39,7 +42,7 @@ What `validate()` guarantees, because a wrong tree would teach things in the wro
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
 from typing import Iterable
@@ -107,6 +110,18 @@ class Tree:
     nodes: dict[str, Node]
     realm_order: dict[str, int]
     realm_stages: dict[str, int]
+    # Chính đạo: the position of every main-path node on the one learning path (path_order)
+    path_rank: dict[str, int] = field(default_factory=dict)
+
+    # ---- Chính đạo, the one learning path
+    def main_path(self) -> list[str]:
+        """Every main-path node in the order the player is led through them."""
+        return sorted(self.path_rank, key=self.path_rank.get)
+
+    def path_key(self, node_id: str) -> tuple:
+        """Sort key of a node on the path: realm, stage, place inside the stage (optional nodes last)."""
+        n = self.nodes[node_id]
+        return (not n.main, self.realm_order[n.realm], n.stage or 99, self.path_rank.get(n.id, 10 ** 6), n.id)
 
     # ---- structure
     def ancestors(self, node_id: str) -> set[str]:
@@ -163,7 +178,7 @@ class Tree:
         finished = self.done(mastered_skills, done_nodes)
         out = [n for n in self.nodes.values()
                if n.id not in finished and set(n.requires) <= finished]
-        out.sort(key=lambda n: (not n.main, self.realm_order[n.realm], n.stage or 99, n.branch, n.id))
+        out.sort(key=lambda n: self.path_key(n.id))
         return [n.id for n in out]
 
     def stage_reached(self, mastered_skills: Iterable[str], done_nodes: Iterable[str] = ()) -> tuple[str, int]:
@@ -210,9 +225,35 @@ def build(raw: dict) -> Tree:
             requires=tuple(n.get("requires", [])), reinforces=tuple(n.get("reinforces", [])),
             topics_vi=tuple(n.get("topics_vi", [])), problems=tuple(n.get("problems", [])))
     realms = raw.get("realms", [])
-    return Tree(raw=raw, nodes=nodes,
-                realm_order={r["id"]: r["order"] for r in realms},
-                realm_stages={r["id"]: r["stages"] for r in realms})
+    order = {r["id"]: r["order"] for r in realms}
+    stages = {r["id"]: r["stages"] for r in realms}
+    path = path_order(raw, nodes, order, stages)
+    return Tree(raw=raw, nodes=nodes, realm_order=order, realm_stages=stages,
+                path_rank={nid: i for i, nid in enumerate(path)})
+
+
+def path_order(raw: dict, nodes: dict[str, Node], order: dict[str, int], stages: dict[str, int]) -> list[str]:
+    """Chính đạo: the main-path nodes in one total order - realm, then stage, then the order
+    `main_path` gives inside the stage. A node the list leaves out (a test tree, a node added
+    without a place) comes after the listed ones of its stage, by id. Whatever the list says,
+    a node never comes before a node of its stage that it requires: inside a stage the order
+    is a topological sort that always takes the first available node by that key."""
+    listed = raw.get("main_path") if isinstance(raw.get("main_path"), dict) else {}
+    out: list[str] = []
+    for realm in sorted(order, key=order.get):
+        rows = listed.get(realm) if isinstance(listed.get(realm), list) else []
+        for stage in range(1, stages.get(realm, 0) + 1):
+            row = rows[stage - 1] if stage <= len(rows) and isinstance(rows[stage - 1], list) else []
+            place = {nid: i for i, nid in reversed(list(enumerate(row))) if isinstance(nid, str)}
+            here = {n.id: n for n in nodes.values() if n.main and n.realm == realm and n.stage == stage}
+            key = {nid: (place.get(nid, len(row)), nid) for nid in here}
+            left = dict(here)
+            while left:
+                ready = [nid for nid, n in left.items() if not any(r in left for r in n.requires)]
+                pick = min(ready or left, key=key.get)      # (a cycle is reported by validate)
+                out.append(pick)
+                del left[pick]
+    return out
 
 
 @lru_cache(maxsize=1)
@@ -921,6 +962,48 @@ def validate_tree(raw: dict, skills: dict[str, tuple[str, ...]], problems: set[s
             errs.append(f"sources: branch {b['id']} has no suggested reading")
     if asked is not None:
         errs += _content_problems(t, raw, asked)
+    if "main_path" in raw:
+        errs += _path_problems(t, raw["main_path"])
+    return errs
+
+
+def _path_problems(t: Tree, path) -> list[str]:
+    """`main_path` is Chính đạo, the one order the player is led through the main-path nodes:
+    {realm: [[stage 1 ids], [stage 2 ids], ...]}. Every main-path node is in it exactly once, in
+    the row of its own realm and stage, never before a node of its stage that it requires."""
+    if not isinstance(path, dict):
+        return ["main_path must be an object {realm: [[ids of stage 1], [ids of stage 2], ...]}"]
+    errs: list[str] = []
+    seen: list[str] = []
+    for realm in [k for k in path if not str(k).startswith("_")]:
+        if realm not in t.realm_stages:
+            errs.append(f"main_path: unknown realm {realm!r}")
+            continue
+        rows = path[realm]
+        if not isinstance(rows, list) or len(rows) != t.realm_stages[realm] or \
+                not all(isinstance(r, list) for r in rows):
+            errs.append(f"main_path.{realm}: needs one list of node ids per stage ({t.realm_stages[realm]})")
+            continue
+        for stage, row in enumerate(rows, 1):
+            for i, nid in enumerate(row):
+                where = f"main_path.{realm} stage {stage}"
+                seen.append(nid)
+                n = t.nodes.get(nid)
+                if n is None:
+                    errs.append(f"{where}: unknown node {nid!r}")
+                    continue
+                if not n.main:
+                    errs.append(f"{where}: {nid} is optional; only main-path nodes are on Chính đạo")
+                elif n.realm != realm or n.stage != stage:
+                    errs.append(f"{where}: {nid} belongs to {n.realm} stage {n.stage}")
+                for r in n.requires:
+                    if r in row and row.index(r) > i:
+                        errs.append(f"{where}: {nid} comes before {r}, which it requires")
+    for nid in _dupes(seen):
+        errs.append(f"main_path: {nid} is listed more than once")
+    for n in sorted(t.main_nodes(), key=lambda n: n.id):
+        if n.id not in seen:
+            errs.append(f"main_path: the main-path node {n.id} has no place on Chính đạo")
     return errs
 
 
@@ -1076,6 +1159,8 @@ def validate_all(math_dir: Path = MATH_DIR) -> list[str]:
     except (OSError, ValueError) as e:
         return [f"cannot read the tree: {e}"]
     errs = validate_tree(raw, subject_skills(math_dir), problem_ids(math_dir), skills_with_questions(math_dir))
+    if "main_path" not in raw:
+        errs.append("main_path is missing: the shipped tree must give Chính đạo, the one learning path")
     if errs:
         return errs
     return validate_world(plan, build(raw), math_dir)

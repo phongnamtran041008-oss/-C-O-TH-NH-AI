@@ -7,7 +7,7 @@
       "Con đến rồi. Ta là Trúc Lão, người giữ Đạo Thụ ở Trúc Lâm. Từ nay con tu tiên bằng toán đại học.",
       "Đạo Thụ là cây giáo trình: mỗi nút là một phần kiến thức. Học xong nút nào, con nhận Tu Vi và mở thêm đường đi.",
       "Mỗi nút học ba bước: đọc bài ở Tàng Thư Các, luyện câu hỏi, rồi vượt Thiên kiếp nhỏ để chứng tỏ con đã vững.",
-      "Ta đã ghi sẵn Lộ Trình từ bước đầu tiên đến hết Luyện Khí. Làm tới đâu, nhận thưởng tới đó.",
+      "Ta đã vạch sẵn Chính đạo: học từng nút một, đúng thứ tự, luôn chỉ một việc tiếp theo. Theo nó thì không học lan man.",
       "Bấm F1 bất cứ lúc nào để xem việc tiếp theo. Giờ con hãy mở bảng Lộ Trình ra nhé."
     ]
   },
@@ -44,7 +44,7 @@
           "desc_vi": "Đạo Thụ là cây giáo trình, nơi con đọc, luyện và vượt kiếp mỗi ngày. Hãy mở ra xem một lần.",
           "how_vi": [
             "Ở Động Phủ, bấm phím M hoặc nút Toán ở dải nút phía dưới màn hình.",
-            "Thẻ Nên học liệt kê các nút đang mở; mỗi nhánh toán có một thẻ riêng."
+            "Thẻ Chính đạo chỉ đúng một nút và một việc phải làm tiếp; các thẻ nhánh để xem thêm."
           ],
           "check": {"type": "seen", "key": "math_hub"},
           "goto": "math",
@@ -54,9 +54,9 @@
         {
           "id": "g_read_doc",
           "title_vi": "Đọc trang sách đầu tiên",
-          "desc_vi": "Tàng Thư Các có bài đọc cho từng phần. Đọc trước khi luyện thì câu hỏi đỡ bỡ ngỡ hơn nhiều.",
+          "desc_vi": "Hiểu trước, luyện sau. Tàng Thư Các có bài đọc cho từng phần; đọc rồi thì câu hỏi đỡ bỡ ngỡ hơn nhiều.",
           "how_vi": [
-            "Trong Đạo Thụ, bấm nút Đọc ở dòng của một nút đang mở.",
+            "Trong Đạo Thụ, thẻ Chính đạo: bấm Học bài (hoặc Enter).",
             "Mục trước, Mục sau (phím Trái, Phải) để lật trang; Đóng hoặc Esc để thoát."
           ],
           "check": {"type": "seen", "key": "library_doc"},
@@ -83,7 +83,7 @@
           "title_vi": "Buổi luyện đầu tiên",
           "desc_vi": "Buổi luyện là các câu hỏi liên tiếp trên một nút. Câu đúng cho Tu Vi, câu càng khó Tu Vi càng nhiều.",
           "how_vi": [
-            "Trong Đạo Thụ, bấm Luyện ở một nút đang mở, ví dụ Tập hợp và ánh xạ.",
+            "Đọc bài xong, nút lớn ở thẻ Chính đạo đổi thành Luyện: bấm nó (hoặc Enter).",
             "Trả lời bằng chuột hoặc phím số; Enter hay Space sang câu tiếp, Nghỉ để dừng."
           ],
           "check": {"type": "practice_runs", "count": 1},
@@ -106,7 +106,7 @@
           "title_vi": "Vượt Thiên kiếp nhỏ đầu tiên",
           "desc_vi": "Cổng thuần thục mở thì Thiên kiếp nhỏ hiện ra: mỗi vi kỹ năng một câu ở bậc cao nhất. Qua là phần ấy xong.",
           "how_vi": [
-            "Luyện tới khi chữ Cổng n/m trên dòng nút đổi thành nút Thiên kiếp, rồi bấm nó.",
+            "Luyện tới khi Cổng mở: nút lớn ở thẻ Chính đạo đổi thành Độ Thiên kiếp nhỏ.",
             "Cổng mở khi mỗi vi kỹ năng đúng 4 trong 5 câu gần nhất ở bậc cao nhất của phần.",
             "Được sai 1 câu nếu phần có từ 4 vi kỹ năng, ít hơn thì đúng hết. Trượt thì thử lại ngay."
           ],
@@ -132,48 +132,58 @@
     },
     {
       "id": "c2_bon_nhanh",
-      "title_vi": "Bốn Nhánh Toán",
-      "intro_vi": "Bốn nhánh toán đi song song, mỗi nhánh có một nút đầu mở sẵn. Làm đủ cả bốn để lên tầng Luyện Khí.",
+      "title_vi": "Chính Đạo Tầng Một",
+      "intro_vi": "Năm nút đầu của Chính đạo, đúng thứ tự: tập hợp, logic, Python, hàm số, phép đếm. Xong cả năm là lên tầng 1.",
       "rewards": {"spirit_stones": 200, "immortal_jade": 7},
       "steps": [
         {
           "id": "g_node_ds",
-          "title_vi": "Nút đầu Đại Số",
-          "desc_vi": "Đại Số Tuyến Tính là ngôn ngữ của dữ liệu: vectơ, ma trận, phép biến đổi. Nút đầu là Tập hợp và ánh xạ.",
-          "how_vi": ["Đạo Thụ, thẻ Đại Số: luyện nút Tập hợp và ánh xạ rồi vượt Thiên kiếp nhỏ."],
-          "check": {"type": "nodes_done", "count": 1, "branch": "ds"},
+          "title_vi": "Nút 1: Tập hợp và ánh xạ",
+          "desc_vi": "Tập hợp và ánh xạ là ngôn ngữ chung của mọi nhánh toán: dữ liệu là tập hợp, mô hình là một ánh xạ.",
+          "how_vi": ["Đạo Thụ, thẻ Chính đạo: Học bài, Luyện, rồi Độ Thiên kiếp nhỏ."],
+          "check": {"type": "node_done", "node": "ds_ngon_ngu"},
           "goto": "math",
-          "help": "dao_thu",
-          "rewards": {"spirit_stones": 60, "xp": 30}
-        },
-        {
-          "id": "g_node_gt",
-          "title_vi": "Nút đầu Giải Tích",
-          "desc_vi": "Giải Tích dạy cách một mô hình biết phải sửa mình theo hướng nào. Nút đầu là Hàm số, hàm hợp, mũ và logarit.",
-          "how_vi": ["Đạo Thụ, thẻ Giải Tích: luyện nút Hàm số, hàm hợp, mũ và logarit, rồi vượt kiếp."],
-          "check": {"type": "nodes_done", "count": 1, "branch": "gt"},
-          "goto": "math",
-          "help": "dao_thu",
-          "rewards": {"spirit_stones": 60, "xp": 30}
-        },
-        {
-          "id": "g_node_xs",
-          "title_vi": "Nút đầu Xác Suất",
-          "desc_vi": "Xác Suất và Thống Kê giúp suy luận khi không chắc chắn. Nút đầu là Sự kiện và phép đếm.",
-          "how_vi": ["Đạo Thụ, thẻ Xác Suất: luyện nút Sự kiện và phép đếm rồi vượt Thiên kiếp nhỏ."],
-          "check": {"type": "nodes_done", "count": 1, "branch": "xs"},
-          "goto": "math",
-          "help": "dao_thu",
+          "help": "chinh_dao",
           "rewards": {"spirit_stones": 60, "xp": 30}
         },
         {
           "id": "g_node_tr",
-          "title_vi": "Nút đầu Thuật Toán",
-          "desc_vi": "Thuật Toán và Tối Ưu là nền của mọi cách huấn luyện mô hình. Nút đầu là Logic mệnh đề và quy tắc đếm.",
-          "how_vi": ["Đạo Thụ, thẻ Thuật Toán: luyện nút Logic mệnh đề và quy tắc đếm rồi vượt kiếp."],
-          "check": {"type": "nodes_done", "count": 1, "branch": "tr"},
+          "title_vi": "Nút 2: Logic và quy tắc đếm",
+          "desc_vi": "Logic mệnh đề là phép toán của tập hợp viết bằng chữ, và là chữ if của mọi chương trình.",
+          "how_vi": ["Đạo Thụ, thẻ Chính đạo: làm theo nút lớn tới khi nút này xong."],
+          "check": {"type": "node_done", "node": "tr_logic_dem"},
           "goto": "math",
-          "help": "dao_thu",
+          "help": "chinh_dao",
+          "rewards": {"spirit_stones": 60, "xp": 30}
+        },
+        {
+          "id": "g_node_lt",
+          "title_vi": "Nút 3: Python nhập môn",
+          "desc_vi": "Logic vừa học được dùng ngay trong code. Nút lập trình không có câu hỏi: con giải bài tập Python của nút.",
+          "how_vi": ["Đạo Thụ, thẻ Chính đạo: bấm Làm bài tập, giải từng bài rồi Nộp bài."],
+          "check": {"type": "node_done", "node": "lt_python_co_ban"},
+          "goto": "math",
+          "help": "lap_trinh",
+          "rewards": {"spirit_stones": 60, "xp": 30}
+        },
+        {
+          "id": "g_node_gt",
+          "title_vi": "Nút 4: Hàm số, mũ, logarit",
+          "desc_vi": "Hàm số là ánh xạ giữa các số. Giải Tích dạy cách một mô hình biết phải sửa mình theo hướng nào.",
+          "how_vi": ["Đạo Thụ, thẻ Chính đạo: Học bài, Luyện, rồi Độ Thiên kiếp nhỏ."],
+          "check": {"type": "node_done", "node": "gt_ham_so"},
+          "goto": "math",
+          "help": "chinh_dao",
+          "rewards": {"spirit_stones": 60, "xp": 30}
+        },
+        {
+          "id": "g_node_xs",
+          "title_vi": "Nút 5: Sự kiện và phép đếm",
+          "desc_vi": "Sự kiện là tập hợp, đếm được thì tính được xác suất: bước đầu để suy luận khi không chắc chắn.",
+          "how_vi": ["Đạo Thụ, thẻ Chính đạo: làm theo nút lớn tới khi nút này xong."],
+          "check": {"type": "node_done", "node": "xs_dem_su_kien"},
+          "goto": "math",
+          "help": "chinh_dao",
           "rewards": {"spirit_stones": 60, "xp": 30}
         },
         {
@@ -194,7 +204,7 @@
           "id": "g_answers_50",
           "title_vi": "50 câu đã trả lời",
           "desc_vi": "Cộng dồn mọi câu con đã trả lời, đúng hay sai. Luyện đều mỗi ngày dễ hơn là dồn một lần.",
-          "how_vi": ["Mỗi ngày một hai buổi luyện ngắn; thẻ Nên học trong Đạo Thụ chỉ sẵn nút nên làm."],
+          "how_vi": ["Mỗi ngày một hai buổi luyện ngắn; thẻ Chính đạo trong Đạo Thụ chỉ sẵn việc nên làm."],
           "check": {"type": "math_answers", "count": 50},
           "goto": "math",
           "help": "mot_ngay",
@@ -203,7 +213,7 @@
         {
           "id": "g_trials_4",
           "title_vi": "4 Thiên kiếp nhỏ",
-          "desc_vi": "Mỗi phần của một nút có Thiên kiếp nhỏ riêng. Vượt đủ 4 phần ở bất kỳ nhánh nào.",
+          "desc_vi": "Mỗi phần của một nút có Thiên kiếp nhỏ riêng. Theo Chính đạo, con sẽ vượt đủ 4 phần trong tầng đầu.",
           "how_vi": ["Trượt không mất gì: ôn vi kỹ năng yếu rồi thử lại ngay."],
           "check": {"type": "trials_passed", "count": 4},
           "goto": "math",
@@ -214,8 +224,8 @@
     },
     {
       "id": "c3_thuc_chien",
-      "title_vi": "Thực Chiến",
-      "intro_vi": "Ngoài buổi luyện còn nhiều cách dùng kiến thức vừa học: hầm ngục, thủ thành, chiêu thức, cơ duyên.",
+      "title_vi": "Luyện Thêm",
+      "intro_vi": "Ngoài Chính đạo: làng, chiêu thức, và các cách luyện thêm (hầm ngục, thủ thành, cơ duyên).",
       "rewards": {"spirit_stones": 280, "immortal_jade": 10},
       "steps": [
         {
@@ -242,6 +252,7 @@
           "check": {"type": "dungeon_cleared", "count": 1},
           "goto": "dungeon",
           "help": "ham_nguc",
+          "optional": true,
           "rewards": {"spirit_stones": 100, "xp": 40}
         },
         {
@@ -255,6 +266,7 @@
           "check": {"type": "td_wins", "count": 1},
           "goto": "td",
           "help": "thu_thanh",
+          "optional": true,
           "rewards": {"spirit_stones": 100, "xp": 40}
         },
         {
@@ -319,7 +331,7 @@
       "step": {
         "title_vi": "Luyện Khí tầng {stage}",
         "desc_vi": "Xong mọi nút chính đạo của Đạo Thụ cho tới hết tầng {stage}. Nút đang biên soạn tính là xong.",
-        "how_vi": ["Mở Đạo Thụ (phím M), thẻ Nên học: luyện rồi vượt Thiên kiếp nhỏ của từng nút.",
+        "how_vi": ["Mở Đạo Thụ (phím M), thẻ Chính đạo: làm theo nút lớn, từng nút một, đúng thứ tự.",
                    "Tầng 3, 5, 6 và 8 mở thần thông mới: xem Cẩm nang, mục Thần thông và linh thú."],
         "goto": "math",
         "help": "dao_thu"
@@ -351,11 +363,25 @@
       ]
     },
     {
+      "id": "chinh_dao",
+      "title_vi": "Chính đạo",
+      "lines_vi": [
+        "Chính đạo là nhiệm vụ chính: một con đường duy nhất qua mọi nút chính đạo, đúng thứ tự nên học.",
+        "Nút nào cũng đứng sau những nút nó cần. Nút lập trình đứng ngay sau phần toán nó dùng.",
+        "Thẻ Chính đạo trong Đạo Thụ cho con đúng một việc: tên nút, vì sao người làm AI cần nó, và một nút lớn.",
+        "Mỗi nút toán ba bước: Hiểu (Học bài), Luyện (tới khi Cổng mở), Vượt cổng (Độ Thiên kiếp nhỏ).",
+        "Nút lập trình chỉ có bài tập: bấm Làm bài tập. Enter cũng bấm được nút lớn.",
+        "Dưới thẻ là các nút của tầng theo thứ tự: đã xong, đang học, để sau.",
+        "Các thẻ nhánh vẫn mở để xem; nút ghi Để sau học được, nhưng theo Chính đạo thì không học lan man.",
+        "Hầm Ngục, Thủ Thành, Cơ Duyên là Luyện thêm: vui, có thưởng, nhưng không thay được Chính đạo."
+      ]
+    },
+    {
       "id": "dao_thu",
       "title_vi": "Đạo Thụ là gì",
       "lines_vi": [
         "Đạo Thụ là cây giáo trình. Mỗi nút là một phần kiến thức, mở bằng phím M ở Động Phủ.",
-        "Bốn nhánh toán đi song song: Đại Số, Giải Tích, Xác Suất, Thuật Toán. Thẻ Nên học gom các nút đang mở.",
+        "Thẻ đầu, Chính đạo, chỉ đúng nút cần học tiếp và việc phải làm. Các thẻ nhánh để xem cả cây.",
         "Nút đang mở: học được ngay. Nút đã xong: mọi phần đã vượt Thiên kiếp nhỏ.",
         "Nút chưa mở: dòng ghi rõ cần xong nút nào trước. Nút đang biên soạn: chưa có nội dung, tính là xong.",
         "Chính đạo là các nút chặn đường lên tầng. Bàng môn mở theo cùng luật nhưng không chặn gì.",
@@ -410,7 +436,7 @@
       "title_vi": "Tàng Thư Các",
       "lines_vi": [
         "Tàng Thư Các là nơi cất bài đọc cho từng phần của Đạo Thụ.",
-        "Mở bằng nút Đọc ở dòng của một phần, hoặc nút Tàng Thư Các ở đáy màn hình Đạo Thụ.",
+        "Mở bằng nút Học bài ở thẻ Chính đạo, nút Đọc ở dòng của một phần, hoặc nút Tàng Thư Các.",
         "Đang trả lời câu hỏi mà bí thì bấm nút Tàng Thư (phím T) để xem bài của phần đang luyện.",
         "Trong bài: Mục trước, Mục sau (phím Trái, Phải) đổi mục; PageUp, PageDown hoặc Space cuộn; Esc đóng.",
         "Bấm vào tên một nút để mở thẻ nút. Mục Nên học từ ghi sách, khoá học hay trang web tốt nhất cho nút ấy.",
@@ -541,11 +567,11 @@
       "title_vi": "Một ngày tu luyện",
       "lines_vi": [
         "Gợi ý 20 đến 30 phút mỗi ngày, đều đặn hơn là dồn một buổi dài.",
-        "1. Bấm F1 xem việc tiếp theo, rồi mở Đạo Thụ (M), thẻ Nên học.",
-        "2. Đọc một mục Tàng Thư của nút đang học (3 đến 5 phút).",
+        "1. Bấm F1 xem việc tiếp theo, rồi mở Đạo Thụ (M), thẻ Chính đạo.",
+        "2. Nút mới thì bấm Học bài trước: đọc bài của nút (3 đến 5 phút).",
         "3. Luyện 10 đến 15 phút. Gặp tâm ma thì làm cho đúng để phá nó.",
         "4. Khi Cổng mở, vượt Thiên kiếp nhỏ ngay lúc đang vững nhất.",
-        "5. Cuối buổi chơi một Hầm Ngục hoặc một ải Thủ Thành để ôn theo cách vui hơn.",
+        "5. Còn sức thì Luyện thêm: một Hầm Ngục hay một ải Thủ Thành để ôn theo cách vui hơn.",
         "6. Nhận thưởng trên bảng Lộ Trình rồi nghỉ. Mai làm tiếp."
       ]
     }

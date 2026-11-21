@@ -1,6 +1,6 @@
 """Đạo Thụ through the real client UI: the math hub lists the nodes of the curriculum tree, not
-floors. A new player sees where they stand (Luyện Khí) and the four first math nodes under
-"Nên học"; a node's card shows why, what it needs and the recommended source (the browser opens
+floors. A new player sees Chính đạo, the main quest: one card for the one next step (read the
+lesson of the first node), and the nodes of the stage in path order; a node's card shows why, what it needs and the recommended source (the browser opens
 only when the button is pressed); a branch tab lists its nodes by stage, a node of two floors
 has two rows, a locked node cannot be started and a vacant one says "Đang biên soạn"; the list
 scrolls. A sitting runs on a node, its gate opens the Thiên kiếp nhỏ, and passing it opens the
@@ -22,7 +22,8 @@ from client.tests.test_linh_phong_flow import abode
 from client.tests.test_math_flow import answer_math, meet_gate, top, wait_question
 from client.tests.test_world_flow import make_account
 
-FIRST_FOUR = ["ds_ngon_ngu", "gt_ham_so", "tr_logic_dem", "xs_dem_su_kien"]
+FIRST_FOUR = ["ds_ngon_ngu", "tr_logic_dem", "gt_ham_so", "xs_dem_su_kien"]     # (in path order)
+STAGE_1 = ["ds_ngon_ngu", "tr_logic_dem", "lt_python_co_ban", "gt_ham_so", "xs_dem_su_kien"]
 NODE = "ds_ngon_ngu"
 NEXT_NODE = "ds_vecto_ma_tran"
 OTHER_BRANCH_NODE = "lt_cau_truc_du_lieu"          # Lập Trình: needs Python nhập môn and Tập hợp và ánh xạ
@@ -86,7 +87,7 @@ def run_tree_flow(workdir: Path, shots: Path | None = None) -> None:
             drv.press(pygame.K_RETURN)
             drv.step(3)
 
-        # ---- a new player: the stage and "Nên học" with the four first math nodes
+        # ---- a new player: Chính đạo - one card, one step; the stage's nodes in path order under it
         open_hub(drv)
         hub = top(drv)
         assert hub.tab == "next" and [t["id"] for t in hub.tabs][:3] == ["next", "ds", "gt"]
@@ -95,18 +96,21 @@ def run_tree_flow(workdir: Path, shots: Path | None = None) -> None:
         stage = hub.tree["stage"]
         assert (stage["realm_name_vi"], stage["stage"], stage["stages"]) == ("Luyện Khí", 0, 9)
         assert hub.tree["next"] == FIRST_FOUR
-        assert all(drv.has(f"math_node_{n}_1") for n in FIRST_FOUR)
-        assert all(drv.has(f"math_info_{n}") for n in FIRST_FOUR)
-        assert not drv.has(f"math_trial_{NODE}_1")                    # the gate is closed
+        main = hub.tree["main"]
+        assert (main["node_id"], main["step"], main["index"], main["total"]) == (NODE, "hoc", 1, 5)
+        assert [n["id"] for n in main["stage_nodes"]] == STAGE_1
+        assert drv.has("math_main_go") and drv.has("math_main_info") and not drv.has(f"math_node_{NODE}_1")
+        assert all(drv.has(f"math_path_{n}") for n in STAGE_1)
         text = drawn_text(drv)
-        assert MT.header_text(stage) in text and "Tầng 1" in text
-        assert T.TREE_STAGE_PROGRESS.format(d=1, t=5, n=1) in text    # "đã xong 1/5 nút của tầng 1": Python nhập môn
+        assert MT.main_head(main) in text and main["name_vi"] in text and T.PATH_GO["hoc"] in text
+        assert T.PATH_LIST.format(n=1) in text and T.PATH_STATE["done"] in text      # Python nhập môn is done
+        assert T.PATH_STATE["later"] in text and T.PATH_STATE["now"] in text
         drv.shot("tree_next")
 
         # ---- the card of a node: why, what it needs, the source - and the browser only on a press
         opened: list[str] = []
         webbrowser.open = lambda u, *a, **k: opened.append(u) or True
-        drv.click(f"math_info_{NODE}")
+        drv.click("math_main_info")                                    # the name on the card opens the node's card
         drv.wait(lambda: drv.top_is("NodeCardScene"), 5, "the node card")
         card = top(drv)
         node = card.node
@@ -175,8 +179,10 @@ def run_tree_flow(workdir: Path, shots: Path | None = None) -> None:
         assert not any(drv.has(f"math_node_{TWO_FLOORS}_{f}") for f in (2, 3))
         assert not any(drv.has(f"math_trial_{TWO_FLOORS}_{f}") for f in (2, 3))
         text = drawn_text(drv)
-        assert "Cần xong: " + top(drv).tree["nodes"][1]["name_vi"] in text      # Hàm số, hàm hợp, mũ và logarit
-        assert any(s.endswith("(1/2)") for s in text) and any(s.endswith("(2/2)") for s in text)
+        needs = "Cần xong: " + MT.node_by_id(top(drv).tree, "gt_ham_so")["name_vi"]
+        flat = [t.replace(chr(10), " ") for t in text]
+        assert needs in flat, text                                     # whole, on one line or two
+        assert any(s.endswith("(1/2)") for s in flat) and any(s.endswith("(2/2)") for s in flat)
         drv.shot("tree_two_floors_locked")
         refused = httpx.post(url + "/math/node/start", json={"node_id": TWO_FLOORS},
                              headers={"Authorization": f"Bearer {token}"})
@@ -200,9 +206,17 @@ def run_tree_flow(workdir: Path, shots: Path | None = None) -> None:
         assert T.TREE_VACANT == "Đang biên soạn" and drawn_text(drv).count(T.TREE_VACANT) == 0
         drv.shot("tree_branch_lt")
 
-        # ---- a sitting on a node
+        # ---- Chính đạo: "Học bài" opens the lesson and reports it read; then the one button says "Luyện"
         drv.click("math_tab_next")
-        drv.click(f"math_node_{NODE}_1")
+        drv.click("math_main_go")
+        drv.wait(lambda: drv.top_is("DocScene"), 10, "the lesson")
+        drv.wait(lambda: server.sql("select flags from users where id=?", (uid,))[0][0] and "ds_ngon_ngu:1" in
+                 json.loads(server.sql("select flags from users where id=?", (uid,))[0][0]).get("path", {}).get("read", []),
+                 10, "the lesson recorded")
+        drv.press(pygame.K_ESCAPE)
+        drv.wait(lambda: drv.top_is("MathPracticeScene") and top(drv).tree["main"]["step"] == "luyen", 10, "Luyện")
+        assert T.PATH_GO["luyen"] in drawn_text(drv)
+        drv.click("math_main_go")                                     # (Enter would do the same)
         q = wait_question(drv)
         assert q["math"]["floor"] == 1 and top(drv).run["node_id"] == NODE
         assert top(drv).run["node_name_vi"] == node["name_vi"]
@@ -224,9 +238,10 @@ def run_tree_flow(workdir: Path, shots: Path | None = None) -> None:
         meet_gate(server, uid, skills, floor=1)
         close_hub(drv)
         open_hub(drv)
-        assert drv.has(f"math_trial_{NODE}_1")
+        assert top(drv).tab == "next" and top(drv).tree["main"]["step"] == "kiep"
+        assert T.PATH_GO["kiep"] in drawn_text(drv)
         drv.shot("tree_gate_open")
-        drv.click(f"math_trial_{NODE}_1")
+        drv.press(pygame.K_RETURN)                                     # Enter presses the card's one button
         last = None
         for n in range(1, len(skills) + 1):
             q = wait_question(drv, last)
@@ -255,9 +270,15 @@ def run_tree_flow(workdir: Path, shots: Path | None = None) -> None:
         assert NODE not in tree["next"] and NEXT_NODE in tree["next"] and OTHER_BRANCH_NODE in tree["next"]
         assert next(n for n in tree["nodes"] if n["id"] == NODE)["state"] == "done"
         assert next(n for n in tree["nodes"] if n["id"] == OTHER_BRANCH_NODE)["branch"] == "lt"
-        drv.click("math_tab_next")
-        assert drv.has(f"math_node_{NEXT_NODE}_3") and drv.has(f"math_info_{OTHER_BRANCH_NODE}")
+        drv.click("math_tab_next")                                     # Chính đạo moved on to the next node
+        main = top(drv).tree["main"]
+        assert (main["node_id"], main["step"], main["index"]) == ("tr_logic_dem", "hoc", 2)
+        assert [n["state"] for n in main["stage_nodes"]] == ["done", "now", "done", "later", "later"]
+        drv.game.toasts.clear()
+        drv.shot("tree_main_mid_stage")
         drv.click("math_tab_ds")
+        assert drv.has(f"math_node_{NEXT_NODE}_3")                     # ahead on the path, open, marked "Để sau"
+        assert T.PATH_LATER in drawn_text(drv)
         text = drawn_text(drv)
         assert T.MATH_CLEARED in text                                  # the passed node says so
         assert drv.has(f"math_node_{NODE}_1")                          # and can still be practised
@@ -270,7 +291,7 @@ def run_tree_flow(workdir: Path, shots: Path | None = None) -> None:
 
         # ---- the stage line moves with every node: two of the five done, so "đã xong 2/5 nút của tầng 1"
         assert top(drv).tree["stage"]["progress"] == {"stage": 1, "done": 2, "total": 5}
-        drv.click("math_tab_next")
+        drv.click("math_tab_ud")                                       # (a branch without a subject: the long form fits)
         assert T.TREE_STAGE_PROGRESS.format(d=2, t=5, n=1) in drawn_text(drv)
         drv.game.toasts.clear()                                       # (the guide's "Xong" toasts hide the line)
         drv.shot("tree_stage_progress")
