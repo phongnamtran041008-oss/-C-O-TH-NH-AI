@@ -117,12 +117,6 @@
    "w": 187.47,
    "h": 17.67
   },
-  "147f30dcaba567b8": {
-   "tex": "A = \\left( [f(b_{1})]_{C} \\; \\ldots \\; [f(b_{n})]_{C} \\right)",
-   "alt": "A = ([f(b_1)]_C ... [f(b_n)]_C)",
-   "w": 119.46,
-   "h": 10.18
-  },
   "15718065a71c35d5": {
    "tex": "f'(c) = \\frac{f(b) - f(a)}{b - a}",
    "alt": "f'(c) = (f(b) - f(a))/(b - a)",
@@ -207,18 +201,6 @@
    "w": 166.14,
    "h": 10.63
   },
-  "233b3f3ee8c6cef8": {
-   "tex": "\\text{rank} A \\le \\text{min}(m, n) \\quad \\text{voi } A \\text{ co } m \\times n",
-   "alt": "rank A <= min(m, n) voi A co m x n",
-   "w": 161.65,
-   "h": 10.18
-  },
-  "242e3c800ffacaee": {
-   "tex": "a_{1}u_{1} + a_{2}u_{2} + \\ldots + a_{k}u_{k}",
-   "alt": "a_1u_1 + a_2u_2 + ... + a_ku_k",
-   "w": 109.87,
-   "h": 7.54
-  },
   "243d6fcadfc9efaf": {
    "tex": "\\varepsilon = z\\,\\frac{\\sigma}{\\sqrt{n}}, \\qquad 2\\,\\Phi(z) = 1 - \\alpha",
    "alt": "epsilon = z sigma/(can(n)), 2 Phi(z) = 1 - alpha",
@@ -284,12 +266,6 @@
    "alt": "lim_(x -> 3) (x^2 - 9)/(x - 3) = lim_(x -> 3) (x + 3) = 6",
    "w": 127.34,
    "h": 23.19
-  },
-  "32a36e2d903ea72a": {
-   "tex": "\\text{det} A = D_{\\text{xuong}} - D_{\\text{len}}",
-   "alt": "det A = D_(xuong) - D_(len)",
-   "w": 94.55,
-   "h": 10.3
   },
   "34cf332e511b5356": {
    "tex": "|x_n - x^*| \\le \\frac{b - a}{2^{n+1}}",
@@ -423,23 +399,11 @@
    "w": 166.45,
    "h": 21.85
   },
-  "415e067d4c137fd5": {
-   "tex": "f(x, y) = x^{T} A y, \\qquad q(x) = x^{T} A x = \\sum_{i, j} a_{ij} x_i x_j, \\qquad B = \\frac{A + A^{T}}{2}",
-   "alt": "f(x, y) = x^T A y, q(x) = x^T A x = tong_(i, j) a_(ij) x_i x_j, B = (A + A^T)/2",
-   "w": 293.63,
-   "h": 28.98
-  },
   "43b03214b7b9df30": {
    "tex": "\\varepsilon = z\\,\\sqrt{\\frac{f(1-f)}{n}}",
    "alt": "epsilon = z can((f(1-f))/n)",
    "w": 76.27,
    "h": 25.05
-  },
-  "4433ffcba0ee76cf": {
-   "tex": "\\text{det} A = a_{i1}C_{i1} + a_{i2}C_{i2} + \\ldots + a_{in}C_{in}",
-   "alt": "det A = a_(i1)C_(i1) + a_(i2)C_(i2) + ... + a_(in)C_(in)",
-   "w": 165.63,
-   "h": 8.9
   },
   "44ab53287487ed85": {
    "tex": "f\\Big(\\sum_i \\lambda_i x_i\\Big) \\le \\sum_i \\lambda_i f(x_i)",
@@ -567,18 +531,6 @@
    "w": 58.26,
    "h": 21.85
   },
-  "5584b8fe42edf5a3": {
-   "tex": "\\text{det}(A^{-1}) = \\frac{1}{\\text{det} A}",
-   "alt": "det(A^(-1)) = 1/(det A)",
-   "w": 79.58,
-   "h": 20.76
-  },
-  "588fd6101f3696b5": {
-   "tex": "[x]_{B} = P \\, [x]_{B'}, \\qquad [x]_{B'} = P^{-1} [x]_{B}",
-   "alt": "[x]_B = P [x]_(B'), [x]_(B') = P^(-1) [x]_B",
-   "w": 154.81,
-   "h": 11.54
-  },
   "592a20d6b836dd6e": {
    "tex": "s = \\mathrm{sup}\\,A \\iff \\big(\\forall a \\in A:\\ a \\le s\\big) \\land \\big(\\forall \\varepsilon > 0\\ \\exists a \\in A:\\ a > s - \\varepsilon\\big)",
    "alt": "s = sup A <=> (voi moi a thuoc A: a <= s) va (voi moi epsilon > 0 ton tai a thuoc A: a > s - epsilon)",
@@ -644,12 +596,6 @@
    "alt": "C_n^k = C_(n-1)^(k-1) + C_(n-1)^k",
    "w": 82.6,
    "h": 12.8
-  },
-  "64f92ca1dabe938f": {
-   "tex": "x = A^{-1} b",
-   "alt": "x = A^(-1) b",
-   "w": 41.45,
-   "h": 9.83
   },
   "65f6b867cfc2e82b": {
    "tex": "\\nabla f(x^*) = 0, \\quad H(x^*) \\text{ xac dinh duong}",
@@ -728,12 +674,6 @@
    "alt": "C_(ij) = (-1)^(i + j) M_(ij)",
    "w": 76.15,
    "h": 11.96
-  },
-  "74210f766c5c9540": {
-   "tex": "q = t_{1} X^{2} + t_{2} Y^{2} + \\ldots",
-   "alt": "q = t_1 X^2 + t_2 Y^2 + ...",
-   "w": 97.78,
-   "h": 10.98
   },
   "74778eda40c7ea6d": {
    "tex": "P(X = i) = \\sum_j P(X = i, Y = j), \\qquad P(Y = j \\mid X = i) = \\frac{P(X = i, Y = j)}{P(X = i)}",
@@ -999,35 +939,17 @@
    "w": 126.88,
    "h": 11.54
   },
-  "9fe3f8a3a85affce": {
-   "tex": "D_{\\text{xuong}} = a_{11}a_{22}a_{33} + a_{12}a_{23}a_{31} + a_{13}a_{21}a_{32}",
-   "alt": "D_(xuong) = a_(11)a_(22)a_(33) + a_(12)a_(23)a_(31) + a_(13)a_(21)a_(32)",
-   "w": 187.62,
-   "h": 9.96
-  },
   "a18821c5a106dd9e": {
    "tex": "A^{T} = A",
    "alt": "A^T = A",
    "w": 34.76,
    "h": 9.91
   },
-  "a19dfd13f19275f4": {
-   "tex": "\\text{det}(AB) = \\text{det} A \\cdot \\text{det} B, \\qquad \\text{det}(A^{T}) = \\text{det} A",
-   "alt": "det(AB) = det A . det B, det(A^T) = det A",
-   "w": 197.86,
-   "h": 11.62
-  },
   "a2b9a9a8d51db201": {
    "tex": "E(X) = \\sum_i x_i\\,p_i, \\qquad E(X) = \\int_{-\\infty}^{+\\infty} x f(x)\\,dx",
    "alt": "E(X) = tong_i x_i p_i, E(X) = tich phan_(-vo cung)^(+vo cung) x f(x) dx",
    "w": 200.13,
    "h": 27.41
-  },
-  "a2d45ac2fcc412e8": {
-   "tex": "D_{\\text{len}} = a_{13}a_{22}a_{31} + a_{11}a_{23}a_{32} + a_{12}a_{21}a_{33}",
-   "alt": "D_(len) = a_(13)a_(22)a_(31) + a_(11)a_(23)a_(32) + a_(12)a_(21)a_(33)",
-   "w": 177.81,
-   "h": 8.64
   },
   "a36f79251bb13a82": {
    "tex": "\\big(f(g(x))\\big)' = f'(g(x)) \\cdot g'(x)",
@@ -1058,12 +980,6 @@
    "alt": "bai toan loi: cuc tieu dia phuong => cuc tieu toan cuc",
    "w": 229.96,
    "h": 9.16
-  },
-  "a57f616b72382318": {
-   "tex": "\\|u\\| = \\sqrt{u \\cdot u}, \\qquad \\cos \\theta = \\frac{u \\cdot v}{\\|u\\| \\, \\|v\\|}",
-   "alt": "||u|| = can(u . u), cos theta = (u . v)/(||u|| ||v||)",
-   "w": 153.13,
-   "h": 21.17
   },
   "a68b32056abb358d": {
    "tex": "\\int_a^b f\\big(u(x)\\big)\\,u'(x)\\,dx = \\int_{u(a)}^{u(b)} f(u)\\,du",
@@ -1125,12 +1041,6 @@
    "w": 212.57,
    "h": 23.43
   },
-  "ada4da1d34a9ecf2": {
-   "tex": "A = U \\Sigma V^{T}",
-   "alt": "A = U Sigma V^T",
-   "w": 50.72,
-   "h": 9.91
-  },
   "ade2b45ea0c0c72e": {
    "tex": "\\neg(p \\lor q) \\equiv \\neg p \\land \\neg q",
    "alt": "khong(p hoac q) = khong p va khong q",
@@ -1191,35 +1101,17 @@
    "w": 181.11,
    "h": 12.35
   },
-  "b49990c1f6b847c6": {
-   "tex": "(AB)^{-1} = B^{-1} A^{-1}, \\qquad (A^{T})^{-1} = (A^{-1})^{T}",
-   "alt": "(AB)^(-1) = B^(-1) A^(-1), (A^T)^(-1) = (A^(-1))^T",
-   "w": 183.86,
-   "h": 11.62
-  },
   "b7a2a7534f308c2e": {
    "tex": "(f \\circ g)(x) = f(g(x))",
    "alt": "(f o g)(x) = f(g(x))",
    "w": 87.44,
    "h": 10.18
   },
-  "b7d5f54f1eda47a6": {
-   "tex": "\\text{det} \\, B = \\text{det} \\, A, \\qquad \\text{tr} \\, B = \\text{tr} \\, A",
-   "alt": "det B = det A, tr B = tr A",
-   "w": 133.75,
-   "h": 9.27
-  },
   "b8553ac3190d5204": {
    "tex": "P_n = n! = n (n-1) \\cdots 2 \\cdot 1",
    "alt": "P_n = n! = n (n-1) ... 2 . 1",
    "w": 118.33,
    "h": 10.18
-  },
-  "bac9e8627b60e960": {
-   "tex": "A \\text{ kha nghich} \\Leftrightarrow \\text{det} A \\neq 0",
-   "alt": "A kha nghich <=> det A != 0",
-   "w": 114.56,
-   "h": 9.48
   },
   "bbee470e364f0a01": {
    "tex": "f^{-1}(y) = x \\;\\Leftrightarrow\\; f(x) = y",
@@ -1244,12 +1136,6 @@
    "alt": "dim(U + W) = dim U + dim W - dim(U giao W)",
    "w": 204.79,
    "h": 10.18
-  },
-  "c5002c285f9157e2": {
-   "tex": "A = P D P^{-1}",
-   "alt": "A = P D P^(-1)",
-   "w": 55.54,
-   "h": 9.83
   },
   "c5aef6105fc186ce": {
    "tex": "C_n^k = \\frac{A_n^k}{k!} = \\frac{n!}{k! \\, (n-k)!}",
@@ -1502,18 +1388,6 @@
    "alt": "E(aX + b) = a E(X) + b, E(X + Y) = E(X) + E(Y)",
    "w": 251.76,
    "h": 10.18
-  },
-  "e7e99eff7c4730be": {
-   "tex": "\\text{dim} \\, \\mathbb{R}^{n} = n, \\qquad \\text{dim} \\, \\text{span}\\{u_{1}, \\ldots, u_{k}\\} = \\text{rank} \\, A",
-   "alt": "dim R^n = n, dim span{u_1, ..., u_k} = rank A",
-   "w": 211.44,
-   "h": 10.18
-  },
-  "e910125212adc588": {
-   "tex": "v_{3} = u_{3} - \\frac{u_{3} \\cdot v_{1}}{v_{1} \\cdot v_{1}} v_{1} - \\frac{u_{3} \\cdot v_{2}}{v_{2} \\cdot v_{2}} v_{2}",
-   "alt": "v_3 = u_3 - (u_3 . v_1)/(v_1 . v_1) v_1 - (u_3 . v_2)/(v_2 . v_2) v_2",
-   "w": 139.86,
-   "h": 19.9
   },
   "e97dc51ba73bee4c": {
    "tex": "A^{k} = P D^{k} P^{-1}",
