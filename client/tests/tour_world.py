@@ -61,6 +61,10 @@ class Shots:
         return p
 
 
+class Stalled(AssertionError):
+    """Keys held toward the arrow for 30 s without moving a pixel."""
+
+
 class Banners:
     """follow_arrow's walk hook: a picture when a new khu banner shows (the pass into it)."""
 
@@ -80,6 +84,8 @@ class Banners:
                 {"zone": sc.zone_id, "at": p, "aim": r and tuple(round(v) for v in r.aim),
                  "server": (round(getattr(sc.player, "sx", 0)), round(getattr(sc.player, "sy", 0)))})
             self.s.shot("stall")
+        elif self.stalled and time.time() - self.since > 30.0:
+            raise Stalled(f"stalled at {p}")
         b = nav(self.s.drv).banner
         if b is not None and (not self.s.banners or self.s.banners[-1][:3] != b[:3]):
             self.s.banners.append(b[:3])
@@ -123,8 +129,13 @@ def lead(drv: Driver, server: ServerProcess, dest: dict, s: Shots, timeout: floa
     nav(drv).set_dest(dest, zone)
     drv.wait(lambda: nav(drv).status in ("path", "here") or nav(drv).dest is None, 15, "the way")
     t0 = time.time()
-    follow_arrow(drv, server, lambda: nav(drv).dest is None, dest.get("name_vi", ""), timeout=timeout,
-                 walk=Banners(s, s.facts))
+    try:
+        follow_arrow(drv, server, lambda: nav(drv).dest is None, dest.get("name_vi", ""), timeout=timeout,
+                     walk=Banners(s, s.facts))
+    except Stalled:
+        drv.keys.held = set()
+        nav(drv).clear()
+        return -1.0
     return time.time() - t0
 
 
