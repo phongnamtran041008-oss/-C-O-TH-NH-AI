@@ -16,6 +16,7 @@ import math
 
 import pygame
 
+from .. import strings_realm_vi as R
 from .. import strings_vi as T
 from ..engine import sprites
 from .base import Scene
@@ -212,8 +213,10 @@ class RealmGateScene(Scene):
             floor = r.get("floor") or 0
             ui.text(T.REALM_INFO.format(p=r["puzzles"], m=r["time_limit_minutes"], n=r.get("party_min", 2)),
                     x + 16, y + 38, 7, "#5A5A5A")
-            ui.text(T.REALM_MATH_FLOOR.format(f=floor) if floor else T.REALM_MATH_NO_FLOOR, x + 16, y + 62, 7,
-                    "#6A994E" if r["realm_ok"] else "#BC4749")
+            fr = ui.text(T.REALM_MATH_FLOOR.format(f=floor) if floor else T.REALM_MATH_NO_FLOOR, x + 16, y + 62, 7,
+                         "#6A994E" if r["realm_ok"] else "#BC4749")
+            if R.band_line(r):     # the band of tu vi a run entered now would field (realm_quai.py)
+                ui.text(R.band_line(r), fr.right + 10, y + 62, 7, "#4A7CC8")
             ui.text(T.REALM_ENTRIES.format(n=r["entries_left"], d=r["daily"]), x + w - 18, y + 38, 7,
                     "#2B2B2B", anchor="topright")
             is_rift = r["kind"] == "rift"
@@ -274,6 +277,8 @@ class RealmGateScene(Scene):
             ui.text(T.REALM_MATH_FLOOR.format(f=floor) if floor else T.REALM_MATH_NO_FLOOR, x + 16, y + 40, 7,
                     "#6A994E" if floor else "#BC4749")
             ui.text(T.REALM_MATH_INFO.format(p=r["puzzles"], m=r["time_limit_minutes"]), x + 16, y + 51, 7, "#5A5A5A")
+            if R.band_line(r):
+                ui.text(R.band_line(r), x + 16, y + 62, 7, "#4A7CC8")
             ui.text(T.REALM_ENTRIES.format(n=r["entries_left"], d=r["daily"]), x + w - 18, y + 40, 7,
                     "#2B2B2B", anchor="topright")
             ok = bool(r.get("open")) and r["realm_ok"] and r["entries_left"] > 0
