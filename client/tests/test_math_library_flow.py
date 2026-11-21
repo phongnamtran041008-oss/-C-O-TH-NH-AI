@@ -26,38 +26,37 @@ def top(drv: Driver):
 
 
 def read_whole_document(drv: Driver, shots_name: str | None = None) -> dict:
-    """Scrolls a document to the end, checking every page. Returns what was drawn."""
+    """Reads a document to the end with Page Down, a page (one micro-skill) at a time,
+    checking the layout of every page. Returns what was drawn."""
     scene = top(drv)
     drv.wait(lambda: scene.doc is not None and scene.items, 10, "the document")
     ui = drv.game.ui
-    _, _, cw, ch = scene.content_box()
-    seen = {"formulas": 0, "matrices": 0, "lines": 0, "pages": 0}
-    for n, it in enumerate(scene.items):
-        if it["kind"] == "text":
-            seen["lines"] += 1
-            width = ui.text_size(it["text"], it["size"])[0]
-            assert it["x"] + width <= cw + 1, f"line {it['text']!r} is wider than the page"
-        elif it["kind"] == "formula":
-            seen["formulas"] += 1
-            b = it["block"]
-            assert b["w"] <= cw, f"formula {b['tex']} is {b['w']} wide, the page has {cw}"
-            img = mathdraw.image(b["key"], max(1, round(b["w"] * ui.s)), max(1, round(b["h"] * ui.s)))
-            assert img is not None, f"no picture shipped for {b['tex']} ({b['key']}.png)"
-        elif it["kind"] == "matrices":
-            seen["matrices"] += 1
-            w, _ = mathdraw.matrices_size(ui, it["block"]["matrices"])
-            assert w <= cw, f"a matrix figure is {w} wide, the page has {cw}"
+    seen = {"formulas": 0, "matrices": 0, "figures": 0, "lines": 0, "screens": 0, "pages": 0}
+    checked: set[int] = set()
     while True:
-        seen["pages"] += 1
-        if shots_name and seen["pages"] <= 3:
-            drv.shot(f"{shots_name}_p{seen['pages']}")
-        before = scene.scroll
+        if scene.page not in checked:
+            checked.add(scene.page)
+            problems = scene.layout_problems(ui)
+            assert problems == [], f"page {scene.page + 1}: {problems[:5]}"
+            for it in scene.items:
+                kind = {"text": "lines", "formula": "formulas", "matrices": "matrices", "figure": "figures"}
+                if it["kind"] in kind:
+                    seen[kind[it["kind"]]] += 1
+                if it["kind"] == "formula":
+                    b = it["block"]
+                    img = mathdraw.image(b["key"], max(1, round(b["w"] * ui.s)), max(1, round(b["h"] * ui.s)))
+                    assert img is not None, f"no picture shipped for {b['tex']} ({b['key']}.png)"
+        seen["screens"] += 1
+        if shots_name and seen["screens"] <= 3:
+            drv.shot(f"{shots_name}_p{seen['screens']}")
+        before = (scene.page, scene.scroll)
         drv.press(pygame.K_PAGEDOWN)
         drv.step(2)
-        if scene.scroll <= before + 0.5 or seen["pages"] > 40:
+        if (scene.page, scene.scroll) == before or seen["screens"] > 80:
             break
-    assert scene.scroll > 0, "the document never scrolled"
-    assert seen["formulas"] and seen["lines"], seen
+    seen["pages"] = len(checked)
+    assert seen["pages"] == len(scene.pages), "Page Down did not reach every page"
+    assert (seen["formulas"] or seen["figures"] or seen["matrices"]) and seen["lines"], seen
     return seen
 
 

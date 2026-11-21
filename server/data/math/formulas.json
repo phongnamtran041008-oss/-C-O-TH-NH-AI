@@ -63,12 +63,6 @@
    "w": 176.4,
    "h": 10.18
   },
-  "0b37e81408d24d13": {
-   "tex": "(\\arcsin x)' = \\frac{1}{\\sqrt{1 - x^2}}, \\qquad (\\arctan x)' = \\frac{1}{1 + x^2}",
-   "alt": "(arcsin x)' = 1/(can(1 - x^2)), (arctan x)' = 1/(1 + x^2)",
-   "w": 216.24,
-   "h": 24.05
-  },
   "0c4a78547ab13451": {
    "tex": "E(X) = \\frac{a+b}{2}, \\qquad V(X) = \\frac{(b-a)^2}{12}",
    "alt": "E(X) = (a+b)/2, V(X) = ((b-a)^2)/12",
@@ -351,12 +345,6 @@
    "w": 101.66,
    "h": 10.18
   },
-  "3215732d2ddc7eea": {
-   "tex": "A = (a_{ij}), \\quad 1 \\le i \\le m, \\quad 1 \\le j \\le n",
-   "alt": "A = (a_(ij)), 1 <= i <= m, 1 <= j <= n",
-   "w": 157.47,
-   "h": 10.63
-  },
   "32a36e2d903ea72a": {
    "tex": "\\text{det} A = D_{\\text{xuong}} - D_{\\text{len}}",
    "alt": "det A = D_(xuong) - D_(len)",
@@ -519,12 +507,6 @@
    "w": 293.63,
    "h": 28.98
   },
-  "417b96ad43ac1e42": {
-   "tex": "a(u + v) = au + av",
-   "alt": "a(u + v) = au + av",
-   "w": 84.07,
-   "h": 10.18
-  },
   "43b03214b7b9df30": {
    "tex": "\\varepsilon = z\\,\\sqrt{\\frac{f(1-f)}{n}}",
    "alt": "epsilon = z can((f(1-f))/n)",
@@ -615,12 +597,6 @@
    "w": 110.36,
    "h": 23.43
   },
-  "4f50a10553b7482c": {
-   "tex": "(A + B)_{ij} = a_{ij} + b_{ij}",
-   "alt": "(A + B)_(ij) = a_(ij) + b_(ij)",
-   "w": 90.39,
-   "h": 10.63
-  },
   "4f98eaf916357556": {
    "tex": "Z = \\frac{X - \\mu}{\\sigma} \\sim N(0, 1)",
    "alt": "Z = (X - mu)/sigma ~ N(0, 1)",
@@ -674,12 +650,6 @@
    "alt": "(t_1 + ... + t_k)/(t_1 + ... + t_n)",
    "w": 58.26,
    "h": 21.85
-  },
-  "552a574d58f6c107": {
-   "tex": "(x^n)' = n x^{n-1}, \\quad (e^x)' = e^x, \\quad (\\ln x)' = \\frac{1}{x}",
-   "alt": "(x^n)' = n x^(n-1), (e^x)' = e^x, (ln x)' = 1/x",
-   "w": 185.4,
-   "h": 20.76
   },
   "5547ad49cda83f3f": {
    "tex": "\\overline{z} = a - bi",
@@ -891,12 +861,6 @@
    "w": 332.4,
    "h": 28.39
   },
-  "7477bd6f051ff562": {
-   "tex": "(A^{T})^{T} = A",
-   "alt": "(A^T)^T = A",
-   "w": 48.6,
-   "h": 11.62
-  },
   "7491d1ebe38de8c1": {
    "tex": "\\text{ti so} = \\min \\frac{b_i}{a_{ij}} \\quad \\text{voi} \\quad a_{ij} > 0",
    "alt": "ti so = min (b_i)/(a_(ij)) voi a_(ij) > 0",
@@ -926,12 +890,6 @@
    "alt": "f(x) ~ C/(x^p) (x -> +vo cung) => (tich phan_a^(+vo cung) f(x) dx < +vo cung <=> p > 1)",
    "w": 278.21,
    "h": 24.94
-  },
-  "7b3a92db81feea15": {
-   "tex": "\\text{tr}(A) = a_{11} + a_{22} + \\ldots + a_{nn}",
-   "alt": "tr(A) = a_(11) + a_(22) + ... + a_(nn)",
-   "w": 128.08,
-   "h": 10.18
   },
   "7b51cbf0318d6121": {
    "tex": "\\text{tr}(kA + B) = k \\cdot \\text{tr}(A) + \\text{tr}(B)",
@@ -1005,23 +963,11 @@
    "w": 92.7,
    "h": 10.18
   },
-  "84958bcbbcaf072f": {
-   "tex": "(\\sin x)' = \\cos x, \\quad (\\cos x)' = -\\sin x, \\quad (\\tan x)' = \\frac{1}{\\cos^2 x}",
-   "alt": "(sin x)' = cos x, (cos x)' = -sin x, (tan x)' = 1/(cos^2 x)",
-   "w": 246.63,
-   "h": 21.11
-  },
   "84dcb96242c59cef": {
    "tex": "(k + l)u = ku + lu, \\qquad k(u + v) = ku + kv",
    "alt": "(k + l)u = ku + lu, k(u + v) = ku + kv",
    "w": 189.25,
    "h": 10.18
-  },
-  "851c10778cae11a1": {
-   "tex": "\\text{tr}(A^{T}) = \\text{tr}(A)",
-   "alt": "tr(A^T) = tr(A)",
-   "w": 66.51,
-   "h": 11.62
   },
   "855d8105cc9bc858": {
    "tex": "z^{n} = w \\quad \\Leftrightarrow \\quad z \\text{ la can bac } n \\text{ cua } w",
@@ -1472,12 +1418,6 @@
    "alt": "C_n^k = (A_n^k)/(k!) = (n!)/(k! (n-k)!)",
    "w": 106.22,
    "h": 25.74
-  },
-  "c61d38ce578e4169": {
-   "tex": "(A + B)^{T} = A^{T} + B^{T}",
-   "alt": "(A + B)^T = A^T + B^T",
-   "w": 94.86,
-   "h": 11.62
   },
   "c61ed713582e76c5": {
    "tex": "|z| > z_{\\alpha/2}, \\qquad z > z_{\\alpha}",
