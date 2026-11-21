@@ -107,13 +107,29 @@ Ví dụ: tính tích phân từ 0 đến 1 của x e^x dx.
 2. [x e^x] từ 0 đến 1 trừ tích phân của e^x: e - (e - 1).
 3. Kết quả: 1.
 
-Có khi tích phân cũ quay lại, và đó là tin tốt. Gọi J là nguyên hàm của e^x sin x. Làm từng phần hai lần (cả hai lần dv = e^x dx) được J = e^x sin x - e^x cos x - J. J đứng ở hai vế như một ẩn của phương trình: chuyển vế, 2J = e^x (sin x - cos x), nên J = e^x (sin x - cos x)/2 + C.
-
 > Lỗi thường gặp: sai dấu ở bước cuối. Nguyên hàm của x cos x là x sin x + cos x: trừ đi -cos x thành cộng.
 
 :::check
 Q: Tìm nguyên hàm của ln x. Chọn u và dv thế nào?
 A: u = ln x, dv = dx: du = dx/x, v = x. Được x ln x - tích phân của 1 dx = x ln x - x + C.
+:::
+
+### Khi tích phân cũ quay lại
+
+:::figure flow
+caption: J đứng ở hai vế như một ẩn của phương trình: chuyển vế là giải ra J.
+box "J"
+link "từng phần hai lần"
+box "e^x sin x - e^x cos x - J" xanh
+link "chuyển vế"
+box "2J = e^x (sin x - cos x)" luc
+:::
+
+Có khi tích phân cũ quay lại, và đó là tin tốt. Gọi J là nguyên hàm của e^x sin x. Làm từng phần hai lần (cả hai lần dv = e^x dx) được J = e^x sin x - e^x cos x - J. Chuyển vế, 2J = e^x (sin x - cos x), nên J = e^x (sin x - cos x)/2 + C.
+
+:::check
+Q: Gọi K là nguyên hàm của e^x cos x. Làm cùng cách (hai lần dv = e^x dx), K bằng gì?
+A: K = e^x cos x + e^x sin x - K, nên K = e^x (sin x + cos x)/2 + C.
 :::
 
 ## Tích phân hàm hữu tỉ và hàm lượng giác
@@ -143,6 +159,15 @@ $$ \int \frac{dx}{x^2 + a^2} = \frac{1}{a}\arctan\frac{x}{a} + C $$
 
 Mẫu bậc hai vô nghiệm thì đưa về (x + p)^2 + a^2 rồi dùng arctan: 1/(x^2 + 2x + 5) = 1/((x + 1)^2 + 4) có nguyên hàm (1/2) arctan((x + 1)/2).
 
+> Lỗi thường gặp: quên hệ số 1/a. Nguyên hàm của 1/(x^2 + 9) là (1/3) arctan(x/3).
+
+:::check
+Q: Dùng phép tách ở ví dụ, tìm nguyên hàm của (3x + 1)/(x^2 - 1).
+A: 2/(x - 1) + 1/(x + 1) có nguyên hàm 2 ln|x - 1| + ln|x + 1| + C.
+:::
+
+### Hàm lượng giác
+
 :::figure grid
 caption: Ba đường cho hàm lượng giác; đường cuối luôn đi được.
 table
@@ -155,9 +180,7 @@ row "khi đó" "sin x = 2t/(1 + t^2)"
 row "và" "cos x = (1 - t^2)/(1 + t^2)"
 :::
 
-Với t = tan(x/2), mọi phân thức của sin, cos thành phân thức của t, và ta quay về cách tách ở trên.
-
-> Lỗi thường gặp: quên hệ số 1/a. Nguyên hàm của 1/(x^2 + 9) là (1/3) arctan(x/3).
+Với t = tan(x/2), mọi phân thức của sin, cos thành phân thức của t, và ta quay về cách tách ở trang trước.
 
 :::check
 Q: Tính tích phân từ 0 đến pi của sin^2 x dx.

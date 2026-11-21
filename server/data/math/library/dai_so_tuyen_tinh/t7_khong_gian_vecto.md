@@ -27,7 +27,16 @@ vector 0 0 -1.5 -1 do "(-1)u" pos=w
 Không gian vectơ là một tập mà cộng hai phần tử hay nhân một phần tử với số không bao giờ đưa ra ngoài, và các luật cộng, nhân quen thuộc vẫn đúng.
 :::
 
-Tám tiên đề chỉ là luật quen của số: giao hoán, kết hợp, có vectơ 0, có vectơ đối -u, hai luật phân phối, (kl)u = k(lu) và 1u = u. Muốn bác bỏ thì chỉ cần một tiên đề sai ở một ví dụ cụ thể. Từ tiên đề suy ra 0u = 0 và (-1)u = -u.
+Tám tiên đề chỉ là luật quen của số: giao hoán, kết hợp, có vectơ 0, có vectơ đối -u, hai luật phân phối, (kl)u = k(lu) và 1u = u. Từ tiên đề suy ra 0u = 0 và (-1)u = -u.
+
+:::check
+Q: Tập các điểm có tọa độ nguyên trong R^2, với phép toán thông thường, có là không gian vectơ không?
+A: Không: cộng thì vẫn nguyên, nhưng (1/2).(1, 0) = (1/2, 0) rơi ra ngoài.
+:::
+
+### Bác bỏ bằng một phản ví dụ
+
+Muốn bác bỏ thì chỉ cần một tiên đề sai ở một ví dụ cụ thể.
 
 Ví dụ: R^2 với cộng thường nhưng k.(x, y) = (kx, y). Có là không gian vectơ?
 
@@ -40,18 +49,18 @@ $$ (k + l)u = ku + lu, \qquad k(u + v) = ku + kv $$
 > Lỗi thường gặp: gộp 1u + (-1)u bằng luật (kl)u = k(lu). Đây là tổng hai vectơ, phải dùng (k + l)u = ku + lu: được (1 + (-1))u = 0u = 0.
 
 :::check
-Q: Tập các điểm có tọa độ nguyên trong R^2, với phép toán thông thường, có là không gian vectơ không?
-A: Không: cộng thì vẫn nguyên, nhưng (1/2).(1, 0) = (1/2, 0) rơi ra ngoài.
+Q: R^2 với cộng thường nhưng k.(x, y) = (kx, 0). Tiên đề nào sai?
+A: 1u = u sai: 1.(1, 1) = (1, 0), khác (1, 1).
 :::
 
 ## Không gian con
 
 :::hook
-Mọi tổ hợp của các ảnh mẫu tạo thành một "không gian con" của mọi ảnh. Không gian con là chỗ dữ liệu sống, và nhận ra nó là bước đầu của nén dữ liệu.
+Mọi tổ hợp của các ảnh mẫu tạo thành một không gian con của mọi ảnh: chỗ dữ liệu sống. Nhận ra nó là bước đầu của nén dữ liệu.
 :::
 
 :::figure plane
-caption: Đường y = x/2 qua gốc (xanh) là không gian con. Đường song song y = x/2 + 1 (đỏ) thì không: nó không chứa 0.
+caption: Đường y = x/2 qua gốc (xanh) là không gian con. Đường y = x/2 + 1 (đỏ) không chứa 0 nên không phải.
 size: 150 110
 x: -3 3 1
 y: -2 2.5 1
@@ -64,7 +73,14 @@ point 0 0 muc "0" pos=se
 Không gian con là một tập con kín: chứa 0, cộng hai phần tử hay nhân với số vẫn ở trong; trong R^n đó là gốc, đường thẳng hay mặt phẳng... đi qua gốc.
 :::
 
-Tập nghiệm của một hệ thuần nhất luôn là không gian con. Vế phải khác 0, bình phương, tích, trị tuyệt đối hay bất đẳng thức thường làm hỏng. Giao hai không gian con vẫn là không gian con; hợp thì nói chung không.
+Tập nghiệm của một hệ thuần nhất luôn là không gian con. Điều kiện có vế phải khác 0, có bình phương, tích, trị tuyệt đối hay bất đẳng thức thường làm tập mất tính kín. Giao hai không gian con vẫn là không gian con; hợp thì nói chung không.
+
+:::check
+Q: Tập nghiệm của x + y = 1 trong R^2 có là không gian con không?
+A: Không: nó không chứa (0, 0), vì 0 + 0 khác 1.
+:::
+
+### Kiểm tra từng điều kiện
 
 Ví dụ: tìm m để W = {(x, y, z) : 2x - y + z = m + 1} là không gian con.
 
@@ -83,7 +99,7 @@ A: Không: (0, 1) và (1, 1) đều thuộc W, nhưng tổng (1, 2) không nằm
 ## Tổ hợp tuyến tính và bao tuyến tính
 
 :::hook
-Mọi màu trên màn hình là a phần đỏ + b phần lục + c phần lam. Màu đó là một tổ hợp tuyến tính, và mọi màu pha được tạo thành bao tuyến tính của ba màu gốc.
+Mỗi màu trên màn hình là a phần đỏ + b phần lục + c phần lam: một tổ hợp tuyến tính. Mọi màu pha được là bao tuyến tính của ba màu gốc.
 :::
 
 :::figure plane
@@ -106,9 +122,8 @@ Span của các vectơ là mọi tổ hợp a_1 u_1 + ... + a_k u_k của chúng
 
 Ví dụ: u = (1, 2, 0), v = (0, 1, 1), w = (2, m, 3). Tìm m để w thuộc span{u, v}.
 
-1. au + bv = (a, 2a + b, b).
-2. Tọa độ 1 và 3: a = 2, b = 3.
-3. Tọa độ 2 phải khớp: m = 2 . 2 + 3 = 7.
+1. au + bv = (a, 2a + b, b). Tọa độ 1 và 3 cho a = 2, b = 3.
+2. Tọa độ 2 phải khớp: m = 2 . 2 + 3 = 7.
 
 > Lỗi thường gặp: giải hai phương trình rồi kết luận ngay. Nghiệm phải thỏa MỌI phương trình của hệ.
 
@@ -145,20 +160,27 @@ vector 0 0 -2 -1 xanh "v" pos=w
 Một họ độc lập khi không vectơ nào thừa, tức tổ hợp của chúng bằng 0 chỉ khi mọi hệ số đều bằng 0.
 :::
 
-Cách xét: xếp các vectơ thành ma trận, khử Gauss; độc lập khi hạng bằng số vectơ. n vectơ trong R^n: độc lập khi định thức khác 0. Họ có vectơ 0, hay nhiều hơn n vectơ trong R^n, luôn phụ thuộc. Phụ thuộc chỉ nói CÓ một vectơ thừa, không nói là vectơ nào.
+$$ a_{1}u_{1} + \ldots + a_{k}u_{k} = 0 \Rightarrow a_{1} = \ldots = a_{k} = 0 $$
+
+:::check
+Q: u, v, w độc lập. Họ u + v, v - w, u + w có độc lập không?
+A: Không: (u + v) - (v - w) = u + w, nên vectơ thứ ba là tổ hợp của hai vectơ đầu.
+:::
+
+### Xét bằng hạng hoặc định thức
+
+Cách xét: xếp các vectơ thành ma trận rồi khử Gauss; họ độc lập khi hạng bằng số vectơ. Với n vectơ trong R^n, họ độc lập khi định thức khác 0. Họ có vectơ 0, hay có nhiều hơn n vectơ trong R^n, luôn phụ thuộc. Phụ thuộc chỉ nói CÓ một vectơ thừa, không nói là vectơ nào.
 
 Ví dụ: tìm m để (1, 0, 2), (2, 1, m), (0, 1, 3) phụ thuộc.
 
 1. Định thức của ma trận ba hàng đó: 1 . (3 - m) - 0 + 2 . (2 - 0) = 7 - m.
 2. Phụ thuộc khi định thức bằng 0: m = 7.
 
-$$ a_{1}u_{1} + \ldots + a_{k}u_{k} = 0 \Rightarrow a_{1} = \ldots = a_{k} = 0 $$
-
 > Lỗi thường gặp: thấy hệ có nghiệm a = b = c = 0 rồi kết luận độc lập. Hệ thuần nhất nào cũng có nghiệm đó; phải hỏi có nghiệm KHÁC 0 không.
 
 :::check
-Q: u, v, w độc lập. Họ u + v, v - w, u + w có độc lập không?
-A: Không: (u + v) - (v - w) = u + w, nên vectơ thứ ba là tổ hợp của hai vectơ đầu.
+Q: (1, 2) và (2, 5) trong R^2 có độc lập không?
+A: Có: định thức 1 . 5 - 2 . 2 = 1 khác 0.
 :::
 
 ## Cơ sở và số chiều
@@ -189,7 +211,16 @@ mark cell 2 3 vang
 Cơ sở là bộ hướng vừa đủ: sinh ra cả không gian và không thừa cái nào; số chiều là số vectơ của nó, như nhau với mọi cơ sở.
 :::
 
-dim span{u_1, ..., u_k} = hạng của ma trận lập từ chúng. Cơ sở lấy các cột có trụ của CHÍNH ma trận ban đầu. Không gian nghiệm của Ax = 0: mỗi ẩn tự do cho một vectơ cơ sở.
+Số chiều của span{u_1, ..., u_k} bằng hạng của ma trận lập từ chúng. Cơ sở lấy các cột có trụ của CHÍNH ma trận ban đầu, không phải của bậc thang.
+
+:::check
+Q: Bốn vectơ trong R^3 xếp thành ma trận có hạng 2. Span của chúng có mấy chiều? Bốn vectơ đó có độc lập không?
+A: 2 chiều. Không độc lập: 4 vectơ mà chỉ 2 hướng thật.
+:::
+
+### Không gian nghiệm và công thức số chiều
+
+Với không gian nghiệm của Ax = 0, mỗi ẩn tự do cho một vectơ cơ sở.
 
 Ví dụ: cơ sở và số chiều của W = {(x, y, z) : x + 2y - z = 0}.
 
@@ -211,12 +242,12 @@ A: 2 + 2 - 1 = 3: tổng của chúng là cả R^3.
 ## Tọa độ và ma trận chuyển cơ sở
 
 :::hook
-Cùng một màu có mã RGB và mã HSV khác nhau; cùng một ảnh có tọa độ điểm ảnh và tọa độ JPEG khác nhau. Đổi cơ sở là đổi cách gọi tên, không đổi vật.
+Cùng một màu có mã RGB và mã HSV khác nhau. Đổi cơ sở là đổi cách gọi tên, không đổi vật.
 :::
 
 :::figure plane
-caption: Trong cơ sở b1 = (2, 1), b2 = (0, 1), điểm (4, 4) có tọa độ (2, 2): đi 2 bước b1 rồi 2 bước b2.
-size: 150 110
+caption: Đi 2 bước b1 = (2, 1) rồi 2 bước b2 = (0, 1) tới (4, 4): tọa độ là (2, 2).
+size: 150 95
 x: -1 4.5 1
 y: -0.5 4.5 1
 vector 0 0 2 1 do
@@ -236,9 +267,8 @@ Tọa độ trong cơ sở B là công thức pha: cần bao nhiêu phần mỗi
 
 Ví dụ: tọa độ của x = (3, 7) trong cơ sở b1 = (1, 2), b2 = (1, 3).
 
-1. P có cột b1, b2: P = [1, 1; 2, 3], det P = 1.
-2. P^(-1) = [3, -1; -2, 1].
-3. [x]_B = P^(-1) x = (9 - 7, -6 + 7) = (2, 1). Thử: 2b1 + b2 = (3, 7).
+1. P có cột b1, b2: P = [1, 1; 2, 3], det P = 1, nên P^(-1) = [3, -1; -2, 1].
+2. [x]_B = P^(-1) x = (9 - 7, -6 + 7) = (2, 1). Thử: 2b1 + b2 = (3, 7).
 
 $$ x = P \, [x]_{B}, \qquad [x]_{B} = P^{-1} x $$
 

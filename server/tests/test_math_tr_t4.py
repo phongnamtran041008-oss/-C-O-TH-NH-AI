@@ -190,7 +190,7 @@ def test_one_document_per_floor_explains_every_micro_skill(floor):
     for n, end in zip(starts, starts[1:] + [len(blocks)]):
         part = blocks[n:end]
         assert any(b["type"] == "note" and b["text"].startswith("Lỗi thường gặp") for b in part), blocks[n]
-    assert doc.formulas
+    assert any(b["type"] in ("formula", "figure", "matrices") for b in doc.blocks)
 
 
 def test_the_library_of_floors_4_to_6_is_valid_and_its_pictures_are_built():

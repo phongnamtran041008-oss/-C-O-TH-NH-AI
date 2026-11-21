@@ -32,8 +32,7 @@ $$ s = \mathrm{sup}\,A \iff \big(\forall a \in A:\ a \le s\big) \land \big(\fora
 Ví dụ: tìm sup và inf của A = {2 + 1/n : n = 1, 2, ...}.
 
 1. Các số 3, 5/2, 7/3, ... giảm dần: sup = 3 = max, thuộc A.
-2. 2 + 1/n > 2, và với mọi e > 0 có n để 1/n < e.
-3. inf A = 2, không thuộc A.
+2. 2 + 1/n > 2, và với mọi e > 0 có n để 1/n < e: inf A = 2, không thuộc A.
 
 > Lỗi thường gặp: nhầm sup với max. (0, 1) có sup = 1, nhưng 1 không thuộc (0, 1): tập không có phần tử lớn nhất.
 
@@ -76,9 +75,8 @@ limsup không phải sup của các số hạng: (-1)^n (1 + 1/n) có số hạn
 
 Ví dụ: limsup, liminf của a_n = (-1)^n (2 - 1/n).
 
-1. n chẵn: a_n = 2 - 1/n -> 2.
-2. n lẻ: a_n = -(2 - 1/n) -> -2.
-3. limsup = 2, liminf = -2: khác nhau, dãy không hội tụ.
+1. n chẵn: a_n = 2 - 1/n -> 2. n lẻ: a_n = -(2 - 1/n) -> -2.
+2. limsup = 2, liminf = -2: khác nhau, dãy không hội tụ.
 
 > Lỗi thường gặp: thấy hai dãy con có hai giới hạn khác nhau là nói "không có limsup". Dãy bị chặn luôn có limsup và liminf.
 
@@ -113,20 +111,34 @@ f khả tích khi chia đủ mịn thì bậc thang trên U và dưới L kẹp 
 
 $$ U(f, P) = \sum_k M_k\, h_k, \qquad L(f, P) = \sum_k m_k\, h_k $$
 
-Hàm liên tục, đơn điệu, hay bị chặn và chỉ nhảy ở hữu hạn điểm đều khả tích: chỗ nhảy chỉ nằm trong vài dải, chia mịn thì dải hẹp lại. Hàm Dirichlet (1 trên số hữu tỉ, 0 trên số vô tỉ) thì không: đoạn con nào cũng chứa cả hai loại số, nên U = 1, L = 0 với mọi phân hoạch, khe hở không bao giờ co.
-
 Ví dụ: U và L của x^2 trên [0, 3], P = {0, 1, 2, 3}.
 
 1. x^2 tăng: sup ở mút phải, inf ở mút trái mỗi đoạn.
 2. U = 1 + 4 + 9 = 14, L = 0 + 1 + 4 = 5 (mỗi đoạn dài 1).
 3. Tích phân 9 nằm giữa 5 và 14.
 
-> Lỗi thường gặp: nghĩ |f| khả tích thì f khả tích. Trên [0, 1], lấy f = 1 tại số hữu tỉ, -1 tại số vô tỉ: |f| = 1 khả tích, còn f có U = 1, L = -1 với mọi phân hoạch.
-
 :::check
 Q: f(x) = 2x trên [0, 2], P = {0, 1, 2}. Tính U - L.
 A: U = 2 . 1 + 4 . 1 = 6, L = 0 . 1 + 2 . 1 = 2, nên U - L = 4.
 :::
+
+### Hàm nào khả tích
+
+:::figure plane
+caption: Hàm nhảy một lần: chỉ dải đỏ chứa chỗ nhảy làm U khác L; chia mịn thì dải hẹp lại.
+size: 150 70
+x: -0.2 2.3 1
+y: -0.3 2.6 1
+segment 0 1 1 1 xanh
+segment 1 2 2 2 xanh
+poly 0.8 1 1.2 1 1.2 2 0.8 2 do
+point 1 1 xanh open
+point 1 2 xanh
+:::
+
+Hàm liên tục, đơn điệu, hay bị chặn và chỉ nhảy ở hữu hạn điểm đều khả tích: chỗ nhảy chỉ nằm trong vài dải, chia mịn thì dải hẹp lại. Hàm Dirichlet (1 trên số hữu tỉ, 0 trên số vô tỉ) thì không: đoạn con nào cũng chứa cả hai loại số, nên U = 1, L = 0 với mọi phân hoạch, khe hở không bao giờ co.
+
+> Lỗi thường gặp: nghĩ |f| khả tích thì f khả tích. Trên [0, 1], lấy f = 1 tại số hữu tỉ, -1 tại số vô tỉ: |f| = 1 khả tích, còn f có U = 1, L = -1 với mọi phân hoạch.
 
 :::check
 Q: f(x) = x trên [0, 1], chia n đoạn đều. Tính U_n và U_n - L_n.
@@ -141,7 +153,7 @@ Loss lồi thì gradient descent không kẹt ở đáy giả. Tính lồi cũng
 
 :::figure plane
 caption: Dây cung (đỏ) nối hai điểm của x^2 luôn nằm trên đồ thị.
-size: 150 100
+size: 120 90
 x: -1.6 2.6 1
 y: -0.5 4.5 1
 curve "x^2" xanh -1.5 2.1
@@ -156,13 +168,12 @@ f lồi khi mọi dây cung nằm trên đồ thị: f tại một điểm trung
 
 $$ f(\lambda x + (1 - \lambda) y) \le \lambda f(x) + (1 - \lambda) f(y), \qquad 0 \le \lambda \le 1 $$
 
-Hàm khả vi hai lần lồi đúng khi f'' >= 0 khắp khoảng; f'' được chạm 0 vài điểm, như x^4 vẫn lồi. Không khả vi vẫn lồi được: mọi dây cung của |x| đều nằm trên. Đồ thị lồi nằm trên mọi tiếp tuyến; tiếp tuyến của e^x tại 0 là 1 + x, nên e^x >= 1 + x.
+Hàm khả vi hai lần lồi đúng khi f'' >= 0 khắp khoảng; f'' chạm 0 vài điểm vẫn được, như x^4. |x| không khả vi mà vẫn lồi. Đồ thị lồi nằm trên mọi tiếp tuyến: tiếp tuyến của e^x tại 0 là 1 + x, nên e^x >= 1 + x.
 
 Ví dụ: kiểm Jensen với f = x^2, x = 0, y = 4, lambda = 1/4.
 
 1. Điểm trộn: (1/4) . 0 + (3/4) . 4 = 3, vế trái f(3) = 9.
-2. Vế phải: (1/4) . 0 + (3/4) . 16 = 12.
-3. 9 <= 12, hiệu 3.
+2. Vế phải: (1/4) . 0 + (3/4) . 16 = 12, và 9 <= 12 (hiệu 3).
 
 > Lỗi thường gặp: x^3 có f'' = 6x >= 0 chỉ khi x >= 0, nên chỉ lồi trên [0, +vô cùng). Tích hai hàm lồi cũng chưa chắc lồi.
 
@@ -196,6 +207,19 @@ Khoảng cách: không âm, bằng 0 chỉ khi trùng nhau, đối xứng, và �
 
 $$ \|x\|_1 = \sum_i |x_i|, \qquad \|x\|_2 = \sqrt{\sum_i x_i^2}, \qquad \|x\|_{\infty} = \max_i |x_i| $$
 
+Ví dụ: u = (1, -2, 2), v = (3, 1, -4). Tính d_1, d_2, d_inf.
+
+1. Độ lệch từng tọa độ: |2|, |3|, |-6|.
+2. d_1 = 2 + 3 + 6 = 11, d_2 = sqrt(4 + 9 + 36) = 7.
+3. d_inf = 6. Luôn có d_inf <= d_2 <= d_1.
+
+:::check
+Q: u = (0, 0, 0), v = (1, -2, 2). Tính d_1, d_2, d_inf.
+A: Độ lệch 1, 2, 2: d_1 = 5, d_2 = sqrt(1 + 4 + 4) = 3, d_inf = 2.
+:::
+
+### Bác một công thức khoảng cách
+
 :::figure grid
 caption: Bác một công thức chỉ cần một phản ví dụ cho một điều kiện.
 table
@@ -206,17 +230,30 @@ row "x - y" "không âm" "d(0, 1) = -1"
 row "|x - y|/(1 + |x - y|)" "không hỏng" "là metric"
 :::
 
-Dãy Cauchy là dãy mà về sau các số hạng sát nhau tùy ý, dù chưa biết nó tiến về đâu. Dãy hội tụ thì luôn Cauchy. Không gian đầy đủ là nơi chiều ngược lại cũng đúng: R đầy đủ, còn Q thì không, vì 1, 1.4, 1.41, 1.414, ... là dãy Cauchy trong Q nhưng đích sqrt(2) nằm ngoài Q.
-
-Ví dụ: u = (1, -2, 2), v = (3, 1, -4). Tính d_1, d_2, d_inf.
-
-1. Độ lệch từng tọa độ: |2|, |3|, |-6|.
-2. d_1 = 2 + 3 + 6 = 11, d_2 = sqrt(4 + 9 + 36) = 7.
-3. d_inf = 6. Luôn có d_inf <= d_2 <= d_1.
+Muốn bác thì chỉ cần một bộ số làm hỏng một trong bốn điều kiện; muốn khẳng định thì phải chứng minh cả bốn.
 
 > Lỗi thường gặp: khai triển ((x - y) + (y - z))^2 mà quên số hạng giữa 2(x - y)(y - z).
 
 :::check
 Q: d(x, y) = |x - y| + 1 khi x khác y, d(x, x) = 0. Đây có phải metric trên R?
 A: Có. Ba điều đầu rõ; tam giác: |x - z| + 1 <= (|x - y| + 1) + (|y - z| + 1) khi y khác x, z (y trùng một đầu thì hai vế bằng nhau).
+:::
+
+### Dãy Cauchy và không gian đầy đủ
+
+:::figure numberline
+caption: Phóng to: 1.4; 1.41; 1.414; ... sát nhau dần trong Q, nhưng đích sqrt(2) không thuộc Q.
+size: 200 45
+range: 1.39 1.42 0.01
+point 1.4 xanh
+point 1.41 xanh
+point 1.414 xanh
+point sqrt(2) do "sqrt(2)" open
+:::
+
+Dãy Cauchy là dãy mà về sau các số hạng sát nhau tùy ý, dù chưa biết nó tiến về đâu. Dãy hội tụ thì luôn Cauchy. Không gian đầy đủ là nơi chiều ngược lại cũng đúng: R đầy đủ, còn Q thì không, vì 1, 1.4, 1.41, 1.414, ... là dãy Cauchy trong Q nhưng đích sqrt(2) nằm ngoài Q.
+
+:::check
+Q: Trong không gian (0, 1] với d(x, y) = |x - y|, dãy 1/n có là dãy Cauchy không? Có hội tụ trong (0, 1] không?
+A: Có Cauchy: trong R nó hội tụ về 0. Nhưng 0 không thuộc (0, 1], nên nó không hội tụ trong (0, 1]: không gian này không đầy đủ.
 :::

@@ -14,9 +14,9 @@ Mỗi vòng huấn luyện, sai số của mô hình nhỏ đi một chút. Hỏ
 :::
 
 :::figure numberline
-caption: u_n = (2n + 1)/n đi 3; 2.5; 2.33; 2.25; ... Từ n = 5 trở đi, mọi số hạng nằm trong dải 2 +- 0.25.
+caption: u_n = (2n + 1)/n: từ n = 5, mọi số hạng nằm trong dải xanh 2 +- 0.25.
 range: 1.5 3.2 0.5
-nbhd 2 0.25 luc "dải 2 +- 0.25"
+nbhd 2 0.25 luc
 seq "(2*n + 1)/n" 1 9 xanh "u_n"
 :::
 
@@ -32,9 +32,23 @@ Ví dụ: tính giới hạn của u_n = (4n^2 - n)/(2n^2 + 3).
 2. Được (4 - 1/n)/(2 + 3/n^2).
 3. 1/n và 3/n^2 -> 0, còn lại 4/2 = 2.
 
-Có lũy thừa mũ như 5^n và 2^n: chia cho số có cơ số lớn nhất, phần còn lại (2/5)^n -> 0. Hiệu hai căn như sqrt(n^2 + 4n) - n: nhân liên hợp để thành thương. (-1)^n/n -> 0 vì trị tuyệt đối 1/n -> 0; còn (-1)^n nhảy -1, 1 mãi, không có giới hạn.
+> Lỗi thường gặp: chia cho lũy thừa nhỏ hơn bậc của mẫu, rồi coi mẫu là hằng số trong khi nó vẫn chạy ra vô cùng.
 
-> Lỗi thường gặp: chia cho lũy thừa nhỏ hơn bậc của mẫu. Khi đó mẫu vẫn còn chạy ra vô cùng, đừng vội coi nó là một hằng số.
+:::check
+Q: Tính giới hạn của (2n + 5)/(6n - 1).
+A: Chia tử và mẫu cho n: (2 + 5/n)/(6 - 1/n) -> 2/6 = 1/3.
+:::
+
+### Mũ, căn và dấu đan xen
+
+:::figure numberline
+caption: (-1)^n/n nhảy hai bên 0 nhưng mỗi lúc một gần: -1; 0.5; -0.33; 0.25; ... -> 0.
+range: -1.2 0.7 0.2
+nbhd 0 0.1 luc
+seq "(-1)^n/n" 1 10 xanh
+:::
+
+Có lũy thừa mũ như 5^n và 2^n: chia cho số có cơ số lớn nhất, phần còn lại (2/5)^n -> 0. Hiệu hai căn như sqrt(n^2 + 4n) - n: nhân liên hợp để biến hiệu thành thương. (-1)^n/n -> 0 vì trị tuyệt đối 1/n -> 0; còn (-1)^n nhảy -1, 1 mãi nên không có giới hạn.
 
 :::check
 Q: Tính giới hạn của (3 . 5^n - 2^n)/(5^n + 4 . 2^n).
@@ -48,8 +62,8 @@ Vận tốc là quãng đường chia thời gian; cho thời gian về 0 thì t
 :::
 
 :::figure plane
-caption: y = (x^2 - 9)/(x - 3) là đường y = x + 3 bị khoét lỗ tại x = 3. Từ hai phía, độ cao đều tiến về 6.
-size: 150 105
+caption: (x^2 - 9)/(x - 3) là y = x + 3 khoét lỗ tại 3; hai phía đều tiến về 6.
+size: 150 90
 x: 0 5 1
 y: 0 9 3
 curve "(x^2 - 9)/(x - 3)" xanh
@@ -63,6 +77,15 @@ Giới hạn tại a là độ cao mà f(x) tiến tới khi x sát a. Chính f(
 
 $$ \lim_{x \to 3} \frac{x^{2} - 9}{x - 3} = \lim_{x \to 3} (x + 3) = 6 $$
 
+:::check
+Q: f(x) = x + 1 khi x khác 2, và f(2) = 10. Giới hạn của f khi x -> 2 bằng bao nhiêu?
+A: 3. Giới hạn chỉ nhìn các x gần 2, không nhìn f(2) = 10.
+:::
+
+### Thay số trước, gỡ 0/0 sau
+
+Luôn thay số trước. Ra một số bình thường (mẫu khác 0) thì đó là đáp số. Ra 0/0 là có thừa số chung đang trốn, phải lôi ra.
+
 Ví dụ: tính giới hạn của (x^2 + x - 6)/(x^2 - 4) khi x -> 2.
 
 1. Thay x = 2: tử 0, mẫu 0. Dạng 0/0, chưa có đáp số.
@@ -70,13 +93,13 @@ Ví dụ: tính giới hạn của (x^2 + x - 6)/(x^2 - 4) khi x -> 2.
 3. Rút gọn (x - 2), còn (x + 3)/(x + 2).
 4. Thay x = 2: 5/4.
 
-Luôn thay số trước. Ra một số bình thường (mẫu khác 0) thì đó là đáp số. Ra 0/0 là có thừa số chung đang trốn, phải lôi ra. Có căn thì nhân liên hợp: (sqrt(x + 9) - 3)/x = 1/(sqrt(x + 9) + 3) -> 1/6.
-
 > Lỗi thường gặp: phân tích sai nhân tử. Nhân ngược lại để thử: (x - 2)(x + 3) = x^2 + x - 6.
 
+Có căn thì nhân liên hợp. Với (sqrt(x + 9) - 3)/x khi x -> 0: nhân tử và mẫu với sqrt(x + 9) + 3, tử thành (x + 9) - 9 = x; rút gọn x còn 1/(sqrt(x + 9) + 3) -> 1/6.
+
 :::check
-Q: f(x) = x + 1 khi x khác 2, và f(2) = 10. Giới hạn của f khi x -> 2 bằng bao nhiêu?
-A: 3. Giới hạn chỉ nhìn các x gần 2, không nhìn f(2) = 10.
+Q: Tính giới hạn của (sqrt(x + 4) - 2)/x khi x -> 0.
+A: Nhân liên hợp: tử thành x, còn 1/(sqrt(x + 4) + 2) -> 1/4.
 :::
 
 ## Giới hạn ở vô cùng và giới hạn vô cùng
@@ -107,6 +130,17 @@ Phân thức P/Q khi x -> vô cùng:
 
 Mẫu -> 0 còn tử -> một số khác 0 thì ra vô cùng: 1/x^2 -> +vô cùng cả hai phía, nhưng 1/(x - 1) lệch dấu hai phía nên không có giới hạn.
 
+> Lỗi thường gặp: thấy mẫu -> 0 liền viết +vô cùng mà không xét dấu hai phía.
+
+:::check
+Q: Tính giới hạn của (6x^2 - x)/(1 - 3x^2) khi x -> +vô cùng.
+A: Cùng bậc 2: chỉ còn tỉ số hai hệ số cao nhất, 6/(-3) = -2.
+:::
+
+### Vô cùng trừ vô cùng
+
+Hai phần cùng chạy ra vô cùng rồi trừ nhau thì chưa biết kết quả. Nhân liên hợp để biến hiệu thành thương, rồi chia cho lũy thừa cao nhất như trên.
+
 Ví dụ: tính giới hạn của sqrt(x^2 + 6x) - x khi x -> +vô cùng.
 
 1. Dạng vô cùng - vô cùng: nhân và chia cho liên hợp sqrt(x^2 + 6x) + x.
@@ -114,11 +148,9 @@ Ví dụ: tính giới hạn của sqrt(x^2 + 6x) - x khi x -> +vô cùng.
 3. Chia tử và mẫu cho x: 6/(sqrt(1 + 6/x) + 1).
 4. Mẫu -> 1 + 1 = 2, nên giới hạn bằng 3.
 
-> Lỗi thường gặp: thấy mẫu -> 0 liền viết +vô cùng mà không xét dấu hai phía.
-
 :::check
-Q: Tính giới hạn của (6x^2 - x)/(1 - 3x^2) khi x -> +vô cùng.
-A: Cùng bậc 2: chỉ còn tỉ số hai hệ số cao nhất, 6/(-3) = -2.
+Q: Tính giới hạn của sqrt(x^2 + 2x) - x khi x -> +vô cùng.
+A: Liên hợp: 2x/(sqrt(x^2 + 2x) + x) = 2/(sqrt(1 + 2/x) + 1) -> 2/2 = 1.
 :::
 
 ## Hai giới hạn đáng nhớ
@@ -143,6 +175,15 @@ sin u / u -> 1 khi u -> 0, và (1 + 1/m)^m -> e khi m -> vô cùng. Mọi bài l
 
 $$ \lim_{x \to 0} \frac{\sin x}{x} = 1 $$
 
+Với sin: sin(5x)/x = 5 . sin(5x)/(5x) -> 5. Từ đó tan x / x -> 1 và (1 - cos x)/x^2 -> 1/2. Nhưng khi x -> vô cùng thì sin x / x -> 0; còn x . sin(1/x) -> 0 khi x -> 0, vì bị kẹp giữa -|x| và |x|.
+
+:::check
+Q: Tính giới hạn của sin(4x)/(2x) khi x -> 0.
+A: sin(4x)/(2x) = 2 . sin(4x)/(4x) -> 2 . 1 = 2.
+:::
+
+### Số e
+
 :::figure numberline
 caption: (1 + 1/n)^n với n = 1, 2, 3, ...: tăng dần nhưng không vượt qua e, khoảng 2.718.
 range: 1.9 2.9 0.2
@@ -157,8 +198,6 @@ Ví dụ: tính giới hạn của (1 + 2/n)^(3n).
 1. Đặt m = n/2: 2/n = 1/m và 3n = 6m.
 2. Biểu thức thành [(1 + 1/m)^m]^6.
 3. Trong ngoặc -> e, nên giới hạn là e^6.
-
-Với sin: sin(5x)/x = 5 . sin(5x)/(5x) -> 5. Từ đó tan x / x -> 1 và (1 - cos x)/x^2 -> 1/2. Nhưng khi x -> vô cùng thì sin x / x -> 0; còn x . sin(1/x) -> 0 khi x -> 0, vì bị kẹp giữa -|x| và |x|.
 
 > Lỗi thường gặp: thay riêng cơ số, coi (1 + 1/n)^(2n) là 1^vô cùng = 1. Số mũ cũng đang chạy: đây là dạng vô định, đáp số là e^2.
 
@@ -182,6 +221,19 @@ row 0.01 0.99998 0.01
 row 0.001 0.9999998 0.001
 :::
 
+:::core
+Hai vô cùng bé tương đương khi tỉ số -> 1. Trong tích và thương, thay mỗi thừa số bằng bản tương đương; trong hiệu thì không.
+:::
+
+So hai vô cùng bé a, b bằng a/b: -> 0 thì a bậc cao hơn; -> 1 thì tương đương; -> số khác 0 thì cùng bậc. Bậc của a là số k để a/x^k -> một số khác 0; với tổng các lũy thừa, mũ nhỏ nhất thắng: x^4 - 3x^6 bậc 4. Còn 1/x khi x -> 0 là vô cùng lớn: |1/x| -> +vô cùng.
+
+:::check
+Q: Khi x -> 0, x^3 + 2x^2 - sin(x^5) là vô cùng bé bậc mấy?
+A: Bậc 2: sin(x^5) ~ x^5, và trong x^3, 2x^2, x^5 thì mũ nhỏ nhất là 2, nên 2x^2 thắng.
+:::
+
+### Thay tương đương trong tích và thương
+
 :::figure grid
 caption: Bảng tương đương khi u -> 0; u có thể là 3x, x^2, ...
 table
@@ -191,21 +243,15 @@ row "ln(1 + u), e^u - 1" "u"
 row "1 - cos u" "u^2/2"
 :::
 
-:::core
-Hai vô cùng bé tương đương khi tỉ số -> 1. Trong tích và thương, thay mỗi thừa số bằng bản tương đương; trong hiệu thì không.
-:::
-
 Ví dụ: tính giới hạn của sin(3x) . (e^(2x) - 1) / (x . ln(1 + 4x)) khi x -> 0.
 
 1. sin(3x) ~ 3x, e^(2x) - 1 ~ 2x, ln(1 + 4x) ~ 4x.
 2. Cả biểu thức là tích và thương, nên thay được từng thừa số.
 3. Giới hạn = (3x . 2x)/(x . 4x) = 6/4 = 3/2.
 
-So hai vô cùng bé a, b bằng a/b: -> 0 thì a bậc cao hơn; -> 1 thì tương đương; -> số khác 0 thì cùng bậc. Bậc của a là số k để a/x^k -> một số khác 0; với tổng các lũy thừa, mũ nhỏ nhất thắng: x^4 - 3x^6 bậc 4. Còn 1/x khi x -> 0 là vô cùng lớn: |1/x| -> +vô cùng.
-
 > Lỗi thường gặp: thay tương đương trong một hiệu. (e^x - 1 - x)/x^2: thay e^x - 1 ~ x cho 0, sai; đúng là e^x - 1 - x ~ x^2/2, giới hạn 1/2.
 
 :::check
-Q: Khi x -> 0, x^3 + 2x^2 - sin(x^5) là vô cùng bé bậc mấy? Và sin(6x)/(e^(3x) - 1) -> ?
-A: Bậc 2: 2x^2 thắng (sin(x^5) ~ x^5). Giới hạn thứ hai: 6x/(3x) = 2.
+Q: Khi x -> 0, sin(6x)/(e^(3x) - 1) tiến tới đâu?
+A: sin(6x) ~ 6x và e^(3x) - 1 ~ 3x, nên giới hạn là 6x/(3x) = 2.
 :::

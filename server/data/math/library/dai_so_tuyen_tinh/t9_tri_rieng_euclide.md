@@ -14,21 +14,25 @@ Google từng xếp hạng trang web bằng một vectơ riêng của ma trận 
 :::
 
 :::figure plane
-caption: A = [2, 1; 1, 2]. v = (1, 1) giữ hướng, chỉ dài ra 3 lần: vectơ riêng, t = 3. Còn w = (1, 0) bị xoay thành Aw = (2, 1).
-size: 150 120
+caption: A = [2, 1; 1, 2]: v = (1, 1) chỉ dài ra 3 lần (vectơ riêng, t = 3); w = (1, 0) bị xoay thành Aw = (2, 1).
+size: 150 100
 x: -0.5 3.5 1
 y: -0.5 3.5 1
-vector 0 0 3 3 luc "Av = 3v" pos=nw
-vector 0 0 1 1 do "v" pos=se
-vector 0 0 2 1 xam "Aw" pos=e
-vector 0 0 1 0 xanh "w" pos=s
+vector 0 0 3 3 luc
+vector 0 0 1 1 do
+vector 0 0 2 1 xam
+vector 0 0 1 0 xanh
+text 1.4 2.5 "Av = 3v"
+text 0.3 0.9 "v"
+text 2.5 1.0 "Aw"
+text 0.5 -0.35 "w"
 :::
 
 :::core
 Vectơ riêng là hướng mà A chỉ kéo giãn chứ không xoay: Av = tv với v khác 0; giá trị riêng t là hệ số kéo giãn.
 :::
 
-Ở đây giá trị riêng viết là t. Cấp 2: p(t) = t^2 - (tr A)t + det A, nên tổng các giá trị riêng là vết, tích là định thức. Ma trận tam giác có giá trị riêng là đường chéo. Nếu Av = tv thì A^k v = t^k v, A^(-1) v = (1/t) v. Cấp 3 có nghiệm nguyên thì thử các ước của det A.
+$$ Av = tv, \; v \neq 0 \iff \text{det}(A - tI) = 0 $$
 
 Ví dụ: tìm giá trị riêng, vectơ riêng của A ở hình.
 
@@ -36,9 +40,21 @@ Ví dụ: tìm giá trị riêng, vectơ riêng của A ở hình.
 2. t = 3: A - 3I = [-1, 1; 1, -1], nên y = x: vectơ (1, 1).
 3. t = 1: A - I = [1, 1; 1, 1], nên y = -x: vectơ (1, -1).
 
-$$ Av = tv, \; v \neq 0 \iff \text{det}(A - tI) = 0 $$
+:::check
+Q: A = [1, 2; 2, 1]. v = (1, 1) có là vectơ riêng của A không? Với giá trị riêng nào?
+A: Có: Av = (3, 3) = 3v, giá trị riêng 3.
+:::
 
-> Lỗi thường gặp: lấy đường chéo làm giá trị riêng khi A không tam giác. Ở đây đường chéo là 2, 2 nhưng giá trị riêng là 1 và 3.
+### Vết, định thức và lũy thừa
+
+Với ma trận cấp 2, đa thức đặc trưng là p(t) = t^2 - (tr A)t + det A, nên tổng hai giá trị riêng là vết, tích của chúng là định thức. Ma trận tam giác có giá trị riêng nằm trên đường chéo. Nếu Av = tv thì A^k v = t^k v và A^(-1) v = (1/t) v. Với cấp 3 có nghiệm nguyên, hãy thử các ước của det A.
+
+Ví dụ: tìm giá trị riêng của A = [4, 1; 2, 3] chỉ từ vết và định thức.
+
+1. tr A = 7, det A = 12 - 2 = 10.
+2. p(t) = t^2 - 7t + 10 = (t - 2)(t - 5): giá trị riêng 2 và 5. Thử: 2 + 5 = 7, 2 . 5 = 10.
+
+> Lỗi thường gặp: lấy đường chéo làm giá trị riêng khi A không tam giác. Với A = [2, 1; 1, 2] ở trang trước, đường chéo là 2, 2 nhưng giá trị riêng là 1 và 3.
 
 :::check
 Q: A cấp 2 có giá trị riêng 2 và -1. Tính det A, tr A, và giá trị riêng của A^2 + A.
@@ -66,8 +82,6 @@ box "A^k x" luc
 Chéo hóa là nhìn A trong một cơ sở toàn vectơ riêng; ở đó A chỉ giãn từng trục: A = P D P^(-1), cột của P là vectơ riêng, D là giá trị riêng.
 :::
 
-Cần n vectơ riêng độc lập. n giá trị riêng khác nhau: luôn được. Giá trị riêng bội k: không gian riêng phải đủ k chiều. Đa thức đặc trưng vô nghiệm thực: không chéo hóa được trên R.
-
 Ví dụ: A = [1, 2; 0, 3]. Tính A^4.
 
 1. Tam giác: giá trị riêng 1 và 3; vectơ riêng (1, 0) và (1, 1).
@@ -75,6 +89,25 @@ Ví dụ: A = [1, 2; 0, 3]. Tính A^4.
 3. A^4 = P D^4 P^(-1) = [1, 80; 0, 81].
 
 $$ A^{k} = P D^{k} P^{-1} $$
+
+:::check
+Q: A = P D P^(-1) với D = [2, 0; 0, -1]. A^3 có những giá trị riêng nào?
+A: A^3 = P D^3 P^(-1), D^3 = [8, 0; 0, -1]: giá trị riêng 8 và -1.
+:::
+
+### Khi nào chéo hóa được
+
+:::figure plane
+caption: Phép trượt [1, 1; 0, 1] chỉ giữ nguyên hướng trục x; e2 bị nghiêng thành (1, 1). Chỉ một hướng riêng: không chéo hóa được.
+size: 150 90
+x: -0.5 2.5 1
+y: -0.5 1.5 1
+vector 0 0 1 0 do "e1" pos=s
+vector 0 0 0 1 xanh "e2" pos=w
+vector 0 0 1 1 luc "Ae2" pos=e
+:::
+
+Cần đủ n vectơ riêng độc lập. Nếu có n giá trị riêng khác nhau thì luôn được. Nếu một giá trị riêng có bội k, không gian riêng của nó phải đủ k chiều. Nếu đa thức đặc trưng vô nghiệm thực thì không chéo hóa được trên R.
 
 > Lỗi thường gặp: đếm giá trị riêng tính cả bội rồi kết luận chéo hóa được. Phải cộng số chiều các không gian riêng.
 
@@ -86,7 +119,7 @@ A: Không: giá trị riêng 3 bội 2, nhưng A - 3I = [0, 0; 1, 0] có hạng 
 ## Không gian Euclide và trực giao hóa
 
 :::hook
-Mạng nơ-ron sâu thường khởi tạo trọng số trực giao để tín hiệu không co lại hay nổ tung qua nhiều lớp. Gram-Schmidt là cách bẻ một bộ vectơ cho vuông góc.
+Mạng nơ-ron sâu hay khởi tạo trọng số trực giao để tín hiệu không co lại hay nổ tung. Gram-Schmidt bẻ một bộ vectơ cho vuông góc.
 :::
 
 :::figure plane
@@ -105,7 +138,7 @@ vector 0 0 0 2 luc "v2" pos=w
 Gram-Schmidt lần lượt gọt khỏi mỗi vectơ phần bóng của nó trên các vectơ đã có; phần còn lại vuông góc với tất cả.
 :::
 
-Độ dài ||u|| = sqrt(u . u); u, v trực giao khi u . v = 0. Khi đó ||u + v||^2 = ||u||^2 + ||v||^2 (Pythagore, bình phương chứ không phải độ dài). Luôn có |u . v| <= ||u|| ||v|| (Cauchy-Schwarz). Muốn trực chuẩn, chia mỗi v_i cho độ dài của nó.
+$$ v_{1} = u_{1}, \qquad v_{2} = u_{2} - \frac{u_{2} \cdot v_{1}}{v_{1} \cdot v_{1}} v_{1} $$
 
 Ví dụ: trực giao hóa u1 = (1, 1), u2 = (2, 0).
 
@@ -113,13 +146,33 @@ Ví dụ: trực giao hóa u1 = (1, 1), u2 = (2, 0).
 2. Hệ số bóng: u2 . v1 / v1 . v1 = 2/2 = 1.
 3. v2 = (2, 0) - (1, 1) = (1, -1). Thử: v2 . v1 = 1 - 1 = 0.
 
-$$ v_{1} = u_{1}, \qquad v_{2} = u_{2} - \frac{u_{2} \cdot v_{1}}{v_{1} \cdot v_{1}} v_{1} $$
-
 > Lỗi thường gặp: chia cho ||v1|| thay vì cho v1 . v1 = ||v1||^2. Bóng sẽ dài sai và v2 không còn vuông góc.
 
 :::check
-Q: u = (3, 0), v = (0, 4) vuông góc. ||u + v|| bằng bao nhiêu? Có bằng ||u|| + ||v|| không?
-A: ||u + v||^2 = 9 + 16 = 25, nên ||u + v|| = 5, khác 3 + 4 = 7.
+Q: Trực giao hóa u1 = (0, 1), u2 = (2, 3).
+A: Hệ số bóng 3/1 = 3, nên v2 = (2, 3) - 3(0, 1) = (2, 0), vuông góc với v1 = (0, 1).
+:::
+
+### Độ dài, góc và Pythagore
+
+:::figure plane
+caption: u = (3, 0) vuông góc với v = (0, 4): ||u + v|| = 5 là cạnh huyền, ngắn hơn 3 + 4.
+size: 140 95
+x: -0.5 4.5 2
+y: -0.5 4.5 2
+vector 0 0 3 0 do
+vector 3 0 3 4 xanh
+vector 0 0 3 4 luc
+text 1.5 0.35 "u"
+text 3.45 2 "v"
+text 0.9 2.6 "u + v"
+:::
+
+Độ dài là ||u|| = sqrt(u . u); u và v trực giao khi u . v = 0. Khi đó ||u + v||^2 = ||u||^2 + ||v||^2 (Pythagore cho bình phương độ dài, không phải cho độ dài). Luôn có |u . v| <= ||u|| ||v|| (Cauchy-Schwarz). Muốn trực chuẩn, chia mỗi v_i cho độ dài của nó.
+
+:::check
+Q: u = (6, 0), v = (0, 8) vuông góc. ||u + v|| bằng bao nhiêu? Có bằng ||u|| + ||v|| không?
+A: ||u + v||^2 = 36 + 64 = 100, nên ||u + v|| = 10, khác 6 + 8 = 14.
 :::
 
 ## Dạng toàn phương
@@ -146,17 +199,26 @@ mark cell 3 2 do
 q xác định dương khi q(x) > 0 theo mọi hướng x khác 0 (đáy bát), tức mọi giá trị riêng của ma trận đối xứng của q đều dương.
 :::
 
-Có giá trị riêng dương lẫn âm: không xác định dấu (yên ngựa). Tiêu chuẩn Sylvester: xác định dương khi các định thức con góc trên trái D_1, D_2, ... đều dương. Ở hình: D_1 = 1, D_2 = 1, D_3 = -1, nên không xác định dương.
+Nếu có giá trị riêng dương lẫn âm thì q không xác định dấu (yên ngựa).
+
+> Lỗi thường gặp: đặt nguyên hệ số tích chéo vào cả hai ô. Ô (1, 2) và (2, 1) cộng lại mới ra hệ số của xy.
+
+:::check
+Q: Viết ma trận đối xứng của q = 3x^2 + 4xy - y^2.
+A: Chia đôi 4 vào hai ô: [3, 2; 2, -1].
+:::
+
+### Tiêu chuẩn Sylvester
+
+Tiêu chuẩn Sylvester: q xác định dương khi các định thức con góc trên trái D_1, D_2, ... đều dương. Ở hình trang trước: D_1 = 1, D_2 = 1, D_3 = -1, nên q không xác định dương.
+
+$$ D_{1} > 0, \; D_{2} > 0, \; \ldots, \; D_{n} > 0 $$
 
 Ví dụ: tìm m để q = x^2 + 6xy + my^2 xác định dương.
 
 1. Chia đôi 6: A = [1, 3; 3, m].
 2. D_1 = 1 > 0, D_2 = m - 9.
 3. Cần m - 9 > 0: m > 9.
-
-$$ D_{1} > 0, \; D_{2} > 0, \; \ldots, \; D_{n} > 0 $$
-
-> Lỗi thường gặp: đặt nguyên hệ số tích chéo vào cả hai ô. Ô (1, 2) và (2, 1) cộng lại mới ra hệ số của xy.
 
 :::check
 Q: q = x^2 - 2xy + y^2 có xác định dương không?
@@ -184,7 +246,20 @@ segment 2 1 1 3 luc dash "r" pos=e
 Hình chiếu của b là điểm gần b nhất trên đường hay mặt phẳng; phần dư b - p luôn vuông góc với chỗ được chiếu lên.
 :::
 
-Chiếu lên mặt phẳng qua gốc có pháp tuyến n: bỏ đi phần của b dọc theo n. Ma trận chiếu lên span{a} là a a^T / (a^T a). Cộng hình chiếu lên từng vectơ chỉ đúng khi cơ sở trực giao.
+$$ p = \frac{a \cdot b}{a \cdot a} a, \qquad r = b - p $$
+
+Ma trận chiếu lên span{a} là a a^T / (a^T a).
+
+:::check
+Q: p là hình chiếu của b lên một không gian con. ||p|| có thể lớn hơn ||b|| không?
+A: Không: b = p + r với r vuông góc p, nên ||b||^2 = ||p||^2 + ||r||^2 >= ||p||^2.
+:::
+
+### Chiếu lên mặt phẳng
+
+Chiếu lên mặt phẳng qua gốc có pháp tuyến n là bỏ đi phần của b dọc theo n. Cộng hình chiếu lên từng vectơ của mặt phẳng chỉ đúng khi cơ sở trực giao.
+
+$$ p = b - \frac{b \cdot n}{n \cdot n} n $$
 
 Ví dụ: chiếu b = (3, 1, 1) lên mặt phẳng x + z = 0.
 
@@ -192,15 +267,11 @@ Ví dụ: chiếu b = (3, 1, 1) lên mặt phẳng x + z = 0.
 2. Phần dọc n: 2n = (2, 0, 2).
 3. p = (3, 1, 1) - (2, 0, 2) = (1, 1, -1). Thử: 1 + (-1) = 0.
 
-$$ p = \frac{a \cdot b}{a \cdot a} a, \qquad r = b - p $$
-
-$$ p = b - \frac{b \cdot n}{n \cdot n} n $$
-
 > Lỗi thường gặp: cộng hình chiếu lên hai vectơ không vuông góc của mặt phẳng. Phải trực giao hóa trước, hoặc chiếu qua pháp tuyến.
 
 :::check
-Q: p là hình chiếu của b lên một không gian con. ||p|| có thể lớn hơn ||b|| không?
-A: Không: b = p + r với r vuông góc p, nên ||b||^2 = ||p||^2 + ||r||^2 >= ||p||^2.
+Q: Chiếu b = (1, 2, 3) lên mặt phẳng z = 0.
+A: n = (0, 0, 1), b . n = 3, n . n = 1: p = (1, 2, 3) - 3(0, 0, 1) = (1, 2, 0).
 :::
 
 ## Làm quen PCA và SVD
@@ -226,7 +297,9 @@ point -1 -3 muc
 PCA tìm hướng dữ liệu trải dài nhất: đó là vectơ riêng của ma trận hiệp phương sai, và giá trị riêng là độ trải theo hướng ấy.
 :::
 
-Trước hết trừ trung bình mỗi cột. SVD: mọi ma trận A = U Sigma V^T; các giá trị kỳ dị là căn bậc hai giá trị riêng của A^T A, luôn thực và không âm. Phần phương sai giữ lại là tổng giá trị riêng giữ chia tổng tất cả.
+Trước hết trừ trung bình mỗi cột. Phần phương sai giữ lại là tổng các giá trị riêng được giữ chia cho tổng tất cả.
+
+$$ \frac{t_{1} + \ldots + t_{k}}{t_{1} + \ldots + t_{n}} $$
 
 Ví dụ: PCA với bốn điểm ở hình (trung bình đã bằng 0), S = X^T X.
 
@@ -234,7 +307,25 @@ Ví dụ: PCA với bốn điểm ở hình (trung bình đã bằng 0), S = X^T
 2. p(t) = (20 - t)^2 - 144: giá trị riêng 32 và 8.
 3. t = 32 cho hướng (1, 1); giữ 1 hướng được 32/40 = 4/5 phương sai.
 
-$$ \frac{t_{1} + \ldots + t_{k}}{t_{1} + \ldots + t_{n}} $$
+:::check
+Q: Ma trận hiệp phương sai có giá trị riêng 9 và 1. Giữ 1 hướng thì giữ được bao nhiêu phần phương sai?
+A: 9/(9 + 1) = 9/10, tức 90%.
+:::
+
+### SVD: xoay, giãn, xoay
+
+:::figure flow
+caption: A = U Sigma V^T: một phép xoay (hoặc lật), giãn từng trục theo giá trị kỳ dị, rồi xoay lần nữa.
+box "x"
+link "V^T"
+box "xoay"
+link "Sigma"
+box "giãn trục" xanh
+link "U"
+box "Ax" luc
+:::
+
+SVD: mọi ma trận đều viết được A = U Sigma V^T. Các giá trị kỳ dị là căn bậc hai các giá trị riêng của A^T A, luôn thực và không âm.
 
 > Lỗi thường gặp: quên trừ trung bình trước khi lập ma trận hiệp phương sai; hoặc lấy căn giá trị riêng của A thay cho của A^T A.
 

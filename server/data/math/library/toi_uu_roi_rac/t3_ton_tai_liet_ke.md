@@ -3,112 +3,302 @@ id: tr_lib_t3
 title_vi: Bài toán tồn tại và bài toán liệt kê
 subject: toi_uu_roi_rac
 floor: 3
-summary_vi: Khi không cần đếm hết mà chỉ cần chỉ ra có hay không, và khi phải đi qua từng cấu hình một không sót cái nào: nguyên lý Dirichlet, bất biến, thứ tự từ điển, phương pháp sinh và quay lui.
+format: 2
+summary_vi: Chứng minh một điều chắc chắn xảy ra mà không cần đếm hết (Dirichlet, bất biến), rồi đi qua mọi cấu hình theo thứ tự từ điển không sót cái nào: so sánh, sinh cấu hình liền sau, tính thứ hạng, và quay lui có cắt nhánh.
 skills: [tr_t3_dirichlet, tr_t3_bat_bien, tr_t3_tu_dien, tr_t3_sinh_ke_tiep, tr_t3_thu_hang, tr_t3_quay_lui]
 ---
 ## Nguyên lý Dirichlet
 
-Nhốt N con chim vào k cái lồng, N > k, thì có một lồng chứa ít nhất hai con. Dạng tổng quát:
+:::hook
+Bảng băm có 1000 ô mà phải cất 1001 khóa: chắc chắn có hai khóa chung một ô, dù hàm băm tốt đến đâu.
+:::
 
-$$ N \text{ vat vao } k \text{ hop } \Rightarrow \text{ co hop chua it nhat } \left\lceil \frac{N}{k} \right\rceil \text{ vat} $$
+:::figure grid
+caption: 6 vật vẫn chia đều mỗi hộp 2. Vật thứ 7 rơi vào đâu cũng làm một hộp có 3: cần k(m - 1) + 1 = 7.
+table "6 vật"
+head "hộp 1" "hộp 2" "hộp 3"
+row "o o" "o o" "o o"
+op "+1"
+table "7 vật"
+head "hộp 1" "hộp 2" "hộp 3"
+row "o o o" "o o" "o o"
+mark cell 1 1 do
+:::
 
-Trần của N/k là số nguyên nhỏ nhất không nhỏ hơn N/k: trần của 9/4 là 3, trần của 8/4 là 2.
+:::core
+Nhiều vật hơn hộp thì có hộp chứa chung: N vật vào k hộp thì chắc chắn có một hộp chứa ít nhất trần(N/k) vật.
+:::
 
-Muốn chắc chắn có m vật trong cùng một hộp, cần ít nhất:
+Trần(N/k) là số nguyên nhỏ nhất không nhỏ hơn N/k: trần(17/5) = 4. Muốn chắc chắn có m vật cùng hộp, cần một vật nhiều hơn cách chia đều mỗi hộp m - 1 vật:
 
 $$ k(m-1) + 1 $$
 
-vì k(m - 1) vật vẫn có thể chia mỗi hộp đúng m - 1 vật.
+Ví dụ: túi linh thạch 3 màu. Lấy bao nhiêu viên để chắc có 3 viên cùng màu?
 
-Phần khó là chọn hộp cho khéo. Ví dụ: trong 6 số nguyên bất kỳ luôn có hai số có hiệu chia hết cho 5.
+1. Màu là hộp: k = 3, cần m = 3.
+2. 6 viên vẫn có thể là 2, 2, 2. Viên thứ 7 bắt buộc tạo bộ ba: 3 . 2 + 1 = 7.
 
-1. Hộp là số dư khi chia cho 5: có 5 hộp 0, 1, 2, 3, 4.
-2. 6 số vào 5 hộp nên có hai số cùng hộp.
-3. Hai số cùng số dư có hiệu chia hết cho 5.
+:::check
+Q: Cất 17 cuộn bí kíp vào 5 rương. Chắc chắn có một rương chứa ít nhất mấy cuộn? Sao không nói được 5?
+A: trần(17/5) = 4. Chia 4, 4, 3, 3, 3 thì không rương nào có 5 cuộn.
+:::
 
-Một ví dụ khéo hơn: chọn 11 số trong {1, 2, ..., 20} thì có hai số mà số này chia hết cho số kia. Mỗi số viết được thành 2^a . m với m lẻ; 10 số lẻ từ 1 đến 19 là 10 hộp; hai số cùng hộp thì số nhỏ chia hết số lớn.
+### Chọn hộp cho khéo
 
-> Lỗi thường gặp: kết luận về từng hộp cụ thể. Nguyên lý chỉ nói có một hộp đầy, không nói hộp nào. Lỗi thứ hai là đánh giá sai trong một hộp, như cho rằng hai điểm trong hình vuông cạnh 1 cách nhau không quá 1, trong khi đường chéo dài căn bậc hai của 2.
+Phần khó là chọn hộp. Hộp hay gặp: số dư khi chia cho d, cặp số có tổng hoặc hiệu cố định, các giá trị có thể của một đại lượng.
+
+Ví dụ: chọn ít nhất bao nhiêu số khác nhau trong {1, ..., 10} để chắc có hai số có tổng 11?
+
+1. Hộp là các cặp tổng 11: {1, 10}, {2, 9}, {3, 8}, {4, 7}, {5, 6}. Có 5 hộp.
+2. Chọn 6 số thì hai số rơi cùng một cặp. Chọn 5 số 1, 2, 3, 4, 5 thì chưa có.
+3. Vậy cần 6 số.
+
+> Lỗi thường gặp: kết luận về một hộp cụ thể. Nguyên lý chỉ nói có MỘT hộp đầy, không nói hộp nào.
+
+:::check
+Q: Trong 5 số nguyên bất kỳ, luôn có hai số có hiệu chia hết cho 4. Hộp là gì?
+A: Số dư khi chia cho 4: chỉ có 4 hộp 0, 1, 2, 3. 5 số nên hai số cùng số dư, hiệu của chúng chia hết cho 4.
+:::
 
 ## Chẵn lẻ và bất biến
 
-Khi một trò chơi hay quá trình cho phép biến đổi theo luật, muốn chứng minh một trạng thái không bao giờ đạt được, hãy tìm một bất biến: một đại lượng không đổi qua mọi bước (hoặc không đổi tính chẵn lẻ, không đổi số dư).
+:::hook
+Một trò xếp hình chơi mãi không ra đích. Thay vì thử tiếp, hãy tìm một con số mà mọi nước đi đều giữ nguyên.
+:::
 
-Cách làm luôn gồm ba bước:
+:::figure grid
+caption: Lật đúng 2 cốc: số cốc úp d đổi -2, +2 hoặc 0. Tính chẵn lẻ của d không bao giờ đổi.
+table
+head "lật" "d đổi"
+row "úp, úp" "-2"
+row "ngửa, ngửa" "+2"
+row "úp, ngửa" "0"
+mark col 2 vang
+:::
 
-1. Chọn đại lượng: tổng, tính chẵn lẻ của tổng, số ô mỗi màu, hiệu hai tổng xen kẽ.
-2. Chứng minh mỗi bước của luật chơi không làm nó đổi.
-3. So giá trị lúc đầu với giá trị mà trạng thái đích phải có. Khác nhau thì không đạt được.
+:::core
+Bất biến là đại lượng mà mọi nước đi đều giữ nguyên; lúc đầu và đích khác giá trị bất biến thì đích không bao giờ tới được.
+:::
 
-Ví dụ: trên bảng có 1, 2, ..., 10, mỗi lượt xóa a, b và viết |a - b|. Tổng mới bằng tổng cũ trừ 2 . min(a, b), nên tính chẵn lẻ của tổng không đổi. Tổng lúc đầu 55 là số lẻ, nên số cuối cùng chắc chắn là số lẻ.
+1. Chọn đại lượng: tổng, tính chẵn lẻ, số ô mỗi màu, hiệu hai tổng xen kẽ.
+2. Kiểm MỌI kiểu nước đi đều giữ nó.
+3. So giá trị lúc đầu với giá trị mà đích phải có.
 
-Ví dụ kinh điển về tô màu: bàn cờ 8 x 8 bị cắt hai ô góc đối diện. Hai ô đó cùng màu, nên còn 32 ô màu này và 30 ô màu kia; mỗi domino phủ một ô mỗi màu, nên không thể lát kín.
+Ví dụ: bảng có 1, 2, 3, 4, 5. Mỗi lượt xóa a, b và viết |a - b|. Số cuối chẵn hay lẻ?
 
-> Lỗi thường gặp: kiểm tra bất biến không đủ mọi trường hợp của một bước. Lật hai cốc gồm ba khả năng: hai cốc úp, hai cốc ngửa, một úp một ngửa; khả năng cuối không làm đổi số cốc úp, chứ không phải làm giảm 1.
+1. Tổng mới = tổng cũ - 2 . min(a, b): tính chẵn lẻ của tổng không đổi.
+2. Tổng đầu là 15, lẻ. Số cuối là tổng cuối, nên luôn lẻ.
+
+> Lỗi thường gặp: chỉ kiểm vài kiểu nước đi. Quên kiểu "úp, ngửa" là tưởng d giảm 1.
+
+:::check
+Q: Bàn 3 x 3 bỏ một ô ở giữa cạnh. Lát kín bằng 4 quân domino được không?
+A: Tô xen kẽ: 4 góc và ô tâm cùng màu (5 ô), 4 ô giữa cạnh màu kia. Bỏ một ô giữa cạnh còn 5 và 3, mà mỗi domino phủ 1 ô mỗi màu: không được.
+:::
 
 ## Thứ tự từ điển
 
-Thứ tự từ điển so sánh hai dãy cùng độ dài như cách xếp chữ trong từ điển: đi từ trái sang phải, dừng ở vị trí khác nhau đầu tiên; dãy có phần tử nhỏ hơn ở vị trí đó đứng trước.
+:::hook
+Từ điển, danh bạ, tên tệp: so chữ đầu, bằng nhau mới so chữ kế tiếp.
+:::
 
-$$ (a_1, \ldots, a_n) < (b_1, \ldots, b_n) \Leftrightarrow a_i < b_i \text{ tai vi tri khac nhau dau tien } i $$
+:::figure grid
+caption: Vị trí 1 bằng nhau. Ở vị trí 2, 1 < 2 nên dãy trên đứng trước.
+table
+head "1" "2" "3" "4"
+row 3 1 4 2
+row 3 2 1 4
+mark col 1 xanh
+mark col 2 do
+:::
 
-Ví dụ: (2, 3, 4, 1) đứng trước (2, 4, 1, 3) vì ở vị trí thứ hai 3 nhỏ hơn 4; những gì đứng sau vị trí đó không còn ý nghĩa.
+:::core
+So từ trái sang phải và dừng ở vị trí khác nhau đầu tiên: dãy có phần tử nhỏ hơn ở đó đứng trước.
+:::
 
-Ba loại cấu hình hay được xếp theo thứ tự từ điển:
+- Xâu nhị phân dài n xếp đúng như các số 0, 1, ..., 2^n - 1.
+- Hoán vị của {1, ..., n}: đầu là (1, 2, ..., n), cuối là (n, ..., 2, 1).
+- Tập k phần tử viết tăng dần: đầu {1, ..., k}, cuối {n - k + 1, ..., n}.
 
-- Xâu nhị phân độ dài n: thứ tự trùng với thứ tự của các số 0, 1, ..., 2^n - 1 viết trong hệ nhị phân.
-- Hoán vị của {1, ..., n}: đầu tiên là (1, 2, ..., n), cuối cùng là (n, ..., 2, 1).
-- Tập con k phần tử của {1, ..., n}, mỗi tập viết tăng dần: đầu tiên là {1, ..., k}, cuối cùng là {n - k + 1, ..., n}.
+Ví dụ: xếp 2101, 2011, 1220, 2100.
 
-> Lỗi thường gặp: so sánh theo tổng hay theo phần tử lớn nhất thay vì theo vị trí khác nhau đầu tiên. 1012 đứng trước 1021 vì ở vị trí thứ ba 1 nhỏ hơn 2, dù hai xâu có cùng các chữ số.
+1. Chữ đầu: 1220 đứng trước ba xâu bắt đầu bằng 2.
+2. Chữ thứ hai: 2011 trước 2101 và 2100. Chữ thứ tư: 2100 trước 2101.
+3. Thứ tự: 1220, 2011, 2100, 2101.
+
+> Lỗi thường gặp: so theo tổng hay theo số lớn nhất. 1012 và 1021 cùng chữ số, nhưng 1012 đứng trước.
+
+:::check
+Q: Các tập 3 phần tử của {1, ..., 7}, viết tăng dần, xếp theo từ điển. Tập đầu và tập cuối là gì?
+A: Đầu {1, 2, 3}, cuối {5, 6, 7}: mỗi vị trí đạt giá trị lớn nhất được phép.
+:::
 
 ## Phương pháp sinh
 
-Phương pháp sinh liệt kê các cấu hình bằng cách đi từ cấu hình đầu tiên, mỗi lần dựng cấu hình liền sau theo thứ tự từ điển, đến khi gặp cấu hình cuối cùng. Cần hai thứ: biết cấu hình đầu, cuối, và một quy tắc tìm cấu hình liền sau.
+:::hook
+Muốn thử mọi cấu hình mà không lưu cả danh sách, chỉ cần biết từ cấu hình này đi tới cấu hình liền sau như thế nào.
+:::
 
-Xâu nhị phân liền sau: từ phải sang trái tìm chữ số 0 đầu tiên, đổi nó thành 1 và đổi mọi chữ số bên phải nó thành 0. Ví dụ 10111 thành 11000. Xâu toàn số 1 là cấu hình cuối.
+:::figure grid
+caption: Như cộng 1: chữ 0 cuối cùng thành 1, mọi chữ 1 bên phải nó về 0.
+table "trước"
+row 1 0 0 1 1
+mark cell 1 3 do
+op "->"
+table "sau"
+row 1 0 1 0 0
+mark cell 1 3 do
+:::
 
-Tập con k phần tử liền sau: phần tử ở vị trí i lớn nhất được phép là n - k + i. Từ phải sang trái tìm phần tử đầu tiên chưa đạt giá trị lớn nhất, tăng nó lên 1, các phần tử sau nó lấy các số liền tiếp. Ví dụ với n = 6, k = 3: {1, 5, 6} thành {2, 3, 4}.
+:::core
+Sinh đi từ cấu hình đầu tới cấu hình cuối; mỗi bước tăng vị trí phải nhất còn tăng được, rồi đưa mọi vị trí sau nó về nhỏ nhất.
+:::
 
-Hoán vị liền sau:
+Xâu nhị phân: từ phải sang trái tìm chữ 0 đầu tiên. Xâu toàn số 1 là cấu hình cuối. Tập k phần tử của {1, ..., n}: vị trí i lớn nhất là n - k + i. Tìm từ phải phần tử chưa đạt giá trị lớn nhất, tăng nó 1, các phần tử sau lấy số liền tiếp.
 
-1. Từ phải sang trái tìm vị trí i đầu tiên có a_i < a_(i + 1). Đoạn sau i đang giảm dần.
-2. Trong đoạn sau i tìm số nhỏ nhất còn lớn hơn a_i, đổi chỗ nó với a_i.
-3. Đảo ngược đoạn sau i cho thành tăng dần.
+Ví dụ: tập 3 phần tử của {1, ..., 6}. Tập liền sau {2, 5, 6}?
 
-Ví dụ (1, 3, 5, 4, 2): vị trí i là chỗ của số 3, đổi 3 với 4 được (1, 4, 5, 3, 2), đảo đoạn sau được (1, 4, 2, 3, 5).
+1. Giá trị lớn nhất của ba vị trí: 4, 5, 6. Số 6 và 5 đã đạt.
+2. Tăng 2 lên 3, hai vị trí sau lấy 4, 5: được {3, 4, 5}.
 
-> Lỗi thường gặp: quên bước đảo ngược ở hoán vị. Sau khi đổi chỗ, đoạn sau vẫn giảm dần, tức là lớn nhất có thể; giữ nguyên nó là nhảy qua rất nhiều hoán vị ở giữa.
+:::check
+Q: Tập 2 phần tử của {1, ..., 6}. Tập liền sau {3, 6} là gì?
+A: 6 đã lớn nhất ở vị trí 2. Tăng 3 lên 4, vị trí sau lấy 5: {4, 5}.
+:::
+
+### Hoán vị liền sau
+
+:::figure flow
+caption: Đuôi (5, 4, 3, 1) đã giảm dần, tức lớn nhất. Tăng số đứng trước nó ít nhất có thể, rồi đưa đuôi về nhỏ nhất.
+box "2 5 4 3 1"
+link "đổi 2 với 3"
+box "3 5 4 2 1" xanh
+link "đảo đuôi"
+box "3 1 2 4 5" luc
+:::
+
+1. Từ phải sang trái tìm số đầu tiên nhỏ hơn số đứng ngay sau nó: số 2.
+2. Trong đuôi bên phải, số nhỏ nhất còn lớn hơn 2 là 3: đổi chỗ.
+3. Đuôi (5, 4, 2, 1) vẫn giảm dần: đảo ngược thành tăng dần.
+
+> Lỗi thường gặp: quên đảo đuôi. Giữ (3, 5, 4, 2, 1) là nhảy qua mọi hoán vị bắt đầu bằng 3 ở giữa.
+
+:::check
+Q: Hoán vị liền sau (1, 4, 3, 2) là gì?
+A: Số 1 nhỏ hơn số sau nó. Đổi 1 với 2 được (2, 4, 3, 1), đảo đuôi được (2, 1, 3, 4).
+:::
 
 ## Thứ hạng của cấu hình
 
-Thứ hạng của một cấu hình là vị trí của nó trong danh sách xếp theo thứ tự từ điển, đánh số từ 1. Không cần liệt kê hết: đếm số cấu hình đứng trước rồi cộng 1.
+:::hook
+Đánh số mọi cấu hình rồi lưu một con số thay cho cả cấu hình: muốn vậy phải tính được nó đứng thứ mấy mà không liệt kê hết.
+:::
 
-Với xâu nhị phân, xâu ứng với số m (đọc trong hệ nhị phân) đứng thứ m + 1. Ví dụ 01101 = 13 đứng thứ 14.
+:::figure grid
+caption: (2, 4, 1, 3): có 6 + 4 = 10 hoán vị đứng trước, nên nó đứng thứ 11.
+table
+head "1" "2" "3" "4"
+side "số" "nhỏ hơn, chưa dùng" "nhân" "góp"
+row 2 4 1 3
+row 1 2 0 0
+row 3! 2! 1! 0!
+row 6 4 0 0
+mark row 4 vang
+:::
 
-Với hoán vị, đi từ trái sang phải. Ở vị trí i, gọi c_i là số các số nhỏ hơn a_i chưa dùng ở các vị trí trước; đặt một số như vậy vào vị trí i thì mọi cách xếp (n - i)! phần còn lại đều đứng trước.
+:::core
+Thứ hạng là 1 cộng số cấu hình đứng trước; đếm chúng theo từng vị trí, không cần liệt kê.
+:::
+
+Ở vị trí i, đặt một số nhỏ hơn chưa dùng thì mọi cách xếp (n - i)! phần còn lại đều đứng trước. Xâu nhị phân thì dễ hơn: xâu là số m thì đứng thứ m + 1, như 0110 = 6 đứng thứ 7.
 
 $$ \text{hang} = 1 + \sum_{i=1}^{n} c_i \, (n-i)! $$
 
-Ví dụ (2, 3, 1, 4): c_1 = 1 cho 1 . 3! = 6; c_2 = 1 (chỉ có số 1) cho 1 . 2! = 2; c_3 = 0. Có 8 hoán vị đứng trước, nên nó đứng thứ 9.
+> Lỗi thường gặp: lệch một. Có m cấu hình đứng trước thì nó đứng thứ m + 1, không phải thứ m.
 
-Với tập con, làm tương tự: giữ các phần tử đầu, đặt ở một vị trí một số nhỏ hơn rồi đếm bằng tổ hợp số cách chọn các phần tử còn lại lớn hơn nó.
+:::check
+Q: Trong các hoán vị của {1, 2, 3, 4}, (4, 1, 2, 3) đứng thứ mấy?
+A: Vị trí 1 có 3 số nhỏ hơn 4: 3 . 3! = 18; các vị trí sau góp 0. Đứng thứ 19.
+:::
 
-> Lỗi thường gặp: lệch một vị trí. Số cấu hình đứng trước là m thì cấu hình đứng thứ m + 1, vì cấu hình đầu tiên đứng thứ 1 chứ không phải thứ 0.
+### Thứ hạng của tập con
+
+Với tập viết tăng dần, cũng đếm các tập đứng trước: giữ nguyên các phần tử đầu, đặt một số nhỏ hơn ở một vị trí, rồi đếm cách chọn các phần tử sau lớn hơn nó.
+
+Ví dụ: tập 2 phần tử của {1, ..., 5}. {2, 4} đứng thứ mấy?
+
+1. Bắt đầu bằng 1: {1, 2}, {1, 3}, {1, 4}, {1, 5}, là 4 tập.
+2. Bắt đầu bằng 2 mà phần tử sau nhỏ hơn 4: chỉ {2, 3}.
+3. 5 tập đứng trước: {2, 4} đứng thứ 6.
+
+:::check
+Q: Cùng danh sách đó, tập đứng thứ 8 là tập nào?
+A: Bắt đầu bằng 1: thứ 1 đến 4; bằng 2: {2, 3}, {2, 4}, {2, 5} là thứ 5 đến 7. Thứ 8 là {3, 4}.
+:::
 
 ## Thuật toán quay lui
 
-Quay lui xây cấu hình từng thành phần một. Ở bước i, thử lần lượt mọi giá trị hợp lệ cho x_i; với mỗi giá trị, hoặc in ra khi cấu hình đã đủ, hoặc đi tiếp sang bước i + 1. Thử hết thì trở về bước i - 1: đó là quay lui.
+:::hook
+Giải sudoku bằng máy: điền thử một ô, đi tiếp; gặp ngõ cụt thì xóa ô vừa điền và thử số khác.
+:::
 
-1. Try(i): với mỗi giá trị v còn hợp lệ cho x_i, gán x_i = v.
-2. Nếu i là thành phần cuối thì in ra cấu hình.
-3. Ngược lại gọi Try(i + 1).
-4. Thử hết các giá trị thì Try(i) kết thúc và trả quyền về Try(i - 1).
+:::figure graph
+caption: Tìm tập con của {1, 2, 3, 4} có tổng 5, chọn số tăng dần. Nút đỏ có tổng vượt 5 nên bị cắt; hai nút xanh {1, 4}, {2, 3} là lời giải.
+size: 300 120
+layout: tree
+node R "bắt đầu"
+node A "1"
+node B "2"
+node C "3"
+node D "4"
+node AB "1,2"
+node AC "1,3"
+node AD "1,4" luc
+node BC "2,3" luc
+node BD "2,4" do
+node CD "3,4" do
+node ABC "1,2,3" do
+node ACD "1,3,4" do
+edge R A
+edge R B
+edge R C
+edge R D
+edge A AB
+edge A AC
+edge A AD luc
+edge B BC luc
+edge B BD do dash
+edge C CD do dash
+edge AB ABC do dash
+edge AC ACD do dash
+:::
 
-Sức mạnh của quay lui là cắt nhánh: nếu cấu hình bộ phận x_1, ..., x_i đã vi phạm ràng buộc mà không thành phần nào thêm vào sửa được, thì bỏ qua toàn bộ nhánh mở rộng từ nó.
+:::core
+Quay lui dựng lời giải từng bước, thử mọi lựa chọn còn hợp lệ, hết lựa chọn thì lùi về bước trước; nhánh đã hỏng thì cắt bỏ cả nhánh.
+:::
 
-Ví dụ: liệt kê các tập con của {1, 2, 3, 4, 5} có tổng 6. Chọn các phần tử tăng dần, dừng nhánh khi tổng vượt 6. Bắt đầu bằng 1 được {1, 5} và {1, 2, 3}; bắt đầu bằng 2 được {2, 4}; bắt đầu bằng 3, 4, 5 không được gì. Có 3 tập.
+:::check
+Q: Nhìn hình: vì sao nút "1,2" vẫn đi tiếp còn "2,4" bị cắt ngay?
+A: Tổng 1 + 2 = 3 còn nhỏ hơn 5, có thể thêm số. 2 + 4 = 6 đã vượt 5, thêm số nào cũng chỉ lớn hơn.
+:::
 
-Bài 4 quân hậu trên bàn 4 x 4: đặt mỗi hàng một quân, quay lui khi không còn cột an toàn; tìm được đúng 2 cách đặt.
+### Thủ tục Try(i) và đếm lời giải
 
-> Lỗi thường gặp: để một giá trị được dùng lại khi bài không cho phép, như ghép {3, 3} thành tập có tổng 6, hay cho x_2 trùng x_1 khi liệt kê hoán vị. Mỗi bước phải chỉ thử những giá trị chưa dùng.
+1. Try(i): với mỗi giá trị v còn hợp lệ, gán x_i = v.
+2. Nếu đã đủ cấu hình thì in ra, chưa đủ thì gọi Try(i + 1).
+3. Thử hết giá trị thì Try(i) trả về: đó là bước quay lui.
+
+Không ràng buộc thì không cắt gì: xâu nhị phân dài n cho đủ 2^n lá. Liệt kê hoán vị thì chỉ thử những số chưa dùng. Muốn biết quay lui in ra bao nhiêu cấu hình, chia theo lựa chọn ở bước đầu rồi cộng lại.
+
+Ví dụ: bộ (x_1, x_2, x_3), mỗi x_i từ 0 đến 2, tổng bằng 4. Có bao nhiêu bộ?
+
+1. x_1 = 0: x_2 + x_3 = 4, chỉ (2, 2): 1 bộ.
+2. x_1 = 1: tổng 3, có (1, 2), (2, 1): 2 bộ. x_1 = 2: tổng 2, có (0, 2), (1, 1), (2, 0): 3 bộ.
+3. Cộng lại: 1 + 2 + 3 = 6 bộ.
+
+> Lỗi thường gặp: dùng lại một giá trị bài không cho phép, như ghép {3, 3} thành tập có tổng 6.
+
+:::check
+Q: Quay lui liệt kê các tập con của {1, ..., 5} có tổng 7. Nó in ra mấy tập?
+A: 3 tập: {1, 2, 4}, {2, 5}, {3, 4}.
+:::
