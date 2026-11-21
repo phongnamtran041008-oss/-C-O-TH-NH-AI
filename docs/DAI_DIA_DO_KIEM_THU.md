@@ -123,3 +123,71 @@ What a player sees, judged:
   * a world notice in the chat ("Mắc Ảnh Động sẽ mở cửa...", `105`) is red text over the ground
     bottom left (chat);
   * the dot below drops at text sizes 6-9 (known, `engine/text.py`).
+
+## 4. Numbers on the real world
+
+Client: `nav_perf` (a real server, the character at tầng 9 with every land open, following the
+arrow from the gate to the farthest khu of band 3 for 40 s, every frame timed without the driver's
+sleep). Server: `bench_giant_map.py --zone all` (the shipped map run as its own zone, its real
+monsters; 1, 10 and 40 players spread over it, walking, 200 ticks of 50 ms) and `--startup`.
+"old" is the same zone's map before Đại Địa Đồ (commit 660f7ef, about 60 x 40 tiles), on the same
+bench.
+
+| land | file KB (old) | zip KB (old) | map load ms (old) | world frame walking avg / 95% / worst ms | ground surfaces MB (old) | server channel ms (old) | monsters (old) | tick 1p avg/worst ms (old) | tick 10p | tick 40p |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Kiếm Trủng Sơn | 2038 (112) | 132 (6) | 55-59 (24) | 4.6 / 6.3 / 26.7 | 24 (9.6) | 70 (58) | 221 (42) | 0.26/0.65 (0.22/0.66) | 0.81/1.50 (0.61/1.90) | 2.11/5.03 (2.52/6.22) |
+| Lưu Vân Cốc | 1906 (110) | 127 (6) | 47-57 (29) | 5.1 / 6.4 / 13.5 | 24 (9.4) | 60 (54) | 182 (18) | 0.23/0.57 (0.11/0.28) | 0.74/1.60 (0.45/1.38) | 1.90/4.61 (2.11/6.27) |
+| Mê Đồ Lâm | 2288 (116) | 145 (5) | 65-66 (25) | 5.0 / 6.2 / 9.6 | 24 (9.4) | 61 (61) | 159 (32) | 0.18/0.52 (0.18/0.32) | 0.69/1.21 (0.55/1.44) | 1.70/3.61 (2.43/5.44) |
+| Vạn Tượng Trạch | 1532 (102) | 101 (5) | 48-60 (25) | 5.0 / 6.4 / 11.0 | 24 (8.3) | 64 (56) | 124 (16) | 0.15/0.43 (0.11/0.35) | 0.58/1.48 (0.38/1.20) | 1.51/3.83 (2.00/6.01) |
+| Thiên Công Phường | 1549 (120) | 97 (6) | 41-48 (25) | 4.9 / 6.2 / 11.8 | 24 (8.8) | 64 (57) | 164 (17) | 0.13/0.46 (0.11/0.39) | 0.64/1.22 (0.38/1.16) | 1.87/5.34 (2.42/7.77) |
+| Linh Xạ Nguyên | 1848 (101) | 123 (5) | 47-54 (25) | 4.6 / 5.4 / 10.6 | 24 (9.0) | 65 (49) | 162 (15) | 0.20/0.48 (0.10/0.33) | 0.66/1.70 (0.35/0.86) | 1.58/3.32 (1.94/4.98) |
+| Lôi Kiếp Đài | 326 (63) | 11 (3) | 9-12 (22) | 4.9 / 6.2 / 15.8 | 23.5 (4.7) | 57 (55) | 3 (3) | 0.04/0.08 (0.05/0.14) | 0.25/0.60 (0.33/0.99) | 1.64/4.65 (2.00/5.20) |
+
+(The monsters column is the live count of a fresh channel on the server, which can differ by a
+few from the sum of the map's `count` - 157 for Mê Đồ Lâm.)
+
+* **The rest of the client, per giant land**: the world standing still 4.0-5.5 ms a frame; the first
+  arrow to the farthest khu of band 3 0.34-0.66 s after choosing it (23-24 frames); the grid 7-12 ms
+  and the field 106-115 ms spread over frames (no slice over 5.2 ms); one reading 0.05-0.07 ms;
+  the overview 6-9 ms once; the minimap 0.17-0.23 ms a frame; the big map opens in 20-27 ms and
+  draws in 3.6-4.7 ms (worst 6.3); the walk grid 303 KB, a field 1.2 MB, the overview 225 KB, the
+  big map's picture 185 KB. The ground chunks are capped by the tilemap's cache: 24 MB at most
+  (15-16 MB measured on Thiên Công Phường and Linh Xạ Nguyên, whose walks drew fewer chunks).
+* **The server's start-up** with every map preloaded (`World.preload`, 8 zones): 0.36 s (import of
+  the app 0.92 s before it), 6-78 ms a zone; the 11.4 MB of maps parsed; the process at 97 MB.
+  Before Đại Địa Đồ the six lands parsed in 2-3 ms each: the giant ones take 37-57 ms each, about
+  0.25 s more in all, once, at start-up.
+* **The web build** packs `client/assets/maps` into its zip archive: the ten maps are 11.4 MB on disk
+  and 748 KB compressed (deflate 9, as the archive does); before, 0.94 MB and 47 KB. So the maps add
+  about 0.7 MB to what a browser downloads (measured on the files; no browser run).
+
+**Worse than on the old small maps, plainly**: the map files are 13-20 times larger on disk (2 MB
+instead of 0.1 MB a land; 0.7 MB more in the web download); loading a land takes 40-66 ms instead of
+about 25 ms; the ground surfaces of a land are 24 MB instead of 8-10 MB (the tilemap cache's cap);
+the client's working set is about 20-25 MB larger (95-101 MB against 74-83 MB on the bench); the
+server parses a land in 37-57 ms instead of 2-3 ms; a land holds 4-10 times the monsters. The
+server's tick is not worse: with one player it is 0.13-0.26 ms against 0.10-0.22 ms, and with 40
+players spread over a giant land it is lower (1.5-2.1 ms against 1.9-2.5 ms: the players are farther
+apart, so fewer see each other). The world frame while walking stays at 4.6-5.1 ms on average.
+
+## 5. The rare slow frames
+
+The navigation work had traced 36-38 ms walking frames to the hotbar and the ability row scaling
+their icons with `pygame.transform.scale` every frame. Measured with the two rows timed inside every
+walking frame (`nav_perf`, `hud_rows_ms`, `slow_frames`), on Kiếm Trủng Sơn, Thiên Công Phường and
+Mê Đồ Lâm, 4 300-4 500 frames each, the rows drawn the old way (`NAV_PERF_OLD_ICONS=1`): **0.36-0.42 ms
+a frame on average, 1.3-1.5 ms at worst, and no frame over 25 ms at all.** The icon scaling is not the
+cause of the slow frames; it costs well under half a millisecond. With the scaled icons kept
+(`world.py` `hud_icon`, below) the rows cost 0.31-0.32 ms; the one frame over 25 ms in all seven lands
+(26.7 ms on Kiếm Trủng Sơn) spent 18 ms in the rows once - the first drawing of a picture loaded
+lazily from disk (a sheet's first use), not the scaling. The 36-38 ms frames of the earlier profile
+were most likely such first uses and the network poll, under the other agents' suites.
+
+The cache stays (it is small, the same pixels - `client/tests/test_hud_icons.py` compares the
+pictures - and saves the scaling of up to eight icons a frame), but it is not a fix of anything a
+player would notice; dropping its commit is harmless.
+
+## 6. Defects in other agents' areas
+
+See the final report of this work; in short: Kiếm Trủng Sơn and Lưu Vân Cốc walked clean (no map
+defect); their stone ground reads as wall (art); the HUD covers monsters at the top of the screen.
