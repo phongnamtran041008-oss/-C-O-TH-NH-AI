@@ -13,6 +13,7 @@ For every map in server/maps:
   beast, NPC, interact and sign; a spot that `needs` Đạp Kiếm Lướt (world_plan.json) is reached
   by one glide of at most the glide's max_px over water or ink instead, and not on foot;
 * every portal leads to a map and a spawn that exist; every prop's sprite has a picture;
+* every spawn of a map with khu lies inside a band 0 khu (the gate camp);
 * khu: ids unique in the whole world, band 0..3, the stage range of their band
   (data/math/dia_do.json), the anchor inside the khu; camps are band 0;
 * monster areas of a banded map: inside the khu they name, with its band, a monster that exists,
@@ -42,6 +43,9 @@ DATA = ROOT / "server" / "data"
 SPRITES_PY = ROOT / "client" / "engine" / "sprites.py"
 WIRING = ROOT / "client" / "assets" / "v2" / "wiring.json"
 GLIDE_TOL = 1.0      # px
+# lands of other authors where the spawn-in-a-camp rule (2026-11-21) is only a warning until they
+# are fixed (the world builder does not edit their modules)
+SPAWN_RULE_LATER = {"thien_cong_phuong", "linh_xa_nguyen", "rung_muc_loang", "ho_nghien_muc"}
 
 
 def _json(p: Path) -> dict:
@@ -248,6 +252,12 @@ def check_map(zone: str, ctx: dict, report: list | None = None) -> list[str]:
         if feet_tile(ax, ay) not in foot:
             out.append(f"{w}: its anchor ({ax}, {ay}) cannot be walked to from `spawn`")
         khu_rects[kid] = (k, band, realm)
+    # ---- every spawn of a banded map lies in a safe place (a band 0 khu): a player arriving sees
+    # the camp's name first, never a band and then the camp
+    for name, (x, y) in (zmap.spawns.items() if zmap.khu else ()):
+        if not any(b == 0 and k.contains(x, y) for k, b, _r in khu_rects.values()):
+            msg = f"{where}: spawn {name} ({x:.0f}, {y:.0f}) lies in no band 0 khu (grow the gate camp over it)"
+            (ctx["warnings"].append(msg) if zone in SPAWN_RULE_LATER else out.append(msg))
     # ---- monsters
     rules = ctx["rules"]
     clear = int(rules["clearance_tiles"]) * TILE
@@ -388,7 +398,7 @@ def context() -> dict:
             "map_zone": {z["map"]: zid for zid, z in zones.items() if z.get("map")},
             "monsters": monsters, "bands": dd["realms"], "rules": dd["distribution"], "glide": glide,
             "sizes": doc_sizes(), "sprites": known_sprites(), "khu_seen": {}, "texts": [],
-            "leash": float(_json(DATA / "balance" / "combat.json")["leash_radius"])}
+            "leash": float(_json(DATA / "balance" / "combat.json")["leash_radius"]), "warnings": []}
 
 
 def problems(report: list | None = None, warnings: list | None = None) -> list[str]:
@@ -404,6 +414,8 @@ def problems(report: list | None = None, warnings: list | None = None) -> list[s
         if not (SERVER_MAPS / path.name).is_file():
             out.append(f"client/assets/maps/{path.name} has no server copy")
     out += _fonts(ctx["texts"], warnings)
+    if warnings is not None:
+        warnings += ctx["warnings"]
     return out
 
 
