@@ -64,6 +64,9 @@ def hp(drv) -> int:
     return int(drv.game.state.character.get("hp") or 0)
 
 
+STRAY: list[dict] = []          # the verdicts of the stray cards (a right one may break the shield first)
+
+
 def clear_stray_card(drv, server) -> bool:
     """A card this test did not ask for (on a loaded machine another monster of the area can land
     a blow first, or ours lands before the test looks) pauses the fight for us; after a wrong or
@@ -75,6 +78,7 @@ def clear_stray_card(drv, server) -> bool:
     if not card.result and not card.sent:
         answer_card(drv, server, correct=True)
     drv.wait(lambda: card.result is not None or not drv.top_is(CARD), 15, "the stray card's verdict")
+    STRAY.append({"monster": card.monster_id, **(card.result or {})})
     if drv.top_is(CARD) and drv.game.top is card and card.close_delay() is None:
         while card.result_t < 0.6:
             drv.step(2)
@@ -169,7 +173,9 @@ def run_parry_flow(workdir: Path, shots: Path | None = None) -> None:
         res = answer_card(drv, server, correct=True)
         c = res["combat"]
         assert c["parry"] and c["damage"] > 0 and c["stun"] == PLAN["right_answer"]["stun_seconds"], c
-        assert c["shield_broken"], "the Phản Đòn breaks the elite's Mặc Thuẫn"
+        # (a stray card of this elite answered right while waiting broke the shield already)
+        broken_before = any(s["monster"] == m.id and (s.get("combat") or {}).get("shield_broken") for s in STRAY)
+        assert c["shield_broken"] or broken_before, "the Phản Đòn breaks the elite's Mặc Thuẫn"
         drv.wait(lambda: spy.of("parry", id=m.id), 4, "the parry effect")
         drv.step(3)
         drv.shot("phan_don_card")
