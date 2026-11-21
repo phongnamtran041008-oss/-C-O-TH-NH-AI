@@ -105,10 +105,22 @@ def monster_of_band(drv: Driver, band: int, s: Shots) -> bool:
     ws = here(drv)
     mons = sorted((e for e in ws.entities.values() if e.kind == "m" and e.alive and getattr(e, "kv", 0) == band),
                   key=lambda e: abs(e.pos[0] - ws.player.x) + abs(e.pos[1] - ws.player.y))
-    mons = [e for e in mons if abs(e.pos[0] - ws.player.x) < 220 and abs(e.pos[1] - ws.player.y) < 120]
+    mons = [e for e in mons if abs(e.pos[0] - ws.player.x) < 320 and abs(e.pos[1] - ws.player.y) < 200]
     if not mons:
         return False
     e = mons[0]
+
+    def on_screen() -> bool:
+        sx, sy = ws.view.to_screen(e.pos[0], e.pos[1])
+        return 30 <= sx <= 450 and 40 <= sy <= 230
+    end = time.time() + 8                            # a few steps toward it, until it is on the screen
+    while time.time() < end and not on_screen():
+        if drv.game.top is not ws or not e.alive:
+            return False
+        kx, ky = keys_for(e.pos[0] - ws.player.x, e.pos[1] - ws.player.y, lean=True)
+        drv.hold(KEYS.get((kx, 0), []) + KEYS.get((0, ky), []), 0.1)
+    if not on_screen():
+        return False
     real = pygame.mouse.get_pos
 
     def over():

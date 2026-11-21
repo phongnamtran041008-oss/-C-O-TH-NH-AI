@@ -479,6 +479,12 @@ def test_each_land_s_arrival_spawns_lie_in_its_gate_camp():
             continue
         for o in tm.find("spawn"):
             assert any(x <= o.x < x + w and y <= o.y < y + h for x, y, w, h in camps), (zone, o.name)
+        # and the heart of a khu the arrow leads to never lies in a camp (arriving there would
+        # show the camp's banner, not the khu's)
+        for r, p in chi_duong.khu_objects(tm):
+            ax, ay = chi_duong.num(p.get("anchor_x")), chi_duong.num(p.get("anchor_y"))
+            if chi_duong.num(p.get("band")):
+                assert not any(x <= ax < x + w and y <= ay < y + h for x, y, w, h in camps), (zone, p.get("khu"))
 
 
 def test_the_overview_is_built_in_c_and_is_the_same_picture():

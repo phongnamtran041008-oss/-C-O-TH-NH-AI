@@ -150,8 +150,9 @@ def build() -> dict:
     K = {}
     K["re"] = m.khu("mdl_re_nhanh", "Rừng Rẽ Nhánh", 1, (0, 0, 109, 79), "rung_hoa", (0, 0),
                     "Lối rừng tỏa ra như cành cây: không vòng nào, mỗi nhánh tận cùng là một ngõ cụt. Hoa Yêu nở dọc lối.")
-    K["bia"] = m.khu("mdl_bia_rung", "Bìa Rừng Đa Lối", 1, (0, 80, 109, 159), "rung_mo", NGA_BA,
-                     "Bìa rừng ngay trong cổng tây: các khoảng trống nối nhau bằng nhiều lối, có lối vòng. Mực Con và Lân Hỏa Yêu quanh ngã ba đầu tiên.")
+    # its heart is Hang Mặc Hồ: Ngã Ba Đầu Tiên lies inside the gate camp, which reaches the gate
+    K["bia"] = m.khu("mdl_bia_rung", "Bìa Rừng Đa Lối", 1, (0, 80, 109, 159), "rung_mo", HANG_HO,
+                     "Bìa rừng ngay trong cổng tây: các khoảng trống nối nhau bằng nhiều lối, có lối vòng. Mực Con lảng vảng sau Lều Bìa Rừng, Lân Hỏa Yêu ở rìa bắc, Mặc Hồ trong hang phía nam.")
     K["nhen"] = m.khu("mdl_to_nhen", "Lũng Tơ Nhện", 1, (0, 160, 109, 239), "to_nhen", (0, 0),
                       "Lũng rừng tối chằng chịt tơ: Tri Chu Tinh giăng lưới giữa những cây chết.")
     K["vong"] = m.khu("mdl_vong_lap", "Cổ Lâm Vòng Lặp", 2, (110, 0, 214, 79), "co_lam", DA_CO_THU,
