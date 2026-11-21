@@ -117,7 +117,8 @@ class Monster:
                 return
         self.target = None
 
-    def update(self, dt: float, col: Collider, rng: random.Random) -> None:
+    def update(self, dt: float, col: Collider, rng: random.Random, info: dict | None = None) -> None:
+        """One tick of wandering (`info`: the monster's info, when the caller has it already)."""
         if self.idle > 0:
             self.idle -= dt
             self.moving = False
@@ -130,10 +131,11 @@ class Monster:
         tx, ty = self.target
         dx, dy = tx - self.x, ty - self.y
         dist = math.hypot(dx, dy)
-        sp = self.info["speed"] * dt
+        info = info if info is not None else self.info      # (a property: looked up once)
+        sp = info["speed"] * dt
         if dist <= sp:
             self.x, self.y, self.target = tx, ty, None
-            lo, hi = self.info["idle_seconds"]
+            lo, hi = info["idle_seconds"]
             self.idle = rng.uniform(lo, hi)
             self.moving = False
             return

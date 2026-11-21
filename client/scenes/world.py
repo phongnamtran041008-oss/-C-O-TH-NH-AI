@@ -237,7 +237,18 @@ def old_prop(name: str, variant: int, frame: int):
         return None
 
 
+SPOT_MARGIN = 160          # screen px: a weapon spot's icon, ring and light column (96 px) never reach further
+
+
+def off_screen(v, wx: float, wy: float, size: tuple[int, int], margin: int = SPOT_MARGIN) -> bool:
+    """Is world point (wx, wy) so far off a screen of `size` that nothing drawn round it shows?"""
+    sx, sy = v.to_screen(wx, wy)
+    return sx < -margin or sy < -margin or sx > size[0] + margin or sy > size[1] + margin
+
+
 def map_collider(tmap) -> mv.Collider:
+    if hasattr(tmap, "collider"):       # a TileMap builds its grid once, not at every zone change
+        return tmap.collider()
     solids = [(r.x, r.y, r.w, r.h) for r in tmap.solids]
     return mv.Collider(tmap.px_w, tmap.px_h, solids)
 
@@ -756,12 +767,13 @@ class WorldScene(Scene):
                 g.toast(msg, "#BC4749")
         g.api.post("/weapons/claim", {"id": spot.id, "land": spot.land}, ok, err)
 
-    def weapon_drawables(self, v) -> list:
+    def weapon_drawables(self, v, size: tuple[int, int] | None = None) -> list:
         """(foot y, image, screen position) of the weapon spots in the v2 world: the weapon's
-        icon standing on its tile, bobbing; a locked one is dimmed, a taken one is gone."""
+        icon standing on its tile, bobbing; a locked one is dimmed, a taken one is gone. With the
+        screen's `size`, the spots far off it are skipped (a giant land has many)."""
         out = []
         for sp in self.weapon_spots:
-            if sp.state == "taken":
+            if sp.state == "taken" or (size is not None and off_screen(v, sp.x, sp.y, size)):
                 continue
             img = art2.icon(*sp.icon) if sp.icon else None
             if img is None:
@@ -1956,8 +1968,9 @@ class WorldScene(Scene):
     def draw_spot_glow(self, surf, v, ground: bool) -> None:
         """The weapon spots of Thiên Địa Đồ glow in the colour of their phẩm's rarity: the ring on
         the ground, the column over it; a locked spot only a dim ring, a taken one nothing."""
+        size = surf.get_size()
         for sp in self.weapon_spots:
-            if sp.state == "taken":
+            if sp.state == "taken" or off_screen(v, sp.x, sp.y, size):
                 continue
             rarity = spot_rarity(sp.id)
             sx, sy = v.to_screen(sp.x, sp.y)
@@ -2525,8 +2538,8 @@ class WorldScene(Scene):
         if self.waiting_zone is not None or self.portal_cool > 0:
             return
         p = self.player
-        inside = [o for o in self.map.objects
-                  if o.type == "portal" and o.x <= p.x <= o.x + o.w and o.y <= p.y <= o.y + o.h]
+        inside = [o for o in self.map.find("portal")
+                  if o.x <= p.x <= o.x + o.w and o.y <= p.y <= o.y + o.h]
         if self.portal_refused and not any(o.props.get("target") == self.portal_refused for o in inside):
             self.portal_refused = None        # stepped out of the gate whose land said no
         for o in inside:
@@ -2546,7 +2559,7 @@ class WorldScene(Scene):
         off = {"up": (0, -10), "down": (0, 6), "left": (-10, -3), "right": (10, -3)}[p.facing]
         fx, fy = p.x + off[0], p.y + off[1]
         best, best_d = None, 22.0
-        for o in self.map.objects:
+        for o in self.map.interactables_near(fx, fy, best_d):     # (buckets: never every object of a giant map)
             if o.type in ("npc", "interact", "sign"):
                 cx, cy = o.x + o.w / 2, o.y + o.h
                 d = math.hypot(cx - fx, cy - fy)
@@ -2836,7 +2849,7 @@ class WorldScene(Scene):
             pygame.draw.ellipse(zone, (188, 71, 73, 110), inner)
             pygame.draw.ellipse(zone, (142, 53, 55, 200), rect, 1)
             surf.blit(zone, (int(tx - r - 2) - cx, int(ty - r * 0.65 - 2) - cy))
-        for o in self.map.objects:
+        for o in self.map.drawables_in(cx - 8, cy - 8, cx + sw + 8, cy + sh + 40):
             if o.x + o.w < cx - 8 or o.x > cx + sw + 8 or o.y + o.h < cy - 8 or o.y > cy + sh + 40:
                 continue
             name = o.props.get("sprite")
@@ -3136,7 +3149,7 @@ class WorldScene(Scene):
         self.draw_sparks(surf, ground=True)
         self.draw_formations(surf)                 # Bày pháp trận
         vw, vh = v.span(sw, sh)
-        for o in self.map.objects:
+        for o in self.map.drawables_in(v.x - 40, v.y - 8, v.x + vw + 40, v.y + vh + 80):
             if o.x + o.w < v.x - 40 or o.x > v.x + vw + 40 or o.y + o.h < v.y - 8 or o.y > v.y + vh + 80:
                 continue
             d = art2.object_drawable(o, v, self.t, talking=self.npc_talking(o) if o.type == "npc" else False)
@@ -3161,7 +3174,7 @@ class WorldScene(Scene):
                 img = sprites.truc_lao()[1 if int(self.t * 10) % 37 == 0 else 0] if look == "truc_lao" \
                     else sprites.npc(look)[("down", 0)]
                 drawables.append((o.foot_y, v.img(img), v.to_screen(o.x, o.y)))
-        drawables += self.weapon_drawables(v)
+        drawables += self.weapon_drawables(v, (sw, sh))
         drawables += self.ground_loot.drawables(v, now, self.player.x, self.player.y)
         bars = []
         for e in self.entities.values():
@@ -3335,7 +3348,7 @@ class WorldScene(Scene):
             heads.append((e.pos[0], e.pos[1], name, col, e.id, lift))
         for d in self.ground_loot.near(self.player.x, self.player.y) if v2 else ():
             heads.append((d.x, d.y, d.name, d.color, None, 34))
-        for o in self.map.objects:
+        for o in self.map.find("npc"):
             if o.type == "npc":
                 lift = 25
                 if v2:

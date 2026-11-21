@@ -893,10 +893,17 @@ def _move_monster(m: "Monster", tx: float, ty: float, speed: float, dt: float, c
     m.facing = ("right" if dx > 0 else "left") if abs(dx) > abs(dy) else ("down" if dy > 0 else "up")
 
 
+def _rng(ch: "ChannelZone", m: "Monster") -> random.Random:
+    """The monster's own random stream on a channel where far monsters sleep (zone.py), else
+    the channel's."""
+    return getattr(m, "rng", None) or ch.rng
+
+
 def _respawn_monster(ch: "ChannelZone", m: "Monster") -> None:
     a = m.area
+    rng = _rng(ch, m)
     for _ in range(20):
-        x, y = ch.rng.uniform(a.x + 8, a.x + a.w - 8), ch.rng.uniform(a.y + 8, a.y + a.h - 8)
+        x, y = rng.uniform(a.x + 8, a.x + a.w - 8), rng.uniform(a.y + 8, a.y + a.h - 8)
         if not ch.map.collider.blocked(x, y):
             m.x, m.y = x, y
             break
@@ -904,9 +911,57 @@ def _respawn_monster(ch: "ChannelZone", m: "Monster") -> None:
     m.idle = 1.0
 
 
-def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float) -> None:
-    from . import abilities
-    c = cfg()
+def _near_players(ch: "ChannelZone", m: "Monster", r: float):
+    """The players that may stand within r of the monster, in the channel's order: those of
+    the grid combat.tick built (`_pgrid`) round the monster's cell, or every player without one."""
+    pg = getattr(ch, "_pgrid", None)
+    if pg is None or r > pg[0]:
+        return ch.players.values()
+    if len(ch.events) != pg[2]:           # something happened (a knock-down moves a player): check
+        pos = pg[3]
+        if len(pos) != len(ch.players) or any(p.x != x or p.y != y for p, (x, y) in zip(ch.players.values(), pos)):
+            pg = _player_grid(ch, pg[0])
+        else:
+            ch._pgrid = pg = (pg[0], pg[1], len(ch.events), pos)
+    c = pg[0]
+    return pg[1].get((int(m.x // c), int(m.y // c)), ())
+
+
+def _player_grid(ch: "ChannelZone", cell: float):
+    """For the aggro checks (_near_players), built once a tick: each player listed in its cell of
+    `cell` px and the eight round it, so one look-up finds everyone within a cell of a monster,
+    in the channel's order."""
+    cells: dict = {}
+    pos = []
+    for p in ch.players.values():
+        pos.append((p.x, p.y))
+        cx, cy = int(p.x // cell), int(p.y // cell)
+        for gy in (cy - 1, cy, cy + 1):
+            for gx in (cx - 1, cx, cx + 1):
+                lst = cells.get((gx, gy))
+                if lst is None:
+                    cells[(gx, gy)] = [p]
+                else:
+                    lst.append(p)
+    ch._pgrid = pg = (cell, cells, len(ch.events), pos)
+    return pg
+
+
+_ABILITIES = None
+
+
+def _abilities():
+    """realtime/abilities.py, imported once (it imports this module: no import at the top)."""
+    global _ABILITIES
+    if _ABILITIES is None:
+        from . import abilities
+        _ABILITIES = abilities
+    return _ABILITIES
+
+
+def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float, c: dict | None = None) -> None:
+    abilities = _abilities()
+    c = c if c is not None else cfg()
     info = m.info
     col = ch.map.collider
     if m.mode == "dead":
@@ -933,7 +988,7 @@ def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float) -> Non
             m.engaged.discard(uid)
     if not m.engaged and info.get("aggressive"):
         r = info.get("aggro_radius", 0)
-        near = [p for p in ch.players.values() if not p.dead and dist(p.x, p.y, m.x, m.y) <= r
+        near = [p for p in _near_players(ch, m, r) if not p.dead and dist(p.x, p.y, m.x, m.y) <= r
                 and not (m.on_hit and (p.protected(now) or p.q_pending)) and m.fights(p)
                 and not abilities.airborne(p, now)]       # (a flyer overhead is out of its reach)
         if near:
@@ -942,7 +997,7 @@ def _monster_tick(ch: "ChannelZone", m: "Monster", dt: float, now: float) -> Non
         if m.mode == "chase":
             m.mode = "return"
         else:
-            m.update(dt, col, ch.rng)
+            m.update(dt, col, _rng(ch, m), info)
         return
     hx, hy = m.home
     if dist(m.x, m.y, hx, hy) > c["leash_radius"]:  # dragged too far from home: give up and heal
@@ -1001,8 +1056,18 @@ def tick(ch: "ChannelZone", dt: float, now: float) -> None:
     from ..systems.linh_can import fx as lc_fx
     c = cfg()
     w = _world()
-    for m in ch.monsters:
-        _monster_tick(ch, m, dt, now)
+    wake = ch.wake_cells() if hasattr(ch, "wake_cells") else None
+    cell = getattr(ch, "cell_px", 0)
+    if cell:
+        _player_grid(ch, cell)
+    try:
+        for m in ch.monsters:
+            if wake is not None and m.mode == "wander" and not m.engaged and m.tele is None and (
+                    int(m.x // cell), int(m.y // cell)) not in wake:
+                continue          # asleep: far from everyone, only wandering (zone.py, _setup_sleep)
+            _monster_tick(ch, m, dt, now, c)
+    finally:
+        ch._pgrid = None
     if getattr(ch, "chieu_zones", None):      # burning ground and sword domains (math_skills, Chiêu Thức II)
         from ..systems import math_skills
         math_skills.tick_zones(ch, now)
