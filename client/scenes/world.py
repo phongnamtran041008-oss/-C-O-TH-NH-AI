@@ -53,6 +53,28 @@ def mskill_initials(name_vi: str) -> str:
     return "".join(w[0] for w in name_vi.split()[:2]).upper()
 
 
+_HUD_ICONS: dict = {}               # (key, w, h) -> (source, picture at window size): the hotbar's icons
+HUD_ICONS_MAX = 160
+
+
+def hud_icon(ui, img: pygame.Surface, x: float, y: float, zoom: float, key=None) -> None:
+    """`ui.image(img, x, y, zoom, anchor="center")` with the scaled picture kept: the hotbar and
+    the ability row drew every icon with a fresh `pygame.transform.scale` each frame (the rare
+    slow frames while walking). The same pixels: the same scale of the same surface. `key` names
+    a picture whose surface object is made anew on each call (a subsurface of an icon sheet);
+    without it the surface itself is the key (and held, so its id is never reused)."""
+    k = ui.s * zoom
+    w, h = int(img.get_width() * k), int(img.get_height() * k)
+    ck = (key if key is not None else id(img), w, h)
+    hit = _HUD_ICONS.get(ck)
+    if hit is None or (key is None and hit[0] is not img):
+        if len(_HUD_ICONS) >= HUD_ICONS_MAX:
+            _HUD_ICONS.pop(next(iter(_HUD_ICONS)))
+        hit = _HUD_ICONS[ck] = (img, pygame.transform.scale(img, (w, h)))
+    wx, wy = ui.d.to_window(x, y)
+    ui.win.blit(hit[1], (wx - w // 2, wy - h // 2))
+
+
 MSKILL_TARGETLESS = ("ward", "shield", "heal", "domain")     # chiêu cast with no monster aimed at
 
 
@@ -1798,7 +1820,7 @@ class WorldScene(Scene):
                 img = petfollow.picture(self.game.worn_pet() or "tieu_long", ui.time)
             if img is not None:
                 k = min(1.0, 18 / max(img.get_width(), img.get_height()))
-                ui.image(img, x + 11, y0 + 11, zoom=k, anchor="center")
+                hud_icon(ui, img, x + 11, y0 + 11, k)
             ui.text(T.ABILITY_KEYS[uid], x + 2, y0 + 1, 6, "#E9C46A")
             if not a.get("ok"):
                 ui.fill(x, y0, 22, 22, (0, 0, 0, 120))
@@ -2329,10 +2351,13 @@ class WorldScene(Scene):
         of the chiêu's Vietnamese name instead - never a Chinese character."""
         from ..engine import icons
         img = art2.skill_icon(sk.get("id")) if art2.on() else None
+        key = None
         if img is None:
             img = icons.icon(sk.get("icon") or "", int(sk.get("icon_variant") or 0))
+            if img is not None:         # a new subsurface of the sheet each call: named by the sheet and cell
+                key = ("icon", id(img.get_parent()), img.get_offset())
         if img is not None:
-            ui.image(img, x + 11, y + 11, zoom=0.625, anchor="center")       # a 32 px icon, drawn at 20
+            hud_icon(ui, img, x + 11, y + 11, 0.625, key)                    # a 32 px icon, drawn at 20
         else:
             ui.text(mskill_initials(sk.get("name_vi", "")), x + 11, y + 12, 8,
                     "#6B665C" if locked else "#E9C46A", anchor="center")

@@ -55,6 +55,11 @@ def surface_bytes(s) -> int:
 
 
 def measure_land(zone: str, workdir: Path, seconds: float = 40.0) -> dict:
+    import os
+    if os.environ.get("NAV_PERF_OLD_ICONS"):         # the hotbar as it was: every icon scaled each frame
+        from client.scenes import world as W
+        from client.ui.kit import UI
+        W.hud_icon = lambda ui, img, x, y, zoom, key=None: UI.image(ui, img, x, y, zoom=zoom, anchor="center")
     server = ServerProcess(workdir)
     facts: dict = {"zone": zone}
     try:
