@@ -430,8 +430,8 @@ class WorldMapScene(Scene):
                  (mx - yw / 2, my - 24 - yh), (mx - yw / 2, my + 22)]
         spots = [(sx, sy) for sx, sy in spots                      # (on the map, never over the legend)
                  if px <= sx and sx + yw <= px + pw and py <= sy and sy + yh <= py + ph] or spots
-        lx, ly = next(((sx, sy) for sx, sy in spots
-                       if pygame.Rect(int(sx), int(sy), int(yw), int(yh)).collidelist(taken) == -1), spots[0])
+        lx, ly = min(spots, key=lambda s: len(pygame.Rect(int(s[0]), int(s[1]), int(yw), int(yh))
+                                                 .collidelistall(taken)))      # (the first free one, else the least covered)
         ui.fill(lx - 1, ly, yw + 2, yh, (20, 18, 15, 150))
         ui.text(N.YOU, lx, ly, 7, "#FFFFFF")
         ui.border(px - 2, py - 2, pw + 4, ph + 4, "#8B5A2B")

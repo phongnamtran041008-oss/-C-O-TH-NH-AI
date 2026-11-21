@@ -107,10 +107,7 @@ None of them fires while the chat box is being typed in (`chatbox.typing`), like
   (`portal` objects, and the abode's `interact` object with action `exit`) form a graph; the route is a
   breadth-first search over zones; after each zone change (a new world scene) the next leg is planned
   by itself, since the state lives on the game (`client/engine/chi_duong.py`, `chi_duong.of(game)`).
-* Timings (this machine, Python 3.14): a 320 x 240 tile perfect maze (9 455 solids, 186 000 reachable
-  cells): grid 13 ms + field 50 ms, spread over 16 frames, the longest slice 3.5 ms; an open giant land
-  with a river and 2 500 rocks in the real game loop: 40-52 frames of about 3 ms (0.13-0.15 s in all);
-  one reading 0.3 ms.
+* Timings: see [Measured on the real giant lands](#measured-on-the-real-giant-lands).
 
 ## Files
 
@@ -122,13 +119,69 @@ None of them fires while the chat box is being typed in (`chatbox.typing`), like
   tile colours, the minimap window), `client/ui/nav_arrow.py` (the arrow), `client/ui/nav_hud.py`
   (plate, banner, keys and buttons), `client/scenes/world_map.py` (the picker and Thiên Địa Đồ),
   `client/strings_nav_vi.py` (every new on-screen string); hooks in `client/scenes/world.py`
-  (`_build_minimap`, the minimap HUD block, one call after drawing the world, one in the HUD) and
+  (`_build_minimap`, the minimap HUD block, one call after drawing the world, one in the HUD, the
+  band pips of the name tags and the band line of a monster's tooltip, `kv` read into `Ent.kv`) and
   `client/scenes/abode.py` (the same two calls).
 * tests: `server/tests/test_navigation.py` (the rule on synthetic lands and khu, the route);
   `client/tests/test_nav_units.py` (grid against the collider, corridors, round a wall, a maze walked by
   the arrow, straying, an island, a giant map in budget, the zone route, a synthetic .tmj with khu: the
   banner, the khu goal, the overview, the minimap window, the arrow sprites, the font);
-  `client/tests/test_nav_flow.py` (the real client and server: picker, arrow through the village gate
-  into Kiếm Trủng Sơn, the big map and its clicks, the khu banners, H home to the abode gate, out of
-  the abode by E to the village; and a synthetic giant land, `client/tests/nav_giant.py`).
-  `python -m client.tests.test_nav_flow tools/reports/nav` writes the screenshots.
+  plus: the way keeps to a road, the first arrow before the field is done (and the same as after),
+  every anchor of both giant lands walked by the arrow, the overview built in C is the same picture,
+  the band pips; the synthetic giant land in the real UI (`client/tests/nav_giant.py`);
+  `client/tests/test_nav_flow.py` (the real client and server on the real lands: a newcomer's
+  picker, read in full; the arrow through the village gate, the camp and into the recommended khu of
+  band 1 of Kiếm Trủng Sơn, to its anchor, with the real khu banners; Thiên Địa Đồ of the village and
+  of the world (the toasts off the boxes) and of the giant land, every khu named; a khu of band 2
+  picked there and walked into: the warning banner, the plate, a band 2 monster's pips and tooltip;
+  H home from deep inside, through the village to the abode gate; out of the abode by E; and a second
+  newcomer led from the gate of Lưu Vân Cốc, over its river, to a khu picked on its big map).
+  `python -m client.tests.test_nav_flow tools/reports/nav` writes the screenshots (committed there).
+  `client/tests/nav_walk.py` (`python -m client.tests.nav_walk`): the walk of every anchor, a table;
+  `client/tests/nav_perf.py` (`python -m client.tests.nav_perf`): the numbers below.
+* server: `server/tests/test_guard_pick.py` - a guard bee picks through `guard._Near` (the monsters by
+  cell, built once per guard tick) exactly the monster a scan of all of them picks.
+
+## Measured on the real giant lands
+
+This machine (Windows, Python 3.14, the dummy video driver at 1440 x 810, other agents' test suites
+running at the same time), Kiếm Trủng Sơn / Lưu Vân Cốc.
+
+**Walking every anchor by the arrow alone** (`nav_walk`: from the land's gate, the eight-direction keys
+a player would hold for the arrow, a tenth of a second a step, at 74 px/s; the way's length is the
+field's chain with its corners cut by straight lines): all 22 anchors reached, none stuck, the arrow
+never through a solid (checked with the movement collider every 2 px), the feet never on water. Ratio
+walked / way 0.85-1.08 (the test fails above 1.6). Walking time from the gate, Kiếm Trủng Sơn: camps 2 /
+19 / 37 s, Chân Núi Kiếm Gãy 23 s, Loạn Số Cốc 17 s, Thạch Lâm 41 s, Cổ Kiếm Đạo 27 s, Sườn Đông 44 s,
+Bãi Kiếm Gãy 62 s, Kiếm Trủng 44 s, Đỉnh Vạn Kiếm 63 s; Lưu Vân Cốc: camps 2 / 19 / 48 s, Bãi Suối 22 s,
+Đồng Cỏ 21 s, Rừng Thông 39 s, Đồi Hoa Đào 26 s, Khúc Suối Cong 41 s, Thác Mây 69 s, Đèo Gió Lôi 56 s,
+Cao Nguyên 64 s.
+
+**In the real game loop** (`nav_perf`, a real server):
+
+| | Kiếm Trủng Sơn | Lưu Vân Cốc |
+|---|---|---|
+| world frame, standing (avg / worst) | 8.9 / 12.8 ms | 7.3 / 10.1 ms |
+| world frame following the arrow 40 s (avg / 95% / worst) | 8.0 / 10.8 / 38 ms | 8.5 / 12.0 / 36 ms |
+| first arrow after choosing the nearest khu of band 1 (grid not built) | 0.37 s, 12 frames | 0.33 s, 18 frames |
+| first arrow to the farthest khu of band 3 | 0.65 s, 37 frames | 0.67 s, 37 frames |
+| grid / whole field (spread over frames) | 13 / 177 ms | 10 / 181 ms |
+| longest slice of the search in a frame | 5.4 ms | 5.4 ms |
+| one reading of the way / with the 900-cell route | 0.09 / 0.41 ms | 0.13 / 0.68 ms |
+| building the overview (once, at the zone's load) | 14 ms | 12 ms |
+| the minimap window, one frame | 0.30 ms | 0.45 ms |
+| opening the big map (first time; again) | 39 ms; about 10 ms | 50 ms; about 10 ms |
+| a frame of the big map (avg / worst) | 9.4 / 21 ms | 8.4 / 10.6 ms |
+| memory: ground chunks (tilemap's cache) | 24 MB | 24 MB |
+| overview / big map picture at window size | 225 KB / 1.7 MB | 225 KB / 1.7 MB |
+| walk grid / one field | 303 KB / 1.2 MB | 303 KB / 1.2 MB |
+
+The worst walking frames (36-38 ms, a few in 3 000) are not Chỉ Đường's: profiled, they are the
+world HUD (`world.py` `draw_ability_row`, `draw_hotbar` / `draw_mskill_icon` scaling icons each
+frame) and the network poll. The first opening of the big map pays for the first rendering of its
+labels (`engine/text.py`'s cache) and for its picture; later openings reuse both.
+
+Before this round the same loop measured: the big map 27 ms a frame (worst 61: the world and its HUD
+drawn under it, the khu tints filled at window size every frame), the overview 27 ms, the minimap's
+route 4-6 ms in some frames (the whole route drawn as thick lines), the minimap scanning all 6 000
+objects of the map for its gates every frame, the field 10 MB of Python ints.
