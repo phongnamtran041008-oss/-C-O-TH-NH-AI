@@ -79,3 +79,47 @@ map's edge at the gate:
 
 `client/tests/test_nav_units.py::test_each_land_s_arrival_spawns_lie_in_its_gate_camp` keeps it so,
 and checks that no khu's anchor lies inside a camp (arriving there would show the camp's banner).
+
+## 3. The tour in pictures (`tools/reports/tour/`)
+
+A character "Du Lãm" at Luyện Khí tầng 9, every node of Đạo Thụ passed (every land open), on a real
+server: per land the gate camp on arrival, the minimap crop, "Vùng này", a picture at every khu
+banner on the way (the passes), the anchor of the nearest khu of each band (one screenful each), a
+monster of that band under the mouse, the minimap deep inside, "Vùng này" again; once the picker
+with everything open and "Thiên hạ". The three bands of every land were reached by the arrow in the
+real game (none stalled); Lôi Kiếp Đài: its six named places, the boss terrace included.
+`116`-`122`: "Vùng này" of every land drawn again after the label fixes below (offline, the player
+at the gate).
+
+What a player sees, judged:
+
+* **Good**: every land greets the player with its camp's banner ("<camp> · An Toàn, nơi an toàn")
+  (`003`, `022`, `039`, `053`, `071`, `091`); the arrow, the plate and the khu banners read well;
+  band 2 and 3 monsters carry their pips and the tooltip names the band ("Trung Vực · hợp Luyện Khí
+  tầng 4-6", `014`, `031`, `062`, `069`); no camp with a monster in it; no monster in a wall or in
+  water in the pictures; the maze of Mê Đồ Lâm on the minimap (`089`) and its heart reached (`088`);
+  the picker with everything open reads in full, nothing cut (`001`); "Thiên hạ" (`002`).
+* **Fixed (navigation UI)**: on "Vùng này" the label of the village gate sat on the gate's own mark
+  and on the player's mark ("Trúc L■m Thôn", `024`, `041`), the gate camps' names hid under the khu
+  labels of a band 1 khu ("Lều Cửa Thảo Nguyên", `024`; "Trại Cổng Phường" too) and under "Con ở
+  đây" (`005`). `client/scenes/world_map.py`: the gate's label goes beside its mark; the camp's and
+  the gate's labels take the place where the fewest pixels of other labels, the gates' marks, the
+  named places' diamonds and the player's mark lie (the khu labels reserved at their real width,
+  not 60 px); "Con ở đây" has more places to go (`116`-`122`).
+* **Fixed (the walkers)**: in the first runs the tour stalled twice with the arrow a pixel or two
+  off (beside a pine in Mê Đồ Lâm, the well of Trại Bến Đầm): the flow tests' walker held no key
+  inside the keys' dead zone; it now taps toward the aim, as a player nudges.
+* **Fixed (the map)**: the anchor of Bìa Rừng Đa Lối fell inside the stretched gate camp (`076`
+  is the new anchor, Hang Mặc Hồ, with its Mặc Hồ).
+* **Left as they are** (not navigation; the names are the pictures):
+  * the walk from Mê Đồ Lâm's gate to Hang Mặc Hồ crosses the bottom edge of the stretched camp
+    twice, so its banners go camp, Bìa Rừng, camp, Bìa Rừng; harmless, and a smaller camp
+    rectangle would bring the arrival banner problem back;
+  * the walkable "stone" ground of Kiếm Trủng Sơn's peak and Lưu Vân Cốc's plateau and the cobbles
+    of Thiên Công Phường (`049`, `067`, `069`, `100`) look like the cliff walls around them: a
+    player may take open stone for a wall (art; B1's lands and the art pipeline);
+  * monsters near the top of the screen are drawn under the zone label and the player card, and
+    the quest tracker covers name tags at the right (`044`, `105`, `113`: HUD layout of world.py);
+  * a world notice in the chat ("Mắc Ảnh Động sẽ mở cửa...", `105`) is red text over the ground
+    bottom left (chat);
+  * the dot below drops at text sizes 6-9 (known, `engine/text.py`).

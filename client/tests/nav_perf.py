@@ -64,6 +64,9 @@ def measure_land(zone: str, workdir: Path, seconds: float = 40.0) -> dict:
     facts: dict = {"zone": zone}
     try:
         token, uid = make_account(server.url, "detu_do", "Lữ Khách")
+        from client.tests.test_lands_flow import grant_luyen_khi       # every land open, the hotbar full
+        grant_luyen_khi(server, uid)
+        server.sql("update characters set realm='luyen_khi', realm_stage=9 where user_id=?", (uid,))
         from client.engine import tilemap
         tilemap._MAPS.pop(zone, None)
         t = time.perf_counter()
@@ -226,7 +229,11 @@ def main() -> None:
     from client.tests.nav_walk import world_lands
     for zone in sys.argv[1:] or world_lands():
         with tempfile.TemporaryDirectory(prefix="kvtt_navperf_") as tmp:
-            f = measure_land(zone, Path(tmp))
+            try:
+                f = measure_land(zone, Path(tmp))
+            except AssertionError as e:
+                print(f"{zone:12} FAILED {str(e)[:300]}")
+                continue
         for k, v in f.items():
             if isinstance(v, tuple):
                 v = " / ".join(f"{a:.2f}" for a in v)
