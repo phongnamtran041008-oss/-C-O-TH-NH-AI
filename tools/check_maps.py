@@ -19,7 +19,8 @@ For every map in server/maps:
   of this land (a land's creatures stay in their land), no boss, the quái lỗi sai only in band 1
   of Kiếm Trủng Sơn; an elite alone in its area; per khu at least two kinds and at most a handful
   of elites; nothing within the clearance of a gate, a spawn or a camp; the density of
-  tiles_per_monster; at most max_monsters_per_land monsters on any map;
+  tiles_per_monster; an area small enough for the leash of its monsters (a monster pulled from
+  its corner must not give up the fight); at most max_monsters_per_land monsters on any map;
 * every text a player reads on the map (khu, poi, signs) can be drawn by the game's fonts.
 """
 from __future__ import annotations
@@ -286,6 +287,9 @@ def check_map(zone: str, ctx: dict, report: list | None = None) -> list[str]:
         if info.get("skill") and (land_id != "kiem_trung_son" or band != 1):
             out.append(f"{w}: the quái lỗi sai {kind} stay in band 1 of Kiếm Trủng Sơn")
         count = int(p.get("count", 1))
+        if (a.w * a.w + a.h * a.h) ** 0.5 / 2 > ctx["leash"] * 0.8:
+            out.append(f"{w}: {int(a.w // TILE)} x {int(a.h // TILE)} tiles, too large for a monster's leash "
+                       f"({ctx['leash']:.0f} px from its middle): at most about 20 x 15 tiles")
         if rank == "elite" and count != 1:
             out.append(f"{w}: an elite stands alone in its area (count {count})")
         for (x0, y0, x1, y1) in keep_out:
@@ -383,7 +387,8 @@ def context() -> dict:
     return {"zones": zones, "plan": plan, "lands": {l["id"]: l for l in plan.get("lands", [])},
             "map_zone": {z["map"]: zid for zid, z in zones.items() if z.get("map")},
             "monsters": monsters, "bands": dd["realms"], "rules": dd["distribution"], "glide": glide,
-            "sizes": doc_sizes(), "sprites": known_sprites(), "khu_seen": {}, "texts": []}
+            "sizes": doc_sizes(), "sprites": known_sprites(), "khu_seen": {}, "texts": [],
+            "leash": float(_json(DATA / "balance" / "combat.json")["leash_radius"])}
 
 
 def problems(report: list | None = None, warnings: list | None = None) -> list[str]:

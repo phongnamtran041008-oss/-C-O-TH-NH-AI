@@ -31,6 +31,14 @@ from dataclasses import dataclass, field
 from .builder import GID, ROOT, T, MapBuilder
 
 DIA_DO = ROOT / "server" / "data" / "math" / "dia_do.json"
+COMBAT = ROOT / "server" / "data" / "balance" / "combat.json"
+LEASH_SHARE = 0.8      # a monster area's half diagonal stays within this share of the leash
+
+
+def max_area_half_diagonal() -> float:
+    """Pixels: a monster pulled from anywhere in its area must stay within its leash (a monster
+    dragged further than `leash_radius` from the middle of its area gives up the fight)."""
+    return LEASH_SHARE * float(json.loads(COMBAT.read_text("utf-8"))["leash_radius"])
 
 # ------------------------------------------------------------------ noise
 _M = 0xFFFFFFFF
@@ -744,6 +752,9 @@ class DaiDiaDo(MapBuilder):
         """One monster_area (tile rect) of khu `kid`: band, khu and realm come from the khu."""
         k = next(q for q in self.khus if q.id == kid)
         x0, y0, x1, y1 = rect
+        if math.hypot((x1 - x0 + 1) * T / 2, (y1 - y0 + 1) * T / 2) > max_area_half_diagonal():
+            raise ValueError(f"{self.zone}: monster area {rect} of {kid} is larger than a monster's leash "
+                             f"(at most about 20 x 15 tiles)")
         a = {"name": name or f"{kid}_{monster}_{len(k.areas)}", "monster": monster, "rect": tuple(rect),
              "count": int(count)}
         k.areas.append(a)

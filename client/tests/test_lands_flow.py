@@ -245,7 +245,7 @@ def run_weapon_spot_flow(workdir: Path, shots: Path | None = None) -> None:
 
 # ------------------------------------------------------------------ the tour (screenshots only)
 SCENIC = {   # land -> a tile to stand on for its picture
-    "kiem_trung_son": (44, 13), "luu_van_coc": (27, 21), "van_tuong_trach": (30, 16),
+    "kiem_trung_son": (160, 150), "luu_van_coc": (150, 192), "van_tuong_trach": (30, 16),
     "me_do_lam": (50, 12), "thien_cong_phuong": (12, 7), "linh_xa_nguyen": (40, 18),
     "loi_kiep_dai": (20, 22),
 }

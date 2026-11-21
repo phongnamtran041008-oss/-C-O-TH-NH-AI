@@ -21,6 +21,22 @@ KIEM_TRUNG_SON = "loan_so_coc"      # Kiếm Trủng Sơn: kiem_2_ha sits behind
 LUU_VAN_COC = "luu_van_coc"         # Lưu Vân Cốc: dao_2_ha sits in the waterfall
 
 
+def spot_pos(pid: str) -> tuple[int, int]:
+    """The tile of a weapon spot (world_plan.json weapons_placed), e.g. "kiem_2_ha"."""
+    return tuple(next(p for p in math_tree.world_plan()["weapons_placed"]
+                      if f"{p['weapon']}_{p['quality']}" == pid)["pos"])
+
+
+# Đại Địa Đồ (2026-11-21): the places are read from the plan, not written here. Around both spots
+# the giant maps keep the small maps' shape: Kiếm Trủng Sơn's peak (3 x 2 tiles) in a ring of ink,
+# the ledge 4 tiles south of the spot; Lưu Vân Cốc's ledge in the pool, the shore 3 tiles south.
+PEAK = spot_pos("kiem_2_ha")
+LEDGE = (PEAK[0], PEAK[1] + 4)       # the ledge below the nest of Hỏa Tước
+CHASM = (PEAK[0], PEAK[1] + 3)       # the ink between them
+POOL = spot_pos("dao_2_ha")          # the ledge in the clouds above the falls
+SHORE = (POOL[0], POOL[1] + 3)       # the rock at the foot of the waterfall
+
+
 @pytest_asyncio.fixture
 async def gw(app, monkeypatch):
     w = World(mono=FakeMono())
@@ -121,18 +137,18 @@ def landing(zone: str, x: float, y: float, dx: int, dy: int):
 
 async def test_a_glide_crosses_the_chasm_to_the_spot_behind_it(client, gw):
     h, uid, s = await fighter(client, gw, "ab_3", "Lướt Ba")
-    x0, y0 = tile_feet(51, 6)                                # the ledge below the nest of Hỏa Tước
+    x0, y0 = tile_feet(*LEDGE)                               # the ledge below the nest of Hỏa Tước
     p = place(gw, s, KIEM_TRUNG_SON, x0, y0)
     s.tree = pos(6)
     spot = weapons.data()["by_id"]["kiem_2_ha"]
     z = maps.load(KIEM_TRUNG_SON)
-    assert z.tile_name(51, 5) == "ink" and z.collider.blocked(*tile_feet(51, 5)), "a chasm of ink"
+    assert z.tile_name(*CHASM) == "ink" and z.collider.blocked(*tile_feet(*CHASM)), "a chasm of ink"
     to = landing(KIEM_TRUNG_SON, x0, y0, 0, -1)
-    assert to is not None and (int(to[0] // 16), int((to[1] - 1) // 16)) in {(51, 3), (51, 2)}
+    assert to is not None and (int(to[0] // 16), int((to[1] - 1) // 16)) in {(PEAK[0], PEAK[1] + 1), PEAK}
     # walking there is impossible: the steps stop at the chasm
     p.channel.queue_input(p, 1, [(0, -1, 100)] * 10)
     run(gw, 1.2)
-    assert p.y > tile_feet(51, 5)[1] - 16, "on foot the chasm stops it"
+    assert p.y > tile_feet(*CHASM)[1] - 16, "on foot the chasm stops it"
     p.x, p.y = x0, y0
     s.sent.clear()
     assert abilities.request_glide(p, 2, to[0], to[1], gw.mono()) is None
@@ -146,12 +162,12 @@ async def test_a_glide_crosses_the_chasm_to_the_spot_behind_it(client, gw):
 
 async def test_a_glide_crosses_water_too(client, gw):
     h, uid, s = await fighter(client, gw, "ab_4", "Lướt Bốn")
-    x0, y0 = tile_feet(20, 6)                                # the rock at the foot of the waterfall
+    x0, y0 = tile_feet(*SHORE)                               # the rock at the foot of the waterfall
     p = place(gw, s, LUU_VAN_COC, x0, y0)
     s.tree = pos(6)
-    assert maps.load(LUU_VAN_COC).tile_name(20, 5) == "water"
+    assert maps.load(LUU_VAN_COC).tile_name(SHORE[0], SHORE[1] - 1) == "water"
     to = landing(LUU_VAN_COC, x0, y0, 0, -1)
-    assert to is not None and int(to[0] // 16) == 20 and int((to[1] - 1) // 16) == 3
+    assert to is not None and int(to[0] // 16) == POOL[0] and int((to[1] - 1) // 16) == POOL[1]
     assert abilities.request_glide(p, 1, to[0], to[1], gw.mono()) is None
     run(gw, 0.1)
     assert (p.x, p.y) == to
@@ -159,7 +175,7 @@ async def test_a_glide_crosses_water_too(client, gw):
 
 async def test_a_glide_is_refused_before_its_stage(client, gw):
     h, uid, s = await fighter(client, gw, "ab_5", "Lướt Năm")
-    x0, y0 = tile_feet(51, 6)
+    x0, y0 = tile_feet(*LEDGE)
     p = place(gw, s, KIEM_TRUNG_SON, x0, y0)
     s.tree = pos(5)
     to = landing(KIEM_TRUNG_SON, x0, y0, 0, -1)
@@ -172,10 +188,10 @@ async def test_a_glide_is_refused_before_its_stage(client, gw):
 
 async def test_a_glide_is_refused_onto_a_tile_that_is_not_walkable(client, gw):
     h, uid, s = await fighter(client, gw, "ab_6", "Lướt Sáu")
-    x0, y0 = tile_feet(20, 6)
+    x0, y0 = tile_feet(*SHORE)
     p = place(gw, s, LUU_VAN_COC, x0, y0)
     s.tree = pos(6)
-    wet = tile_feet(20, 4)                                   # into the waterfall itself
+    wet = tile_feet(POOL[0], POOL[1] + 1)                    # into the waterfall itself
     assert abilities.request_glide(p, 1, *wet, gw.mono()) is None
     s.sent.clear()
     run(gw, 0.1)
@@ -187,34 +203,37 @@ async def test_a_glide_is_refused_onto_a_tile_that_is_not_walkable(client, gw):
 async def test_a_glide_does_not_pass_walls_nor_go_too_far(client, gw):
     h, uid, s = await fighter(client, gw, "ab_7", "Lướt Bảy")
     z = maps.load(KIEM_TRUNG_SON)
-    x0, y0 = tile_feet(51, 6)
+    x0, y0 = tile_feet(*LEDGE)
     p = place(gw, s, KIEM_TRUNG_SON, x0, y0)
     s.tree = pos(6)
     g = unlock("dap_kiem_luot")["glide"]
     far = (x0, y0 - g["max_px"] - 20)
     assert glide.check(z.collider, z.tile_name, over(), x0, y0, *far, g["max_px"]) == "too_far"
     # east of the ledge stands a stone wall (solid, and no chasm): a glide through it is refused
-    wall = next(tx for tx in range(52, 56) if z.collider.blocked(*tile_feet(tx, 6)) and z.tile_name(tx, 6) not in over())
-    beyond = next((tile_feet(tx, 6) for tx in range(wall + 1, 56) if not z.collider.blocked(*tile_feet(tx, 6))), None)
+    lx, ly = LEDGE
+    wall = next(tx for tx in range(lx + 1, lx + 5) if z.collider.blocked(*tile_feet(tx, ly))
+                and z.tile_name(tx, ly) not in over())
+    beyond = next((tile_feet(tx, ly) for tx in range(wall + 1, lx + 5) if not z.collider.blocked(*tile_feet(tx, ly))),
+                  None)
     if beyond is not None and math.hypot(beyond[0] - x0, 0) <= g["max_px"]:
         assert glide.check(z.collider, z.tile_name, over(), x0, y0, *beyond, g["max_px"]) == "blocked"
     else:     # nothing walkable behind it: the landing itself is refused
-        assert glide.check(z.collider, z.tile_name, over(), x0, y0, *tile_feet(wall, 6), g["max_px"]) == "bad_landing"
-    assert abilities.request_glide(p, 1, *tile_feet(wall, 6), gw.mono()) is None
+        assert glide.check(z.collider, z.tile_name, over(), x0, y0, *tile_feet(wall, ly), g["max_px"]) == "bad_landing"
+    assert abilities.request_glide(p, 1, *tile_feet(wall, ly), gw.mono()) is None
     run(gw, 0.1)
     assert (p.x, p.y) == (x0, y0)
 
 
 async def test_no_glide_while_answering_or_in_a_bi_canh(client, gw):
     h, uid, s = await fighter(client, gw, "ab_8", "Lướt Tám")
-    p = place(gw, s, KIEM_TRUNG_SON, *tile_feet(51, 6))
+    p = place(gw, s, KIEM_TRUNG_SON, *tile_feet(*LEDGE))
     s.tree = pos(6)
     p.protect_until = gw.mono() + 5
-    assert abilities.request_glide(p, 1, *tile_feet(51, 3), gw.mono()) == "answering"
+    assert abilities.request_glide(p, 1, *tile_feet(PEAK[0], PEAK[1] + 1), gw.mono()) == "answering"
     p.protect_until = 0.0
     p.channel.instance = True
     try:
-        assert abilities.request_glide(p, 2, *tile_feet(51, 3), gw.mono()) == "cannot"
+        assert abilities.request_glide(p, 2, *tile_feet(PEAK[0], PEAK[1] + 1), gw.mono()) == "cannot"
         assert abilities.view(p, gw.mono()) is None
     finally:
         p.channel.instance = False
@@ -238,11 +257,16 @@ def test_the_spots_behind_the_chasm_and_the_waterfall_open_with_the_glide(monkey
 
 # ------------------------------------------------------------------ Cưỡi linh thú
 def open_ground(w: World, s):
-    """A stretch of free ground in Kiếm Trủng Sơn (the path in its south) for timing a walk."""
+    """A stretch of free ground in Kiếm Trủng Sơn for timing a walk: the first row near the gate
+    (searched, not written here: the giant map is generated) with 200 px free to the east."""
     z = maps.load(KIEM_TRUNG_SON)
-    x0, y0 = tile_feet(20, 32)
-    assert all(not z.collider.blocked(x0 + d, y0) for d in range(0, 200, 4))
-    return place(w, s, KIEM_TRUNG_SON, x0, y0)
+    sx, sy = z.spawn("from_village")
+    for ty in range(int(sy // 16), int(sy // 16) - 40, -1):
+        for tx in range(int(sx // 16) - 20, int(sx // 16) + 20):
+            x0, y0 = tile_feet(tx, ty)
+            if all(not z.collider.blocked(x0 + d, y0) for d in range(0, 200, 4)):
+                return place(w, s, KIEM_TRUNG_SON, x0, y0)
+    raise AssertionError("no free stretch near the gate of Kiếm Trủng Sơn")
 
 
 async def walk_right(w: World, p, seq: int, ms: int) -> float:

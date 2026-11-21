@@ -433,7 +433,8 @@ def test_autotile_quadrants_for_every_shape():
 
 def test_the_2x_ground_is_built_once_and_dirt_cells_are_no_longer_squares():
     from client.engine.tilemap import TileMap
-    m = TileMap(ROOT / "client" / "assets" / "maps" / "loan_so_coc.tmj")
+    # a small land with lone dirt cells in its grass (Kiếm Trủng Sơn is a giant map since Đại Địa Đồ)
+    m = TileMap(ROOT / "client" / "assets" / "maps" / "linh_xa_nguyen.tmj")
     g = m.ground32()
     assert g.get_size() == (m.w * 32, m.h * 32) and m.ground32() is g and m.autotiled > 50
     from client.art import build as B
@@ -576,11 +577,29 @@ def test_every_autotile_pair_has_its_tiles():
             assert f"{rule['pair']}_{suf}" in terrain, (cell, suf)
 
 
-def test_stone_islands_are_round_and_dark_grass_gets_its_edge():
+def _with_stone_islands(tmp_path: Path) -> Path:
+    """A small real map with single stone tiles set into its grass (no shipped map is sure to have
+    them: the giant lands paint stone in patches)."""
+    from client.art import build as B
+    names = [n for n, _ in B.TILESET]
+    data = json.loads((ROOT / "client" / "assets" / "maps" / "linh_xa_nguyen.tmj").read_text("utf-8"))
+    w, h = data["width"], data["height"]
+    g = next(l for l in data["layers"] if l["name"] == "ground")["data"]
+    for i in range(len(g)):
+        x, y = i % w, i // w
+        if 2 <= x < w - 2 and 2 <= y < h - 2 and x % 7 == 3 and y % 5 == 2 and all(
+                names[g[(y + dy) * w + x + dx] - 1] == "grass" for dx, dy in ((0, 0), (0, -1), (1, 0), (0, 1), (-1, 0))):
+            g[i] = names.index("stone") + 1
+    path = tmp_path / "stone_islands.tmj"
+    path.write_text(json.dumps(data), "utf-8")
+    return path
+
+
+def test_stone_islands_are_round_and_dark_grass_gets_its_edge(tmp_path):
     from client.engine.tilemap import TileMap
     from client.art import build as B
     names = [n for n, _ in B.TILESET]
-    m = TileMap(ROOT / "client" / "assets" / "maps" / "loan_so_coc.tmj")
+    m = TileMap(_with_stone_islands(tmp_path))
     g = m.ground32()
     stone = [i for i, gid in enumerate(m.ground) if gid and names[gid - 1] == "stone"]
     lone = [i for i in stone if all(0 <= (i // m.w + dy) < m.h and 0 <= i % m.w + dx < m.w and

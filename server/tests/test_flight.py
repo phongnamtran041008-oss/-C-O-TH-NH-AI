@@ -39,8 +39,17 @@ def at(stage: int, realm: str = "luyen_khi") -> lands.TreePos:
     return lands.TreePos(realm, stage, frozenset())
 
 
-LEDGE = (51, 6)            # Kiếm Trủng Sơn: the ledge below the nest, a chasm of ink north of it
-CHASM = (51, 5)
+# Kiếm Trủng Sơn: the ledge below the nest, a chasm of ink north of it (read from the plan)
+from tests.test_abilities import CHASM, LEDGE  # noqa: E402
+
+
+def _open() -> tuple[float, float]:
+    """Open ground in the south of Kiếm Trủng Sơn: the plaza of the gate camp (its khu anchor)."""
+    k = next(a for a in maps.load(KIEM_TRUNG_SON).khu if a.name == "kts_trai_cong")
+    return float(k.props["anchor_x"]), float(k.props["anchor_y"])
+
+
+OPEN = _open()
 
 
 def take_off(gw: World, p, seq: int) -> None:
@@ -161,7 +170,7 @@ async def test_a_flyer_crosses_the_chasm_walking_cannot_and_lands_on_the_far_sid
 
 async def test_a_flyer_moves_at_the_swords_speed_and_no_faster(client, gw):
     h, uid, s = await fighter(client, gw, "fl_4", "Phi Bốn")
-    x0, y0 = tile_feet(20, 32)                          # the open path in the south of Kiếm Trủng Sơn
+    x0, y0 = OPEN                                       # the open plaza in the south of Kiếm Trủng Sơn
     p = place(gw, s, KIEM_TRUNG_SON, x0, y0)
     speed = p.channel.speed
     s.tree = at(6)
@@ -183,7 +192,8 @@ async def test_a_flyer_does_not_pass_walls(client, gw):
     z = maps.load(KIEM_TRUNG_SON)
     over = abilities.fly_over(1)
     x0, y0 = tile_feet(*LEDGE)
-    wall = next(tx for tx in range(52, 56) if z.collider.blocked(*tile_feet(tx, 6)) and z.tile_name(tx, 6) not in over)
+    wall = next(tx for tx in range(LEDGE[0] + 1, LEDGE[0] + 5) if z.collider.blocked(*tile_feet(tx, LEDGE[1]))
+                and z.tile_name(tx, LEDGE[1]) not in over)
     p = place(gw, s, KIEM_TRUNG_SON, x0, y0)
     s.tree = at(6)
     take_off(gw, p, 1)
@@ -234,7 +244,7 @@ async def test_the_gauge_runs_dry_over_the_chasm_and_the_flyer_falls_back(client
 
 async def test_the_gauge_runs_dry_over_ground_and_lands_there(client, gw):
     h, uid, s = await fighter(client, gw, "fl_8", "Phi Tám")
-    p = place(gw, s, KIEM_TRUNG_SON, *tile_feet(20, 32))
+    p = place(gw, s, KIEM_TRUNG_SON, *OPEN)
     s.tree = at(6)
     take_off(gw, p, 1)
     x, y = p.x, p.y
@@ -246,7 +256,7 @@ async def test_the_gauge_runs_dry_over_ground_and_lands_there(client, gw):
 async def test_kim_si_dieu_lengthens_the_gauge_and_a_linh_can_refills_it_faster(client, gw, monkeypatch):
     from app.systems import beasts as sysbeasts
     h, uid, s = await fighter(client, gw, "fl_9", "Phi Chín")
-    p = place(gw, s, KIEM_TRUNG_SON, *tile_feet(20, 32))
+    p = place(gw, s, KIEM_TRUNG_SON, *OPEN)
     s.tree = at(6)
     base, refill = abilities.gauge_max(p), abilities.refill_seconds(p)
     assert (base, refill) == (low()["gauge_seconds"], low()["refill_seconds"])
@@ -264,7 +274,7 @@ async def test_kim_si_dieu_lengthens_the_gauge_and_a_linh_can_refills_it_faster(
 
 async def test_free_flight_at_truc_co_has_no_gauge_and_is_faster(client, gw):
     h, uid, s = await fighter(client, gw, "fl_10", "Phi Mười")
-    p = place(gw, s, KIEM_TRUNG_SON, *tile_feet(20, 32))
+    p = place(gw, s, KIEM_TRUNG_SON, *OPEN)
     speed = p.channel.speed
     s.tree = at(0, "truc_co")
     p.fly_gauge = 0.0                                  # (an empty low-rung gauge does not matter up there)
@@ -374,7 +384,7 @@ async def test_no_flight_in_a_bi_canh(client, gw):
 # ------------------------------------------------------------------ others, saves, zones
 async def test_others_and_late_joiners_see_the_flyer(client, gw):
     h, uid, s = await fighter(client, gw, "fl_16", "Phi Mười Sáu")
-    p = place(gw, s, KIEM_TRUNG_SON, *tile_feet(20, 32))
+    p = place(gw, s, KIEM_TRUNG_SON, *OPEN)
     s.tree = at(6)
     take_off(gw, p, 1)
     assert p.full()["fl"] == 1 and p.full()["fs"] == "phi_kiem_1"

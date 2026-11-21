@@ -271,14 +271,17 @@ def monsters(m: DaiDiaDo) -> None:
     """Band 1: the low stages (normal rank); band 2: the middle creatures with a few elites;
     band 3: the high stages and the elites. The nine quái lỗi sai stay in Loạn Số Cốc, in three
     groups by their floor, floor 1 nearest the gate camp."""
-    # Loạn Số Cốc: the mistakes, floor by floor (each group two normal kinds and one elite)
-    for floor, x0, (a, na), (b, nb), elite in (
-            (1, 182, ("dstt_phan_tu_ma", 5), ("dstt_nghich_hieu_ma", 4), "dstt_anh_trung_ma"),
-            (2, 226, ("dstt_binh_phuong_ma", 5), ("dstt_phan_ao_ma", 4), "dstt_modun_ma"),
-            (3, 270, ("dstt_chi_so_ma", 5), ("dstt_chuyen_vi_ma", 4), "dstt_doi_xung_ma")):
-        m.monster_area("kts_loan_so_coc", a, (x0, 174, x0 + 33, 203), na, name=f"t{floor}_{a[5:-3]}")
-        m.monster_area("kts_loan_so_coc", b, (x0, 206, x0 + 33, 233), nb, name=f"t{floor}_{b[5:-3]}")
-        m.monster_area("kts_loan_so_coc", elite, (x0 + 12, 199, x0 + 21, 208), 1, name=f"t{floor}_{elite[5:-3]}")
+    # Loạn Số Cốc: the mistakes, floor by floor (each group two normal kinds and one elite), in
+    # areas of 20 x 15 tiles: a monster chased to the edge of its area stays within its leash
+    for floor, x0, a, b, elite in (
+            (1, 182, "dstt_phan_tu_ma", "dstt_nghich_hieu_ma", "dstt_anh_trung_ma"),
+            (2, 226, "dstt_binh_phuong_ma", "dstt_phan_ao_ma", "dstt_modun_ma"),
+            (3, 270, "dstt_chi_so_ma", "dstt_chuyen_vi_ma", "dstt_doi_xung_ma")):
+        for n, (kind, col, row, count) in enumerate(((a, 0, 0, 2), (b, 1, 0, 2), (a, 0, 1, 2), (b, 1, 1, 2),
+                                                    (a, 0, 2, 1))):
+            x, y = x0 + 21 * col, 174 + 16 * row
+            m.monster_area("kts_loan_so_coc", kind, (x, y, x + 19, y + 14), count, name=f"t{floor}_{kind[5:-3]}_{n}")
+        m.monster_area("kts_loan_so_coc", elite, (x0 + 25, 208, x0 + 33, 216), 1, name=f"t{floor}_{elite[5:-3]}")
     m.monsters("kts_chan_nui", [("kiem_linh", 3), ("thiet_giap_thu", 1)], tiles_per=210)
     fx, fy = CAVE
     m.monster_area("kts_thach_lam", "thach_khoi", (fx - 8, fy + 6, fx + 12, fy + 16), 2, name="thach_khoi_thac")
