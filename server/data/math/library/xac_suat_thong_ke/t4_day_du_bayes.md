@@ -129,6 +129,8 @@ Ví dụ: hộp I: 2 trắng, 1 đen; hộp II: 1 trắng, 2 đen. Chuyển 1 bi
 2. Hộp II còn 4 bi: có 2 trắng nếu chuyển trắng, 1 trắng nếu chuyển đen.
 3. P = 2/3 . 2/4 + 1/3 . 1/4 = 4/12 + 1/12 = 5/12.
 
+Dùng ngược: hai xưởng chia đôi sản lượng, xưởng I hỏng 1/10, cả nhà máy 3/40. Tỉ lệ x của xưởng II: 1/2 . 1/10 + 1/2 . x = 3/40, x = 1/20.
+
 > Lỗi thường gặp: lấy trung bình cộng ba tỉ lệ sai, ra 19/300. Mô hình làm nhiều phải nặng ký hơn.
 
 :::check
@@ -213,7 +215,7 @@ Dương tính gồm cả người bệnh lẫn người khỏe bị báo nhầm.
 
 $$ P(B \mid D) = \frac{p\,s}{p\,s + (1-p)\,f} $$
 
-p: tỉ lệ bệnh, s = P(dương | bệnh), f = P(dương | khỏe).
+p: tỉ lệ bệnh, s = P(dương | bệnh), f = P(dương | khỏe). Hai lần xét nghiệm độc lập cùng dương: thay s bằng s^2, f bằng f^2 (số trong hình ra 324/373).
 
 Ví dụ: 1/3 số thư là rác; chữ "miễn phí" có trong 3/5 thư rác, 1/10 thư thường. P(rác | có chữ)?
 
