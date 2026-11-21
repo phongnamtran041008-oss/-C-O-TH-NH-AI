@@ -1,6 +1,6 @@
 """Đại Số Tuyến Tính: generators added by the curriculum review (tools/audit_curriculum.py found
 these micro-skill x tier cells with only two or three hand-written questions and no generator, so a
-learner met the same question again within a few answers). Ids start with `dstt_gx_`; each one
+learner met the same question again within a few answers). Ids are `dstt_g<floor>_<name>` like the rest; each one
 sits on the tier the cell is asked at. Matrices are sent as figures (Draw.matrices).
 tools/math_verify_rasoat.py redoes every answer with sympy (Matrix products, rank, solve)."""
 from __future__ import annotations
@@ -58,7 +58,7 @@ def _unimodular(rng: random.Random) -> list[list[int]]:
 
 
 # ------------------------------------------------------------------ floor 4
-@generator("dstt_gx_tvh_tim_m")
+@generator("dstt_g4_tvh_tim_m")
 def tvh_tim_m(rng: random.Random) -> Draw:
     """Tier 3: the dot product of two feature vectors is given; find the unknown coordinate."""
     m = rng.randint(-6, 6)
@@ -78,7 +78,7 @@ def tvh_tim_m(rng: random.Random) -> Draw:
                      f"Vậy m = {k - rest}/{c} = {m}."])
 
 
-@generator("dstt_gx_ab_tru_ba")
+@generator("dstt_g4_ab_tru_ba")
 def ab_tru_ba(rng: random.Random) -> Draw:
     """Tier 2: one entry of AB - BA, to feel that AB != BA."""
     while True:
@@ -102,7 +102,7 @@ def ab_tru_ba(rng: random.Random) -> Draw:
 
 
 # ------------------------------------------------------------------ floor 7
-@generator("dstt_gx_con_khong_gian")
+@generator("dstt_g7_con_khong_gian")
 def con_khong_gian(rng: random.Random) -> Draw:
     """Tier 5, true/false: is W a subspace of R^2 or R^3? (zero vector, sums and scalar multiples)"""
     kind = rng.choice(["line", "shifted", "product", "halfplane", "plane3", "shifted3", "square"])
@@ -148,7 +148,7 @@ def con_khong_gian(rng: random.Random) -> Draw:
         solution_vi=why)
 
 
-@generator("dstt_gx_thuoc_bao_tuyen_tinh")
+@generator("dstt_g7_thuoc_bao_tuyen_tinh")
 def thuoc_bao_tuyen_tinh(rng: random.Random) -> Draw:
     """Tier 5: w = (w1, m, w3) lies in span{u, v}; find m."""
     while True:
@@ -170,7 +170,7 @@ def thuoc_bao_tuyen_tinh(rng: random.Random) -> Draw:
                      f"Tọa độ thứ hai: m = {u[1]} . {paren(s)} + {paren(v[1])} . {paren(t)} = {m}."])
 
 
-@generator("dstt_gx_toa_do_doi_co_so")
+@generator("dstt_g7_toa_do_doi_co_so")
 def toa_do_doi_co_so(rng: random.Random) -> Draw:
     """Tier 5: coordinates in B are given; find them in B'."""
     while True:
@@ -200,7 +200,7 @@ def toa_do_doi_co_so(rng: random.Random) -> Draw:
 
 
 # ------------------------------------------------------------------ floor 8
-@generator("dstt_gx_doi_co_so_ma_tran")
+@generator("dstt_g8_doi_co_so_ma_tran")
 def doi_co_so_ma_tran(rng: random.Random) -> Draw:
     """Tier 5: B = P^-1 A P with P of determinant +-1 (so every entry is a whole number)."""
     a = matrix(rng, 2, 2, -3, 4)
@@ -219,7 +219,7 @@ def doi_co_so_ma_tran(rng: random.Random) -> Draw:
         matrices={"A": a, "P": p})
 
 
-@generator("dstt_gx_hop_anh_xa_gia_tri")
+@generator("dstt_g8_hop_anh_xa_gia_tri")
 def hop_anh_xa_gia_tri(rng: random.Random) -> Draw:
     """Tier 5: (g o f)(p, q) for two linear maps R^2 -> R^2, through the product of their matrices."""
     af = [[nonzero(rng, -3, 4) for _ in range(2)] for _ in range(2)]
@@ -252,7 +252,7 @@ def _low_rank(rng: random.Random, rows: int, cols: int, rank: int) -> list[list[
             return m
 
 
-@generator("dstt_gx_nhan_va_anh")
+@generator("dstt_g8_nhan_va_anh")
 def nhan_va_anh(rng: random.Random) -> Draw:
     """Tier 5: dim Ker f and dim Im f of the map x -> Ax."""
     rows, cols = rng.choice([(3, 4), (3, 3), (2, 4), (4, 3), (4, 4)])
@@ -269,7 +269,7 @@ def nhan_va_anh(rng: random.Random) -> Draw:
         matrices={"A": m})
 
 
-@generator("dstt_gx_so_chieu_nhan")
+@generator("dstt_g8_so_chieu_nhan_rs")
 def so_chieu_nhan(rng: random.Random) -> Draw:
     """Tier 5: from the rank-nullity theorem: given two of (dim domain, dim Ker, dim Im) find the third."""
     n = rng.randint(4, 8)
@@ -293,7 +293,7 @@ def so_chieu_nhan(rng: random.Random) -> Draw:
 
 
 # ------------------------------------------------------------------ more cells found thin (floors 4-6)
-@generator("dstt_gx_chuyen_vi_tich")
+@generator("dstt_g4_chuyen_vi_tich_rs")
 def chuyen_vi_tich(rng: random.Random) -> Draw:
     """Tier 2: one entry of (AB)^T, using (AB)^T = B^T A^T."""
     a, b = matrix(rng, 2, 2, -3, 4), matrix(rng, 2, 2, -3, 4)
@@ -310,7 +310,7 @@ def chuyen_vi_tich(rng: random.Random) -> Draw:
         matrices={"A": a, "B": b})
 
 
-@generator("dstt_gx_hang_ma_tran")
+@generator("dstt_g6_hang_ma_tran")
 def hang_ma_tran(rng: random.Random) -> Draw:
     """Tier 4: the rank of a matrix built from fewer independent rows than it shows."""
     rows, cols = rng.choice([(3, 3), (3, 4), (4, 3), (4, 4)])

@@ -1,5 +1,5 @@
 """Thuật Toán và Tối Ưu: generators added by the curriculum review (see rsdstt_floor1.py for why).
-Ids start with `tr_gx_`. Graphs are drawn from the rng and written out as edge lists in the
+Ids are `tr_g<floor>_<name>`. Graphs are drawn from the rng and written out as edge lists in the
 prompt; tools/math_verify_rasoat.py recomputes each answer another way (itertools permutations,
 Floyd-Warshall, matrix powers, an explicit stack, sympy for the Hessian)."""
 from __future__ import annotations
@@ -39,7 +39,7 @@ def _adjacency(n: int, edges) -> dict[int, list[int]]:
 
 
 # ------------------------------------------------------------------ floor 3
-@generator("tr_gx_hoan_vi_thu_may")
+@generator("tr_g3_hoan_vi_thu_may")
 def hoan_vi_thu_may(rng: random.Random) -> Draw:
     """Tier 3: the place of a permutation in the lexicographic list of all permutations of 1..n."""
     n = rng.choice([4, 4, 5])
@@ -65,7 +65,7 @@ def hoan_vi_thu_may(rng: random.Random) -> Draw:
 
 
 # ------------------------------------------------------------------ floor 5
-@generator("tr_gx_danh_sach_ke_dem")
+@generator("tr_g5_danh_sach_ke_dem")
 def danh_sach_ke_dem(rng: random.Random) -> Draw:
     """Tier 4: read an adjacency list: number of edges, the largest degree, or the number of leaves."""
     n = rng.choice([6, 7, 8])
@@ -97,7 +97,7 @@ def danh_sach_ke_dem(rng: random.Random) -> Draw:
         solution_vi=sol)
 
 
-@generator("tr_gx_thanh_phan_lien_thong")
+@generator("tr_g5_thanh_phan_lien_thong")
 def thanh_phan_lien_thong(rng: random.Random) -> Draw:
     """Tier 4: number of connected components, or edges to add to connect the graph."""
     n = rng.choice([7, 8, 9])
@@ -147,7 +147,7 @@ def _bfs_dist(n: int, adj, src: int) -> dict[int, int]:
     return dist
 
 
-@generator("tr_gx_bfs_khoang_cach")
+@generator("tr_g6_bfs_khoang_cach_rs")
 def bfs_khoang_cach(rng: random.Random) -> Draw:
     """Tier 4: the least number of edges between two vertices (a BFS), or how many vertices are
     exactly d edges from the source."""
@@ -178,7 +178,7 @@ def bfs_khoang_cach(rng: random.Random) -> Draw:
                      f"Đáp án: {ans}."])
 
 
-@generator("tr_gx_dfs_thu_tu")
+@generator("tr_g6_dfs_thu_tu_rs")
 def dfs_thu_tu(rng: random.Random) -> Draw:
     """Tier 4: the order in which DFS from vertex 1 visits the vertices, smaller neighbour first."""
     n = rng.choice([6, 7, 8])
@@ -204,7 +204,7 @@ def dfs_thu_tu(rng: random.Random) -> Draw:
 
 
 # ------------------------------------------------------------------ floors 7-8
-@generator("tr_gx_cay_dem_la")
+@generator("tr_g7_cay_dem_la")
 def cay_dem_la(rng: random.Random) -> Draw:
     """Tier 5: the degree sum of a tree is 2(n - 1), so leaves can be counted; or a forest's edges."""
     if rng.random() < 0.7:
@@ -229,7 +229,7 @@ def cay_dem_la(rng: random.Random) -> Draw:
         solution_vi=["Một cây có m đỉnh có m - 1 cạnh.", f"Cộng {k} cây: số cạnh = (tổng số đỉnh) - (số cây) = {n} - {k} = {n - k}."])
 
 
-@generator("tr_gx_ham_loi_hesse")
+@generator("tr_g8_ham_loi_hesse")
 def ham_loi_hesse(rng: random.Random) -> Draw:
     """Tier 5, true/false: is f(x, y) = a x^2 + b x y + c y^2 convex? (Hessian [[2a, b], [b, 2c]])"""
     a, c = rng.randint(1, 5), rng.choice([-2, -1, 1, 2, 3, 4, 5])

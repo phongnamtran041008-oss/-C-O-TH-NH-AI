@@ -3,12 +3,12 @@
   "subject": "toi_uu_roi_rac",
   "items": [],
   "generators": [
-    {"id": "tr_gx_hoan_vi_thu_may", "skill": "tr_t3_tu_dien", "tier": 3, "type": "numeric", "reviewed": false},
-    {"id": "tr_gx_danh_sach_ke_dem", "skill": "tr_t5_danh_sach_ke", "tier": 4, "type": "numeric", "reviewed": false},
-    {"id": "tr_gx_thanh_phan_lien_thong", "skill": "tr_t5_duong_di_lien_thong", "tier": 4, "type": "numeric", "reviewed": false},
-    {"id": "tr_gx_bfs_khoang_cach", "skill": "tr_t6_bfs", "tier": 4, "type": "numeric", "reviewed": false},
-    {"id": "tr_gx_dfs_thu_tu", "skill": "tr_t6_dfs", "tier": 4, "type": "numeric", "reviewed": false},
-    {"id": "tr_gx_cay_dem_la", "skill": "tr_t7_cay", "tier": 5, "type": "numeric", "reviewed": false},
-    {"id": "tr_gx_ham_loi_hesse", "skill": "tr_t8_ham_loi", "tier": 5, "type": "true_false", "reviewed": false}
+    {"id": "tr_g3_hoan_vi_thu_may", "skill": "tr_t3_tu_dien", "tier": 3, "type": "numeric", "reviewed": false},
+    {"id": "tr_g5_danh_sach_ke_dem", "skill": "tr_t5_danh_sach_ke", "tier": 4, "type": "numeric", "reviewed": false},
+    {"id": "tr_g5_thanh_phan_lien_thong", "skill": "tr_t5_duong_di_lien_thong", "tier": 4, "type": "numeric", "reviewed": false},
+    {"id": "tr_g6_bfs_khoang_cach_rs", "skill": "tr_t6_bfs", "tier": 4, "type": "numeric", "reviewed": false},
+    {"id": "tr_g6_dfs_thu_tu_rs", "skill": "tr_t6_dfs", "tier": 4, "type": "numeric", "reviewed": false},
+    {"id": "tr_g7_cay_dem_la", "skill": "tr_t7_cay", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "tr_g8_ham_loi_hesse", "skill": "tr_t8_ham_loi", "tier": 5, "type": "true_false", "reviewed": false}
   ]
 }

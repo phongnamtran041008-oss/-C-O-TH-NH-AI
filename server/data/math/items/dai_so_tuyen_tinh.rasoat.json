@@ -3,16 +3,16 @@
   "subject": "dai_so_tuyen_tinh",
   "items": [],
   "generators": [
-    {"id": "dstt_gx_ab_tru_ba", "skill": "dstt_t4_khong_giao_hoan", "tier": 2, "type": "numeric", "reviewed": false},
-    {"id": "dstt_gx_tvh_tim_m", "skill": "dstt_t4_tich_vo_huong", "tier": 3, "type": "numeric", "reviewed": false},
-    {"id": "dstt_gx_con_khong_gian", "skill": "dstt_t7_khong_gian_vecto", "tier": 5, "type": "true_false", "reviewed": false},
-    {"id": "dstt_gx_thuoc_bao_tuyen_tinh", "skill": "dstt_t7_to_hop_tuyen_tinh", "tier": 5, "type": "numeric", "reviewed": false},
-    {"id": "dstt_gx_toa_do_doi_co_so", "skill": "dstt_t7_toa_do", "tier": 5, "type": "numeric", "reviewed": false},
-    {"id": "dstt_gx_doi_co_so_ma_tran", "skill": "dstt_t8_doi_co_so", "tier": 5, "type": "numeric", "reviewed": false},
-    {"id": "dstt_gx_hop_anh_xa_gia_tri", "skill": "dstt_t8_hop_anh_xa", "tier": 5, "type": "numeric", "reviewed": false},
-    {"id": "dstt_gx_nhan_va_anh", "skill": "dstt_t8_nhan_va_anh", "tier": 5, "type": "numeric", "reviewed": false},
-    {"id": "dstt_gx_so_chieu_nhan", "skill": "dstt_t8_dinh_ly_so_chieu", "tier": 5, "type": "numeric", "reviewed": false},
-    {"id": "dstt_gx_chuyen_vi_tich", "skill": "dstt_t4_tinh_chat_nhan", "tier": 2, "type": "numeric", "reviewed": false},
-    {"id": "dstt_gx_hang_ma_tran", "skill": "dstt_t6_hang", "tier": 4, "type": "numeric", "reviewed": false}
+    {"id": "dstt_g4_ab_tru_ba", "skill": "dstt_t4_khong_giao_hoan", "tier": 2, "type": "numeric", "reviewed": false},
+    {"id": "dstt_g4_tvh_tim_m", "skill": "dstt_t4_tich_vo_huong", "tier": 3, "type": "numeric", "reviewed": false},
+    {"id": "dstt_g7_con_khong_gian", "skill": "dstt_t7_khong_gian_vecto", "tier": 5, "type": "true_false", "reviewed": false},
+    {"id": "dstt_g7_thuoc_bao_tuyen_tinh", "skill": "dstt_t7_to_hop_tuyen_tinh", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "dstt_g7_toa_do_doi_co_so", "skill": "dstt_t7_toa_do", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "dstt_g8_doi_co_so_ma_tran", "skill": "dstt_t8_doi_co_so", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "dstt_g8_hop_anh_xa_gia_tri", "skill": "dstt_t8_hop_anh_xa", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "dstt_g8_nhan_va_anh", "skill": "dstt_t8_nhan_va_anh", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "dstt_g8_so_chieu_nhan_rs", "skill": "dstt_t8_dinh_ly_so_chieu", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "dstt_g4_chuyen_vi_tich_rs", "skill": "dstt_t4_tinh_chat_nhan", "tier": 2, "type": "numeric", "reviewed": false},
+    {"id": "dstt_g6_hang_ma_tran", "skill": "dstt_t6_hang", "tier": 4, "type": "numeric", "reviewed": false}
   ]
 }

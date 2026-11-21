@@ -32,7 +32,10 @@ def recompute():
     sys.path.insert(0, str(ROOT / "tools"))
     try:
         import math_verify_tr_t4 as module
-        yield module.EXPECTED
+        import math_verify_rasoat
+        # the curriculum review's generators (tools/math_verify_rasoat.py) sit on these floors too
+        mine = {k: v for k, v in math_verify_rasoat.EXPECTED.items() if k.startswith(('tr_g4_', 'tr_g5_', 'tr_g6_'))}
+        yield {**module.EXPECTED, **mine}
     finally:
         sys.path.remove(str(ROOT / "tools"))
 
@@ -139,6 +142,9 @@ def test_everything_is_unreviewed_until_a_person_checks_it():
 # ------------------------------------------------------------------ the generators
 def test_every_generator_is_listed_and_registered():
     listed = {g["id"] for g in raw_part()["generators"]}
+    # plus the generators the curriculum review added (items/<subject>.rasoat.json) on these floors
+    review = json.loads(PART_FILE.with_name(f"{SUBJECT}.rasoat.json").read_text("utf-8"))["generators"]
+    listed |= {g["id"] for g in review if g["id"].startswith(('tr_g4_', 'tr_g5_', 'tr_g6_'))}
     assert listed == set(GENERATORS)
     assert all(mi.generators()[g].qtype in ("true_false", "numeric") for g in GENERATORS)
 
@@ -207,10 +213,12 @@ async def test_a_player_who_cleared_floors_1_to_3_practises_floor_4_right_and_wr
     results = []
     for correct in (True, False, True, True, False, True, False, True):
         q = await ask(client, h, run_id)
-        assert q["math"]["subject"] == SUBJECT
         if not q["math"].get("review"):                       # (rule 6b may bring a question from below)
+            assert q["math"]["subject"] == SUBJECT
             assert q["math"]["floor"] == 4 and q["math"]["skill"].startswith("tr_t4_")
             assert q["math"]["tier"] in (2, 3)
+        else:   # a review question comes from a node tr_thuat_toan reinforces: it may be another subject (xs_dem_su_kien)
+            assert q["math"]["subject"] in (SUBJECT, "xac_suat_thong_ke")
         key = await answer_key(q["session_id"])
         answer = right_answer(q, key) if correct else wrong_answer(q, key)
         r = await client.post("/quiz/answer", json={"session_id": q["session_id"], "answer": answer}, headers=h)
