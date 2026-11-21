@@ -172,7 +172,7 @@ def build() -> dict:
     m.paint(warp=7.0, scale=26.0)
     m.camp("mdl_leu_bia_rung", "Lều Bìa Rừng", CAMP1, r=6,
            desc_vi="Lều nghỉ sau ngã ba đầu tiên, ngay trong cổng tây. Không có quái.",
-           label_vi="Lều Bìa Rừng (nghỉ chân)")
+           label_vi="Lều Bìa Rừng (nghỉ chân)", to_edge="w")
     m.camp("mdl_tram_nga_bay", "Trạm Ngã Bảy", CAMP2, r=6,
            desc_vi="Trạm nghỉ sau hàng cây mực, cửa vào Trung Vực.", label_vi="Trạm Ngã Bảy · cửa Trung Vực")
     m.camp("mdl_am_khe_muc", "Am Khe Mực", CAMP3, r=6,
@@ -740,9 +740,11 @@ def monsters(m, cells: Cells) -> None:
         m.monster_area(kid, kind, rect, cnt, name=f"{kid}_{kind}_{len(hand)}")
         hand.append(rect)
 
-    area("mdl_bia_rung", "ink_slime", (15, 111, 33, 125), 2)
-    area("mdl_bia_rung", "ink_slime", (15, 131, 33, 142), 2)
-    area("mdl_bia_rung", "tone_wisp", (15, 94, 33, 108), 2)
+    # the gate camp reaches the west gate (to_edge): the first quests' monsters wait just past its
+    # clearance, east of the camp on the road to Ngã Bảy, south and north of the gate road
+    area("mdl_bia_rung", "ink_slime", (76, 111, 94, 125), 2)
+    area("mdl_bia_rung", "ink_slime", (34, 138, 52, 149), 2)
+    area("mdl_bia_rung", "tone_wisp", (15, 86, 33, 100), 2)
     hx, hy = HANG_HO
     area("mdl_bia_rung", "ink_fox", (hx - 4, hy - 4, hx + 4, hy + 4), 1)
     cx, cy = CAY_ME

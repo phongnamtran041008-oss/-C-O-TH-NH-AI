@@ -448,6 +448,39 @@ def test_every_anchor_of_the_giant_lands_is_reached_by_following_the_arrow():
         assert r["search_s"] < 2.0 and r["read_ms"] < 2.0, r
 
 
+def test_every_land_of_the_world_is_walked_by_the_arrow_and_home_again():
+    """Every land with khu or named places (derived from the maps: the six giant lands and Lôi
+    Kiếp Đài): from the gate to every khu anchor, every poi, every weapon spot and beast of
+    world_plan.json that does not need a flying skill (a place in water: its nearest shore), then
+    from the deepest anchor home by H through the village to the Động Phủ's gate - by the arrow
+    alone, never stuck, never through a solid, never on water, at most 1.6 times the way. About
+    40 s; the table: python -m client.tests.nav_walk."""
+    from client.tests import nav_walk
+    lands = nav_walk.world_lands()
+    assert {"loan_so_coc", "luu_van_coc", "rung_muc_loang", "ho_nghien_muc", "thien_cong_phuong",
+            "linh_xa_nguyen", "loi_kiep_dai"} <= set(lands), lands
+    bad = []
+    for zone in lands:
+        res = nav_walk.walk_all(zone)
+        assert len(res["rows"]) >= 7 and res["home"], zone
+        assert any(h["zone"] == "truc_lam_thon" for h in res["home"]), res["home"]
+        bad += [nav_walk.fmt(r) for r in res["rows"] + res["home"] if not nav_walk.good(r)]
+    assert not bad, "\n".join(bad)
+
+
+def test_each_land_s_arrival_spawns_lie_in_its_gate_camp():
+    """A player walking in from the village sees the camp's banner first (docs/DAI_DIA_DO_KIEM_THU.md)."""
+    from client.engine.tilemap import load_map
+    from client.tests import nav_walk
+    for zone in nav_walk.world_lands():
+        tm = load_map(zone)
+        camps = [r for r, p in chi_duong.khu_objects(tm) if chi_duong.num(p.get("band")) == 0]
+        if not camps:
+            continue
+        for o in tm.find("spawn"):
+            assert any(x <= o.x < x + w and y <= o.y < y + h for x, y, w, h in camps), (zone, o.name)
+
+
 def test_the_overview_is_built_in_c_and_is_the_same_picture():
     from client.engine.tilemap import load_map
     for zone in ("loan_so_coc", "truc_lam_thon"):
