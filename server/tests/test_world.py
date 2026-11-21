@@ -390,8 +390,8 @@ def test_new_channel_object_spawns_monsters_once():
     zmap = maps.load(FOREST)
     ch = ChannelZone(FOREST, 1, zmap)
     expected = sum(int(a.props["count"]) for a in zmap.monster_areas)
-    beasts = [m for m in ch.monsters if getattr(m, "beast", False)]     # + the linh thú of the land, one each
-    assert len(ch.monsters) == expected + len(beasts) and len(beasts) <= 1
+    beasts = [m for m in ch.monsters if getattr(m, "beast", False)]     # + the linh thú of the land (two since the bestiary)
+    assert len(ch.monsters) == expected + len(beasts) and len(beasts) <= 2
     assert len({m.eid for m in ch.monsters}) == expected + len(beasts)
 
 
