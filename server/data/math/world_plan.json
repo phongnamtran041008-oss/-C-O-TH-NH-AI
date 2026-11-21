@@ -125,7 +125,7 @@
   {"weapon": "cung_1", "quality": "ha", "land": "linh_xa_nguyen", "spot_vi": "Trên giá cung ở Trường Bắn Đầu, cạnh Lều Cửa Thảo Nguyên.", "pos": [32, 105], "requires": {"realm": "luyen_khi", "stage": 3, "nodes": ["ud_knn"]}},
   {"weapon": "cung_1", "quality": "trung", "land": "linh_xa_nguyen", "spot_vi": "Sau hàng bia thứ hai của Trường Bắn Tầm Xa (Trung Vực).", "pos": [196, 199], "requires": {"realm": "luyen_khi", "stage": 5, "nodes": ["ud_hoi_quy_1_bien", "ud_naive_bayes"]}},
   {"weapon": "cung_1", "quality": "thuong", "land": "linh_xa_nguyen", "spot_vi": "Trong tay Tâm Ma của chính mình, giữa Đài Vấn Tâm (Thâm Xứ).", "pos": [272, 186], "requires": {"realm": "luyen_khi", "stage": 8, "nodes": ["ud_mang_no_ron"]}},
-  {"weapon": "cung_2", "quality": "ha", "land": "loi_kiep_dai", "spot_vi": "Rơi ra khi vượt Thiên Kiếp Luyện Khí.", "pos": [20, 13], "requires": {"realm": "luyen_khi", "stage": 9, "nodes": ["du_an_luyen_khi"]}},
+  {"weapon": "cung_2", "quality": "ha", "land": "loi_kiep_dai", "spot_vi": "Rơi ra khi vượt Thiên Kiếp Luyện Khí, giữa đài trên đỉnh Thang Lôi Kiếp.", "pos": [60, 20], "requires": {"realm": "luyen_khi", "stage": 9, "nodes": ["du_an_luyen_khi"]}},
 
   {"weapon": "truong_2", "quality": "ha", "land": "van_hai_thien_dao", "spot_vi": "Trên đảo mây đầu tiên.", "needs": "ngu_kiem_phi_hanh", "requires": {"realm": "truc_co", "stage": 1, "nodes": ["tc_hoc_co_giam_sat"]}},
   {"weapon": "truong_2", "quality": "trung", "land": "van_hai_thien_dao", "spot_vi": "Trên đảo có cây quyết định cổ thụ.", "needs": "ngu_kiem_phi_hanh", "requires": {"realm": "truc_co", "stage": 2, "nodes": ["tc_cay_quyet_dinh", "tc_phan_loai"]}},
