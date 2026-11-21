@@ -79,7 +79,8 @@ def run_tame_flow(workdir: Path, shots: Path | None = None) -> None:
     try:
         b = beast_plan(TAME)
         stage = b["requires"]["stage"]
-        uid = start(server, workdir, shots, "detu_thu", "Thu Phục", TAME_ZONE, (34, 17), stage)
+        near = (b["pos"][0] + 1, b["pos"][1] + 3)          # on Đảo Sương, just south of it
+        uid = start(server, workdir, shots, "detu_thu", "Thu Phục", TAME_ZONE, near, stage)
         give(server, uid, "phong_an_phu", 1)
         drv = Driver(server.url, workdir, shots)
         ws = enter(drv, TAME_ZONE)

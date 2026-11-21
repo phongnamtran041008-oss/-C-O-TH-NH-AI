@@ -25,6 +25,17 @@ def world(drv):
     return drv.game.world_scene()
 
 
+def slime_spot() -> tuple[int, int]:
+    """Feet in the middle of the first Mực Con area of Mê Đồ Lâm, by the west gate (read from
+    the map: it is generated)."""
+    data = json.loads((Path(__file__).resolve().parents[2] / "server" / "maps" / "rung_muc_loang.tmj")
+                      .read_text("utf-8"))
+    a = next(o for layer in data["layers"] if layer["type"] == "objectgroup" for o in layer["objects"]
+             if o.get("type") == "monster_area"
+             and {"name": "monster", "type": "string", "value": "ink_slime"} in o.get("properties", []))
+    return int(a["x"] + a["width"] // 2) // 16 * 16 + 8, int(a["y"] + a["height"] // 2) // 16 * 16 + 12
+
+
 def answer_math(drv: Driver, server: ServerProcess, correct: bool = True) -> dict:
     """Answer the math question of the card on top through its widgets, reading the key from
     the database (test only), and wait for the verdict."""
@@ -120,7 +131,7 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         url = server.url
         token, uid = make_account(url, "detu_c", "Chiến Sĩ")     # no word learned: none is needed
         # stand at the edge of the Mực Con area in Rừng Mực Loang, with the quest-1 brush
-        server.sql("update characters set zone_id='rung_muc_loang', x=?, y=? where user_id=?", (16 * 18, 16 * 20, uid))
+        server.sql("update characters set zone_id='rung_muc_loang', x=?, y=? where user_id=?", (*slime_spot(), uid))
         h = {"Authorization": f"Bearer {token}"}
         import httpx
         inst = server.sql("select count(*) from equipment_instances")[0][0]

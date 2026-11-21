@@ -198,7 +198,7 @@ def test_aggro_through_the_player_grid_finds_who_a_full_scan_finds(tmp_path):
 
 # ------------------------------------------------------------------ today's maps are untouched
 def test_small_maps_and_bi_canh_never_sleep():
-    ch = ChannelZone(ZONE, 1, maps.load(ZONE))
+    ch = ChannelZone("truc_lam_thon", 1, maps.load("truc_lam_thon"))    # (Mê Đồ Lâm is giant since B2)
     assert not ch.sleepy and ch.wake_cells() is None
     assert all(getattr(m, "rng", None) is None for m in ch.monsters)    # they share the channel's stream, as before
 

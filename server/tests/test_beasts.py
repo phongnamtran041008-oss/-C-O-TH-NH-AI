@@ -315,12 +315,15 @@ async def test_linh_ho_sniffs_the_weapons_lying_near(client, gw):
     r = await client.get("/beasts/sniff", headers=h)
     assert r.status_code == 400 and r.json()["error"]["code"] == "no_nose"
     wear(p, "linh_ho")
+    spots = [x for x in weapons.data()["placed"] if x["land"] == "me_do_lam"]
+    sx, sy = spots[0]["pos"]                     # walk a few tiles from the first spot of the forest
+    gw._place(s, lands.zone_of("me_do_lam"), sx * 16 + 8 + 5 * 16, sy * 16 + 12, "up")
+    p = s.player
     r = await client.get("/beasts/sniff", headers=h)
     assert r.status_code == 200, r.text
     d = r.json()
     radius = bplan("linh_ho")["gift"]["radius_tiles"]
     assert d["radius_tiles"] == radius
-    spots = [x for x in weapons.data()["placed"] if x["land"] == "me_do_lam"]
     near = {x["id"] for x in spots
             if ((x["pos"][0] * 16 + 8 - p.x) ** 2 + (x["pos"][1] * 16 + 12 - p.y) ** 2) ** 0.5 <= radius * 16}
     assert near and {f["id"] for f in d["found"]} == near and len(near) < len(spots)

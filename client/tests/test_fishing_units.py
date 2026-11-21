@@ -28,7 +28,9 @@ def test_water_is_found_at_the_pond_the_lake_and_not_on_dry_land():
     assert water_near(abode, 10 * 16 + 7, 17 * 16 + 8, "left") is not None      # beside the pond
     assert water_near(abode, 19 * 16 + 8, 19 * 16, "down") is None               # the spawn
     lake = load_map("ho_nghien_muc")
-    area, (bx, by) = water_near(lake, 27.9 * 16, 19.6 * 16, "up")                 # end of the dock
+    fisher = next(o for o in lake.find("npc") if o.props.get("npc") == "fisher")
+    fx, fy = fisher.x + fisher.w / 2, fisher.y + fisher.h                         # Ngư Ông's feet
+    area, (bx, by) = water_near(lake, fx + 38.4, fy - 142.4, "up")                # end of his dock
     assert area.props["pool"] == "ho" and area.x <= bx <= area.x + area.w and area.y <= by <= area.y + area.h
     spawn = lake.find("spawn")[0]
     assert water_near(lake, spawn.x, spawn.y, "left") is None

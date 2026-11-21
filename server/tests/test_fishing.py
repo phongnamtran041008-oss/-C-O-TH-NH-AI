@@ -104,7 +104,8 @@ class InWorld:
 def dock_tip():
     from app.realtime import maps
     m = maps.load("ho_nghien_muc")
-    return m, (27.9 * 16, 19.6 * 16)
+    fx, fy = m.npcs["fisher"]                 # Ngư Ông's feet; his dock runs north just east of him
+    return m, (fx + 38.4, fy - 142.4)
 
 
 async def cast_and_hook(client, h, frozen, spot="abode"):

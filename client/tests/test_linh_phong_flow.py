@@ -13,7 +13,7 @@ import httpx
 import pygame
 
 from client.tests.driver import Driver, ServerProcess
-from client.tests.test_combat_flow import CARD, answer_math, beat, engage, world
+from client.tests.test_combat_flow import CARD, answer_math, beat, engage, slime_spot, world
 from client.tests.test_world_flow import make_account
 
 HAN = re.compile("[" + chr(0x3400) + "-" + chr(0x9FFF) + "]")    # CJK ideographs
@@ -153,7 +153,7 @@ def run_bee_flow(workdir: Path, shots: Path | None = None) -> None:
 
         # ---------------------------------------------------------------- guard bees in the forest
         server.sql("update characters set realm='luyen_khi', realm_stage=1, zone_id='rung_muc_loang', x=?, y=? "
-                   "where user_id=?", (16 * 18, 16 * 20, uid))
+                   "where user_id=?", (*slime_spot(), uid))
         server.sql("update bees set role='guard', level=3 where user_id=?", (uid,))
         n_shots = drv.n_shots
         drv = Driver(url, workdir, shots)
