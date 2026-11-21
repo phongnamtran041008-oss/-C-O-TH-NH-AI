@@ -28,8 +28,14 @@ def _rot(pts, a: float):
 
 
 def _silhouette(src: pygame.Surface, colour) -> pygame.Surface:
-    m = pygame.mask.from_surface(src)
-    return m.to_surface(setcolor=colour, unsetcolor=(0, 0, 0, 0))
+    """The shape of `src` in one colour (surface blends only: no pygame.mask in the web build)."""
+    s = pygame.Surface(src.get_size(), pygame.SRCALPHA)
+    c = (*colour[:3], colour[3] if len(colour) > 3 else 255)
+    for x in range(src.get_width()):          # 25 x 25, once per direction (cached)
+        for y in range(src.get_height()):
+            if src.get_at((x, y))[3]:
+                s.set_at((x, y), c)
+    return s
 
 
 def sprite(step: int, straight: bool = False) -> pygame.Surface:

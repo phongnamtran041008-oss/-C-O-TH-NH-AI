@@ -251,6 +251,8 @@ class FakeGame:
     def __init__(self):
         self.now = 0.0
         self.toasts: list = []
+        self.asked: list = []
+        self.api = type("Api", (), {"get": lambda _s, path, ok, err: self.asked.append(path)})()
 
     def toast(self, text, *rest):
         self.toasts.append(text)

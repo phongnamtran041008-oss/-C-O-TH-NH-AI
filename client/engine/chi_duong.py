@@ -196,6 +196,8 @@ class ChiDuong:
     def update(self, scene) -> None:
         g = self.game
         zone = scene_zone(scene)
+        if zone != self.zone and zone is not None and self.data is not None:
+            self.refresh()                   # a new zone: the stage may have moved (throttled)
         self.zone = zone
         if zone is not None and getattr(scene, "map", None) is not None:
             self._watch_khu(scene, zone)
