@@ -3,6 +3,19 @@ while drawing; the kit draws at window resolution and reports clicks for this fr
 
 Coordinates are base pixels (480x270). Every interactive element has an id, recorded in
 `ui.widgets` each frame (used for keyboard focus and by the automated test driver).
+
+Layout audit (client/ui/audit.py): `ui.audit` is None in the game. Set it to a list and every
+`ui.text`, `ui.button`, `ui.input_box` and `ui.panel` appends a record of what it drew - its
+rectangle in base units, the ink box of a text, the clip rectangle in force, the button a
+label belongs to - and a layout that had to shorten a text says so with `ui.note_cut`.
+`audit.problems(records)` turns the records into a list of problems.
+
+Clipping: `ui.push_clip(x, y, w, h)` / `ui.pop_clip()` limit drawing to a rectangle (nested
+clips intersect); a scrolling region uses it as its safety net.
+
+Marks: whatever the scene on top (ui.enabled) draws inside its panels is remembered for the
+frame (`ui.marks`, `ui.panels`), so overlays drawn afterwards - toasts, the Thành Tựu banner -
+can find a place that covers no text (`free_slot`).
 """
 from __future__ import annotations
 
@@ -51,6 +64,11 @@ class UI:
         self.time = 0.0
         self.hot: str | None = None
         self.sfx = None              # set by the game: callable(name)
+        self.audit: list | None = None   # a list: every text / widget drawn is recorded (audit.py)
+        self._clips: list[tuple[float, float, float, float]] = []
+        self._owner: str | None = None   # the button whose label is being drawn
+        self.marks: list[tuple[float, float, float, float]] = []    # text / widgets of the top scene
+        self.panels: list[tuple[float, float, float, float]] = []   # panels of the top scene
 
     # ------------------------------------------------------------ frame
     @property
@@ -84,6 +102,10 @@ class UI:
         self._input_order = []
         self.tooltip = None
         self.hot = None
+        self.marks, self.panels = [], []
+        if self._clips:
+            self._clips = []
+            self.win.set_clip(None)
 
     def end(self) -> None:
         if self.tooltip:
@@ -135,7 +157,74 @@ class UI:
         overlay.fill((20, 18, 15, alpha))
         self.win.blit(overlay, (0, 0))
 
+    # ------------------------------------------------------------ clipping, audit, marks
+    def clip_rect(self) -> tuple[float, float, float, float] | None:
+        """The clip rectangle in force (base units), or None."""
+        return self._clips[-1] if self._clips else None
+
+    def push_clip(self, x, y, w, h) -> None:
+        """Draw only inside this rectangle until pop_clip (it is intersected with the clip in
+        force)."""
+        if self._clips:
+            cx, cy, cw, ch = self._clips[-1]
+            x0, y0 = max(x, cx), max(y, cy)
+            x1, y1 = min(x + w, cx + cw), min(y + h, cy + ch)
+            x, y, w, h = x0, y0, max(0.0, x1 - x0), max(0.0, y1 - y0)
+        self._clips.append((x, y, w, h))
+        self.win.set_clip(self.rect(x, y, w, h))
+
+    def pop_clip(self) -> None:
+        if self._clips:
+            self._clips.pop()
+        self.win.set_clip(self.rect(*self._clips[-1]) if self._clips else None)
+
+    def note_cut(self, text: str, why: str = "cut") -> None:
+        """A layout had to shorten or leave out this text (an ellipsis, a dropped row): the
+        audit reports it."""
+        if self.audit is not None:
+            self.audit.append({"kind": why, "text": text, "clip": self.clip_rect()})
+
+    def _record(self, kind: str, rect, **extra) -> None:
+        if self.audit is not None:
+            self.audit.append({"kind": kind, "rect": tuple(float(v) for v in rect), "clip": self.clip_rect(),
+                               **extra})
+
+    def _mark(self, x, y, w, h) -> None:
+        if self.enabled:
+            self.marks.append((x, y, w, h))
+
+    def obstacles(self) -> list[tuple[float, float, float, float]]:
+        """What an overlay must not cover this frame: the text and widgets the top scene drew
+        inside its own panels or hugging their edges (a label just above a card belongs to it),
+        and the panels' title boxes. (A scene with no panel - the world and its HUD - has none:
+        overlays keep the place that scene gives them.)"""
+        def meets(a, b) -> bool:
+            return a[0] < b[0] + b[2] and a[0] + a[2] > b[0] and a[1] < b[1] + b[3] + 16 and a[1] + a[3] > b[1] - 16
+        return [m for m in self.marks if any(meets(m, p) for p in self.panels)]
+
+    def free_slot(self, w: float, h: float, prefer: float, cx: float = 240, margin: float = 2,
+                  obstacles=None) -> float | None:
+        """The y (base units) of a w x h strip centred on cx that covers none of `obstacles`
+        (default: `obstacles()`), nearest to `prefer`; a place outside the top scene's panels
+        beats one inside them. None: there is no such place."""
+        x0, x1 = cx - w / 2 - 1, cx + w / 2 + 1
+        marks = self.obstacles() if obstacles is None else obstacles
+        best = None
+        y = margin
+        while y + h <= 270 - margin:
+            y0, y1 = y - 1, y + h + 1
+            if not any(mx < x1 and mx + mw > x0 and my < y1 and my + mh > y0 for mx, my, mw, mh in marks):
+                inside = any(px < x1 and px + pw > x0 and py < y1 and py + ph > y0 for px, py, pw, ph in self.panels)
+                score = (inside, abs(y - prefer))
+                if best is None or score < best[0]:
+                    best = (score, y)
+            y += 1
+        return None if best is None else best[1]
+
     def panel(self, x, y, w, h, title: str | None = None, color=PAPER, edge=UICOL["panel_edge"]) -> None:
+        self._record("panel", (x, y, w, h))
+        if self.enabled:
+            self.panels.append((x, y, w + 2, h + 2))
         self.fill(x + 2, y + 2, w, h, (0, 0, 0, 90))
         self.fill(x, y, w, h, color)
         self.border(x, y, w, h, edge, 2)
@@ -143,6 +232,7 @@ class UI:
         if title:
             tw, th = self.f.size(title, 9, self.s)
             bw = tw / self.s + 14
+            self._mark(x + (w - bw) / 2, y - 6, bw, 13)
             self.fill(x + (w - bw) / 2, y - 6, bw, 13, UICOL["accent"])
             self.border(x + (w - bw) / 2, y - 6, bw, 13, INK)
             self.text(title, x + w / 2, y + 0.5, 9, "#FFFFFF", anchor="center")
@@ -168,6 +258,7 @@ class UI:
             wy -= int(total_h // 2)
         elif vy == "b":
             wy -= int(total_h)
+        ink = None
         for i, sf in enumerate(surfs):
             lx = wx
             if hx == "c":
@@ -175,8 +266,20 @@ class UI:
             elif hx == "r":
                 lx = wx + width - sf.get_width()
             self.win.blit(sf, (lx, wy + int(i * lh)))
-        return pygame.Rect(int((wx - self.d.ox) / self.s), int((wy - self.d.oy) / self.s),
-                           int(width / self.s) + 1, int(total_h / self.s) + 1)
+            if self.audit is not None:
+                b = sf.get_bounding_rect()
+                if b.width and b.height:
+                    b.move_ip(lx, wy + int(i * lh))
+                    ink = b if ink is None else ink.union(b)
+        bx, by = (wx - self.d.ox) / self.s, (wy - self.d.oy) / self.s
+        if self.enabled and txt.strip():
+            self.marks.append((bx, by, width / self.s, total_h / self.s))
+        if self.audit is not None:
+            self._record("text", (bx, by, width / self.s, total_h / self.s), text=txt, size=size,
+                         owner=self._owner, lines=len(lines),
+                         ink=None if ink is None else ((ink.x - self.d.ox) / self.s, (ink.y - self.d.oy) / self.s,
+                                                       ink.width / self.s, ink.height / self.s))
+        return pygame.Rect(int(bx), int(by), int(width / self.s) + 1, int(total_h / self.s) + 1)
 
     def text_size(self, txt: str, size: float = 8, kind: str = "ui") -> tuple[float, float]:
         w, h = self.f.size(txt, size, self.s, kind)
@@ -230,7 +333,11 @@ class UI:
             self.fill(x, y + oy, w, h, (255, 255, 255, 50))
         if style != "ghost":
             self.border(x, y + oy, w, h, INK)
+        self._record("button", (x, y, w, h), id=wid, label=label)
+        self._mark(x, y, w, h)
+        self._owner = wid
         self.text(label, x + w / 2, y + h / 2 + oy, size, fg, kind=kind, anchor="center")
+        self._owner = None
         if hov:
             self.hot = wid
             if tooltip:
@@ -245,6 +352,8 @@ class UI:
         st = self.inputs.setdefault(wid, InputState())
         self.widgets[wid] = self.rect(x, y, w, h)
         self._input_order.append(wid)
+        self._record("input", (x, y, w, h), id=wid)
+        self._mark(x, y, w, h)
         if self.click_in(x, y, w, h):
             self.set_focus(wid)
         focused = self.focus == wid and self.enabled
@@ -267,10 +376,12 @@ class UI:
         shown = ("•" * len(st.text)) if password else st.text
         if focused and st.composing:
             shown += st.composing
+        self._owner = wid
         if shown:
             self.text(shown, x + 4, y + h / 2, 8, INK, kind=kind, anchor="midleft")
         elif placeholder:
             self.text(placeholder, x + 4, y + h / 2, 8, "#9A9387", anchor="midleft")
+        self._owner = None
         if focused and int(self.time * 2) % 2 == 0:
             tw = self.text_size(shown, 8, kind)[0] if shown else 0
             cx = x + 4 + tw + 1

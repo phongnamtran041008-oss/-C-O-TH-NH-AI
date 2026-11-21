@@ -379,14 +379,35 @@ def test_meditation_asks_on_the_math_card_with_nothing_to_stop():
 
 
 # ------------------------------------------------------------------ the combat card of a missed Thiên kiếp
-def test_a_missed_thien_kiep_stays_up_long_enough_to_read_and_closes_on_enter():
-    """An ordinary combat card closes itself after two seconds; the reveal of a Thiên kiếp (which
-    part went wrong, a long solution) needs longer, and the player can close it when done."""
-    from pathlib import Path
+def test_a_missed_thien_kiep_stays_up_until_the_player_closes_it():
+    """A combat card after a wrong answer never closes by itself (nobody reads a solution in two
+    seconds): it waits for "Đã hiểu", Enter or Space - not the Enter that sent the answer."""
+    from client.scenes.math_practice import MathCombatQuizScene
+    ui = make_ui()
+    game = make_game(ui)
+    closed = []
+    card = MathCombatQuizScene(game, question(), "m1", on_result=closed.append)
+    card.close = lambda: closed.append("closed")
+    card.tell_fortune = lambda: None
+    reveal(card)
+    card.result["combat"] = {"cast": "x", "missed": True}
+    for _ in range(40):                                  # a whole minute: still there
+        card.update(1.5, True)
+    assert not closed
+    frame(ui, lambda: card.draw_ui(ui))
+    assert "math_got_it" in ui.widgets
+    frame(ui, lambda: card.draw_ui(ui), keys=[pygame.K_RETURN])
+    assert closed and closed[0] == "closed"
 
-    from client.scenes import math_practice as mp
-    assert mp.TRIBULATION_REVEAL_SECONDS >= 15
-    src = (Path(mp.__file__)).read_text("utf-8")
-    block = src[src.index("class MathCombatQuizScene"):src.index("# M10: (widget id, label, module, scene class)")]
-    assert 'self.q.get("input") == "tribulation"' in block and "TRIBULATION_REVEAL_SECONDS" in block
-    assert "ui.key(pygame.K_RETURN) or ui.key(pygame.K_ESCAPE)" in block and "self.finish()" in block
+
+def test_a_fresh_reveal_ignores_the_enter_that_sent_the_answer():
+    from client.scenes.math_practice import MathCombatQuizScene
+    ui = make_ui()
+    card = MathCombatQuizScene(make_game(ui), question(), "m1")
+    closed = []
+    card.close = lambda: closed.append("closed")
+    reveal(card)
+    frame(ui, lambda: card.draw_ui(ui), keys=[pygame.K_RETURN])
+    assert not closed                                    # result_t is 0: too early
+    frame(ui, lambda: card.draw_ui(ui), click="math_got_it")
+    assert closed

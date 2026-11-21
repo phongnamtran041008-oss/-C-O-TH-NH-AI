@@ -71,6 +71,8 @@ def settle(drv: Driver, server: ServerProcess) -> None:
         card = drv.game.top
         if not card.result:
             answer(drv, server, True)
+        elif not card.result.get("correct"):    # a wrong answer (a timeout) waits to be read
+            drv.click("math_got_it")
         drv.wait(lambda: card not in drv.game.scenes, 6, "the card closes")
 
 
