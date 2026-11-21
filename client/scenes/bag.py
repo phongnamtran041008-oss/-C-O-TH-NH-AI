@@ -59,6 +59,7 @@ class BagScene(Scene):
             per = 9
             if ui.inp.wheel and ui.enabled:
                 self.scroll = max(0, min(max(0, len(rows) - per), self.scroll - ui.inp.wheel))
+            self.scroll = max(0, min(self.scroll, max(0, len(rows) - per)))
             for i, r in enumerate(rows[self.scroll:self.scroll + per]):
                 ry = ly + i * 18
                 ui.fill(lx, ry, lw, 16, "#FFFDF7" if i % 2 else "#F8F1E3")
@@ -109,13 +110,16 @@ class BagScene(Scene):
         ui.text(f"x{r['qty']}", lx + 170, ry + 8, 8, anchor="midleft")
         if ui.hover(lx, ry, lw - 70, 16):
             ui.set_tooltip(r.get("desc_vi", ""))
-        if r.get("kind") == "note" and ui.button(f"read_{r['item_id']}", lx + lw - 70, ry + 2, 66, 12,
-                                                 T.NOTE_READ, size=7):
-            # M7: a ghi chú lỗi sai is read, not spent - it opens its part of Tàng Thư Các
-            self.api.post("/inventory/use", {"item_id": r["item_id"]}, self._read_note,
-                          self.game.api_error)
-        elif r.get("usable") and ui.button(f"use_{r['item_id']}", lx + lw - 70, ry + 2, 66, 12, T.USE, size=7):
-            self.api.post("/inventory/use", {"item_id": r["item_id"]}, self._after(), self.game.api_error)
+        # one button per row: read, use, (an egg's hint) or sell - the first that applies
+        # (a usable item that can also be sold showed both buttons on top of each other)
+        if r.get("kind") == "note":
+            if ui.button(f"read_{r['item_id']}", lx + lw - 70, ry + 2, 66, 12, T.NOTE_READ, size=7):
+                # M7: a ghi chú lỗi sai is read, not spent - it opens its part of Tàng Thư Các
+                self.api.post("/inventory/use", {"item_id": r["item_id"]}, self._read_note,
+                              self.game.api_error)
+        elif r.get("usable"):
+            if ui.button(f"use_{r['item_id']}", lx + lw - 70, ry + 2, 66, 12, T.USE, size=7):
+                self.api.post("/inventory/use", {"item_id": r["item_id"]}, self._after(), self.game.api_error)
         elif r.get("kind") == "egg":
             ui.text(T.EGG_HINT, lx + lw - 6, ry + 8, 7, "#6A994E", anchor="midright")
         elif r.get("sell_price") and ui.button(f"sell_item_{r['item_id']}", lx + lw - 70, ry + 2, 66, 12,
@@ -130,11 +134,12 @@ class BagScene(Scene):
         stats = " ".join(f"{T.STATS_VI.get(k, k)} {v}" for k, v in r["stats"].items())
         grade, colour = T.gear_grade(r)
         gw = ui.text_size(grade, 6)[0]
-        ui.text(fit(ui, f"{r['slot_vi']} · {stats}", 7, lw - 130 - 78 - gw), lx + 130, ry + 8, 7, "#5A5A5A",
-                anchor="midleft")
+        line, room = f"{r['slot_vi']} · {stats}", lw - 130 - 78 - gw
+        size = 7 if ui.text_size(line, 7)[0] <= room else 6          # a size smaller before any cut
+        ui.text(fit(ui, line, size, room), lx + 130, ry + 8, size, "#5A5A5A", anchor="midleft")
         ui.text(grade, lx + lw - 74, ry + 8, 6, colour, anchor="midright")
-        if ui.hover(lx, ry, lw - 70, 16):
-            ui.set_tooltip(f"{r['name_vi']} · {grade}\n{r.get('desc_vi', '')}")
+        if ui.hover(lx, ry, lw - 70, 16):        # (the whole line of stats too: a long one is cut above)
+            ui.set_tooltip(f"{r['name_vi']} · {grade}\n{line}\n{r.get('desc_vi', '')}")
         if r.get("equipped"):
             if ui.button(f"uneq_{r['id']}", lx + lw - 70, ry + 2, 66, 12, T.UNEQUIP, size=7, selected=True):
                 self.api.post("/equipment/unequip", {"slot": r["equipped"]}, self._after(), self.game.api_error)
@@ -161,6 +166,7 @@ class BagScene(Scene):
         per = 8
         if ui.inp.wheel and ui.enabled:
             self.scroll = max(0, min(max(0, len(rows) - per), self.scroll - ui.inp.wheel))
+        self.scroll = max(0, min(self.scroll, max(0, len(rows) - per)))
         for i, (kind, r) in enumerate(rows[self.scroll:self.scroll + per]):
             ry = ly + i * 20
             if kind == "head":
@@ -175,7 +181,7 @@ class BagScene(Scene):
                 self.row_spot(ui, r, lx, ry, lw)
         if len(rows) > per:
             ui.text(f"{self.scroll + 1}–{min(len(rows), self.scroll + per)}/{len(rows)} (cuộn chuột)",
-                    lx + lw, y + h - 30, 7, "#8E877A", anchor="topright")
+                    lx + lw, y + h - 34, 7, "#8E877A", anchor="topright")       # (above the Đóng button)
         self.draw_hand(ui, lx + lw + 8, ly, 90)
 
     def row_weapon(self, ui, r, lx, ry, lw):
@@ -183,11 +189,11 @@ class BagScene(Scene):
         tx = self.row_icon(ui, r, lx, ry, r["color"])
         lvl = f" +{r['enhance']}" if r["enhance"] else ""
         quality, qcolour = T.gear_grade(r)
-        ui.text(r["name_vi"] + lvl, tx, ry + 5, 8, r["color"], anchor="midleft")
-        ui.text(quality, lx + lw - 58, ry + 5, 7, qcolour, anchor="midright")     # the phẩm, in its colour
+        ui.text(r["name_vi"] + lvl, tx, ry + 4.5, 8, r["color"], anchor="midleft")
+        ui.text(quality, lx + lw - 58, ry + 4.5, 7, qcolour, anchor="midright")     # the phẩm, in its colour
         ui.text(fit(ui, T.WPN_LINE.format(type=wv["type_vi"], grade=wv["grade"], quality=quality,
                                           atk=r["stats"].get("atk", 0)), 6, lw - (tx - lx) - 58),
-                tx, ry + 14, 6, "#5A5A5A", anchor="midleft")
+                tx, ry + 14.5, 6, "#5A5A5A", anchor="midleft")
         if ui.hover(lx, ry, lw - 56, 16):
             tip = T.WPN_TIP.format(name=r["name_vi"], quality=quality, effect=wv["effect_vi"],
                                    branch=wv["branch_vi"], why=wv["why_vi"])
@@ -207,13 +213,15 @@ class BagScene(Scene):
             tx = lx + 20
         colour = {"available": "#6A994E", "taken": "#8E877A", "locked": "#BC4749"}.get(p["state"], "#5A5A5A")
         name = f"{p['name_vi']} · "
-        ui.text(name, tx, ry + 5, 8, "#2B2B2B", anchor="midleft")
-        ui.text(p.get("quality_vi", ""), tx + ui.text_size(name, 8)[0], ry + 5, 8,
+        ui.text(name, tx, ry + 4.5, 8, "#2B2B2B", anchor="midleft")
+        ui.text(p.get("quality_vi", ""), tx + ui.text_size(name, 8)[0], ry + 4.5, 8,
                 p.get("quality_color") or T.QUALITY_COLORS.get(p.get("quality"), "#2B2B2B"), anchor="midleft")
         detail = p["reason_vi"] if p["state"] == "locked" else T.WPN_WHERE.format(land=p["land_vi"], spot=p["spot_vi"])
-        ui.text(fit(ui, detail, 6, lw - (tx - lx) - 4), tx, ry + 14, 6,
+        ui.text(fit(ui, detail, 6, lw - (tx - lx) - 4), tx, ry + 14.5, 6,
                 colour if p["state"] == "locked" else "#5A5A5A", anchor="midleft")
-        ui.text(T.WPN_STATE.get(p["state"], p["state"]), lx + lw - 4, ry + 5, 7, colour, anchor="midright")
+        ui.text(T.WPN_STATE.get(p["state"], p["state"]), lx + lw - 4, ry + 4.5, 7, colour, anchor="midright")
+        if ui.hover(lx, ry, lw, 18) and ui.text_size(detail, 6)[0] > lw - (tx - lx) - 4:
+            ui.set_tooltip(detail)          # a long reason is cut on its row: whole on hover
         if ui.hover(lx, ry, lw, 16):
             tip = T.WPN_TIP.format(name=p["name_vi"], quality=p.get("quality_vi", ""), effect=p["effect_vi"],
                                    branch=p["branch_vi"], why=p["why_vi"])

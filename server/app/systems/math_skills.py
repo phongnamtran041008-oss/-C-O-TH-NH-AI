@@ -815,7 +815,8 @@ def resolve(p: "Player", sid: str, correct: bool, answer_ms: int | None, timed_o
         if m is not None and m.alive and m.shield and p.user_id in m.engaged:
             p.next_q = (m.eid, now + combat.cfg()["next_question_delay"])   # the fight goes on
         return _block(k, missed=True, timed_out=bool(timed_out),
-                      monster_hp=max(0, m.hp_pct()) if m is not None else 0)
+                      monster_hp=max(0, m.hp_pct()) if m is not None else 0,
+                      **combat.hold_reading(p, sid, "cast", now))   # (once its solution is read)
     streak = p.mcombo
     p.mcombo = streak + 1
     fast = is_fast(answer_ms, q["limit"])

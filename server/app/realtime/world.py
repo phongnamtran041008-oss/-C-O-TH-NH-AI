@@ -107,6 +107,7 @@ class Session:
         self.last_mark = -1e9                    # party ping icons (stage 9)
         self.tree = None                         # lands.TreePos: the doors of the lands (Thiên Địa Đồ)
         self.tamed: set[str] = set()             # the linh thú this player sealed (realtime/beasts.py)
+        self.reads_solution = False              # hello.caps has "q_read" (realtime/combat.hold_reading)
 
     def send(self, msg: dict) -> None:
         if self.closed:
@@ -359,13 +360,14 @@ class World:
                 for ch in sorted(self._channels(zone_id), key=lambda ch: ch.number)]
 
     # ------------------------------------------------------------ connect
-    async def connect(self, user, character: Character) -> Session:
+    async def connect(self, user, character: Character, caps=()) -> Session:
         old = self.sessions.get(user.id)
         if old is not None:  # spec 15.1: a new login kicks the old connection
             old.close(4001, {"t": "kicked", "reason": "elsewhere",
                              "message_vi": "Tài khoản vừa đăng nhập ở nơi khác."})
         s = Session(user.id, user.username, character.display_name, character.realm,
                     character.appearance or {}, bool(user.is_admin))
+        s.reads_solution = "q_read" in (caps or ())
         s.chat_banned_until = user.chat_banned_until
         s.saved_zone = character.zone_id or ABODE
         s.saved_pos = (character.x, character.y, character.facing or "down")
@@ -381,7 +383,7 @@ class World:
         s.send({"t": "welcome", "v": protocol.PROTOCOL_VERSION, "you": {"uid": user.id, "id": f"p{user.id}",
                                                                           "name": s.name},
                 "zone": zone, "st": round(self.server_time(), 3), "day": self.day_phase(),
-                "day_length": cfg()["day_length_seconds"]})
+                "day_length": cfg()["day_length_seconds"], "caps": protocol.SERVER_CAPS})
         self.chat.send_history(s, "world")
         for fid in s.friends:
             other = self.sessions.get(fid)
@@ -494,6 +496,10 @@ class World:
             if err is not None:   # refused at once; the rest of the answer comes from the background task
                 s.send({"t": "mcast", "k": msg.k, "ok": False, "code": err,
                         "message_vi": math_skills.REFUSALS_VI.get(err, math_skills.REFUSALS_VI["cannot"])})
+        elif isinstance(msg, protocol.QRead):
+            p = s.player      # the card of a wrong answer closed: the fight goes on for this player
+            if p is not None:
+                combat.end_reading(p, self.mono(), msg.sid)
         elif isinstance(msg, protocol.PartyCmd):
             self.parties.handle(s, msg)
         elif isinstance(msg, protocol.RealmCmd):

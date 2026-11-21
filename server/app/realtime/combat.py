@@ -10,8 +10,9 @@ is written and answered, on the micro-skill that monster stands for, through the
 question pipeline as before (math_combat.question_for / math_ask.pick_own). Right = Phản Đòn:
 no damage, the monster takes a counter hit (x counter_multiplier) and is stunned, the player
 gains tu vi (the quiz service's xp rule) and linh lực. Wrong or out of time = the blow lands in
-full and the card shows the solution. After either, a rest window: a blow landing then does
-half damage and asks nothing. Normal monsters have no Mặc Thuẫn out here (plain hits kill
+full and the card shows the solution; the fight stays paused for that player while they read it
+(hold_reading: until the client says the card closed, `q_read`, at most READ_CAP_SECONDS).
+After either, a rest window: a blow landing then does half damage and asks nothing. Normal monsters have no Mặc Thuẫn out here (plain hits kill
 them); an elite's or a boss's shield breaks only on a Phản Đòn. Other players in the zone are
 not paused: they keep fighting, the same monster included.
 
@@ -271,6 +272,62 @@ def _unasked_blow(ch: "ChannelZone", p: "Player", mid: str, dmg: float) -> None:
         hurt_player(ch, p, amount, now, by=mid)
 
 
+# ------------------------------------------------------------------ reading the solution
+READ_CAP_SECONDS = 45.0   # the longest the card of a wrong answer holds the fight for its reader
+READ_GAP_SECONDS = 1.0    # once it closes, a Vấn Đạo monster asks again no sooner than this
+
+
+def reads_solution(p: "Player") -> bool:
+    """Does this player's client say when the card of a wrong answer closes (`q_read`, announced
+    in `hello.caps`)? An old client never does: it keeps today's timing (the rest window)."""
+    s = p.session
+    return s is not None and bool(getattr(s, "reads_solution", False))
+
+
+def hold_reading(p: "Player", sid: str, kind: str, now: float) -> dict:
+    """A wrong answer (or a timeout) on a fight card: the card shows the solution, and the
+    fight stays paused for this player - Hộ Thể, no blow, no new question - until the client
+    sends `q_read` for this question, or READ_CAP_SECONDS pass (nobody hides behind an open
+    card). Nobody else is held: monsters turn on the others as when one is answering.
+    `kind`: "hit" (a blow of the open world: its rest window starts when the card closes),
+    "van_dao", "cast" or "seal". Returns the fields added to the answer's result."""
+    if p.dead or p.ghost or p.channel is None or not reads_solution(p):
+        return {}
+    until = now + READ_CAP_SECONDS
+    p.reading = {"sid": sid, "until": until, "kind": kind}
+    p.protect_until = max(p.protect_until, until)
+    return {"read_cap": READ_CAP_SECONDS}
+
+
+def reading(p: "Player", now: float) -> bool:
+    r = p.reading
+    return r is not None and now < r["until"]
+
+
+def end_reading(p: "Player", now: float, sid: str | None = None) -> bool:
+    """The card was closed (`q_read` with its sid) or the cap ran out (sid None): the fight goes
+    on. A blow's rest window starts now; a Vấn Đạo question waits at least READ_GAP_SECONDS."""
+    r = p.reading
+    if r is None or (sid is not None and sid != r["sid"]):
+        return False
+    p.reading = None
+    if p.question is None and p.protect_until <= r["until"]:
+        p.protect_until = 0.0
+    if r["kind"] == "hit":
+        p.rest_until = max(p.rest_until, now + float(plan()["question_cooldown_seconds"]))
+    if p.next_q is not None:
+        p.next_q = (p.next_q[0], max(p.next_q[1], now + READ_GAP_SECONDS))
+    return True
+
+
+def drop_reading(p: "Player") -> None:
+    """Death (or leaving): nothing is held any more."""
+    if p.reading is not None:
+        if p.question is None and p.protect_until <= p.reading["until"]:
+            p.protect_until = 0.0
+        p.reading = None
+
+
 def parry_heal(ch: "ChannelZone", p: "Player") -> int:
     """The worn Ngọc Thố (gift heal_on_right): a Phản Đòn heals a share of max HP. Returns the HP healed."""
     from ..systems import beasts
@@ -467,7 +524,7 @@ def end_question(p: "Player", reason: str) -> None:
 
 
 def request_question(ch: "ChannelZone", p: "Player", m: "Monster", now: float) -> None:
-    if p.question is not None or p.q_pending or now < p.no_question_until:
+    if p.question is not None or p.q_pending or now < p.no_question_until or reading(p, now):
         return
     if p.user_id in m.group_hits:   # a bí cảnh boss: this player already did their part of the shield
         return
@@ -584,7 +641,8 @@ def on_answer(p: "Player", sid: str, correct: bool, answer_ms: int | None) -> di
     p.protect_until = 0.0
     m = ch.monster(q["mid"])
     if q.get("hit") is not None:     # the open-world rule: a blow that landed
-        return _parry(ch, p, q, m, correct, now)
+        out = _parry(ch, p, q, m, correct, now)
+        return out if correct else {**out, **hold_reading(p, sid, "hit", now)}
     if m is None or not m.alive:
         return {"gone": True}
     c = cfg()
@@ -607,7 +665,8 @@ def on_answer(p: "Player", sid: str, correct: bool, answer_ms: int | None) -> di
     dmg = hurt_player(ch, p, mac_kich(p, m), now, kind="mk", by=m.eid, ignore_protect=True)
     if m.alive and m.shield and not p.dead:
         p.next_q = (m.eid, now + c["next_question_delay"])
-    return {"correct": False, "mac_kich": int(round(dmg)), "hp": max(0, int(round(p.hp))), "dead": p.dead}
+    return {"correct": False, "mac_kich": int(round(dmg)), "hp": max(0, int(round(p.hp))), "dead": p.dead,
+            **hold_reading(p, sid, "van_dao", now)}
 
 
 def group_hit(ch: "ChannelZone", m: "Monster", p: "Player") -> tuple[int, int] | None:
@@ -840,6 +899,7 @@ async def _reward(uid: int, kind: str, loot: dict | None = None, rng: random.Ran
 
 def die(ch: "ChannelZone", p: "Player", now: float) -> None:
     p.mcombo = 0   # the chiêu combo (M9) does not survive a fall
+    drop_reading(p)
     if ch.instance:   # a bí cảnh: no Tu Vi lost, the player becomes a ghost (spec 14.2)
         ch.on_down(p, now)
         return
@@ -1015,7 +1075,10 @@ def tick(ch: "ChannelZone", dt: float, now: float) -> None:
         if q is not None and now >= q["deadline"] + 0.25 and not q["timeout_sent"]:
             q["timeout_sent"] = True  # nobody answered in time: grade it as a timeout (= wrong)
             w.spawn(_grade_timeout(p.user_id, q["sid"]))
-        if p.next_q is not None and now >= p.next_q[1] and p.question is None and not p.q_pending:
+        if p.reading is not None and now >= p.reading["until"]:
+            end_reading(p, now)       # the cap: the card was left open too long, the fight goes on
+        if (p.next_q is not None and now >= p.next_q[1] and p.question is None and not p.q_pending
+                and p.reading is None):
             mid = p.next_q[0]
             p.next_q = None
             m = ch.monster(mid)

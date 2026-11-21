@@ -72,8 +72,9 @@ class ParryCard(MathCombatQuizScene):
             out.append((txt, "#4F7A35"))
         elif "parry" in c:
             out.append((T.GUARD_BREAK_RESULT.format(n=c.get("damage_taken", 0)), "#BC4749"))
-        if c.get("rest"):
-            out.append((T.PARRY_REST.format(s=f"{c['rest']:g}"), "#6B6B6B"))
+        if c.get("rest"):     # (after a mistake the server holds the fight until the card closes)
+            rest = T.PARRY_REST_AFTER if c.get("read_cap") else T.PARRY_REST
+            out.append((rest.format(s=f"{c['rest']:g}"), "#6B6B6B"))
         return out + self.mistake_reveal()
 
 

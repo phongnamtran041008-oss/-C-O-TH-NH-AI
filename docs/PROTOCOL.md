@@ -14,8 +14,11 @@ Mỗi gói tin là **một object JSON**, trường `t` cho biết loại. Phiê
 1. Client mở WebSocket, gói tin **đầu tiên** phải là `hello` (trong 10 giây):
 
    ```json
-   {"t": "hello", "v": 4, "token": "<JWT lấy từ /auth/login>"}
+   {"t": "hello", "v": 4, "token": "<JWT lấy từ /auth/login>", "caps": ["q_read"]}
    ```
+
+   `caps` (tùy chọn, mặc định `[]`): những gì client làm được ngoài số phiên bản. `"q_read"` = client báo khi thẻ
+   của một câu trả lời sai được đóng (gói `q_read`, xem "Đọc lời giải" dưới). Client cũ không gửi `caps`.
 
 2. Server trả `welcome`, hoặc `error` rồi đóng kết nối:
 
@@ -28,8 +31,11 @@ Mỗi gói tin là **một object JSON**, trường `t` cho biết loại. Phiê
 
    ```json
    {"t": "welcome", "v": 4, "you": {"uid": 7, "id": "p7", "name": "Tiểu Trúc"},
-    "zone": "abode", "st": 1234.5, "day": 0.42, "day_length": 7200}
+    "zone": "abode", "st": 1234.5, "day": 0.42, "day_length": 7200, "caps": ["q_read"]}
    ```
+
+   `caps`: những gì server hiểu ngoài số phiên bản (client chỉ gửi `q_read` khi có `"q_read"` ở đây; server cũ
+   không có khóa này).
 
    `zone` là nơi nhân vật đang đứng: `abode` (động phủ, riêng tư, không đi qua WebSocket) hoặc một vùng của
    thế giới (nếu lần trước thoát ở đó, hoặc vừa rớt mạng chưa quá 30 giây). `st` là đồng hồ server (giây),
@@ -61,6 +67,7 @@ Mỗi gói tin là **một object JSON**, trường `t` cho biết loại. Phiê
 | `ride` | `s` (số kế tiếp của dòng `in`), `on` (true/false) | **Cưỡi linh thú**: lên / xuống thú cưỡi đang đeo |
 | `fly` | `s` (số kế tiếp của dòng `in`), `on` (true/false) | **Ngự kiếm**: đạp kiếm bay lên / hạ xuống (xem dưới) |
 | `tran` | — | **Bày pháp trận** dưới chân |
+| `q_read` | `sid` (phiên câu hỏi, tối đa 64 ký tự) | thẻ của một câu trận đấu trả lời **sai hoặc hết giờ** vừa đóng: người chơi đã đọc lời giải, trận đấu đi tiếp (xem "Đọc lời giải") |
 
 ### Vào vùng (`join`)
 
@@ -143,6 +150,27 @@ là việc của đợt sau.
 Câu trả lời của `q` gửi qua REST `POST /quiz/answer` như mọi câu hỏi khác; server chấm, rồi áp kết quả vào trận
 đấu trong bộ nhớ ngay lập tức. Hết giờ mà không trả lời thì vòng tick tự chấm là sai.
 
+### Đọc lời giải (`q_read`)
+
+Sau một câu **sai hoặc hết giờ** trên thẻ trận đấu (đòn trúng ở vùng hoang, Vấn Đạo, chiêu thức hụt, ấn của bí
+cảnh) thẻ hiện lời giải và chờ người chơi đóng ("Đã hiểu", Enter, Space). Với client có `"q_read"` trong
+`hello.caps`, server **giữ trận đấu dừng cho riêng người ấy** trong lúc đọc (`realtime/combat.hold_reading`):
+
+- Hộ Thể vẫn còn (không mất máu, không đi, không đánh, không né, không ra chiêu, không quái nào chọn họ) và không
+  có câu hỏi mới nào (đòn rơi xuống thì `paused`, Vấn Đạo không hỏi lại, ấn không hỏi).
+- Kết quả của câu (khối `combat` của `POST /quiz/answer`, hay khối kết quả chiêu) có thêm `read_cap` = số giây tối
+  đa server giữ (**45**). Không có `read_cap` = server không giữ (client cũ, hay server cũ).
+- Hết giữ khi client gửi `{"t": "q_read", "sid": "<session_id của câu đó>"}` (sid khác thì bỏ qua), hoặc khi hết
+  `read_cap` giây (không ai núp sau một thẻ để mở mãi), hoặc khi người ấy ngã xuống.
+- Khi hết giữ: ở vùng hoang thời gian nghỉ (`rest`) **bắt đầu từ lúc đó**; Vấn Đạo hỏi câu kế tiếp không sớm hơn
+  1 giây sau. Câu trả lời **đúng** giữ nguyên nhịp cũ (thẻ tự đóng, nghỉ tính từ lúc trả lời).
+- Chỉ giữ người đọc: người khác trong vùng, cả đồng đội cùng tổ đội, vẫn đánh và bị hỏi như thường; `q_read` của
+  người khác không mở được thẻ của người này.
+- Client cũ (không có `caps`) giữ nhịp cũ: hết Hộ Thể ngay khi chấm, rồi thời gian nghỉ. Không giữ tới 45 giây
+  với client không bao giờ gửi `q_read`, vì như thế nó bị đứng im 45 giây sau mỗi câu sai.
+- Client chỉ gửi `q_read` khi `welcome.caps` có `"q_read"`, và tự đóng thẻ sau `read_cap` giây (mặc định 45) nên
+  một luồng không bao giờ treo vì một thẻ bị bỏ mở.
+
 ### Snapshot
 
 ```json
@@ -188,8 +216,8 @@ Bí cảnh vẫn theo Vấn Đạo ở trên.
 - Quái ra đòn có báo trước (`tele`). Đòn rơi xuống người đang đứng trong vùng: trong lúc Né Đòn còn bất khả xâm
   phạm thì `dodged`; trong thời gian nghỉ (sau mỗi câu) thì mất nửa máu, không hỏi; còn lại thì `struck`, rồi gói
   `q` có `hit`. Trả lời qua `POST /quiz/answer` như mọi câu.
-- **"Trận đấu dừng lại" chỉ dừng cho người bị hỏi.** Từ lúc trúng đòn tới khi trả lời (hoặc hết giờ) người ấy có Hộ
-  Thể: không mất máu, không đi, không đánh, không né, không ra chiêu, và không con quái nào chọn họ làm mục tiêu.
+- **"Trận đấu dừng lại" chỉ dừng cho người bị hỏi.** Từ lúc trúng đòn tới khi trả lời (hoặc hết giờ; sau câu sai thì tới khi
+  đóng thẻ lời giải, xem "Đọc lời giải") người ấy có Hộ Thể: không mất máu, không đi, không đánh, không né, không ra chiêu, và không con quái nào chọn họ làm mục tiêu.
   Thế giới không dừng: người khác trong vùng vẫn đánh tiếp, kể cả đánh chính con quái ấy, và nó quay sang đánh họ.
   Đòn đang báo trước vẫn rơi xuống những người khác đứng trong vùng. Không ai trả lời hộ ai: câu đúng của người
   này không đóng câu của người kia.

@@ -239,7 +239,7 @@ class AchievementsScene(Scene):
         pips = tier_pips(e)
         pw = len(pips) * 6 if len(pips) > 1 else 0
         name_w = tw - pw - 4
-        ui.text(fit(ui, e["name_vi"], 8, name_w), tx, y + 2, 8, INK if e["revealed"] else GREY)
+        ui.text(fit(ui, e["name_vi"], 8, name_w), tx, y + 1, 8, INK if e["revealed"] else GREY)
         if pw:
             px = tx + min(ui.text_size(fit(ui, e["name_vi"], 8, name_w), 8)[0] + 5, name_w + 4)
             for i, st in enumerate(pips):

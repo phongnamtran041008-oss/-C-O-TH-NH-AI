@@ -84,6 +84,7 @@ class Player:
     mcombo: int = 0                                     # right cast answers in a row (0 after a miss/death)
     # ---- the open-world rule (world_plan.json "combat"): in the wild mcombo counts Phản Đòn in a row ----
     rest_until: float = 0.0                             # after a question: blows do half damage, ask nothing
+    reading: dict | None = None                         # the card of a wrong answer is still open (combat.hold_reading)
     dodge_until: float = 0.0                            # Né Đòn: invulnerable until then
     dodge_ready: float = 0.0                            # Né Đòn cooldown
     free_casting: set = field(default_factory=set)      # chiêu whose free cast is being checked (unlock)

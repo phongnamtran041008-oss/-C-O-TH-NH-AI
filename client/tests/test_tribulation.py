@@ -391,7 +391,7 @@ def test_a_missed_thien_kiep_stays_up_until_the_player_closes_it():
     card.tell_fortune = lambda: None
     reveal(card)
     card.result["combat"] = {"cast": "x", "missed": True}
-    for _ in range(40):                                  # a whole minute: still there
+    for _ in range(29):                                  # 43.5 s: still there (it closes at READ_CAP)
         card.update(1.5, True)
     assert not closed
     frame(ui, lambda: card.draw_ui(ui))

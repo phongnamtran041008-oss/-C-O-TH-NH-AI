@@ -797,9 +797,23 @@ class MathCombatQuizScene(CombatCard, MathQuizScene):
             return 1.2              # a right answer gets back to the fight a little faster
         return self.close_after
 
+    READ_CAP = 45.0             # the longest a card waits for its reader (the server's combat.READ_CAP_SECONDS)
+
+    def read_cap(self) -> float:
+        """How long the solution of a wrong answer may stay open: the server's cap when it holds
+        the fight for the reader (`read_cap` in the result), else READ_CAP - nobody can hide
+        behind an open card, and no flow can hang on one."""
+        c = (self.result or {}).get("combat") or {}
+        try:
+            return float(c.get("read_cap") or self.READ_CAP)
+        except (TypeError, ValueError):
+            return self.READ_CAP
+
     def update(self, dt, top):
         super().update(dt, top)
         delay = self.close_delay() if self.result else None
+        if delay is None and self.result:
+            delay = self.read_cap()
         if delay is not None and self.result_t >= delay:
             self.finish()
 
@@ -808,6 +822,25 @@ class MathCombatQuizScene(CombatCard, MathQuizScene):
         self.tell_fortune()
         if self.on_combat_result and self.result:
             self.on_combat_result(self.result)
+
+    def on_exit(self):
+        super().on_exit()
+        self.tell_read()
+
+    def tell_read(self) -> None:
+        """The card leaves (closed by the player, by its cap, or by the world): after anything
+        but a right answer, tell the server the solution was read (`q_read`), so the fight it
+        held for this player goes on. Only to a server that understands it (welcome.caps)."""
+        res = getattr(self, "result", None)
+        if getattr(self, "_told", False) or not (getattr(self, "sent", False) or res) or (res or {}).get("correct"):
+            return
+        net = getattr(self.game, "net", None)
+        can = getattr(net, "can", None)
+        sid = self.q.get("session_id")
+        if not sid or not callable(can) or not can("q_read"):
+            return
+        self._told = True
+        net.send({"t": "q_read", "sid": sid})
 
     def status_items(self):
         items = []
@@ -1213,7 +1246,8 @@ class MathPracticeScene(Scene):
             state = n["state"]
             if state == "now":
                 ui.fill(rx, ry, rw, pitch - 1, "#F6DFA0")
-            if ui.button(f"math_path_{n['id']}", rx, ry, rw, pitch - 1, "", style="ghost"):
+            # (a name too long for its row in two columns: whole on hover, and in its card)
+            if ui.button(f"math_path_{n['id']}", rx, ry, rw, pitch - 1, "", style="ghost", tooltip=n["name_vi"]):
                 node = node_by_id(self.tree, n["id"])
                 if node:
                     self.game.push(NodeCardScene(self.game, node, self.tree))
@@ -1263,26 +1297,27 @@ class MathPracticeScene(Scene):
         later = node["id"] in getattr(self, "later", ()) and kind != "locked"
         ink = INK if kind in ("part", "code") and not later else PALE
         if later:                                   # ahead on Chính đạo: reachable, but marked
-            ui.text(stage_text(node), x + 12, cy + 4, 6, GREY, anchor="midleft")
-            ui.text(T.PATH_LATER, x + 12, cy + 11, 6, "#B8862E", anchor="midleft")
+            ui.text(stage_text(node), x + 12, cy + 3.5, 6, GREY, anchor="midleft")
+            ui.text(T.PATH_LATER, x + 12, cy + 11.5, 5, "#B8862E", anchor="midleft")
         else:
             ui.text(stage_text(node), x + 12, cy + 7, 7, GREY if node.get("stage") is not None else "#C99A3A",
                     anchor="midleft")
         info = f"math_info_{node['id']}" if row.first else f"math_info_{node['id']}_{row.index}"
-        if ui.button(info, x + 50, cy, 128 if part is not None else 172, 13, "", style="ghost"):
+        if ui.button(info, x + 50, cy, 128 if part is not None else 172, self.ROW - 1, "", style="ghost"):
             self.game.push(NodeCardScene(self.game, node, self.tree))
         # (a row with no part has no tiers, so its name may use the room of the tiers column); a long
         # name goes on two lines or a size smaller, never cut
         tail = " " + T.TREE_PART.format(i=row.index, n=row.count) if row.count > 1 else ""
-        size, lines = fit_lines(ui, node["name_vi"] + tail, 124 if part is not None else 170)
-        ui.text("\n".join(lines), x + 52, cy + 7, size, ink, anchor="midleft", line_gap=1.0)
+        size, lines = fit_lines(ui, node["name_vi"] + tail, 124 if part is not None else 170, sizes=(8, 7, 6, 5),
+                                height=self.ROW - 1)
+        ui.text("\n".join(lines), x + 52, cy + (self.ROW - 1) / 2, size, ink, anchor="midleft", line_gap=1.0)
         if part is not None:
             ui.text(tiers_text(part["tier_min"], part["tier_max"]), x + 182, cy + 7, 7, GREY, anchor="midleft")
         if kind == "vacant":
             ui.text(T.TREE_VACANT, x + w - 12, cy + 7, 7, PALE, anchor="midright")
             return
         if kind == "locked":
-            size, lines = fit_lines(ui, locked_reason(node), 166, sizes=(7, 6))
+            size, lines = fit_lines(ui, locked_reason(node), 166, sizes=(7, 6, 5), height=self.ROW - 1)
             ui.text("\n".join(lines), x + w - 12, cy + 7, size, PALE, anchor="midright", line_gap=1.0)
             return
         if kind == "code":
@@ -1361,11 +1396,21 @@ class MathPracticeScene(Scene):
             if hint:
                 lines.append(hint)
         ui.text(title, x + w / 2, y + 40, 12, colour, anchor="center")
+        top = y + 64
         if r.get("node_name_vi"):                   # the node the sitting was on
-            ui.text(r["node_name_vi"], x + w / 2, y + 52, 8, GREY, anchor="midtop", max_w=w - 40)
-        pitch = 18 if len(lines) <= 6 else 15       # (seven lines still clear the button)
-        for i, line in enumerate(lines):
-            ui.text(line, x + w / 2, y + 74 + i * pitch, 9, "#2B2B2B", anchor="center", max_w=w - 40)
+            top = ui.text(r["node_name_vi"], x + w / 2, y + 52, 8, GREY, anchor="midtop", max_w=w - 40).bottom + 6
+        # the lines stack by their real height (a long one wraps), a size smaller while they would
+        # not clear the button
+        room = y + 172 - top
+        for size in (9, 8, 7, 6):
+            heights = [len(ui.f.wrap(line, size, int((w - 40) * ui.s), ui.s)) * ui.text_size("Ag", size)[1] * 1.15
+                       for line in lines]
+            gap = max(2.0, min(8.0, (room - sum(heights)) / max(1, len(lines))))
+            if sum(heights) + gap * (len(lines) - 1) <= room:
+                break
+        cy = top
+        for line in lines:
+            cy = ui.text(line, x + w / 2, cy, size, "#2B2B2B", anchor="midtop", max_w=w - 40).bottom + gap
         if ui.button("math_back", x + w / 2 - 45, y + 176, 90, 16, T.MATH_BACK, style="primary",
                      key=pygame.K_RETURN):
             self.summary = self.trial = None

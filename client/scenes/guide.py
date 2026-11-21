@@ -187,6 +187,22 @@ def main_detail(view: dict) -> dict | None:
 
 
 # ------------------------------------------------------------------ HUD pieces
+def hint_size(ui, text: str, width: float) -> float:
+    """The hint line of the HUD box: 7, or 6 when that is what keeps it whole."""
+    return 7 if ui.text_size(text, 7)[0] <= width else 6
+
+
+def draw_hint(ui, lines: list[str], x: float, y: float, width: float, colour) -> None:
+    """The hint of the HUD box: one line at 7 or 6, or two lines at 6 (the box grew for them)."""
+    if not lines:
+        return
+    if len(lines) == 1:
+        hs = hint_size(ui, lines[0], width)
+        ui.text(fit(ui, lines[0], hs, width), x, y, hs, colour)
+        return
+    ui.text("\n".join(lines), x, y, 6, colour, line_gap=1.0)
+
+
 def draw_tracker(ui, game, x: float, y: float, enabled: bool) -> int:
     """The "Việc tiếp theo" box at (x, y), TRACKER_W wide; one button, widget id `hud_guide`.
     Returns its height (0 while the guide has not arrived: nothing is drawn)."""
@@ -196,11 +212,17 @@ def draw_tracker(ui, game, x: float, y: float, enabled: bool) -> int:
     m = tracker_model(view)
     w, h = TRACKER_W, TRACKER_H
     title = None
-    if m.get("main") and m["title"]:        # the node's whole name: a second line before a cut
+    top = 12                                # where the title starts (one more pixel over two lines:
+    if m.get("main") and m["title"]:        # the marks of its first line would touch the header)
         size, lines = fit_lines(ui, m["title"], w - 8, sizes=(8, 7), lines=2)
         title = (size, lines)
         if len(lines) > 1:
-            h += ui.text_size("Ag", size)[1]
+            h += ui.text_size("Ag", size)[1] + 1
+            top = 13
+    hint_lines = [m["hint"]] if m["hint"] else []
+    if hint_lines and ui.text_size(m["hint"], 6)[0] > w - 8:     # a long hint: two lines, never cut
+        hint_lines = ui.f.wrap(m["hint"], 6, int((w - 8) * ui.s), ui.s)[:2]
+        h += ui.text_size("Ag", 6)[1]
     # not ui.button: a ghost button that is disabled would still paint itself grey
     ui.widgets["hud_guide"] = ui.rect(x, y, w, h)
     hov = enabled and ui.hover(x, y, w, h)
@@ -217,8 +239,8 @@ def draw_tracker(ui, game, x: float, y: float, enabled: bool) -> int:
     if title is not None:
         size, lines = title
         lh = ui.text_size("Ag", size)[1]
-        ui.text("\n".join(lines), x + 4, y + 12, size, INK, line_gap=1.0)
-        ui.text(fit(ui, m["hint"], 7, w - 8), x + 4, y + 12 + lh * len(lines) + 1, 7, "#A33B2B")
+        ui.text("\n".join(lines), x + 4, y + top, size, INK, line_gap=1.0)
+        draw_hint(ui, hint_lines, x + 4, y + top + lh * len(lines) + 1, w - 8, "#A33B2B")
     elif m["body"]:
         lines = ui.f.wrap(m["body"], 7, int((w - 8) * ui.s), ui.s)[:2]
         if len(lines) == 2 and len(ui.f.wrap(m["body"], 7, int((w - 8) * ui.s), ui.s)) > 2:
@@ -229,7 +251,7 @@ def draw_tracker(ui, game, x: float, y: float, enabled: bool) -> int:
         ui.text(fit(ui, m["title"], 8, room), x + 4, y + 12, 8, INK)
         if m["count"]:
             ui.text(m["count"], x + w - 4, y + 12, 8, GREEN, anchor="topright")
-        ui.text(fit(ui, m["hint"], 7, w - 8), x + 4, y + 23, 7, GREY)
+        draw_hint(ui, hint_lines, x + 4, y + 23, w - 8, GREY)
     if enabled and ui.click_in(x, y, w, h):
         if ui.sfx:
             ui.sfx("click")
@@ -473,6 +495,8 @@ class GuideScene(Scene):
             ui.fill(rx, ry + pitch / 2 - 2, 4, 4, {"done": GREEN, "now": UICOL["gold"]}.get(n["state"], "#CFC6B4"))
             size, lines = fit_lines(ui, f"{i + 1}. {n['name_vi']}", colw - 12, sizes=(7, 6, 5), lines=1)
             ui.text(lines[0], rx + 7, ry + pitch / 2, size, col, anchor="midleft")
+            if lines[0].endswith("...") and ui.hover(rx, ry, colw, pitch):
+                ui.set_tooltip(n["name_vi"])        # a name cut in two columns: whole on hover
 
     def draw_chapters(self, ui, view, x, y, has_main: bool = False, shown: int = 5) -> None:
         if has_main:                        # Chính đạo first: the main quest
@@ -485,9 +509,9 @@ class GuideScene(Scene):
                 ui.border(x, y, self.LEFT_W, self.CH_ROW, UICOL["gold"])
             ui.fill(x, y, 3, self.CH_ROW, UICOL["gold"])
             m = view["main"]
-            ui.text(T.GUIDE_MAIN_CHAPTER, x + 6, y + 3, 8, "#FFFFFF" if sel else INK)
+            ui.text(T.GUIDE_MAIN_CHAPTER, x + 6, y + 2, 8, "#FFFFFF" if sel else INK)
             sub = main_step_line(m) if m["step"] != "done" else T.GUIDE_MARK_DONE
-            ui.text(fit(ui, sub, 7, self.LEFT_W - 10), x + 6, y + 13, 7, "#E3D5BA" if sel else GREY)
+            ui.text(fit(ui, sub, 7, self.LEFT_W - 10), x + 6, y + 14, 7, "#E3D5BA" if sel else GREY)
             y += self.CH_ROW + 2
         for i, ch in enumerate(view["chapters"][:shown]):
             ry = y + i * (self.CH_ROW + 2)
@@ -597,7 +621,7 @@ class GuideScene(Scene):
         sw = ui.text_size(state, 7)[0]
         ui.text(fit(ui, d["title"], 9, w - sw - 8), x, y, 9, INK)
         ui.text(state, x + w, y + 2, 7, GREEN if d["state"] != "active" else GREY, anchor="topright")
-        y += 12
+        y += 14                                     # (a size-9 title with marks is 13 tall)
         y = ui.text(d["desc"], x, y, 8, INK, max_w=w).bottom + 3
         for line in d["how"]:
             ui.text("-", x + 1, y, 7, GREY)

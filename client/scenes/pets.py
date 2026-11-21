@@ -74,9 +74,9 @@ class PetScene(Scene):
                 elif not p.get("tamed"):
                     ui.image(sprites.pet(p["pet_type"], int(ui.time * 3) % 2 if p["equipped"] else 0),
                              cx + 21, cy + 20, zoom=2, anchor="center")
-                ui.text(p["name_vi"], cx + 21, cy + 38, 7, col, anchor="center")
+                ui.text(p["name_vi"], cx + 21, cy + 37, 7, col, anchor="center")
                 ui.text(T.PETS_TAMED if p.get("tamed") else T.PETS_LEVEL.format(l=p["level"], m=p["max_level"]),
-                        cx + 21, cy + 45, 6, "#8E877A", anchor="center")
+                        cx + 21, cy + 46, 6, "#8E877A", anchor="center")
                 if ui.click_in(cx, cy, 42, 50):
                     self.sel = i
             if pages > 1:                 # more than twelve: pages of twelve
@@ -96,8 +96,8 @@ class PetScene(Scene):
             elif not p.get("tamed"):
                 ui.image(sprites.pet(p["pet_type"], int(ui.time * 4) % 2), px + 30, y + 62, zoom=3.5, anchor="center")
             ui.text(p["name_vi"] if p.get("tamed") else f"{p['name_vi']} · {p['zodiac_vi']}", px + 120, y + 44, 9, col)
-            ui.text(T.PETS_TAMED_FROM if p.get("tamed") else p["rarity_vi"], px + 120, y + 56, 7, col)
-            ui.text(T.PETS_LEVEL.format(l=p["level"], m=p["max_level"]), px + 120, y + 66, 7, "#8E877A")
+            ui.text(T.PETS_TAMED_FROM if p.get("tamed") else p["rarity_vi"], px + 120, y + 57, 7, col)
+            ui.text(T.PETS_LEVEL.format(l=p["level"], m=p["max_level"]), px + 120, y + 67, 7, "#8E877A")
             ui.text(p["skill_vi"], px + 10, y + 96, 7, "#2B2B2B", max_w=w - 234)
             stats = "  ".join(f"{T.STATS_VI.get(k, k)} +{v}" for k, v in p["stats"].items())
             ui.text(stats, px + 10, y + 140, 7, "#6A994E", max_w=w - 234)

@@ -84,8 +84,8 @@ class ShopScene(Scene):
             s = stock[i]
             ry = y + row * 22
             ui.fill(x + 10, ry, w - 20, 20, "#FFFDF7" if row % 2 else "#F8F1E3")
-            ui.text(s["name_vi"], x + 16, ry + 2, 8)
-            ui.text(T.SHOP_LEFT.format(n=s["left"], d=s["daily"]), x + 16, ry + 12, 6, "#8E877A")
+            ui.text(s["name_vi"], x + 16, ry + 1, 8)
+            ui.text(T.SHOP_LEFT.format(n=s["left"], d=s["daily"]), x + 16, ry + 13, 6, "#8E877A")
             if ui.hover(x + 10, ry, 200, 20):
                 ui.set_tooltip(s["desc_vi"])
             ok = d["at_shop"] and not self.busy and s["left"] > 0
@@ -105,7 +105,7 @@ class ShopScene(Scene):
             ry = y + row * 22
             ui.fill(x + 10, ry, w - 20, 20, "#FFFDF7" if row % 2 else "#F8F1E3")
             ui.fill(x + 10, ry, 3, 20, g["color"])
-            ui.text(f"{g['name_vi']} · {g['rarity_vi']}", x + 16, ry + 2, 8, g["color"])
+            ui.text(f"{g['name_vi']} · {g['rarity_vi']}", x + 16, ry + 1, 8, g["color"])
             stats = " ".join(f"{T.STATS_VI.get(k, k)} {v}" for k, v in g["stats"].items())
             ui.text(f"{g['slot_vi']} · {stats}", x + 16, ry + 12, 6, "#5A5A5A")
             if ui.button(f"shop_gear_{g['item_id']}_{g['rarity']}", x + w - 96, ry + 3, 82, 14,

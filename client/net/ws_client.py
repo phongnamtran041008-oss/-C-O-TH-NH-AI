@@ -15,6 +15,7 @@ import time
 
 CONNECTING, ONLINE, OFFLINE, STOPPED = "connecting", "online", "offline", "stopped"
 FATAL_ERRORS = {"bad_token", "token_expired", "no_token", "version", "no_character", "banned"}
+CLIENT_CAPS = ["q_read"]   # hello.caps: this client says when the card of a wrong answer closes
 
 
 def ws_url(http_url: str) -> str:
@@ -36,6 +37,7 @@ class WsClient:
         self.stop_reason: str | None = None
         self.connected_once = False
         self.rtt: float | None = None
+        self.server_caps: frozenset = frozenset()   # welcome.caps: what the server understands (q_read)
         self.sent = 0
         self._out: asyncio.Queue | None = None
         self._loop: asyncio.AbstractEventLoop | None = None
@@ -59,6 +61,14 @@ class WsClient:
         except RuntimeError:  # loop already closed
             return False
         return True
+
+    def hello(self) -> dict:
+        """The first message of every connection (also sent by the browser client)."""
+        return {"t": "hello", "v": self.version, "token": self.token, "caps": list(CLIENT_CAPS)}
+
+    def can(self, cap: str) -> bool:
+        """Does the server we are connected to understand this (welcome.caps)?"""
+        return cap in self.server_caps
 
     def poll(self) -> list[dict]:
         out = []
@@ -95,7 +105,7 @@ class WsClient:
                 async with connect(self.url, open_timeout=10, ping_interval=20, ping_timeout=20,
                                    close_timeout=2, max_size=1 << 20) as ws:
                     self._out = asyncio.Queue(maxsize=512)
-                    await ws.send(json.dumps({"t": "hello", "v": self.version, "token": self.token}))
+                    await ws.send(json.dumps(self.hello()))
                     tasks = {asyncio.create_task(self._reader(ws)), asyncio.create_task(self._writer(ws)),
                              asyncio.create_task(self._watch_stop())}
                     done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
@@ -139,6 +149,7 @@ class WsClient:
         if t == "welcome":
             self.state = ONLINE
             self.connected_once = True
+            self.server_caps = frozenset(c for c in (m.get("caps") or []) if isinstance(c, str))
         elif t == "pong" and isinstance(m.get("c"), (int, float)):
             self.rtt = time.monotonic() - m["c"]
         elif t == "kicked":
