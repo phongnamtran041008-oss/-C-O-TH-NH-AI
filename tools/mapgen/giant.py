@@ -359,11 +359,22 @@ class DaiDiaDo(MapBuilder):
         return k
 
     def camp(self, kid: str, name_vi: str, center: tuple, r: int = 6, desc_vi: str = "",
-             label_vi: str | None = None) -> Khu:
+             label_vi: str | None = None, to_edge: str | None = None) -> Khu:
         """A rest camp: a band 0 khu (no monster within the clearance), a plaza with lanterns, a
-        well and mats, a road node of the same id and a poi. Call after paint()."""
+        well and mats, a road node of the same id and a poi. Call after paint(). `to_edge` ("n",
+        "s", "w", "e") stretches the camp's khu to that edge of the map: the gate camp, so the
+        gate and the arrival spawns lie inside it (a spawn always lies in a band 0 khu)."""
         cx, cy = center
-        rect = (cx - r - 2, cy - r - 2, cx + r + 2, cy + r + 2)
+        x0, y0, x1, y1 = (cx - r - 2, cy - r - 2, cx + r + 2, cy + r + 2)
+        if to_edge == "s":
+            y1 = self.H - 1
+        elif to_edge == "n":
+            y0 = 0
+        elif to_edge == "w":
+            x0 = 0
+        elif to_edge == "e":
+            x1 = self.W - 1
+        rect = (x0, y0, x1, y1)
         k = Khu(kid, name_vi, 0, rect, "camp", (cx, cy + 1), desc_vi, True, self.realm, 0, 0)
         self.khus.insert(sum(1 for q in self.khus if q.camp), k)
         for y in range(cy - r - 2, cy + r + 3):

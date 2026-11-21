@@ -77,7 +77,7 @@ def build() -> dict:
 
     # ---- 2. the ground, the camps
     m.paint(warp=7.0, scale=26.0)
-    m.camp("lvc_leu_cua_coc", "Lều Cửa Cốc", (151, 224), r=7,
+    m.camp("lvc_leu_cua_coc", "Lều Cửa Cốc", (151, 224), r=7, to_edge="s",
            desc_vi="Lều nghỉ ngay trong cổng cốc. Không có quái.", label_vi="Lều Cửa Cốc")
     m.camp("lvc_tram_giua", "Trạm Mây Giữa", (156, 156), r=6,
            desc_vi="Trạm nghỉ sau rặng thông, cửa vào Trung Vực.", label_vi="Trạm Mây Giữa · cửa Trung Vực")
