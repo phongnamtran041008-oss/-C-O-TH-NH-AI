@@ -167,6 +167,15 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.shot("parry")
         drv.wait(lambda: not drv.top_is(CARD), 6, "card closes by itself")
         beat(drv, ws, m, server)
+        fell = (m.pos[0], m.pos[1])
+        # a piece that lands within PICK_PX of the player's feet goes from "pop" through "lie" to
+        # "pick" in one update (client/engine/ground_loot.py), so it is never seen lying: the
+        # moment it falls, step back from where the monster fell (the pop lasts POP seconds)
+        from client.engine import ground_loot
+        if math.hypot(ws.player.x - fell[0], ws.player.y - fell[1]) < 3 * ground_loot.PICK_PX:
+            away = -1 if ws.player.x <= fell[0] else 1
+            drv.hold([pygame.K_a if away < 0 else pygame.K_d], 0.3)
+            drv.keys.held = set()
         drv.wait(lambda: any("Linh Thạch" in t or "Nhận" in t for t in drv.toast_log) or
                  any(f.text.startswith("+") for f in ws.fx.texts), 6, "loot")
         drv.shot("loot")
@@ -175,8 +184,22 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         # already in the bag, but its toast waits until the player walks to it - and shows once
         from client.engine import art2
         if art2.on():
-            drv.wait(lambda: any(d.state == "lie" for d in ws.ground_loot.drops), 6, "gear on the ground")
-            d = next(x for x in ws.ground_loot.drops if x.state == "lie")
+            gl = ws.ground_loot
+
+            def picked() -> list[str]:
+                return [t for t in drv.toast_log if t.startswith("Nhặt được")]
+            drv.wait(lambda: any(d.state == "lie" for d in gl.drops) or picked(), 6, "gear on the ground")
+            if not any(d.state == "lie" for d in gl.drops):
+                # the player still stood where it fell (a tree of the forest held the step back):
+                # picked up at once, which is the game working - its toast shows, once each
+                drv.step(30)
+                got = picked()
+                assert got and all(got.count(t) == 1 for t in got), got
+                assert not any(d.state == "lie" for d in gl.drops)
+                d = None
+            else:
+                d = next(x for x in gl.drops if x.state == "lie")
+        if art2.on() and d is not None:
             said = d.toast[0]
             assert said not in drv.toast_log, "the toast waits for the pickup"
             drv.step(6)

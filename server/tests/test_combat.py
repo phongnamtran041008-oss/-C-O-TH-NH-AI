@@ -76,11 +76,29 @@ def last(s: Session, t: str):
     return next((m for m in reversed(s.sent) if m.get("t") == t), None)
 
 
+ROOM_PX = 64     # free ground every way from the fight: a dash (dash_px 40) and a step more
+
+
+def free_ground(col, area, x: float, y: float) -> tuple[float, float]:
+    """A spot of the monster's area with ROOM_PX of free ground left, right, up and down - the
+    nearest to (x, y), scanning 8 px apart. A monster spawns anywhere in its area, maybe beside
+    a rock or a tree, and a test of the dash or of a blow's zone must not depend on that luck."""
+    def roomy(px: float, py: float) -> bool:
+        return all(not col.blocked(px + dx * d, py + dy * d)
+                   for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)) for d in range(0, ROOM_PX + 1, 4))
+    spots = [(area.x + i, area.y + j) for i in range(8, int(area.w) - 7, 8) for j in range(8, int(area.h) - 7, 8)]
+    for px, py in sorted([(x, y)] + spots, key=lambda q: (q[0] - x) ** 2 + (q[1] - y) ** 2):
+        if roomy(px, py):
+            return px, py
+    raise AssertionError(f"no free ground in monster area {area.name}")
+
+
 def at_monster(w: World, s: Session, kind: str = "ink_slime"):
     assert w.join(s, "truc_lam_thon", "abode")
     m0 = None
     ch = w._pick_channel(FOREST)
     m0 = next(m for m in ch.monsters if m.kind == kind)
+    m0.x, m0.y = free_ground(ch.map.collider, m0.area, m0.x, m0.y)
     w._place(s, FOREST, m0.x, m0.y, "down")
     for m in ch.monsters:  # keep the others away from the test
         if m is not m0:

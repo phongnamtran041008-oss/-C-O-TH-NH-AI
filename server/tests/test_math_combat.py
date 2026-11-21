@@ -18,7 +18,7 @@ from app.realtime.world import World
 from app.systems import catalog, math_combat
 from tests.helpers import answer_key
 from tests.test_math_loop import right_answer, wrong_answer
-from tests.test_combat import FakeMono, fighter, last, run, settle  # noqa: F401  (fixtures/helpers)
+from tests.test_combat import FakeMono, fighter, free_ground, last, run, settle  # noqa: F401  (fixtures/helpers)
 
 VALLEY = "loan_so_coc"
 SLIME_MA = "dstt_phan_tu_ma"          # floor 1, tập hợp: the gentlest of them
@@ -38,6 +38,7 @@ def at_math_monster(w: World, s, kind: str = SLIME_MA):
     assert w.join(s, "truc_lam_thon", "abode")
     ch = w._pick_channel(VALLEY)
     m0 = next(m for m in ch.monsters if m.kind == kind)
+    m0.x, m0.y = free_ground(ch.map.collider, m0.area, m0.x, m0.y)
     w._place(s, VALLEY, m0.x, m0.y, "down")
     for m in ch.monsters:
         if m is not m0:

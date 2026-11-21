@@ -324,6 +324,7 @@ class DaiDiaDo(MapBuilder):
         self.road = bytearray(n)            # 1 road, 2 bridge, 3 pass, 4 land bridge
         self.barrier = [None] * n           # the barrier kind of a tile
         self.keep = bytearray(n)            # no barrier, no scatter (camps, landmarks)
+        self.soft = bytearray(n)            # scatter puts only walk-through props here (soft_rect)
         self.nodes: dict[str, dict] = {}
         self.edges: list[dict] = []
         self.pois: list[tuple] = []
@@ -506,6 +507,14 @@ class DaiDiaDo(MapBuilder):
                 self.barrier[j] = None
                 if key:
                     self.setg(x, y, key)
+
+    def soft_rect(self, x0, y0, x1, y1) -> None:
+        """Ground to fight on: scatter() puts no solid prop in these tiles (grass and bushes only),
+        so a dodge or a chase is never stopped by a rock that happens to stand there."""
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                if self.inside(x, y):
+                    self.soft[self.i(x, y)] = 1
 
     def keep_rect(self, x0, y0, x1, y1) -> None:
         """No barrier, no road detour and no scatter in these tiles (a landmark's ground)."""
@@ -894,7 +903,7 @@ class DaiDiaDo(MapBuilder):
             table = th.dense_props if self.rng.random() < c else th.open_props
             name = _pick(table, self.rng.random())
             solid = PROPS[name].foot is not None or PROPS[name].kind == "tree"
-            if solid and near_road[j]:
+            if solid and (near_road[j] or self.soft[j]):
                 continue
             room = self._room(name, x, y)
             if room is None:

@@ -17,6 +17,7 @@ from sqlalchemy import select
 from app import db as dbm
 from app.models import AchievementCounter
 from app.realtime import combat
+from app.realtime.maps import Area
 from app.realtime import world as wmod
 from app.realtime.party import Party
 from app.realtime.world import World
@@ -68,6 +69,11 @@ def others(p, n: int) -> list:
 
 
 def put(o, x: float, y: float) -> None:
+    """Stand a monster at (x, y), its home (the middle of its area) moved there with it: a monster
+    put further than `leash_radius` from its own area's middle would give up a fight, run home
+    and heal (on the giant maps an area's middle can lie far from where a test stands)."""
+    a = o.area
+    o.area = Area(a.name, x - a.w / 2, y - a.h / 2, a.w, a.h, a.props)
     o.x, o.y, o.mode, o.target = x, y, "wander", None
 
 
@@ -330,8 +336,11 @@ async def test_chain_hops_at_random_among_the_near_and_falls_off(client, gw, lea
         assert hp[o.eid] - o.hp == pytest.approx(hit_of(p, "chuong_tam_loi", o) * f ** i), o.eid
     assert lone.hp == hp[lone.eid]
     assert [h_[0] for h_ in mskill_events(p)[-1]["hits"]] == [m.eid, a.eid, b.eid]
-    # never more than `hops` jumps
+    # never more than `hops` jumps (a and b go far first: the lightning chooses at random, and a
+    # hop onto b, out of the crowd's reach, would end the chain early by chance alone)
     gw.mono.t += sk["cooldown"]
+    put(a, m.x - 300, m.y)
+    put(b, m.x - 300, m.y + 300)
     crowd = others(p, 6)
     for i, o in enumerate(crowd):
         put(o, m.x + 10 + (i % 3) * 8, m.y + (i // 3) * 8)
