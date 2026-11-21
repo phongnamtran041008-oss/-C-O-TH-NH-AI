@@ -11,6 +11,13 @@ folder (never in the assets) and measures:
           snapshots) with 1, 10 and 40 players spread over the map, walking.
 
     "/e/TU TIÊN AI/.venv/Scripts/python.exe" tools/bench_giant_map.py [--frames N] [--ticks N]
+    ... tools/bench_giant_map.py --zone ho_nghien_muc     # a real land instead of the synthetic one
+    ... tools/bench_giant_map.py --zone all               # every map the server ships, in turn
+    ... tools/bench_giant_map.py --zone ho_nghien_muc --map old.tmj   # an older file of that zone
+    ... tools/bench_giant_map.py --startup                # the server's start-up: every map preloaded
+
+With `--zone` the map is the shipped one (client/assets/maps and server/maps), the server runs it
+as that zone (its real monsters, lands, khu), and the client walks it with the real art.
 
 Each part runs in its own process so the memory numbers do not mix. The minimap of the world
 scene (`WorldScene._build_minimap`) is stubbed out: it is being replaced by a 1-px-per-tile
@@ -196,7 +203,7 @@ def surface_mb(tm) -> float:
 
 
 # ------------------------------------------------------------------ client
-def client_part(zoom: int, path: Path | None, frames: int) -> dict:
+def client_part(zoom: int, path: Path | None, frames: int, zone_id: str = "") -> dict:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
     os.environ["SDL_AUDIODRIVER"] = "dummy"
     sys.path.insert(0, str(ROOT))
@@ -215,7 +222,13 @@ def client_part(zoom: int, path: Path | None, frames: int) -> dict:
     game.state.me = {"id": 1}
     game.state.cult = {"stats": {}}
     t0 = time.perf_counter()
-    if path is not None:
+    if zone_id:                                # a real zone (its shipped map, or the file given)
+        zone = zone_id
+        tilemap._MAPS.pop(zone, None)
+        tm = tilemap.TileMap(path) if path is not None else tilemap.load_map(zone)
+        tilemap._MAPS[zone] = tm
+        out["map"] = zone
+    elif path is not None:
         tm = tilemap.TileMap(path)
         zone = "bench_giant"
         tilemap._MAPS[zone] = tm
@@ -232,7 +245,7 @@ def client_part(zoom: int, path: Path | None, frames: int) -> dict:
     # the walk: corner to corner, then back along the middle; 4 world px a frame (240 px/s at 60 fps)
     pw, ph = tm.px_w, tm.px_h
     pts = [(120, 120), (pw - 120, ph - 120), (pw - 120, ph / 2), (120, ph / 2)]
-    if path is None:                           # a small map: back and forth over it
+    if path is None and not zone_id or pw < 2000:       # a small map: back and forth over it
         pts = [(100, 100), (pw - 100, ph - 100), (100, ph - 100), (pw - 100, 100)] * 3
     route = []
     for (ax, ay), (bx, by) in zip(pts, pts[1:]):
@@ -271,7 +284,7 @@ def client_part(zoom: int, path: Path | None, frames: int) -> dict:
 
 
 # ------------------------------------------------------------------ server
-def server_part(path: Path, ticks: int) -> dict:
+def server_part(path: Path, ticks: int, zone_id: str = "") -> dict:
     db = Path(tempfile.mkdtemp(prefix="bench_db_")) / "bench.db"
     os.environ.setdefault("DATABASE_URL", f"sqlite+aiosqlite:///{db}")
     os.environ.setdefault("ENV", "dev")
@@ -283,6 +296,7 @@ def server_part(path: Path, ticks: int) -> dict:
     from app.realtime.world import Session, World
     from app.realtime.zone import ChannelZone
     out: dict = {}
+    ZONE = zone_id or globals()["ZONE"]
     t0 = time.perf_counter()
     zmap = maps.parse(path)
     out["parse_s"] = time.perf_counter() - t0
@@ -340,6 +354,65 @@ def server_part(path: Path, ticks: int) -> dict:
     return out
 
 
+def startup_part() -> dict:
+    """The server's start-up: every zone map parsed and channel 1 opened (World.preload), timed."""
+    db = Path(tempfile.mkdtemp(prefix="bench_db_")) / "bench.db"
+    os.environ.setdefault("DATABASE_URL", f"sqlite+aiosqlite:///{db}")
+    os.environ.setdefault("ENV", "dev")
+    os.environ.setdefault("ALLOW_UNREVIEWED", "1")
+    os.environ.setdefault("AUTO_MIGRATE", "0")
+    sys.path.insert(0, str(ROOT / "server"))
+    t0 = time.perf_counter()
+    from app.realtime.world import World, world_zones
+    out = {"import_s": time.perf_counter() - t0}
+    w = World()
+    per = {}
+    t0 = time.perf_counter()
+    for z in world_zones():
+        t = time.perf_counter()
+        w._channels(z)
+        per[z] = round((time.perf_counter() - t) * 1000)
+    out["preload_s"] = time.perf_counter() - t0
+    out["per_zone_ms"] = per
+    out["maps_mb"] = sum(p.stat().st_size for p in (ROOT / "server" / "maps").glob("*.tmj")) / 2 ** 20
+    out["ws_mb"], out["peak_ws_mb"] = working_set_mb()
+    return out
+
+
+def _run_part(args: list) -> dict:
+    cmd = [sys.executable, str(Path(__file__).resolve()), *args]
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    line = next((ln for ln in r.stdout.splitlines() if ln.startswith("RESULT ")), None)
+    if line is None:
+        tail = (r.stderr or r.stdout).strip().splitlines()[-6:]
+        return {"error": " | ".join(tail)}
+    return json.loads(line[7:])
+
+
+def bench_zone(zone: str, path: Path | None, a) -> dict:
+    """One real zone: the client's walk at zoom 2 (the v2 art) and the server's channel and ticks."""
+    spath = path or ROOT / "server" / "maps" / f"{zone}.tmj"
+    args = ["--part", "client", "--zoom", "2", "--frames", str(a.frames), "--zone", zone]
+    if path is not None:
+        args += ["--map", str(path)]
+    c = _run_part(args)
+    s = _run_part(["--part", "server", "--map", str(spath), "--ticks", str(a.ticks), "--zone", zone])
+    size = spath.stat().st_size / 1024
+    if "error" in c:
+        print(f"{zone:18} client FAILED {c['error']}")
+    else:
+        print(f"{zone:18} file {size:7.0f} KB  client: load {c['load_s'] * 1000:5.0f} ms, scene {c['scene_s'] * 1000:5.0f} ms, "
+              f"surfaces {c['surface_mb']:5.1f} MB, frame avg {c['avg_ms']:.2f} / p99 {c['p99_ms']:.2f} / worst "
+              f"{c['worst_ms']:.2f} ms, working set {c['ws_mb']:.0f} MB")
+    if "error" in s:
+        print(f"{zone:18} server FAILED {s['error']}")
+    else:
+        print(f"{zone:18} server: parse {s['parse_s'] * 1000:5.0f} ms, channel {s['channel_s'] * 1000:5.0f} ms, "
+              f"{s['monsters']} monsters, ticks " + ", ".join(
+                  f"{n}p {s[f'tick_{n}']['avg_ms']:.2f}/{s[f'tick_{n}']['worst_ms']:.2f} ms" for n in (1, 10, 40)))
+    return {"client": c, "server": s, "file_kb": size}
+
+
 # ------------------------------------------------------------------ driver
 def main() -> None:
     ap = argparse.ArgumentParser()
@@ -348,13 +421,27 @@ def main() -> None:
     ap.add_argument("--zoom", type=int, default=2)
     ap.add_argument("--frames", type=int, default=1500)
     ap.add_argument("--ticks", type=int, default=200)
+    ap.add_argument("--zone", default="", help="a real zone (or 'all') instead of the synthetic land")
+    ap.add_argument("--startup", action="store_true", help="the server's start-up with every map preloaded")
     a = ap.parse_args()
     if a.part == "client":
-        res = client_part(a.zoom, Path(a.map) if a.map else None, a.frames)
+        res = client_part(a.zoom, Path(a.map) if a.map else None, a.frames, a.zone)
         print("RESULT " + json.dumps(res))
         return
     if a.part == "server":
-        print("RESULT " + json.dumps(server_part(Path(a.map), a.ticks)))
+        print("RESULT " + json.dumps(server_part(Path(a.map), a.ticks, a.zone)))
+        return
+    if a.part == "startup":
+        print("RESULT " + json.dumps(startup_part()))
+        return
+    if a.startup:
+        print(json.dumps(_run_part(["--part", "startup"]), ensure_ascii=False))
+        return
+    if a.zone:
+        zones = ([p.stem for p in sorted((ROOT / "server" / "maps").glob("*.tmj")) if p.stem != "bi_canh"]
+                 if a.zone == "all" else [a.zone])
+        for z in zones:
+            print("RESULT " + json.dumps({z: bench_zone(z, Path(a.map) if a.map else None, a)}))
         return
     folder = Path(tempfile.mkdtemp(prefix="bench_giant_"))
     t0 = time.perf_counter()

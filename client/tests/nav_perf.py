@@ -1,7 +1,10 @@
 """The cost of Chỉ Đường on the real giant lands, in the real game loop under the dummy driver
 (a real server, the real world scene): docs/CHI_DUONG.md "Measured".
 
-    python -m client.tests.nav_perf            # both giant lands; prints the numbers
+    python -m client.tests.nav_perf            # every land (nav_walk.world_lands); prints the numbers
+    python -m client.tests.nav_perf ho_nghien_muc
+
+* loading the map (`load_map`, a cold cache) and the bytes of its file;
 
 * the frame time of the world scene (average, 95th percentile, worst) while following the arrow
   across the land (the time of `game.step`, the driver's sleep left out);
@@ -9,7 +12,9 @@
 * one reading of the way (`Leg.read`), with and without the route for the maps;
 * building the overview, a minimap window frame, opening the big map and drawing it;
 * the memory held by the map's surfaces (ground chunks, overview, minimap) and by the walk grid
-  and field.
+  and field;
+* the world HUD's icon rows (`draw_ability_row`, `draw_hotbar`) timed inside every walking
+  frame: their share of the slow frames (the rare frames over 25 ms).
 """
 from __future__ import annotations
 
@@ -50,11 +55,25 @@ def surface_bytes(s) -> int:
 
 
 def measure_land(zone: str, workdir: Path, seconds: float = 40.0) -> dict:
+    import os
+    if os.environ.get("NAV_PERF_OLD_ICONS"):         # the hotbar as it was: every icon scaled each frame
+        from client.scenes import world as W
+        from client.ui.kit import UI
+        W.hud_icon = lambda ui, img, x, y, zoom, key=None: UI.image(ui, img, x, y, zoom=zoom, anchor="center")
     server = ServerProcess(workdir)
     facts: dict = {"zone": zone}
     try:
         token, uid = make_account(server.url, "detu_do", "Lữ Khách")
-        tm = load_map(zone)
+        from client.tests.test_lands_flow import grant_luyen_khi       # every land open, the hotbar full
+        grant_luyen_khi(server, uid)
+        server.sql("update characters set realm='luyen_khi', realm_stage=9 where user_id=?", (uid,))
+        from client.engine import tilemap
+        tilemap._MAPS.pop(zone, None)
+        t = time.perf_counter()
+        tm = load_map(zone)                                # the file read and parsed, the collider, no drawing
+        facts["map_load_ms"] = (time.perf_counter() - t) * 1000
+        from client.config import assets_dir
+        facts["map_file_kb"] = (assets_dir() / "maps" / f"{zone}.tmj").stat().st_size / 1024
         x, y = next((o.x, o.y) for o in tm.find("spawn") if o.name == "from_village")
         server.sql("update characters set zone_id=?, x=?, y=? where user_id=?", (zone, x, y, uid))
         server.sql("update users set flags=? where id=?", (json.dumps({"tutorial": 5}), uid))
@@ -76,6 +95,10 @@ def measure_land(zone: str, workdir: Path, seconds: float = 40.0) -> dict:
         facts["idle_frame_ms"] = (statistics.mean(idle) * 1000, max(idle) * 1000)
         # ---- the nearest khu of band 1 (a newcomer's), the grid not built yet: the first arrow
         khus = chi_duong.khu_objects(ws.map)
+        if not khus:                                       # Lôi Kiếp Đài: its named places stand in for khu
+            khus = [((o.x, o.y, o.w, o.h), {"khu": "", "name_vi": o.props.get("name_vi", ""), "band": b,
+                                             "anchor_x": int(o.x + 8), "anchor_y": int(o.y + 28)})
+                    for o in ws.map.find("poi") for b in ("1", "3") if o.props.get("poi") in ("landmark", "boss")]
         rect, props = min((k for k in khus if k[1].get("band") == "1"),
                           key=lambda k: abs(int(k[1]["anchor_x"]) - x) + abs(int(k[1]["anchor_y"]) - y))
         nv._GRIDS.clear()
@@ -116,6 +139,21 @@ def measure_land(zone: str, workdir: Path, seconds: float = 40.0) -> dict:
         facts["read_route_ms"] = (time.perf_counter() - t) / 20 * 1000
         # ---- walk by the arrow, every frame timed
         walk: list = []
+        hud: list = []                                     # (frame index, ms in the two icon rows)
+        cls = type(ws)
+        orig = {n: getattr(cls, n) for n in ("draw_ability_row", "draw_hotbar")}
+        spent = [0.0]
+
+        def timed(fn):
+            def wrap(self, *a, **k):
+                t = time.perf_counter()
+                try:
+                    return fn(self, *a, **k)
+                finally:
+                    spent[0] += time.perf_counter() - t
+            return wrap
+        for n, fn in orig.items():
+            setattr(cls, n, timed(fn))
         end = time.time() + seconds
         x0, y0 = ws.player.x, ws.player.y
         while time.time() < end and nav.dest is not None:
@@ -129,8 +167,19 @@ def measure_land(zone: str, workdir: Path, seconds: float = 40.0) -> dict:
             ax, ay = nav.reading.aim
             kx, ky = keys_for(ax - ws.player.x, ay - ws.player.y)
             drv.keys.held = set(KEYS.get((kx, 0), []) + KEYS.get((0, ky), []))
-            timed_steps(drv, 6, walk)
+            for _ in range(6):
+                spent[0] = 0.0
+                timed_steps(drv, 1, walk)
+                hud.append(spent[0])
         drv.keys.held = set()
+        for n, fn in orig.items():
+            setattr(cls, n, fn)
+        pairs = list(zip(walk[-len(hud):], hud)) if hud else []
+        slow = [(f, h) for f, h in pairs if f > 0.025]
+        facts["hud_rows_ms"] = (statistics.mean(h for _f, h in pairs) * 1000 if pairs else 0.0,
+                                max((h for _f, h in pairs), default=0.0) * 1000)
+        facts["slow_frames"] = len(slow)
+        facts["slow_frames_hud_share"] = (sum(h for _f, h in slow) / max(1e-9, sum(f for f, _h in slow))) if slow else 0.0
         facts["walked_px"] = abs(ws.player.x - x0) + abs(ws.player.y - y0)
         walk.sort()
         facts["walk_frames"] = len(walk)
@@ -177,9 +226,14 @@ def measure_land(zone: str, workdir: Path, seconds: float = 40.0) -> dict:
 
 
 def main() -> None:
-    for zone in sys.argv[1:] or ("loan_so_coc", "luu_van_coc"):
+    from client.tests.nav_walk import world_lands
+    for zone in sys.argv[1:] or world_lands():
         with tempfile.TemporaryDirectory(prefix="kvtt_navperf_") as tmp:
-            f = measure_land(zone, Path(tmp))
+            try:
+                f = measure_land(zone, Path(tmp))
+            except AssertionError as e:
+                print(f"{zone:12} FAILED {str(e)[:300]}")
+                continue
         for k, v in f.items():
             if isinstance(v, tuple):
                 v = " / ".join(f"{a:.2f}" for a in v)

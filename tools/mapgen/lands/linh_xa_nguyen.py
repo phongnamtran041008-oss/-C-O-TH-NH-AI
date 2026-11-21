@@ -126,7 +126,7 @@ def build() -> dict:
     m.paint(warp=7.0, scale=26.0)
     m.camp("lxn_leu_cong", "Lều Cửa Thảo Nguyên", (18, 120), r=8,
            desc_vi="Lều nghỉ ngay trong cổng thảo nguyên, cạnh giá cung. Không có quái.",
-           label_vi="Lều Cửa Thảo Nguyên · giá cung")
+           label_vi="Lều Cửa Thảo Nguyên · giá cung", to_edge="w")
     m.camp("lxn_tram_gio", "Trạm Gió Bờ Sông", (128, 120), r=6,
            desc_vi="Trạm nghỉ bên kia Sông Tên Rơi, cửa vào Trung Vực.", label_vi="Trạm Gió Bờ Sông · cửa Trung Vực")
     m.camp("lxn_leu_ngua", "Lều Mã Phu", (232, 120), r=6,

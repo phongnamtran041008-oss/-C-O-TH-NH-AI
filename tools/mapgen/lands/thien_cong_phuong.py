@@ -141,7 +141,7 @@ def build() -> dict:
     m.paint(warp=6.0, scale=26.0)
     m.camp("tcp_trai_cong", "Trại Cổng Phường", (300, 120), r=8,
            desc_vi="Trại ngay trong cổng phường, cạnh lò rèn nguội. Không có quái.",
-           label_vi="Trại Cổng Phường · lò rèn nguội")
+           label_vi="Trại Cổng Phường · lò rèn nguội", to_edge="e")
     m.camp("tcp_tram_giua", "Trạm Thợ Giữa", (196, 120), r=6,
            desc_vi="Trạm nghỉ sau tường thành đổ, cửa vào Trung Vực.", label_vi="Trạm Thợ Giữa · cửa Trung Vực")
     m.camp("tcp_lan_cuoi", "Lán Thợ Cuối", (92, 120), r=6,

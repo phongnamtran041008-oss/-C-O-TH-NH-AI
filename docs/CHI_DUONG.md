@@ -46,8 +46,9 @@ None of them fires while the chat box is being typed in (`chatbox.typing`), like
 * **Thiên Địa Đồ** (an opaque scene: the world and its HUD are not drawn under it): "Vùng này" - the
   zone in full, its khu tinted by band (green Ngoại Vi, gold Trung Vực, red Thâm Xứ, blue An Toàn) with
   their names and stages ("tầng 4-6", red when above the player's working stage), the recommended khu
-  outlined in gold and its stages in gold with "· hợp tu vi", the camps named beside them (where no
-  other label is), the gates with the zone they lead to, the other named places (`poi`) as diamonds
+  outlined in gold and its stages in gold with "· hợp tu vi", the camps named beside them (where the
+  fewest pixels of other labels, the gates' marks, the named places' diamonds and the player's mark
+  lie under them), the gates with the zone they lead to (beside the gate's mark, never over it), the other named places (`poi`) as diamonds
   named on hover, the player and the way; the khu under the mouse is outlined in white, its tooltip
   says its band, stages, "cao hơn tu vi của con" when it is, and its description; a click leads there
   (a camp is never a goal). The picture with its tints is built once per opening at window resolution.
@@ -101,7 +102,10 @@ None of them fires while the chat box is being typed in (`chatbox.typing`), like
   reading then is exactly the reading of the finished field. A player who strays needs no new search: the
   way is read again from wherever they stand (`Leg.read`): down the field, the arrow pointing at the
   farthest of the next 14 cells that can be walked to in a straight line (each point on the line has
-  its 2 x 2 surrounding cells walkable, whose boxes hold the foot box). A player where the field never
+  its 2 x 2 surrounding cells walkable, whose boxes hold the foot box); when no straight line to
+any of them is clear - the feet stand a few pixels beside the line of cells after a diagonal step,
+and the line to the next cell would graze a corner - the arrow first points sideways onto that line
+(the foot of the perpendicular, never backward; the next cell when that is within 1.5 px). A player where the field never
   reached (an island reached by Đạp Kiếm Lướt) gets a straight arrow and the hint. Building the grid and
   the field are generators run 5 ms per frame until the first arrow, 3 ms after. **From zone to zone**: the gates of every shipped map
   (`portal` objects, and the abode's `interact` object with action `exit`) form a graph; the route is a
@@ -144,6 +148,9 @@ None of them fires while the chat box is being typed in (`chatbox.typing`), like
 
 ## Measured on the real giant lands
 
+The whole world (six giant lands and Lôi Kiếp Đài) walked, toured and measured:
+[DAI_DIA_DO_KIEM_THU.md](DAI_DIA_DO_KIEM_THU.md). The numbers below are the first two lands, before it.
+
 This machine (Windows, Python 3.14, the dummy video driver at 1440 x 810, other agents' test suites
 running at the same time), Kiếm Trủng Sơn / Lưu Vân Cốc.
 
@@ -176,9 +183,10 @@ Cao Nguyên 64 s.
 | overview / big map picture at window size | 225 KB / 1.7 MB | 225 KB / 1.7 MB |
 | walk grid / one field | 303 KB / 1.2 MB | 303 KB / 1.2 MB |
 
-The worst walking frames (36-38 ms, a few in 3 000) are not Chỉ Đường's: profiled, they are the
-world HUD (`world.py` `draw_ability_row`, `draw_hotbar` / `draw_mskill_icon` scaling icons each
-frame) and the network poll. The first opening of the big map pays for the first rendering of its
+The worst walking frames (36-38 ms, a few in 3 000) are not Chỉ Đường's. They were put down to the
+world HUD's icon scaling; measured later on every land (DAI_DIA_DO_KIEM_THU.md, "The rare slow
+frames") that scaling costs 0.4 ms a frame and no frame went over 25 ms because of it: they are
+first uses of lazily loaded pictures and the network poll. The first opening of the big map pays for the first rendering of its
 labels (`engine/text.py`'s cache) and for its picture; later openings reuse both.
 
 Before this round the same loop measured: the big map 27 ms a frame (worst 61: the world and its HUD

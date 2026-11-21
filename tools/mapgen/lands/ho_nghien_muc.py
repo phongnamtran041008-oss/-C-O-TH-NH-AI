@@ -136,7 +136,7 @@ def build() -> dict:
     m.paint(warp=7.0, scale=26.0)
     m.camp("vtt_trai_ben", "Trại Bến Đầm", CAMP1, r=7,
            desc_vi="Trại ngay trong cổng đông, cạnh lều Ngư Ông và Hồ Nghiên Mực. Không có quái.",
-           label_vi="Trại Bến Đầm (nghỉ chân)")
+           label_vi="Trại Bến Đầm (nghỉ chân)", to_edge="e")
     m.camp("vtt_tram_suong", "Trạm Sương", CAMP2, r=6,
            desc_vi="Trạm nghỉ bên kia lạch lớn, cửa vào Trung Vực.", label_vi="Trạm Sương · cửa Trung Vực")
     m.camp("vtt_am_den", "Am Đèn Lồng", CAMP3, r=6,

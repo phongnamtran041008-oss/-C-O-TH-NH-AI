@@ -332,17 +332,43 @@ class WorldMapScene(Scene):
         self.labels = []
         taken: list[pygame.Rect] = []                 # labels already drawn (the player's avoids them)
         gates = []
+        camps = any(chi_duong.num(p.get("band")) == 0 for _, p in khus)
+        pois = [o for o in tmap.find("poi") if not (camps and o.props.get("poi") == "camp")
+                and o.props.get("poi") != "gate"]          # (camps and gates are named already)
+        pl = self.scene.player                        # nor over the player's mark
+        taken.append(pygame.Rect(int(px + pl.x * k - 4), int(py + pl.y * k - 4), 8, 8))
+        for o in pois:                                # the named places' diamonds: no label over them
+            taken.append(pygame.Rect(int(px + (o.x + o.w / 2) * k - 4), int(py + (o.y + o.h / 2) * k - 4), 8, 8))
         for o in tmap.find("portal"):                 # the gates' labels first: the camps keep off them
             name = T.ZONE_NAMES.get(o.props.get("target"), o.props.get("target", ""))
             sx, sy = px + o.x * k, py + o.y * k
             nw = ui.text_size(name, 7)[0]
-            tx = min(max(sx + o.w * k / 2, px + nw / 2 + 3), px + pw - nw / 2 - 3)
-            ty = min(max(sy + o.h * k / 2, py + 8), py + ph - 8)
+            gate = pygame.Rect(int(sx), int(sy), max(3, int(o.w * k)), max(3, int(o.h * k)))
+            # beside its gate, never over the gate's own mark (a gate on the map's edge), inside the map
+            cx, cy = sx + o.w * k / 2, sy + o.h * k / 2
+            spots = [(cx, cy), (gate.right + nw / 2 + 3, cy), (gate.left - nw / 2 - 3, cy),
+                     (cx, gate.bottom + 6), (cx, gate.top - 6), (gate.right + nw / 2 + 9, cy),
+                     (gate.left - nw / 2 - 9, cy), (gate.right + nw / 2 + 3, cy - 11),
+                     (gate.left - nw / 2 - 3, cy - 11), (gate.right + nw / 2 + 3, cy + 11),
+                     (gate.left - nw / 2 - 3, cy + 11)]
+            spots = [(min(max(a, px + nw / 2 + 3), px + pw - nw / 2 - 3), min(max(b, py + 8), py + ph - 8))
+                     for a, b in spots]
+
+            def box(t):
+                return pygame.Rect(int(t[0] - nw / 2 - 2), int(t[1] - 4), int(nw + 4), 9)
+
+            def under(t):                             # (over the gate's mark, px of marks and labels under it)
+                r = box(t)
+                return r.colliderect(gate), sum(c.w * c.h for c in (r.clip(o) for o in taken))
+            tx, ty = min(spots, key=under)
             gates.append((o, name, sx, sy, nw, tx, ty))
-            taken.append(pygame.Rect(int(tx - nw / 2 - 2), int(ty - 4), int(nw + 4), 9))
+            taken.append(box((tx, ty)))
+            taken.append(gate)
         for (rx, ry, rw, rh), props in khus:          # and the khu names, in their top-left corners
             if chi_duong.num(props.get("band")) > 0:
-                taken.append(pygame.Rect(int(px + rx * k + 1), int(py + ry * k + 1), 60, 18))
+                name = props.get("name_vi") or props.get("khu") or ""
+                lw = min(rw * k - 2, max(ui.text_size(name, 8)[0], 40) + 4)
+                taken.append(pygame.Rect(int(px + rx * k + 1), int(py + ry * k + 1), int(lw), 18))
         mx_, my_ = ui.inp.mouse
         under = chi_duong.khu_at(tmap, (mx_ - px) / k, (my_ - py) / k) \
             if px <= mx_ <= px + pw and py <= my_ <= py + ph else None      # the khu under the mouse (first wins)
@@ -356,9 +382,17 @@ class WorldMapScene(Scene):
                 lw = ui.text_size(label, 7)[0] + 4
                 spots = [(sx + sw + 2, sy + sh / 2 - 4.5), (sx - lw - 2, sy + sh / 2 - 4.5),
                          (sx + sw / 2 - lw / 2, sy + sh + 1), (sx + sw / 2 - lw / 2, sy - 10)]
+                # (a gate camp reaching the map's edge: inside its own rectangle, above or below the road)
+                spots += [(sx + sw - lw - 2, sy + 1), (sx + sw - lw - 2, sy + sh - 10), (sx + sw / 2 - lw / 2, sy + 1),
+                          (sx + sw / 2 - lw / 2, sy + sh - 10), (sx + sw + 2, sy + 1), (sx + sw + 2, sy + sh - 10)]
+                for _o, _n, _gx, _gy, gw, gtx, gty in gates:     # stacked on a gate's label inside the camp
+                    if sx <= gtx <= sx + sw and sy <= gty <= sy + sh:
+                        spots += [(gtx - gw / 2 - 2, gty - 15), (gtx - gw / 2 - 2, gty + 6)]
                 spots = [(min(max(a, px + 1), px + pw - lw - 1), min(max(b, py + 1), py + ph - 10)) for a, b in spots]
-                lx, ly = next(((a, b) for a, b in spots
-                               if pygame.Rect(int(a), int(b), int(lw), 9).collidelist(taken) == -1), spots[0])
+                def covered(t):                       # px of other labels and marks under it
+                    r = pygame.Rect(int(t[0]), int(t[1]), int(lw), 9)
+                    return sum(c.w * c.h for c in (r.clip(o) for o in taken))
+                lx, ly = min(spots, key=covered)      # the first free one, else the least covered
                 ui.fill(lx, ly, lw, 9, (20, 18, 15, 170))
                 ui.text(label, lx + 2, ly, 7, "#D6ECFA")
                 taken.append(pygame.Rect(int(lx), int(ly), int(lw), 9))
@@ -399,9 +433,6 @@ class WorldMapScene(Scene):
             ui.border(sx, sy, max(3, o.w * k), max(3, o.h * k), "#2B1D0E")
             ui.fill(tx - nw / 2 - 2, ty - 4, nw + 4, 9, (20, 18, 15, 170))
             ui.text(name, tx, ty, 7, "#D6ECFA", anchor="center")
-        camps = any(chi_duong.num(p.get("band")) == 0 for _, p in khus)
-        pois = [o for o in tmap.find("poi") if not (camps and o.props.get("poi") == "camp")
-                and o.props.get("poi") != "gate"]          # (camps and gates are named already)
         for o in pois:
             sx, sy = px + (o.x + o.w / 2) * k, py + (o.y + o.h / 2) * k
             c = POI_COLOURS.get(o.props.get("poi", "landmark"), "#E3D5BA")
@@ -428,6 +459,7 @@ class WorldMapScene(Scene):
         spots = [(mx - yw / 2, my - 5 - yh), (mx - yw / 2, my + 5), (mx + 6, my - yh / 2), (mx - 6 - yw, my - yh / 2),
                  (mx + 6, my - 14 - yh), (mx - 6 - yw, my - 14 - yh), (mx + 6, my + 12), (mx - 6 - yw, my + 12),
                  (mx - yw / 2, my - 24 - yh), (mx - yw / 2, my + 22)]
+        spots += [(mx + dx - yw / 2, my + dy) for dy in (-34, 30, -44, 40) for dx in (0, 24, -24)]
         spots = [(sx, sy) for sx, sy in spots                      # (on the map, never over the legend)
                  if px <= sx and sx + yw <= px + pw and py <= sy and sy + yh <= py + ph] or spots
         lx, ly = min(spots, key=lambda s: len(pygame.Rect(int(s[0]), int(s[1]), int(yw), int(yh))

@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 import tempfile
 import time
@@ -122,11 +123,15 @@ def follow_arrow(drv: Driver, server: ServerProcess, done, what: str, timeout: f
         ax, ay = n.reading.aim
         kx, ky = keys_for(ax - sc.player.x, ay - sc.player.y, lean=lean)
         keys = KEYS.get((kx, 0), []) + KEYS.get((0, ky), [])
+        if not keys:                                # the aim a pixel or two off: a tap toward it
+            kx, ky = keys_for(ax - sc.player.x, ay - sc.player.y, lean=True)
+            keys = KEYS.get((kx, 0), []) + KEYS.get((0, ky), [])
         if not keys:
             drv.step(2)
             continue
         last = (sc, sc.player.x, sc.player.y)
-        drv.hold(keys, 0.1)
+        # a tenth of a second, less when the aim is nearer: a player lets go on the spot
+        drv.hold(keys, max(0.02, min(0.1, math.hypot(ax - sc.player.x, ay - sc.player.y) / 74.0)))
         lean = last == (here(drv), sc.player.x, sc.player.y)    # held against a corner: lean as the arrow does
     sc = here(drv)
     raise AssertionError(f"the arrow did not lead to {what}: in {getattr(sc, 'zone_id', type(sc).__name__)} at "
