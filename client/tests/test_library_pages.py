@@ -63,20 +63,22 @@ def test_one_page_per_micro_skill_and_the_arrows_turn_them(ui):
     game = Game()
     doc = math_library.documents()["gt_lib_t4"]
     scene = DocScene(game, doc.id)
-    assert len(scene.pages) == len(doc.skills) and scene.page == 0
+    # a page per micro-skill, plus one for every `###` heading that splits a skill into short pages
+    n_pages = sum(1 for b in doc.blocks if b["type"] in ("section", "heading"))
+    assert len(scene.pages) == n_pages >= len(doc.skills) and scene.page == 0
     frame(ui, scene)
     first = [it["text"] for it in scene.items if it["kind"] == "text"]
     frame(ui, scene, key(pygame.K_RIGHT))
     frame(ui, scene)
-    assert scene.page == 1 and scene.current_section() == 1
+    assert scene.page == 1 and scene.current_section() == scene.page_section[1]
     assert [it["text"] for it in scene.items if it["kind"] == "text"] != first
     frame(ui, scene, key(pygame.K_LEFT))
     frame(ui, scene, key(pygame.K_LEFT))                    # no page before the first
     assert scene.page == 0
     frame(ui, scene, key(pygame.K_END))
-    assert scene.page == len(doc.skills) - 1
+    assert scene.page == n_pages - 1
     frame(ui, scene, key(pygame.K_RIGHT))                   # nor after the last
-    assert scene.page == len(doc.skills) - 1
+    assert scene.page == n_pages - 1
     frame(ui, scene, key(pygame.K_HOME))
     assert scene.page == 0 and scene.scroll == 0
 
@@ -103,8 +105,9 @@ def test_opening_at_a_block_opens_its_page(doc_id):
     doc = math_library.documents()[doc_id]
     for n, skill in enumerate(doc.skills):
         block = doc.section_of(skill)
-        assert DocScene(Game(), doc_id, block).page == n
-        assert DocScene(Game(), doc_id, block + 1).page == n       # a block inside the section too
+        scene = DocScene(Game(), doc_id, block)
+        assert scene.page == scene.page_section.index(n)           # the first page of that micro-skill
+        assert DocScene(Game(), doc_id, block + 1).page == scene.page   # a block inside the section too
 
 
 def test_a_self_check_answer_shows_on_enter_or_on_a_click(ui):
@@ -163,22 +166,23 @@ def test_an_old_document_still_reads_page_by_page(ui):
 
 def test_a_heading_inside_a_section_is_a_page_of_its_own(ui):
     """A `###` heading splits a micro-skill into short pages; the section stays the same one."""
-    src = (ROOT / "server/data/math/library/giai_tich/t4_dao_ham.md").read_text("utf-8")
-    marker = "Biết hệ số góc thì viết được tiếp tuyến"
+    src = (ROOT / "server/data/math/library/giai_tich/t6_khao_sat.md").read_text("utf-8")
+    marker = "Bậc ba đồng biến trên cả R"
+    base, _ = math_library.parse_document(src)
     assert marker in src
-    doc, problems = math_library.parse_document(src.replace(marker, "### Tiếp tuyến\n\n" + marker, 1))
+    doc, problems = math_library.parse_document(src.replace(marker, "### Ý thứ hai\n\n" + marker, 1))
     assert doc is not None and problems == [], problems
     game = Game()
     game.api.docs = {doc.id: doc}
     scene = DocScene(game, doc.id)
-    assert len(scene.pages) == len(doc.skills) + 1
+    assert len(scene.pages) == sum(1 for b in base.blocks if b["type"] in ("section", "heading")) + 1
     assert scene.page_section[:3] == [0, 0, 1]
     frame(ui, scene)
     assert scene.part_of_section() == (1, 2)
     frame(ui, scene, key(pygame.K_RIGHT))
     frame(ui, scene)
     assert scene.page == 1 and scene.current_section() == 0 and scene.part_of_section() == (2, 2)
-    assert any(it["kind"] == "text" and "Tiếp tuyến" in it["text"] for it in scene.items)
+    assert any(it["kind"] == "text" and "Ý thứ hai" in it["text"] for it in scene.items)
     assert scene.layout_problems(ui) == []
     # a question still opens the page of its micro-skill
     assert DocScene(game, doc.id, doc.section_of(doc.skills[1])).page == 2
