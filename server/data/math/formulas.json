@@ -75,12 +75,6 @@
    "w": 166.27,
    "h": 10.18
   },
-  "10ed6db9149c46d7": {
-   "tex": "\\frac{px + q}{(x - r)(x - s)} = \\frac{A}{x - r} + \\frac{B}{x - s}, \\qquad A = \\frac{pr + q}{r - s},\\; B = \\frac{ps + q}{s - r}",
-   "alt": "(px + q)/((x - r)(x - s)) = A/(x - r) + B/(x - s), A = (pr + q)/(r - s), B = (ps + q)/(s - r)",
-   "w": 284.7,
-   "h": 23.94
-  },
   "110674aba413b4dd": {
    "tex": "A_n^k = n(n-1)\\cdots(n-k+1) = \\frac{n!}{(n-k)!}",
    "alt": "A_n^k = n(n-1)...(n-k+1) = (n!)/((n-k)!)",
@@ -98,18 +92,6 @@
    "alt": "f(x) = tong_(k=0)^n (f^((k))(a))/(k!)(x - a)^k + R_n(x)",
    "w": 158.69,
    "h": 29.21
-  },
-  "12cf639fa5409791": {
-   "tex": "y'(x) = -\\frac{F_x}{F_y}, \\qquad z_x = -\\frac{F_x}{F_z},\\; z_y = -\\frac{F_y}{F_z}",
-   "alt": "y'(x) = -(F_x)/(F_y), z_x = -(F_x)/(F_z), z_y = -(F_y)/(F_z)",
-   "w": 184.48,
-   "h": 24.6
-  },
-  "133cac3736ab4db4": {
-   "tex": "\\max_{[a, b]} f = \\max\\{ f(a),\\ f(b),\\ f(c_1), \\dots, f(c_k) \\}",
-   "alt": "max_([a, b]) f = max{ f(a), f(b), f(c_1), ..., f(c_k) }",
-   "w": 187.47,
-   "h": 17.67
   },
   "15718065a71c35d5": {
    "tex": "f'(c) = \\frac{f(b) - f(a)}{b - a}",
@@ -147,12 +129,6 @@
    "w": 166.38,
    "h": 23.98
   },
-  "1a7a2a3f778ea5ad": {
-   "tex": "p = \\lim_{x \\to \\infty} \\frac{f(x)}{x}, \\qquad q = \\lim_{x \\to \\infty} \\big(f(x) - px\\big)",
-   "alt": "p = lim_(x -> vo cung) (f(x))/x, q = lim_(x -> vo cung) (f(x) - px)",
-   "w": 178.16,
-   "h": 22.07
-  },
   "1aef2be96dd84a04": {
    "tex": "f = \\frac{m_1 + m_2}{n_1 + n_2}, \\qquad z = \\frac{f_1 - f_2}{\\sqrt{f(1-f)(1/n_1 + 1/n_2)}}",
    "alt": "f = (m_1 + m_2)/(n_1 + n_2), z = (f_1 - f_2)/(can(f(1-f)(1/n_1 + 1/n_2)))",
@@ -182,12 +158,6 @@
    "alt": "P(B | D) = (p s)/(p s + (1-p) f)",
    "w": 120.19,
    "h": 21.15
-  },
-  "20b37cc74e90ca34": {
-   "tex": "\\int_a^b f(x)\\,dx = \\lim_{c \\to a^+} \\int_c^b f(x)\\,dx",
-   "alt": "tich phan_a^b f(x) dx = lim_(c -> a^+) tich phan_c^b f(x) dx",
-   "w": 130.18,
-   "h": 25.28
   },
   "20b67950cac8d965": {
    "tex": "P(A \\mid B) = \\frac{P(AB)}{P(B)}, \\quad P(B) > 0",
@@ -237,23 +207,11 @@
    "w": 137.13,
    "h": 10.78
   },
-  "2a9f4c5eac2ae50d": {
-   "tex": "\\mathrm{limsup}_{n \\to \\infty}\\, a_n = \\lim_{n \\to \\infty} \\mathrm{sup}\\,\\{a_k : k \\ge n\\}",
-   "alt": "limsup_(n -> vo cung) a_n = lim_(n -> vo cung) sup {a_k : k >= n}",
-   "w": 165.95,
-   "h": 14.84
-  },
   "2e267a1278f439cc": {
    "tex": "\\max c^T x \\quad \\text{voi} \\quad A x \\le b, \\; x \\ge 0",
    "alt": "max c^T x voi A x <= b, x >= 0",
    "w": 133.7,
    "h": 11.05
-  },
-  "2e66ba486044d453": {
-   "tex": "f'' > 0 \\;\\Rightarrow\\; f(x) > f(x_0) + f'(x_0)(x - x_0) \\quad (x \\ne x_0)",
-   "alt": "f'' > 0 => f(x) > f(x_0) + f'(x_0)(x - x_0) (x != x_0)",
-   "w": 231.65,
-   "h": 10.78
   },
   "2e8c450dab6658a1": {
    "tex": "\\text{so tam giac} = \\frac{1}{6} \\operatorname{tr}(A^3)",
@@ -351,12 +309,6 @@
    "w": 212.21,
    "h": 18.94
   },
-  "3d9ecfce9b1c7b78": {
-   "tex": "f(a + dx, b + dy) \\approx f + f_x\\,dx + f_y\\,dy + \\frac{1}{2}\\big(f_{xx}\\,dx^2 + 2f_{xy}\\,dx\\,dy + f_{yy}\\,dy^2\\big)",
-   "alt": "f(a + dx, b + dy) xap xi f + f_x dx + f_y dy + 1/2 (f_(xx) dx^2 + 2f_(xy) dx dy + f_(yy) dy^2)",
-   "w": 322.52,
-   "h": 20.65
-  },
   "3da09a42c3cf2aff": {
    "tex": "f(u) = f(v) \\Rightarrow u = v",
    "alt": "f(u) = f(v) => u = v",
@@ -392,12 +344,6 @@
    "alt": "epsilon = z can((f(1-f))/n)",
    "w": 76.27,
    "h": 25.05
-  },
-  "44ab53287487ed85": {
-   "tex": "f\\Big(\\sum_i \\lambda_i x_i\\Big) \\le \\sum_i \\lambda_i f(x_i)",
-   "alt": "f (tong_i lambda_i x_i) <= tong_i lambda_i f(x_i)",
-   "w": 116.18,
-   "h": 23.84
   },
   "4536348703b6c9a6": {
    "tex": "s^2 = \\frac{(n_1 - 1)s_1^2 + (n_2 - 1)s_2^2}{n_1 + n_2 - 2}, \\qquad t = \\frac{x_{tb1} - x_{tb2}}{\\sqrt{s^2(1/n_1 + 1/n_2)}}",
@@ -440,12 +386,6 @@
    "alt": "d(s, v) = d(s, truoc(v)) + 1",
    "w": 117.17,
    "h": 10.18
-  },
-  "4cb4c500f8c77f98": {
-   "tex": "H = \\begin{pmatrix} f_{xx} & f_{xy} \\\\ f_{xy} & f_{yy} \\end{pmatrix}, \\qquad D = f_{xx} f_{yy} - f_{xy}^2",
-   "alt": "H = [f_(xx), f_(xy); f_(xy), f_(yy)], D = f_(xx) f_(yy) - f_(xy)^2",
-   "w": 175.11,
-   "h": 25.35
   },
   "4cbf208d46d68e28": {
    "tex": "y = f'(a)(x - a) + f(a)",
@@ -525,12 +465,6 @@
    "w": 126.96,
    "h": 24.47
   },
-  "5cf17d6e12207cdf": {
-   "tex": "df = f_x\\,dx + f_y\\,dy, \\qquad f(x + dx, y + dy) \\approx f(x, y) + f_x\\,dx + f_y\\,dy",
-   "alt": "df = f_x dx + f_y dy, f(x + dx, y + dy) xap xi f(x, y) + f_x dx + f_y dy",
-   "w": 292.51,
-   "h": 10.64
-  },
   "5dbe9becf8911520": {
    "tex": "\\bar{A}_n^k = n^k",
    "alt": "A_n^k = n^k",
@@ -554,12 +488,6 @@
    "alt": "(e^(ax))^((n)) = a^n e^(ax), (1/x)^((n)) = ((-1)^n n!)/(x^(n+1))",
    "w": 183.88,
    "h": 27.04
-  },
-  "616633be3b47ba8a": {
-   "tex": "f'(x) > 0 \\ \\forall x \\in I \\;\\Rightarrow\\; f(x_1) < f(x_2) \\ \\forall x_1 < x_2 \\in I",
-   "alt": "f'(x) > 0 voi moi x thuoc I => f(x_1) < f(x_2) voi moi x_1 < x_2 thuoc I",
-   "w": 215.53,
-   "h": 10.78
   },
   "6182547b0ce4984c": {
    "tex": "\\frac{n!}{n_1! \\, n_2! \\cdots n_m!}",
@@ -609,12 +537,6 @@
    "w": 125.54,
    "h": 22.74
   },
-  "6a85610dd284982c": {
-   "tex": "f'(x_0) = 0 \\;\\Rightarrow\\; f(x) - f(x_0) \\approx \\frac{f''(x_0)}{2}(x - x_0)^2",
-   "alt": "f'(x_0) = 0 => f(x) - f(x_0) xap xi (f''(x_0))/2(x - x_0)^2",
-   "w": 210.99,
-   "h": 21.94
-  },
   "6b4b95113b260093": {
    "tex": "A_n^k = n (n-1) \\cdots (n-k+1) = \\frac{n!}{(n-k)!}",
    "alt": "A_n^k = n (n-1) ... (n-k+1) = (n!)/((n-k)!)",
@@ -632,12 +554,6 @@
    "alt": "[a, b; c, d]^(-1) = 1/(ad - bc) [d, -b; -c, a]",
    "w": 145.64,
    "h": 26.45
-  },
-  "6fa41710e30bbddc": {
-   "tex": "f_x(a, b) = \\lim_{h \\to 0} \\frac{f(a + h, b) - f(a, b)}{h} = \\frac{\\partial f}{\\partial x}(a, b)",
-   "alt": "f_x(a, b) = lim_(h -> 0) (f(a + h, b) - f(a, b))/h = (d f)/(d x)(a, b)",
-   "w": 205.05,
-   "h": 22.74
   },
   "7286e9334b8ad8e0": {
    "tex": "2^n, \\quad (n-1)!, \\quad n!",
@@ -687,12 +603,6 @@
    "w": 89.94,
    "h": 10.18
   },
-  "795dba240832ed4e": {
-   "tex": "f(x) \\sim \\frac{C}{x^p} \\;(x \\to +\\infty) \\;\\Rightarrow\\; \\left( \\int_a^{+\\infty} f(x)\\,dx < +\\infty \\iff p > 1 \\right)",
-   "alt": "f(x) ~ C/(x^p) (x -> +vo cung) => (tich phan_a^(+vo cung) f(x) dx < +vo cung <=> p > 1)",
-   "w": 278.21,
-   "h": 24.94
-  },
   "7b51cbf0318d6121": {
    "tex": "\\text{tr}(kA + B) = k \\cdot \\text{tr}(A) + \\text{tr}(B)",
    "alt": "tr(kA + B) = k . tr(A) + tr(B)",
@@ -722,12 +632,6 @@
    "alt": "Cov(X, Y) = E [(X - E(X))(Y - E(Y)) ] = E(XY) - E(X) E(Y)",
    "w": 289.27,
    "h": 12.21
-  },
-  "80d99357e54afa26": {
-   "tex": "\\nabla f = (f_x, f_y), \\qquad D_u f = \\nabla f \\cdot u = |\\nabla f|\\cos\\theta",
-   "alt": "grad f = (f_x, f_y), D_u f = grad f . u = |grad f|costheta",
-   "w": 199.24,
-   "h": 10.64
   },
   "812f1cf946757744": {
    "tex": "\\text{det}(kA) = k^{n} \\, \\text{det} A",
@@ -843,12 +747,6 @@
    "w": 141.35,
    "h": 7.54
   },
-  "97bdc505bb5bd592": {
-   "tex": "\\int f\\big(u(x)\\big)\\,u'(x)\\,dx = \\int f(u)\\,du",
-   "alt": "tich phan f (u(x)) u'(x) dx = tich phan f(u) du",
-   "w": 139.76,
-   "h": 22.62
-  },
   "98194342502251ed": {
    "tex": "\\lim_{n \\to \\infty} \\frac{1}{n^{k}} = 0 \\;(k > 0), \\qquad \\lim_{n \\to \\infty} q^{n} = 0 \\;(|q| < 1)",
    "alt": "lim_(n -> vo cung) 1/(n^k) = 0 (k > 0), lim_(n -> vo cung) q^n = 0 (|q| < 1)",
@@ -957,12 +855,6 @@
    "w": 229.96,
    "h": 9.16
   },
-  "a68b32056abb358d": {
-   "tex": "\\int_a^b f\\big(u(x)\\big)\\,u'(x)\\,dx = \\int_{u(a)}^{u(b)} f(u)\\,du",
-   "alt": "tich phan_a^b f (u(x)) u'(x) dx = tich phan_(u(a))^(u(b)) f(u) du",
-   "w": 158.76,
-   "h": 27.4
-  },
   "a71fb69454dd1867": {
    "tex": "B = P^{-1} A P",
    "alt": "B = P^(-1) A P",
@@ -1029,12 +921,6 @@
    "w": 153.18,
    "h": 11.1
   },
-  "ae47bf2348cba9f8": {
-   "tex": "\\lim_{(x, y) \\to (a, b)} f(x, y) = L",
-   "alt": "lim_((x, y) -> (a, b)) f(x, y) = L",
-   "w": 88.01,
-   "h": 17.55
-  },
   "af405e325fd7d4c2": {
    "tex": "P(a \\le X < b) = F(b) - F(a)",
    "alt": "P(a <= X < b) = F(b) - F(a)",
@@ -1058,12 +944,6 @@
    "alt": "z . z = a^2 + b^2 = |z|^2",
    "w": 90.26,
    "h": 11.54
-  },
-  "b09631e36ac105b7": {
-   "tex": "\\int f(x)\\,dx = F(x) + C \\iff F'(x) = f(x)",
-   "alt": "tich phan f(x) dx = F(x) + C <=> F'(x) = f(x)",
-   "w": 186.51,
-   "h": 22.62
   },
   "b174291e84507343": {
    "tex": "P(A) = \\sum_{i=1}^{n} P(H_i)\\,P(A \\mid H_i)",
@@ -1365,12 +1245,6 @@
    "w": 68.65,
    "h": 14.84
   },
-  "eafaab13310f0413": {
-   "tex": "\\int_a^{+\\infty} f(x)\\,dx = \\lim_{R \\to +\\infty} \\int_a^R f(x)\\,dx",
-   "alt": "tich phan_a^(+vo cung) f(x) dx = lim_(R -> +vo cung) tich phan_a^R f(x) dx",
-   "w": 149.04,
-   "h": 25.19
-  },
   "eb99db9c6b7ecea2": {
    "tex": "L = f - \\lambda g, \\quad L_x = 0, \\; L_y = 0, \\; g = 0",
    "alt": "L = f - lambda g, L_x = 0, L_y = 0, g = 0",
@@ -1395,23 +1269,11 @@
    "w": 65.67,
    "h": 21.04
   },
-  "f2dbc172a221ceb4": {
-   "tex": "V_{Oy} = 2\\pi\\int_a^b x\\,f(x)\\,dx",
-   "alt": "V_(Oy) = 2pitich phan_a^b x f(x) dx",
-   "w": 97.6,
-   "h": 25.27
-  },
   "f5059ad8586a4bc8": {
    "tex": "\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1",
    "alt": "lim_(x -> 0) (sin x)/x = 1",
    "w": 59.78,
    "h": 21.37
-  },
-  "f5203259f56ab2cd": {
-   "tex": "J = \\begin{pmatrix} u_x & u_y \\\\ v_x & v_y \\end{pmatrix}, \\qquad z_x = z_u\\,u_x + z_v\\,v_x",
-   "alt": "J = [u_x, u_y; v_x, v_y], z_x = z_u u_x + z_v v_x",
-   "w": 169.64,
-   "h": 25.35
   },
   "f7854b763091035a": {
    "tex": "f(x, y) = x^{T} A y, \\qquad B = \\frac{A + A^{T}}{2}",
@@ -1443,12 +1305,6 @@
    "w": 117.76,
    "h": 25.16
   },
-  "f9c56550e33fb71d": {
-   "tex": "f_{CT} < m < f_{CD}",
-   "alt": "f_(CT) < m < f_(CD)",
-   "w": 69.73,
-   "h": 9.27
-  },
   "fbd8ec7e7b958fb5": {
    "tex": "\\text{hang} = 1 + \\sum_{i=1}^{n} c_i \\, (n-i)!",
    "alt": "hang = 1 + tong_(i=1)^n c_i (n-i)!",
@@ -1472,12 +1328,6 @@
    "alt": "dim Ker f + dim Im f = dim V",
    "w": 129.65,
    "h": 9.27
-  },
-  "ff50672b57ef7abf": {
-   "tex": "d(x, z) \\le d(x, y) + d(y, z)",
-   "alt": "d(x, z) <= d(x, y) + d(y, z)",
-   "w": 110.34,
-   "h": 10.18
   }
  }
 }
