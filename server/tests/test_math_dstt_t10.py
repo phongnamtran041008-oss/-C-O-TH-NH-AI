@@ -250,8 +250,8 @@ def test_the_library_covers_every_micro_skill_of_floor_ten():
     assert len(sections) == len(doc.skills)
     notes = [b for b in doc.blocks if b["type"] == "note"]
     assert len(notes) >= len(doc.skills) and all(n["text"].startswith("Lỗi thường gặp") for n in notes)
-    assert len(doc.formulas) >= len(doc.skills)
-    assert any(b["type"] == "steps" for b in doc.blocks) and any(b["type"] == "matrices" for b in doc.blocks)
+    assert sum(1 for b in doc.blocks if b["type"] in ("formula", "figure", "matrices")) >= len(doc.skills)   # something to look at per micro-skill
+    assert any(b["type"] == "steps" for b in doc.blocks) and any(b["type"] in ("matrices", "figure") for b in doc.blocks)
     for sk in doc.skills:
         assert ml.for_skill(sk) is doc
     assert not [e for e in ml.validate_all() if f"{SUBJECT}/t{FLOOR}_" in e]

@@ -73,6 +73,9 @@ QUIZ_CORRECT = "Chính xác!"
 QUIZ_WRONG = "Chưa đúng"
 QUIZ_TIMEOUT = "Hết giờ!"
 QUIZ_ANSWER_WAS = "Đáp án: {a}"
+QUIZ_MORE = "còn nữa: lăn chuột hoặc phím Lên/Xuống"
+QUIZ_GOT_IT = "Đã hiểu"
+QUIZ_GOT_IT_KEYS = "Enter / Space: đóng thẻ"
 
 GACHA_ROLL1 = "Quay 1 ({p})"
 GACHA_ROLL10 = "Quay 10 ({p})"
@@ -224,6 +227,7 @@ PARRY_RESULT_GONE = "Phản Đòn! Không mất máu · +{qi} Linh Lực"
 GUARD_BREAK = "Trúng đòn"
 GUARD_BREAK_RESULT = "Trúng đòn -{n}. Xem lời giải bên trên."
 PARRY_REST = "Nghỉ {s} giây: đòn trúng chỉ nửa sát thương, không hỏi"
+PARRY_REST_AFTER = "Trận đấu chờ con đọc lời giải. Đóng thẻ rồi nghỉ {s} giây: đòn trúng chỉ nửa sát thương"
 DODGE_OK = "Né!"
 DODGE_LOCKED = "Né Đòn mở ở Luyện Khí tầng 1."
 DODGE_HINT = "[Shift] Né Đòn"
@@ -810,6 +814,7 @@ MATH_SECONDS = "{n} giây"
 MATH_TRUE = "Đúng"
 MATH_FALSE = "Sai"
 MATH_NUMBER_HINT = "Phân số viết a/b, số thập phân dùng dấu chấm, nhiều số cách nhau bằng dấu phẩy"
+MATH_NUMBER_INSTRUCTION = "Điền số: phân số viết a/b, số thập phân dùng dấu chấm, nhiều số cách nhau bằng dấu phẩy"
 MATH_NUMBER_PLACEHOLDER = "vd 3/4 hoặc 1, 2, 3"
 MATH_YOUR_ANSWER = "Bạn trả lời: {a}"
 MATH_SOLUTION = "Lời giải từng bước"
@@ -871,6 +876,16 @@ CODE_SAMPLE_LINE = "Ví dụ {n}: {v}"
 CODE_PASSED = "Qua {p}/{t} test"
 CODE_BEST = "Tốt nhất: {v}, {p}/{t} test"
 CODE_RUN_HINT = "Chạy thử dùng ví dụ trong đề. Nộp bài chạy trên test ẩn và nhận Tu Vi."
+CODE_SAMPLE_IN = "Vào:"
+CODE_SAMPLE_OUT = "Ra:"
+CODE_DETAIL = "Chi tiết"
+CODE_DETAIL_TITLE = "Kết quả chi tiết"
+CODE_GOT = "Chương trình in ra:"
+CODE_WANT = "Đáp án đúng:"
+CODE_PRINTED_NOTHING = "(không in gì)"
+CODE_ERROR = "Lỗi chương trình:"
+CODE_MORE_LINES = "(còn {n} dòng nữa)"
+CODE_SCROLL_HINT = "Lăn chuột hoặc PgUp / PgDn để xem tiếp"
 CODE_VERDICTS = {
     "AC": "Đúng hết",
     "WA": "Sai kết quả",
@@ -915,6 +930,15 @@ LIB_PREV = "Mục trước"
 LIB_NEXT = "Mục sau"
 LIB_NOTE = "Trúc Lão nhắc: "
 LIB_EMPTY = "Chưa có trang sách nào."
+LIB_PAGE = "{n}/{t}"
+LIB_HOOK = "Vì sao phải học?"
+LIB_CORE = "Bản chất"
+LIB_CHECK = "Tự kiểm"
+LIB_SHOW = "Nghĩ xong thì bấm vào đây (hoặc Enter) để xem đáp án."
+LIB_ANSWER = "Đáp án: "
+LIB_PRACTICE = "Luyện ngay"
+LIB_KEYS = "Trái / Phải: lật trang"
+LIB_KEYS_SCROLL = "Lăn chuột hoặc Lên / Xuống để đọc tiếp"
 
 # ------------------------------------------------------------------ M7: quái lỗi sai, Lò Toán
 CRAFT_TITLE = "Lò Toán"
@@ -1152,7 +1176,27 @@ TREE_STAGE = "{realm} tầng {n}/{t}"
 TREE_STAGE_NONE = "{realm}: chưa qua tầng nào"
 TREE_STAGE_PROGRESS = "đã xong {d}/{t} nút của tầng {n}"     # inside the stage being worked on
 TREE_STAGE_PROGRESS_SHORT = "xong {d}/{t} nút tầng {n}"
-TREE_TAB_NEXT = "Nên học"
+TREE_TAB_NEXT = "Chính đạo"
+# ---- Chính đạo: the main quest, the card on the first tab of the hub (scenes/math_tree.py)
+PATH_HEAD = "Chính đạo · {realm} tầng {n} · nút {i}/{t}"
+PATH_GO = {"hoc": "Học bài", "luyen": "Luyện", "kiep": "Độ Thiên kiếp nhỏ", "code": "Làm bài tập"}
+PATH_RESUME = {"luyen": "Luyện tiếp", "kiep": "Độ kiếp tiếp"}
+PATH_CHIPS = ("Hiểu", "Luyện", "Vượt cổng")
+PATH_CHIP_CODE = "Bài tập {d}/{t}"
+PATH_GATE = "Cổng {d}/{t}"
+PATH_PART = "Phần {i}/{n}"
+PATH_REREAD = "Đọc lại bài"
+PATH_LIST = "Tầng {n}, theo thứ tự nên học"
+PATH_STATE = {"done": "Đã xong", "now": "Đang học", "later": "Để sau"}
+PATH_LATER = "Để sau"
+PATH_DONE_TITLE = "Con đã đi hết Chính đạo hiện có"
+PATH_DONE_BODY = "Mọi nút chính đạo có nội dung đều đã xong. Các thẻ nhánh còn bàng môn để học thêm."
+PATH_SIDE = "Luyện thêm:"
+PATH_SIDE_TIP = "Luyện thêm cho vui, có thưởng. Không thay được Chính đạo."
+PATH_HINT = {"hoc": "Hiểu trước, luyện sau: đọc bài của nút.", "luyen": "Luyện tới khi Cổng mở.",
+             "kiep": "Cổng đã mở: vượt Thiên kiếp nhỏ để xong phần này.",
+             "code": "Nút lập trình: giải các bài tập của nút."}
+PATH_STEP_SHORT = {"hoc": "Học bài", "luyen": "Luyện", "kiep": "Độ Thiên kiếp nhỏ", "code": "Làm bài tập"}
 TREE_TAB_SHORT = {"ds": "Đại Số", "gt": "Giải Tích", "xs": "Xác Suất", "tr": "Thuật Toán", "lt": "Lập Trình",
                   "ud": "Thực Chiến"}
 TREE_ROW_STAGE = "Tầng {n}"
@@ -1220,6 +1264,15 @@ GUIDE_HUD_STUDY = "Đang học · F1"
 GUIDE_HUD_CLAIM = "Nhận thưởng ({n}) · F1"
 GUIDE_HUD_ALL_DONE = "Con đã làm hết lộ trình hiện có. Cứ luyện tiếp trên Đạo Thụ nhé."
 GUIDE_STEP_DONE_TOAST = "Xong: {title}"       # short: in the world it sits beside the HUD box, which says F1
+GUIDE_HUD_MAIN = "Chính đạo {i}/{t} · F1"      # the HUD box once Chính đạo leads
+GUIDE_HUD_MAIN_CLAIM = "Nhận {n}"
+GUIDE_HUD_MAIN_DONE = "Chính đạo · F1"
+GUIDE_MAIN_CHAPTER = "Chính đạo"              # the first entry of the board: the step of the main quest
+GUIDE_MAIN_INTRO = "Nhiệm vụ chính: đi từng nút một trên Chính đạo, đúng thứ tự nên học."
+GUIDE_MAIN_SUB = "Nhiệm vụ chính"
+GUIDE_MAIN_STEP = "Việc bây giờ: {step}. {hint}"
+GUIDE_STUDY_MAIN = "{name} · {step}"
+GUIDE_MAIN_STAGE = "{realm} tầng {n}: nút {i}/{t} · cả cảnh giới {d}/{a} nút"
 
 # ---- Linh căn: Trắc Linh Đài (scenes/linh_can.py)
 HUD_LINH_CAN = "Linh Căn"

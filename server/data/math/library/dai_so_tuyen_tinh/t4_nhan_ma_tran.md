@@ -3,131 +3,284 @@ id: dstt_lib_t4
 title_vi: Nhân ma trận
 subject: dai_so_tuyen_tinh
 floor: 4
-summary_vi: Phép nhân ma trận là hàng nhân cột: khi nào nhân được, cách tính từng ô, vì sao đổi thứ tự thì đổi kết quả, và các luật còn giữ được.
+format: 2
+summary_vi: Nhân ma trận là hàng nhân cột: một hàng gặp một cột ra một số, hai số giữa của cỡ phải khớp, đổi thứ tự là đổi việc làm, và lũy thừa là lặp lại cùng một bước.
 skills: [dstt_t4_tich_vo_huong, dstt_t4_dieu_kien_kich_thuoc, dstt_t4_nhan_ma_tran, dstt_t4_khong_giao_hoan, dstt_t4_tinh_chat_nhan, dstt_t4_luy_thua]
 ---
 ## Tích vô hướng: một hàng nhân một cột
 
-Mọi phép nhân ma trận đều dựng từ một viên gạch nhỏ: tích vô hướng của hai vectơ cùng số chiều. Nhân từng cặp tọa độ cùng vị trí rồi cộng tất cả lại.
+:::hook
+Máy gợi ý phim chấm điểm "hợp gu" bằng tích vô hướng: nhân sở thích của bạn với chất của phim theo từng mục, rồi cộng lại.
+:::
+
+:::figure grid
+caption: Nhân từng cột (cùng một mục), rồi cộng hàng tích: 8 - 5 - 6 = -3. Âm: phim này không hợp gu.
+table
+head "hành động" "lãng mạn" "hài"
+side "bạn" "phim" "tích"
+row 2 -1 3
+row 4 5 -2
+row 8 -5 -6
+mark row 3 vang
+:::
+
+:::core
+Tích vô hướng ghép từng cặp tọa độ cùng vị trí, nhân lại rồi cộng hết: hai vectơ vào, một con số ra.
+:::
+
+Hai vectơ phải cùng số chiều, thiếu một tọa độ là không có bạn để ghép. Tích bằng 0 nghĩa là hai vectơ vuông góc, "không liên quan" gì đến nhau.
+
+Ví dụ: tìm m để u = (m, 1, 2) và v = (3, -4, 1) có tích vô hướng 0.
+
+1. Ghép từng cặp: 3m + 1 . (-4) + 2 . 1 = 3m - 2.
+2. Cho bằng 0: 3m = 2, m = 2/3. Thử: 2 - 4 + 2 = 0.
 
 $$ u \cdot v = u_{1}v_{1} + u_{2}v_{2} + \ldots + u_{n}v_{n} $$
 
-Kết quả là một số, không phải một vectơ.
+> Lỗi thường gặp: sai dấu khi nhân số âm, như viết (-1) . 5 = 5. Viết dấu của từng tích ra trước rồi mới cộng.
 
-Ví dụ với u = (1, -2, 3) và v = (4, 0, -1):
-
-1. Nhân từng cặp: 1 . 4 = 4, (-2) . 0 = 0, 3 . (-1) = -3.
-2. Cộng lại: 4 + 0 - 3 = 1.
-
-Hai vectơ có tích vô hướng bằng 0 gọi là vuông góc với nhau; tầng 9 sẽ dùng lại điều này.
-
-> Lỗi thường gặp: quên dấu khi nhân số âm, như viết (-3) . 4 = 12. Hãy viết rõ dấu của từng tích trước khi cộng.
+:::check
+Q: Tích vô hướng của u = (3, -2) với chính nó là bao nhiêu? u . u có khi nào âm không?
+A: 9 + 4 = 13. Không bao giờ âm: u . u là tổng các bình phương.
+:::
 
 ## Điều kiện kích thước để nhân
 
-Tích AB chỉ xác định khi số cột của A bằng số hàng của B. Khi đó AB lấy số hàng của A và số cột của B:
+:::hook
+Một lớp mạng nơ-ron nhận 784 số và nhả ra 10 số, nên ma trận trọng số của nó phải cỡ 10 x 784. Lệch một chút là chương trình báo lỗi "shape mismatch" ngay.
+:::
+
+:::figure grid
+caption: Một hàng của A có 3 ô, một cột của B có 3 ô: khớp nhau mới nhân được. AB lấy 2 hàng của A, 4 cột của B.
+style: matrix
+table "A: 2 x 3"
+row * * *
+row * * *
+mark row 1 do
+op "x"
+table "B: 3 x 4"
+row * * * *
+row * * * *
+row * * * *
+mark col 1 xanh
+op "="
+table "AB: 2 x 4"
+row * * * *
+row * * * *
+mark cell 1 1 vang
+:::
+
+:::core
+Đặt hai cỡ cạnh nhau (m x n)(n x p): hai số ở giữa phải bằng nhau, hai số ở ngoài là cỡ của tích.
+:::
+
+Cùng cỡ chưa chắc nhân được: hai ma trận 3 x 2 thì 2 khác 3. Ngược lại, A^T A luôn nhân được: (n x m)(m x n) cho n x n.
+
+Ví dụ: A cỡ 3 x 2, B cỡ 2 x 5, C cỡ 5 x 1. ABC cỡ bao nhiêu?
+
+1. AB: (3 x 2)(2 x 5), giữa khớp, ra 3 x 5.
+2. (AB)C: (3 x 5)(5 x 1), giữa khớp, ra 3 x 1.
 
 $$ (m \times n) \cdot (n \times p) = m \times p $$
 
-Cách nhớ: viết hai cỡ cạnh nhau, hai số ở giữa phải bằng nhau và "triệt tiêu", hai số ở ngoài là cỡ của tích.
+> Lỗi thường gặp: so số hàng với số hàng. Chỉ có một điều kiện: số cột của ma trận trước bằng số hàng của ma trận sau.
 
-- A cỡ 2 x 3, B cỡ 3 x 4: nhân được, AB cỡ 2 x 4.
-- Cũng hai ma trận đó, BA là (3 x 4)(2 x 3): 4 khác 2, không nhân được.
-- Với mọi A cỡ m x n, cả A^T A (cỡ n x n) lẫn A A^T (cỡ m x m) đều xác định.
-
-Hai ma trận cùng cỡ chưa chắc nhân được: hai ma trận cùng cỡ 3 x 2 thì không nhân được với nhau.
-
-> Lỗi thường gặp: so số hàng với số hàng, hoặc đòi hai ma trận cùng cỡ. Điều kiện duy nhất là số cột của ma trận trước bằng số hàng của ma trận sau.
+:::check
+Q: A cỡ 4 x 3. B phải cỡ bao nhiêu để cả AB lẫn BA đều nhân được?
+A: AB cần B có 3 hàng, BA cần B có 4 cột: B cỡ 3 x 4.
+:::
 
 ## Nhân hai ma trận
 
-Phần tử ở hàng i, cột j của AB là tích vô hướng của hàng i của A với cột j của B.
+:::hook
+Mỗi nơ-ron của một lớp mạng là một hàng trọng số nhân với cột dữ liệu vào. GPU làm hàng tỷ phép hàng-nhân-cột như thế mỗi giây.
+:::
+
+:::figure grid
+caption: Hàng 2 của A (đỏ) nhân cột 1 của B (xanh): -2 + 0 + 4 = 2, ra ô (2, 1) của AB.
+style: matrix
+table "A"
+row 1 2 0
+row -1 3 1
+mark row 2 do
+op "x"
+table "B"
+row 2 1
+row 0 -1
+row 4 2
+mark col 1 xanh
+op "="
+table "AB"
+row 2 -1
+row 2 -2
+mark cell 2 1 vang
+:::
+
+:::core
+Ô (i, j) của AB là hàng i của A nhân vô hướng với cột j của B: hàng lấy bên trái, cột lấy bên phải.
+:::
+
+Nhân ma trận với một vectơ cột x: mỗi tọa độ của Ax là một hàng của A nhân x. Hàng i của A toàn số 0 thì hàng i của AB cũng toàn số 0.
+
+Ví dụ: tính các ô còn lại của AB ở hình.
+
+1. Ô (1, 1): (1, 2, 0) . (2, 0, 4) = 2. Ô (1, 2): (1, 2, 0) . (1, -1, 2) = -1.
+2. Ô (2, 2): (-1, 3, 1) . (1, -1, 2) = -1 - 3 + 2 = -2.
 
 $$ (AB)_{ij} = a_{i1}b_{1j} + a_{i2}b_{2j} + \ldots + a_{in}b_{nj} $$
 
-Ví dụ với hai ma trận cỡ 2 x 2:
-
-:::matrix
-A = 1 2 ; 3 4
-B = 2 0 ; 1 -1
-:::
-
-Ô hàng 1, cột 1 là (1, 2) . (2, 1) = 4; ô hàng 1, cột 2 là (1, 2) . (0, -1) = -2. Làm tương tự với hàng 2 được tích:
-
-:::matrix
-C = 4 -2 ; 10 -4
-:::
-
-Hai hệ quả nên nhớ: nếu hàng i của A toàn số 0 thì hàng i của AB cũng toàn số 0; và một ma trận nhân với một vectơ cột cho một vectơ cột, mỗi tọa độ là một hàng nhân vectơ đó.
-
 > Lỗi thường gặp: nhân từng ô cùng vị trí như phép cộng. Nhân ma trận luôn là hàng của ma trận trước nhân cột của ma trận sau.
 
-## AB != BA
-
-Phép nhân ma trận không giao hoán. Ngay cả khi cả AB và BA đều xác định và cùng cỡ, hai kết quả thường khác nhau.
-
-:::matrix
-A = 1 1 ; 0 1
-B = 1 0 ; 1 1
+:::check
+Q: A vuông cấp 3 có cột 2 toàn số 0. Với B vuông cấp 3, cột nào của BA chắc chắn toàn số 0?
+A: Cột 2: ô (i, 2) của BA là hàng i của B nhân cột 2 của A, mà cột đó toàn 0.
 :::
 
-Với hai ma trận này, AB có hàng (2, 1) và (1, 1), còn BA có hàng (1, 1) và (1, 2).
+## Không giao hoán: AB khác BA
 
-Có những cặp giao hoán: mọi ma trận giao hoán với chính nó, với I và với các bội kI; A giao hoán với mọi đa thức của A như 2A + 3I.
-
-Một điều lạ khác: AB có thể là ma trận không trong khi A và B đều khác không.
-
-:::matrix
-A = 0 1 ; 0 0
-B = 1 0 ; 0 0
+:::hook
+Lật một tấm ảnh rồi xoay khác với xoay rồi mới lật. Mỗi phép biến hình là một ma trận, nên thứ tự nhân ma trận là thứ tự làm việc.
 :::
 
-Ở đây AB = 0 nhưng BA có hàng (0, 1) và (0, 0).
+:::figure plane
+caption: v = (2, 1). Lật qua trục ngang rồi quay 90 độ được (1, 2); quay trước rồi lật được (-1, -2).
+size: 150 120
+x: -2.5 2.5 2
+y: -2.5 2.5 2
+vector 0 0 2 1 muc "v" pos=e
+vector 0 0 1 2 xanh "RFv" pos=e
+vector 0 0 -1 -2 do "FRv" pos=w
+:::
 
-Vì không giao hoán, các hằng đẳng thức quen thuộc phải viết lại:
+:::matrix
+R = 0 -1 ; 1 0
+F = 1 0 ; 0 -1
+:::
+
+:::core
+ABv nghĩa là làm B trước rồi mới A; đổi thứ tự là đổi việc làm, nên nói chung AB != BA.
+:::
+
+Ví dụ: tính RF và FR (R quay 90 độ, F lật qua trục ngang).
+
+1. RF: hàng (0, -1) nhân hai cột (1, 0) và (0, -1) ra (0, 1); hàng (1, 0) ra (1, 0).
+2. FR: hàng (1, 0) ra (0, -1); hàng (0, -1) ra (-1, 0).
+3. RF = [0, 1; 1, 0] khác FR = [0, -1; -1, 0].
+
+:::check
+Q: A = [1, 2; 0, 1], B = [1, 0; 3, 1]. Tính ô (1, 1) của AB và của BA.
+A: AB: (1, 2) . (1, 3) = 7. BA: (1, 0) . (1, 0) = 1. Khác nhau, nên AB != BA.
+:::
+
+### Khi nào giao hoán, và hệ quả
+
+:::figure grid
+caption: Hai ma trận đều khác O mà tích lại bằng O: mỗi hàng của A vuông góc với mỗi cột của B.
+style: matrix
+table "A"
+row 1 1
+row 1 1
+op "x"
+table "B"
+row 1 -1
+row -1 1
+op "="
+table "AB"
+row 0 0
+row 0 0
+:::
+
+Có những cặp giao hoán: kI với mọi ma trận, A với chính nó và với các lũy thừa của nó. Điều lạ so với số: AB có thể bằng O khi cả A và B đều khác O.
 
 $$ (A + B)^{2} = A^{2} + AB + BA + B^{2} $$
 
-> Lỗi thường gặp: gộp AB + BA thành 2AB, hoặc viết (A + B)(A - B) = A^2 - B^2. Hai bước này chỉ đúng khi AB = BA.
+> Lỗi thường gặp: gộp AB + BA thành 2AB. Chỉ được gộp khi biết chắc AB = BA.
+
+:::check
+Q: A = [1, 0; 0, 0], B = [0, 0; 0, 1]. Tính AB.
+A: AB = O: hàng (1, 0) gặp hai cột (0, 0) và (0, 1) đều ra 0, hàng (0, 0) cũng ra 0.
+:::
 
 ## Tính chất của phép nhân ma trận
 
-Mất tính giao hoán nhưng phép nhân ma trận giữ được các luật còn lại, miễn là các cỡ phù hợp:
+:::hook
+Mạng nơ-ron ba lớp tính W3(W2(W1 x)). Nhờ tính kết hợp, có thể gộp trước W3 W2 W1 thành một ma trận, hoặc chọn thứ tự nhân rẻ nhất.
+:::
 
-$$ A(BC) = (AB)C $$
+:::figure grid
+caption: A cỡ 2 x 3, B cỡ 3 x 4: chỉ B^T A^T khớp cỡ với (AB)^T.
+table
+head "tích" "cỡ" "kết quả"
+row "(AB)^T" "lật của 2 x 4" "4 x 2"
+row "B^T A^T" "(4 x 3)(3 x 2)" "4 x 2"
+row "A^T B^T" "(3 x 2)(4 x 3)" "không nhân được"
+mark row 2 luc
+mark row 3 do
+:::
 
-$$ A(B + C) = AB + AC, \quad (B + C)A = BA + CA $$
+:::core
+Nhân ma trận giữ mọi luật quen thuộc trừ giao hoán; vì thế chuyển vị một tích phải đảo thứ tự.
+:::
 
-$$ (kA)B = k(AB) = A(kB) $$
+Phân phối phải giữ bên: A(B + C) = AB + AC, còn (B + C)A = BA + CA. Số thì đưa ra đâu cũng được: (kA)B = k(AB) = A(kB).
 
-Tính kết hợp cho phép chọn thứ tự tính cho gọn: với A cỡ 1 x 2, B cỡ 2 x 1, C cỡ 1 x 2, tính AB trước chỉ là một số.
+Ví dụ: A = [1, 3] cỡ 1 x 2, B = [2; -1] cỡ 2 x 1, C = [4, 1] cỡ 1 x 2. Tính ABC.
 
-Chuyển vị một tích thì đảo thứ tự:
+1. Tính AB trước: 2 - 3 = -1, chỉ là một số.
+2. (AB)C = -1 . [4, 1] = [-4, -1].
+3. A(BC) cũng ra [-4, -1], nhưng phải lập BC cỡ 2 x 2 trước.
 
 $$ (AB)^{T} = B^{T} A^{T} $$
 
-Lý do: ô (i, j) của (AB)^T là hàng j của A nhân cột i của B, cũng chính là hàng i của B^T nhân cột j của A^T.
+> Lỗi thường gặp: viết (A + B)(A - B) = A^2 - B^2. Nhân bung giữ thứ tự ra A^2 - AB + BA - B^2.
 
-> Lỗi thường gặp: viết (AB)^T = A^T B^T. Khi A, B không vuông thì A^T B^T thường không nhân được; khi vuông thì nó thường cho một ma trận khác.
+:::check
+Q: A, B vuông cùng cấp. (A^T B)^T bằng gì?
+A: Đảo thứ tự và lật từng cái: B^T (A^T)^T = B^T A.
+:::
 
 ## Ma trận đơn vị và lũy thừa ma trận
 
-Ma trận đơn vị I đóng vai số 1 trong phép nhân:
+:::hook
+Thời tiết mỗi ngày đổi theo ma trận P: 7 ngày sau là P^7, bảy lần một bước.
+:::
+
+:::figure grid
+caption: Mỗi lần nhân thêm A, ô góc trên phải cộng thêm 3: A^n có ô đó là 3n, không phải 3^n.
+style: matrix
+table "A"
+row 1 3
+row 0 1
+mark cell 1 2 vang
+op "->"
+table "A^2"
+row 1 6
+row 0 1
+mark cell 1 2 vang
+op "->"
+table "A^3"
+row 1 9
+row 0 1
+mark cell 1 2 vang
+:::
+
+:::core
+A^n là nhân A với chính nó n lần (hàng nhân cột), không phải lũy thừa từng ô; I đóng vai số 1.
+:::
+
+Chỉ ma trận vuông có lũy thừa, và A^0 = I. Ma trận chéo thì lũy thừa từng số trên đường chéo. A^2 = I thì A^n là I khi n chẵn, là A khi n lẻ. Có A khác O mà A^2 = O.
+
+Ví dụ: A = [2, 1; 0, 1]. Tính A^2.
+
+1. Hàng 1 nhân hai cột: (2, 1) . (2, 0) = 4 và (2, 1) . (1, 1) = 3.
+2. Hàng 2: (0, 1) . (2, 0) = 0 và (0, 1) . (1, 1) = 1.
+3. A^2 = [4, 3; 0, 1]; bình phương từng ô sẽ ra [4, 1; 0, 1], sai.
 
 $$ AI = IA = A $$
 
-Với A vuông, lũy thừa là nhân A với chính nó nhiều lần: A^2 = A . A, A^3 = A^2 . A, và quy ước A^0 = I. Chỉ ma trận vuông mới có lũy thừa.
+> Lỗi thường gặp: tính A^2 bằng cách bình phương từng ô. Hai cách chỉ trùng nhau với ma trận chéo.
 
-Một vài dạng tính nhanh:
-
-- Ma trận chéo: lũy thừa từng phần tử trên đường chéo, ví dụ đường chéo 2, -1, 3 cho A^4 có đường chéo 16, 1, 81.
-- Ma trận có hàng (1, a) và (0, 1): A^n có hàng (1, na) và (0, 1).
-- Nếu A^2 = I thì A^n bằng I khi n chẵn, bằng A khi n lẻ.
-
-:::matrix
-A = 0 1 ; 1 0
+:::check
+Q: A = [0, -1; 1, 0] là phép quay 90 độ. A^4 bằng gì?
+A: Quay 4 lần 90 độ là quay một vòng: A^4 = I. (Tính: A^2 = -I, nên A^4 = I.)
 :::
-
-Ma trận trên có A^2 = I, nên A^2025 = A.
-
-> Lỗi thường gặp: tính A^2 bằng cách bình phương từng ô. A^2 là tích A . A, chỉ với ma trận chéo thì hai cách mới trùng nhau.

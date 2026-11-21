@@ -56,7 +56,7 @@ async def _authenticate(ws: WebSocket):
         if ch is None:
             await _reject(ws, "no_character", "Bạn chưa tạo nhân vật.", 4004)
             return None
-    return user, ch
+    return user, ch, hello.caps
 
 
 async def _writer(ws: WebSocket, s: Session) -> None:
@@ -77,8 +77,8 @@ async def ws_endpoint(ws: WebSocket):
     auth = await _authenticate(ws)
     if auth is None:
         return
-    user, character = auth
-    s = await world.connect(user, character)
+    user, character, caps = auth
+    s = await world.connect(user, character, caps)
     writer = asyncio.create_task(_writer(ws, s))
     c = cfg()
     try:

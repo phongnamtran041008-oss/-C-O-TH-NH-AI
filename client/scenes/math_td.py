@@ -819,7 +819,7 @@ class MathTdScene(Scene):
         for i, lv in enumerate(d["levels"]):
             bx = x + i * 34
             style = "gold" if lv["stars"] == 3 else ("green" if lv["stars"] else "normal")
-            if ui.button(f"mtd_lv_{lv['id']}", bx, y + 11, 28, 16, str(i + 1), size=9, style=style,
+            if ui.button(f"mtd_lv_{lv['id']}", bx, y + 12, 28, 16, str(i + 1), size=9, style=style,
                          enabled=lv["unlocked"], selected=self.sel == lv["id"],
                          tooltip=lv["name_vi"] if lv["unlocked"] else lv.get("locked_vi")):
                 self.sel = lv["id"]

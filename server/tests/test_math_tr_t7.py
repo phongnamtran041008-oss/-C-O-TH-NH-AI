@@ -216,8 +216,10 @@ def test_one_document_per_floor_explains_every_micro_skill(floor):
     for n, end in zip(starts, starts[1:] + [len(blocks)]):
         part = blocks[n:end]
         assert any(b["type"] == "note" and b["text"].startswith("Lỗi thường gặp") for b in part), blocks[n]
-        assert any(b["type"] == "text" and "Ví dụ" in b["text"] for b in part), blocks[n]
-    assert doc.formulas
+        # a worked case in some form: a "Ví dụ", a list of steps, or a self-check with its answer
+        assert any(b["type"] in ("steps", "check") or (b["type"] == "text" and "Ví dụ" in b["text"])
+                   for b in part), blocks[n]
+    assert any(b["type"] in ("formula", "figure", "matrices") for b in doc.blocks)
 
 
 def test_the_library_of_floors_7_to_9_is_valid_and_its_pictures_are_built():

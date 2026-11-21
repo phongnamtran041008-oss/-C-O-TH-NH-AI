@@ -3,111 +3,280 @@ id: dstt_lib_t8
 title_vi: Ánh xạ tuyến tính và ma trận của nó
 subject: dai_so_tuyen_tinh
 floor: 8
-summary_vi: Ánh xạ giữ phép cộng và phép nhân với số, nhân và ảnh, định lý số chiều, ma trận của ánh xạ trong một cặp cơ sở, hợp ánh xạ ứng với tích ma trận, và đổi cơ sở B = P^(-1) A P.
+format: 2
+summary_vi: Ánh xạ tuyến tính biến lưới thẳng thành lưới thẳng và giữ gốc đứng yên: biết nó làm gì với các vectơ cơ sở là biết hết, ghi lại thành ma trận, làm liền hai phép là nhân hai ma trận, và đổi cơ sở là nhìn cùng một phép qua cặp kính khác.
 skills: [dstt_t8_anh_xa_tuyen_tinh, dstt_t8_nhan_va_anh, dstt_t8_dinh_ly_so_chieu, dstt_t8_ma_tran_anh_xa, dstt_t8_hop_anh_xa, dstt_t8_doi_co_so]
 ---
 ## Ánh xạ tuyến tính
 
-Ánh xạ f: V -> W giữa hai không gian vectơ là tuyến tính khi với mọi u, v và mọi số k:
+:::hook
+Trong game, xoay, lật hay phóng to nhân vật là biến đổi mọi điểm cùng một lúc mà lưới vẫn thẳng, gốc đứng yên. Đó chính là ánh xạ tuyến tính.
+:::
+
+:::figure plane
+caption: f(x, y) = (2x - y, x + y) đưa ô vuông xanh thành hình bình hành vàng, dựng trên f(e1) = (2, 1) và f(e2) = (-1, 1).
+size: 150 95
+x: -1.5 2.5 1
+y: -0.5 2.5 1
+poly 0 0 2 1 1 2 -1 1 vang
+poly 0 0 1 0 1 1 0 1 xanh
+vector 0 0 2 1 do
+vector 0 0 -1 1 do
+:::
+
+:::core
+Ánh xạ tuyến tính giữ phép cộng và phép nhân với số; vì thế biết ảnh của các vectơ cơ sở là biết ảnh của mọi vectơ.
+:::
 
 $$ f(u + v) = f(u) + f(v), \qquad f(ku) = k f(u) $$
 
-Hệ quả: f(0) = 0, và f giữ mọi tổ hợp tuyến tính. Vì vậy chỉ cần biết ảnh của các vectơ của MỘT cơ sở là biết f ở mọi nơi.
+Ví dụ: f(1, 1) = (2, 0), f(1, -1) = (0, 4). Tính f(3, 1).
 
-Từ R^n vào R^m, f tuyến tính khi và chỉ khi mỗi tọa độ của f(x) là một tổ hợp tuyến tính của các tọa độ của x, không có hằng số, không có tích, bình phương hay trị tuyệt đối. f(x, y) = (2x - y, x + 3y) tuyến tính; (x + y, x - 1) thì không vì f(0, 0) khác 0.
+1. Viết (3, 1) = a(1, 1) + b(1, -1): a + b = 3, a - b = 1, nên a = 2, b = 1.
+2. f giữ tổ hợp: f(3, 1) = 2 f(1, 1) + 1 f(1, -1) = (4, 0) + (0, 4) = (4, 4).
 
-Ví dụ f(1, 2) = (3, 1), f(2, 3) = (1, 0). Để tính f(1, 0): viết (1, 0) = -3(1, 2) + 2(2, 3), rồi f(1, 0) = -3(3, 1) + 2(1, 0) = (-7, -3).
+> Lỗi thường gặp: lấy luôn hệ số (2, 1) làm f(3, 1). Đó là tọa độ của (3, 1); ảnh phải tính qua f(1, 1) và f(1, -1).
 
-> Lỗi thường gặp: lấy luôn cặp hệ số (-3, 2) làm f(1, 0). Hệ số là tọa độ của (1, 0); ảnh phải tính qua f(1, 2) và f(2, 3).
+:::check
+Q: f tuyến tính và f(2, 4) = (6, -2). Tính f(1, 2) và f(0, 0).
+A: (1, 2) = (1/2)(2, 4), nên f(1, 2) = (3, -1). Còn f(0, 0) = (0, 0) với mọi ánh xạ tuyến tính.
+:::
+
+### Nhận ra ánh xạ tuyến tính
+
+:::figure plane
+caption: Ba mẫu quen tác động lên u = (2, 1): chiếu lên Ox, lật qua Ox, quay 90 độ.
+size: 170 100
+x: -2 3.5 1
+y: -1.5 2.5 1
+vector 0 0 2 1 muc
+vector 0 0 2 0 xanh
+vector 0 0 2 -1 do
+vector 0 0 -1 2 luc
+text 2.3 1.2 "u"
+text 2.8 0.25 "chiếu"
+text 2.6 -1.2 "lật"
+text -1.5 2.2 "quay"
+:::
+
+Hệ quả của định nghĩa: f(0) = 0, ánh xạ tuyến tính luôn giữ gốc đứng yên. Từ R^n vào R^m, f tuyến tính khi mỗi tọa độ của f(x) là một tổ hợp của x, y, ...: không có hằng số, không có tích, bình phương hay trị tuyệt đối. Ba mẫu trong hình: chiếu lên Ox là (x, 0), lật qua Ox là (x, -y), quay 90 độ là (-y, x).
+
+:::check
+Q: f(x, y) = (x + 1, y) có tuyến tính không? Còn g(x, y) = (3y, x - y)?
+A: f không: f(0, 0) = (1, 0) khác 0. g có: mỗi tọa độ là tổ hợp của x, y, không hằng số.
+:::
 
 ## Nhân Ker f và ảnh Im f
 
-$$ \text{Ker} f = \{v : f(v) = 0\}, \qquad \text{Im} f = \{f(v) : v \in V\} $$
-
-Ker f là không gian con của V, Im f là không gian con của W. Nếu f(x) = Ax:
-
-- Ker f là không gian nghiệm của Ax = 0: giải hệ thuần nhất, mỗi ẩn tự do cho một vectơ cơ sở.
-- Im f được sinh bởi các cột của A: khử Gauss, các cột có trụ của CHÍNH A là một cơ sở.
-
-:::matrix
-A = 1 2 0 1 ; 0 0 1 1 ; 1 2 1 2
+:::hook
+Một mô hình nén ảnh là một ánh xạ. Những gì nó đè về 0 là thông tin mất vĩnh viễn (nhân); những gì nó tạo ra được là mọi bản nén có thể có (ảnh).
 :::
 
-Hàng 3 bằng hàng 1 cộng hàng 2, rank A = 2. Ker f có cơ sở (-2, 1, 0, 0), (-1, 0, -1, 1); Im f có cơ sở là cột 1 và cột 3 của A: (1, 0, 1), (0, 1, 1).
+:::figure map
+caption: f(x, y, z) = (x - y, y - z): mọi bội của (1, 1, 1) rơi vào 0 (đỏ), đó là Ker f. Các điểm được trúng tạo thành Im f.
+col "R^3" "(1, 1, 1)" "(2, 2, 2)" "(1, 0, 0)" "(0, 1, 0)"
+col "R^2" "(0, 0)" "(1, 0)" "(-1, 1)"
+gap 1 "f"
+"(1, 1, 1)" -> "(0, 0)" do
+"(2, 2, 2)" -> "(0, 0)" do
+"(1, 0, 0)" -> "(1, 0)"
+"(0, 1, 0)" -> "(-1, 1)"
+:::
 
-f đơn ánh khi và chỉ khi Ker f = {0}.
+:::core
+Ker f là mọi thứ bị f đè về 0, Im f là mọi thứ f tạo ra được; với f(x) = Ax, Ker là nghiệm của Ax = 0, Im là span các cột của A.
+:::
 
-> Lỗi thường gặp: lấy các hàng khác 0 của dạng bậc thang làm cơ sở của Im f. Biến đổi hàng làm thay đổi không gian cột; phải lấy cột của ma trận ban đầu.
+Cả hai là không gian con. f đơn ánh đúng khi Ker f = {0}. Cơ sở của Im lấy các cột có trụ của CHÍNH A.
+
+Ví dụ: A có hàng (1, 2, 1), (0, 1, 1), (1, 3, 2), f(x) = Ax.
+
+1. Hàng 3 = hàng 1 + hàng 2: khử còn x + 2y + z = 0, y + z = 0.
+2. z = t cho y = -t, x = t: Ker f = span{(1, -1, 1)}.
+3. Trụ ở cột 1, 2: Im f = span{(1, 0, 1), (2, 1, 3)}, mặt phẳng z = x + y.
+
+$$ \text{Ker} f = \{v : f(v) = 0\}, \qquad \text{Im} f = \{f(v) : v \in V\} $$
+
+> Lỗi thường gặp: lấy hàng của dạng bậc thang làm cơ sở của Im f. Biến đổi hàng làm đổi không gian cột; phải lấy cột của A ban đầu.
+
+:::check
+Q: f(x, y) = (x + 2y, 2x + 4y). Im f là gì? (3, 6) có thuộc Im f không?
+A: f(x, y) = (x + 2y)(1, 2), nên Im f = span{(1, 2)}. (3, 6) = 3(1, 2) = f(3, 0): thuộc.
+:::
 
 ## Định lý số chiều
 
-Với f: V -> W tuyến tính và V có số chiều hữu hạn:
+:::hook
+Nén ảnh 1000 chiều xuống 50 chiều thì ít nhất 950 chiều thông tin phải bị đè về 0. Định lý số chiều là luật bảo toàn đó.
+:::
+
+:::figure plane
+caption: Chiếu (x, y) -> (x, 0): trục y bị đè về 0 (Ker, 1 chiều), trục x sống sót (Im, 1 chiều). 1 + 1 = 2.
+size: 150 100
+x: -2.5 2.5 5
+y: -2 2 5
+line 0 0 0 1 do "Ker" pos=e
+line 0 0 1 0 xanh
+text -1.8 -0.4 "Im"
+vector 0 0 1.5 1.5 muc "v" pos=e
+segment 1.5 1.5 1.5 0 muc dash
+point 1.5 0 xanh
+:::
+
+:::core
+Mỗi chiều của không gian nguồn hoặc bị đè về 0, hoặc sống sót thành một chiều của ảnh: dim Ker + dim Im = dim nguồn.
+:::
 
 $$ \text{dim} \, \text{Ker} f + \text{dim} \, \text{Im} f = \text{dim} \, V $$
 
-Với f(x) = Ax, đó là n = (n - rank A) + rank A.
+> Lỗi thường gặp: dùng số chiều của không gian ĐÍCH trong định lý. Vế phải là số chiều của không gian nguồn (số cột của A).
 
-Hệ quả, với dim V = n và dim W = m:
+:::check
+Q: f: R^5 -> R^3 tuyến tính có dim Ker f = 2. dim Im f bằng mấy? f có toàn ánh không?
+A: dim Im f = 5 - 2 = 3 = dim R^3, nên f toàn ánh.
+:::
 
-- f đơn ánh khi dim Ker f = 0; khi đó n <= m.
-- f toàn ánh khi dim Im f = m; khi đó n >= m.
-- Khi n = m: đơn ánh, toàn ánh và song ánh là một.
+### Số chiều quyết định đơn ánh, toàn ánh
 
-Ví dụ f: R^5 -> R^3 toàn ánh thì dim Ker f = 5 - 3 = 2. Không có ánh xạ tuyến tính nào từ R^3 lên toàn bộ R^4.
+Với f(x) = Ax thì dim Im f = rank A. f: R^n -> R^m muốn đơn ánh thì cần n <= m, muốn toàn ánh thì cần n >= m. Khi n = m, đơn ánh, toàn ánh và song ánh là một.
 
-> Lỗi thường gặp: nghĩ rằng ánh xạ từ R^3 vào chính nó có thể toàn ánh mà không đơn ánh. Khi số chiều hai phía bằng nhau, mất đơn ánh là mất luôn toàn ánh.
+Ví dụ: f(x, y, z, t) = (x - y, z + t, x - y + z + t), từ R^4 vào R^3.
+
+1. Hàng 3 = hàng 1 + hàng 2, nên rank A = 2 = dim Im f.
+2. dim Ker f = 4 - 2 = 2.
+3. dim Im f = 2 < 3: f không toàn ánh.
+
+:::check
+Q: Có ánh xạ tuyến tính từ R^3 lên toàn R^4 không? Có ánh xạ đơn ánh từ R^4 vào R^3 không?
+A: Không cả hai: dim Im <= 3 < 4; và dim Ker = 4 - dim Im >= 1, nên không đơn ánh.
+:::
 
 ## Ma trận của ánh xạ tuyến tính
 
-Cho cơ sở B = {b1, ..., bn} của V và C của W. Ma trận của f trong cặp cơ sở đó có cột thứ j là tọa độ của f(bj) trong C:
-
-$$ A = \left( [f(b_{1})]_{C} \; \ldots \; [f(b_{n})]_{C} \right) $$
-
-Với cơ sở chính tắc ở cả hai phía, cột j chính là f(ej). Ví dụ f(x, y) = (2x - y, x + 3y, y) có cột f(1, 0) = (2, 1, 0) và f(0, 1) = (-1, 3, 1):
-
-:::matrix
-A = 2 -1 ; 1 3 ; 0 1
+:::hook
+GPU không hiểu "xoay 30 độ", nó chỉ nhân ma trận. Muốn đưa một phép biến hình vào máy, phải ghi nó thành một bảng số.
 :::
 
-Ví dụ trên đa thức: f(p) = p' với cơ sở 1, x, x^2. f(1) = 0, f(x) = 1, f(x^2) = 2x cho ba cột (0, 0, 0), (1, 0, 0), (0, 2, 0).
+:::figure grid
+caption: f(x, y) = (x + 2y, 3x, x - y). Cột 1 là f(1, 0), cột 2 là f(0, 1).
+style: matrix
+table "A"
+head "f(e1)" "f(e2)"
+row 1 2
+row 3 0
+row 1 -1
+mark col 1 xanh
+mark col 2 vang
+:::
+
+:::core
+Cột j của ma trận là ảnh của vectơ cơ sở thứ j, viết bằng tọa độ trong cơ sở đích: ma trận là sổ ghi f làm gì với từng vectơ cơ sở.
+:::
+
+Ánh xạ R^n -> R^m cho ma trận cỡ m x n. Cơ sở đích chính tắc thì cột chính là f(b_j); cơ sở đích khác thì phải đổi f(b_j) ra tọa độ.
+
+Ví dụ: f(p) = x p' trên đa thức bậc <= 2, cơ sở 1, x, x^2.
+
+1. f(1) = 0, f(x) = x, f(x^2) = 2x^2: tọa độ (0, 0, 0), (0, 1, 0), (0, 0, 2).
+2. Đặt làm cột: ma trận chéo với đường chéo 0, 1, 2.
 
 $$ [f(v)]_{C} = A \, [v]_{B} $$
 
-> Lỗi thường gặp: đặt ảnh f(bj) làm HÀNG, hoặc đặt chính f(bj) làm cột khi cơ sở đích không phải chính tắc. Cột là TỌA ĐỘ của ảnh trong cơ sở đích.
+> Lỗi thường gặp: đặt ảnh f(b_j) làm HÀNG. Hàng là chuyển vị, sai; mỗi vectơ cơ sở cho một CỘT.
+
+:::check
+Q: f(x, y) = (y, x). Ma trận của f trong cơ sở b1 = (1, 1), b2 = (1, -1) (dùng cho cả hai phía) là gì?
+A: f(b1) = (1, 1) = b1, tọa độ (1, 0); f(b2) = (-1, 1) = -b2, tọa độ (0, -1). Ma trận [1, 0; 0, -1].
+:::
 
 ## Hợp ánh xạ và tích ma trận
 
-Nếu f có ma trận A_f và g có ma trận A_g (cơ sở chính tắc) thì ánh xạ hợp g o f, làm f trước, có ma trận
+:::hook
+Gộp nhiều lớp biến đổi tuyến tính liên tiếp thành một phép chỉ là nhân các ma trận, nhưng phải đúng thứ tự.
+:::
+
+:::figure flow
+caption: Làm f trước nên A_f đứng sát x; ma trận của g o f là A_g A_f, đọc từ phải sang trái.
+box "x"
+link "A_f"
+box "f(x)" xanh
+link "A_g"
+box "g(f(x))" luc
+:::
+
+:::core
+Làm f rồi làm g ứng với tích A_g A_f, ma trận của phép làm sau đứng bên trái; phép làm ngược f^(-1) ứng với A_f^(-1).
+:::
+
+Ví dụ: f(x, y) = (y, x), g(x, y) = (x, x + y). Tìm ma trận của g o f.
+
+1. A_f = [0, 1; 1, 0], A_g = [1, 0; 1, 1].
+2. A_g A_f = [0, 1; 1, 1].
+3. Thử: g(f(x, y)) = g(y, x) = (y, y + x). Khớp. Còn f o g có ma trận A_f A_g = [1, 1; 1, 0], khác.
 
 $$ A_{g \circ f} = A_{g} A_{f} $$
 
-Ánh xạ làm sau đứng bên trái, giống như trong g(f(x)). Vì AB nói chung khác BA, g o f và f o g nói chung khác nhau.
+:::check
+Q: f(x, y) = (2x, y), g(x, y) = (x + y, y). Ma trận của g o f là gì?
+A: A_g A_f = [1, 1; 0, 1][2, 0; 0, 1] = [2, 1; 0, 1]. Thử: g(2x, y) = (2x + y, y).
+:::
 
-Ví dụ f(x, y) = (x + 2y, y), g(x, y) = (x, 3x + y): g(f(x, y)) = (x + 2y, 3x + 7y), còn f(g(x, y)) = (7x + 2y, 3x + y).
+### Ánh xạ ngược
 
-f là đẳng cấu (song ánh tuyến tính) khi ma trận vuông của nó khả nghịch; khi đó
+:::figure flow
+caption: Làm f rồi làm f^(-1) là về chỗ cũ: A_f^(-1) A_f = I.
+box "x"
+link "A_f"
+box "f(x)" xanh
+link "A_f^(-1)"
+box "x" luc
+:::
+
+f là đẳng cấu (song ánh tuyến tính) khi ma trận vuông của nó có det khác 0. Khi det = 0, f đè bẹp một hướng nào đó nên không làm ngược được.
 
 $$ A_{f^{-1}} = (A_{f})^{-1}, \qquad (g \circ f)^{-1} = f^{-1} \circ g^{-1} $$
 
-> Lỗi thường gặp: viết ma trận của g o f là A_f A_g, hoặc lấy ma trận chuyển vị thay cho ma trận nghịch đảo khi tìm ánh xạ ngược.
+> Lỗi thường gặp: lấy chuyển vị A^T thay cho nghịch đảo A^(-1) khi tìm ánh xạ ngược. Hai cái chỉ trùng nhau với phép quay, phép lật.
+
+:::check
+Q: f(x, y) = (x + y, y). Tìm f^(-1).
+A: A = [1, 1; 0, 1], det 1, A^(-1) = [1, -1; 0, 1], nên f^(-1)(x, y) = (x - y, y). Thử: f(x - y, y) = (x, y).
+:::
 
 ## Đổi cơ sở và ma trận đồng dạng
 
-Nếu f: R^n -> R^n có ma trận chính tắc A và P có các cột là các vectơ của cơ sở mới B, thì ma trận của f trong B là
+:::hook
+PCA chọn hệ trục mới theo hướng dữ liệu trải dài. Trong hệ trục khéo chọn, một phép biến hình rối rắm chỉ còn là kéo giãn dọc từng trục.
+:::
+
+:::figure flow
+caption: P^(-1) A P đọc từ phải sang trái: đổi tọa độ B sang tọa độ thường (P), làm f (A), đổi về B (P^(-1)).
+box "[v]_B"
+link "P"
+box "v"
+link "A"
+box "f(v)" xanh
+link "P^(-1)"
+box "[f(v)]_B" luc
+:::
+
+:::core
+Đổi cơ sở không đổi phép biến hình, chỉ đổi cách ghi: B = P^(-1) A P, với các cột của P là vectơ cơ sở mới.
+:::
+
+A và B = P^(-1) A P gọi là đồng dạng: cùng định thức, cùng vết, cùng hạng. Chọn cơ sở là các vectơ mà A chỉ kéo giãn thì B là ma trận chéo.
+
+Ví dụ: A = [3, 1; 0, 2], cơ sở mới b1 = (1, 0), b2 = (1, -1).
+
+1. P = [1, 1; 0, -1], AP = [3, 2; 0, -2].
+2. det P = -1, P^(-1) = [1, 1; 0, -1].
+3. B = P^(-1)(AP) = [3, 0; 0, 2]: A chỉ giãn b1 gấp 3, b2 gấp 2.
 
 $$ B = P^{-1} A P $$
 
-Đọc từ phải sang trái: đổi tọa độ trong B sang chính tắc (P), tác động f (A), đổi về B (P^(-1)).
+> Lỗi thường gặp: tính (AP)P^(-1). Thứ tự đó trả lại đúng A; P^(-1) phải đứng bên trái.
 
-:::matrix
-A = 4 -2 ; 1 1
-P = 1 2 ; 1 1
+:::check
+Q: A có det A = 6, tr A = 5. B = P^(-1) A P có định thức và vết bao nhiêu?
+A: Vẫn 6 và 5: hai ma trận ghi cùng một phép biến hình, chỉ khác cơ sở.
 :::
-
-A(1, 1) = (2, 2) = 2(1, 1) và A(2, 1) = (6, 3) = 3(2, 1), nên trong cơ sở (1, 1), (2, 1) ma trận của f là ma trận chéo với đường chéo 2, 3.
-
-Hai ma trận A và B = P^(-1) A P gọi là đồng dạng. Chúng có cùng định thức, cùng vết, cùng hạng và cùng đa thức đặc trưng.
-
-$$ \text{det} \, B = \text{det} \, A, \qquad \text{tr} \, B = \text{tr} \, A $$
-
-> Lỗi thường gặp: tính (AP)P^(-1) thay cho P^(-1)(AP). Thứ tự đó cho lại chính A.

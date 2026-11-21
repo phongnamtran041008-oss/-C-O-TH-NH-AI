@@ -21,6 +21,18 @@ parses it into blocks and the client draws them; nothing is rendered as raw Mark
     1. bước giải                      <- numbered steps
     > Lỗi thường gặp: ...             <- a note from Trúc Lão
 
+`format: 2` in the front matter marks a lesson written as visual cards, one page per
+section (docs/BAI_GIANG_TRUC_QUAN.md). It adds four blocks, and each section is held to a
+budget (budget_problems):
+
+    :::hook                           <- "Vì sao phải học?": one concrete situation
+    :::core                           <- "Bản chất": the one sentence to remember
+    :::check                          <- "Tự kiểm": a Q: line and an A: line, answer hidden
+    :::figure plane                   <- a diagram, laid out by learning/math_figures.py
+    (each closed by a ::: line)
+
+Documents without `format` are format 1 and parse exactly as before.
+
 Text is Vietnamese and ASCII-safe outside formulas (A^T, !=), like every other string of
 the game. A formula is TeX, written in ASCII only; `tools/build_formulas.py` turns each
 one into a PNG that ships with the game, and `alt` here is the plain-text fallback shown
@@ -39,6 +51,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from . import math_path
+from .math_figures import FigureError, figure_problems, labels_of, parse_figure
 from .math_items import MATRIX_ENTRY_RE, MATRIX_NAME_RE, MAX_MATRICES, MAX_MATRIX_SIDE
 from .math_path import MATH_DIR, text_problem
 
@@ -47,8 +60,18 @@ MANIFEST = MATH_DIR / "formulas.json"
 KEY_LEN = 16
 MAX_FORMULA_WIDTH = 380.0        # base units: the widest a picture may be in the reader
 MAX_FORMULA_HEIGHT = 90.0
-FRONT_KEYS = {"id", "title_vi", "subject", "floor", "skills", "summary_vi"}
-BLOCK_TYPES = ("section", "heading", "text", "bullets", "steps", "formula", "matrices", "note")
+FRONT_KEYS = {"id", "title_vi", "subject", "floor", "skills", "summary_vi", "format"}
+BLOCK_TYPES = ("section", "heading", "text", "bullets", "steps", "formula", "matrices", "note",
+               "hook", "core", "check", "figure")
+FORMATS = (1, 2)                 # 2: a lesson written as visual cards (docs/BAI_GIANG_TRUC_QUAN.md)
+MAX_HOOK = 220                   # characters
+MAX_CORE = 180
+MAX_CHECK = 200                  # the question, and the answer, each
+# The budget of one section of a `format: 2` lesson (one card, one micro-skill).
+MAX_PROSE_WORDS = 110            # text + bullets; hook, core, steps, notes and checks are not counted
+MAX_SECTION_FORMULAS = 2         # per page
+MAX_STEPS = 5
+MAX_SECTION_PAGES = 3            # a section may be split by `###` headings into this many pages
 
 
 # ------------------------------------------------------------------ TeX in plain text
@@ -209,6 +232,7 @@ class Document:
     skills: tuple[str, ...]
     summary_vi: str
     blocks: tuple[dict, ...] = field(default_factory=tuple)
+    format: int = 1
 
     def view(self, formulas: dict | None = None) -> dict:
         """What the server sends: the blocks, with each formula's size filled in."""
@@ -220,7 +244,22 @@ class Document:
                 b = {**b, "w": size.get("w", 0.0), "h": size.get("h", 0.0)}
             blocks.append(b)
         return {"id": self.id, "title_vi": self.title_vi, "subject": self.subject, "floor": self.floor,
-                "skills": list(self.skills), "summary_vi": self.summary_vi, "blocks": blocks}
+                "skills": list(self.skills), "summary_vi": self.summary_vi, "format": self.format,
+                "blocks": blocks}
+
+    @property
+    def figures(self) -> list[dict]:
+        return [b for b in self.blocks if b["type"] == "figure"]
+
+    def section_blocks(self) -> list[list[dict]]:
+        """The blocks of each section (each page of the reader), the section block first."""
+        out: list[list[dict]] = []
+        for b in self.blocks:
+            if b["type"] == "section":
+                out.append([b])
+            elif out:
+                out[-1].append(b)
+        return out
 
     @property
     def formulas(self) -> list[dict]:
@@ -349,6 +388,22 @@ def parse_blocks(body: str, skills: list[str]) -> tuple[list[dict], list[str]]:
             matrices, bad = parse_matrices(rows)
             problems += bad
             blocks.append({"type": "matrices", "matrices": matrices})
+        elif stripped.split()[0] in (":::hook", ":::core", ":::check", ":::figure"):
+            flush()
+            head = stripped.split()
+            name = head[0][3:]
+            inner: list[str] = []
+            while i < len(lines) and lines[i].strip() != ":::" and not _opens(lines[i]):
+                inner.append(lines[i].strip())
+                i += 1
+            if i >= len(lines) or _opens(lines[i]):      # a forgotten ::: must not swallow what follows
+                problems.append(f"a :::{name} block is never closed by :::")
+            else:
+                i += 1
+            block, bad = _fenced(name, head[1:], inner)
+            problems += bad
+            if block is not None:
+                blocks.append(block)
         elif stripped.startswith(":::"):
             problems.append(f"unknown block {stripped!r}")
             flush()
@@ -360,6 +415,85 @@ def parse_blocks(body: str, skills: list[str]) -> tuple[list[dict], list[str]]:
     if sections < len(skills):
         problems.append(f"only {sections} sections for {len(skills)} micro-skills in `skills`")
     return blocks, problems
+
+
+def _opens(line: str) -> bool:
+    """A line that starts a new section or block: it cannot be inside a ::: block."""
+    s = line.strip()
+    return s.startswith("## ") or (s.startswith(":::") and s != ":::")
+
+
+def _fenced(name: str, args: list[str], inner: list[str]) -> tuple[dict | None, list[str]]:
+    """A :::hook, :::core, :::check or :::figure block from the lines inside it."""
+    if name == "figure":
+        if len(args) != 1:
+            return None, [":::figure needs exactly one kind, like :::figure plane"]
+        try:
+            return parse_figure(args[0], inner), []
+        except FigureError as e:
+            return None, [f"figure {args[0]}: {e}"]
+    if args:
+        return None, [f":::{name} takes nothing after its name"]
+    if name == "check":
+        q = [ln[2:].strip() for ln in inner if ln.startswith("Q:")]
+        a = [ln[2:].strip() for ln in inner if ln.startswith("A:")]
+        other = [ln for ln in inner if ln and not ln.startswith(("Q:", "A:"))]
+        if len(q) != 1 or len(a) != 1 or other or not q[0] or not a[0]:
+            return None, [":::check needs exactly one Q: line and one A: line"]
+        problems = [f":::check: the {what} is {len(t)} characters, at most {MAX_CHECK}"
+                    for what, t in (("question", q[0]), ("answer", a[0])) if len(t) > MAX_CHECK]
+        return {"type": "check", "question": q[0], "answer": a[0]}, problems
+    text = " ".join(ln for ln in inner if ln)
+    if not text:
+        return None, [f"the :::{name} block is empty"]
+    limit = MAX_HOOK if name == "hook" else MAX_CORE
+    problems = [f":::{name} is {len(text)} characters, at most {limit}"] if len(text) > limit else []
+    return {"type": name, "text": text}, problems
+
+
+def _words(text: str) -> int:
+    return len(text.split())
+
+
+def budget_problems(doc: "Document") -> list[str]:
+    """What a `format: 2` lesson breaks of the budget of one card per micro-skill."""
+    errors = []
+    for n, section in enumerate(doc.section_blocks(), 1):
+        where = f"section {n} ({section[0]['title_vi']})"
+        kinds = [b["type"] for b in section[1:]]
+        if kinds.count("core") != 1:
+            errors.append(f"{where}: needs exactly one :::core (it has {kinds.count('core')})")
+        if not any(k in ("figure", "matrices") for k in kinds):
+            errors.append(f"{where}: needs a :::figure or a :::matrix to look at")
+        if "check" not in kinds:
+            errors.append(f"{where}: needs a :::check")
+        # Words and formulas are counted per PAGE: a `###` heading inside a section starts a page of
+        # its own in the reader, so a micro-skill with two ideas is two short pages.
+        pages: list[list[dict]] = [[]]
+        for b in section[1:]:
+            if b["type"] == "heading" and pages[-1]:
+                pages.append([])
+            pages[-1].append(b)
+        if len(pages) > MAX_SECTION_PAGES:
+            errors.append(f"{where}: {len(pages)} pages (### headings), at most {MAX_SECTION_PAGES}")
+        for k, page in enumerate(pages, 1):
+            at = where if len(pages) == 1 else f"{where}, page {k}"
+            prose = sum(_words(b["text"]) for b in page if b["type"] == "text") + \
+                sum(_words(item) for b in page if b["type"] == "bullets" for item in b["items"])
+            if prose > MAX_PROSE_WORDS:
+                errors.append(f"{at}: {prose} words of text and bullets, at most {MAX_PROSE_WORDS} "
+                              "(move it into a figure, cut it, or start a new page with a ### heading)")
+            n_formulas = sum(1 for b in page if b["type"] == "formula")
+            if n_formulas > MAX_SECTION_FORMULAS:
+                errors.append(f"{at}: {n_formulas} formulas, at most {MAX_SECTION_FORMULAS}")
+            if len(pages) > 1 and not any(b["type"] not in ("heading",) for b in page):
+                errors.append(f"{at}: the page is empty")
+        for b in section:
+            if b["type"] == "steps" and len(b["items"]) > MAX_STEPS:
+                errors.append(f"{where}: a list of {len(b['items'])} steps, at most {MAX_STEPS}")
+        if n == 1 and "hook" not in kinds:
+            errors.append(f"{where}: the first section needs a :::hook (why learn this?)")
+    return errors
 
 
 def parse_matrices(rows: list[str]) -> tuple[list[dict], list[str]]:
@@ -402,12 +536,18 @@ def parse_document(text: str, name: str = "") -> tuple[Document | None, list[str
     if not isinstance(skills, list) or not skills:
         problems.append("`skills` must list the micro-skills this document is about")
         skills = []
+    fmt = front.get("format", 1)
+    if fmt not in FORMATS:
+        problems.append(f"format: {fmt} is not a format the game knows ({', '.join(map(str, FORMATS))})")
+        fmt = 1
     blocks, bad = parse_blocks(body, skills)
     problems += bad
     doc = Document(id=str(front.get("id", "")), title_vi=str(front.get("title_vi", "")),
                    subject=str(front.get("subject", "")), floor=front.get("floor", 0),
                    skills=tuple(skills), summary_vi=str(front.get("summary_vi", "")),
-                   blocks=tuple(blocks))
+                   blocks=tuple(blocks), format=fmt)
+    if fmt == 2:
+        problems += budget_problems(doc)
     return doc, problems
 
 
@@ -468,11 +608,17 @@ def validate_document(doc: Document, problems: list[str], subject_id: str, manif
         if b["type"] not in BLOCK_TYPES:
             errors.append(f"{where}: unknown block type")
             continue
-        for key in ("title_vi", "text"):
+        for key in ("title_vi", "text", "question", "answer"):
             if key in b and b[key] is not None:
                 problem = text_problem(b[key])
                 if problem:
                     errors.append(f"{where}: {key} {problem}")
+        if b["type"] == "figure":
+            errors += [f"{where} {b['kind']}: {p}" for p in figure_problems(b)]
+            for label in labels_of(b):
+                problem = text_problem(label)
+                if problem:
+                    errors.append(f"{where} {b['kind']}: {label!r} {problem}")
         for item in b.get("items", []):
             problem = text_problem(item)
             if problem:

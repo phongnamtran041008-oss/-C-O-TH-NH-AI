@@ -399,7 +399,7 @@ class WebWsClient(WsClient):
                 continue
             t = m.get("t") if isinstance(m, dict) else None
             if t == "_open":
-                self._raw_send({"t": "hello", "v": self.version, "token": self.token})
+                self._raw_send(self.hello())
             elif t == "_closed":
                 self._lost()
                 break

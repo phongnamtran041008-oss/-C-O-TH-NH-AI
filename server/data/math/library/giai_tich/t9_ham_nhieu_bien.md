@@ -3,124 +3,333 @@ id: gt_lib_t9
 title_vi: Hàm nhiều biến
 subject: giai_tich
 floor: 9
-summary_vi: Hàm của hai biến có giới hạn, đạo hàm riêng, vi phân và cực trị như hàm một biến, nhưng mọi thứ phải xét theo mọi hướng cùng lúc; gradient gom các đạo hàm riêng thành một vector, và lan truyền ngược trong mạng nơ-ron chỉ là quy tắc dây chuyền chạy ngược trên một đồ thị tính toán.
+format: 2
+summary_vi: Hàm hai biến là một mặt địa hình: giới hạn phải đúng theo mọi đường, đạo hàm riêng là độ dốc dọc từng trục, gradient chỉ hướng lên dốc nhanh nhất, và lan truyền ngược là quy tắc dây chuyền chạy ngược trên đồ thị tính toán.
 skills: [gt_t9_gioi_han_lien_tuc, gt_t9_dao_ham_rieng, gt_t9_vi_phan_ham_an, gt_t9_cuc_tri, gt_t9_cuc_tri_dieu_kien, gt_t9_gradient_lan_truyen]
 ---
 ## Miền xác định, giới hạn và liên tục
 
-Miền xác định của f(x, y) là tập các điểm (x, y) của mặt phẳng làm công thức có nghĩa: căn bậc hai cần biểu thức không âm, ln cần biểu thức dương, mẫu cần khác 0. Kết quả thường là một miền vẽ được: nửa mặt phẳng, hình tròn, vành khăn, phần trên một parabol.
+:::hook
+Hàm loss của một mô hình hai trọng số là một mặt địa hình trên mặt phẳng. Đi tới một điểm có vô số lối vào, và giới hạn phải đúng theo mọi lối.
+:::
 
-Ví dụ sqrt(9 - x^2 - y^2)/sqrt(x^2 + y^2 - 1) xác định trên vành khăn 1 < x^2 + y^2 <= 9.
+:::figure plane
+caption: xy/(x^2 + y^2): dọc trục x bằng 0, dọc y = x bằng 1/2. Hai lối, hai số.
+size: 150 100
+aspect: equal
+x: -2 2 1
+y: -1.5 1.5 1
+line 0 0 1 0 xanh
+line 0 0 1 1 do
+text -1.3 0.3 "f = 0" xanh
+text 1.4 0.6 "f = 1/2" do
+point 0 0 muc open
+:::
 
-Giới hạn khi (x, y) -> (a, b) bằng L nghĩa là f(x, y) gần L khi (x, y) gần (a, b) theo bất kỳ cách nào:
+:::core
+Giới hạn tại một điểm của mặt phẳng phải như nhau theo mọi đường đi tới; hai đường cho hai số khác nhau là không có giới hạn.
+:::
 
-$$ \lim_{(x, y) \to (a, b)} f(x, y) = L $$
+Miền xác định: căn cần >= 0, ln cần > 0, mẫu khác 0. Liên tục tại (a, b): giới hạn bằng f(a, b).
 
-Hai công cụ:
+Ví dụ: giới hạn của x^2 y/(x^2 + y^2) khi (x, y) -> (0, 0).
 
-- Chứng minh không tồn tại: tìm hai đường đi tới (a, b) cho hai giới hạn khác nhau. xy/(x^2 + y^2) dọc y = kx cho k/(1 + k^2), phụ thuộc k.
-- Chứng minh tồn tại: kẹp |f(x, y) - L| bởi một biểu thức dần tới 0, chẳng hạn |x^2 y^2/(x^2 + y^2)| <= y^2; hoặc chuyển sang tọa độ cực x = r cos t, y = r sin t và chặn theo r.
+1. x^2 <= x^2 + y^2, nên x^2/(x^2 + y^2) <= 1.
+2. Vậy |f| <= |y|, mọi đường đi đều thế.
+3. |y| -> 0, kẹp lại: giới hạn bằng 0.
 
-f liên tục tại (a, b) khi giới hạn tồn tại và bằng f(a, b). Tổng, tích, hợp của các hàm liên tục là liên tục (ở nơi xác định).
+> Lỗi thường gặp: thử mọi đường thẳng rồi kết luận có giới hạn. x^2 y/(x^4 + y^2) cho 0 dọc mọi đường thẳng, nhưng 1/2 dọc parabol y = x^2.
 
-> Lỗi thường gặp: thử mọi đường thẳng qua gốc rồi kết luận giới hạn tồn tại. x^2 y/(x^4 + y^2) cho 0 dọc mọi đường thẳng nhưng cho 1/2 dọc parabol y = x^2.
+:::check
+Q: (x^2 - y^2)/(x^2 + y^2) có giới hạn tại (0, 0) không?
+A: Không. Dọc trục x (y = 0) bằng 1, dọc trục y (x = 0) bằng -1.
+:::
 
 ## Đạo hàm riêng
 
-Đạo hàm riêng theo x là đạo hàm khi giữ y cố định, và ngược lại:
+:::hook
+Vặn một núm trên bàn trộn âm, giữ các núm khác yên: tiếng đổi bao nhiêu? Đó là đạo hàm riêng, mỗi lần chỉ cho một biến chạy.
+:::
 
-$$ f_x(a, b) = \lim_{h \to 0} \frac{f(a + h, b) - f(a, b)}{h} = \frac{\partial f}{\partial x}(a, b) $$
+:::figure plane
+caption: Lát y = 1 của z = x^2 y + y^3 là z = x^2 + 1; dốc tại x = 1 là f_x(1, 1) = 2.
+size: 150 100
+x: -1.5 2.2 1
+y: -0.5 5 1
+names: x z
+curve "x^2 + 1" xanh "z = x^2 + 1" pos=w
+tangent "x^2 + 1" 1 do len=34
+point 1 2 do "dốc 2" pos=se
+:::
 
-Thực hành: coi biến kia là hằng số rồi dùng mọi quy tắc của hàm một biến. Với f = x^y (x > 0): f_x = y x^(y - 1) (lũy thừa của x) nhưng f_y = x^y ln x (hàm mũ của y).
-
-Đạo hàm riêng cấp hai: f_xx, f_yy và hai đạo hàm hỗn hợp; trong bí cảnh này f_xy nghĩa là (f_x)_y.
+:::core
+Đạo hàm riêng theo x là đạo hàm thường khi coi mọi biến khác là hằng số: đi dọc trục x và đo độ dốc.
+:::
 
 $$ f_{xy} = \frac{\partial}{\partial y}\Big(\frac{\partial f}{\partial x}\Big), \qquad f_{xy} = f_{yx} $$
 
-Định lý Schwarz (vế phải của dòng trên, đúng khi các đạo hàm hỗn hợp liên tục) cho phép đổi thứ tự lấy đạo hàm với mọi hàm sơ cấp quen thuộc ở những điểm chúng khả vi liên tục. Nó có thể sai khi điều kiện liên tục hỏng: xy(x^2 - y^2)/(x^2 + y^2) có f_xy(0, 0) = -1 và f_yx(0, 0) = 1.
+Hàm sơ cấp trơn thì f_xy = f_yx (Schwarz); điều kiện liên tục hỏng thì có thể khác.
 
-Phương trình Laplace u_xx + u_yy = 0 là một ví dụ phương trình đạo hàm riêng; x^3 - 3xy^2 là một nghiệm.
+Ví dụ: f = x^2 y^3 + 3xy. Tính f_xy(1, 1).
 
-> Lỗi thường gặp: quên rằng biến kia là hằng số chứ không phải 0, hoặc lấy đạo hàm hai lần theo cùng một biến khi đề hỏi đạo hàm hỗn hợp.
+1. f_x = 2xy^3 + 3y (y đứng yên như hằng số).
+2. f_xy = (f_x)_y = 6xy^2 + 3.
+3. Tại (1, 1): 9. Tính f_y rồi lấy theo x cũng ra 9.
+
+> Lỗi thường gặp: nhầm loại hàm. Với x^y, theo x là lũy thừa: y x^(y - 1); theo y là hàm mũ: x^y ln x.
+
+:::check
+Q: Tìm a để u = x^2 + a y^2 thỏa u_xx + u_yy = 0.
+A: u_xx = 2, u_yy = 2a, nên 2 + 2a = 0: a = -1.
+:::
 
 ## Vi phân toàn phần, hàm ẩn và công thức Taylor
 
-f khả vi tại (x, y) khi số gia của f xấp xỉ được bằng một biểu thức tuyến tính theo dx, dy; biểu thức đó là vi phân toàn phần:
+:::hook
+Đo một khoảnh ruộng linh thảo hình chữ nhật, cả hai cạnh đều lệch một chút: diện tích lệch bao nhiêu? Cộng phần lệch do từng cạnh.
+:::
 
-$$ df = f_x\,dx + f_y\,dy, \qquad f(x + dx, y + dy) \approx f(x, y) + f_x\,dx + f_y\,dy $$
+:::figure plane
+caption: f = xy: x thêm dx góp dải y.dx, y thêm dy góp dải x.dy. Góc dx.dy quá nhỏ, bỏ.
+size: 150 100
+axes: off
+x: -0.7 4.2
+y: -0.6 3.2
+poly 0 0 3 0 3 2 0 2 xanh "xy"
+poly 3 0 4 0 4 2 3 2 vang "y.dx"
+poly 0 2 3 2 3 3 0 3 luc "x.dy"
+poly 3 2 4 2 4 3 3 3 do
+text 1.5 -0.3 "x"
+text 3.5 -0.3 "dx"
+text -0.35 1 "y"
+text -0.35 2.5 "dy"
+:::
 
-Ví dụ sqrt(3.02^2 + 3.97^2): tại (3, 4), f = 5, f_x = 3/5, f_y = 4/5, nên giá trị gần đúng là 5 + (3/5)(0.02) + (4/5)(-0.03) = 4.988.
+:::core
+Vi phân toàn phần df = f_x dx + f_y dy: mỗi biến nhích một chút, cộng phần đổi theo từng hướng.
+:::
 
-Hàm ẩn: nếu F(x, y) = 0 và F_y khác 0 tại một điểm thì gần đó y là hàm khả vi của x. Lấy đạo hàm F(x, y(x)) = 0 theo x:
+Ví dụ: tính gần đúng 2.01^2 . 0.98 bằng f = x^2 y tại (2, 1).
 
-$$ y'(x) = -\frac{F_x}{F_y}, \qquad z_x = -\frac{F_x}{F_z},\; z_y = -\frac{F_y}{F_z} $$
+1. f = 4, f_x = 2xy = 4, f_y = x^2 = 4.
+2. dx = 0.01, dy = -0.02.
+3. f xấp xỉ 4 + 4(0.01) + 4(-0.02) = 3.96 (thật: 3.9593).
 
-Muốn y'' thì lấy đạo hàm thêm lần nữa đẳng thức đã có (nhớ y' cũng là hàm của x), rồi thay số.
+:::check
+Q: f = xy tại (3, 2), x nhích dx = 0.1 và y nhích dy = -0.1. df xấp xỉ bao nhiêu?
+A: df = y dx + x dy = 2(0.1) + 3(-0.1) = -0.1.
+:::
 
-Công thức Taylor bậc hai tại (a, b), với dx = x - a, dy = y - b:
+### Hàm ẩn
 
-$$ f(a + dx, b + dy) \approx f + f_x\,dx + f_y\,dy + \frac{1}{2}\big(f_{xx}\,dx^2 + 2f_{xy}\,dx\,dy + f_{yy}\,dy^2\big) $$
+:::figure plane
+caption: Trên đường tròn x^2 + y^2 = 25, tiếp tuyến tại (3, 4) dốc -3/4: âm, đúng như hình.
+size: 110 80
+aspect: equal
+x: -6 7 5
+y: -6 7 5
+param "5*cos(t)" "5*sin(t)" 0 2*pi xanh
+line 3 4 7 1 do
+point 3 4 do "(3, 4)" pos=ne
+:::
 
-Với tích của các hàm một biến, nhân các khai triển Maclaurin đã biết là nhanh nhất: e^x ln(1 + y) = y + xy - y^2/2 + (bậc ba).
+Hàm ẩn: dọc đường cong F(x, y) = 0, F không đổi nên F_x dx + F_y dy = 0, tức y' = -F_x/F_y. Mặt F(x, y, z) = 0: giữ y yên thì F_x dx + F_z dz = 0, nên z_x = -F_x/F_z; z_y tương tự.
 
-> Lỗi thường gặp: quên dấu trừ trong y' = -F_x/F_y, hoặc quên hệ số 2 của số hạng hỗn hợp trong Taylor (hệ số của dx dy là f_xy, không phải f_xy/2).
+> Lỗi thường gặp: quên dấu trừ trong y' = -F_x/F_y. Thử với đường tròn: tại (3, 4) dốc phải âm.
+
+:::check
+Q: x^2 + y^2 = 25 xác định y = y(x) gần (3, 4). Tính y'(3).
+A: F_x = 2x, F_y = 2y: y' = -x/y = -3/4.
+:::
+
+:::check
+Q: Mặt cầu x^2 + y^2 + z^2 = 9 xác định z = z(x, y) gần (2, 1, 2). Tính z_x và z_y.
+A: F_x = 2x, F_y = 2y, F_z = 2z: z_x = -x/z = -1, z_y = -y/z = -1/2.
+:::
+
+### Taylor bậc hai
+
+Taylor bậc hai thêm vào df phần cong (f_xx dx^2 + 2f_xy dx dy + f_yy dy^2)/2; có số 2 vì f_xy và f_yx cùng góp. Với tích các hàm một biến thì nhanh hơn: nhân các khai triển một biến rồi giữ phần bậc hai.
+
+Ví dụ: tìm phần bậc hai của e^x sin y quanh (0, 0).
+
+1. e^x = 1 + x + x^2/2 + ..., sin y = y - y^3/6 + ...
+2. Nhân lại, chỉ giữ các số hạng có tổng số mũ bằng 2: chỉ có x . y.
+3. Phần bậc hai là xy.
+
+:::check
+Q: Tìm phần bậc hai của e^x cos y quanh (0, 0).
+A: (1 + x + x^2/2 + ...)(1 - y^2/2 + ...): các số hạng bậc hai là x^2/2 và -y^2/2, nên phần bậc hai là (x^2 - y^2)/2.
+:::
 
 ## Cực trị của hàm hai biến
 
-Tại điểm cực trị bên trong miền, cả hai đạo hàm riêng bằng 0 (điểm dừng). Để phân loại điểm dừng (a, b), dùng ma trận đạo hàm cấp hai (ma trận Hesse) và định thức của nó:
+:::hook
+Mặt loss của mạng nơ-ron có đáy, có đỉnh, và rất nhiều yên ngựa: chỗ phẳng mà không phải đáy. Gradient bằng 0 ở cả ba, nên phải phân loại.
+:::
 
-$$ H = \begin{pmatrix} f_{xx} & f_{xy} \\ f_{xy} & f_{yy} \end{pmatrix}, \qquad D = f_{xx} f_{yy} - f_{xy}^2 $$
+:::figure plane
+caption: Yên ngựa x^2 - y^2: dọc trục x đi lên, dọc trục y đi xuống.
+size: 140 100
+x: -2 2 1
+y: -3 3 1
+names: t z
+curve "x^2" xanh "dọc x" pos=w
+curve "-x^2" do "dọc y" pos=w
+point 0 0 muc
+:::
 
-- D > 0 và f_xx > 0: cực tiểu địa phương.
-- D > 0 và f_xx < 0: cực đại địa phương.
-- D < 0: điểm yên ngựa (không phải cực trị).
-- D = 0: dấu hiệu không kết luận được; xét trực tiếp.
+:::figure grid
+caption: Tại điểm dừng, D = f_xx f_yy - f_xy^2.
+table
+head "D" "f_xx" "điểm dừng là"
+row "> 0" "> 0" "cực tiểu"
+row "> 0" "< 0" "cực đại"
+row "< 0" "bất kỳ" "yên ngựa"
+row "= 0" "bất kỳ" "chưa biết"
+:::
 
-Lý do nằm ở công thức Taylor: tại điểm dừng phần bậc nhất biến mất, dấu của phần bậc hai quyết định.
+:::core
+Chỗ phẳng có thể là đáy, đỉnh hay yên ngựa; D của các đạo hàm cấp hai phân xử.
+:::
 
-Ví dụ x^3 + y^3 - 3xy: điểm dừng (0, 0) và (1, 1). Tại (0, 0) D = -9, yên ngựa; tại (1, 1) D = 27, f_xx = 6, cực tiểu với giá trị -1.
+Ví dụ: cực trị của f = x^2 + xy + y^2 - 3x.
 
-Hàm bậc hai Ax^2 + Bxy + Cy^2 + Dx + Ey có H không đổi: nếu 4AC - B^2 > 0 và A > 0 thì điểm dừng là cực tiểu toàn cục.
+1. f_x = 2x + y - 3 = 0, f_y = x + 2y = 0: điểm dừng (2, -1).
+2. f_xx = 2, f_yy = 2, f_xy = 1: D = 4 - 1 = 3 > 0.
+3. f_xx > 0: cực tiểu, f(2, -1) = -3.
 
-> Lỗi thường gặp: kết luận "D = 0 nên không có cực trị". x^4 + y^4 có D = 0 tại gốc mà vẫn đạt cực tiểu ở đó.
+> Lỗi thường gặp: thấy D = 0 là kết luận không có cực trị. x^4 + y^4 có D = 0 tại gốc mà vẫn có đáy ở đó.
+
+:::check
+Q: Điểm dừng (0, 0) của f = x^2 + 6xy + y^2 là gì?
+A: f_xx = f_yy = 2, f_xy = 6: D = 4 - 36 < 0, yên ngựa.
+:::
 
 ## Cực trị có điều kiện
 
-Tìm cực trị của f(x, y) khi (x, y) phải nằm trên đường g(x, y) = 0. Tại điểm cực trị (nơi grad g khác 0), gradient của f song song với gradient của g:
+:::hook
+Huấn luyện mô hình mà trọng số bị giới hạn độ lớn, hay xây hộp với số linh thạch có hạn: tối ưu mà phải đứng trên một đường ràng buộc.
+:::
+
+:::figure plane
+caption: x + y = c trượt tới khi vừa chạm đường tròn: GTLN, grad f vuông góc cả hai.
+size: 150 105
+aspect: equal
+x: -2.2 2.6 1
+y: -2.2 2.6 1
+param "sqrt(2)*cos(t)" "sqrt(2)*sin(t)" 0 2*pi xanh
+line 2 0 0 2 do dash
+line 0 0 1 -1 xam dash
+line -2 0 0 -2 xam dash
+vector 1 1 1.6 1.6 do "grad f" pos=e
+point 1 1 muc
+:::
+
+:::core
+Trên đường ràng buộc g = 0, cực trị của f nằm nơi đường mức của f vừa tiếp xúc đường ràng buộc: tại đó grad f song song grad g.
+:::
 
 $$ \nabla f = \lambda\,\nabla g, \qquad g(x, y) = 0 $$
 
-Tương đương: lập hàm Lagrange L = f - lambda g và giải L_x = L_y = 0, g = 0. Số lambda là nhân tử Lagrange.
+Ràng buộc là đường đóng (tròn, elip) thì so f tại các điểm tìm được: lớn nhất là GTLN, nhỏ nhất là GTNN.
 
-Cách làm:
+Ví dụ: GTLN, GTNN của x + y trên x^2 + y^2 = 2.
 
-1. Viết hệ ba phương trình (bốn với ba biến), ẩn x, y, lambda.
-2. Khử lambda (chia hai phương trình cho nhau, nhưng nhớ xét riêng trường hợp mẫu bằng 0).
-3. Thay vào ràng buộc để tìm các điểm nghi ngờ, tính f tại mỗi điểm.
-4. Nếu đường ràng buộc đóng và bị chặn (đường tròn, elip), số lớn nhất là GTLN, nhỏ nhất là GTNN.
+1. (1, 1) = lambda (2x, 2y), nên x = y.
+2. Thay vào: 2x^2 = 2, x = 1 hoặc x = -1.
+3. f(1, 1) = 2 là GTLN, f(-1, -1) = -2 là GTNN.
 
-Ví dụ x + 2y trên x^2 + y^2 = 5: (1, 2) = 2lambda(x, y) cho y = 2x, hai điểm (1, 2), (-1, -2), GTLN 5, GTNN -5. Bài toán thực tế (hộp thể tích cho trước, ít vật liệu nhất) giải cùng cách.
+> Lỗi thường gặp: bỏ sót nghiệm. Từ 4 lambda^2 = 1 phải lấy cả 1/2 lẫn -1/2; từ x = lambda x phải xét cả x = 0.
 
-> Lỗi thường gặp: bỏ sót nghiệm khi giải. Từ 4lambda^2 = 1 phải lấy cả lambda = 1/2 lẫn lambda = -1/2; từ 2x = 2lambda x phải xét cả x = 0.
+:::check
+Q: GTLN của 3x - 4y trên đường tròn x^2 + y^2 = 4?
+A: grad f = (3, -4) song song (x, y): điểm 2 . (3, -4)/5. GTLN = 2 . 5 = 10.
+:::
 
 ## Gradient, Jacobian và lan truyền ngược
 
-Gradient gom các đạo hàm riêng thành một vector. Đạo hàm theo hướng vector đơn vị u là tích vô hướng:
+:::hook
+Mỗi bước huấn luyện mạng nơ-ron: lan truyền ngược để có gradient của loss, rồi bước một chút ngược hướng gradient.
+:::
 
-$$ \nabla f = (f_x, f_y), \qquad D_u f = \nabla f \cdot u = |\nabla f|\cos\theta $$
+:::figure graph
+caption: a = xy, b = x^2, f = a + b tại x = 2, y = 3. Từ x tới f có hai đường (đỏ): qua a và qua b.
+size: 170 80
+layout: free
+directed: yes
+node x 0 0 "x = 2"
+node y 0 2 "y = 3"
+node a 2 1 "a = 6" xanh
+node b 2 -1 "b = 4" xanh
+node f 4 0 "f = 10" vang
+edge x a "y = 3" do
+edge y a "x = 2"
+edge x b "2x = 4" do
+edge a f "1" do
+edge b f "1" do
+:::
 
-Hệ quả: f tăng nhanh nhất theo hướng grad f với tốc độ |grad f|, giảm nhanh nhất theo hướng ngược lại, và không đổi theo hướng vuông góc với grad f (tiếp xúc với đường mức). Thuật toán hạ gradient trong học máy đi một bước nhỏ theo -grad f.
+:::core
+Gradient chỉ hướng lên dốc nhanh nhất; lan truyền ngược tính nó: nhân đạo hàm cục bộ dọc mỗi đường từ đầu ra về, rồi cộng các đường.
+:::
 
-Với ánh xạ (u, v) = (u(x, y), v(x, y)), ma trận Jacobian là ma trận các đạo hàm riêng; quy tắc dây chuyền nhiều biến là nhân các ma trận này:
+Ví dụ: với hình trên, tính df/dx và df/dy.
 
-$$ J = \begin{pmatrix} u_x & u_y \\ v_x & v_y \end{pmatrix}, \qquad z_x = z_u\,u_x + z_v\,v_x $$
+1. Đường x -> a -> f: 3 . 1 = 3. Đường x -> b -> f: 4 . 1 = 4.
+2. Cộng hai đường: df/dx = 3 + 4 = 7 (khớp y + 2x).
+3. y chỉ có một đường: df/dy = 2 . 1 = 2.
 
-Lan truyền ngược trên một đồ thị tính toán nhỏ:
+> Lỗi thường gặp: chỉ đi một đường. Ở hình trên, quên nhánh qua b sẽ ra df/dx = 3 thay vì 7.
 
-1. Lan truyền xuôi: tính giá trị mọi nút từ đầu vào tới đầu ra.
-2. Bắt đầu từ đầu ra với đạo hàm 1, đi ngược từng cạnh: đạo hàm theo một nút = đạo hàm theo nút sau nó nhân đạo hàm cục bộ của cạnh.
-3. Một nút đi vào nhiều nút sau thì cộng đóng góp của mọi đường.
+:::check
+Q: Nơ-ron z = wx + b, L = (z - t)^2 với w = 2, x = 3, b = -1, t = 4. Tính L, dL/dw, dL/db.
+A: z = 5, L = 1. dL/dz = 2(z - t) = 2, rồi dL/dw = 2 . x = 6, dL/db = 2 . 1 = 2.
+:::
 
-Ví dụ u = xy, v = u + z, f = v^2 tại x = 1, y = 2, z = -4: xuôi u = 2, v = -2, f = 4; ngược df/dv = 2v = -4, df/dx = -4 . 1 . y = -8, df/dy = -4, df/dz = -4. Một nơ-ron z = wx + b với L = (z - t)^2 có dL/dw = 2(z - t)x và dL/db = 2(z - t).
+### Gradient và đạo hàm theo hướng
 
-> Lỗi thường gặp: bỏ sót một đường. Với a = xy, f = a + x^2, x đi vào f cả qua a lẫn trực tiếp, nên df/dx = y + 2x chứ không chỉ y.
+:::figure plane
+caption: f = x^2 + y^2: đường mức là các vòng tròn. Tại (1, 2), grad f = (2, 4) vuông góc với vòng mức và chỉ ra phía f tăng nhanh nhất.
+size: 120 95
+aspect: equal
+axes: off
+x: -3 3.5 2
+y: -3 4.5 2
+param "sqrt(5)*cos(t)" "sqrt(5)*sin(t)" 0 2*pi xam
+param "cos(t)" "sin(t)" 0 2*pi xam
+vector 1 2 1.8 3.6 do "grad f" pos=e
+point 1 2 do
+:::
+
+grad f = (f_x, f_y). Đi theo hướng đơn vị u, f đổi với tốc độ grad f . u = |grad f| cos(góc): lớn nhất là |grad f| khi đi đúng hướng grad f, bằng 0 khi đi dọc đường mức.
+
+:::check
+Q: f = x^2 + y^2. Đạo hàm theo hướng u = (3/5, 4/5) tại (1, 2) bằng bao nhiêu?
+A: grad f = (2, 4). Tích vô hướng: 6/5 + 16/5 = 22/5.
+:::
+
+### Jacobian
+
+:::figure grid
+caption: Jacobian của (u, v) = (x + y, xy) tại (3, 1): mỗi hàng là gradient của một thành phần.
+style: matrix
+table "J"
+row u_x u_y
+row v_x v_y
+op "="
+table
+row 1 1
+row y x
+op "="
+table
+row 1 1
+row 1 3
+:::
+
+Jacobian của (u, v) = (u(x, y), v(x, y)) là bảng [u_x, u_y; v_x, v_y]. Dây chuyền nhiều biến là nhân các bảng ấy; một ô của tích, z_x = z_u u_x + z_v v_x, chính là cộng hai đường x -> u -> z và x -> v -> z.
+
+:::check
+Q: (u, v) = (x + y, xy). Tính định thức Jacobian tại (1, 2).
+A: Bảng [u_x, u_y; v_x, v_y] = [1, 1; y, x] = [1, 1; 2, 1]. Định thức 1 . 1 - 1 . 2 = -1.
+:::

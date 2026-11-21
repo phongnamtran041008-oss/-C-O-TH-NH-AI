@@ -88,7 +88,10 @@ class CongPhapScene(Scene):
         self.world.draw_mskill_icon(ui, sk, x + 6, y + 2, not learned)
         if not learned:
             ui.fill(x + 6, y + 2, 22, 22, (0, 0, 0, 110))
-        ui.text(fit(ui, sk["name_vi"], 6, CELL_W - 10), x + 6, y + 26, 6, INK if learned else GREY)
+        short = fit(ui, sk["name_vi"], 6, CELL_W - 10)
+        ui.text(short, x + 6, y + 26, 6, INK if learned else GREY)
+        if short != sk["name_vi"] and ui.hover(x, y, CELL_W - 2, CELL_H - 2):
+            ui.set_tooltip(sk["name_vi"])       # a long name, cut in its cell: whole on hover and in the details
         if sk["id"] in self.slots:
             ui.text(str(self.slots.index(sk["id"]) + 1), x + CELL_W - 6, y + 3, 8, UICOL["accent"], anchor="topright")
         elif not learned:

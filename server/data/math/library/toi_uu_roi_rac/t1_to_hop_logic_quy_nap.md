@@ -3,129 +3,193 @@ id: tr_lib_t1
 title_vi: Tổ hợp mở đầu, logic mệnh đề và quy nạp
 subject: toi_uu_roi_rac
 floor: 1
-summary_vi: Ba món đồ nghề của người tu toán rời rạc: liệt kê và đếm những cách sắp đặt, nói cho chặt bằng mệnh đề, và chứng minh một điều đúng mãi mãi bằng quy nạp.
+format: 2
+summary_vi: Ba món đồ nghề đầu tiên: hỏi đúng hai câu trước khi đếm, đếm bằng cộng và nhân, nói cho chặt bằng mệnh đề và bảng chân trị, rồi chứng minh một điều đúng mãi mãi bằng quy nạp.
 skills: [tr_t1_cau_hinh, tr_t1_cong_nhan, tr_t1_menh_de, tr_t1_bang_chan_tri, tr_t1_quy_nap]
 ---
 ## Cấu hình tổ hợp
 
-Toán rời rạc hỏi rất nhiều câu dạng "có bao nhiêu cách". Mỗi cách là một cấu hình: một cách sắp đặt các vật theo đúng luật của bài. Trước khi đếm, phải trả lời rõ hai câu hỏi.
+:::hook
+Đặt mật khẩu, chọn tổ đi bí cảnh, xếp đệ tử vào hàng: đều là câu hỏi "có bao nhiêu cách". Nhận sai loại cách là đếm sai từ đầu.
+:::
 
-- Thứ tự có quan trọng không? Xếp An rồi Bình vào hai ghế khác với xếp Bình rồi An; nhưng chọn An và Bình vào một tổ thì chỉ là một cách.
-- Một vật có được dùng lại không? Mật lệnh được lặp ký tự; một hàng người thì không ai đứng hai chỗ.
+:::figure grid
+caption: Hai câu hỏi xếp mọi bài đếm vào bốn ô; mỗi ô là một loại cấu hình.
+table
+head "không lặp" "được lặp"
+side "có thứ tự" "không thứ tự"
+row "hoán vị, xếp chỗ" "xâu, mật khẩu"
+row "tập con, nhóm" "chia kẹo (tầng 2)"
+mark cell 1 2 xanh
+mark cell 2 1 vang
+:::
 
-Bốn loại cấu hình gặp suốt bí cảnh này:
+:::core
+Cấu hình là một cách sắp đặt. Trước khi đếm, hỏi: đổi thứ tự có ra cách mới không, và một vật có được dùng lại không?
+:::
 
-- Dãy có thứ tự, không lặp: xếp người vào ghế, trao giải nhất nhì ba.
-- Dãy có thứ tự, được lặp: xâu ký tự, mật lệnh, xâu nhị phân.
-- Hoán vị: dãy có thứ tự dùng hết mọi vật, mỗi vật một lần.
-- Tập con: chọn một nhóm, không kể thứ tự.
+Tập {1, 2} và {2, 1} là một, còn cặp (1, 2) khác (2, 1). Xâu nhị phân dài n có 2^n xâu. Vị trí bị ép có ít cách hơn: chữ đầu cố định chỉ có 1 cách; bảng m chữ mà chỉ cần khác chữ ngay trước thì còn m - 1 cách.
 
-Khi bài còn nhỏ, cách chắc chắn nhất là liệt kê có hệ thống, để không sót và không trùng. Ví dụ các tập con 2 phần tử của {a, b, c, d}:
+Ví dụ: liệt kê mọi tập con 3 phần tử của {a, b, c, d}.
 
-1. Ghép a với từng chữ đứng sau nó: {a, b}, {a, c}, {a, d}.
-2. Ghép b với từng chữ đứng sau nó: {b, c}, {b, d}.
-3. Ghép c với chữ đứng sau nó: {c, d}.
-4. Không ghép ngược lại (như {b, a}) vì đó là tập đã có. Tất cả 6 tập.
+1. Viết chữ theo thứ tự a, b, c, d, chỉ ghép chữ đứng sau.
+2. Bắt đầu bằng a: {a, b, c}, {a, b, d}, {a, c, d}.
+3. Bắt đầu bằng b: {b, c, d}. Có 4 tập.
 
-Xâu nhị phân độ dài n là dãy n chữ số 0 hoặc 1. Mỗi vị trí có 2 khả năng nên có tất cả 2^n xâu.
+> Lỗi thường gặp: liệt kê lộn xộn rồi đếm. Đếm xâu có "11" liền nhau mà quên 111 là sót ngay một cấu hình.
 
-> Lỗi thường gặp: liệt kê không theo thứ tự nào cả rồi đếm. Gần như chắc chắn sẽ sót một cấu hình (như sót 111 khi tìm xâu có hai chữ số 1 liền nhau) hoặc đếm một cấu hình hai lần.
+:::check
+Q: Tô 4 ô thành hàng bằng 3 màu, hai ô kề nhau khác màu: mấy cách?
+A: Ô đầu 3 cách; mỗi ô sau chỉ cần khác ô ngay trước: 2 cách. 3 . 2 . 2 . 2 = 24.
+:::
 
 ## Quy tắc cộng và quy tắc nhân
 
-Hai quy tắc này là gốc của mọi phép đếm.
+:::hook
+Gói tin đi từ máy A tới máy C: qua bộ định tuyến B, hoặc theo cáp thẳng. Có bao nhiêu tuyến gửi?
+:::
 
-Quy tắc cộng: nếu mọi cách làm rơi vào đúng một trong các trường hợp rời nhau, thì số cách bằng tổng số cách của từng trường hợp.
+:::figure graph
+caption: Qua B phải đi XONG hai chặng: 3 . 2 = 6. Đi thẳng là trường hợp khác: thêm 2. Tổng 8.
+size: 200 55
+layout: free
+node A 0 1 "A"
+node B 2 2 "B"
+node C 4 1 "C"
+edge A B "3 đường" xanh
+edge B C "2 đường" xanh
+edge A C "2 đường thẳng" vang
+:::
 
-$$ |A_1 \cup A_2 \cup \cdots \cup A_k| = |A_1| + |A_2| + \cdots + |A_k| $$
+:::core
+Chọn MỘT trong các trường hợp rời nhau thì cộng; phải làm XONG mọi bước nối tiếp thì nhân.
+:::
 
-Quy tắc nhân: nếu một việc gồm các bước nối tiếp, bước thứ i luôn có n_i cách dù các bước trước chọn gì, thì số cách bằng tích.
+Cộng cần các trường hợp không có cách nào chung. Nhân cần số cách mỗi bước không đổi, dù bước trước chọn gì.
 
-$$ |A_1 \times A_2 \times \cdots \times A_k| = |A_1| \cdot |A_2| \cdots |A_k| $$
+Ví dụ: có bao nhiêu số chẵn có 3 chữ số khác nhau lập từ 0, 1, 2, 3, 4?
 
-Cách nhớ: chữ "hoặc" giữa các trường hợp thường dẫn tới phép cộng, chữ "rồi" giữa các bước thường dẫn tới phép nhân.
+1. Số 0 vừa chẵn vừa cấm ở hàng trăm, nên chia theo hàng đơn vị.
+2. Đơn vị là 0: hàng trăm 4 cách, hàng chục 3 cách: 12 số. Đơn vị là 2 hoặc 4: hàng trăm khác 0 và khác nó còn 3 cách, hàng chục 3 cách: 2 . 3 . 3 = 18 số.
+3. Hai trường hợp rời nhau: 12 + 18 = 30.
 
-Ví dụ: có bao nhiêu số chẵn có 3 chữ số đôi một khác nhau?
+> Lỗi thường gặp: nhân khi số cách của một bước còn tùy bước trước. Hãy đổi thứ tự các bước, hoặc chia trường hợp.
 
-1. Chữ số 0 làm khó hàng trăm, nên chia trường hợp theo hàng đơn vị.
-2. Hàng đơn vị là 0: hàng trăm 9 cách, hàng chục 8 cách, được 72 số.
-3. Hàng đơn vị là 2, 4, 6 hoặc 8: 4 cách; hàng trăm khác 0 và khác hàng đơn vị nên 8 cách; hàng chục 8 cách; được 4 . 8 . 8 = 256 số.
-4. Hai trường hợp rời nhau, cộng lại: 72 + 256 = 328.
-
-> Lỗi thường gặp: nhân khi số cách ở một bước lại phụ thuộc vào lựa chọn trước đó. Nếu chọn hàng đơn vị sau cùng thì số cách của nó tùy vào việc hàng trăm, hàng chục đã dùng số chẵn chưa. Hãy đổi thứ tự các bước hoặc chia trường hợp cho số cách ở mỗi bước luôn cố định.
+:::check
+Q: 5 kiếm, 2 đao. Lấy 1 binh khí: mấy cách? Lấy 1 kiếm VÀ 1 đao: mấy cách?
+A: Một binh khí: kiếm hoặc đao, 5 + 2 = 7. Một kiếm và một đao: hai bước, 5 . 2 = 10.
+:::
 
 ## Mệnh đề và các phép nối
 
-Mệnh đề là một câu khẳng định đúng hoặc sai, chỉ một trong hai. "7 là số nguyên tố" là mệnh đề đúng; "2 + 2 = 5" là mệnh đề sai; "Hãy ngồi xuống!" hay "x lớn hơn 3" (khi chưa biết x) không phải mệnh đề.
+:::hook
+Lệnh if chỉ hỏi điều kiện đúng hay sai. Logic mệnh đề tính đúng sai của những điều kiện ghép.
+:::
 
-Từ các mệnh đề p, q ta lập mệnh đề mới bằng năm phép nối. Trong game chúng được viết bằng chữ:
+:::figure grid
+caption: Mỗi cột là luật của một phép nối. Kéo theo chỉ sai ở dòng đỏ: p đúng mà q sai.
+table
+head "p" "q" "p và q" "p hoặc q" "p => q" "p <=> q"
+row Đ Đ Đ Đ Đ Đ
+row Đ S S Đ S S
+row S Đ S Đ Đ S
+row S S S S Đ Đ
+mark cell 2 5 do
+:::
 
-- không p (phủ định): đúng khi p sai.
-- p và q (hội): đúng khi cả hai đều đúng.
-- p hoặc q (tuyển): sai chỉ khi cả hai đều sai.
-- p => q (kéo theo): sai chỉ khi p đúng mà q sai.
-- p <=> q (tương đương): đúng khi p và q cùng chân trị.
+:::core
+Và cần cả hai đúng; hoặc chỉ sai khi cả hai sai; kéo theo chỉ sai khi vế trước đúng, vế sau sai; tương đương đúng khi hai vế cùng chân trị.
+:::
 
-$$ p \Rightarrow q \text{ sai } \Leftrightarrow p \text{ dung va } q \text{ sai} $$
+Mệnh đề là câu chỉ có một chân trị: đúng hoặc sai. Câu mệnh lệnh, hay "x > 3" khi chưa biết x, không phải mệnh đề. Phủ định của "mọi x đều P" là "có ít nhất một x không P".
 
-Phép kéo theo hay làm người mới bối rối nhất. Hãy coi p => q như một lời hứa: "Nếu trời mưa thì ta mang ô". Lời hứa chỉ bị phá khi trời mưa mà không mang ô. Trời không mưa thì mang hay không, lời hứa vẫn giữ. Vì vậy "Nếu 2 + 2 = 5 thì 3 là số chẵn" là mệnh đề đúng.
+Ví dụ: p sai, q đúng, r sai. Tính (p hoặc q) => r.
 
-Phủ định của "mọi x đều có tính chất P" là "có ít nhất một x không có tính chất P", không phải "mọi x đều không có P".
+1. Trong ngoặc trước: q đúng nên p hoặc q đúng.
+2. Đúng => sai là dòng duy nhất làm kéo theo sai: mệnh đề sai.
 
-Ví dụ với p đúng, q sai, r đúng, tính (p => q) hoặc (q <=> r):
+> Lỗi thường gặp: nghĩ p => q sai khi p sai. Như lời hứa "nếu mưa thì mang ô": trời không mưa thì không thể thất hứa.
 
-1. p đúng, q sai nên p => q sai.
-2. q sai, r đúng, khác chân trị, nên q <=> r sai.
-3. Hai vế của phép hoặc đều sai nên cả mệnh đề sai.
-
-> Lỗi thường gặp: nghĩ p => q sai khi p sai. Vế trước sai thì phép kéo theo luôn đúng, bất kể vế sau.
+:::check
+Q: Biết p => q đúng và p đúng. q đúng hay sai? Nhìn bảng mà trả lời.
+A: q đúng: trong các dòng có p đúng, chỉ dòng q đúng làm p => q đúng.
+:::
 
 ## Bảng chân trị và tương đương logic
 
-Bảng chân trị liệt kê mọi cách gán đúng, sai cho các biến và chân trị của mệnh đề ở từng dòng. n biến cho 2^n dòng: 2 biến 4 dòng, 3 biến 8 dòng.
+:::hook
+Hai cách viết điều kiện if có chạy giống nhau không? Thử hết mọi tổ hợp đúng sai là biết chắc.
+:::
 
-Hai mệnh đề tương đương logic khi chúng có cùng chân trị ở mọi dòng. Muốn chứng tỏ hai mệnh đề không tương đương, chỉ cần chỉ ra một dòng mà chúng khác nhau.
+:::figure grid
+caption: Hai cột xanh trùng nhau ở cả 4 dòng nên tương đương. Cột q => p lệch ở dòng đỏ nên không.
+table
+head "p" "q" "p => q" "(không p) hoặc q" "q => p"
+row Đ Đ Đ Đ Đ
+row Đ S S S Đ
+row S Đ Đ Đ S
+row S S Đ Đ Đ
+mark col 3 xanh
+mark col 4 xanh
+mark cell 3 5 do
+:::
 
-Một mệnh đề đúng ở mọi dòng là hằng đúng, như p hoặc (không p).
+:::core
+Hai mệnh đề tương đương khi cột chân trị trùng nhau ở MỌI dòng; một dòng lệch là đủ bác bỏ.
+:::
 
-Những tương đương dùng nhiều nhất:
+n biến cho 2^n dòng. Đúng ở mọi dòng là hằng đúng, như p hoặc (không p).
 
-$$ p \Rightarrow q \equiv \neg p \lor q $$
+- De Morgan: không (p và q) là (không p) hoặc (không q), và ngược lại.
+- Phản đảo: p => q tương đương (không q) => (không p).
+- Không (p => q) là p và (không q).
 
-$$ \neg(p \land q) \equiv \neg p \lor \neg q $$
+Ví dụ: (p hoặc q) và (không r) đúng ở mấy trong 8 dòng?
 
-$$ \neg(p \lor q) \equiv \neg p \land \neg q $$
+1. p hoặc q chỉ sai khi p, q cùng sai: đúng ở 3 trong 4 cách gán p, q.
+2. Còn cần r sai (1 cách): 3 . 1 = 3 dòng.
 
-$$ p \Rightarrow q \equiv \neg q \Rightarrow \neg p $$
+> Lỗi thường gặp: lẫn đảo q => p với phản đảo. Chỉ phản đảo giữ nguyên nghĩa.
 
-Hai công thức giữa là luật De Morgan: đưa phủ định vào trong ngoặc thì "và" đổi thành "hoặc", "hoặc" đổi thành "và". Công thức cuối nói mệnh đề phản đảo (không q) => (không p) tương đương với p => q, và đó là gốc của cách chứng minh phản chứng.
-
-Ví dụ rút gọn không (p => q):
-
-1. Viết p => q thành (không p) hoặc q.
-2. Phủ định và dùng De Morgan: (không (không p)) và (không q).
-3. Bỏ phủ định kép: p và (không q).
-
-> Lỗi thường gặp: nhầm mệnh đề đảo q => p với mệnh đề phản đảo. Đảo không tương đương với mệnh đề gốc: lấy p sai, q đúng thì p => q đúng còn q => p sai.
+:::check
+Q: (p và q) => p có phải hằng đúng không? Không cần lập bảng.
+A: Có. Muốn sai thì p và q phải đúng, tức p đúng, mà vế sau p lại phải sai: vô lý.
+:::
 
 ## Chứng minh bằng quy nạp
 
-Quy nạp chứng minh một mệnh đề P(n) đúng với mọi n từ một số n_0 trở đi, bằng hai bước:
+:::hook
+Vòng lặp đúng ở lần đầu, và lần nào đúng thì lần sau cũng đúng: vậy nó đúng ở mọi lần.
+:::
 
-- Bước cơ sở: kiểm tra P(n_0) đúng.
-- Bước quy nạp: giả sử P(k) đúng với một k >= n_0 nào đó (giả thiết quy nạp), chứng minh P(k + 1) đúng.
+:::figure flow
+caption: Cơ sở đẩy quân domino đầu; bước quy nạp: quân nào đổ cũng xô đổ quân kế.
+box "P(1) đúng" luc
+link "P(k) => P(k+1)"
+box "P(2)" xanh
+link "=>"
+box "P(3)" xanh
+link "=>"
+box "..."
+link ""
+box "mọi n" luc
+:::
 
-$$ P(1) \land \big(P(k) \Rightarrow P(k+1)\big) \Rightarrow \forall n \ge 1,\ P(n) $$
+:::core
+Quy nạp cần cả cơ sở P(n_0) đúng lẫn bước P(k) => P(k + 1); thiếu một việc là cả chuỗi sụp.
+:::
 
-Hãy hình dung một hàng quân domino: bước cơ sở đẩy quân đầu tiên, bước quy nạp bảo đảm quân nào đổ cũng làm quân sau đổ.
+Ví dụ: chứng minh 2 + 4 + ... + 2n = n(n + 1) với mọi n >= 1.
 
-Ví dụ chứng minh 1 + 3 + 5 + ... + (2n - 1) = n^2:
+1. Cơ sở n = 1: vế trái 2, vế phải 1 . 2 = 2.
+2. Giả thiết quy nạp: 2 + 4 + ... + 2k = k(k + 1).
+3. Thêm số hạng cuối khi n = k + 1, là 2(k + 1): được (k + 1)(k + 2).
 
-1. Cơ sở: n = 1, vế trái là 1, vế phải là 1^2 = 1.
-2. Giả thiết quy nạp: 1 + 3 + ... + (2k - 1) = k^2.
-3. Cộng số lẻ tiếp theo, 2k + 1, vào hai vế: tổng của k + 1 số lẻ đầu tiên bằng k^2 + 2k + 1 = (k + 1)^2.
-4. Đó chính là công thức với n = k + 1, nên đẳng thức đúng với mọi n >= 1.
+Cơ sở có thể muộn: 2^n > 3n sai khi n <= 3, nên n_0 = 4. Tổng 1 + 3 + ... + 19 có 2n - 1 = 19, nên n = 10, tổng 100.
 
-Với bất đẳng thức, bước cơ sở không phải lúc nào cũng là n = 1. Chẳng hạn 2^n > n^2 sai ở n = 2, 3, 4 nhưng đúng với mọi n >= 5, nên phải bắt đầu từ n_0 = 5.
+> Lỗi thường gặp: khai triển ẩu ở bước k sang k + 1.
 
-> Lỗi thường gặp: bỏ bước cơ sở. Mệnh đề "n = n + 1" có bước quy nạp đúng (cộng 1 vào hai vế) nhưng sai với mọi n. Lỗi thứ hai hay gặp là biến đổi đại số ẩu ở bước k sang k + 1: luôn khai triển lại để kiểm tra.
+:::check
+Q: Bước quy nạp của "n^2 + n là số lẻ" chạy được. Vậy nó lẻ với mọi n?
+A: Không: cơ sở sai, 1 + 1 = 2 chẵn. (k + 1)^2 + (k + 1) = (k^2 + k) + 2(k + 1) chỉ chuyển cái đúng đi tiếp; thực ra n^2 + n luôn chẵn.
+:::

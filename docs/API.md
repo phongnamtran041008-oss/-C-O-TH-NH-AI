@@ -940,6 +940,34 @@ và `CHECKS` của `guide.py`).
   bước `seen` của guide.json dùng (máy khách gửi `math_hub`, `library_doc`, `village`); khoá khác: `bad_key`
   (400). Gửi lại không sao.
 
+### Chính đạo — nhiệm vụ chính (2026-11-21)
+
+Thứ tự học duy nhất của các nút chính đạo nằm trong `tree.json` `main_path` (`{realm: [[id tầng 1], [id tầng 2],
+...]}`), kiểm bởi `math_tree.validate` / `tools/check_tree.py`: mỗi nút chính đạo đúng một lần, đúng tầng, không
+đứng trước nút nó cần. `GET /math/tree` thêm vào mỗi nút `path` (vị trí trên Chính đạo, `null` với bàng môn), xếp
+`nodes` và `next` theo thứ tự ấy, và thêm `main`; `GET /guide` thêm `main` (cùng nội dung) và `lead`.
+
+- `main` = **một** việc phải làm bây giờ: nút chính đạo đầu tiên trên đường chưa xong (bỏ qua nút "đang biên
+  soạn"), phần đầu tiên chưa vượt của nó:
+  `{node_id, path, name_vi, why_vi, branch, branch_vi, kind, realm, realm_name_vi, stage, index, total, step,
+  done: {hieu, luyen, kiep}, part: {subject_id, floor, index, count} | null, gate: {done, total, ok} | null,
+  doc_id, block, subject_id, floor, problems[{id, title_vi, solved}], problems_done, problems_total,
+  resume: "practice" | "trial" | null, stage_nodes[{id, name_vi, branch, branch_vi, kind, state: "done" | "now" |
+  "later"}], path_done, path_total}`.
+  - `step`: `hoc` (chưa mở bài đọc của phần, chưa có câu trả lời nào trên vi kỹ năng của phần, chưa có buổi
+    luyện dở ở đó, và tầng có bài đọc) -> `luyen` (cổng thuần thục chưa mở) -> `kiep` (cổng mở, hoặc Thiên kiếp
+    nhỏ đang dở) -> phần sau / nút sau. Nút chỉ có bài tập lập trình: `code` (`subject_id`, `floor` = bài đầu tiên
+    chưa giải). Hết đường: `{step: "done", node_id: null, ...}`.
+  - `index`/`total` = vị trí của nút trong các nút chính đạo có nội dung của tầng ấy ("Chính đạo 2/5");
+    `path_done`/`path_total` = cả cảnh giới. `doc_id` + `block` = bài đọc của phần và mục của vi kỹ năng đầu.
+  - `resume` = buổi đang dở nằm đúng trên phần này (nút "Luyện tiếp" / "Độ kiếp tiếp").
+- `lead` = `"main"` khi hai bước chào (`g_welcome`, `g_board`) đã xong: ô Việc tiếp theo và bảng Lộ Trình dẫn
+  bằng `main`; không thì `"steps"`.
+- `POST /guide/read {node_id, floor}` -> `{read: "<node>:<floor>", main, guide: <như GET /guide>}`. Ghi rằng
+  người chơi đã mở bài đọc của phần ấy (bước hiểu xong) vào `users.flags["path"]["read"]` (không bảng mới, không
+  migration; ghi so-sánh-rồi-đổi như `guide`). Gửi lại không sao. Nút hoặc phần không có: `no_part` (404).
+  Máy khách gửi khi bấm "Học bài" ở thẻ Chính đạo và nút "Đọc" ở dòng một phần.
+
 ## Chỉ Đường (đi đâu cho hợp tu vi)
 
 `server/app/systems/navigation.py`, luật và cách máy khách vẽ mũi tên: `docs/CHI_DUONG.md`. "Tu vi" của nơi chốn

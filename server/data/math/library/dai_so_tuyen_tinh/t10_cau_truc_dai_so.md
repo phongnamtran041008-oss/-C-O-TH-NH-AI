@@ -3,111 +3,253 @@ id: dstt_lib_t10
 title_vi: Tài năng: cấu trúc đại số và dạng song tuyến tính
 subject: dai_so_tuyen_tinh
 floor: 10
-summary_vi: Tầng ẩn đi từ ma trận sang cấu trúc đứng sau nó - quan hệ hai ngôi, phép toán hai ngôi và các tính chất của chúng, nhóm, vành, trường - rồi quay lại với dạng song tuyến tính và dạng toàn phương viết bằng ma trận. Trọng tâm là kiểm tra từng tiên đề một cách chính xác và biết tìm phản ví dụ.
+format: 2
+summary_vi: Tầng ẩn nhìn ra bộ xương phía sau ma trận: quan hệ tương đương cắt tập thành lớp, phép toán có trung hòa và phần tử ngược, nhóm đếm bước quay về, trường là nơi chia được, và dạng song tuyến tính x^T A y. Trọng tâm là kiểm từng điều kiện và biết tìm phản ví dụ.
 skills: [dstt_t10_quan_he, dstt_t10_phep_toan_hai_ngoi, dstt_t10_nhom, dstt_t10_vanh_truong, dstt_t10_dang_song_tuyen_tinh]
 ---
 ## Quan hệ hai ngôi
 
-Một quan hệ R trên tập A là một tập con của A x A; viết a R b khi cặp (a, b) thuộc R. Ba tính chất cần kiểm tra:
+:::hook
+Bộ lọc thư gom các thư "cùng loại" thành từng nhóm. Muốn gom được gọn, rời nhau, thì "cùng loại" phải là một quan hệ tương đương.
+:::
 
-- Phản xạ: a R a với mọi a.
-- Đối xứng: a R b thì b R a.
-- Bắc cầu: a R b và b R c thì a R c.
+:::figure graph
+caption: a ~ b khi a - b chia hết cho 3, trên {1, ..., 6}: ba lớp {1, 4}, {2, 5}, {3, 6}, rời nhau và phủ kín.
+layout: circle
+node 1 "1" do
+node 4 "4" do
+node 2 "2" xanh
+node 5 "5" xanh
+node 3 "3" luc
+node 6 "6" luc
+edge 1 4 do
+edge 2 5 xanh
+edge 3 6 luc
+:::
 
-Quan hệ vừa phản xạ, đối xứng, bắc cầu là quan hệ tương đương; nó chia A thành các lớp tương đương đôi một rời nhau (lớp của a gồm mọi b có b R a). Quan hệ phản xạ, phản đối xứng (a R b và b R a thì a = b) và bắc cầu là quan hệ thứ tự; thứ tự toàn phần nếu hai phần tử bất kỳ đều so sánh được.
+:::core
+Quan hệ tương đương (phản xạ, đối xứng, bắc cầu) là "giống nhau theo một tiêu chí": nó cắt tập thành các lớp rời nhau phủ kín.
+:::
+
+Ví dụ: a ~ b khi a - b chia hết cho 4, trên {1, ..., 15}.
+
+1. Cùng lớp nghĩa là cùng số dư khi chia cho 4: có 4 lớp.
+2. Lớp của 2: 2, 6, 10, 14, có 4 phần tử.
+3. Bắc cầu: a - b = 4k, b - c = 4m thì a - c = 4(k + m).
 
 $$ a \sim b \iff n \mid (a - b) $$
 
-(hai số cùng lớp khi cùng số dư trong phép chia cho n.)
+:::check
+Q: Trên Z, a R b khi |a| = |b|. Đây có là quan hệ tương đương không? Lớp của 3 là gì?
+A: Có: phản xạ, đối xứng, bắc cầu đều đúng vì chỉ so hai số |a|, |b|. Lớp của 3 là {3, -3}.
+:::
 
-Ví dụ: trên Z, a ~ b khi a - b chia hết cho 3. Bắc cầu:
+### Ba tính chất và quan hệ thứ tự
 
-1. Giả sử a - b = 3k và b - c = 3m với k, m nguyên.
-2. Cộng lại: a - c = 3(k + m), mà k + m nguyên.
-3. Vậy a - c chia hết cho 3, tức a ~ c. Có ba lớp, ứng với số dư 0, 1, 2.
+:::figure grid
+caption: Quan hệ trên {1, 2, 3} viết thành bảng 0/1. Phản xạ: đường chéo toàn 1. Đối xứng: bảng bằng chuyển vị của nó.
+table "R"
+head 1 2 3
+side 1 2 3
+row 1 0 1
+row 0 1 0
+row 1 0 1
+mark diag
+:::
 
-Trong ma trận: quan hệ trên {1, ..., n} là một ma trận 0/1 cỡ n x n; phản xạ nghĩa là đường chéo toàn 1, đối xứng nghĩa là ma trận bằng chuyển vị của nó.
+Phản xạ: a R a với mọi a. Đối xứng: a R b kéo theo b R a. Bắc cầu: a R b và b R c kéo theo a R c. Thay đối xứng bằng phản đối xứng (a R b và b R a thì a = b) ta được quan hệ thứ tự, như <= hay "chia hết"; thứ tự là toàn phần nếu mọi cặp đều so sánh được.
 
-> Lỗi thường gặp: kết luận bắc cầu bằng cách "cộng" hai bất đẳng thức, ví dụ |x - y| < 1 và |y - z| < 1 không cho |x - z| < 1 (chỉ cho < 2), nên quan hệ |x - y| < 1 trên R không là quan hệ tương đương; nhầm quan hệ <= (thứ tự) với quan hệ tương đương vì thiếu đối xứng; chỉ kiểm tra một cặp rồi kết luận cho mọi cặp.
+> Lỗi thường gặp: "cộng" hai bất đẳng thức để có bắc cầu. |x - y| < 1 và |y - z| < 1 chỉ cho |x - z| < 2: x = 0, y = 0.6, z = 1.2 phá bắc cầu.
+
+:::check
+Q: Quan hệ "a chia hết b" trên {1, 2, 3, 6} có đối xứng không? Nó là loại quan hệ gì?
+A: Không đối xứng: 1 chia hết 2 nhưng 2 không chia hết 1. Nó phản xạ, phản đối xứng, bắc cầu: một quan hệ thứ tự, không toàn phần vì 2 và 3 không so sánh được.
+:::
 
 ## Phép toán hai ngôi
 
-Phép toán hai ngôi trên tập A gán cho mỗi cặp (a, b) một phần tử a * b của A. Các tính chất hay hỏi:
+:::hook
+Mật mã và hàm băm dựng trên những phép toán lạ. Trước khi tin một phép toán, phải biết nó có giao hoán, kết hợp, có trung hòa, có phần tử ngược hay không.
+:::
 
-- Giao hoán: a * b = b * a với mọi a, b.
-- Kết hợp: (a * b) * c = a * (b * c) với mọi a, b, c.
-- Phần tử trung hoà e: a * e = e * a = a với mọi a (nếu có thì duy nhất).
-- Phần tử ngược của a: số a' có a * a' = a' * a = e.
+:::figure grid
+caption: a * b = max(a, b) trên {0, 1, 2}. Bảng đối xứng: giao hoán. Hàng của 0 (vàng) chép y tiêu đề: 0 là trung hòa. Số 0 chỉ ở ô (0, 0): chỉ 0 có ngược.
+table "*"
+head 0 1 2
+side 0 1 2
+row 0 1 2
+row 1 1 2
+row 2 2 2
+mark row 1 vang
+:::
+
+:::core
+Trung hòa e là phần tử "không làm gì": a * e = a với mọi a; phần tử ngược đưa a về đúng e, không phải về 0 hay 1.
+:::
+
+Giao hoán là a * b = b * a; kết hợp viết ở công thức dưới. Chứng minh thì khai triển hai vế với mọi a, b, c; bác bỏ thì một phản ví dụ là đủ. Trung hòa, nếu có, là duy nhất.
+
+Ví dụ: a * b = a + b - 4 trên R. Tìm trung hòa và phần tử ngược của 1.
+
+1. a * e = a + e - 4 = a với mọi a, nên e = 4.
+2. Ngược của 1: 1 * b = 1 + b - 4 phải bằng e = 4, nên b = 7.
 
 $$ (a * b) * c = a * (b * c), \qquad a * e = e * a = a, \qquad a * a' = a' * a = e $$
 
-Muốn chứng minh một tính chất, khai triển cả hai vế cho mọi a, b, c; muốn bác bỏ, chỉ cần một phản ví dụ. Ví dụ phép toán a * b = a + b + ab trên R:
+> Lỗi thường gặp: tìm phần tử ngược trước khi biết e, rồi cho a * b bằng 0 hay 1 theo thói quen. Phải tìm e trước.
 
-1. Trung hoà: a * e = a + e + ae = a cho e (1 + a) = 0 với mọi a, nên e = 0.
-2. Phần tử ngược của a: a + b + ab = 0 cho b = -a/(1 + a), tồn tại khi a khác -1.
-3. Số -1 không có phần tử ngược; số 2 có phần tử ngược -2/3.
-
-> Lỗi thường gặp: tìm phần tử ngược mà không biết phần tử trung hoà (phần tử ngược phải đưa về chính phần tử trung hoà, không phải về 1 hay 0 tuỳ ý); coi phép trừ hay trung bình cộng là kết hợp; để phần tử trung hoà phụ thuộc a (nó là một phần tử cố định chung cho mọi a).
+:::check
+Q: a * b = ab + 1 trên R có kết hợp không? Thử a = b = 0, c = 1.
+A: (0 * 0) * 1 = 1 * 1 = 2, còn 0 * (0 * 1) = 0 * 1 = 1. Khác nhau: không kết hợp.
+:::
 
 ## Nhóm và nhóm con
 
-Nhóm (G, *) là tập G với một phép toán kết hợp, có phần tử trung hoà và mọi phần tử đều có phần tử ngược (phép toán phải đóng, tức a * b vẫn thuộc G). Nhóm giao hoán nếu thêm tính giao hoán. Nhóm con H của G là tập con khác rỗng, đóng với phép toán và với phép lấy ngược.
+:::hook
+Xoay khối Rubik, mã hóa RSA, mã sửa lỗi đều là nhóm. Cấp của một phần tử là số bước để lặp lại nó thì quay về chỗ cũ.
+:::
 
-Với một nhóm hữu hạn:
+:::figure graph
+caption: Trong Z_10, cứ cộng 4: 0, 4, 8, 2, 6 rồi về 0. Năm bước, nên 4 có cấp 5 = 10/gcd(4, 10).
+layout: circle
+directed: yes
+node 0 "0" vang
+node 1 "1"
+node 2 "2"
+node 3 "3"
+node 4 "4"
+node 5 "5"
+node 6 "6"
+node 7 "7"
+node 8 "8"
+node 9 "9"
+edge 0 4 do
+edge 4 8 do
+edge 8 2 do
+edge 2 6 do
+edge 6 0 do
+:::
 
-- Cấp của phần tử a là số k nhỏ nhất > 0 có a^k = e (viết cộng: ka = 0).
-- Định lý Lagrange: số phần tử của một nhóm con chia hết số phần tử của nhóm; cấp của mỗi phần tử cũng chia hết cấp của nhóm.
-- Nhóm cộng Z_n gồm các số dư modulo n; cấp của a là n/gcd(a, n), và a sinh ra cả nhóm khi gcd(a, n) = 1 (có phi(n) phần tử sinh).
-- Các phần tử khả nghịch của Z_n (gcd(a, n) = 1) lập thành nhóm nhân có phi(n) phần tử.
+:::core
+Cấp của a là số bước ít nhất để lặp a quay về trung hòa; theo Lagrange, nó và mọi nhóm con đều có số phần tử chia hết cấp của nhóm.
+:::
 
 $$ \mathrm{ord}(a) = \frac{n}{\mathrm{gcd}(a, n)} \quad (a \in \mathbb{Z}_n), \qquad \mathrm{ord}(a) \mid |G| $$
 
-Ví dụ: nhóm các phần tử khả nghịch của Z_7 (cấp 6) và phần tử 3.
+:::check
+Q: Trong Z_10 với phép cộng, 6 có cấp bao nhiêu? Kể các bước.
+A: 10/gcd(6, 10) = 5: 6, 2, 8, 4, 0.
+:::
 
-1. 3^1 = 3, 3^2 = 9 = 2, 3^3 = 6 (mọi phép tính modulo 7).
-2. 3^6 = (3^3)^2 = 36 = 1.
-3. Cấp của 3 chia hết 6 và không phải 1, 2, 3 (các lũy thừa đó khác 1), nên cấp là 6: 3 sinh ra cả nhóm.
+### Nhóm, nhóm con và phần tử sinh
 
-> Lỗi thường gặp: dùng nghịch đảo nhân 1/a khi phép toán của nhóm là phép cộng (phần tử ngược là -a); kiểm tra nhóm con mà quên điều kiện đóng hay quên khác rỗng; cho rằng hợp của hai nhóm con là nhóm con (2Z hợp 3Z chứa 2 và 3 nhưng không chứa 2 + 3 = 5); nghĩ rằng một tập con của nhóm có số phần tử bất kỳ đều có thể là nhóm con.
+Nhóm là một tập với phép toán đóng, kết hợp, có trung hòa, và phần tử nào cũng có ngược. Nhóm con là tập con khác rỗng, đóng với phép toán và với việc lấy ngược. Trong Z_n với phép cộng, a sinh cả nhóm khi gcd(a, n) = 1, nên có phi(n) phần tử sinh. Các số khả nghịch của Z_n lập một nhóm nhân có phi(n) phần tử.
+
+Ví dụ: cấp của 2 trong nhóm nhân các số khác 0 của Z_7.
+
+1. 2^1 = 2, 2^2 = 4, 2^3 = 8 = 1 (modulo 7).
+2. Cấp là 3, chia hết 6 phần tử của nhóm.
+3. 2 không sinh cả nhóm, vì 3 nhỏ hơn 6.
+
+> Lỗi thường gặp: lấy 1/a làm phần tử ngược trong nhóm cộng. Phép toán là cộng thì ngược của a là -a. Hợp hai nhóm con cũng không phải nhóm con: 2 và 3 trong 2Z hợp 3Z, nhưng 5 thì không.
+
+:::check
+Q: Nhóm có 15 phần tử có thể có nhóm con 6 phần tử không? Z_15 có bao nhiêu phần tử sinh?
+A: Không: 6 không chia hết 15. Phần tử sinh là a có gcd(a, 15) = 1: phi(15) = 8.
+:::
 
 ## Vành và trường
 
-Vành là tập có hai phép toán, cộng và nhân: với phép cộng là một nhóm giao hoán, phép nhân kết hợp, và nhân phân phối đối với cộng. Vành giao hoán có đơn vị 1 là vành mà phép nhân giao hoán và có phần tử trung hoà 1. Trường là vành giao hoán có đơn vị 1 khác 0 mà mọi phần tử khác 0 đều khả nghịch.
+:::hook
+Mã QR và mã sửa lỗi trên đĩa tính toán trong một trường hữu hạn. Chọn Z_n với n hợp số thì phép chia hỏng và mã không giải lại được.
+:::
 
-- Ước của 0: a khác 0 có a b = 0 với một b khác 0; trường không có ước của 0.
-- Z là vành giao hoán không có ước của 0 nhưng không là trường (2 không có nghịch đảo); Q, R, C là trường.
-- Z_n là trường khi và chỉ khi n nguyên tố; nếu n hợp số thì Z_n có ước của 0 và các phần tử không khả nghịch.
-- Ma trận vuông cấp 2 là vành không giao hoán, có ước của 0.
+:::figure grid
+caption: Bảng nhân Z_6. Đỏ: hai số khác 0 nhân ra 0 (ước của 0). Xanh: tích bằng 1, chỉ 1 và 5 khả nghịch.
+table
+head x 0 1 2 3 4 5
+row 0 0 0 0 0 0 0
+row 1 0 1 2 3 4 5
+row 2 0 2 4 0 2 4
+row 3 0 3 0 3 0 3
+row 4 0 4 2 0 4 2
+row 5 0 5 4 3 2 1
+mark cell 3 5 do
+mark cell 4 4 do
+mark cell 4 6 do
+mark cell 5 5 do
+mark cell 2 3 luc
+mark cell 6 7 luc
+:::
+
+:::core
+Trường là nơi chia được cho mọi số khác 0; Z_n là trường đúng khi n nguyên tố, còn n hợp số thì có ước của 0 phá phép chia.
+:::
+
+Vành: cộng là nhóm giao hoán, nhân kết hợp, nhân phân phối với cộng. Trong Z_n, a khả nghịch khi gcd(a, n) = 1; mỗi số khác 0 hoặc khả nghịch, hoặc là ước của 0. Z không có ước của 0 nhưng vẫn không là trường: 2 không có nghịch đảo.
+
+:::check
+Q: Z_5 có là trường không? Nghịch đảo của 3 trong Z_5 là gì?
+A: Có, vì 5 nguyên tố. 3 . 2 = 6 = 1, nên nghịch đảo của 3 là 2.
+:::
+
+### Tìm số khả nghịch trong Z_n
+
+Ví dụ: xét Z_9.
+
+1. Khả nghịch: gcd(a, 9) = 1, tức 1, 2, 4, 5, 7, 8 (phi(9) = 6). Nghịch đảo của 2 là 5: 2 . 5 = 10 = 1.
+2. Còn lại 3 và 6 là ước của 0: 3 . 3 = 9 = 0. Vậy Z_9 không là trường.
 
 $$ \exists\, b : \; ab \equiv 1 \ (\mathrm{mod}\ n) \iff \mathrm{gcd}(a, n) = 1 $$
 
-Ví dụ Z_8: 2 . 4 = 8 = 0 với 2, 4 khác 0 nên 2 và 4 là ước của 0, không khả nghịch; chỉ 1, 3, 5, 7 khả nghịch (mỗi số tự nghịch đảo của nó, vì 3 . 3 = 9 = 1). Vậy Z_8 là vành giao hoán nhưng không là trường.
+> Lỗi thường gặp: thử vài số thấy khả nghịch rồi kết luận là trường. Phải xét mọi số khác 0; Z_8 có 3, 5, 7 khả nghịch nhưng 2 . 4 = 0.
 
-> Lỗi thường gặp: thử vài phần tử khả nghịch rồi kết luận mọi phần tử khác 0 đều khả nghịch; nói "vành giao hoán không có ước của 0 là trường" (đúng khi vành hữu hạn, sai với Z); đếm ước của 0 mà quên rằng phần tử khả nghịch không bao giờ là ước của 0.
+:::check
+Q: Trong Z_7, nghịch đảo của 2 là gì? Z_15 có bao nhiêu ước của 0?
+A: 2 . 4 = 8 = 1, nên là 4. Z_15: 14 số khác 0, phi(15) = 8 khả nghịch, còn 6 ước của 0 (3, 5, 6, 9, 10, 12).
+:::
 
 ## Dạng tuyến tính và song tuyến tính
 
-Dạng song tuyến tính f trên R^n gán cho mỗi cặp vectơ (x, y) một số, tuyến tính theo từng biến khi biến kia cố định. Mọi dạng như vậy có ma trận A với phần tử a_ij = f(e_i, e_j) và viết được f(x, y) = x^T A y; thứ tự x, y quan trọng. f đối xứng khi và chỉ khi A^T = A.
-
-Dạng toàn phương của f là q(x) = f(x, x). Nó chỉ phụ thuộc phần đối xứng của A, nên có thể thay A bằng ma trận đối xứng B = (A + A^T)/2, với các phần tử ngoài đường chéo bằng một nửa hệ số của x_i x_j.
-
-$$ f(x, y) = x^{T} A y, \qquad q(x) = x^{T} A x = \sum_{i, j} a_{ij} x_i x_j, \qquad B = \frac{A + A^{T}}{2} $$
-
-Ví dụ về thứ tự: với A như dưới đây, u = (1, 1) và v = (2, -1).
-
-:::matrix
-A = 2 1 ; -1 3
+:::hook
+Điểm chú ý trong mô hình attention có dạng x^T A y. A không đối xứng nên "x chú ý tới y" có thể khác "y chú ý tới x".
 :::
 
-1. A v = (2 . 2 + 1 . (-1), -1 . 2 + 3 . (-1)) = (3, -5), nên f(u, v) = u^T (A v) = 3 - 5 = -2.
-2. A u = (3, 2), nên f(v, u) = v^T (A u) = 2 . 3 + (-1) . 2 = 4: đổi chỗ hai vectơ cho kết quả khác vì A không đối xứng.
+:::figure grid
+caption: f = x1 y1 + 4 x1 y2 + 2 x2 y1 - 3 x2 y2: ô (i, j) của A là hệ số của x_i y_j. q = f(x, x) gộp 4 + 2 = 6, chia đôi vào B.
+table "A của f"
+head y1 y2
+side x1 x2
+row 1 4
+row 2 -3
+mark cell 1 2 vang
+mark cell 2 1 vang
+op "->"
+table "B của q"
+head x1 x2
+side x1 x2
+row 1 3
+row 3 -3
+mark cell 1 2 luc
+mark cell 2 1 luc
+:::
 
-Ví dụ q(x) = 3 x1^2 - 8 x1 x2 + 5 x2^2:
+:::core
+Dạng song tuyến tính là f(x, y) = x^T A y với a_ij là hệ số của x_i y_j; dạng toàn phương q(x) = f(x, x) chỉ thấy phần đối xứng của A.
+:::
 
-1. Đường chéo của B lấy từ hệ số của x1^2 và x2^2: 3 và 5.
-2. Hệ số -8 của x1 x2 chia đều cho hai ô đối xứng: b12 = b21 = -4.
-3. Kiểm tra: q(2, 1) = 12 - 16 + 5 = 1 và x^T B x = 3 . 4 + 2 . (-4) . 2 + 5 = 1.
+f đối xứng đúng khi A^T = A. Hai dạng khác nhau có thể cho cùng q. B đối xứng cấp 2 thì q xác định dương khi b11 > 0 và det B > 0; q(1, 1) bằng tổng các ô của B.
 
-Muốn biết q xác định dương, xét ma trận đối xứng B: với cấp 2, b11 > 0 và det B > 0 (ở ví dụ trên det B = 15 - 16 = -1 nên q nhận cả hai dấu).
+Ví dụ: A như hình, u = (1, 1), v = (2, -1).
 
-> Lỗi thường gặp: chia hệ số x1 x2 không chia đôi (hệ số 2 b12, nên b12 = hệ số/2); đảo thứ tự x, y và đọc A chuyển vị; cho rằng mọi dạng song tuyến tính đều đối xứng; coi hai dạng song tuyến tính có cùng q là một (chúng chỉ cùng phần đối xứng).
+1. Av = (2 - 4, 4 + 3) = (-2, 7); f(u, v) = -2 + 7 = 5.
+2. Au = (5, -1); f(v, u) = 10 + 1 = 11. Khác nhau, vì A không đối xứng.
+
+$$ f(x, y) = x^{T} A y, \qquad B = \frac{A + A^{T}}{2} $$
+
+> Lỗi thường gặp: đặt nguyên hệ số của x1 x2 vào cả hai ô của B. x^T B x có 2 b12 x1 x2, nên b12 là một nửa hệ số.
+
+:::check
+Q: q = 2 x1^2 - 4 x1 x2 + 3 x2^2. Viết B. q có xác định dương không?
+A: B = [2, -2; -2, 3]. b11 = 2 > 0, det B = 6 - 4 = 2 > 0: xác định dương.
+:::

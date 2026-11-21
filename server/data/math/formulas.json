@@ -9,41 +9,11 @@
    "w": 57.41,
    "h": 10.29
   },
-  "012d966802200465": {
-   "tex": "\\neg(p \\land q) \\equiv \\neg p \\lor \\neg q",
-   "alt": "khong(p va q) = khong p hoac khong q",
-   "w": 84.11,
-   "h": 10.18
-  },
   "02bdafbb227413a2": {
    "tex": "V_{Ox} = \\pi\\int_a^b f(x)^2\\,dx",
    "alt": "V_(Ox) = pitich phan_a^b f(x)^2 dx",
    "w": 90.02,
    "h": 25.27
-  },
-  "03bb5bfa93628956": {
-   "tex": "X_{tb} = \\frac{X_1 + X_2 + \\cdots + X_n}{n}",
-   "alt": "X_(tb) = (X_1 + X_2 + ... + X_n)/n",
-   "w": 121.63,
-   "h": 20.93
-  },
-  "054778ea7f6bd288": {
-   "tex": "(x, y, z) = t(4, -3, 1)",
-   "alt": "(x, y, z) = t(4, -3, 1)",
-   "w": 89.94,
-   "h": 10.18
-  },
-  "066916cf0ca13e74": {
-   "tex": "\\text{QHTT co nghiem} \\Rightarrow \\text{co nghiem toi uu tai mot dinh}",
-   "alt": "QHTT co nghiem => co nghiem toi uu tai mot dinh",
-   "w": 222.59,
-   "h": 9.27
-  },
-  "09c92c7c6ca722bc": {
-   "tex": "R_n(x) = \\frac{f^{(n+1)}(c)}{(n+1)!}(x - a)^{n+1}",
-   "alt": "R_n(x) = (f^((n+1))(c))/((n+1)!)(x - a)^(n+1)",
-   "w": 129.07,
-   "h": 26.1
   },
   "0a32b7c03d32f24e": {
    "tex": "(a * b) * c = a * (b * c), \\qquad a * e = e * a = a, \\qquad a * a' = a' * a = e",
@@ -51,29 +21,11 @@
    "w": 296.33,
    "h": 10.78
   },
-  "0a71cf0456ab4f7f": {
-   "tex": "\\ln(1 + x) \\sim x, \\quad e^{x} - 1 \\sim x, \\quad 1 - \\cos x \\sim \\frac{x^{2}}{2}",
-   "alt": "ln(1 + x) ~ x, e^x - 1 ~ x, 1 - cos x ~ (x^2)/2",
-   "w": 202.23,
-   "h": 22.36
-  },
   "0b077c7f7d33af9c": {
    "tex": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
    "alt": "(a + bi)(c + di) = (ac - bd) + (ad + bc)i",
    "w": 176.4,
    "h": 10.18
-  },
-  "0b37e81408d24d13": {
-   "tex": "(\\arcsin x)' = \\frac{1}{\\sqrt{1 - x^2}}, \\qquad (\\arctan x)' = \\frac{1}{1 + x^2}",
-   "alt": "(arcsin x)' = 1/(can(1 - x^2)), (arctan x)' = 1/(1 + x^2)",
-   "w": 216.24,
-   "h": 24.05
-  },
-  "0c4a78547ab13451": {
-   "tex": "E(X) = \\frac{a+b}{2}, \\qquad V(X) = \\frac{(b-a)^2}{12}",
-   "alt": "E(X) = (a+b)/2, V(X) = ((b-a)^2)/12",
-   "w": 166.56,
-   "h": 22.7
   },
   "0cf5bb6e26ab181d": {
    "tex": "C_{n+k-1}^{n-1} = C_{n+k-1}^{k}",
@@ -93,35 +45,11 @@
    "w": 175.81,
    "h": 10.18
   },
-  "0edcb1c94c35bfd5": {
-   "tex": "z = r(\\cos \\varphi + i \\sin \\varphi)",
-   "alt": "z = r(cos phi + i sin phi)",
-   "w": 91.31,
-   "h": 10.18
-  },
   "10382e38e43c88ad": {
    "tex": "f(t x + (1 - t) y) \\le t f(x) + (1 - t) f(y)",
    "alt": "f(t x + (1 - t) y) <= t f(x) + (1 - t) f(y)",
    "w": 166.27,
    "h": 10.18
-  },
-  "1058a5a4e4f0d5dc": {
-   "tex": "A + B = A \\cup B, \\quad AB = A \\cap B",
-   "alt": "A + B = A hop B, AB = A giao B",
-   "w": 138.39,
-   "h": 9.27
-  },
-  "10ed6db9149c46d7": {
-   "tex": "\\frac{px + q}{(x - r)(x - s)} = \\frac{A}{x - r} + \\frac{B}{x - s}, \\qquad A = \\frac{pr + q}{r - s},\\; B = \\frac{ps + q}{s - r}",
-   "alt": "(px + q)/((x - r)(x - s)) = A/(x - r) + B/(x - s), A = (pr + q)/(r - s), B = (ps + q)/(s - r)",
-   "w": 284.7,
-   "h": 23.94
-  },
-  "110674aba413b4dd": {
-   "tex": "A_n^k = n(n-1)\\cdots(n-k+1) = \\frac{n!}{(n-k)!}",
-   "alt": "A_n^k = n(n-1)...(n-k+1) = (n!)/((n-k)!)",
-   "w": 181.36,
-   "h": 23.94
   },
   "115c892ae01159b1": {
    "tex": "f(\\lambda x + (1 - \\lambda) y) \\le \\lambda f(x) + (1 - \\lambda) f(y), \\qquad 0 \\le \\lambda \\le 1",
@@ -134,24 +62,6 @@
    "alt": "f(x) = tong_(k=0)^n (f^((k))(a))/(k!)(x - a)^k + R_n(x)",
    "w": 158.69,
    "h": 29.21
-  },
-  "12cf639fa5409791": {
-   "tex": "y'(x) = -\\frac{F_x}{F_y}, \\qquad z_x = -\\frac{F_x}{F_z},\\; z_y = -\\frac{F_y}{F_z}",
-   "alt": "y'(x) = -(F_x)/(F_y), z_x = -(F_x)/(F_z), z_y = -(F_y)/(F_z)",
-   "w": 184.48,
-   "h": 24.6
-  },
-  "133cac3736ab4db4": {
-   "tex": "\\max_{[a, b]} f = \\max\\{ f(a),\\ f(b),\\ f(c_1), \\dots, f(c_k) \\}",
-   "alt": "max_([a, b]) f = max{ f(a), f(b), f(c_1), ..., f(c_k) }",
-   "w": 187.47,
-   "h": 17.67
-  },
-  "147f30dcaba567b8": {
-   "tex": "A = \\left( [f(b_{1})]_{C} \\; \\ldots \\; [f(b_{n})]_{C} \\right)",
-   "alt": "A = ([f(b_1)]_C ... [f(b_n)]_C)",
-   "w": 119.46,
-   "h": 10.18
   },
   "15718065a71c35d5": {
    "tex": "f'(c) = \\frac{f(b) - f(a)}{b - a}",
@@ -171,23 +81,17 @@
    "w": 220.73,
    "h": 25.76
   },
-  "1a2c7d1249aaa518": {
-   "tex": "\\frac{(n-1)!}{2}, \\quad \\frac{n! \\, (n-1)!}{2}",
-   "alt": "((n-1)!)/2, (n! (n-1)!)/2",
-   "w": 103.1,
-   "h": 21.85
+  "198df9af18e87aab": {
+   "tex": "P(\\bar{A}) = 1 - P(A)",
+   "alt": "P(A) = 1 - P(A)",
+   "w": 77.52,
+   "h": 12.39
   },
   "1a3aeb1d3a6f30ff": {
    "tex": "F(x) = \\int_{-\\infty}^{x} f(t)\\,dt, \\qquad f(x) = F'(x)",
    "alt": "F(x) = tich phan_(-vo cung)^x f(t) dt, f(x) = F'(x)",
    "w": 166.38,
    "h": 23.98
-  },
-  "1a7a2a3f778ea5ad": {
-   "tex": "p = \\lim_{x \\to \\infty} \\frac{f(x)}{x}, \\qquad q = \\lim_{x \\to \\infty} \\big(f(x) - px\\big)",
-   "alt": "p = lim_(x -> vo cung) (f(x))/x, q = lim_(x -> vo cung) (f(x) - px)",
-   "w": 178.16,
-   "h": 22.07
   },
   "1aef2be96dd84a04": {
    "tex": "f = \\frac{m_1 + m_2}{n_1 + n_2}, \\qquad z = \\frac{f_1 - f_2}{\\sqrt{f(1-f)(1/n_1 + 1/n_2)}}",
@@ -201,18 +105,6 @@
    "w": 182.55,
    "h": 22.05
   },
-  "1d229de8de7acbd2": {
-   "tex": "p \\Rightarrow q \\text{ sai } \\Leftrightarrow p \\text{ dung va } q \\text{ sai}",
-   "alt": "p => q sai <=> p dung va q sai",
-   "w": 122.96,
-   "h": 9.16
-  },
-  "1dc317c45fb6120c": {
-   "tex": "(1 + x)^{\\alpha} = 1 + \\alpha x + \\frac{\\alpha(\\alpha - 1)}{2!}x^2 + \\cdots + o(x^n)",
-   "alt": "(1 + x)^(alpha) = 1 + alpha x + (alpha(alpha - 1))/(2!)x^2 + ... + o(x^n)",
-   "w": 206.54,
-   "h": 21.85
-  },
   "1dddd655e91a8c1b": {
    "tex": "P\\left(|X_{tb} - \\mu| \\ge \\varepsilon\\right) \\le \\frac{\\sigma^2}{n\\,\\varepsilon^2} \\to 0",
    "alt": "P (|X_(tb) - mu| >= epsilon) <= (sigma^2)/(n epsilon^2) -> 0",
@@ -225,47 +117,17 @@
    "w": 120.19,
    "h": 21.15
   },
-  "1fee94eb301913ef": {
-   "tex": "(3, 4 \\mid 5) - 3(1, 2 \\mid 3) = (0, -2 \\mid -4)",
-   "alt": "(3, 4 | 5) - 3(1, 2 | 3) = (0, -2 | -4)",
-   "w": 155.57,
-   "h": 10.18
-  },
-  "20b37cc74e90ca34": {
-   "tex": "\\int_a^b f(x)\\,dx = \\lim_{c \\to a^+} \\int_c^b f(x)\\,dx",
-   "alt": "tich phan_a^b f(x) dx = lim_(c -> a^+) tich phan_c^b f(x) dx",
-   "w": 130.18,
-   "h": 25.28
-  },
   "20b67950cac8d965": {
    "tex": "P(A \\mid B) = \\frac{P(AB)}{P(B)}, \\quad P(B) > 0",
    "alt": "P(A | B) = (P(AB))/(P(B)), P(B) > 0",
    "w": 145.07,
    "h": 24.64
   },
-  "226eeab95bddeda1": {
-   "tex": "y = \\log_a x \\;\\Leftrightarrow\\; a^{y} = x, \\quad x > 0",
-   "alt": "y = log_a x <=> a^y = x, x > 0",
-   "w": 133.61,
-   "h": 9.92
-  },
   "229403b9973357a6": {
    "tex": "(AB)_{ij} = a_{i1}b_{1j} + a_{i2}b_{2j} + \\ldots + a_{in}b_{nj}",
    "alt": "(AB)_(ij) = a_(i1)b_(1j) + a_(i2)b_(2j) + ... + a_(in)b_(nj)",
    "w": 166.14,
    "h": 10.63
-  },
-  "233b3f3ee8c6cef8": {
-   "tex": "\\text{rank} A \\le \\text{min}(m, n) \\quad \\text{voi } A \\text{ co } m \\times n",
-   "alt": "rank A <= min(m, n) voi A co m x n",
-   "w": 161.65,
-   "h": 10.18
-  },
-  "242e3c800ffacaee": {
-   "tex": "a_{1}u_{1} + a_{2}u_{2} + \\ldots + a_{k}u_{k}",
-   "alt": "a_1u_1 + a_2u_2 + ... + a_ku_k",
-   "w": 109.87,
-   "h": 7.54
   },
   "243d6fcadfc9efaf": {
    "tex": "\\varepsilon = z\\,\\frac{\\sigma}{\\sqrt{n}}, \\qquad 2\\,\\Phi(z) = 1 - \\alpha",
@@ -279,23 +141,11 @@
    "w": 135.18,
    "h": 10.18
   },
-  "26a9088ed1e985e3": {
-   "tex": "d(v) := \\min( d(v), \\, d(u) + w(u, v) )",
-   "alt": "d(v) := min(d(v), d(u) + w(u, v))",
-   "w": 145.81,
-   "h": 10.18
-  },
   "276f6dc656a48c00": {
    "tex": "(A^{T})_{ij} = a_{ji}",
    "alt": "(A^T)_(ij) = a_(ji)",
    "w": 53.02,
    "h": 12.07
-  },
-  "277e5e278e0e9dfe": {
-   "tex": "|A_1 \\times A_2 \\times \\cdots \\times A_k| = |A_1| \\cdot |A_2| \\cdots |A_k|",
-   "alt": "|A_1 x A_2 x ... x A_k| = |A_1| . |A_2| ... |A_k|",
-   "w": 180.95,
-   "h": 10.17
   },
   "289d1c0980a3461f": {
    "tex": "f(x_0 + dx) \\approx f(x_0) + f'(x_0)\\, dx",
@@ -303,71 +153,11 @@
    "w": 137.13,
    "h": 10.78
   },
-  "29597be1dff5231b": {
-   "tex": "Ax = b, \\quad A \\text{ co } m \\times n, \\quad x \\in \\mathbb{R}^{n}, \\quad b \\in \\mathbb{R}^{m}",
-   "alt": "Ax = b, A co m x n, x thuoc R^n, b thuoc R^m",
-   "w": 187.47,
-   "h": 9.36
-  },
-  "2a9f4c5eac2ae50d": {
-   "tex": "\\mathrm{limsup}_{n \\to \\infty}\\, a_n = \\lim_{n \\to \\infty} \\mathrm{sup}\\,\\{a_k : k \\ge n\\}",
-   "alt": "limsup_(n -> vo cung) a_n = lim_(n -> vo cung) sup {a_k : k >= n}",
-   "w": 165.95,
-   "h": 14.84
-  },
-  "2e267a1278f439cc": {
-   "tex": "\\max c^T x \\quad \\text{voi} \\quad A x \\le b, \\; x \\ge 0",
-   "alt": "max c^T x voi A x <= b, x >= 0",
-   "w": 133.7,
-   "h": 11.05
-  },
-  "2e66ba486044d453": {
-   "tex": "f'' > 0 \\;\\Rightarrow\\; f(x) > f(x_0) + f'(x_0)(x - x_0) \\quad (x \\ne x_0)",
-   "alt": "f'' > 0 => f(x) > f(x_0) + f'(x_0)(x - x_0) (x != x_0)",
-   "w": 231.65,
-   "h": 10.78
-  },
-  "2e8c450dab6658a1": {
-   "tex": "\\text{so tam giac} = \\frac{1}{6} \\operatorname{tr}(A^3)",
-   "alt": "so tam giac = 1/6 tr(A^3)",
-   "w": 100.35,
-   "h": 20.87
-  },
   "2ee6047bbf2f1373": {
    "tex": "\\lim_{x \\to 3} \\frac{x^{2} - 9}{x - 3} = \\lim_{x \\to 3} (x + 3) = 6",
    "alt": "lim_(x -> 3) (x^2 - 9)/(x - 3) = lim_(x -> 3) (x + 3) = 6",
    "w": 127.34,
    "h": 23.19
-  },
-  "30bd9caf1cd478e3": {
-   "tex": "A \\times B = \\{(a, b) : a \\in A, b \\in B\\}",
-   "alt": "A x B = {(a, b) : a thuoc A, b thuoc B}",
-   "w": 136.79,
-   "h": 10.18
-  },
-  "3169079d3b0823a1": {
-   "tex": "f : X \\to \\mathbb{R}, \\quad x \\mapsto f(x)",
-   "alt": "f : X -> R, x -> f(x)",
-   "w": 101.66,
-   "h": 10.18
-  },
-  "3215732d2ddc7eea": {
-   "tex": "A = (a_{ij}), \\quad 1 \\le i \\le m, \\quad 1 \\le j \\le n",
-   "alt": "A = (a_(ij)), 1 <= i <= m, 1 <= j <= n",
-   "w": 157.47,
-   "h": 10.63
-  },
-  "32a36e2d903ea72a": {
-   "tex": "\\text{det} A = D_{\\text{xuong}} - D_{\\text{len}}",
-   "alt": "det A = D_(xuong) - D_(len)",
-   "w": 94.55,
-   "h": 10.3
-  },
-  "34c544050053402f": {
-   "tex": "A \\cdot 0 = 0",
-   "alt": "A . 0 = 0",
-   "w": 38.75,
-   "h": 8.12
   },
   "34cf332e511b5356": {
    "tex": "|x_n - x^*| \\le \\frac{b - a}{2^{n+1}}",
@@ -405,24 +195,6 @@
    "w": 146.07,
    "h": 11.54
   },
-  "38c652779be35416": {
-   "tex": "P(A_1 A_2 A_3) = P(A_1)\\,P(A_2 \\mid A_1)\\,P(A_3 \\mid A_1 A_2)",
-   "alt": "P(A_1 A_2 A_3) = P(A_1) P(A_2 | A_1) P(A_3 | A_1 A_2)",
-   "w": 204.94,
-   "h": 10.18
-  },
-  "397a98cce663d288": {
-   "tex": "(x, y, z) = (-1 + 3t, \\; 2 - t, \\; t), \\quad t \\in \\mathbb{R}",
-   "alt": "(x, y, z) = (-1 + 3t, 2 - t, t), t thuoc R",
-   "w": 166.02,
-   "h": 10.18
-  },
-  "39807d78d6ebc283": {
-   "tex": "a_n = A \\, r_1^{n} + B \\, r_2^{n}",
-   "alt": "a_n = A r_1^n + B r_2^n",
-   "w": 74.85,
-   "h": 9.9
-  },
   "39d896f8db2b30f4": {
    "tex": "Av = tv, \\; v \\neq 0 \\iff \\text{det}(A - tI) = 0",
    "alt": "Av = tv, v != 0 <=> det(A - tI) = 0",
@@ -441,23 +213,17 @@
    "w": 50.2,
    "h": 18.48
   },
-  "3aa010db4da7a84a": {
-   "tex": "0 \\le P(A) \\le 1, \\qquad P(\\Omega) = 1",
-   "alt": "0 <= P(A) <= 1, P(Omega) = 1",
-   "w": 127.01,
-   "h": 10.18
-  },
-  "3ad50f59fa479d3a": {
-   "tex": "\\frac{f(b) - f(a)}{g(b) - g(a)} = \\frac{f'(c)}{g'(c)}",
-   "alt": "(f(b) - f(a))/(g(b) - g(a)) = (f'(c))/(g'(c))",
-   "w": 93.07,
-   "h": 24.73
-  },
   "3b0f8edbac98f095": {
    "tex": "f_Y(y) = \\frac{1}{|a|}\\, f_X\\!\\left(\\frac{y - b}{a}\\right)",
    "alt": "f_Y(y) = 1/(|a|) f_X ((y - b)/a)",
    "w": 108.27,
    "h": 24.52
+  },
+  "3b3f31dcdb497af5": {
+   "tex": "(AB)^{-1} = B^{-1} A^{-1}",
+   "alt": "(AB)^(-1) = B^(-1) A^(-1)",
+   "w": 82.36,
+   "h": 11.54
   },
   "3c01a2765d54addb": {
    "tex": "\\exists\\, b : \\; ab \\equiv 1 \\ (\\mathrm{mod}\\ n) \\iff \\mathrm{gcd}(a, n) = 1",
@@ -465,34 +231,16 @@
    "w": 177.93,
    "h": 10.18
   },
-  "3cc416bb27cd8779": {
-   "tex": "\\sin x = x - \\frac{x^3}{3!} + \\frac{x^5}{5!} - \\cdots, \\qquad \\cos x = 1 - \\frac{x^2}{2!} + \\frac{x^4}{4!} - \\cdots",
-   "alt": "sin x = x - (x^3)/(3!) + (x^5)/(5!) - ..., cos x = 1 - (x^2)/(2!) + (x^4)/(4!) - ...",
-   "w": 263.35,
-   "h": 22.66
-  },
   "3d13cf8d5d2e6f85": {
    "tex": "V(X) = E(X^2) - \\left(E(X)\\right)^2, \\qquad \\sigma(X) = \\sqrt{V(X)}",
    "alt": "V(X) = E(X^2) - (E(X))^2, sigma(X) = can(V(X))",
    "w": 212.21,
    "h": 18.94
   },
-  "3d9ecfce9b1c7b78": {
-   "tex": "f(a + dx, b + dy) \\approx f + f_x\\,dx + f_y\\,dy + \\frac{1}{2}\\big(f_{xx}\\,dx^2 + 2f_{xy}\\,dx\\,dy + f_{yy}\\,dy^2\\big)",
-   "alt": "f(a + dx, b + dy) xap xi f + f_x dx + f_y dy + 1/2 (f_(xx) dx^2 + 2f_(xy) dx dy + f_(yy) dy^2)",
-   "w": 322.52,
-   "h": 20.65
-  },
   "3da09a42c3cf2aff": {
    "tex": "f(u) = f(v) \\Rightarrow u = v",
    "alt": "f(u) = f(v) => u = v",
    "w": 91.55,
-   "h": 10.18
-  },
-  "3e1508841beeaea6": {
-   "tex": "f(x^*) = \\text{max} \\{ f(x) : x \\in D \\}",
-   "alt": "f(x^*) = max { f(x) : x thuoc D }",
-   "w": 121.02,
    "h": 10.18
   },
   "3f22509d5c649b0b": {
@@ -513,35 +261,11 @@
    "w": 166.45,
    "h": 21.85
   },
-  "415e067d4c137fd5": {
-   "tex": "f(x, y) = x^{T} A y, \\qquad q(x) = x^{T} A x = \\sum_{i, j} a_{ij} x_i x_j, \\qquad B = \\frac{A + A^{T}}{2}",
-   "alt": "f(x, y) = x^T A y, q(x) = x^T A x = tong_(i, j) a_(ij) x_i x_j, B = (A + A^T)/2",
-   "w": 293.63,
-   "h": 28.98
-  },
-  "417b96ad43ac1e42": {
-   "tex": "a(u + v) = au + av",
-   "alt": "a(u + v) = au + av",
-   "w": 84.07,
-   "h": 10.18
-  },
   "43b03214b7b9df30": {
    "tex": "\\varepsilon = z\\,\\sqrt{\\frac{f(1-f)}{n}}",
    "alt": "epsilon = z can((f(1-f))/n)",
    "w": 76.27,
    "h": 25.05
-  },
-  "4433ffcba0ee76cf": {
-   "tex": "\\text{det} A = a_{i1}C_{i1} + a_{i2}C_{i2} + \\ldots + a_{in}C_{in}",
-   "alt": "det A = a_(i1)C_(i1) + a_(i2)C_(i2) + ... + a_(in)C_(in)",
-   "w": 165.63,
-   "h": 8.9
-  },
-  "44ab53287487ed85": {
-   "tex": "f\\Big(\\sum_i \\lambda_i x_i\\Big) \\le \\sum_i \\lambda_i f(x_i)",
-   "alt": "f (tong_i lambda_i x_i) <= tong_i lambda_i f(x_i)",
-   "w": 116.18,
-   "h": 23.84
   },
   "4536348703b6c9a6": {
    "tex": "s^2 = \\frac{(n_1 - 1)s_1^2 + (n_2 - 1)s_2^2}{n_1 + n_2 - 2}, \\qquad t = \\frac{x_{tb1} - x_{tb2}}{\\sqrt{s^2(1/n_1 + 1/n_2)}}",
@@ -549,23 +273,11 @@
    "w": 258.24,
    "h": 28.53
   },
-  "47499a61e9a7ebc2": {
-   "tex": "P(a \\le X \\le b) = \\int_a^b f(x)\\,dx",
-   "alt": "P(a <= X <= b) = tich phan_a^b f(x) dx",
-   "w": 122.84,
-   "h": 25.27
-  },
   "4804eff2676459da": {
    "tex": "z = \\frac{x_{tb} - \\mu_0}{\\sigma/\\sqrt{n}}, \\qquad t = \\frac{x_{tb} - \\mu_0}{s/\\sqrt{n}}",
    "alt": "z = (x_(tb) - mu_0)/(sigma/can(n)), t = (x_(tb) - mu_0)/(s/can(n))",
    "w": 140.18,
    "h": 23.54
-  },
-  "4863af74e6b9e029": {
-   "tex": "\\min b^T y \\quad \\text{voi} \\quad A^T y \\ge c, \\; y \\ge 0",
-   "alt": "min b^T y voi A^T y >= c, y >= 0",
-   "w": 135.13,
-   "h": 11.16
   },
   "49a517c076f75e41": {
    "tex": "P(X = k) = C_n^k p^k (1-p)^{n-k}, \\quad E(X) = np, \\quad V(X) = np(1-p)",
@@ -573,17 +285,11 @@
    "w": 282.78,
    "h": 11.79
   },
-  "4a9c8736dfc5ff93": {
-   "tex": "P_n = n! = n(n-1)\\cdots 2 \\cdot 1, \\quad 0! = 1",
-   "alt": "P_n = n! = n(n-1)... 2 . 1, 0! = 1",
-   "w": 159.62,
+  "4bdde7ae2f70a5ae": {
+   "tex": "(x, y, z) = (-3 + 5t, \\; 4 - 3t, \\; t)",
+   "alt": "(x, y, z) = (-3 + 5t, 4 - 3t, t)",
+   "w": 132.93,
    "h": 10.18
-  },
-  "4c3294756f8d3949": {
-   "tex": "e^x = 1 + x + \\frac{x^2}{2!} + \\frac{x^3}{3!} + \\cdots + \\frac{x^n}{n!} + o(x^n)",
-   "alt": "e^x = 1 + x + (x^2)/(2!) + (x^3)/(3!) + ... + (x^n)/(n!) + o(x^n)",
-   "w": 189.61,
-   "h": 22.58
   },
   "4c5e9a11d92c94e2": {
    "tex": "d(s, v) = d(s, \\text{truoc}(v)) + 1",
@@ -591,35 +297,11 @@
    "w": 117.17,
    "h": 10.18
   },
-  "4cb4c500f8c77f98": {
-   "tex": "H = \\begin{pmatrix} f_{xx} & f_{xy} \\\\ f_{xy} & f_{yy} \\end{pmatrix}, \\qquad D = f_{xx} f_{yy} - f_{xy}^2",
-   "alt": "H = [f_(xx), f_(xy); f_(xy), f_(yy)], D = f_(xx) f_(yy) - f_(xy)^2",
-   "w": 175.11,
-   "h": 25.35
-  },
   "4cbf208d46d68e28": {
    "tex": "y = f'(a)(x - a) + f(a)",
    "alt": "y = f'(a)(x - a) + f(a)",
    "w": 103.77,
    "h": 10.78
-  },
-  "4d6a70acc50d0a1a": {
-   "tex": "(a+b)^n = \\sum_{k=0}^{n} C_n^k a^{k} b^{n-k}",
-   "alt": "(a+b)^n = tong_(k=0)^n C_n^k a^k b^(n-k)",
-   "w": 106.99,
-   "h": 28.8
-  },
-  "4e50f41f2b9d6a24": {
-   "tex": "\\sin(ax + b) \\text{ co chu ky } \\frac{2\\pi}{|a|}",
-   "alt": "sin(ax + b) co chu ky 2pi/(|a|)",
-   "w": 110.36,
-   "h": 23.43
-  },
-  "4f50a10553b7482c": {
-   "tex": "(A + B)_{ij} = a_{ij} + b_{ij}",
-   "alt": "(A + B)_(ij) = a_(ij) + b_(ij)",
-   "w": 90.39,
-   "h": 10.63
   },
   "4f98eaf916357556": {
    "tex": "Z = \\frac{X - \\mu}{\\sigma} \\sim N(0, 1)",
@@ -675,30 +357,6 @@
    "w": 58.26,
    "h": 21.85
   },
-  "552a574d58f6c107": {
-   "tex": "(x^n)' = n x^{n-1}, \\quad (e^x)' = e^x, \\quad (\\ln x)' = \\frac{1}{x}",
-   "alt": "(x^n)' = n x^(n-1), (e^x)' = e^x, (ln x)' = 1/x",
-   "w": 185.4,
-   "h": 20.76
-  },
-  "5547ad49cda83f3f": {
-   "tex": "\\overline{z} = a - bi",
-   "alt": "z = a - bi",
-   "w": 44.38,
-   "h": 8.56
-  },
-  "5584b8fe42edf5a3": {
-   "tex": "\\text{det}(A^{-1}) = \\frac{1}{\\text{det} A}",
-   "alt": "det(A^(-1)) = 1/(det A)",
-   "w": 79.58,
-   "h": 20.76
-  },
-  "588fd6101f3696b5": {
-   "tex": "[x]_{B} = P \\, [x]_{B'}, \\qquad [x]_{B'} = P^{-1} [x]_{B}",
-   "alt": "[x]_B = P [x]_(B'), [x]_(B') = P^(-1) [x]_B",
-   "w": 154.81,
-   "h": 11.54
-  },
   "592a20d6b836dd6e": {
    "tex": "s = \\mathrm{sup}\\,A \\iff \\big(\\forall a \\in A:\\ a \\le s\\big) \\land \\big(\\forall \\varepsilon > 0\\ \\exists a \\in A:\\ a > s - \\varepsilon\\big)",
    "alt": "s = sup A <=> (voi moi a thuoc A: a <= s) va (voi moi epsilon > 0 ton tai a thuoc A: a > s - epsilon)",
@@ -711,53 +369,11 @@
    "w": 126.96,
    "h": 24.47
   },
-  "5cb06c1c60c80701": {
-   "tex": "f : X \\to Y, \\quad x \\mapsto f(x)",
-   "alt": "f : X -> Y, x -> f(x)",
-   "w": 102.08,
-   "h": 10.18
-  },
-  "5cf17d6e12207cdf": {
-   "tex": "df = f_x\\,dx + f_y\\,dy, \\qquad f(x + dx, y + dy) \\approx f(x, y) + f_x\\,dx + f_y\\,dy",
-   "alt": "df = f_x dx + f_y dy, f(x + dx, y + dy) xap xi f(x, y) + f_x dx + f_y dy",
-   "w": 292.51,
-   "h": 10.64
-  },
-  "5dbe9becf8911520": {
-   "tex": "\\bar{A}_n^k = n^k",
-   "alt": "A_n^k = n^k",
-   "w": 37.08,
-   "h": 12.44
-  },
-  "5ee8b6bf9050edd5": {
-   "tex": "n \\ge \\left(\\frac{z\\,\\sigma}{\\varepsilon_0}\\right)^2, \\qquad n \\ge \\frac{z^2\\, p(1-p)}{\\varepsilon_0^2}",
-   "alt": "n >= ((z sigma)/(epsilon_0))^2, n >= (z^2 p(1-p))/(epsilon_0^2)",
-   "w": 151.47,
-   "h": 27.95
-  },
-  "60328fc8c36e0be0": {
-   "tex": "p \\Rightarrow q \\equiv \\neg p \\lor q",
-   "alt": "p => q = khong p hoac q",
-   "w": 67.13,
-   "h": 8.06
-  },
   "615ec013afc18727": {
    "tex": "(e^{ax})^{(n)} = a^n e^{ax}, \\qquad \\left(\\frac{1}{x}\\right)^{(n)} = \\frac{(-1)^n n!}{x^{n+1}}",
    "alt": "(e^(ax))^((n)) = a^n e^(ax), (1/x)^((n)) = ((-1)^n n!)/(x^(n+1))",
    "w": 183.88,
    "h": 27.04
-  },
-  "616633be3b47ba8a": {
-   "tex": "f'(x) > 0 \\ \\forall x \\in I \\;\\Rightarrow\\; f(x_1) < f(x_2) \\ \\forall x_1 < x_2 \\in I",
-   "alt": "f'(x) > 0 voi moi x thuoc I => f(x_1) < f(x_2) voi moi x_1 < x_2 thuoc I",
-   "w": 215.53,
-   "h": 10.78
-  },
-  "6182547b0ce4984c": {
-   "tex": "\\frac{n!}{n_1! \\, n_2! \\cdots n_m!}",
-   "alt": "(n!)/(n_1! n_2! ... n_m!)",
-   "w": 64.38,
-   "h": 22.76
   },
   "6358d05f6f806e85": {
    "tex": "(g \\circ f)(x) = g(f(x))",
@@ -765,23 +381,11 @@
    "w": 87.44,
    "h": 10.18
   },
-  "63824d2a3ec3731c": {
-   "tex": "C_n^k = C_{n-1}^{k-1} + C_{n-1}^{k}",
-   "alt": "C_n^k = C_(n-1)^(k-1) + C_(n-1)^k",
-   "w": 82.6,
-   "h": 12.8
-  },
-  "64f92ca1dabe938f": {
-   "tex": "x = A^{-1} b",
-   "alt": "x = A^(-1) b",
-   "w": 41.45,
-   "h": 9.83
-  },
-  "65f6b867cfc2e82b": {
-   "tex": "\\nabla f(x^*) = 0, \\quad H(x^*) \\text{ xac dinh duong}",
-   "alt": "grad f(x^*) = 0, H(x^*) xac dinh duong",
-   "w": 162.47,
-   "h": 10.18
+  "63c2d1dc3eead87e": {
+   "tex": "n \\ge \\left(\\frac{z\\,\\sigma}{\\varepsilon_0}\\right)^2",
+   "alt": "n >= ((z sigma)/(epsilon_0))^2",
+   "w": 55.84,
+   "h": 26.44
   },
   "668ddef0fc05beb6": {
    "tex": "P(A) \\ge 0, \\qquad P(\\Omega) = 1, \\qquad A \\cap B = \\varnothing \\Rightarrow P(A \\cup B) = P(A) + P(B)",
@@ -807,12 +411,6 @@
    "w": 125.54,
    "h": 22.74
   },
-  "6a85610dd284982c": {
-   "tex": "f'(x_0) = 0 \\;\\Rightarrow\\; f(x) - f(x_0) \\approx \\frac{f''(x_0)}{2}(x - x_0)^2",
-   "alt": "f'(x_0) = 0 => f(x) - f(x_0) xap xi (f''(x_0))/2(x - x_0)^2",
-   "w": 210.99,
-   "h": 21.94
-  },
   "6b4b95113b260093": {
    "tex": "A_n^k = n (n-1) \\cdots (n-k+1) = \\frac{n!}{(n-k)!}",
    "alt": "A_n^k = n (n-1) ... (n-k+1) = (n!)/((n-k)!)",
@@ -831,41 +429,11 @@
    "w": 145.64,
    "h": 26.45
   },
-  "6e2e7f899468f982": {
-   "tex": "z = a + bi, \\quad a \\in \\mathbb{R}, \\quad b \\in \\mathbb{R}",
-   "alt": "z = a + bi, a thuoc R, b thuoc R",
-   "w": 122.79,
-   "h": 9.04
-  },
-  "6fa41710e30bbddc": {
-   "tex": "f_x(a, b) = \\lim_{h \\to 0} \\frac{f(a + h, b) - f(a, b)}{h} = \\frac{\\partial f}{\\partial x}(a, b)",
-   "alt": "f_x(a, b) = lim_(h -> 0) (f(a + h, b) - f(a, b))/h = (d f)/(d x)(a, b)",
-   "w": 205.05,
-   "h": 22.74
-  },
-  "70e2713a9e375eb8": {
-   "tex": "\\sin x \\sim x, \\quad \\tan x \\sim x, \\quad \\arcsin x \\sim x",
-   "alt": "sin x ~ x, tan x ~ x, arcsin x ~ x",
-   "w": 163.5,
-   "h": 8.78
-  },
-  "71ff8b25e972f593": {
-   "tex": "|z| = \\sqrt{a^{2} + b^{2}}",
-   "alt": "|z| = can(a^2 + b^2)",
-   "w": 65.44,
-   "h": 13.88
-  },
   "7286e9334b8ad8e0": {
    "tex": "2^n, \\quad (n-1)!, \\quad n!",
    "alt": "2^n, (n-1)!, n!",
    "w": 83.01,
    "h": 10.18
-  },
-  "728a1a8a7d942996": {
-   "tex": "|A| = n \\Rightarrow A \\text{ co } 2^{n} \\text{ tap con}",
-   "alt": "|A| = n => A co 2^n tap con",
-   "w": 116.48,
-   "h": 10.17
   },
   "729a351cc4d4cb96": {
    "tex": "P(X > x) = e^{-\\lambda x}, \\quad E(X) = \\frac{1}{\\lambda}, \\quad V(X) = \\frac{1}{\\lambda^2}",
@@ -879,41 +447,11 @@
    "w": 76.15,
    "h": 11.96
   },
-  "74210f766c5c9540": {
-   "tex": "q = t_{1} X^{2} + t_{2} Y^{2} + \\ldots",
-   "alt": "q = t_1 X^2 + t_2 Y^2 + ...",
-   "w": 97.78,
-   "h": 10.98
-  },
   "74778eda40c7ea6d": {
    "tex": "P(X = i) = \\sum_j P(X = i, Y = j), \\qquad P(Y = j \\mid X = i) = \\frac{P(X = i, Y = j)}{P(X = i)}",
    "alt": "P(X = i) = tong_j P(X = i, Y = j), P(Y = j | X = i) = (P(X = i, Y = j))/(P(X = i))",
    "w": 332.4,
    "h": 28.39
-  },
-  "7477bd6f051ff562": {
-   "tex": "(A^{T})^{T} = A",
-   "alt": "(A^T)^T = A",
-   "w": 48.6,
-   "h": 11.62
-  },
-  "7491d1ebe38de8c1": {
-   "tex": "\\text{ti so} = \\min \\frac{b_i}{a_{ij}} \\quad \\text{voi} \\quad a_{ij} > 0",
-   "alt": "ti so = min (b_i)/(a_(ij)) voi a_(ij) > 0",
-   "w": 130.85,
-   "h": 23.93
-  },
-  "76a3fe3a05444099": {
-   "tex": "(a_1, \\ldots, a_n) < (b_1, \\ldots, b_n) \\Leftrightarrow a_i < b_i \\text{ tai vi tri khac nhau dau tien } i",
-   "alt": "(a_1, ..., a_n) < (b_1, ..., b_n) <=> a_i < b_i tai vi tri khac nhau dau tien i",
-   "w": 290.18,
-   "h": 10.18
-  },
-  "7814d01529ad00b6": {
-   "tex": "\\begin{pmatrix} 1 & 1 & 1 & 6 \\\\ 0 & 1 & 2 & 8 \\\\ 0 & 0 & 1 & 3 \\end{pmatrix}",
-   "alt": "[1, 1, 1, 6; 0, 1, 2, 8; 0, 0, 1, 3]",
-   "w": 68.72,
-   "h": 38.69
   },
   "78ad1981fa8694ec": {
    "tex": "U(f, P) = \\sum_k M_k\\, h_k, \\qquad L(f, P) = \\sum_k m_k\\, h_k",
@@ -921,16 +459,10 @@
    "w": 203.3,
    "h": 22.05
   },
-  "795dba240832ed4e": {
-   "tex": "f(x) \\sim \\frac{C}{x^p} \\;(x \\to +\\infty) \\;\\Rightarrow\\; \\left( \\int_a^{+\\infty} f(x)\\,dx < +\\infty \\iff p > 1 \\right)",
-   "alt": "f(x) ~ C/(x^p) (x -> +vo cung) => (tich phan_a^(+vo cung) f(x) dx < +vo cung <=> p > 1)",
-   "w": 278.21,
-   "h": 24.94
-  },
-  "7b3a92db81feea15": {
-   "tex": "\\text{tr}(A) = a_{11} + a_{22} + \\ldots + a_{nn}",
-   "alt": "tr(A) = a_(11) + a_(22) + ... + a_(nn)",
-   "w": 128.08,
+  "78d7610dfeb14e2f": {
+   "tex": "(x, y, z) = t(7, -3, 1)",
+   "alt": "(x, y, z) = t(7, -3, 1)",
+   "w": 89.94,
    "h": 10.18
   },
   "7b51cbf0318d6121": {
@@ -957,34 +489,16 @@
    "w": 121.1,
    "h": 10.18
   },
-  "7d689e9bd3f9a027": {
-   "tex": "\\lim_{n \\to \\infty} u_n = L",
-   "alt": "lim_(n -> vo cung) u_n = L",
-   "w": 51.91,
-   "h": 14.27
-  },
   "7d8d9211459aa88b": {
    "tex": "\\mathrm{Cov}(X, Y) = E\\big[(X - E(X))(Y - E(Y))\\big] = E(XY) - E(X)\\,E(Y)",
    "alt": "Cov(X, Y) = E [(X - E(X))(Y - E(Y)) ] = E(XY) - E(X) E(Y)",
    "w": 289.27,
    "h": 12.21
   },
-  "80d99357e54afa26": {
-   "tex": "\\nabla f = (f_x, f_y), \\qquad D_u f = \\nabla f \\cdot u = |\\nabla f|\\cos\\theta",
-   "alt": "grad f = (f_x, f_y), D_u f = grad f . u = |grad f|costheta",
-   "w": 199.24,
-   "h": 10.64
-  },
   "812f1cf946757744": {
    "tex": "\\text{det}(kA) = k^{n} \\, \\text{det} A",
    "alt": "det(kA) = k^n det A",
    "w": 82.53,
-   "h": 10.18
-  },
-  "818833d1104b6103": {
-   "tex": "A = \\{1, 2, 3\\}",
-   "alt": "A = {1, 2, 3}",
-   "w": 55.72,
    "h": 10.18
   },
   "82bc2f290de80951": {
@@ -1005,40 +519,16 @@
    "w": 92.7,
    "h": 10.18
   },
-  "84958bcbbcaf072f": {
-   "tex": "(\\sin x)' = \\cos x, \\quad (\\cos x)' = -\\sin x, \\quad (\\tan x)' = \\frac{1}{\\cos^2 x}",
-   "alt": "(sin x)' = cos x, (cos x)' = -sin x, (tan x)' = 1/(cos^2 x)",
-   "w": 246.63,
-   "h": 21.11
-  },
   "84dcb96242c59cef": {
    "tex": "(k + l)u = ku + lu, \\qquad k(u + v) = ku + kv",
    "alt": "(k + l)u = ku + lu, k(u + v) = ku + kv",
    "w": 189.25,
    "h": 10.18
   },
-  "851c10778cae11a1": {
-   "tex": "\\text{tr}(A^{T}) = \\text{tr}(A)",
-   "alt": "tr(A^T) = tr(A)",
-   "w": 66.51,
-   "h": 11.62
-  },
-  "855d8105cc9bc858": {
-   "tex": "z^{n} = w \\quad \\Leftrightarrow \\quad z \\text{ la can bac } n \\text{ cua } w",
-   "alt": "z^n = w <=> z la can bac n cua w",
-   "w": 154.1,
-   "h": 8.22
-  },
-  "8607765a58542d8f": {
-   "tex": "A \\cap B = \\{x : x \\in A \\text{ va } x \\in B\\}",
-   "alt": "A giao B = {x : x thuoc A va x thuoc B}",
-   "w": 132.21,
-   "h": 10.18
-  },
-  "89ec2d8e124fd2b2": {
-   "tex": "O(n + m)",
-   "alt": "O(n + m)",
-   "w": 43.18,
+  "856033e2d6aa25b8": {
+   "tex": "\\nabla f(x^*) = 0",
+   "alt": "grad f(x^*) = 0",
+   "w": 50.94,
    "h": 10.18
   },
   "8a1f89990a7cb866": {
@@ -1064,24 +554,6 @@
    "alt": "S = tich phan_a^b |f(x) - g(x) | dx",
    "w": 106.08,
    "h": 25.27
-  },
-  "8cda997ce5f48553": {
-   "tex": "\\Omega = \\{1, 2, 3, 4, 5, 6\\}",
-   "alt": "Omega = {1, 2, 3, 4, 5, 6}",
-   "w": 84.29,
-   "h": 10.18
-  },
-  "8d64442e0066c978": {
-   "tex": "A \\cup B = \\{x : x \\in A \\text{ hoac } x \\in B\\}",
-   "alt": "A hop B = {x : x thuoc A hoac x thuoc B}",
-   "w": 142.1,
-   "h": 10.18
-  },
-  "8f71eb7a4e45535a": {
-   "tex": "P(1) \\land \\big(P(k) \\Rightarrow P(k+1)\\big) \\Rightarrow \\forall n \\ge 1,\\ P(n)",
-   "alt": "P(1) va (P(k) => P(k+1)) => voi moi n >= 1, P(n)",
-   "w": 191.43,
-   "h": 12.21
   },
   "90e7ce80c95a27cf": {
    "tex": "|x_n - x^*| \\le \\frac{q^n}{1 - q}\\,|x_1 - x_0|, \\qquad |x_n - x^*| \\le \\frac{q}{1 - q}\\,|x_n - x_{n-1}|",
@@ -1113,12 +585,6 @@
    "w": 167.81,
    "h": 28.59
   },
-  "964b0503fe8539cd": {
-   "tex": "s^2 = \\frac{\\sum x_i^2 - n\\,x_{tb}^2}{n-1}",
-   "alt": "s^2 = (tong x_i^2 - n x_(tb)^2)/(n-1)",
-   "w": 82.6,
-   "h": 24.21
-  },
   "97030b7a2998607e": {
    "tex": "z = \\frac{f - p_0}{\\sqrt{p_0(1 - p_0)/n}}",
    "alt": "z = (f - p_0)/(can(p_0(1 - p_0)/n))",
@@ -1131,12 +597,6 @@
    "w": 141.35,
    "h": 7.54
   },
-  "97bdc505bb5bd592": {
-   "tex": "\\int f\\big(u(x)\\big)\\,u'(x)\\,dx = \\int f(u)\\,du",
-   "alt": "tich phan f (u(x)) u'(x) dx = tich phan f(u) du",
-   "w": 139.76,
-   "h": 22.62
-  },
   "98194342502251ed": {
    "tex": "\\lim_{n \\to \\infty} \\frac{1}{n^{k}} = 0 \\;(k > 0), \\qquad \\lim_{n \\to \\infty} q^{n} = 0 \\;(|q| < 1)",
    "alt": "lim_(n -> vo cung) 1/(n^k) = 0 (k > 0), lim_(n -> vo cung) q^n = 0 (|q| < 1)",
@@ -1148,12 +608,6 @@
    "alt": "z = (x_(tb1) - x_(tb2))/(can(sigma_1^2/n_1 + sigma_2^2/n_2))",
    "w": 97.42,
    "h": 31.35
-  },
-  "982f713046cdfd73": {
-   "tex": "\\text{so dinh bac le} = 0 \\Rightarrow \\text{chu trinh Euler}, \\quad = 2 \\Rightarrow \\text{duong di Euler}",
-   "alt": "so dinh bac le = 0 => chu trinh Euler, = 2 => duong di Euler",
-   "w": 271.71,
-   "h": 9.16
   },
   "9835a3a7610c10e9": {
    "tex": "P(a < X < b) = \\Phi\\left(\\frac{b - \\mu}{\\sigma}\\right) - \\Phi\\left(\\frac{a - \\mu}{\\sigma}\\right)",
@@ -1179,18 +633,6 @@
    "w": 135.93,
    "h": 23.23
   },
-  "9a74e624c58b5353": {
-   "tex": "\\Delta_a \\le 0.5 \\cdot 10^{s}",
-   "alt": "Delta_a <= 0.5 . 10^s",
-   "w": 61.48,
-   "h": 8.99
-  },
-  "9b76fde074b9deae": {
-   "tex": "C_n^k = C_n^{n-k}",
-   "alt": "C_n^k = C_n^(n-k)",
-   "w": 49.23,
-   "h": 11.79
-  },
   "9c962e6ca933f7bf": {
    "tex": "AI = IA = A",
    "alt": "AI = IA = A",
@@ -1203,35 +645,17 @@
    "w": 126.88,
    "h": 11.54
   },
-  "9fe3f8a3a85affce": {
-   "tex": "D_{\\text{xuong}} = a_{11}a_{22}a_{33} + a_{12}a_{23}a_{31} + a_{13}a_{21}a_{32}",
-   "alt": "D_(xuong) = a_(11)a_(22)a_(33) + a_(12)a_(23)a_(31) + a_(13)a_(21)a_(32)",
-   "w": 187.62,
-   "h": 9.96
-  },
   "a18821c5a106dd9e": {
    "tex": "A^{T} = A",
    "alt": "A^T = A",
    "w": 34.76,
    "h": 9.91
   },
-  "a19dfd13f19275f4": {
-   "tex": "\\text{det}(AB) = \\text{det} A \\cdot \\text{det} B, \\qquad \\text{det}(A^{T}) = \\text{det} A",
-   "alt": "det(AB) = det A . det B, det(A^T) = det A",
-   "w": 197.86,
-   "h": 11.62
-  },
   "a2b9a9a8d51db201": {
    "tex": "E(X) = \\sum_i x_i\\,p_i, \\qquad E(X) = \\int_{-\\infty}^{+\\infty} x f(x)\\,dx",
    "alt": "E(X) = tong_i x_i p_i, E(X) = tich phan_(-vo cung)^(+vo cung) x f(x) dx",
    "w": 200.13,
    "h": 27.41
-  },
-  "a2d45ac2fcc412e8": {
-   "tex": "D_{\\text{len}} = a_{13}a_{22}a_{31} + a_{11}a_{23}a_{32} + a_{12}a_{21}a_{33}",
-   "alt": "D_(len) = a_(13)a_(22)a_(31) + a_(11)a_(23)a_(32) + a_(12)a_(21)a_(33)",
-   "w": 177.81,
-   "h": 8.64
   },
   "a36f79251bb13a82": {
    "tex": "\\big(f(g(x))\\big)' = f'(g(x)) \\cdot g'(x)",
@@ -1257,24 +681,6 @@
    "w": 198.89,
    "h": 10.18
   },
-  "a528bf79fa062de2": {
-   "tex": "\\text{bai toan loi: cuc tieu dia phuong} \\Rightarrow \\text{cuc tieu toan cuc}",
-   "alt": "bai toan loi: cuc tieu dia phuong => cuc tieu toan cuc",
-   "w": 229.96,
-   "h": 9.16
-  },
-  "a57f616b72382318": {
-   "tex": "\\|u\\| = \\sqrt{u \\cdot u}, \\qquad \\cos \\theta = \\frac{u \\cdot v}{\\|u\\| \\, \\|v\\|}",
-   "alt": "||u|| = can(u . u), cos theta = (u . v)/(||u|| ||v||)",
-   "w": 153.13,
-   "h": 21.17
-  },
-  "a68b32056abb358d": {
-   "tex": "\\int_a^b f\\big(u(x)\\big)\\,u'(x)\\,dx = \\int_{u(a)}^{u(b)} f(u)\\,du",
-   "alt": "tich phan_a^b f (u(x)) u'(x) dx = tich phan_(u(a))^(u(b)) f(u) du",
-   "w": 158.76,
-   "h": 27.4
-  },
   "a71fb69454dd1867": {
    "tex": "B = P^{-1} A P",
    "alt": "B = P^(-1) A P",
@@ -1293,6 +699,18 @@
    "w": 130.91,
    "h": 24.17
   },
+  "a83756c9f487b712": {
+   "tex": "A(u - v) = Au - Av = b - b = 0",
+   "alt": "A(u - v) = Au - Av = b - b = 0",
+   "w": 144.24,
+   "h": 10.18
+  },
+  "a8481ad6acb52cc8": {
+   "tex": "V(aX + b) = a^2\\,V(X), \\qquad V(aX + bY) = a^2 V(X) + b^2 V(Y)",
+   "alt": "V(aX + b) = a^2 V(X), V(aX + bY) = a^2 V(X) + b^2 V(Y)",
+   "w": 268.04,
+   "h": 11.54
+  },
   "a89e3f91338d1ea1": {
    "tex": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^{2} + d^{2}}",
    "alt": "(a + bi)/(c + di) = ((a + bi)(c - di))/(c^2 + d^2)",
@@ -1305,11 +723,11 @@
    "w": 69.96,
    "h": 11.62
   },
-  "ab0824792508352e": {
-   "tex": "\\lim_{x \\to 0} \\frac{1}{x^{2}} = +\\infty",
-   "alt": "lim_(x -> 0) 1/(x^2) = +vo cung",
-   "w": 63.04,
-   "h": 21.33
+  "ab6f0e5d663a8135": {
+   "tex": "\\min b^T y, \\quad A^T y \\ge c, \\; y \\ge 0",
+   "alt": "min b^T y, A^T y >= c, y >= 0",
+   "w": 116.18,
+   "h": 11.16
   },
   "ac0e58a128193342": {
    "tex": "k(m-1) + 1",
@@ -1323,17 +741,11 @@
    "w": 189.39,
    "h": 8.39
   },
-  "ada4da1d34a9ecf2": {
-   "tex": "A = U \\Sigma V^{T}",
-   "alt": "A = U Sigma V^T",
-   "w": 50.72,
-   "h": 9.91
-  },
-  "ade2b45ea0c0c72e": {
-   "tex": "\\neg(p \\lor q) \\equiv \\neg p \\land \\neg q",
-   "alt": "khong(p hoac q) = khong p va khong q",
-   "w": 84.11,
-   "h": 10.18
+  "ada0f03de02f640c": {
+   "tex": "T_{\\sin(ax+b)} = T_{\\cos(ax+b)} = \\frac{2\\pi}{|a|}, \\qquad T_{\\tan(ax+b)} = \\frac{\\pi}{|a|}",
+   "alt": "T_(sin(ax+b)) = T_(cos(ax+b)) = 2pi/(|a|), T_(tan(ax+b)) = pi/(|a|)",
+   "w": 212.57,
+   "h": 23.43
   },
   "ade9f1592dec812b": {
    "tex": "\\log n < n < n \\log n < n^2 < 2^n < n!",
@@ -1341,23 +753,11 @@
    "w": 153.18,
    "h": 11.1
   },
-  "ae47bf2348cba9f8": {
-   "tex": "\\lim_{(x, y) \\to (a, b)} f(x, y) = L",
-   "alt": "lim_((x, y) -> (a, b)) f(x, y) = L",
-   "w": 88.01,
-   "h": 17.55
-  },
   "af405e325fd7d4c2": {
    "tex": "P(a \\le X < b) = F(b) - F(a)",
    "alt": "P(a <= X < b) = F(b) - F(a)",
    "w": 128.02,
    "h": 10.18
-  },
-  "b015b4b9564e5a1b": {
-   "tex": "w(T) = \\sum_{e \\in T} w(e) \\to \\min",
-   "alt": "w(T) = tong_(e thuoc T) w(e) -> min",
-   "w": 105.12,
-   "h": 22.14
   },
   "b07132f8481bdd7f": {
    "tex": "(A^2)_{ij} = \\sum_{k=1}^{n} a_{ik} a_{kj}",
@@ -1371,12 +771,6 @@
    "w": 90.26,
    "h": 11.54
   },
-  "b09631e36ac105b7": {
-   "tex": "\\int f(x)\\,dx = F(x) + C \\iff F'(x) = f(x)",
-   "alt": "tich phan f(x) dx = F(x) + C <=> F'(x) = f(x)",
-   "w": 186.51,
-   "h": 22.62
-  },
   "b174291e84507343": {
    "tex": "P(A) = \\sum_{i=1}^{n} P(H_i)\\,P(A \\mid H_i)",
    "alt": "P(A) = tong_(i=1)^n P(H_i) P(A | H_i)",
@@ -1389,47 +783,11 @@
    "w": 181.11,
    "h": 12.35
   },
-  "b49990c1f6b847c6": {
-   "tex": "(AB)^{-1} = B^{-1} A^{-1}, \\qquad (A^{T})^{-1} = (A^{-1})^{T}",
-   "alt": "(AB)^(-1) = B^(-1) A^(-1), (A^T)^(-1) = (A^(-1))^T",
-   "w": 183.86,
-   "h": 11.62
-  },
   "b7a2a7534f308c2e": {
    "tex": "(f \\circ g)(x) = f(g(x))",
    "alt": "(f o g)(x) = f(g(x))",
    "w": 87.44,
    "h": 10.18
-  },
-  "b7d5f54f1eda47a6": {
-   "tex": "\\text{det} \\, B = \\text{det} \\, A, \\qquad \\text{tr} \\, B = \\text{tr} \\, A",
-   "alt": "det B = det A, tr B = tr A",
-   "w": 133.75,
-   "h": 9.27
-  },
-  "b84c6095ad94c984": {
-   "tex": "(kA)B = k(AB) = A(kB)",
-   "alt": "(kA)B = k(AB) = A(kB)",
-   "w": 112.92,
-   "h": 10.18
-  },
-  "b8553ac3190d5204": {
-   "tex": "P_n = n! = n (n-1) \\cdots 2 \\cdot 1",
-   "alt": "P_n = n! = n (n-1) ... 2 . 1",
-   "w": 118.33,
-   "h": 10.18
-  },
-  "ba3e3c2c22180fc1": {
-   "tex": "(a + bi) + (c + di) = (a + c) + (b + d)i",
-   "alt": "(a + bi) + (c + di) = (a + c) + (b + d)i",
-   "w": 169.38,
-   "h": 10.18
-  },
-  "bac9e8627b60e960": {
-   "tex": "A \\text{ kha nghich} \\Leftrightarrow \\text{det} A \\neq 0",
-   "alt": "A kha nghich <=> det A != 0",
-   "w": 114.56,
-   "h": 9.48
   },
   "bbee470e364f0a01": {
    "tex": "f^{-1}(y) = x \\;\\Leftrightarrow\\; f(x) = y",
@@ -1443,41 +801,11 @@
    "w": 187.34,
    "h": 11.12
   },
-  "be739a317a216e13": {
-   "tex": "\\min f(x) \\quad \\text{voi} \\quad x \\in D",
-   "alt": "min f(x) voi x thuoc D",
-   "w": 98.37,
-   "h": 10.18
-  },
   "c0a389b133e08779": {
    "tex": "\\text{dim}(U + W) = \\text{dim} \\, U + \\text{dim} \\, W - \\text{dim}(U \\cap W)",
    "alt": "dim(U + W) = dim U + dim W - dim(U giao W)",
    "w": 204.79,
    "h": 10.18
-  },
-  "c27e71f3ef135a2f": {
-   "tex": "f(-x) = f(x) \\;\\Rightarrow\\; f \\text{ chan}, \\qquad f(-x) = -f(x) \\;\\Rightarrow\\; f \\text{ le}",
-   "alt": "f(-x) = f(x) => f chan, f(-x) = -f(x) => f le",
-   "w": 240.75,
-   "h": 10.18
-  },
-  "c5002c285f9157e2": {
-   "tex": "A = P D P^{-1}",
-   "alt": "A = P D P^(-1)",
-   "w": 55.54,
-   "h": 9.83
-  },
-  "c5aef6105fc186ce": {
-   "tex": "C_n^k = \\frac{A_n^k}{k!} = \\frac{n!}{k! \\, (n-k)!}",
-   "alt": "C_n^k = (A_n^k)/(k!) = (n!)/(k! (n-k)!)",
-   "w": 106.22,
-   "h": 25.74
-  },
-  "c61d38ce578e4169": {
-   "tex": "(A + B)^{T} = A^{T} + B^{T}",
-   "alt": "(A + B)^T = A^T + B^T",
-   "w": 94.86,
-   "h": 11.62
   },
   "c61ed713582e76c5": {
    "tex": "|z| > z_{\\alpha/2}, \\qquad z > z_{\\alpha}",
@@ -1490,12 +818,6 @@
    "alt": "N(K_n) = n^(n-2), N(G) = det L'",
    "w": 143.67,
    "h": 11.54
-  },
-  "c7c219e243f4b4d4": {
-   "tex": "\\frac{(n-1)(n-2)}{2} = 10",
-   "alt": "((n-1)(n-2))/2 = 10",
-   "w": 91.37,
-   "h": 21.85
   },
   "c9a78a74d82cb6d9": {
    "tex": "(m \\times n) \\cdot (n \\times p) = m \\times p",
@@ -1538,12 +860,6 @@
    "alt": "lim_(x -> a) f(x) = L <=> lim_(x -> a^-) f(x) = lim_(x -> a^+) f(x) = L",
    "w": 193.71,
    "h": 15.48
-  },
-  "cb776f957be257c2": {
-   "tex": "m + n \\quad \\text{(chon mot phuong an)}, \\qquad m \\cdot n \\quad \\text{(lam ca hai buoc)}",
-   "alt": "m + n (chon mot phuong an), m . n (lam ca hai buoc)",
-   "w": 268.83,
-   "h": 10.18
   },
   "cbee2998b285565b": {
    "tex": "x_{n+1} = x_n - \\frac{f(x_n)}{f'(x_n)}",
@@ -1605,12 +921,6 @@
    "w": 248.72,
    "h": 25.36
   },
-  "d563dd9631bfa749": {
-   "tex": "p \\Rightarrow q \\equiv \\neg q \\Rightarrow \\neg p",
-   "alt": "p => q = khong q => khong p",
-   "w": 78.44,
-   "h": 7.32
-  },
   "d575c2ab58876001": {
    "tex": "P_n(k) = C_n^k \\, p^k (1-p)^{n-k}",
    "alt": "P_n(k) = C_n^k p^k (1-p)^(n-k)",
@@ -1641,29 +951,11 @@
    "w": 52.7,
    "h": 18.48
   },
-  "db0fafbc1cb0fd70": {
-   "tex": "\\deg(v) \\ge \\frac{n}{2} \\text{ voi moi } v \\Rightarrow \\text{ co chu trinh Hamilton}",
-   "alt": "deg(v) >= n/2 voi moi v => co chu trinh Hamilton",
-   "w": 209.72,
-   "h": 18.36
-  },
-  "db67e0687ae89c0d": {
-   "tex": "A(BC) = (AB)C",
-   "alt": "A(BC) = (AB)C",
-   "w": 75.62,
-   "h": 10.18
-  },
   "db71dcd9db2909a4": {
    "tex": "\\int_a^b f(x)\\,dx = F(b) - F(a)",
    "alt": "tich phan_a^b f(x) dx = F(b) - F(a)",
    "w": 114.98,
    "h": 25.27
-  },
-  "db924fce0b4babda": {
-   "tex": "\\text{cay } n \\text{ dinh} \\Rightarrow m = n - 1, \\quad \\text{rung } n \\text{ dinh}, k \\text{ cay} \\Rightarrow m = n - k",
-   "alt": "cay n dinh => m = n - 1, rung n dinh, k cay => m = n - k",
-   "w": 263.69,
-   "h": 9.16
   },
   "dc181a02b4a24dae": {
    "tex": "\\log_a(xy) = \\log_a x + \\log_a y, \\qquad \\log_a \\frac{x}{y} = \\log_a x - \\log_a y",
@@ -1671,11 +963,17 @@
    "w": 242.07,
    "h": 20.45
   },
-  "dc97ab7ebbb31572": {
-   "tex": "E(g(X)) = \\sum_x g(x)\\,P(X = x), \\qquad E(g(X)) e g(E(X))",
-   "alt": "E(g(X)) = tong_x g(x) P(X = x), E(g(X)) e g(E(X))",
-   "w": 235,
-   "h": 21.46
+  "de55afc08b221f3b": {
+   "tex": "x^{2} - y^{2} = a, \\quad 2xy = b, \\quad x^{2} + y^{2} = |w|",
+   "alt": "x^2 - y^2 = a, 2xy = b, x^2 + y^2 = |w|",
+   "w": 173.05,
+   "h": 11.54
+  },
+  "de6e6d31e40016c1": {
+   "tex": "\\max c^T x, \\quad A x \\le b, \\; x \\ge 0",
+   "alt": "max c^T x, A x <= b, x >= 0",
+   "w": 114.75,
+   "h": 11.05
   },
   "dea5c8b8fd750e49": {
    "tex": "P(AB) = P(A)\\,P(B \\mid A)",
@@ -1695,53 +993,23 @@
    "w": 96.26,
    "h": 24.73
   },
+  "e08279a757861c4c": {
+   "tex": "n \\ge \\frac{z^2\\, p(1-p)}{\\varepsilon_0^2}",
+   "alt": "n >= (z^2 p(1-p))/(epsilon_0^2)",
+   "w": 70.74,
+   "h": 26.89
+  },
   "e37aa6899e7e993a": {
    "tex": "(f^{-1})'(y_0) = \\frac{1}{f'(x_0)}",
    "alt": "(f^(-1))'(y_0) = 1/(f'(x_0))",
    "w": 89.49,
    "h": 23.44
   },
-  "e3ac47f627e58058": {
-   "tex": "\\frac{c_1}{a_1} \\ge \\frac{c_2}{a_2} \\ge \\cdots \\ge \\frac{c_n}{a_n}",
-   "alt": "(c_1)/(a_1) >= (c_2)/(a_2) >= ... >= (c_n)/(a_n)",
-   "w": 96.31,
-   "h": 19.97
-  },
-  "e3d4bde0ea5f5343": {
-   "tex": "A(B + C) = AB + AC, \\quad (B + C)A = BA + CA",
-   "alt": "A(B + C) = AB + AC, (B + C)A = BA + CA",
-   "w": 215.16,
-   "h": 10.18
-  },
-  "e47ea27af5c2af78": {
-   "tex": "\\max \\text{ gia tri luong} = \\min \\text{ kha nang thong qua lat cat}",
-   "alt": "max gia tri luong = min kha nang thong qua lat cat",
-   "w": 228.59,
-   "h": 9.16
-  },
-  "e573d43c904cfa9a": {
-   "tex": "N \\text{ vat vao } k \\text{ hop } \\Rightarrow \\text{ co hop chua it nhat } \\left\\lceil \\frac{N}{k} \\right\\rceil \\text{ vat}",
-   "alt": "N vat vao k hop => co hop chua it nhat tran(N/k) vat",
-   "w": 222.75,
-   "h": 24.43
-  },
-  "e59ffbee0a878f92": {
-   "tex": "E(aX + b) = a\\,E(X) + b, \\qquad E(X + Y) = E(X) + E(Y)",
-   "alt": "E(aX + b) = a E(X) + b, E(X + Y) = E(X) + E(Y)",
-   "w": 251.76,
-   "h": 10.18
-  },
-  "e7e99eff7c4730be": {
-   "tex": "\\text{dim} \\, \\mathbb{R}^{n} = n, \\qquad \\text{dim} \\, \\text{span}\\{u_{1}, \\ldots, u_{k}\\} = \\text{rank} \\, A",
-   "alt": "dim R^n = n, dim span{u_1, ..., u_k} = rank A",
-   "w": 211.44,
-   "h": 10.18
-  },
-  "e910125212adc588": {
-   "tex": "v_{3} = u_{3} - \\frac{u_{3} \\cdot v_{1}}{v_{1} \\cdot v_{1}} v_{1} - \\frac{u_{3} \\cdot v_{2}}{v_{2} \\cdot v_{2}} v_{2}",
-   "alt": "v_3 = u_3 - (u_3 . v_1)/(v_1 . v_1) v_1 - (u_3 . v_2)/(v_2 . v_2) v_2",
-   "w": 139.86,
-   "h": 19.9
+  "e6a6104689e044e3": {
+   "tex": "x_{n+1} - x^* \\approx g'(x^*)\\,(x_n - x^*)",
+   "alt": "x_(n+1) - x^* xap xi g'(x^*) (x_n - x^*)",
+   "w": 125.67,
+   "h": 10.78
   },
   "e97dc51ba73bee4c": {
    "tex": "A^{k} = P D^{k} P^{-1}",
@@ -1755,35 +1023,11 @@
    "w": 68.65,
    "h": 14.84
   },
-  "eafaab13310f0413": {
-   "tex": "\\int_a^{+\\infty} f(x)\\,dx = \\lim_{R \\to +\\infty} \\int_a^R f(x)\\,dx",
-   "alt": "tich phan_a^(+vo cung) f(x) dx = lim_(R -> +vo cung) tich phan_a^R f(x) dx",
-   "w": 149.04,
-   "h": 25.19
-  },
-  "eb82fd090de3c5e7": {
-   "tex": "P(X = c) = 0",
-   "alt": "P(X = c) = 0",
-   "w": 60.89,
-   "h": 10.18
-  },
   "eb99db9c6b7ecea2": {
    "tex": "L = f - \\lambda g, \\quad L_x = 0, \\; L_y = 0, \\; g = 0",
    "alt": "L = f - lambda g, L_x = 0, L_y = 0, g = 0",
    "w": 162.83,
    "h": 10.18
-  },
-  "edb5cef95eebe641": {
-   "tex": "f^{-1}(y) = x \\Leftrightarrow f(x) = y",
-   "alt": "f^(-1)(y) = x <=> f(x) = y",
-   "w": 102.24,
-   "h": 11.54
-  },
-  "edb79a15843ed8d7": {
-   "tex": "|A_1 \\cup A_2 \\cup \\cdots \\cup A_k| = |A_1| + |A_2| + \\cdots + |A_k|",
-   "alt": "|A_1 hop A_2 hop ... hop A_k| = |A_1| + |A_2| + ... + |A_k|",
-   "w": 204.15,
-   "h": 10.17
   },
   "ee1ddc847f77f642": {
    "tex": "|A \\cup B| = |A| + |B| - |A \\cap B|",
@@ -1797,17 +1041,11 @@
    "w": 65.67,
    "h": 21.04
   },
-  "f1c4bb9eda96ca00": {
-   "tex": "A \\setminus B = \\{x : x \\in A \\text{ va } x \\notin B\\}",
-   "alt": "A \\ B = {x : x thuoc A va x khong thuoc B}",
-   "w": 130.51,
-   "h": 10.18
-  },
-  "f2dbc172a221ceb4": {
-   "tex": "V_{Oy} = 2\\pi\\int_a^b x\\,f(x)\\,dx",
-   "alt": "V_(Oy) = 2pitich phan_a^b x f(x) dx",
-   "w": 97.6,
-   "h": 25.27
+  "f41b678003f7319c": {
+   "tex": "K_n: \\frac{(n-1)!}{2}, \\qquad K_{n,n}: \\frac{n!\\,(n-1)!}{2}",
+   "alt": "K_n: ((n-1)!)/2, K_(n,n): (n! (n-1)!)/2",
+   "w": 164.19,
+   "h": 21.85
   },
   "f5059ad8586a4bc8": {
    "tex": "\\lim_{x \\to 0} \\frac{\\sin x}{x} = 1",
@@ -1815,11 +1053,11 @@
    "w": 59.78,
    "h": 21.37
   },
-  "f5203259f56ab2cd": {
-   "tex": "J = \\begin{pmatrix} u_x & u_y \\\\ v_x & v_y \\end{pmatrix}, \\qquad z_x = z_u\\,u_x + z_v\\,v_x",
-   "alt": "J = [u_x, u_y; v_x, v_y], z_x = z_u u_x + z_v v_x",
-   "w": 169.64,
-   "h": 25.35
+  "f7854b763091035a": {
+   "tex": "f(x, y) = x^{T} A y, \\qquad B = \\frac{A + A^{T}}{2}",
+   "alt": "f(x, y) = x^T A y, B = (A + A^T)/2",
+   "w": 151.1,
+   "h": 22.44
   },
   "f7ca8f8614adedb9": {
    "tex": "\\frac{d}{dx}\\int_{u(x)}^{v(x)} f(t)\\,dt = f\\big(v(x)\\big)\\,v'(x) - f\\big(u(x)\\big)\\,u'(x)",
@@ -1827,35 +1065,11 @@
    "w": 212.65,
    "h": 27.4
   },
-  "f7cda131836a6a12": {
-   "tex": "\\min_{a, b} \\sum_{i=1}^{n} \\big(y_i - a - b x_i\\big)^2",
-   "alt": "min_(a, b) tong_(i=1)^n (y_i - a - b x_i)^2",
-   "w": 100.95,
-   "h": 28.59
-  },
-  "f8cae9a486b8111b": {
-   "tex": "f(x) \\ge 0, \\qquad \\int_{-\\infty}^{+\\infty} f(x)\\,dx = 1",
-   "alt": "f(x) >= 0, tich phan_(-vo cung)^(+vo cung) f(x) dx = 1",
-   "w": 139.39,
-   "h": 24.99
-  },
-  "f99923c221a21e4e": {
-   "tex": "V(aX + b) = a^2\\,V(X)",
-   "alt": "V(aX + b) = a^2 V(X)",
-   "w": 96.16,
-   "h": 11.54
-  },
   "f9aa9e21656552ad": {
    "tex": "\\int_0^1 \\frac{dx}{x^p} < +\\infty \\iff p < 1",
    "alt": "tich phan_0^1 dx/(x^p) < +vo cung <=> p < 1",
    "w": 117.76,
    "h": 25.16
-  },
-  "f9c56550e33fb71d": {
-   "tex": "f_{CT} < m < f_{CD}",
-   "alt": "f_(CT) < m < f_(CD)",
-   "w": 69.73,
-   "h": 9.27
   },
   "fbd8ec7e7b958fb5": {
    "tex": "\\text{hang} = 1 + \\sum_{i=1}^{n} c_i \\, (n-i)!",
@@ -1875,23 +1089,11 @@
    "w": 113.86,
    "h": 10.18
   },
-  "ff1766719db7aab2": {
-   "tex": "\\ln(1 + x) = x - \\frac{x^2}{2} + \\frac{x^3}{3} - \\cdots + (-1)^{n-1}\\frac{x^n}{n} + o(x^n)",
-   "alt": "ln(1 + x) = x - (x^2)/2 + (x^3)/3 - ... + (-1)^(n-1)(x^n)/n + o(x^n)",
-   "w": 237.44,
-   "h": 22.58
-  },
   "ff27eb9238dace7d": {
    "tex": "\\text{dim} \\, \\text{Ker} f + \\text{dim} \\, \\text{Im} f = \\text{dim} \\, V",
    "alt": "dim Ker f + dim Im f = dim V",
    "w": 129.65,
    "h": 9.27
-  },
-  "ff50672b57ef7abf": {
-   "tex": "d(x, z) \\le d(x, y) + d(y, z)",
-   "alt": "d(x, z) <= d(x, y) + d(y, z)",
-   "w": 110.34,
-   "h": 10.18
   }
  }
 }

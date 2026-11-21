@@ -24,7 +24,9 @@ Exit code 0 when every check passes, 1 otherwise. The list grows with each miles
     sympy from the numbers that were drawn (tools/math_verify.py; needs
     server/requirements-dev.txt)
   * library (M4): every document of math/library/ parses, covers exactly the micro-skills
-    of its floor, and every floor that has questions has its document
+    of its floor, and every floor that has questions has its document; a `format: 2` lesson
+    (docs/BAI_GIANG_TRUC_QUAN.md) also keeps the budget of a card and every figure lays out
+    (the pages themselves are checked by tools/shot_library.py, which needs pygame)
   * formula pictures (M4): every $$...$$ has a picture that ships with the game, built
     from that very formula, and small enough to fit the page
   * the four modes of M10 - bí cảnh toán, hầm ngục, cơ duyên, thủ thành toán: each mode's
@@ -73,7 +75,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "server"))
 sys.path.insert(0, str(ROOT / "tools"))
 
-from app.learning import math_items, math_library, math_path, math_problems  # noqa: E402
+from app.learning import math_figures, math_items, math_library, math_path, math_problems  # noqa: E402
 
 DATA_DIR = ROOT / "server" / "data"
 MATH_DIR = DATA_DIR / "math"
@@ -141,8 +143,10 @@ def displayed_strings() -> list[tuple[str, str]]:
     for doc in math_library.documents().values():
         out += [(doc.id, doc.title_vi), (doc.id, doc.summary_vi)]
         for b in doc.blocks:
-            out += [(doc.id, b[k]) for k in ("title_vi", "text", "alt") if b.get(k)]
+            out += [(doc.id, b[k]) for k in ("title_vi", "text", "alt", "question", "answer") if b.get(k)]
             out += [(doc.id, item) for item in b.get("items", [])]
+            if b["type"] == "figure":       # format 2 cards: the caption and every label of a figure
+                out += [(doc.id, t) for t in math_figures.labels_of(b)]
             out += [(doc.id, str(v)) for m in b.get("matrices", []) for row in m["rows"] for v in row]
     for p in math_problems.bank().values():
         out += [(p.id, t) for t in (p.title_vi, *p.statement_vi, p.input_vi, p.output_vi, p.limits_vi) if t]

@@ -226,7 +226,12 @@ def run_combat_flow(workdir: Path, shots: Path | None = None) -> None:
         assert res["combat"]["damage_taken"] > 0 and not res["combat"]["parry"]
         drv.step(6)
         drv.shot("guard_break")
-        drv.press(pygame.K_RETURN)         # read enough: close it
+        card = drv.game.top                # a wrong answer: the card waits until the solution is read
+        t_end = time.time() + 3
+        while time.time() < t_end:
+            drv.step(5)
+        assert drv.game.top is card and "math_got_it" in drv.game.ui.widgets
+        drv.click("math_got_it")           # read enough: close it
         drv.wait(lambda: not drv.top_is(CARD), 6, "wrong card closes")
         drv.wait(lambda: drv.game.state.character.get("hp", 0) < hp0, 5, "hp drops")
         drv.press(pygame.K_q)              # Hồi Huyết Đan

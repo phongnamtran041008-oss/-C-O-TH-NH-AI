@@ -246,7 +246,7 @@ class SealPuzzle(Puzzle):
             self.on_seal[p.user_id] = here
             if (here is None or p.user_id in self.asking or p.question is not None or p.q_pending
                     or here in self.asking.values() or now < self.cool.get(p.user_id, 0.0)
-                    or now < p.no_question_until):
+                    or now < p.no_question_until or combat.reading(p, now)):
                 continue
             if not self.may_take(p):
                 if here != before and p.session is not None:
@@ -321,7 +321,8 @@ class SealPuzzle(Puzzle):
         self.mistake(now, x, y)
         self.cool[p.user_id] = now + cfg()["seal"]["retry_seconds"]
         self.inst.push_puzzle(now)
-        return {"seal": name, "broken": False, "hurt": int(round(hp - p.hp)), "hp": max(0, int(round(p.hp)))}
+        return {"seal": name, "broken": False, "hurt": int(round(hp - p.hp)), "hp": max(0, int(round(p.hp))),
+                **combat.hold_reading(p, sid, "seal", now)}
 
     def solve(self, now: float) -> None:
         for uid in list(self.asking):   # the seals the others were still being asked about need no answer now

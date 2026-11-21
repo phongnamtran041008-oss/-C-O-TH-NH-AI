@@ -3,7 +3,9 @@
 The server (GET /math/tree) decides what is open, done or locked; nothing here repeats a rule.
 This module only turns that answer into something to draw:
 
-  * `tab_list`    - "Nên học" and one tab per branch that has nodes in the player's realm;
+  * `tab_list`    - "Chính đạo" and one tab per branch that has nodes in the player's realm;
+  * `main_step`, `main_label`, `main_chips`, `later_ids` ... - Chính đạo, the main quest: the one
+                    next step the server names (GET /math/tree `main`) as the hub card draws it;
   * `node_rows`   - one row per part of a node (a node with no part, e.g. a vacant one, has one),
                     sorted by stage, optional nodes after the main path;
   * `row_state`, `locked_reason`, `row_label`, `stage_text` ... - what a row says;
@@ -31,13 +33,13 @@ from .math_library import line_h, scroll_rows
 GREY = "#5A5A5A"
 INK = "#2B2B2B"
 PALE = "#9A9387"
-NEXT_TAB = "next"                   # the id of the first tab, "Nên học"
+NEXT_TAB = "next"                   # the id of the first tab, "Chính đạo"
 LAST_STAGE = 99                     # sort key of a node without a stage (an optional one)
 
 
 # ------------------------------------------------------------------ tabs and rows (pure)
 def tab_list(tree: dict) -> list[dict]:
-    """"Nên học" first, then one tab per branch that has a node in the realm the player is in,
+    """"Chính đạo" first, then one tab per branch that has a node in the realm the player is in,
     in the order the server lists the branches. `name_vi` is the short label of the tab;
     `subject` is the math subject of the branch (None for code, practice and projects)."""
     realm = (tree.get("stage") or {}).get("realm")
@@ -51,8 +53,12 @@ def tab_list(tree: dict) -> list[dict]:
 
 
 def first_tab(tree: dict) -> str:
-    """The tab of the sitting left open, else "Nên học"."""
+    """"Chính đạo", unless a sitting was left open on a node that is not the current step of
+    Chính đạo: then the tab of that node's branch, where its "Luyện tiếp" is."""
     run = tree.get("run") or {}
+    m = main_step(tree)
+    if m is not None and run.get("node_id") == m.get("node_id"):
+        return NEXT_TAB
     node = next((n for n in tree.get("nodes", []) if n["id"] == run.get("node_id")), None)
     if node is not None and any(t["id"] == node["branch"] for t in tab_list(tree)):
         return node["branch"]
@@ -104,6 +110,120 @@ def node_by_id(tree: dict | None, node_id: str | None) -> dict | None:
 def names_of(tree: dict | None, ids: list[str]) -> list[str]:
     """The names of nodes, from the tree view; an id the tree does not know is left out."""
     return [n["name_vi"] for i in ids for n in [node_by_id(tree, i)] if n is not None]
+
+
+# ------------------------------------------------------------------ Chính đạo, the main quest (pure)
+STEPS = ("hoc", "luyen", "kiep", "code")
+
+
+def main_step(tree: dict | None) -> dict | None:
+    """The one next step on Chính đạo (GET /math/tree `main`), None from an older server."""
+    m = (tree or {}).get("main")
+    return m if isinstance(m, dict) and m.get("step") else None
+
+
+def main_label(m: dict) -> str:
+    """The label of the one primary button: Học bài, Luyện (Luyện tiếp), Độ Thiên kiếp nhỏ, Làm bài tập."""
+    step = m["step"]
+    if step == "luyen" and m.get("resume") == "practice":
+        return T.PATH_RESUME["luyen"]
+    if step == "kiep" and m.get("resume") == "trial":
+        return T.PATH_RESUME["kiep"]
+    return T.PATH_GO.get(step, "")
+
+
+def main_head(m: dict) -> str:
+    return T.PATH_HEAD.format(realm=m.get("realm_name_vi") or "", n=m.get("stage") or 0, i=m.get("index") or 0,
+                              t=m.get("total") or 0)
+
+
+def main_chips(m: dict) -> list[tuple[str, str]]:
+    """(label, state) of the chips Hiểu -> Luyện -> Vượt cổng; state is done | now | later. A node of
+    exercises only has one chip, its exercises."""
+    if m["step"] == "code":
+        return [(T.PATH_CHIP_CODE.format(d=m.get("problems_done", 0), t=m.get("problems_total", 0)), "now")]
+    done = m.get("done") or {}
+    out, now_given = [], False
+    for key, label in zip(("hieu", "luyen", "kiep"), T.PATH_CHIPS):
+        if done.get(key):
+            out.append((label, "done"))
+        elif not now_given:
+            out.append((label, "now"))
+            now_given = True
+        else:
+            out.append((label, "later"))
+    return out
+
+
+def main_progress(m: dict) -> str:
+    """What is left inside the step: "Cổng 1/4" while practising, "Phần 1/2" of a two-part node."""
+    bits = []
+    part = m.get("part") or {}
+    if part.get("count", 1) > 1:
+        bits.append(T.PATH_PART.format(i=part["index"], n=part["count"]))
+    gate = m.get("gate") or {}
+    if m["step"] in ("luyen", "kiep") and gate.get("total"):
+        bits.append(T.PATH_GATE.format(d=gate["done"], t=gate["total"]))
+    return " · ".join(bits)
+
+
+def main_step_line(m: dict) -> str:
+    """One line for the HUD box: "Luyện · Cổng 1/4", "Học bài", "Làm bài tập 2/5"."""
+    if m["step"] == "code":
+        return f"{T.PATH_STEP_SHORT['code']} {m.get('problems_done', 0)}/{m.get('problems_total', 0)}"
+    more = main_progress(m)
+    return T.PATH_STEP_SHORT.get(m["step"], "") + (f" · {more}" if more else "")
+
+
+def later_ids(tree: dict | None) -> set[str]:
+    """Main-path nodes ahead of the current step on Chính đạo and not done yet: they carry the
+    small "Để sau" mark in the branch tabs (they are not blocked)."""
+    m = main_step(tree)
+    if m is None:
+        return set()
+    here = m.get("path")
+    out = set()
+    for n in (tree or {}).get("nodes", []):
+        if n.get("path") is None or n["state"] in ("done", "vacant"):
+            continue
+        if here is None or n["path"] > here:
+            out.add(n["id"])
+    return out if m["step"] != "done" else set()
+
+
+def draw_chips(ui, x: float, y: float, m: dict) -> float:
+    """The chips Hiểu > Luyện > Vượt cổng at (x, y), 13 high: done green, now gold, later pale.
+    Returns the x after the last one."""
+    for i, (label, state) in enumerate(main_chips(m)):
+        tw = ui.text_size(label, 7)[0] + 10
+        if i:
+            ui.text(">", x - 5, y + 6.5, 7, GREY, anchor="center")
+        fill, fg = {"done": (UICOL["green"], "#FFFFFF"), "now": ("#F6DFA0", INK)}.get(state, ("#EDE6D6", PALE))
+        ui.fill(x, y, tw, 13, fill)
+        ui.border(x, y, tw, 13, "#B8862E" if state == "now" else "#C9B48A")
+        ui.text(label, x + tw / 2, y + 6.5, 7, fg, anchor="center")
+        x += tw + 9
+    return x
+
+
+def fit_lines(ui, text: str, width: float, sizes=(8, 7, 6), lines: int = 2,
+              height: float | None = None) -> tuple[float, list[str]]:
+    """The largest size of `sizes` at which `text` fits in `lines` lines of `width`, and its lines -
+    so a long name is shown whole on two lines or a size smaller, never cut with "...". Only when
+    even the smallest size needs more lines is the last one cut. `height`: the room of a row -
+    several lines are taken only at a size where they fit in it (two lines of 8 in a 16 px row
+    would run into the next row)."""
+    for size in sizes:
+        if ui.text_size(text, size)[0] <= width:
+            return size, [text]
+    for size in sizes:
+        got = ui.f.wrap(text, size, int(width * ui.s), ui.s)
+        if len(got) <= lines and (height is None or len(got) * ui.text_size("Ag", size)[1] <= height + 0.5):
+            return size, got
+    size = sizes[-1]
+    got = ui.f.wrap(text, size, int(width * ui.s), ui.s)[:lines]
+    got[-1] = fit(ui, got[-1] + "...", size, width)
+    return size, got
 
 
 def header_text(stage: dict) -> str:

@@ -4,6 +4,10 @@ Vietnamese interface text uses the pixel font VT323; any character it lacks (arr
 marks, a few math symbols, whatever a player types in chat) is drawn with the Noto Sans
 fallback font at the same size, so a mixed line renders correctly in one call.
 Sizes are given in base pixels (480x270) and multiplied by the display scale.
+
+Maths (client/ui/mathtext.py): a string may carry private-use markers around superscript and
+subscript runs; `render`, `size` and `wrap` draw such a run smaller and raised or lowered, and
+never break a line inside it. The markers themselves are never drawn.
 """
 from __future__ import annotations
 
@@ -13,9 +17,17 @@ from pathlib import Path
 import pygame
 
 from ..config import assets_dir
+from ..ui.mathtext import END, MARKERS, SUB, SUP, split_runs
 
 UI_FONT = "VT323-Regular.ttf"
 FALLBACK_FONT = "NotoSansSC-Game.otf"   # a Noto Sans subset: symbols VT323 lacks
+SCRIPT_SCALE = 0.7                        # a superscript / subscript run, against its line
+
+
+def script_size(size: float) -> float:
+    """The size of a superscript / subscript run on a line of this size (never so small that
+    the pixel font stops being readable)."""
+    return max(size * SCRIPT_SCALE, min(6.0, size * 0.8))
 
 
 class Fonts:
@@ -84,6 +96,46 @@ class Fonts:
         if hit is not None:
             self._cache.move_to_end(key)
             return hit
+        if any(c in MARKERS for c in text):
+            surf = self._render_scripts(text, size, color, scale, kind, antialias)
+        else:
+            surf = self._render_plain(text, size, color, scale, kind, antialias)
+        self._cache[key] = surf
+        if len(self._cache) > 1500:
+            self._cache.popitem(last=False)
+        return surf
+
+    def _render_scripts(self, text: str, size: float, color, scale: int, kind: str,
+                        antialias: bool | None) -> pygame.Surface:
+        """A line with superscript / subscript runs (client/ui/mathtext.py markers): the runs
+        are drawn at SCRIPT_SCALE of the size, a superscript with its top near the top of the
+        capitals, a subscript with its baseline a little under the line's. The line keeps the
+        height of a plain line, so line pitches measured on "Ag" stay true."""
+        runs = split_runs(text)
+        base = self._render_plain("Ag", size, color, scale, kind, antialias)
+        h = base.get_height()
+        fk = "fallback" if kind == "fallback" else "ui"
+        asc_n = self.font(fk, self._px(fk, size, scale)).get_ascent()
+        asc_s = self.font(fk, self._px(fk, script_size(size), scale)).get_ascent()
+        pieces = []
+        for style, chunk in runs:
+            if style == "n":
+                p = self._render_plain(chunk, size, color, scale, kind, antialias)
+                pieces.append((p, (h - p.get_height()) // 2))
+                continue
+            p = self._render_plain(chunk, script_size(size), color, scale, kind, antialias)
+            y = 0.15 * asc_n - 0.32 * asc_s if style == "sup" else 1.12 * asc_n - asc_s
+            pieces.append((p, max(0, min(int(round(y)), h - p.get_height() + max(1, scale)))))
+        w = sum(p.get_width() for p, _ in pieces)
+        surf = pygame.Surface((max(1, w), max(1, h)), pygame.SRCALPHA)
+        x = 0
+        for p, y in pieces:
+            surf.blit(p, (x, y))
+            x += p.get_width()
+        return surf
+
+    def _render_plain(self, text: str, size: float, color, scale: int, kind: str = "ui",
+                      antialias: bool | None = None) -> pygame.Surface:
         col = pygame.Color(color)
         parts = []
         for k, chunk in self._runs(text, kind):
@@ -100,23 +152,28 @@ class Fonts:
             # vertically centre each run on the line
             surf.blit(p, (x, (h - p.get_height()) // 2 + (int(scale * 0.5) if k == "ui" else 0)))
             x += p.get_width()
-        self._cache[key] = surf
-        if len(self._cache) > 1500:
-            self._cache.popitem(last=False)
         return surf
 
     def size(self, text: str, size: float, scale: int, kind: str = "ui") -> tuple[int, int]:
         return self.render(text, size, (0, 0, 0), scale, kind).get_size()
 
     def wrap(self, text: str, size: float, max_w_px: int, scale: int, kind: str = "ui") -> list[str]:
-        """Word wrap; a run of wide (CJK-range) characters can break between any two of them."""
+        """Word wrap; a run of wide (CJK-range) characters can break between any two of them.
+        A superscript / subscript run (mathtext markers) is never broken, spaces inside it
+        included."""
         lines: list[str] = []
         for para in text.split("\n"):
             cur = ""
             tokens = []
             word = ""
+            inside = False
             for ch in para:
-                if ch == " ":
+                if ch in (SUP, SUB, END):
+                    inside = ch != END
+                    word += ch
+                elif inside or 0xE000 <= ord(ch) < 0xF900:    # (inside a run, or private use: no break)
+                    word += ch
+                elif ch == " ":
                     tokens.append(word + " ")
                     word = ""
                 elif ord(ch) >= 0x2E80:

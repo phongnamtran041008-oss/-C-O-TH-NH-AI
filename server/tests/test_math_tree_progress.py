@@ -570,7 +570,7 @@ async def test_the_tree_view_has_every_node_with_its_state_parts_and_reading(cli
     run = (await node_start(client, h, "gt_ham_so")).json()["run"]
     assert run["node_name_vi"] == tree().nodes["gt_ham_so"].name_vi
     view = (await client.get("/math/tree", headers=h)).json()
-    assert view["wired"] is True and set(view) == {"wired", "stage", "branches", "nodes", "next", "run"}
+    assert view["wired"] is True and set(view) == {"wired", "stage", "branches", "nodes", "next", "main", "run"}
     assert {b["id"]: b["subject"] for b in view["branches"]}["ds"] == LA
     assert len(view["nodes"]) == len(tree().nodes)
     by = {n["id"]: n for n in view["nodes"]}
@@ -592,7 +592,7 @@ async def test_the_tree_view_has_every_node_with_its_state_parts_and_reading(cli
     assert [p["id"] for p in by["lt_cau_truc_du_lieu"]["problems"]] == list(tree().nodes["lt_cau_truc_du_lieu"].problems)
     assert by["lt_cau_truc_du_lieu"]["problems"][0]["solved"] is False
     assert by["lt_cau_truc_du_lieu"]["problems"][0]["subject_id"] == LA
-    assert view["next"][:5] == ["ds_ngon_ngu", "gt_ham_so", "lt_python_co_ban", "tr_logic_dem", "xs_dem_su_kien"]
+    assert view["next"][:5] == ["ds_ngon_ngu", "tr_logic_dem", "lt_python_co_ban", "gt_ham_so", "xs_dem_su_kien"]
     assert all(tree().nodes[n].main for n in view["next"])
     assert view["run"]["run_id"] == run["run_id"] and view["run"]["node_id"] == "gt_ham_so"
 

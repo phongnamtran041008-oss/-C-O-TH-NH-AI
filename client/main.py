@@ -755,20 +755,38 @@ class Game:
         self.ui.end()
         pygame.display.flip()
 
+    def _draw_toasts(self, ui) -> None:
+        """The toasts, stacked, where the scene on top wants them (`toast_y`, under a Thành Tựu
+        banner) - unless that would cover the text of an open card or panel: then in the nearest
+        strip that covers none (above or below the card first). Toasts that find no room wait,
+        their time standing still, until there is room (the card closes)."""
+        last = getattr(self, "_toast_clock", self.now)
+        self._toast_clock = self.now
+        held = max(0.0, self.now - last)
+        self.toasts[:] = [t for t in self.toasts if self.now - t.born <= t.life]
+        if not self.toasts:
+            return
+        prefer = max(getattr(self.top, "toast_y", 4), self.achievements.clear_y())
+        avoid = ui.obstacles() + self.achievements.rects()
+        shown, y = 0, None
+        for k in range(len(self.toasts), 0, -1):
+            w = max(ui.text_size(t.text, 9)[0] for t in self.toasts[:k]) + 16
+            y = ui.free_slot(w, k * 17 - 3, prefer, obstacles=avoid)
+            if y is not None:
+                shown = k
+                break
+        for t in self.toasts[shown:]:
+            t.born += held                  # waiting for room: its time does not run
+        for t in self.toasts[:shown]:
+            w = ui.text_size(t.text, 9)[0] + 16
+            ui.fill(240 - w / 2, y, w, 14, (244, 235, 217, 235))
+            ui.border(240 - w / 2, y, w, 14, t.color)
+            ui.text(t.text, 240, y + 7, 9, t.color, anchor="center")
+            y += 17
+
     def _draw_overlays(self) -> None:
         ui = self.ui
-        y = max(getattr(self.top, "toast_y", 4), self.achievements.clear_y())   # under a Thành Tựu banner
-        for t in list(self.toasts):
-            age = self.now - t.born
-            if age > t.life:
-                self.toasts.remove(t)
-                continue
-            w = ui.text_size(t.text, 9)[0] + 16
-            ty = y - min(age * 4, max(0.0, y - 2))       # drifts up a little, never off screen
-            ui.fill(240 - w / 2, ty, w, 14, (244, 235, 217, 235))
-            ui.border(240 - w / 2, ty, w, 14, t.color)
-            ui.text(t.text, 240, ty + 7, 9, t.color, anchor="center")
-            y += 17
+        self._draw_toasts(ui)
         net_down = self.net is not None and self.net.connected_once and not self.net.online
         if self.api.offline or net_down:
             ui.fill(0, 0, 480, 12, (188, 71, 73, 230))
