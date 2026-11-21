@@ -42,6 +42,8 @@ class ZoneMap:
     interacts: dict[str, tuple[float, float]] = field(default_factory=dict)  # action -> foot of the prop
     ground: list[int] = field(default_factory=list)       # the ground layer: one Tiled gid per tile, row by row
     tile: int = 16
+    khu: list[Area] = field(default_factory=list)         # Đại Địa Đồ: the sub-areas of a land (realtime/dia_do.py)
+    pois: list[Area] = field(default_factory=list)        # Đại Địa Đồ: named places the big map lists
 
     def spawn(self, name: str | None) -> tuple[float, float]:
         return self.spawns.get(name or "spawn") or self.spawns.get("spawn") or (self.width_px / 2, self.height_px / 2)
@@ -67,6 +69,7 @@ def parse(path: Path) -> ZoneMap:
     tw, th = data["tilewidth"], data["tileheight"]
     solids, spawns, portals, areas, npcs, water = [], {}, [], [], {}, []
     rooms, realm_objs, interacts = {}, [], {}
+    khu, pois = [], []
     ground: list[int] = []
     for layer in data["layers"]:
         if layer["type"] == "tilelayer" and layer.get("name") == "ground":
@@ -94,9 +97,13 @@ def parse(path: Path) -> ZoneMap:
                                                                    o["height"], props)
             elif o.get("type") == "realm_obj":
                 realm_objs.append(Area(o.get("name", ""), o["x"], o["y"], o["width"], o["height"], props))
+            elif o.get("type") == "khu":
+                khu.append(Area(props.get("khu") or o.get("name", ""), o["x"], o["y"], o["width"], o["height"], props))
+            elif o.get("type") == "poi":
+                pois.append(Area(o.get("name", ""), o["x"], o["y"], o["width"], o["height"], props))
     w, h = data["width"] * tw, data["height"] * th
     return ZoneMap(path.stem, w, h, Collider(w, h, solids), spawns, portals, areas, npcs, water, rooms, realm_objs,
-                   interacts, ground, tw)
+                   interacts, ground, tw, khu, pois)
 
 
 @lru_cache(maxsize=None)
