@@ -27,7 +27,7 @@ sup A là trần thấp nhất của A: không phần tử nào vượt nó, nh�
 
 $$ s = \mathrm{sup}\,A \iff \big(\forall a \in A:\ a \le s\big) \land \big(\forall \varepsilon > 0\ \exists a \in A:\ a > s - \varepsilon\big) $$
 
-Q thiếu điều này: {x thuộc Q : x^2 < 2} không có sup trong Q.
+Đây là chỗ R hơn Q. Tập các số hữu tỉ có x^2 < 2 bị chặn trên (bởi 2 chẳng hạn), nhưng cận trên nhỏ nhất của nó là sqrt(2), không hữu tỉ: trong Q, dưới mỗi cận trên hữu tỉ luôn còn một cận trên hữu tỉ nhỏ hơn.
 
 Ví dụ: tìm sup và inf của A = {2 + 1/n : n = 1, 2, ...}.
 
@@ -72,7 +72,7 @@ point 10 1.9 muc
 limsup, liminf là giới hạn lớn nhất, nhỏ nhất của các dãy con; dãy bị chặn hội tụ đúng khi chúng bằng nhau.
 :::
 
-limsup không phải sup của các số hạng: (-1)^n (1 + 1/n) có số hạng 3/2 nhưng limsup = 1. Và limsup (a_n + b_n) có thể nhỏ hơn hẳn limsup a_n + limsup b_n.
+limsup không phải sup của các số hạng: (-1)^n (1 + 1/n) có số hạng 3/2 nhưng limsup = 1. Và limsup (a_n + b_n) có thể nhỏ hơn limsup a_n + limsup b_n: với a_n = (-1)^n, b_n = -(-1)^n, tổng luôn bằng 0, còn 1 + 1 = 2.
 
 Ví dụ: limsup, liminf của a_n = (-1)^n (2 - 1/n).
 
@@ -113,7 +113,7 @@ f khả tích khi chia đủ mịn thì bậc thang trên U và dưới L kẹp 
 
 $$ U(f, P) = \sum_k M_k\, h_k, \qquad L(f, P) = \sum_k m_k\, h_k $$
 
-Liên tục, đơn điệu, hay bị chặn với hữu hạn điểm gián đoạn: khả tích. Hàm Dirichlet (1 trên Q, 0 ngoài Q) có U = 1, L = 0 mọi P: không.
+Hàm liên tục, đơn điệu, hay bị chặn và chỉ nhảy ở hữu hạn điểm đều khả tích: chỗ nhảy chỉ nằm trong vài dải, chia mịn thì dải hẹp lại. Hàm Dirichlet (1 trên số hữu tỉ, 0 trên số vô tỉ) thì không: đoạn con nào cũng chứa cả hai loại số, nên U = 1, L = 0 với mọi phân hoạch, khe hở không bao giờ co.
 
 Ví dụ: U và L của x^2 trên [0, 3], P = {0, 1, 2, 3}.
 
@@ -121,11 +121,16 @@ Ví dụ: U và L của x^2 trên [0, 3], P = {0, 1, 2, 3}.
 2. U = 1 + 4 + 9 = 14, L = 0 + 1 + 4 = 5 (mỗi đoạn dài 1).
 3. Tích phân 9 nằm giữa 5 và 14.
 
-> Lỗi thường gặp: tính 1 + 2 + ... + n = n^2/2. Đúng là n(n + 1)/2. Và |f| khả tích chưa chắc f khả tích.
+> Lỗi thường gặp: nghĩ |f| khả tích thì f khả tích. Trên [0, 1], lấy f = 1 tại số hữu tỉ, -1 tại số vô tỉ: |f| = 1 khả tích, còn f có U = 1, L = -1 với mọi phân hoạch.
 
 :::check
 Q: f(x) = 2x trên [0, 2], P = {0, 1, 2}. Tính U - L.
 A: U = 2 . 1 + 4 . 1 = 6, L = 0 . 1 + 2 . 1 = 2, nên U - L = 4.
+:::
+
+:::check
+Q: f(x) = x trên [0, 1], chia n đoạn đều. Tính U_n và U_n - L_n.
+A: U_n = (1/n)(1/n + 2/n + ... + n/n) = (1 + ... + n)/n^2 = (n + 1)/(2n), vì 1 + ... + n = n(n + 1)/2 (không phải n^2/2). U_n - L_n = 1/n -> 0.
 :::
 
 ## Hàm lồi
@@ -151,7 +156,7 @@ f lồi khi mọi dây cung nằm trên đồ thị: f tại một điểm trung
 
 $$ f(\lambda x + (1 - \lambda) y) \le \lambda f(x) + (1 - \lambda) f(y), \qquad 0 \le \lambda \le 1 $$
 
-Khả vi hai lần: lồi khi f'' >= 0 (x^4 vẫn lồi); |x| cũng lồi. Lồi thì nằm trên tiếp tuyến: e^x >= 1 + x.
+Hàm khả vi hai lần lồi đúng khi f'' >= 0 khắp khoảng; f'' được chạm 0 vài điểm, như x^4 vẫn lồi. Không khả vi vẫn lồi được: mọi dây cung của |x| đều nằm trên. Đồ thị lồi nằm trên mọi tiếp tuyến; tiếp tuyến của e^x tại 0 là 1 + x, nên e^x >= 1 + x.
 
 Ví dụ: kiểm Jensen với f = x^2, x = 0, y = 4, lambda = 1/4.
 
@@ -191,7 +196,17 @@ Khoảng cách: không âm, bằng 0 chỉ khi trùng nhau, đối xứng, và �
 
 $$ \|x\|_1 = \sum_i |x_i|, \qquad \|x\|_2 = \sqrt{\sum_i x_i^2}, \qquad \|x\|_{\infty} = \max_i |x_i| $$
 
-Không là metric: |x^2 - y^2|, (x - y)^2. Dãy Cauchy hội tụ trong R, chưa chắc trong Q.
+:::figure grid
+caption: Bác một công thức chỉ cần một phản ví dụ cho một điều kiện.
+table
+head "d(x, y)" "hỏng điều" "phản ví dụ"
+row "|x^2 - y^2|" "= 0 chỉ khi x = y" "d(1, -1) = 0"
+row "(x - y)^2" "tam giác" "d(0, 2) = 4 > 1 + 1"
+row "x - y" "không âm" "d(0, 1) = -1"
+row "|x - y|/(1 + |x - y|)" "không hỏng" "là metric"
+:::
+
+Dãy Cauchy là dãy mà về sau các số hạng sát nhau tùy ý, dù chưa biết nó tiến về đâu. Dãy hội tụ thì luôn Cauchy. Không gian đầy đủ là nơi chiều ngược lại cũng đúng: R đầy đủ, còn Q thì không, vì 1, 1.4, 1.41, 1.414, ... là dãy Cauchy trong Q nhưng đích sqrt(2) nằm ngoài Q.
 
 Ví dụ: u = (1, -2, 2), v = (3, 1, -4). Tính d_1, d_2, d_inf.
 

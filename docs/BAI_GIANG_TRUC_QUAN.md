@@ -60,6 +60,17 @@ Chữ hiển thị: tiếng Việt, toán viết ASCII như cả game: `A^T`, `x
 - mỗi danh sách bước **<= 5** bước
 - trang đầu tiên phải có `:::hook` (bài mẫu có hook ở MỌI trang: hãy làm vậy)
 
+### Một kỹ năng có hai ý: tách trang bằng `###`
+
+Trang lý tưởng dài không quá hai màn hình. Khi một kỹ năng (một mục `##`) chứa hai hoặc ba ý riêng, **đừng nén
+thành câu cụt và đừng để trang dài ba bốn màn hình**: đặt một dòng `### Tên ý thứ hai` trước ý đó. Trong bài
+`format: 2`, mỗi `###` mở một trang mới của cùng mục (tiêu đề hiện "Tên mục (2/2)"), nhiều nhất 3 trang một mục.
+
+- Giới hạn 110 từ và 2 công thức tính **theo từng trang**; `core`, hình và `check` vẫn tính theo cả mục (một
+  `core` cho cả kỹ năng, đặt ở trang đầu).
+- Mỗi trang con nên tự đứng được: một hình hoặc một ví dụ, và nếu được thì một `:::check` riêng.
+- Câu hỏi sai vẫn mở đúng trang đầu của kỹ năng; "Luyện ngay" nằm ở trang cuối của bài.
+
 ## 4. Trình tự sư phạm của một trang
 
 1. `:::hook` Vì sao: một tình huống cụ thể, tốt nhất từ AI/ML hoặc đời sống.

@@ -107,7 +107,7 @@ Ví dụ: tính tích phân từ 0 đến 1 của x e^x dx.
 2. [x e^x] từ 0 đến 1 trừ tích phân của e^x: e - (e - 1).
 3. Kết quả: 1.
 
-Với e^x sin x, làm hai lần thì tích phân cũ hiện lại: chuyển vế mà giải.
+Có khi tích phân cũ quay lại, và đó là tin tốt. Gọi J là nguyên hàm của e^x sin x. Làm từng phần hai lần (cả hai lần dv = e^x dx) được J = e^x sin x - e^x cos x - J. J đứng ở hai vế như một ẩn của phương trình: chuyển vế, 2J = e^x (sin x - cos x), nên J = e^x (sin x - cos x)/2 + C.
 
 > Lỗi thường gặp: sai dấu ở bước cuối. Nguyên hàm của x cos x là x sin x + cos x: trừ đi -cos x thành cộng.
 
@@ -141,13 +141,32 @@ Ví dụ: tách (3x + 1)/(x^2 - 1) = A/(x - 1) + B/(x + 1).
 
 $$ \int \frac{dx}{x^2 + a^2} = \frac{1}{a}\arctan\frac{x}{a} + C $$
 
-Mẫu bậc hai vô nghiệm: đưa về (x + p)^2 + a^2. Mũ lẻ của sin: đặt u = cos x; mũ chẵn: hạ bậc; bí thì t = tan(x/2).
+Mẫu bậc hai vô nghiệm thì đưa về (x + p)^2 + a^2 rồi dùng arctan: 1/(x^2 + 2x + 5) = 1/((x + 1)^2 + 4) có nguyên hàm (1/2) arctan((x + 1)/2).
+
+:::figure grid
+caption: Ba đường cho hàm lượng giác; đường cuối luôn đi được.
+table
+head "gặp" "làm"
+row "mũ lẻ của sin" "tách sin x dx, đặt u = cos x"
+row "ví dụ" "sin^3 x = (1 - cos^2 x) sin x"
+row "mũ chẵn" "hạ bậc: sin^2 x = (1 - cos 2x)/2"
+row "bí" "t = tan(x/2), dx = 2 dt/(1 + t^2)"
+row "khi đó" "sin x = 2t/(1 + t^2)"
+row "và" "cos x = (1 - t^2)/(1 + t^2)"
+:::
+
+Với t = tan(x/2), mọi phân thức của sin, cos thành phân thức của t, và ta quay về cách tách ở trên.
 
 > Lỗi thường gặp: quên hệ số 1/a. Nguyên hàm của 1/(x^2 + 9) là (1/3) arctan(x/3).
 
 :::check
 Q: Tính tích phân từ 0 đến pi của sin^2 x dx.
 A: Hạ bậc: sin^2 x = (1 - cos 2x)/2. Phần cos 2x tích phân ra 0 trên [0, pi], còn lại pi/2.
+:::
+
+:::check
+Q: Đặt t = tan(x/2), tìm nguyên hàm của 1/(1 + cos x).
+A: 1 + cos x = 2/(1 + t^2), còn dx = 2 dt/(1 + t^2): thương chỉ còn dt. Nguyên hàm t + C = tan(x/2) + C.
 :::
 
 ## Tích phân xác định và công thức Newton-Leibniz
