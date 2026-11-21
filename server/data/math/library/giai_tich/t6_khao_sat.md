@@ -3,126 +3,229 @@ id: gt_lib_t6
 title_vi: Đơn điệu, cực trị và khảo sát hàm số
 subject: giai_tich
 floor: 6
-summary_vi: Dấu của đạo hàm cấp một kể chuyện hàm tăng giảm và đạt cực trị ở đâu, dấu của đạo hàm cấp hai kể chuyện đồ thị cong lên hay cong xuống; ghép thêm tiệm cận là vẽ được cả đồ thị.
+format: 2
+summary_vi: Dấu của f' cho biết đồ thị đi lên hay đi xuống và dừng ở đâu, dấu của f'' cho biết nó cong lên hay cong xuống; thêm tiệm cận là phác được cả đồ thị và đếm được nghiệm.
 skills: [gt_t6_don_dieu, gt_t6_cuc_tri, gt_t6_gtln_gtnn, gt_t6_loi_lom, gt_t6_tiem_can, gt_t6_khao_sat]
 ---
 ## Tính đơn điệu
 
-Trên một khoảng I mà f khả vi:
+:::hook
+Đường loss khi huấn luyện: chỉ cần biết độ dốc âm hay dương ở từng đoạn là biết loss đang giảm hay tăng, không phải tính từng điểm.
+:::
 
-$$ f'(x) > 0 \ \forall x \in I \;\Rightarrow\; f(x_1) < f(x_2) \ \forall x_1 < x_2 \in I $$
+:::figure plane
+caption: f' = 3(x - 1)(x + 1): dương thì đồ thị đi lên, âm thì đi xuống.
+size: 170 100
+x: -2.4 2.4 1
+y: -3 3 1
+curve "x^3 - 3*x" luc -2.2 -1
+curve "x^3 - 3*x" do -1 1
+curve "x^3 - 3*x" luc 1 2.2
+text -1.9 2.3 "f' > 0" luc
+text 0.6 1.3 "f' < 0" do
+text 1.75 -1.9 "f' > 0" luc
+:::
 
-tức f tăng ngặt trên I; f'(x) < 0 trên I thì f giảm ngặt trên I. Điều này suy ra từ định lý Lagrange: f(x2) - f(x1) = f'(c)(x2 - x1) cùng dấu với f'.
+:::core
+Dấu của f' là chiều đi của f: f' > 0 trên cả một khoảng thì f tăng trên khoảng đó, f' < 0 thì f giảm.
+:::
 
-Cách tìm khoảng tăng, giảm:
+Bậc ba đồng biến trên cả R khi f' >= 0 với mọi x, tức tam thức f' có biệt thức <= 0. f' > 0 khắp nơi thì f(x) = 0 có nhiều nhất một nghiệm.
 
-1. Tính f'(x) và phân tích thành nhân tử.
-2. Tìm các điểm f' bằng 0 hoặc không xác định.
-3. Lập bảng dấu của f' giữa các điểm đó.
+Ví dụ: tìm các khoảng tăng, giảm của f(x) = 2x^3 - 3x^2 - 12x.
 
-Ví dụ f(x) = x^3 - 12x + 1: f'(x) = 3(x - 2)(x + 2), âm trên (-2, 2), dương ngoài đoạn đó. f giảm trên [-2, 2], tăng trên hai khoảng còn lại.
+1. f'(x) = 6x^2 - 6x - 12 = 6(x + 1)(x - 2), bằng 0 tại -1 và 2.
+2. Thử một số ở giữa: f'(0) = -12 < 0; hai bên ngoài thì f' > 0.
+3. f tăng trên (-vô cùng, -1] và [2, +vô cùng), giảm trên [-1, 2].
 
-Chiều ngược lại chỉ đúng một nửa: f tăng ngặt thì f' >= 0, có thể bằng 0 tại vài điểm (x^3 tăng ngặt mà f'(0) = 0). Vì vậy "f đồng biến trên R" với đa thức bậc ba ứng với f'(x) >= 0 với mọi x, tức tam thức f' có biệt thức không dương.
+> Lỗi thường gặp: gộp hai khoảng rời nhau. 1/x giảm trên từng khoảng (-vô cùng, 0) và (0, +vô cùng), nhưng f(-1) < f(1).
 
-Tính đơn điệu chứng minh được bất đẳng thức: muốn ln(1 + x) < x với x > 0, xét g(x) = x - ln(1 + x) có g(0) = 0 và g'(x) = x/(1 + x) > 0.
-
-> Lỗi thường gặp: gộp hai khoảng rời nhau. 1/x giảm trên (-vô cùng, 0) và trên (0, +vô cùng), nhưng không giảm trên R \ {0}: f(-1) = -1 < 1 = f(1).
+:::check
+Q: x^3 tăng ngặt trên R, vậy mà f'(0) = 0. Điều đó có mâu thuẫn gì không?
+A: Không. f' > 0 thì f tăng, nhưng tăng ngặt chỉ cho f' >= 0: f' được phép chạm 0 tại vài điểm rời nhau.
+:::
 
 ## Cực trị
 
-f đạt cực đại tại x0 khi f(x0) >= f(x) với mọi x gần x0; cực tiểu thì ngược lại. Nếu f khả vi tại một điểm cực trị thì f'(x0) = 0 (định lý Fermat). Các điểm f' = 0 hoặc f' không tồn tại gọi là điểm tới hạn: chỉ ở đó mới có thể có cực trị.
+:::hook
+Huấn luyện mô hình là đi tìm đáy của hàm loss. Ở đáy, mặt đất phẳng: độ dốc bằng 0. Nhưng chỗ phẳng chưa chắc đã là đáy.
+:::
 
-Điều kiện f'(x0) = 0 là cần, chưa đủ: x^3 có f'(0) = 0 mà không có cực trị. Hai dấu hiệu đủ:
+:::figure plane
+caption: Lên rồi xuống (f' đổi + sang -) là đỉnh; xuống rồi lên là đáy.
+size: 170 100
+x: -2.4 2.4 1
+y: -3.4 3.4 1
+curve "x^3 - 3*x" xanh -2.2 2.2
+point -1 2 do "cực đại" pos=n
+point 1 -2 luc "cực tiểu" pos=s
+:::
 
-- Cấp một: f' đổi dấu từ + sang - qua x0 thì cực đại, từ - sang + thì cực tiểu, không đổi dấu thì không có cực trị.
-- Cấp hai: f'(x0) = 0 và f''(x0) < 0 thì cực đại, f''(x0) > 0 thì cực tiểu. Lý do nằm ở khai triển Taylor quanh x0: số hạng bậc một mất đi, dấu của f''(x0) quyết định f(x) lớn hay nhỏ hơn f(x0).
+:::core
+Cực trị nằm nơi f' đổi dấu: + sang - là đỉnh, - sang + là đáy; f' = 0 mà không đổi dấu thì không phải cực trị.
+:::
 
-$$ f'(x_0) = 0 \;\Rightarrow\; f(x) - f(x_0) \approx \frac{f''(x_0)}{2}(x - x_0)^2 $$
+Cách khác: f'(x0) = 0 mà f''(x0) < 0 thì đỉnh, > 0 thì đáy, = 0 thì chưa biết. |x| có đáy tại 0 dù f'(0) không tồn tại.
 
-Khi f''(x0) = 0, dấu hiệu cấp hai không nói gì: x^4, -x^4 và x^3 đều có f'(0) = f''(0) = 0 với ba kết luận khác nhau. Quay về xét dấu f'.
+Ví dụ: tìm cực trị của f(x) = x^3 - 6x^2 + 9x + 1.
 
-Nghiệm bội của f' cũng cần để ý: f(x) = x^4 - 4x^3 có f'(x) = 4x^2(x - 3). Qua nghiệm kép 0, f' không đổi dấu; chỉ x = 3 là cực trị (cực tiểu, f(3) = -27).
+1. f'(x) = 3x^2 - 12x + 9 = 3(x - 1)(x - 3).
+2. f' đổi + sang - tại 1, đổi - sang + tại 3.
+3. Cực đại f(1) = 5, cực tiểu f(3) = 1.
 
-> Lỗi thường gặp: kết luận "f'(a) = 0 nên a là điểm cực trị", hoặc "f''(a) = 0 nên a không phải điểm cực trị". Cả hai đều cần xét dấu f'.
+> Lỗi thường gặp: thấy f'(a) = 0 là kết luận có cực trị. x^3 có f'(0) = 0 mà vẫn đi lên qua 0: không có cực trị.
+
+:::check
+Q: f'(x) = (x - 1)^2 (x + 2). f có bao nhiêu điểm cực trị, là loại gì?
+A: Một: cực tiểu tại x = -2 (f' đổi - sang +). Qua nghiệm kép 1, f' không đổi dấu.
+:::
 
 ## Giá trị lớn nhất và nhỏ nhất trên đoạn
 
-Hàm liên tục trên đoạn đóng [a, b] luôn có giá trị lớn nhất (GTLN) và nhỏ nhất (GTNN). Chúng đạt ở điểm tới hạn bên trong đoạn hoặc ở hai đầu mút. Cách tìm:
+:::hook
+Chỉnh learning rate trong khoảng cho phép [0.001, 0.1]: giá trị tốt nhất có thể nằm ở một đáy bên trong, cũng có thể nằm ngay mép khoảng.
+:::
 
-1. Tìm các điểm tới hạn thuộc (a, b).
-2. Tính f tại các điểm đó và tại a, b.
-3. Số lớn nhất là GTLN, số nhỏ nhất là GTNN.
+:::figure plane
+caption: Trên [0, 2]: thấp nhất ở đáy x = 1, cao nhất ở đầu mút x = 2.
+size: 170 100
+x: -0.4 2.4 1
+y: -2.5 2.5 1
+curve "x^3 - 3*x" xanh 0 2
+drop 2 2
+point 0 0 muc
+point 2 2 do "GTLN" pos=w
+point 1 -2 luc "GTNN" pos=e
+:::
 
-$$ \max_{[a, b]} f = \max\{ f(a),\ f(b),\ f(c_1), \dots, f(c_k) \} $$
+:::core
+Trên một đoạn, GTLN và GTNN nằm ở điểm tới hạn bên trong hoặc ở hai đầu mút: tính hết rồi so.
+:::
 
-Ví dụ f(x) = x^3 - 3x trên [0, 3]: điểm tới hạn trong đoạn là x = 1, f(1) = -2; hai đầu f(0) = 0, f(3) = 18. GTLN = 18 ở đầu mút, GTNN = -2.
+Khoảng mở thì có thể không đạt: x trên (0, 1) không chạm 1. x + 9/x trên (0, +vô cùng) nhỏ nhất là f(3) = 6, không có lớn nhất.
 
-Không cần biết điểm nào là cực đại hay cực tiểu: chỉ so các giá trị. GTLN có thể lớn hơn mọi giá trị cực đại, vì nó nằm ở đầu mút.
+Ví dụ: GTLN, GTNN của f(x) = x^3 - 3x^2 trên [1, 4].
 
-Trên khoảng mở hoặc vô hạn, hàm có thể không có GTLN, GTNN (x trên (0, 1) không đạt 1). Khi đó dùng bảng biến thiên: x + 4/x trên (0, +vô cùng) giảm rồi tăng, nên GTNN là f(2) = 4 và không có GTLN.
+1. f'(x) = 3x(x - 2): chỉ x = 2 nằm trong (1, 4); bỏ x = 0.
+2. Tính: f(1) = -2, f(2) = -4, f(4) = 16.
+3. GTLN = 16 tại đầu mút 4, GTNN = -4 tại x = 2.
 
-Bài toán thực tế: viết đại lượng cần tối ưu thành hàm một biến, tìm miền của biến, rồi làm như trên. Hộp không nắp gấp từ tấm vuông cạnh 12 có V(x) = x(12 - 2x)^2 với 0 < x < 6, lớn nhất tại x = 2, V = 128.
+> Lỗi thường gặp: quên hai đầu mút. Chỉ so điểm tới hạn thì ở ví dụ trên mất GTLN 16.
 
-> Lỗi thường gặp: quên hai đầu mút. Chỉ xét điểm tới hạn sẽ bỏ sót GTLN 18 của x^3 - 3x trên [0, 3].
+:::check
+Q: Tấm vuông cạnh 6, cắt bốn góc cạnh x, gấp thành hộp không nắp. x nào cho hộp to nhất?
+A: V = x(6 - 2x)^2, 0 < x < 3. V' = (6 - 2x)(6 - 6x) = 0 tại x = 1, V' đổi + sang -: x = 1, V = 16.
+:::
 
 ## Lồi, lõm và điểm uốn
 
-Trong bí cảnh này, đồ thị gọi là lồi trên khoảng khi nó cong lên, tức f'' > 0; lõm khi nó cong xuống, tức f'' < 0. (Sách khác có thể gọi ngược lại; câu hỏi sẽ luôn ghi rõ dấu của f''.)
+:::hook
+Hàm loss lồi như cái bát chỉ có một đáy, gradient descent đi đâu cũng về đó. Vì vậy dân máy học rất quý hàm lồi, và kiểm tra lồi bằng f''.
+:::
 
-$$ f'' > 0 \;\Rightarrow\; f(x) > f(x_0) + f'(x_0)(x - x_0) \quad (x \ne x_0) $$
+:::figure plane
+caption: Đỏ: f'' < 0, cong xuống. Xanh: f'' > 0, cong lên, nằm trên tiếp tuyến.
+size: 170 100
+x: -1.2 3.2 1
+y: -2.5 2.5 1
+curve "x^3 - 3*x^2 + 2" do -1 1
+curve "x^3 - 3*x^2 + 2" xanh 1 3
+tangent "x^3 - 3*x^2 + 2" 2.3 xam len=34
+point 1 0 muc "uốn" pos=ne
+text 0.8 1.9 "lõm" do
+text 2.8 -1.6 "lồi" xanh
+:::
 
-Công thức trên (với f'' > 0 trên cả khoảng) nói: đồ thị lồi nằm phía trên mọi tiếp tuyến của nó. Điểm uốn là điểm của đồ thị nơi chiều cong đổi, tức f'' đổi dấu.
+:::core
+f'' đo độ cong: f'' > 0 thì đồ thị cong lên (lồi, như cái bát), f'' < 0 thì cong xuống (lõm); điểm uốn là nơi f'' đổi dấu.
+:::
 
-Cách tìm:
+Hàm bậc bốn có y'' là tam thức: hai nghiệm phân biệt thì có hai điểm uốn, biệt thức <= 0 thì y'' không đổi dấu, không có điểm uốn.
 
-1. Tính f'' và tìm các điểm f'' = 0 hoặc không xác định.
-2. Xét dấu f'' ở hai bên mỗi điểm.
-3. Nơi nào f'' đổi dấu thì có điểm uốn; tung độ tính bằng f, không phải f''.
+Ví dụ: tìm điểm uốn của y = x^3 + 3x^2 - 1.
 
-Ví dụ y = x^3 - 6x^2 + 5: y'' = 6x - 12 đổi dấu tại 2, điểm uốn (2, -11). Ví dụ y = x^4 - 4x^3: y'' = 12x(x - 2), hai điểm uốn (0, 0) và (2, -16).
+1. y' = 3x^2 + 6x, y'' = 6x + 6.
+2. y'' = 0 tại x = -1 và đổi dấu qua đó.
+3. Tung độ lấy từ y: y(-1) = 1. Điểm uốn (-1, 1).
 
-Đồ thị bậc ba luôn có đúng một điểm uốn, và nó là tâm đối xứng của đồ thị.
+> Lỗi thường gặp: thấy f''(a) = 0 là kết luận có điểm uốn. x^4 có f''(0) = 0 nhưng f'' >= 0 hai bên: cong lên suốt.
 
-> Lỗi thường gặp: f''(x0) = 0 chưa đủ để có điểm uốn. x^4 có f''(0) = 0 nhưng f'' >= 0 ở hai bên, đồ thị cong lên suốt.
+:::check
+Q: Đồ thị y = x^4 - 24x^2 cong xuống (lõm) trên khoảng nào?
+A: y'' = 12x^2 - 48 = 12(x - 2)(x + 2) < 0 khi -2 < x < 2: lõm trên (-2, 2).
+:::
 
 ## Tiệm cận
 
-Ba loại tiệm cận của đồ thị y = f(x):
+:::hook
+Độ chính xác của mô hình tăng dần khi thêm dữ liệu nhưng không vượt nổi một trần. Cái trần ấy là một tiệm cận: đồ thị bám sát mãi mà không chạm.
+:::
 
-- Tiệm cận đứng x = a: f(x) -> vô cùng khi x -> a (ít nhất một phía).
-- Tiệm cận ngang y = b: f(x) -> b khi x -> +vô cùng hoặc -vô cùng.
-- Tiệm cận xiên y = px + q (p khác 0): f(x) - (px + q) -> 0 khi x -> vô cùng.
+:::figure plane
+caption: x + 1/(x - 1): phần 1/(x - 1) vọt lên gần x = 1, tắt dần ở xa, còn lại y = x.
+size: 170 105
+x: -3 5 1
+y: -3 6 1
+curve "x + 1/(x - 1)" xanh
+line 1 0 1 1 xam dash
+line 0 0 1 1 do dash
+text 1.8 -2.3 "x = 1" xam
+text -1.6 0.6 "y = x" do
+:::
 
-Hệ số của tiệm cận xiên:
+:::core
+Tiệm cận là đường thẳng đồ thị bám sát mãi: đứng ở nơi f phóng ra vô cùng, ngang hoặc xiên khi f(x) - (px + q) -> 0 lúc x -> vô cùng.
+:::
 
-$$ p = \lim_{x \to \infty} \frac{f(x)}{x}, \qquad q = \lim_{x \to \infty} \big(f(x) - px\big) $$
+Với (ax + b)/(cx + d): đứng x = -d/c, ngang y = a/c. Không chia đa thức được thì tính p = lim f(x)/x, rồi q = lim (f(x) - px).
 
-Với phân thức, chia đa thức là nhanh nhất: x^2/(x - 1) = x + 1 + 1/(x - 1), nên tiệm cận xiên y = x + 1 và tiệm cận đứng x = 1. Với (ax + b)/(cx + d) (ad - bc khác 0): tiệm cận đứng x = -d/c, tiệm cận ngang y = a/c.
+Ví dụ: tiệm cận của y = (2x^2 + x)/(x - 1).
 
-Phía +vô cùng và -vô cùng có thể khác nhau: sqrt(x^2 + 2x) có tiệm cận y = x + 1 bên phải nhưng y = -x - 1 bên trái.
+1. Mẫu bằng 0 tại 1, tử bằng 3 khác 0: tiệm cận đứng x = 1.
+2. Chia đa thức: 2x^2 + x = (x - 1)(2x + 3) + 3.
+3. y = 2x + 3 + 3/(x - 1), phần dư -> 0: tiệm cận xiên y = 2x + 3.
 
-Không phải nơi nào mẫu bằng 0 cũng có tiệm cận đứng: (x^2 - 4)/(x - 2) -> 4 khi x -> 2, chỉ là điểm gián đoạn khử được. Và f(x)/x -> p chưa đủ: x + sin x có f(x)/x -> 1 nhưng f(x) - x = sin x không dần tới 0, nên không có tiệm cận xiên.
+> Lỗi thường gặp: chỉ kiểm f(x)/x -> p. x + sin x có f(x)/x -> 1 nhưng f(x) - x = sin x dao động mãi: không có tiệm cận xiên.
 
-> Lỗi thường gặp: tính sai q, chẳng hạn cho x/(x + 1) -> 0 khi x -> vô cùng (đúng là -> 1). Kiểm tra lại bằng phép chia đa thức.
+:::check
+Q: y = (x^2 + 2x)/(x + 2) có tiệm cận đứng x = -2 không?
+A: Không. Với x khác -2, y = x, nên y -> -2, hữu hạn: chỉ là một lỗ trên đường thẳng.
+:::
 
 ## Lược đồ khảo sát hàm số
 
-Khảo sát và vẽ đồ thị của y = f(x) đi theo các bước:
+:::hook
+Đếm nghiệm của -x^3 + 3x^2 = m mà không cần giải: phác dáng đồ thị rồi kéo một đường ngang. Khảo sát là phác được dáng ấy từ vài con số.
+:::
 
-1. Tập xác định; tính chẵn, lẻ, tuần hoàn nếu có (để thu gọn việc vẽ).
-2. Đạo hàm f', bảng biến thiên, cực trị.
-3. Đạo hàm f'', khoảng lồi lõm, điểm uốn.
-4. Các tiệm cận và giới hạn ở hai đầu tập xác định.
-5. Vài điểm đặc biệt (giao với các trục), rồi vẽ.
+:::figure plane
+caption: Đường ngang cắt 3 lần giữa hai giá trị cực trị, 2 lần khi chạm đỉnh, 1 lần ở ngoài.
+size: 170 105
+x: -1.5 3.5 1
+y: -1 6 1
+curve "-x^3 + 3*x^2" xanh
+line 0 2 1 2 luc dash
+line 0 4 1 4 do dash
+line 0 5 1 5 xam dash
+point 2 4 do
+point 0 0 do
+:::
 
-Ví dụ y = x^3 - 3x: lẻ nên đối xứng qua O; y' = 3(x - 1)(x + 1) cho cực đại y(-1) = 2, cực tiểu y(1) = -2; y'' = 6x cho điểm uốn O; không có tiệm cận.
+:::core
+Biết đồ thị lên, xuống ở đâu và dừng ở độ cao nào là đếm được số giao điểm với mọi đường ngang y = m.
+:::
 
-Bảng biến thiên trả lời ngay bài đếm nghiệm: số nghiệm của f(x) = m là số giao điểm của đồ thị với đường ngang y = m. Với hàm bậc ba có giá trị cực đại f_CD và giá trị cực tiểu f_CT, phương trình có ba nghiệm phân biệt đúng khi
+Lược đồ: tập xác định; f' và bảng biến thiên; f'' và điểm uốn; tiệm cận; vài điểm. Hàm lẻ: đối xứng qua O.
 
-$$ f_{CT} < m < f_{CD} $$
+Ví dụ: với m nào thì -x^3 + 3x^2 = m có ba nghiệm phân biệt?
 
-hai nghiệm khi m bằng một trong hai giá trị đó, một nghiệm khi m nằm ngoài. Với x^3 - 3x^2 (cực đại 0, cực tiểu -4): ba nghiệm khi -4 < m < 0.
+1. f'(x) = -3x(x - 2): f giảm, tăng trên [0, 2], rồi giảm.
+2. Cực tiểu f(0) = 0, cực đại f(2) = 4.
+3. Ba nghiệm khi 0 < m < 4; m = 0 hay 4: hai nghiệm; còn lại: một.
 
-Một đồ thị có thể có giá trị cực đại nhỏ hơn giá trị cực tiểu khi hai điểm đó ở hai nhánh khác nhau, ngăn bởi tiệm cận đứng: (x^2 + 3)/(x - 1) có cực đại -2 và cực tiểu 6.
+> Lỗi thường gặp: coi m bằng đúng giá trị cực trị là có ba nghiệm. Đường ngang chỉ chạm đỉnh: hai nghiệm.
 
-> Lỗi thường gặp: làm từng bước đúng rồi chép sai một kết quả ở bước cuối, như ghi tiệm cận xiên của x^2/(x - 1) là y = x. Đối chiếu bảng biến thiên với tiệm cận: nhánh phải đi lên sát y = x + 1.
+:::check
+Q: x + 1/x có cực đại f(-1) = -2, cực tiểu f(1) = 2. Sao đỉnh lại thấp hơn đáy?
+A: Hai điểm nằm trên hai nhánh, ngăn bởi tiệm cận đứng x = 0. Cực trị chỉ so với các điểm ở gần nó.
+:::

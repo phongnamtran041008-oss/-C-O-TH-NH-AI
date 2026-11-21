@@ -3,91 +3,220 @@ id: gt_lib_t10
 title_vi: Tài năng: số thực, khả tích, hàm lồi và không gian metric
 subject: giai_tich
 floor: 10
-summary_vi: Tầng ẩn dựng lại nền của giải tích - tiên đề cận trên đúng của số thực, giới hạn trên và giới hạn dưới của một dãy, điều kiện khả tích Riemann qua tổng Darboux, hàm lồi cùng bất đẳng thức Jensen, rồi khái quát hoá khoảng cách thành không gian metric và không gian định chuẩn. Trọng tâm là chứng minh bằng định nghĩa và tìm phản ví dụ.
+format: 2
+summary_vi: Tầng ẩn dựng lại nền móng: trần thấp nhất của một tập, hai mức mà một dãy dao động bám vào, diện tích kẹp giữa hai bậc thang, dây cung nằm trên hàm lồi, và mọi cách đo khoảng cách.
 skills: [gt_t10_tien_de_so_thuc, gt_t10_gioi_han_tren_duoi, gt_t10_kha_tich_riemann, gt_t10_ham_loi, gt_t10_khong_gian_metric]
 ---
 ## Tiên đề của tập số thực
 
-Tiên đề cận trên đúng: mọi tập con khác rỗng của R mà bị chặn trên đều có một cận trên bé nhất, gọi là cận trên đúng sup A; cận dưới đúng inf A định nghĩa tương tự. Đây là điều làm R khác Q: tập {x thuộc Q : x^2 < 2} có cận trên hữu tỉ nhưng không có cận trên bé nhất hữu tỉ (nó chỉ bằng sqrt(2) trong R).
+:::hook
+Độ chính xác qua các vòng: 0.5, 0.67, 0.75, ... sát dần 1 mà không chạm. Mức 1 là trần thấp nhất của cả tập, dù không thuộc tập.
+:::
 
-Cách kiểm tra s = sup A chia làm hai nửa:
+:::figure numberline
+caption: Các số 1 - 1/n dồn về 1: sup = 1 nhưng 1 không thuộc tập.
+size: 200 45
+range: 0 1.2 0.2
+seq "1 - 1/n" 1 12 xanh
+point 1 do "sup = 1" open
+:::
+
+:::core
+sup A là trần thấp nhất của A: không phần tử nào vượt nó, nhưng hạ nó xuống chút nào là có phần tử vượt.
+:::
 
 $$ s = \mathrm{sup}\,A \iff \big(\forall a \in A:\ a \le s\big) \land \big(\forall \varepsilon > 0\ \exists a \in A:\ a > s - \varepsilon\big) $$
 
-Nửa đầu nói s là cận trên, nửa sau nói không có cận trên nào nhỏ hơn s. Ví dụ A = {1 - 1/n : n = 1, 2, ...}:
+Đây là chỗ R hơn Q. Tập các số hữu tỉ có x^2 < 2 bị chặn trên (bởi 2 chẳng hạn), nhưng cận trên nhỏ nhất của nó là sqrt(2), không hữu tỉ: trong Q, dưới mỗi cận trên hữu tỉ luôn còn một cận trên hữu tỉ nhỏ hơn.
 
-1. Mọi phần tử 1 - 1/n < 1 nên 1 là cận trên.
-2. Cho e > 0; theo tính Archimedes có n với 1/n < e, khi đó 1 - 1/n > 1 - e.
-3. Vậy 1 - e không là cận trên, nên sup A = 1; 1 không thuộc A (mọi phần tử đều < 1), nên A không có phần tử lớn nhất.
+Ví dụ: tìm sup và inf của A = {2 + 1/n : n = 1, 2, ...}.
 
-> Lỗi thường gặp: nhầm sup với max (sup có thể không thuộc tập, như (0, 1) có sup 1); suy từ "sup A = 1" ra "1 thuộc A"; nghĩ rằng mọi tập bị chặn trên của Q đều có cận trên đúng hữu tỉ.
+1. Các số 3, 5/2, 7/3, ... giảm dần: sup = 3 = max, thuộc A.
+2. 2 + 1/n > 2, và với mọi e > 0 có n để 1/n < e.
+3. inf A = 2, không thuộc A.
+
+> Lỗi thường gặp: nhầm sup với max. (0, 1) có sup = 1, nhưng 1 không thuộc (0, 1): tập không có phần tử lớn nhất.
+
+:::check
+Q: A = {(-1)^n/n : n = 1, 2, ...}. Tìm sup A và inf A.
+A: Các số -1, 1/2, -1/3, 1/4, ... sup = 1/2 (n = 2), inf = -1 (n = 1); cả hai thuộc A.
+:::
 
 ## Giới hạn trên và giới hạn dưới
 
-Với dãy bị chặn (a_n), đặt các số sup{a_k : k >= n} giảm dần theo n. Giới hạn của chúng là giới hạn trên, và đó cũng là giới hạn lớn nhất của các dãy con hội tụ; giới hạn dưới là giới hạn nhỏ nhất.
+:::hook
+Loss khi huấn luyện có lúc dao động mãi giữa hai mức. limsup và liminf là hai mức mà dao động ấy bám vào về lâu dài.
+:::
 
-$$ \mathrm{limsup}_{n \to \infty}\, a_n = \lim_{n \to \infty} \mathrm{sup}\,\{a_k : k \ge n\} $$
+:::figure plane
+caption: a_n = (-1)^n (2 - 1/n): số hạng chẵn bám lên 2, số hạng lẻ bám xuống -2.
+size: 170 100
+x: 0 11 2
+y: -2.6 2.6 1
+names: n a
+line 0 2 1 2 do dash "limsup" pos=nw
+line 0 -2 1 -2 xanh dash "liminf" pos=sw
+point 1 -1 muc
+point 2 1.5 muc
+point 3 -1.667 muc
+point 4 1.75 muc
+point 5 -1.8 muc
+point 6 1.833 muc
+point 7 -1.857 muc
+point 8 1.875 muc
+point 9 -1.889 muc
+point 10 1.9 muc
+:::
 
-Tính chất cần nhớ: liminf <= limsup; dãy bị chặn hội tụ khi và chỉ khi liminf = limsup (và khi đó bằng giới hạn); limsup (a_n + b_n) <= limsup a_n + limsup b_n, và dấu bằng không phải lúc nào cũng xảy ra.
+:::core
+limsup, liminf là giới hạn lớn nhất, nhỏ nhất của các dãy con; dãy bị chặn hội tụ đúng khi chúng bằng nhau.
+:::
 
-Ví dụ a_n = (-1)^n (1 + 1/n):
+limsup không phải sup của các số hạng: (-1)^n (1 + 1/n) có số hạng 3/2 nhưng limsup = 1. Và limsup (a_n + b_n) có thể nhỏ hơn limsup a_n + limsup b_n: với a_n = (-1)^n, b_n = -(-1)^n, tổng luôn bằng 0, còn 1 + 1 = 2.
 
-1. Dãy con chẵn a_(2k) = 1 + 1/(2k) tiến tới 1; dãy con lẻ a_(2k+1) = -(1 + 1/(2k+1)) tiến tới -1.
-2. Mọi số hạng thuộc một trong hai dãy con này, nên chỉ có hai giới hạn dãy con: 1 và -1.
-3. limsup a_n = 1 và liminf a_n = -1; hai số khác nhau nên dãy không hội tụ.
+Ví dụ: limsup, liminf của a_n = (-1)^n (2 - 1/n).
 
-> Lỗi thường gặp: lấy sup của tập các số hạng (ví dụ 3/2 ở n = 2) thay vì giới hạn lớn nhất của dãy con; cho rằng dãy có hai giới hạn dãy con khác nhau thì "không có limsup"; coi limsup của tổng bằng tổng các limsup (a_n = (-1)^n và b_n = -(-1)^n cho 0 khác 2).
+1. n chẵn: a_n = 2 - 1/n -> 2.
+2. n lẻ: a_n = -(2 - 1/n) -> -2.
+3. limsup = 2, liminf = -2: khác nhau, dãy không hội tụ.
+
+> Lỗi thường gặp: thấy hai dãy con có hai giới hạn khác nhau là nói "không có limsup". Dãy bị chặn luôn có limsup và liminf.
+
+:::check
+Q: a_n = 1 + 3(-1)^n. Tìm limsup và liminf.
+A: Các số -2, 4, -2, 4, ... limsup = 4, liminf = -2.
+:::
 
 ## Điều kiện khả tích Riemann
 
-Với hàm bị chặn f trên [a, b] và phân hoạch P chia nó thành các đoạn con, gọi M_k, m_k là sup và inf của f trên đoạn con thứ k và h_k là độ dài của nó. Tổng Darboux trên và dưới là:
+:::hook
+Kẹp diện tích giữa bậc thang thừa và bậc thang thiếu; khe hở co về 0 là xong.
+:::
+
+:::figure plane
+caption: U = 14, L = 5 (xanh): diện tích 9 kẹp giữa.
+size: 160 100
+aspect: free
+x: -0.3 3.3 1
+y: -0.5 9.5 2
+poly 0 0 1 0 1 1 0 1 vang
+poly 1 0 2 0 2 4 1 4 vang
+poly 2 0 3 0 3 9 2 9 vang
+poly 1 0 2 0 2 1 1 1 xanh
+poly 2 0 3 0 3 4 2 4 xanh
+curve "x^2" do 0 3
+:::
+
+:::core
+f khả tích khi chia đủ mịn thì bậc thang trên U và dưới L kẹp sát nhau tùy ý: U - L < e.
+:::
 
 $$ U(f, P) = \sum_k M_k\, h_k, \qquad L(f, P) = \sum_k m_k\, h_k $$
 
-f khả tích Riemann khi và chỉ khi với mọi e > 0 có phân hoạch P để U(f, P) - L(f, P) < e; khi đó tích phân nằm giữa L(f, P) và U(f, P) với mọi P.
+Hàm liên tục, đơn điệu, hay bị chặn và chỉ nhảy ở hữu hạn điểm đều khả tích: chỗ nhảy chỉ nằm trong vài dải, chia mịn thì dải hẹp lại. Hàm Dirichlet (1 trên số hữu tỉ, 0 trên số vô tỉ) thì không: đoạn con nào cũng chứa cả hai loại số, nên U = 1, L = 0 với mọi phân hoạch, khe hở không bao giờ co.
 
-Ví dụ f(x) = x^2 trên [0, 2] và P = {0, 1, 2}: f tăng nên sup ở mút phải, inf ở mút trái.
+Ví dụ: U và L của x^2 trên [0, 3], P = {0, 1, 2, 3}.
 
-1. Trên [0, 1]: M = 1, m = 0. Trên [1, 2]: M = 4, m = 1.
-2. U(f, P) = 1 . 1 + 4 . 1 = 5 và L(f, P) = 0 . 1 + 1 . 1 = 1; tích phân 8/3 nằm giữa.
-3. Với hàm tăng chia đều thành n đoạn dài h: U - L = h (f(b) - f(a)), nhỏ tuỳ ý khi n lớn.
+1. x^2 tăng: sup ở mút phải, inf ở mút trái mỗi đoạn.
+2. U = 1 + 4 + 9 = 14, L = 0 + 1 + 4 = 5 (mỗi đoạn dài 1).
+3. Tích phân 9 nằm giữa 5 và 14.
 
-Hàm liên tục, hàm bị chặn với hữu hạn điểm gián đoạn, hàm đơn điệu đều khả tích; hàm không bị chặn thì không. Hàm Dirichlet (1 trên số hữu tỉ, 0 trên số vô tỉ) trên [0, 1] có U = 1 và L = 0 với mọi P nên không khả tích Riemann.
+> Lỗi thường gặp: nghĩ |f| khả tích thì f khả tích. Trên [0, 1], lấy f = 1 tại số hữu tỉ, -1 tại số vô tỉ: |f| = 1 khả tích, còn f có U = 1, L = -1 với mọi phân hoạch.
 
-> Lỗi thường gặp: tính tổng 1 + 2 + ... + n thành n^2/2 (đúng là n(n + 1)/2); coi "bị chặn" là đủ để khả tích; coi "liên tục" là cần để khả tích (hàm bậc thang khả tích); nghĩ |f| khả tích thì f khả tích (hàm 1 trên hữu tỉ, -1 trên vô tỉ là phản ví dụ).
+:::check
+Q: f(x) = 2x trên [0, 2], P = {0, 1, 2}. Tính U - L.
+A: U = 2 . 1 + 4 . 1 = 6, L = 0 . 1 + 2 . 1 = 2, nên U - L = 4.
+:::
+
+:::check
+Q: f(x) = x trên [0, 1], chia n đoạn đều. Tính U_n và U_n - L_n.
+A: U_n = (1/n)(1/n + 2/n + ... + n/n) = (1 + ... + n)/n^2 = (n + 1)/(2n), vì 1 + ... + n = n(n + 1)/2 (không phải n^2/2). U_n - L_n = 1/n -> 0.
+:::
 
 ## Hàm lồi
 
-Hàm f trên một khoảng là lồi khi mọi đoạn nối hai điểm của đồ thị nằm trên đồ thị:
+:::hook
+Loss lồi thì gradient descent không kẹt ở đáy giả. Tính lồi cũng sinh ra cả loạt bất đẳng thức, như trung bình cộng >= trung bình nhân.
+:::
+
+:::figure plane
+caption: Dây cung (đỏ) nối hai điểm của x^2 luôn nằm trên đồ thị.
+size: 150 100
+x: -1.6 2.6 1
+y: -0.5 4.5 1
+curve "x^2" xanh -1.5 2.1
+segment -1 1 2 4 do
+point -1 1 muc
+point 2 4 muc
+:::
+
+:::core
+f lồi khi mọi dây cung nằm trên đồ thị: f tại một điểm trung bình không vượt trung bình các giá trị f.
+:::
 
 $$ f(\lambda x + (1 - \lambda) y) \le \lambda f(x) + (1 - \lambda) f(y), \qquad 0 \le \lambda \le 1 $$
 
-Hàm khả vi hai lần có tiêu chuẩn f'' >= 0 (không cần f'' > 0: x^4 lồi dù f''(0) = 0); đồ thị hàm lồi khả vi nằm trên mọi tiếp tuyến. Bất đẳng thức Jensen mở rộng định nghĩa cho nhiều điểm với trọng số l_i không âm có tổng bằng 1:
+Hàm khả vi hai lần lồi đúng khi f'' >= 0 khắp khoảng; f'' được chạm 0 vài điểm, như x^4 vẫn lồi. Không khả vi vẫn lồi được: mọi dây cung của |x| đều nằm trên. Đồ thị lồi nằm trên mọi tiếp tuyến; tiếp tuyến của e^x tại 0 là 1 + x, nên e^x >= 1 + x.
 
-$$ f\Big(\sum_i \lambda_i x_i\Big) \le \sum_i \lambda_i f(x_i) $$
+Ví dụ: kiểm Jensen với f = x^2, x = 0, y = 4, lambda = 1/4.
 
-Ví dụ e^x >= 1 + x với mọi x:
+1. Điểm trộn: (1/4) . 0 + (3/4) . 4 = 3, vế trái f(3) = 9.
+2. Vế phải: (1/4) . 0 + (3/4) . 16 = 12.
+3. 9 <= 12, hiệu 3.
 
-1. f(x) = e^x có f''(x) = e^x > 0 nên f lồi.
-2. Tiếp tuyến tại 0 là y = 1 + x và đồ thị lồi nằm trên nó.
-3. Dùng Jensen với e^x và x = ln a, y = ln b, z = ln c cho (abc)^(1/3) <= (a + b + c)/3 (trung bình nhân không vượt trung bình cộng).
+> Lỗi thường gặp: x^3 có f'' = 6x >= 0 chỉ khi x >= 0, nên chỉ lồi trên [0, +vô cùng). Tích hai hàm lồi cũng chưa chắc lồi.
 
-> Lỗi thường gặp: kết luận lồi trên R từ f'' = 6x >= 0 (chỉ đúng với x >= 0); đảo chiều bất đẳng thức Jensen (chiều <= dành cho hàm lồi, hàm lõm như ln thì ngược lại); nghĩ tích của hai hàm lồi là lồi (x và -x đều lồi nhưng tích -x^2 lõm); đòi f'' > 0 ngặt.
+:::check
+Q: f(x) = x^3 - 6x^2 + x lồi trên [a, +vô cùng). Số a nhỏ nhất là bao nhiêu?
+A: f''(x) = 6x - 12 >= 0 khi x >= 2: a = 2.
+:::
 
 ## Không gian metric và không gian định chuẩn
 
-Khoảng cách (metric) d trên tập X gán cho mỗi cặp điểm một số d(x, y) thoả bốn điều: không âm, bằng 0 khi và chỉ khi x = y, đối xứng, và bất đẳng thức tam giác. Chuẩn của vectơ có ba tính chất tương ứng (dương trừ vectơ 0, nhân với số thì nhân với |số|, bất đẳng thức tam giác) và sinh ra khoảng cách d(x, y) = chuẩn của (x - y).
+:::hook
+k-NN cần đo xa gần. Taxi theo ô phố, chim bay thẳng: hai cách đo, hai khoảng cách.
+:::
 
-$$ d(x, z) \le d(x, y) + d(y, z) $$
+:::figure plane
+caption: Tới P(3, 4): taxi 7, bay 5, d_inf = 4.
+size: 150 105
+aspect: equal
+x: -0.5 4.5 1
+y: -0.5 4.5 1
+segment 0 0 3 0 xanh
+segment 3 0 3 4 xanh "d_1 = 7" pos=e
+segment 0 0 3 4 do "d_2 = 5" pos=nw
+point 0 0 muc
+point 3 4 muc "P" pos=ne
+:::
+
+:::core
+Khoảng cách: không âm, bằng 0 chỉ khi trùng nhau, đối xứng, và đi vòng không ngắn hơn đi thẳng.
+:::
 
 $$ \|x\|_1 = \sum_i |x_i|, \qquad \|x\|_2 = \sqrt{\sum_i x_i^2}, \qquad \|x\|_{\infty} = \max_i |x_i| $$
 
-Với mọi x trong R^n: chuẩn max <= chuẩn Euclid <= chuẩn tổng. Dãy (x_n) là dãy Cauchy nếu với mọi e > 0 có N sao cho d(x_m, x_n) < e khi m, n >= N. Dãy hội tụ thì là dãy Cauchy; không gian mà mọi dãy Cauchy hội tụ gọi là đầy đủ (R đầy đủ, Q không: các số thập phân gần đúng của sqrt(2) là dãy Cauchy trong Q không hội tụ trong Q).
+:::figure grid
+caption: Bác một công thức chỉ cần một phản ví dụ cho một điều kiện.
+table
+head "d(x, y)" "hỏng điều" "phản ví dụ"
+row "|x^2 - y^2|" "= 0 chỉ khi x = y" "d(1, -1) = 0"
+row "(x - y)^2" "tam giác" "d(0, 2) = 4 > 1 + 1"
+row "x - y" "không âm" "d(0, 1) = -1"
+row "|x - y|/(1 + |x - y|)" "không hỏng" "là metric"
+:::
 
-Ví dụ d(x, y) = (x - y)^2 trên R không là metric:
+Dãy Cauchy là dãy mà về sau các số hạng sát nhau tùy ý, dù chưa biết nó tiến về đâu. Dãy hội tụ thì luôn Cauchy. Không gian đầy đủ là nơi chiều ngược lại cũng đúng: R đầy đủ, còn Q thì không, vì 1, 1.4, 1.41, 1.414, ... là dãy Cauchy trong Q nhưng đích sqrt(2) nằm ngoài Q.
 
-1. Không âm, bằng 0 đúng khi x = y, và đối xứng: ba điều đầu đúng.
-2. Bất đẳng thức tam giác với x = 0, y = 1, z = 2: d(0, 2) = 4 còn d(0, 1) + d(1, 2) = 2, nên bị vi phạm.
-3. Lỗi nằm ở số hạng giữa của ((x - y) + (y - z))^2 = (x - y)^2 + 2(x - y)(y - z) + (y - z)^2.
+Ví dụ: u = (1, -2, 2), v = (3, 1, -4). Tính d_1, d_2, d_inf.
 
-> Lỗi thường gặp: quên số hạng giữa khi khai triển bình phương; coi |x^2 - y^2| là metric trên R (d(1, -1) = 0 dù 1 khác -1); chỉ kiểm tra một vài bộ ba rồi kết luận bất đẳng thức tam giác đúng; nghĩ mọi dãy Cauchy đều hội tụ trong không gian bất kỳ.
+1. Độ lệch từng tọa độ: |2|, |3|, |-6|.
+2. d_1 = 2 + 3 + 6 = 11, d_2 = sqrt(4 + 9 + 36) = 7.
+3. d_inf = 6. Luôn có d_inf <= d_2 <= d_1.
+
+> Lỗi thường gặp: khai triển ((x - y) + (y - z))^2 mà quên số hạng giữa 2(x - y)(y - z).
+
+:::check
+Q: d(x, y) = |x - y| + 1 khi x khác y, d(x, x) = 0. Đây có phải metric trên R?
+A: Có. Ba điều đầu rõ; tam giác: |x - z| + 1 <= (|x - y| + 1) + (|y - z| + 1) khi y khác x, z (y trùng một đầu thì hai vế bằng nhau).
+:::
