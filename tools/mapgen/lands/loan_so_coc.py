@@ -282,8 +282,10 @@ def monsters(m: DaiDiaDo) -> None:
             x, y = x0 + 21 * col, 174 + 16 * row
             m.monster_area("kts_loan_so_coc", kind, (x, y, x + 19, y + 14), count, name=f"t{floor}_{kind[5:-3]}_{n}")
             m.keep_rect(x + 8, y + 6, x + 11, y + 8)          # a clearing in the middle of the area
+            m.soft_rect(x - 1, y - 1, x + 20, y + 15)         # the first fights: nothing solid to pin a dodge
         m.monster_area("kts_loan_so_coc", elite, (x0 + 25, 208, x0 + 33, 216), 1, name=f"t{floor}_{elite[5:-3]}")
         m.keep_rect(x0 + 28, 211, x0 + 30, 213)               # its clearing
+        m.soft_rect(x0 + 24, 207, x0 + 34, 217)
     m.monsters("kts_chan_nui", [("kiem_linh", 3), ("thiet_giap_thu", 1)], tiles_per=210)
     fx, fy = CAVE
     m.monster_area("kts_thach_lam", "thach_khoi", (fx - 10, fy + 6, fx + 12, fy + 17), 2, name="thach_khoi_thac")

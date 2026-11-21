@@ -26,7 +26,7 @@ from app.realtime import world as wmod
 from app.realtime.world import World
 from app.systems import catalog, math_ask, math_combat, math_practice, math_skills
 from tests.helpers import answer_key
-from tests.test_combat import FOREST, FakeMono, fighter, last, run, settle
+from tests.test_combat import FOREST, FakeMono, fighter, free_ground, last, run, settle
 from tests.test_math_loop import right_answer, wrong_answer
 
 VALLEY = "loan_so_coc"
@@ -52,6 +52,7 @@ def stand_at(w: World, s, zone: str, kind: str):
     assert w.join(s, "truc_lam_thon", "abode")
     ch = w._pick_channel(zone)
     m0 = next(m for m in ch.monsters if m.kind == kind)
+    m0.x, m0.y = free_ground(ch.map.collider, m0.area, m0.x, m0.y)
     w._place(s, zone, m0.x, m0.y, "down")
     for m in ch.monsters:
         if m is not m0:
