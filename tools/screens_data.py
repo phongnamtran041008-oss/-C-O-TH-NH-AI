@@ -42,6 +42,9 @@ class _Env:
                 os.environ[k] = v
 
 
+# Inside one test process another test may have imported `app.db` first, or re-pointed its engine
+# at a database of its own (several client flow tests do): harvest() points the engine at the
+# throw-away file for the time it works and puts the old one back afterwards.
 if "app.db" not in sys.modules:
     with _Env():
         import app.db  # noqa: E402,F401 - the engine is made now, on the throw-away file
@@ -114,9 +117,15 @@ def harvest() -> dict:
     global _CACHE
     if _CACHE is None:
         with _Env():
+            from app import db as dbm
             from app.main import run_migrations
-            run_migrations(ENV["DATABASE_URL"])     # (it runs its own event loop)
-            _CACHE = asyncio.run(_harvest())
+            old = (dbm.engine, dbm.SessionLocal)
+            dbm.configure(ENV["DATABASE_URL"])      # (always: a test run earlier may have re-pointed it)
+            try:
+                run_migrations(ENV["DATABASE_URL"])     # (it runs its own event loop)
+                _CACHE = asyncio.run(_harvest())
+            finally:
+                dbm.engine, dbm.SessionLocal = old
     return _CACHE
 
 

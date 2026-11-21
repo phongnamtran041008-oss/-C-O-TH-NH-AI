@@ -127,9 +127,9 @@ def run_library_flow(workdir: Path, shots: Path | None = None) -> None:
             drv.press(pygame.K_HOME)
             drv.step(2)
             assert top(drv).current_section() == 0
-            drv.click("doc_next")                       # jumping by section
+            drv.click("doc_next")                       # the next page (the same micro-skill when it is split)
             drv.step(2)
-            assert top(drv).current_section() == 1
+            assert top(drv).page == 1 and top(drv).current_section() == top(drv).page_section[1]
             drv.press(pygame.K_ESCAPE)
             drv.wait_scene("LibraryListScene")
         drv.press(pygame.K_ESCAPE)
