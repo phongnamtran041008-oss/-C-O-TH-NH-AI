@@ -57,23 +57,34 @@ def _fit(ui, text: str, size: float, w: float) -> str:
     return text.rstrip() + "..."
 
 
+PLATE_MAX_W = 196          # between the player card (x < 140) and the N / M buttons (x > 352)
+
+
 def plate(ui, nav, y: float) -> float:
-    """The goal's name and distance; returns the y under it."""
+    """The goal's name and distance (the distance is never cut: a long name is), and a second
+    line wrapped to two lines at most; returns the y under it."""
     lines = nav.plate()
     if lines is None:
         return y
-    top, sub = lines
-    top = _fit(ui, top, 8, 200)
-    w = max(ui.text_size(top, 8)[0], ui.text_size(sub, 7)[0] if sub else 0) + 22
-    h = 13 + (9 if sub else 0)
+    name, far, sub, warn = lines
+    tail = f" · {far}"
+    tail_w = ui.text_size(tail, 8)[0]
+    name = _fit(ui, name, 8, PLATE_MAX_W - 22 - tail_w)
+    top_w = ui.text_size(name, 8)[0] + tail_w
+    subs = ui.f.wrap(sub, 7, int((PLATE_MAX_W - 22) * ui.s), ui.s)[:2] if sub else []
+    if len(subs) == 2:
+        subs[1] = _fit(ui, subs[1], 7, PLATE_MAX_W - 22)
+    w = min(PLATE_MAX_W, max([top_w] + [ui.text_size(s, 7)[0] for s in subs]) + 22)
+    h = 13 + 9 * len(subs)
     x = 240 - w / 2
     ui.fill(x, y, w, h, PLATE_BG)
-    ui.border(x, y, w, h, "#8B5A2B")
+    ui.border(x, y, w, h, "#BC4749" if warn and nav.status != "straight" else "#8B5A2B")
     img = nav_arrow.sprite(nav_arrow.step_of(-1.5708), nav.status in ("straight", "searching"))
     ui.image(img, x + 7, y + 6.5, zoom=0.5, anchor="center")
-    ui.text(top, x + 14, y + 2, 8, GOLD)
-    if sub:
-        ui.text(sub, x + 14, y + 12, 7, WARN if nav.status == "straight" else GREY)
+    r = ui.text(name, x + 14, y + 2, 8, GOLD)
+    ui.text(tail, r.right, y + 2, 8, PALE)
+    for i, s in enumerate(subs):
+        ui.text(s, x + 14, y + 12 + 9 * i, 7, WARN if warn else GREY)
     return y + h
 
 

@@ -24,6 +24,7 @@ leads to the village). The route is a breadth-first search over zones.
 from __future__ import annotations
 
 import json
+from array import array
 import math
 import time
 from collections import OrderedDict
@@ -37,6 +38,9 @@ FOOT_W, FOOT_H = 10, 6    # engine/movement.py
 LOOK = 14                 # how many cells ahead the arrow may look for a straight line
 NEAR = 3                  # rings searched round a cell the field did not reach
 TRUONG_PX = 32            # 1 trượng = 2 tiles
+ROAD, OFF = 2, 3          # the cost of a step onto a road cell, onto any other: the way keeps to the
+                          # roads (and their bridges and passes) unless leaving them saves a third
+ROAD_TILES = ("path", "plaza", "wood", "bamboo_floor")       # TILESET names a road is made of
 
 
 def _ceil_div(a: int, b: int) -> int:
@@ -48,7 +52,8 @@ class WalkGrid:
     """Walkable foot cells of a map (see the module docstring). Index i = (cy + 1) * W + cx + 1:
     the grid has a frame of blocked cells, so neighbours never need a bounds check."""
 
-    def __init__(self, px_w: int, px_h: int, solids):
+    def __init__(self, px_w: int, px_h: int, solids, ground=None, tiles_w: int = 0, tile: int = 16,
+                 roads=()):
         self.px_w, self.px_h = int(px_w), int(px_h)
         self.cw = self.px_w // CELL + 1
         self.ch = self.px_h // CELL + 1
@@ -57,6 +62,10 @@ class WalkGrid:
         self.solids = [(int(r[0]), int(r[1]), int(r[2]), int(r[3])) for r in solids]
         self.walk: bytearray | None = None
         self.ready = False
+        # the cost of stepping onto a cell: ROAD on a road tile (the tile under the feet), OFF
+        # elsewhere; None (no ground given) is 1 everywhere: plain breadth-first distances
+        self.ground, self.tiles_w, self.tile, self.roads = ground, int(tiles_w), int(tile), frozenset(roads)
+        self.cost: bytearray | None = None
 
     def build(self):
         """A generator: yields every few hundred solids (Job runs it within a time budget)."""
@@ -87,8 +96,38 @@ class WalkGrid:
                     walk[base + a: base + b + 1] = zeros
             if n % 256 == 255:
                 yield
+        if self.ground and self.roads and self.tile == 2 * CELL and self.tiles_w > 0:
+            yield from self._build_cost()
         self.walk = walk
         self.ready = True
+
+    def _build_cost(self):
+        """Every cell's cost from the tile under its feet (x = 8 cx, y = 8 cy + 3: tile column
+        cx // 2, row (8 cy + 3) // 16): a row of tiles turned into costs by a byte table, each
+        tile doubled into its two columns of cells."""
+        lut = bytes(ROAD if i in self.roads else OFF for i in range(256))
+        W, cw, tw = self.W, self.cw, self.tiles_w
+        g = self.ground
+        rows = len(g) // tw
+        cost = bytearray([OFF]) * (W * self.H)
+        pair = bytearray(2 * tw)
+        for cy in range(self.ch):
+            ty = (cy * CELL + OFF_Y) // self.tile
+            if ty >= rows:
+                break
+            part = g[ty * tw:(ty + 1) * tw]
+            try:
+                row = bytes(part).translate(lut)
+            except ValueError:                 # a tile id past 255: clamp it (never a road)
+                row = bytes(min(255, max(0, v)) for v in part).translate(lut)
+            pair[0::2] = row
+            pair[1::2] = row
+            n = min(cw, len(pair))
+            base = (cy + 1) * W + 1
+            cost[base: base + n] = pair[:n]
+            if cy % 64 == 63:
+                yield
+        self.cost = cost
 
     def build_now(self) -> "WalkGrid":
         for _ in self.build():
@@ -175,14 +214,24 @@ class Field:
     def __init__(self, grid: WalkGrid, goals: list[int]):
         self.grid = grid
         self.goals = list(dict.fromkeys(goals))
-        self.dist: list[int] | None = None
+        self.dist: array | None = None
         self.done = False
         self.reached = 0
+        self.level = 0            # while building: every distance below it is final already
+        self.weighted = grid.cost is not None
+
+    @property
+    def unit(self) -> float:
+        """Cost units per cell walked (to turn a distance of the field into pixels)."""
+        return (ROAD + OFF) / 2 if self.grid.cost is not None else 1.0
 
     def build(self):
+        if self.grid.cost is not None:
+            yield from self._build_weighted()
+            return
         g = self.grid
         walk, W = g.walk, g.W
-        dist = [-1] * len(walk)
+        dist = array("i", [-1]) * len(walk)     # (4 bytes a cell: a list of ints is 9 times that)
         q = []
         for s in self.goals:
             if walk[s] and dist[s] < 0:
@@ -216,21 +265,81 @@ class Field:
         self.reached = len(q)
         self.done = True
 
+    def _build_weighted(self):
+        """Dial's shortest paths (costs ROAD / OFF per step onto a cell): buckets by distance,
+        a bucket per distance modulo OFF + 1; a cell may be queued twice, the later copy is
+        skipped when it comes out."""
+        g = self.grid
+        walk, W, cost = g.walk, g.W, g.cost
+        dist = array("i", [-1]) * len(walk)     # (4 bytes a cell: a list of ints is 9 times that)
+        nb = OFF + 1
+        buckets = [[] for _ in range(nb)]
+        pending = 0
+        for s in self.goals:
+            if walk[s] and dist[s] < 0:
+                dist[s] = 0
+                buckets[0].append(s)
+                pending += 1
+        self.dist = dist
+        d = 0
+        n = 0
+        reached = 0
+        while pending:
+            b = buckets[d % nb]
+            self.level = d
+            if not b:
+                d += 1
+                continue
+            pending -= len(b)
+            cur = b[:]
+            b.clear()
+            for i in cur:
+                n += 1
+                if not n & 511:
+                    yield
+                if dist[i] != d:
+                    continue
+                reached += 1
+                for j in (i - 1, i + 1, i - W, i + W):
+                    if walk[j]:
+                        nd = d + cost[j]
+                        dj = dist[j]
+                        if dj < 0 or nd < dj:
+                            dist[j] = nd
+                            buckets[nd % nb].append(j)
+                            pending += 1
+            d += 1
+        self.reached = reached
+        self.done = True
+
     def at(self, i: int) -> int:
         return self.dist[i] if self.dist is not None and 0 <= i < len(self.dist) else -1
 
+    def final(self, d: int) -> bool:
+        """Is a distance of the field final? (always once it is built; while it is being built,
+        a breadth-first distance is final when set, a weighted one below the level reached -
+        the way down the field from such a cell passes only through smaller, final ones)"""
+        return d >= 0 and (self.done or not self.weighted or d < self.level)
+
     def start_of(self, x: float, y: float) -> int | None:
         """The cell the way is read from: the player's own cell, else the nearest one the field
-        reached within NEAR rings (the feet may stand a pixel off a cell); None: no way on foot."""
-        if not self.done:
+        reached within NEAR rings (the feet may stand a pixel off a cell); None: no way on foot
+        (or, while the field is still being built, not known yet). The way from a cell is known
+        as soon as its distance is final: on a giant land the arrow shows long before the field
+        has covered the whole map."""
+        if self.dist is None:
             return None
         g = self.grid
         i = g.index_of(x, y)
-        if self.at(i) >= 0:
+        if self.final(self.at(i)):
             return i
+        partial = not self.done and self.weighted
+        if partial and g.walkable(i):
+            return None                     # its own cell may still be reached: wait for it
         cx, cy = g.cell_of(x, y)
         best, best_d = None, None
         for r in range(1, NEAR + 1):
+            unsure = False
             for dy in range(-r, r + 1):
                 for dx in range(-r, r + 1):
                     if max(abs(dx), abs(dy)) != r:
@@ -240,8 +349,13 @@ class Field:
                         continue
                     j = g.index(nx, ny)
                     d = self.at(j)
-                    if d >= 0 and (best_d is None or d + r < best_d):
-                        best, best_d = j, d + r
+                    if self.final(d):
+                        if best_d is None or d + r * OFF < best_d:
+                            best, best_d = j, d + r * OFF
+                    elif partial and g.walk[j]:
+                        unsure = True       # not final yet: it might be the better start
+            if unsure:
+                return None
             if best is not None:
                 return best
         return None
@@ -252,9 +366,11 @@ class Field:
         if d <= 0:
             return None
         W = self.grid.W
+        cost = self.grid.cost
+        want = d - (cost[i] if cost is not None else 1)       # the cell this one was reached from
         steps = (prev, 1, -1, W, -W) if prev else (1, -1, W, -W)
         for s in steps:
-            if s and self.dist[i + s] == d - 1:
+            if s and self.dist[i + s] == want:
                 return i + s
         return None
 
@@ -355,12 +471,10 @@ class Leg:
         itself as world points, one every 4 cells."""
         ax, ay = self.aim
         straight = math.hypot(ax - x, ay - y)
-        if not self.ready:
-            return Reading("searching", self.aim, straight)
         f, g = self.field, self.grid
-        i = f.start_of(x, y)
-        if i is None:
-            return Reading("straight", self.aim, straight)
+        i = f.start_of(x, y) if f is not None else None
+        if i is None:                       # not reached yet (searching) or never (an island)
+            return Reading("searching" if not self.ready else "straight", self.aim, straight)
         ahead = f.chain(i, LOOK + 1)
         aim = g.point(ahead[1]) if len(ahead) > 1 else self.aim     # no straight line: the next cell
         for j in reversed(ahead[2:]):
@@ -377,10 +491,10 @@ class Leg:
             pts = [g.point(c) for c in cells[::4]] + [g.point(cells[-1])]
             length = sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(pts, pts[1:]))
             left = f.at(cells[-1])
-            dist = math.hypot(pts[0][0] - x, pts[0][1] - y) + length + max(0, left) * CELL * 0.85
+            dist = math.hypot(pts[0][0] - x, pts[0][1] - y) + length + max(0, left) / f.unit * CELL * 0.85
             route = [(x, y)] + pts
         if dist is None:
-            dist = f.at(i) * CELL * 0.85
+            dist = f.at(i) / f.unit * CELL * 0.85
         return Reading("path", aim, dist, route)
 
 
@@ -492,11 +606,19 @@ def grid_for(tmap) -> WalkGrid:
     key = (id(tmap), tmap.px_w, tmap.px_h, len(tmap.solids))
     g = _GRIDS.get(key)
     if g is None:
-        g = WalkGrid(tmap.px_w, tmap.px_h, [(r[0], r[1], r[2], r[3]) for r in tmap.solids])
+        g = WalkGrid(tmap.px_w, tmap.px_h, [(r[0], r[1], r[2], r[3]) for r in tmap.solids],
+                     getattr(tmap, "ground", None), getattr(tmap, "w", 0), getattr(tmap, "tw", 16), road_gids())
         _GRIDS[key] = g
         while len(_GRIDS) > 4:
             _GRIDS.popitem(last=False)
     return g
+
+
+@lru_cache(maxsize=1)
+def road_gids() -> frozenset:
+    """The Tiled ids of the road tiles (gid = TILESET index + 1)."""
+    from ..art import build as B
+    return frozenset(i + 1 for i, (name, _v) in enumerate(B.TILESET) if name in ROAD_TILES)
 
 
 def truong(px: float) -> int:
