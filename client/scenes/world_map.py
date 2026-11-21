@@ -347,14 +347,20 @@ class WorldMapScene(Scene):
             # beside its gate, never over the gate's own mark (a gate on the map's edge), inside the map
             cx, cy = sx + o.w * k / 2, sy + o.h * k / 2
             spots = [(cx, cy), (gate.right + nw / 2 + 3, cy), (gate.left - nw / 2 - 3, cy),
-                     (cx, gate.bottom + 6), (cx, gate.top - 6)]
+                     (cx, gate.bottom + 6), (cx, gate.top - 6), (gate.right + nw / 2 + 9, cy),
+                     (gate.left - nw / 2 - 9, cy), (gate.right + nw / 2 + 3, cy - 11),
+                     (gate.left - nw / 2 - 3, cy - 11), (gate.right + nw / 2 + 3, cy + 11),
+                     (gate.left - nw / 2 - 3, cy + 11)]
             spots = [(min(max(a, px + nw / 2 + 3), px + pw - nw / 2 - 3), min(max(b, py + 8), py + ph - 8))
                      for a, b in spots]
 
             def box(t):
                 return pygame.Rect(int(t[0] - nw / 2 - 2), int(t[1] - 4), int(nw + 4), 9)
-            tx, ty = next((t for t in spots if not box(t).colliderect(gate) and box(t).collidelist(taken) == -1),
-                          next((t for t in spots if not box(t).colliderect(gate)), spots[0]))
+
+            def under(t):                             # (over the gate's mark, px of marks and labels under it)
+                r = box(t)
+                return r.colliderect(gate), sum(c.w * c.h for c in (r.clip(o) for o in taken))
+            tx, ty = min(spots, key=under)
             gates.append((o, name, sx, sy, nw, tx, ty))
             taken.append(box((tx, ty)))
             taken.append(gate)
