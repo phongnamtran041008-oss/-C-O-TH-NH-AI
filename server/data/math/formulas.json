@@ -15,12 +15,6 @@
    "w": 90.02,
    "h": 25.27
   },
-  "066916cf0ca13e74": {
-   "tex": "\\text{QHTT co nghiem} \\Rightarrow \\text{co nghiem toi uu tai mot dinh}",
-   "alt": "QHTT co nghiem => co nghiem toi uu tai mot dinh",
-   "w": 222.59,
-   "h": 9.27
-  },
   "0a32b7c03d32f24e": {
    "tex": "(a * b) * c = a * (b * c), \\qquad a * e = e * a = a, \\qquad a * a' = a' * a = e",
    "alt": "(a * b) * c = a * (b * c), a * e = e * a = a, a * a' = a' * a = e",
@@ -93,12 +87,6 @@
    "w": 77.52,
    "h": 12.39
   },
-  "1a2c7d1249aaa518": {
-   "tex": "\\frac{(n-1)!}{2}, \\quad \\frac{n! \\, (n-1)!}{2}",
-   "alt": "((n-1)!)/2, (n! (n-1)!)/2",
-   "w": 103.1,
-   "h": 21.85
-  },
   "1a3aeb1d3a6f30ff": {
    "tex": "F(x) = \\int_{-\\infty}^{x} f(t)\\,dt, \\qquad f(x) = F'(x)",
    "alt": "F(x) = tich phan_(-vo cung)^x f(t) dt, f(x) = F'(x)",
@@ -153,12 +141,6 @@
    "w": 135.18,
    "h": 10.18
   },
-  "26a9088ed1e985e3": {
-   "tex": "d(v) := \\min( d(v), \\, d(u) + w(u, v) )",
-   "alt": "d(v) := min(d(v), d(u) + w(u, v))",
-   "w": 145.81,
-   "h": 10.18
-  },
   "276f6dc656a48c00": {
    "tex": "(A^{T})_{ij} = a_{ji}",
    "alt": "(A^T)_(ij) = a_(ji)",
@@ -170,12 +152,6 @@
    "alt": "f(x_0 + dx) xap xi f(x_0) + f'(x_0) dx",
    "w": 137.13,
    "h": 10.78
-  },
-  "2e267a1278f439cc": {
-   "tex": "\\max c^T x \\quad \\text{voi} \\quad A x \\le b, \\; x \\ge 0",
-   "alt": "max c^T x voi A x <= b, x >= 0",
-   "w": 133.7,
-   "h": 11.05
   },
   "2ee6047bbf2f1373": {
    "tex": "\\lim_{x \\to 3} \\frac{x^{2} - 9}{x - 3} = \\lim_{x \\to 3} (x + 3) = 6",
@@ -303,12 +279,6 @@
    "w": 140.18,
    "h": 23.54
   },
-  "4863af74e6b9e029": {
-   "tex": "\\min b^T y \\quad \\text{voi} \\quad A^T y \\ge c, \\; y \\ge 0",
-   "alt": "min b^T y voi A^T y >= c, y >= 0",
-   "w": 135.13,
-   "h": 11.16
-  },
   "49a517c076f75e41": {
    "tex": "P(X = k) = C_n^k p^k (1-p)^{n-k}, \\quad E(X) = np, \\quad V(X) = np(1-p)",
    "alt": "P(X = k) = C_n^k p^k (1-p)^(n-k), E(X) = np, V(X) = np(1-p)",
@@ -417,12 +387,6 @@
    "w": 55.84,
    "h": 26.44
   },
-  "65f6b867cfc2e82b": {
-   "tex": "\\nabla f(x^*) = 0, \\quad H(x^*) \\text{ xac dinh duong}",
-   "alt": "grad f(x^*) = 0, H(x^*) xac dinh duong",
-   "w": 162.47,
-   "h": 10.18
-  },
   "668ddef0fc05beb6": {
    "tex": "P(A) \\ge 0, \\qquad P(\\Omega) = 1, \\qquad A \\cap B = \\varnothing \\Rightarrow P(A \\cup B) = P(A) + P(B)",
    "alt": "P(A) >= 0, P(Omega) = 1, A giao B = {} => P(A hop B) = P(A) + P(B)",
@@ -488,12 +452,6 @@
    "alt": "P(X = i) = tong_j P(X = i, Y = j), P(Y = j | X = i) = (P(X = i, Y = j))/(P(X = i))",
    "w": 332.4,
    "h": 28.39
-  },
-  "7491d1ebe38de8c1": {
-   "tex": "\\text{ti so} = \\min \\frac{b_i}{a_{ij}} \\quad \\text{voi} \\quad a_{ij} > 0",
-   "alt": "ti so = min (b_i)/(a_(ij)) voi a_(ij) > 0",
-   "w": 130.85,
-   "h": 23.93
   },
   "78ad1981fa8694ec": {
    "tex": "U(f, P) = \\sum_k M_k\\, h_k, \\qquad L(f, P) = \\sum_k m_k\\, h_k",
@@ -571,12 +529,6 @@
    "tex": "\\nabla f(x^*) = 0",
    "alt": "grad f(x^*) = 0",
    "w": 50.94,
-   "h": 10.18
-  },
-  "89ec2d8e124fd2b2": {
-   "tex": "O(n + m)",
-   "alt": "O(n + m)",
-   "w": 43.18,
    "h": 10.18
   },
   "8a1f89990a7cb866": {
@@ -657,12 +609,6 @@
    "w": 97.42,
    "h": 31.35
   },
-  "982f713046cdfd73": {
-   "tex": "\\text{so dinh bac le} = 0 \\Rightarrow \\text{chu trinh Euler}, \\quad = 2 \\Rightarrow \\text{duong di Euler}",
-   "alt": "so dinh bac le = 0 => chu trinh Euler, = 2 => duong di Euler",
-   "w": 271.71,
-   "h": 9.16
-  },
   "9835a3a7610c10e9": {
    "tex": "P(a < X < b) = \\Phi\\left(\\frac{b - \\mu}{\\sigma}\\right) - \\Phi\\left(\\frac{a - \\mu}{\\sigma}\\right)",
    "alt": "P(a < X < b) = Phi ((b - mu)/sigma) - Phi ((a - mu)/sigma)",
@@ -686,12 +632,6 @@
    "alt": "f_(xy) = d/(d y) ((d f)/(d x)), f_(xy) = f_(yx)",
    "w": 135.93,
    "h": 23.23
-  },
-  "9a74e624c58b5353": {
-   "tex": "\\Delta_a \\le 0.5 \\cdot 10^{s}",
-   "alt": "Delta_a <= 0.5 . 10^s",
-   "w": 61.48,
-   "h": 8.99
   },
   "9c962e6ca933f7bf": {
    "tex": "AI = IA = A",
@@ -740,12 +680,6 @@
    "alt": "P(X = i, Y = j) = P(X = i) P(Y = j) voi moi i, j",
    "w": 198.89,
    "h": 10.18
-  },
-  "a528bf79fa062de2": {
-   "tex": "\\text{bai toan loi: cuc tieu dia phuong} \\Rightarrow \\text{cuc tieu toan cuc}",
-   "alt": "bai toan loi: cuc tieu dia phuong => cuc tieu toan cuc",
-   "w": 229.96,
-   "h": 9.16
   },
   "a71fb69454dd1867": {
    "tex": "B = P^{-1} A P",
@@ -825,12 +759,6 @@
    "w": 128.02,
    "h": 10.18
   },
-  "b015b4b9564e5a1b": {
-   "tex": "w(T) = \\sum_{e \\in T} w(e) \\to \\min",
-   "alt": "w(T) = tong_(e thuoc T) w(e) -> min",
-   "w": 105.12,
-   "h": 22.14
-  },
   "b07132f8481bdd7f": {
    "tex": "(A^2)_{ij} = \\sum_{k=1}^{n} a_{ik} a_{kj}",
    "alt": "(A^2)_(ij) = tong_(k=1)^n a_(ik) a_(kj)",
@@ -872,12 +800,6 @@
    "alt": "a_n = c_1 a_(n-1) + c_2 a_(n-2) -> r^2 = c_1 r + c_2",
    "w": 187.34,
    "h": 11.12
-  },
-  "be739a317a216e13": {
-   "tex": "\\min f(x) \\quad \\text{voi} \\quad x \\in D",
-   "alt": "min f(x) voi x thuoc D",
-   "w": 98.37,
-   "h": 10.18
   },
   "c0a389b133e08779": {
    "tex": "\\text{dim}(U + W) = \\text{dim} \\, U + \\text{dim} \\, W - \\text{dim}(U \\cap W)",
@@ -1029,23 +951,11 @@
    "w": 52.7,
    "h": 18.48
   },
-  "db0fafbc1cb0fd70": {
-   "tex": "\\deg(v) \\ge \\frac{n}{2} \\text{ voi moi } v \\Rightarrow \\text{ co chu trinh Hamilton}",
-   "alt": "deg(v) >= n/2 voi moi v => co chu trinh Hamilton",
-   "w": 209.72,
-   "h": 18.36
-  },
   "db71dcd9db2909a4": {
    "tex": "\\int_a^b f(x)\\,dx = F(b) - F(a)",
    "alt": "tich phan_a^b f(x) dx = F(b) - F(a)",
    "w": 114.98,
    "h": 25.27
-  },
-  "db924fce0b4babda": {
-   "tex": "\\text{cay } n \\text{ dinh} \\Rightarrow m = n - 1, \\quad \\text{rung } n \\text{ dinh}, k \\text{ cay} \\Rightarrow m = n - k",
-   "alt": "cay n dinh => m = n - 1, rung n dinh, k cay => m = n - k",
-   "w": 263.69,
-   "h": 9.16
   },
   "dc181a02b4a24dae": {
    "tex": "\\log_a(xy) = \\log_a x + \\log_a y, \\qquad \\log_a \\frac{x}{y} = \\log_a x - \\log_a y",
@@ -1094,12 +1004,6 @@
    "alt": "(f^(-1))'(y_0) = 1/(f'(x_0))",
    "w": 89.49,
    "h": 23.44
-  },
-  "e47ea27af5c2af78": {
-   "tex": "\\max \\text{ gia tri luong} = \\min \\text{ kha nang thong qua lat cat}",
-   "alt": "max gia tri luong = min kha nang thong qua lat cat",
-   "w": 228.59,
-   "h": 9.16
   },
   "e6a6104689e044e3": {
    "tex": "x_{n+1} - x^* \\approx g'(x^*)\\,(x_n - x^*)",
