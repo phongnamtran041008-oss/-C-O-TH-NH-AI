@@ -75,12 +75,6 @@
    "w": 166.27,
    "h": 10.18
   },
-  "1058a5a4e4f0d5dc": {
-   "tex": "A + B = A \\cup B, \\quad AB = A \\cap B",
-   "alt": "A + B = A hop B, AB = A giao B",
-   "w": 138.39,
-   "h": 9.27
-  },
   "10ed6db9149c46d7": {
    "tex": "\\frac{px + q}{(x - r)(x - s)} = \\frac{A}{x - r} + \\frac{B}{x - s}, \\qquad A = \\frac{pr + q}{r - s},\\; B = \\frac{ps + q}{s - r}",
    "alt": "(px + q)/((x - r)(x - s)) = A/(x - r) + B/(x - s), A = (pr + q)/(r - s), B = (ps + q)/(s - r)",
@@ -309,12 +303,6 @@
    "w": 146.07,
    "h": 11.54
   },
-  "38c652779be35416": {
-   "tex": "P(A_1 A_2 A_3) = P(A_1)\\,P(A_2 \\mid A_1)\\,P(A_3 \\mid A_1 A_2)",
-   "alt": "P(A_1 A_2 A_3) = P(A_1) P(A_2 | A_1) P(A_3 | A_1 A_2)",
-   "w": 204.94,
-   "h": 10.18
-  },
   "39807d78d6ebc283": {
    "tex": "a_n = A \\, r_1^{n} + B \\, r_2^{n}",
    "alt": "a_n = A r_1^n + B r_2^n",
@@ -338,12 +326,6 @@
    "alt": "P(A) = m/n",
    "w": 50.2,
    "h": 18.48
-  },
-  "3aa010db4da7a84a": {
-   "tex": "0 \\le P(A) \\le 1, \\qquad P(\\Omega) = 1",
-   "alt": "0 <= P(A) <= 1, P(Omega) = 1",
-   "w": 127.01,
-   "h": 10.18
   },
   "3b0f8edbac98f095": {
    "tex": "f_Y(y) = \\frac{1}{|a|}\\, f_X\\!\\left(\\frac{y - b}{a}\\right)",
@@ -422,12 +404,6 @@
    "alt": "s^2 = ((n_1 - 1)s_1^2 + (n_2 - 1)s_2^2)/(n_1 + n_2 - 2), t = (x_(tb1) - x_(tb2))/(can(s^2(1/n_1 + 1/n_2)))",
    "w": 258.24,
    "h": 28.53
-  },
-  "47499a61e9a7ebc2": {
-   "tex": "P(a \\le X \\le b) = \\int_a^b f(x)\\,dx",
-   "alt": "P(a <= X <= b) = tich phan_a^b f(x) dx",
-   "w": 122.84,
-   "h": 25.27
   },
   "4804eff2676459da": {
    "tex": "z = \\frac{x_{tb} - \\mu_0}{\\sigma/\\sqrt{n}}, \\qquad t = \\frac{x_{tb} - \\mu_0}{s/\\sqrt{n}}",
@@ -813,12 +789,6 @@
    "w": 106.08,
    "h": 25.27
   },
-  "8cda997ce5f48553": {
-   "tex": "\\Omega = \\{1, 2, 3, 4, 5, 6\\}",
-   "alt": "Omega = {1, 2, 3, 4, 5, 6}",
-   "w": 84.29,
-   "h": 10.18
-  },
   "8f71eb7a4e45535a": {
    "tex": "P(1) \\land \\big(P(k) \\Rightarrow P(k+1)\\big) \\Rightarrow \\forall n \\ge 1,\\ P(n)",
    "alt": "P(1) va (P(k) => P(k+1)) => voi moi n >= 1, P(n)",
@@ -1113,12 +1083,6 @@
    "w": 87.44,
    "h": 10.18
   },
-  "b8553ac3190d5204": {
-   "tex": "P_n = n! = n (n-1) \\cdots 2 \\cdot 1",
-   "alt": "P_n = n! = n (n-1) ... 2 . 1",
-   "w": 118.33,
-   "h": 10.18
-  },
   "bbee470e364f0a01": {
    "tex": "f^{-1}(y) = x \\;\\Leftrightarrow\\; f(x) = y",
    "alt": "f^(-1)(y) = x <=> f(x) = y",
@@ -1208,12 +1172,6 @@
    "alt": "lim_(x -> a) f(x) = L <=> lim_(x -> a^-) f(x) = lim_(x -> a^+) f(x) = L",
    "w": 193.71,
    "h": 15.48
-  },
-  "cb776f957be257c2": {
-   "tex": "m + n \\quad \\text{(chon mot phuong an)}, \\qquad m \\cdot n \\quad \\text{(lam ca hai buoc)}",
-   "alt": "m + n (chon mot phuong an), m . n (lam ca hai buoc)",
-   "w": 268.83,
-   "h": 10.18
   },
   "cbee2998b285565b": {
    "tex": "x_{n+1} = x_n - \\frac{f(x_n)}{f'(x_n)}",
@@ -1413,12 +1371,6 @@
    "w": 149.04,
    "h": 25.19
   },
-  "eb82fd090de3c5e7": {
-   "tex": "P(X = c) = 0",
-   "alt": "P(X = c) = 0",
-   "w": 60.89,
-   "h": 10.18
-  },
   "eb99db9c6b7ecea2": {
    "tex": "L = f - \\lambda g, \\quad L_x = 0, \\; L_y = 0, \\; g = 0",
    "alt": "L = f - lambda g, L_x = 0, L_y = 0, g = 0",
@@ -1478,12 +1430,6 @@
    "alt": "min_(a, b) tong_(i=1)^n (y_i - a - b x_i)^2",
    "w": 100.95,
    "h": 28.59
-  },
-  "f8cae9a486b8111b": {
-   "tex": "f(x) \\ge 0, \\qquad \\int_{-\\infty}^{+\\infty} f(x)\\,dx = 1",
-   "alt": "f(x) >= 0, tich phan_(-vo cung)^(+vo cung) f(x) dx = 1",
-   "w": 139.39,
-   "h": 24.99
   },
   "f99923c221a21e4e": {
    "tex": "V(aX + b) = a^2\\,V(X)",
