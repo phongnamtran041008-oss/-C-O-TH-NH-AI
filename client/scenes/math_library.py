@@ -159,7 +159,12 @@ class _Page:
         elif kind == "note":
             i = self.box(x, w, PAPER_NOTE, None, UICOL["accent"])
             self.y += 4
-            self.lines(b["text"], body, INK, x + 8, w - 8 - BOX_PAD, parent=i, first=T.LIB_NOTE)
+            # A note that names itself ("Lỗi thường gặp: ...") keeps its own label: the reader's
+            # "Trúc Lão nhắc:" in front of it was two labels in a row.
+            label, sep, rest = b["text"].partition(": ")
+            own = bool(sep) and len(label) <= 24 and rest
+            self.lines(rest if own else b["text"], body, INK, x + 8, w - 8 - BOX_PAD, parent=i,
+                       first=f"{label}: " if own else T.LIB_NOTE)
             self.y += 3
             self.close_box(i)
         elif kind == "check":
