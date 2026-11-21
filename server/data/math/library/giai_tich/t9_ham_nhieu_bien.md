@@ -109,7 +109,9 @@ text -0.35 2.5 "dy"
 Vi phân toàn phần df = f_x dx + f_y dy: mỗi biến nhích một chút, cộng phần đổi theo từng hướng.
 :::
 
-Hàm ẩn F(x, y) = 0: y' = -F_x/F_y (đừng quên dấu trừ); mặt F(x, y, z) = 0 thì z_x = -F_x/F_z. Taylor bậc hai thêm (f_xx dx^2 + 2f_xy dx dy + f_yy dy^2)/2.
+Hàm ẩn: dọc đường cong F(x, y) = 0, F không đổi nên F_x dx + F_y dy = 0, tức y' = -F_x/F_y. Mặt F(x, y, z) = 0: giữ y yên thì F_x dx + F_z dz = 0, nên z_x = -F_x/F_z; z_y tương tự.
+
+Taylor bậc hai thêm phần cong (f_xx dx^2 + 2f_xy dx dy + f_yy dy^2)/2; số 2 vì f_xy và f_yx cùng góp. Tích hàm một biến: nhân khai triển, e^x sin y = (1 + x + ...)(y - ...), phần bậc hai là xy.
 
 Ví dụ: tính gần đúng 2.01^2 . 0.98 bằng f = x^2 y tại (2, 1).
 
@@ -122,6 +124,11 @@ Ví dụ: tính gần đúng 2.01^2 . 0.98 bằng f = x^2 y tại (2, 1).
 :::check
 Q: x^2 + y^2 = 25 xác định y = y(x) gần (3, 4). Tính y'(3).
 A: F_x = 2x, F_y = 2y: y' = -x/y = -3/4.
+:::
+
+:::check
+Q: Mặt cầu x^2 + y^2 + z^2 = 9 xác định z = z(x, y) gần (2, 1, 2). Tính z_x và z_y.
+A: F_x = 2x, F_y = 2y, F_z = 2z: z_x = -x/z = -1, z_y = -y/z = -1/2.
 :::
 
 ## Cực trị của hàm hai biến
@@ -216,34 +223,49 @@ Mỗi bước huấn luyện mạng nơ-ron: lan truyền ngược để có gra
 :::
 
 :::figure graph
-caption: z = wx + b, L = (z - t)^2, x = 3, t = 4. Đi ngược, nhân đạo hàm trên cạnh.
-size: 160 75
+caption: a = xy, b = x^2, f = a + b tại x = 2, y = 3. Từ x tới f có hai đường (đỏ): qua a và qua b.
+size: 170 80
 layout: free
 directed: yes
-node w 0 0 "w = 2"
-node b 0 2 "b = -1"
-node z 2 1 "z = 5" xanh
-node L 4 1 "L = 1" do
-edge w z "x = 3"
-edge b z "1"
-edge z L "dL/dz = 2"
+node x 0 0 "x = 2"
+node y 0 2 "y = 3"
+node a 2 1 "a = 6" xanh
+node b 2 -1 "b = 4" xanh
+node f 4 0 "f = 10" vang
+edge x a "y = 3" do
+edge y a "x = 2"
+edge x b "2x = 4" do
+edge a f "1" do
+edge b f "1" do
 :::
 
 :::core
-Gradient chỉ hướng lên dốc nhanh nhất; lan truyền ngược tính nó bằng cách nhân đạo hàm dọc từng đường rồi cộng.
+Gradient chỉ hướng lên dốc nhanh nhất; lan truyền ngược tính nó: nhân đạo hàm cục bộ dọc mỗi đường từ đầu ra về, rồi cộng các đường.
 :::
 
-grad f = (f_x, f_y). Đạo hàm theo hướng đơn vị u là grad f . u; lớn nhất bằng |grad f|. Jacobian: bảng đạo hàm riêng; dây chuyền là nhân bảng.
+Ví dụ: với hình trên, tính df/dx và df/dy.
 
-Ví dụ: với hình trên, tính dL/dw và dL/db.
+1. Đường x -> a -> f: 3 . 1 = 3. Đường x -> b -> f: 4 . 1 = 4.
+2. Cộng hai đường: df/dx = 3 + 4 = 7 (khớp y + 2x).
+3. y chỉ có một đường: df/dy = 2 . 1 = 2.
 
-1. Xuôi: z = 2 . 3 - 1 = 5, L = (5 - 4)^2 = 1.
-2. Ngược: dL/dz = 2(z - t) = 2.
-3. dL/dw = 2 . x = 6, dL/db = 2 . 1 = 2.
+grad f = (f_x, f_y). Đi theo hướng đơn vị u, f đổi với tốc độ grad f . u = |grad f| cos(góc): lớn nhất |grad f| khi đi đúng hướng grad f, bằng 0 khi đi dọc đường mức.
 
-> Lỗi thường gặp: bỏ sót đường. f = a + x^2 với a = xy: x vào f hai lối, df/dx = y + 2x.
+Jacobian của (u, v) = (u(x, y), v(x, y)) là bảng [u_x, u_y; v_x, v_y]. Dây chuyền nhiều biến là nhân các bảng ấy; một ô của tích, z_x = z_u u_x + z_v v_x, chính là cộng hai đường x -> u -> z và x -> v -> z.
+
+> Lỗi thường gặp: chỉ đi một đường. Ở hình trên, quên nhánh qua b sẽ ra df/dx = 3 thay vì 7.
 
 :::check
 Q: f = x^2 + y^2. Đạo hàm theo hướng u = (3/5, 4/5) tại (1, 2) bằng bao nhiêu?
 A: grad f = (2, 4). Tích vô hướng: 6/5 + 16/5 = 22/5.
+:::
+
+:::check
+Q: Nơ-ron z = wx + b, L = (z - t)^2 với w = 2, x = 3, b = -1, t = 4. Tính L, dL/dw, dL/db.
+A: z = 5, L = 1. dL/dz = 2(z - t) = 2, rồi dL/dw = 2 . x = 6, dL/db = 2 . 1 = 2.
+:::
+
+:::check
+Q: (u, v) = (x + y, xy). Tính định thức Jacobian tại (1, 2).
+A: Bảng [u_x, u_y; v_x, v_y] = [1, 1; y, x] = [1, 1; 2, 1]. Định thức 1 . 1 - 1 . 2 = -1.
 :::
