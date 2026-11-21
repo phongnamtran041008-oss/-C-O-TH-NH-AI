@@ -476,12 +476,28 @@ class Leg:
         if i is None:                       # not reached yet (searching) or never (an island)
             return Reading("searching" if not self.ready else "straight", self.aim, straight)
         ahead = f.chain(i, LOOK + 1)
-        aim = g.point(ahead[1]) if len(ahead) > 1 else self.aim     # no straight line: the next cell
-        for j in reversed(ahead[2:]):
+        aim = None
+        for j in reversed(ahead[1:]):
             px, py = g.point(j)
             if g.clear_line(x, y, px, py):
                 aim = (px, py)
                 break
+        if aim is None:
+            # no straight line to any cell ahead: the feet stand beside the line of cells by a few
+            # pixels (the straight line to the next cell would graze a solid's corner), so step
+            # sideways onto that line first - the foot of the perpendicular from the feet to the
+            # line from their cell to the next, never backward - unless that is within a key's
+            # (1.5 px): then the next cell is the aim
+            aim = self.aim if len(ahead) < 2 else g.point(ahead[1])
+            if len(ahead) >= 2:
+                (ox, oy), (nx, ny) = g.point(ahead[0]), aim
+                ux, uy = nx - ox, ny - oy
+                n = math.hypot(ux, uy) or 1.0
+                ux, uy = ux / n, uy / n
+                t = max(0.0, min(n, (x - ox) * ux + (y - oy) * uy))
+                fx, fy = ox + ux * t, oy + uy * t
+                if math.hypot(fx - x, fy - y) > 1.5 and g.clear_line(x, y, fx, fy):
+                    aim = (fx, fy)
         if f.at(i) == 0:
             return Reading("here", self.aim, 0.0)
         route = []
