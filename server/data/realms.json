@@ -1,11 +1,23 @@
 {
-  "_comment": "Bí cảnh (spec 14, M10). Every realm is a math bí cảnh: every question - a Mặc Quái's, a Trận Nhãn seal's, the boss's - comes from math_ask.pick_own, the answering player's own floor and tier, never the monster's or the room's (app/systems/math_realm.py). kind = how it is entered: 'math' at the Cổng Bí Cảnh whenever the gate is there, 'scheduled' at the gate during the opening hours of balance/realm.json schedule, 'rift' only through a Khe Nứt Mực that opens now and then in a public zone (balance/realm.json rift.realm). party_min / daily_entries override the balance defaults; no min_realm: nothing here reads the cultivation realms. math.rooms: the rooms before the boss, in order; kind = a room of app/realtime/realm.py PUZZLES, place = the room of the bi_canh map it is played in, seal = the kind of map object that serves as its seals. math.boss_question: prefer = the question type the boss would like to ask (a type of balance/math.json); the boss asks it of every player who has a question of that type at their own floor and tier (find_mistake, 'Tìm chỗ sai'); a player who has none gets the fallback, the 'bài tổng hợp': pick_own(highest=True), the hardest question this player may be asked. math.lines_vi: the line the math card shows under the question for each asker. room_monsters are quái lỗi sai of floor 1: they ask nothing of their own floor here. Loot (balance/realm.json chest / room_loot_by_realm): Linh Thạch, the materials of data/math/drops.json and Linh Quả, plus Mảnh Bảo Vật in Mặc Ảnh Động, every item gated by tu vi (data/loot_tiers.json, whose source_caps bound what each realm may list); Tu Vi comes from the answers. 'puzzles' names and explains each room for the gate and the room banner.",
+  "_comment": "Bí cảnh (spec 14, M10). Every realm is a math bí cảnh: every question - a Mặc Quái's, a Trận Nhãn seal's, the boss's - comes from math_ask.pick_own, the answering player's own floor and tier, never the monster's or the room's (app/systems/math_realm.py). kind = how it is entered: 'math' at the Cổng Bí Cảnh whenever the gate is there, 'scheduled' at the gate during the opening hours of balance/realm.json schedule, 'rift' only through a Khe Nứt Mực that opens now and then in a public zone (balance/realm.json rift.realm). party_min / daily_entries override the balance defaults; no min_realm: nothing here reads the cultivation realms. math.rooms: the rooms before the boss, in order; kind = a room of app/realtime/realm.py PUZZLES, place = the room of the bi_canh map it is played in, seal = the kind of map object that serves as its seals. math.boss_question: prefer = the question type the boss would like to ask (a type of balance/math.json); the boss asks it of every player who has a question of that type at their own floor and tier (find_mistake, 'Tìm chỗ sai'); a player who has none gets the fallback, the 'bài tổng hợp': pick_own(highest=True), the hardest question this player may be asked. math.lines_vi: the line the math card shows under the question for each asker. quai = the creatures a run fields (app/systems/realm_quai.py, docs/BI_CANH_QUAI.md), chosen by the bí cảnh (theme: 'muc' the ink family of data/creatures/monsters.json, 'tran' quái lỗi sai of the band's floors, 'land' the creatures of the land and khu where a rift opened) and by the band of tu vi of the party (the weakest member's place in Đạo Thụ, 1 Ngoại Vi .. 3 Thâm Xứ; a rift also never above its khu's band). bands.<band>.rooms: one row per room of math.rooms: kinds (normals; 'land' in a rift), count (every kind appears once before any twice), optional elite (one, from band 2 on; 'land' = one of the land's elites). bands.<band>.boss: kind (its body and picture), optional stats_from (a boss whose numbers, group shield and phases it takes), name_vi, hp_mult (default boss_hp_mult). fallback: a rift in a zone where no creature lives. Every monster of a run carries the band like those of a banded khu: numbers x data/math/dia_do.json mult, drops within the band's loot_cap, 'kv' on the wire; they ask nothing of their own: questions come from the player's floor. puzzles (optional, per realm) overrides the name and how-to of its rooms. Loot (balance/realm.json chest / room_loot_by_realm): Linh Thạch, the materials of data/math/drops.json and Linh Quả, plus Mảnh Bảo Vật in Mặc Ảnh Động, every item gated by tu vi (data/loot_tiers.json, whose source_caps bound what each realm may list); Tu Vi comes from the answers. 'puzzles' names and explains each room for the gate and the room banner.",
   "realms": {
     "khe_nut_muc": {
       "name_vi": "Khe Nứt Mực", "kind": "rift", "party_min": 2,
-      "time_limit_minutes": 12, "room_monsters": {"dstt_phan_tu_ma": 1, "dstt_nghich_hieu_ma": 1},
+      "time_limit_minutes": 12,
       "boss": "nghien_ma", "boss_hp_mult": 0.5,
-      "desc_vi": "Một vết rách trong sương mực, chỉ mở vài phút. Một gian trận nhãn rồi một con Nghiên Ma còn non; ai cũng được hỏi đúng tầng toán của mình.",
+      "desc_vi": "Một vết rách trong sương mực, chỉ mở vài phút. Quái của chính vùng đất nơi khe nứt mở tràn ra, rồi một con Nghiên Ma còn non; ai cũng được hỏi đúng tầng toán của mình.",
+      "quai": {
+        "theme": "land",
+        "bands": {
+          "1": {"rooms": [{"kinds": "land", "count": 2}],
+                "boss": {"kind": "nghien_ma", "name_vi": "Nghiên Ma Non"}},
+          "2": {"rooms": [{"kinds": "land", "count": 3}],
+                "boss": {"kind": "nghien_ma", "name_vi": "Nghiên Ma Non"}},
+          "3": {"rooms": [{"kinds": "land", "count": 3, "elite": "land"}],
+                "boss": {"kind": "nghien_ma", "name_vi": "Nghiên Ma Non"}}
+        },
+        "fallback": {"normals": ["ink_slime", "tone_wisp"], "elites": ["ink_fox"]}
+      },
       "math": {
         "rooms": [{"kind": "seal", "place": "compose", "seal": "pedestal"}],
         "boss_question": {"prefer": "find_mistake", "fallback": "highest"},
@@ -16,9 +28,26 @@
     },
     "mac_anh_dong": {
       "name_vi": "Mặc Ảnh Động", "kind": "scheduled", "party_min": 2,
-      "time_limit_minutes": 25, "room_monsters": {"dstt_phan_tu_ma": 1, "dstt_nghich_hieu_ma": 2},
+      "time_limit_minutes": 25,
       "boss": "nghien_ma", "boss_hp_mult": 1.0,
-      "desc_vi": "Hang động nơi Nghiên Ma ngủ, mở cửa ba lần mỗi ngày cho tổ đội. Ba gian trận nhãn rồi tới hang của nó; mỗi người được hỏi đúng tầng toán của mình.",
+      "desc_vi": "Hang động nơi Nghiên Ma ngủ, mở cửa ba lần mỗi ngày cho tổ đội. Ba gian trận nhãn đầy Mặc Quái, Mặc Hồ canh gian cuối, rồi tới hang của nó; mỗi người được hỏi đúng tầng toán của mình.",
+      "quai": {
+        "theme": "muc",
+        "bands": {
+          "1": {"rooms": [{"kinds": ["ink_slime", "tone_wisp"], "count": 3},
+                          {"kinds": ["ink_slime", "tone_wisp", "muc_anh"], "count": 3},
+                          {"kinds": ["tone_wisp", "muc_anh"], "count": 3}],
+                "boss": {"kind": "nghien_ma"}},
+          "2": {"rooms": [{"kinds": ["tone_wisp", "muc_anh"], "count": 3},
+                          {"kinds": ["muc_anh", "but_yeu"], "count": 3},
+                          {"kinds": ["muc_anh", "but_yeu"], "count": 3, "elite": "ink_fox"}],
+                "boss": {"kind": "nghien_ma"}},
+          "3": {"rooms": [{"kinds": ["tone_wisp", "muc_anh", "but_yeu"], "count": 4},
+                          {"kinds": ["muc_anh", "but_yeu"], "count": 4},
+                          {"kinds": ["but_yeu", "muc_anh"], "count": 4, "elite": "ink_fox"}],
+                "boss": {"kind": "nghien_ma"}}
+        }
+      },
       "math": {
         "rooms": [{"kind": "seal", "place": "compose", "seal": "pedestal"},
                   {"kind": "seal", "place": "sentence", "seal": "tile"},
@@ -31,9 +60,28 @@
     },
     "toan_tran": {
       "name_vi": "Toán Trận Bí Cảnh", "kind": "math", "party_min": 1, "daily_entries": 3,
-      "time_limit_minutes": 20, "room_monsters": {"dstt_phan_tu_ma": 1, "dstt_nghich_hieu_ma": 1},
+      "time_limit_minutes": 20,
       "boss": "nghien_ma", "boss_hp_mult": 0.6,
-      "desc_vi": "Hai gian trận nhãn rồi hang Nghiên Ma. Ai cũng được hỏi đúng tầng toán của mình, đi một mình hay cả tổ đội đều được.",
+      "desc_vi": "Hai gian trận nhãn đầy quái lỗi sai rồi tới Trận Chủ ngồi giữa trận. Ai cũng được hỏi đúng tầng toán của mình, đi một mình hay cả tổ đội đều được.",
+      "quai": {
+        "theme": "tran",
+        "bands": {
+          "1": {"rooms": [{"kinds": ["dstt_phan_tu_ma", "dstt_nghich_hieu_ma"], "count": 2},
+                          {"kinds": ["dstt_phan_tu_ma", "dstt_nghich_hieu_ma"], "count": 2}],
+                "boss": {"kind": "dstt_anh_trung_ma", "stats_from": "nghien_ma", "name_vi": "Trận Chủ Ảnh Trùng Ma"}},
+          "2": {"rooms": [{"kinds": ["dstt_phan_tu_ma", "dstt_nghich_hieu_ma", "dstt_phan_ao_ma"], "count": 3},
+                          {"kinds": ["dstt_phan_ao_ma", "dstt_binh_phuong_ma"], "count": 2, "elite": "dstt_anh_trung_ma"}],
+                "boss": {"kind": "dstt_modun_ma", "stats_from": "nghien_ma", "name_vi": "Trận Chủ Mô Đun Ma"}},
+          "3": {"rooms": [{"kinds": ["dstt_phan_tu_ma", "dstt_phan_ao_ma", "dstt_binh_phuong_ma"], "count": 3},
+                          {"kinds": ["dstt_binh_phuong_ma", "dstt_chi_so_ma", "dstt_chuyen_vi_ma"], "count": 3,
+                           "elite": "dstt_modun_ma"}],
+                "boss": {"kind": "dstt_doi_xung_ma", "stats_from": "nghien_ma", "name_vi": "Trận Chủ Đối Xứng Ma"}}
+        }
+      },
+      "puzzles": {
+        "boss": {"name_vi": "Trận Tâm",
+                 "how_vi": "Trận Chủ ngồi giữa trận, mỗi pha Mặc Thuẫn lớn chỉ vỡ khi mỗi người còn sống làm đúng bài tổng hợp của mình: câu khó nhất ở tầng của người ấy. Né vùng đỏ Mặc Triều."}
+      },
       "math": {
         "rooms": [{"kind": "seal", "place": "compose", "seal": "pedestal"},
                   {"kind": "seal", "place": "sentence", "seal": "tile"}],

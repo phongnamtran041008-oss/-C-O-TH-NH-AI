@@ -19,7 +19,7 @@ from .. import balance, clock
 from .. import db as dbm
 from ..config import DATA_DIR
 from ..models import Character, RealmClaim, RealmMember, RealmRun, User
-from . import catalog, cultivation, inventory, items
+from . import catalog, cultivation, inventory, items, realm_quai
 
 
 class RealmError(Exception):
@@ -41,8 +41,11 @@ def realms() -> dict:
     return data()["realms"]
 
 
-def puzzle_info(kind: str) -> dict:
-    return data()["puzzles"].get(kind, {})
+def puzzle_info(kind: str, realm_id: str | None = None) -> dict:
+    """The name and how-to of a room; a realm may word its own (realms.json realms.<id>.puzzles:
+    Toán Trận's den is the Trận Tâm of a Trận Chủ, not Nghiên Ma's)."""
+    own = (realms().get(realm_id or "", {}).get("puzzles") or {}).get(kind) or {}
+    return {**data()["puzzles"].get(kind, {}), **own}
 
 
 # ------------------------------------------------------------------ entries
@@ -160,11 +163,22 @@ def _open_entries(entries: list[dict], realm: str, stage: int) -> list[dict]:
     return out
 
 
+def _in_band(entries: list[dict], band: int, treasures=()) -> list[dict]:
+    """The entries a run of this band may pay at all (loot.band_allows: an item above the band's
+    cap is not part of what the band drops); `treasures` (the chest's own, balance/realm.json
+    chest.<realm>.treasures) are bounded by the realm's cap and the player's tu vi only."""
+    from . import loot
+    if not band:
+        return list(entries)
+    return [e for e in entries if "item" not in e or e["item"] in treasures or loot.band_allows(e["item"], band)]
+
+
 async def _grant_table(db: AsyncSession, uid: int, rng: random.Random, entries: list[dict], ref: str,
-                       out: dict, tier: tuple[str, int] = ("pham_nhan", 0), realm_id: str | None = None) -> None:
+                       out: dict, tier: tuple[str, int] = ("pham_nhan", 0), realm_id: str | None = None,
+                       band: int = 0) -> None:
     """One roll of a weighted table: what the player has not unlocked is taken out first, then
     the rest is weighed; nothing left, nothing paid. Equipment also stays within the cap of
-    the bí cảnh `realm_id`."""
+    the bí cảnh `realm_id` and of the run's band."""
     from . import loot
     entries = _open_entries(entries, *tier)
     if not entries:
@@ -179,25 +193,36 @@ async def _grant_table(db: AsyncSession, uid: int, rng: random.Random, entries: 
         qty = rng.randint(*e.get("qty", [1, 1]))
         out["items"] += await items.grant_items(db, uid, [{"item": e["item"], "qty": qty}], "realm", ref)
     else:
+        within = loot.source_cap(realm_id) if realm_id else None
         rar = loot.roll_equipment_rarity(rng, e.get("min_rarity"), *tier,
-                                         within=loot.source_cap(realm_id) if realm_id else None)
+                                         within=loot.band_within(within, band) if band else within)
         out["equipment"].append(await items.grant_equipment(db, uid, rng.choice(e["equipment"]), rar, "realm", ref))
 
 
-async def claim_room(run_id: int, user_id: int, room_index: int, room_kind: str, realm_id: str) -> dict | None:
+def _band_stones(lo_hi, band: int) -> list[int]:
+    """A stones range of a run in its band (the giant lands' `mult.stones`, data/math/dia_do.json)."""
+    from ..realtime import dia_do
+    k = dia_do.mult(band, None, "stones") if band else 1.0
+    return [int(round(lo_hi[0] * k)), int(round(lo_hi[1] * k))]
+
+
+async def claim_room(run_id: int, user_id: int, room_index: int, room_kind: str, realm_id: str,
+                     band: int = 0) -> dict | None:
     """A cleared room's loot, from the realm's own table (`room_loot_by_realm`: Linh Thạch and
-    the materials of data/math/drops.json; Tu Vi comes from the answers alone, so its `xp` is 0)."""
+    the materials of data/math/drops.json; Tu Vi comes from the answers alone, so its `xp` is 0).
+    A run of a band (1..3, app/systems/realm_quai.py) pays that band's stones and nothing above
+    the band's cap; 0 = no band (the old rule)."""
     c = cfg()["room_loot_by_realm"][realm_id]
     ref = f"run{run_id}:room{room_index}"
 
     async def roll(db, rng):
         from . import loot
         out = {"stage": f"room{room_index}", "room": room_kind, "items": [], "equipment": []}
-        stones = rng.randint(*c["stones"])
+        stones = rng.randint(*_band_stones(c["stones"], band))
         out["spirit_stones"] = await inventory.change_currency(db, user_id, "spirit_stones", stones, "realm", ref)
         out["stones"] = stones
         realm, stage = await loot.player_tier(db, user_id)
-        for d in c["items"]:
+        for d in _in_band(c["items"], band):
             if rng.random() < d["chance"]:
                 qty = rng.randint(*d.get("qty", [1, 1]))
                 if not loot.unlocked(d["item"], realm, stage):   # rolled but above this player's tu vi
@@ -210,10 +235,13 @@ async def claim_room(run_id: int, user_id: int, room_index: int, room_kind: str,
     return await _claim(user_id, run_id, f"room{room_index}", roll)
 
 
-async def claim_chest(run_id: int, user_id: int, realm_id: str, fragments: int, fast: bool) -> dict | None:
+async def claim_chest(run_id: int, user_id: int, realm_id: str, fragments: int, fast: bool,
+                      band: int = 0) -> dict | None:
     """The final chest (spec 14.3): every player rolls on their own; the Mảnh Bảo Vật count is
     the same for the whole team, but only a player whose tu vi has unlocked them gets them
-    (loot.py; the others see them under `locked`). Finishing fast adds stones and a roll."""
+    (loot.py; the others see them under `locked`). Finishing fast adds stones and a roll. A run of
+    a band pays that band's stones and rolls nothing above the band's cap, but for the chest's
+    `treasures` and the Mảnh Bảo Vật, which only the realm's cap and the player's tu vi bound."""
     c = cfg()
     chest = c["chest"][realm_id]
     ref = f"run{run_id}:chest"
@@ -222,7 +250,7 @@ async def claim_chest(run_id: int, user_id: int, realm_id: str, fragments: int, 
         from . import loot
         out = {"stage": "chest", "items": [], "equipment": [], "fast": fast}
         tier = await loot.player_tier(db, user_id)
-        stones = rng.randint(*chest["stones"])
+        stones = rng.randint(*_band_stones(chest["stones"], band))
         if fast:
             stones = int(round(stones * c["fast_bonus"]["stones_mult"]))
         out["spirit_stones"] = await inventory.change_currency(db, user_id, "spirit_stones", stones, "realm", ref)
@@ -237,7 +265,8 @@ async def claim_chest(run_id: int, user_id: int, realm_id: str, fragments: int, 
             out["items"] += await items.grant_items(db, user_id, [{"item": "manh_bao_vat", "qty": fragments}],
                                                     "realm", ref)
         for _ in range(chest["rolls"] + (c["fast_bonus"]["extra_rolls"] if fast else 0)):
-            await _grant_table(db, user_id, rng, chest["table"], ref, out, tier, realm_id)
+            await _grant_table(db, user_id, rng, _in_band(chest["table"], band, chest.get("treasures", ())),
+                               ref, out, tier, realm_id, band)
         if chest["xp"]:
             out["xp"] = await cultivation.add_xp(db, user_id, chest["xp"], "realm")
         from . import achievements, quests   # Thành Tựu: a bí cảnh run to its chest
@@ -254,6 +283,22 @@ async def claims(db: AsyncSession, run_id: int, user_id: int) -> list[dict]:
 
 
 # ------------------------------------------------------------------ the gate
+async def gate_band(db: AsyncSession, user_id: int) -> tuple[int, bool]:
+    """(band, in a party?) the gate shows: the band a run entered now would field, i.e. the
+    weakest band of the player's party, or the player's own (app/systems/realm_quai.py). A rift
+    may still lower it to the band of the khu it opened in."""
+    from ..realtime import lands
+    from ..realtime.world import world
+    party = world.parties.party_of(user_id)
+    uids = list(party.members) if party is not None else [user_id]
+    pos = []
+    for uid in uids:
+        s = world.sessions.get(uid)
+        known = getattr(s, "tree", None) if uid != user_id else None
+        pos.append(known if known is not None else await lands.load_pos(db, uid))
+    return realm_quai.party_band(pos), party is not None
+
+
 async def view(db: AsyncSession, user: User) -> dict:
     from ..realtime.realm import window_status
     from ..realtime.world import world
@@ -261,6 +306,7 @@ async def view(db: AsyncSession, user: User) -> dict:
     used = await entries_used(db, user.id)
     out, math_out = [], []
     floor = (await math_floors(db, [user.id]))[user.id] or 0
+    band, in_party = await gate_band(db, user.id)
     for rid, r in realms().items():
         limit = daily_limit(rid)
         if r["kind"] == "scheduled":
@@ -272,10 +318,11 @@ async def view(db: AsyncSession, user: User) -> dict:
         rooms = r["math"]["rooms"]
         row = {"id": rid, "name_vi": r["name_vi"], "kind": r["kind"], "math": True, "floor": floor,
                "realm_ok": ch is not None and floor > 0, "puzzles": len(rooms),
-               "rooms": [puzzle_info(x["kind"]).get("name_vi", x["kind"]) for x in rooms],
+               "rooms": [puzzle_info(x["kind"], rid).get("name_vi", x["kind"]) for x in rooms],
                "time_limit_minutes": r["time_limit_minutes"], "desc_vi": r.get("desc_vi", ""),
                "entries_left": max(0, limit - used.get(rid, 0)), "daily": limit,
-               "party_min": int(r.get("party_min", cfg()["party_min"])), **st}
+               "party_min": int(r.get("party_min", cfg()["party_min"])),
+               "band": band, "band_vi": realm_quai.band_vi(band), "band_party": in_party, **st}
         # the always-open one on its own tab; the party ones (rift, scheduled) on the first
         (math_out if r["kind"] == "math" else out).append(row)
     fc = cfg()["forge"]

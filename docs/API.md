@@ -253,7 +253,7 @@ Vào bí cảnh, tổ đội và mọi thứ trong lượt chơi đi qua WebSock
 
 | Method | Đường dẫn | Body | Ghi chú |
 |---|---|---|---|
-| GET | `/realms` | — | `{realms[{id, name_vi, kind: scheduled\|rift, math, floor, realm_ok, puzzles, rooms[], time_limit_minutes, desc_vi, entries_left, daily, party_min, open, opens_in, closes_in}], math_realms[...như trên, kind: math], party, queue{key, realm, waiting}?, puzzles{kind: {name_vi, how_vi}}, forge{fragments, stones, have, rarity, rarity_vi, set_vi, bonus_vi, pieces[{id, name_vi, slot_vi}]}}` |
+| GET | `/realms` | — | `{realms[{id, name_vi, kind: scheduled\|rift, math, floor, realm_ok, puzzles, rooms[], time_limit_minutes, desc_vi, entries_left, daily, party_min, band, band_vi, band_party, open, opens_in, closes_in}], math_realms[...như trên, kind: math], party, queue{key, realm, waiting}?, puzzles{kind: {name_vi, how_vi}}, forge{fragments, stones, have, rarity, rarity_vi, set_vi, bonus_vi, pieces[{id, name_vi, slot_vi}]}}` |
 | POST | `/realm/forge` | `{piece}` | 12 Mảnh Bảo Vật + 600 Linh Thạch → một món Mặc Ảnh phẩm Thiên → `{equipment, spirit_stones}`. Lỗi `not_enough`, `bad_piece` |
 
 Thay đổi ở API cũ: `GET /fishing` — Cần Thiên Tơ có giá (Thiên Tằm Ti + Vảy Linh Ngư + Linh Thạch, cần Trúc Cơ). Chỉ số

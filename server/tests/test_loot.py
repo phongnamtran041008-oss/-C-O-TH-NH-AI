@@ -80,11 +80,12 @@ def test_gear_also_stays_within_the_cap_of_its_source():
     rng = random.Random(11)
     forest = loot.source_cap("rung_muc_loang")
     assert forest == loot.parse("luyen_khi:5") and loot.best_rarity(forest) == "linh"
-    assert loot.monster_cap("ink_fox") == forest                        # it lives only in that forest
-    # since the lake became Vạn Tượng Trạch (Thiên Địa Đồ) Mực Con lives only in the forest too;
-    # a creature of a land takes its land's cap
-    assert loot.monster_cap("ink_slime") == forest
+    # since the bí cảnh field by theme (docs/BI_CANH_QUAI.md) the ink family also lives in Mặc Ảnh
+    # Động, which has no cap: the most generous of its homes; a creature of a land takes its
+    # land's cap (a rift there spills it too: Khe Nứt Mực has the same cap)
+    assert loot.monster_cap("ink_fox") is None and loot.monster_cap("ink_slime") is None
     assert loot.monster_cap("dau_tu_oa") == loot.source_cap("ho_nghien_muc") == loot.parse("luyen_khi:9")
+    assert loot.source_cap("khe_nut_muc") == loot.parse("luyen_khi:9")
     seen = {loot.roll_equipment_rarity(rng, None, "dai_thua", 3, within=forest) for _ in range(3000)}
     assert seen == {"pham", "linh"}
     assert loot.source_cap("mac_anh_dong") is None                      # the big bí cảnh has no cap

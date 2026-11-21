@@ -7,6 +7,11 @@ moved from room to room when one is cleared (its seals broken and its Mặc Quá
 question of a run - a monster's, a seal's, the boss's - is a math question at the answering
 player's own floor (app/systems/math_realm.py).
 
+The creatures of a run (app/systems/realm_quai.py, docs/BI_CANH_QUAI.md) are planned once when it
+opens, by the realm's theme and the band of tu vi of the party (the weakest member's place in
+Đạo Thụ; a rift: never above the khu it tore open in). Every one carries that band (RealmMonster):
+numbers scaled, drops capped, "kv" on the wire; the room loot and the chest are paid in the band.
+
 Every realm is a math bí cảnh; its `kind` only says how it is entered: "math" at the Cổng Bí
 Cảnh whenever the gate is there, "scheduled" at the gate during the opening hours of
 balance/realm.json, "rift" through a Khe Nứt Mực that opens now and then in the wild.
@@ -21,7 +26,7 @@ import itertools
 import logging
 import math
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from .. import balance, clock
@@ -47,9 +52,14 @@ def realm_defs() -> dict:
     return secret_realm.realms()
 
 
-def puzzle_info(kind: str) -> dict:
+def puzzle_info(kind: str, realm_id: str | None = None) -> dict:
     from ..systems import secret_realm
-    return secret_realm.puzzle_info(kind)
+    return secret_realm.puzzle_info(kind, realm_id)
+
+
+def realm_quai_band_vi(band: int) -> str:
+    from ..systems import realm_quai
+    return realm_quai.band_vi(band)
 
 
 def dist(ax: float, ay: float, bx: float, by: float) -> float:
@@ -325,12 +335,36 @@ class SealPuzzle(Puzzle):
 PUZZLES = {"seal": SealPuzzle}      # the rooms before the boss a realm may list in `math.rooms`
 
 
+# ------------------------------------------------------------------ the creatures of a run
+@dataclass
+class RealmMonster(ai.Monster):
+    """A monster of a run (app/systems/realm_quai.py). It carries the run's band like a monster
+    of a banded khu (its numbers scaled, its drops capped, "kv" on the wire); a boss that
+    borrows another body (Toán Trận's Trận Chủ, a quái lỗi sai holding the array) also gets the
+    `overlay`: the numbers, group shield and phases of the boss it stands in for, and its name."""
+    overlay: dict | None = None
+    _over: tuple | None = field(default=None, repr=False, compare=False)
+
+    @property
+    def info(self) -> dict:
+        if not self.overlay:
+            return super().info
+        base = ai.monster_types()[self.kind]
+        c = self._over
+        if c is None or c[0] is not base:
+            from . import dia_do
+            c = self._over = (base, dia_do.scaled_info({**base, **self.overlay}, self.band, self.band_realm))
+        return c[1]
+
+
 # ------------------------------------------------------------------ one run
 class RealmInstance(ChannelZone):
     instance = True
 
     def __init__(self, world: "World", run_id: int, realm_id: str, members: dict[int, Member],
-                 rng: random.Random | None = None, rooms: list[str] | None = None):
+                 rng: random.Random | None = None, rooms: list[str] | None = None, band: int = 1,
+                 origin: dict | None = None):
+        from ..systems import realm_quai
         super().__init__(MAP, run_id, maps.load(MAP), rng or random.Random())
         self.monsters = []
         self.world = world
@@ -344,6 +378,11 @@ class RealmInstance(ChannelZone):
         self.no_question: set[int] = set()     # members the bank has no question for right now
         self.rooms = list(rooms) if rooms else self._pick_rooms()
         self.room_specs = self._room_specs()
+        # the creatures of the whole run, by the realm's theme and the party's band (a rift: and
+        # the khu it opened in); the run's band is the plan's (a rift may lower it)
+        self.origin = origin
+        self.quai = realm_quai.plan(realm_id, band, self.rng, sum(1 for k in self.rooms if k != "boss"), origin)
+        self.band = self.quai["band"]
         self.room_i = -1
         self.puzzle: Puzzle | None = None
         self.phase = "starting"            # starting | running | advancing | ended
@@ -458,12 +497,13 @@ class RealmInstance(ChannelZone):
         return {"t": "realm", "event": "start", "run": {
             "id": self.run_id, "realm": self.realm_id, "name_vi": self.rdef["name_vi"],
             "left": int(max(0, self.deadline - now)), "math": True,
-            "rooms": [{"kind": k, "name_vi": puzzle_info(k).get("name_vi", k)} for k in self.rooms],
+            "band": self.band, "band_vi": realm_quai_band_vi(self.band),
+            "rooms": [{"kind": k, "name_vi": puzzle_info(k, self.realm_id).get("name_vi", k)} for k in self.rooms],
             "members": [{"uid": m.uid, "name": m.name, "in": m.state == "in", "floor": m.floor}
                         for m in self.members.values()]}}
 
     def room_msg(self, uid: int, now: float) -> dict:
-        info = puzzle_info(self.kind)
+        info = puzzle_info(self.kind, self.realm_id)
         return {"t": "realm", "event": "room", "i": self.room_i, "n": len(self.rooms), "kind": self.kind,
                 "place": self.place, "math": True, "name_vi": info.get("name_vi", self.kind),
                 "how_vi": info.get("how_vi", ""), "left": int(max(0, self.deadline - now)), "phase": self.phase,
@@ -546,24 +586,29 @@ class RealmInstance(ChannelZone):
             self.world._send_zone(p.session, p)
 
     def _spawn_monsters(self, now: float) -> None:
+        """The room's creatures as the run's plan says (app/systems/realm_quai.py), every one in
+        the run's band."""
         area = self.map.rooms[self.place]
         if self.kind == "boss":
+            spec = self.quai["boss"]
             bs = self.objs("boss_spawn")[0]
-            m = ai.Monster(f"m{self.run_id}_{next(self._mid)}", self.rdef["boss"], area, bs.x + 8, bs.y + 12)
+            m = RealmMonster(f"m{self.run_id}_{next(self._mid)}", spec["kind"], area, bs.x + 8, bs.y + 12,
+                             band=self.band, overlay=spec["overlay"] or None)
             extra = max(0, len(self.present()) - 1)
-            m.hp_scale = self.rdef.get("boss_hp_mult", 1.0) * (1 + cfg()["boss"]["hp_per_extra_member"] * extra)
+            m.hp_scale = spec["hp_mult"] * (1 + cfg()["boss"]["hp_per_extra_member"] * extra)
             m.reset()
             self.boss = m
             self.monsters.append(m)
             self.boss_wake = now + 3.0
             self.next_aoe = now + cfg()["boss"]["aoe_every"]
             return
-        for mkind, count in self.rdef["room_monsters"].items():
-            for _ in range(int(count)):
-                x, y = self._free_spot(area)
-                m = ai.Monster(f"m{self.run_id}_{next(self._mid)}", mkind, area, x, y)
-                m.idle = self.rng.uniform(0.5, 2.0)
-                self.monsters.append(m)
+        j = sum(1 for k in self.rooms[:self.room_i] if k != "boss")     # which room before the boss
+        kinds = self.quai["rooms"][j] if j < len(self.quai["rooms"]) else []
+        for mkind in kinds:
+            x, y = self._free_spot(area)
+            m = RealmMonster(f"m{self.run_id}_{next(self._mid)}", mkind, area, x, y, band=self.band)
+            m.idle = self.rng.uniform(0.5, 2.0)
+            self.monsters.append(m)
 
     def _free_spot(self, a: Area) -> tuple[float, float]:
         for _ in range(40):   # the far half of the room, away from the entrance
@@ -655,7 +700,8 @@ class RealmInstance(ChannelZone):
     async def _pay_room(self, uid: int, i: int, kind: str) -> None:
         from ..systems import secret_realm
         try:
-            loot = await secret_realm.claim_room(self.run_id, uid, i, kind, self.realm_id)
+            loot = await secret_realm.claim_room(self.run_id, uid, i, kind, self.realm_id,
+                                                   band=self.band)
         except Exception:
             log.exception("room loot failed")
             return
@@ -665,7 +711,8 @@ class RealmInstance(ChannelZone):
     async def _pay_chest(self, uid: int, fragments: int, fast: bool) -> None:
         from ..systems import secret_realm
         try:
-            loot = await secret_realm.claim_chest(self.run_id, uid, self.realm_id, fragments, fast)
+            loot = await secret_realm.claim_chest(self.run_id, uid, self.realm_id, fragments, fast,
+                                                    band=self.band)
         except Exception:
             log.exception("chest loot failed")
             return
@@ -889,7 +936,7 @@ class RealmService:
             if err:
                 self._err(s, "cannot_enter", err)
                 return
-            self.start([s.user_id], realm_id)
+            self.start([s.user_id], realm_id, key)
             return
         if party is None or len(party.members) < pmin:
             self._err(s, "need_party", f"Cần tổ đội {pmin}-{c['party_max']} người. "
@@ -902,18 +949,35 @@ class RealmService:
         if err:
             self._err(s, "cannot_enter", err)
             return
-        self.start(list(party.members), realm_id)
+        self.start(list(party.members), realm_id, key)
 
     # ------------------------------------------------------------ entering
-    def start(self, uids: list[int], realm_id: str) -> None:
+    def start(self, uids: list[int], realm_id: str, key: str | None = None) -> None:
+        """`key` = the queue key of what they asked for ('rift:<id>' for a rift: where it opened
+        decides what spills out of it)."""
+        origin = None
+        if key and key.startswith("rift:") and key[5:] in self.rifts:
+            r = self.rifts[key[5:]]
+            origin = {"zone": r.channel.zone_id, "x": r.x, "y": r.y}
         self.starting |= set(uids)
         for uid in uids:
             self.unqueue(uid, notify=False)
             self.world.notify(uid, {"t": "realm", "event": "entering", "realm": realm_id,
                                     "name_vi": realm_defs()[realm_id]["name_vi"]})
-        self.world.spawn(self._start(list(uids), realm_id))
+        self.world.spawn(self._start(list(uids), realm_id, origin))
 
-    async def _start(self, uids: list[int], realm_id: str) -> None:
+    async def party_band(self, db, uids: list[int]) -> int:
+        """The band of tu vi of a party: the weakest member's place in Đạo Thụ, read fresh
+        (app/systems/realm_quai.py); band 1 if it cannot be read."""
+        from ..systems import realm_quai
+        from . import lands
+        try:
+            return realm_quai.party_band([await lands.load_pos(db, uid) for uid in uids])
+        except Exception:
+            log.exception("could not read the party's tu vi")
+            return 1
+
+    async def _start(self, uids: list[int], realm_id: str, origin: dict | None = None) -> None:
         from .. import db as dbm
         from ..systems import secret_realm
         rdef = realm_defs()[realm_id]
@@ -936,6 +1000,7 @@ class RealmService:
                             self.world.notify(uid, protocol.error(
                                 "no_math_question", f"{names} chưa có tầng toán nào có câu hỏi."))
                         return
+                    band = await self.party_band(db, uids)
                     run_id = await secret_realm.create_run(db, realm_id, uids)
                     await db.commit()
             except Exception:
@@ -952,7 +1017,8 @@ class RealmService:
             members = {uid: Member(uid, self.world.sessions[uid].name, floor=floors.get(uid)) for uid in uids}
             try:
                 rng = random.Random(self.seed) if self.seed is not None else random.Random()
-                inst = RealmInstance(self.world, run_id, realm_id, members, rng, rooms=self.room_order)
+                inst = RealmInstance(self.world, run_id, realm_id, members, rng, rooms=self.room_order,
+                                     band=band, origin=origin)
             except Exception:
                 log.exception("could not build a realm run")
                 await secret_realm.abort_run(run_id)
@@ -1022,7 +1088,7 @@ class RealmService:
                     for uid in uids:
                         self.world.notify(uid, protocol.error("cannot_enter", err))
                 else:
-                    self.start(uids, realm_id)
+                    self.start(uids, realm_id, key)
             self.queues[key] = [e for e in keep if e[0] not in taken]
             if not self.queues[key]:
                 del self.queues[key]
