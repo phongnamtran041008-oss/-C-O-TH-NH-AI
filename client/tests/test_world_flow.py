@@ -157,7 +157,13 @@ def run_world_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.hold([pygame.K_d], 7.0)
         drv.wait(lambda: world(drv) is not None and world(drv).zone_id == "rung_muc_loang" and world(drv).joined,
                  10, "forest")
-        drv.wait(lambda: any(e.kind == "m" for e in world(drv).entities.values()), 5, "monsters")
+        # nothing spawns near a gate of a giant land: walk in along the gate road until one shows
+        seen = lambda: any(e.kind == "m" for e in world(drv).entities.values())   # noqa: E731
+        for _ in range(40):
+            if seen():
+                break
+            drv.hold([pygame.K_d], 0.5)
+        drv.wait(seen, 5, "monsters")
         drv.step(30)
         drv.shot("forest")
         drv.wait(lambda: bot.pump() is not None and any(a_eid in m.get("rm", []) for m in bot.find("snap")), 5,
