@@ -310,7 +310,7 @@ def test_the_arrow_leads_to_a_khu_and_says_when_it_is_reached(khu_map):
     assert name == "Trung Vực Thử" and far.endswith(" trượng") and sub == "Trung Vực · hợp Luyện Khí tầng 4-6"
     assert not warn                                             # (the stage is not known yet)
     nav.data = {"stage": {"realm": "luyen_khi", "realm_vi": "Luyện Khí", "stage": 1, "working": 2}}
-    assert nav.plate()[2].endswith("cao hơn tu vi của con") and nav.plate()[3]
+    assert nav.plate()[2] == "Trung Vực · tầng 4-6 · cao hơn tu vi" and nav.plate()[3]
     sc.player.x = 1300                                          # walked into the khu: not there yet
     g.now += 0.2
     nav.update(sc)
@@ -472,3 +472,24 @@ def test_a_giant_land_is_led_through_in_the_real_ui():
     assert out["status"] == "path" and out["route"] > 20, out
     assert out["frames"] < 200, out
     assert out["banner"] is not None and out["banner"][0] == "Trung Vực" and "tầng 4-6" in out["banner"][1]
+
+
+def test_monsters_of_band_2_and_3_near_the_player_carry_their_band(khu_map):
+    from client.ui import nav_hud
+    g = FakeGame()
+    g.top = None
+    nav = chi_duong.of(g)
+    nav.data = {"stage": {"realm": "luyen_khi", "realm_vi": "Luyện Khí", "stage": 1, "working": 2}}
+    sc = FakeScene(khu_map, 1900, 400)
+
+    def mon(eid, x, y, kv):
+        return type("E", (), {"id": eid, "kind": "m", "alive": 1, "kv": kv, "pos": (x, y, 0, 0)})()
+    sc.entities = {"a": mon("a", 1930, 400, 2), "b": mon("b", 2300, 400, 2), "c": mon("c", 1880, 420, 1),
+                   "d": mon("d", 1900, 450, 3)}
+    sc.game = g
+    marks = nav_hud.band_marks(None, sc)
+    assert marks == {"a": (2, True), "d": (3, True)}            # near; band 1 and the far one as before
+    assert nav_hud.band_tip(sc, sc.entities["a"]) == "Trung Vực · hợp Luyện Khí tầng 4-6 · cao hơn tu vi của con"
+    assert nav_hud.band_tip(sc, sc.entities["c"]) == ""
+    sc.entities = {"c": mon("c", 1880, 420, 1)}
+    assert nav_hud.band_marks(None, sc) == {}                    # a map without bands 2-3: nothing at all

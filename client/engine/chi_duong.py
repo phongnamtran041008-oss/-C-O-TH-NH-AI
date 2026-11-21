@@ -288,8 +288,9 @@ class ChiDuong:
             line = fmt.format(realm=self.realm_vi, lo=lo, hi=hi)
             ws = self.working_stage
             warn = ws is not None and lo > ws
-            if warn:
-                line += " · " + N.TOO_HIGH
+            if warn:                         # plainly: above the stage, the monsters are stronger
+                rng = f"{lo}-{hi}" if lo != hi else f"{lo}"
+                line = N.WARN_LINE.format(realm=self.realm_vi, r=rng)
         title = props.get("name_vi") or props.get("khu") or ""
         band_vi = N.BAND_NAMES.get(band, "")
         if band_vi and band_vi not in title:
@@ -343,7 +344,8 @@ class ChiDuong:
             fit = (N.BAND_FIT_ONE if lo == hi else N.BAND_FIT).format(realm=self.realm_vi, lo=lo, hi=hi)
             sub = f"{N.BAND_NAMES.get(num(d.get('band')), '')} · {fit}"
             if self.above_stage(lo):
-                sub, warn = f"{sub} · {N.TOO_HIGH}", True
+                sub = f"{N.BAND_NAMES.get(num(d.get('band')), '')} · tầng {lo}-{hi} · {N.TOO_HIGH_SHORT}"
+                warn = True
         return name, far, sub, warn
 
     def draw_on_minimap(self, ui, mm, x: float, y: float, scene) -> None:

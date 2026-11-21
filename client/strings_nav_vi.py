@@ -40,6 +40,8 @@ PRESS_EXIT = "Tới cổng rồi, nhấn E để ra"
 BAND_FIT = "hợp {realm} tầng {lo}-{hi}"
 BAND_FIT_ONE = "hợp {realm} tầng {lo}"
 TOO_HIGH = "cao hơn tu vi của con"
+TOO_HIGH_SHORT = "cao hơn tu vi"
+WARN_LINE = "Nơi đây hợp {realm} tầng {r}, cao hơn tu vi của con: quái mạnh, cẩn thận!"
 SAFE = "nơi an toàn"
 REALM_DEFAULT = "Luyện Khí"
 

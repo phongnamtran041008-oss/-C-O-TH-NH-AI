@@ -108,7 +108,8 @@ class Ent:
     fsword: str = ""                           # the flying sword under it
     stage: int = 0                             # a player's realm stage (its kiếm khí tier)
     lc: int = 0                                # a player's linh căn giai (1-9; 0 = none)
-    kick: tuple | None = None                  # a struck body's recoil (combat_vfx.recoil)
+    kv: int = 0                                # a monster's band of tu vi on a giant land (0: none)
+    kick: tuple | None = None                 # a struck body's recoil (combat_vfx.recoil)
     dissolve: bool = False                     # its death turns to light (the VFX layer took it over)
 
 
@@ -838,6 +839,7 @@ class WorldScene(Scene):
                       e.get("realm", "pham_nhan"))
             ent.hp, ent.shield, ent.alive = e.get("hp", 100), e.get("sh", 0), e.get("alive", 1)
             ent.rank, ent.weapon = e.get("rank", "normal"), e.get("wp")
+            ent.kv = int(e.get("kv") or 0)          # Đại Địa Đồ: the band of tu vi a monster stands in
             ent.bees = e.get("bees") or []
             ent.pet = e.get("pet")
             ent.ghost = bool(e.get("gh"))
@@ -3356,6 +3358,7 @@ class WorldScene(Scene):
                     lift = art2.extent(ns)[1] + 4 if ns is not None else 25 * self.z
                 heads.append((o.x + o.w / 2, o.y + o.h, o.name, "#E9C46A", None, lift))
         placed: list = []            # name tags already drawn: a tag that would cover one moves up
+        bands = nav_hud.band_marks(ui, self)       # Chỉ Đường: band 2-3 monsters near me or under the mouse
         for x, y, name, col, eid, lift in (sorted(heads, key=lambda h: -h[1]) if v2 else heads):
             sx, sy = self.view.to_screen(x, y) if v2 else (x - cx, y - cy)
             lift += int(self.drawn_alt.get(eid, 0.0) * self.z) if eid else 0     # a flyer's tag rides with it
@@ -3371,6 +3374,8 @@ class WorldScene(Scene):
                 placed.append((bx, by, tw))
             ui.text(name, bx + 0.5, by + 0.5, 7, "#1A1A1A", anchor="midbottom")
             ui.text(name, bx, by, 7, col, anchor="midbottom")
+            if eid in bands:                       # its band: pips after the name
+                nav_hud.draw_band_mark(ui, bx + (tw if v2 else ui.text_size(name, 7)[0]) / 2 + 2, by - 4, *bands[eid])
             giai = self.linh_can_of(eid)
             if giai and v2:                        # a small diamond in the colour of the root's giai
                 self.draw_lc_mark(ui, bx - (tw if v2 else 0) / 2 - 5, by - 4, giai)
@@ -3486,6 +3491,21 @@ class WorldScene(Scene):
                 hovered = e
         return hovered
 
+    def _clickables(self) -> list:
+        """The NPCs, interact objects and signs of the map in map order: the objects a click can
+        open. Found by type once per map (a giant land has thousands of props, not one of
+        which is clickable), not by a walk over every object at each click."""
+        tm = self.map
+        key = (id(tm), id(getattr(tm, "_by_type", None)))
+        cached = getattr(self, "_click_cache", None)
+        if cached is None or cached[0] != key:
+            objs = [o for t in ("npc", "interact", "sign") for o in tm.find(t)]
+            if len(objs) > 1:
+                order = {id(o): i for i, o in enumerate(tm.objects)}
+                objs.sort(key=lambda o: order.get(id(o), 0))
+            cached = self._click_cache = (key, objs)
+        return cached[1]
+
     def _hud_input(self, ui, top: bool) -> None:
         g = self.game
         typing = g.chatbox.typing
@@ -3507,6 +3527,8 @@ class WorldScene(Scene):
                 tip += "\n" + T.PLAYER_REALM.format(realm=T.REALMS.get(hovered.realm, hovered.realm))
             elif hovered.kind == "r":
                 tip += "\n" + T.REALM_RIFT_LEFT.format(t=int(max(0, hovered.left - (g.now - hovered.seen))))
+            elif hovered.kind == "m" and hovered.kv >= 2:          # Chỉ Đường: its band, and if above me
+                tip += "\n" + nav_hud.band_tip(self, hovered)
             ui.set_tooltip(tip)
         if self.realm is not None and ui.inp.right_clicked and 20 < myw < 222:   # a ping for the party
             self.realm.mark(wx, wy, 1 if pygame.key.get_mods() & pygame.KMOD_SHIFT else 0)
@@ -3550,7 +3572,7 @@ class WorldScene(Scene):
                 ui.consume_click()
                 self.interact(("ent", hovered))   # a monster: attack (spec 7.2: left click)
                 return
-            for o in self.map.objects:
+            for o in self._clickables():
                 r = o.rect
                 if o.type == "npc" and z > 1:     # a v2 NPC stands taller than its map rect
                     up = art2.object_height(o, self.view) / z

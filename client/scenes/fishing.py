@@ -23,8 +23,9 @@ OVER_SECONDS = 1.6
 
 # ------------------------------------------------------------------ water and drawing helpers
 def water_near(tmap, x: float, y: float, facing: str = "down", reach: float = REACH):
-    """(water area, float position) when the feet at (x, y) stand at the water, else None."""
-    for o in tmap.objects:
+    """(water area, float position) when the feet at (x, y) stand at the water, else None.
+    Asked every frame: the map's areas by type (`find`), never a walk over all its objects."""
+    for o in (tmap.find("area") if hasattr(tmap, "find") else tmap.objects):
         if o.type != "area" or o.props.get("kind") not in ("pond", "fishing"):
             continue
         if o.x - reach <= x <= o.x + o.w + reach and o.y - reach <= y <= o.y + o.h + reach:

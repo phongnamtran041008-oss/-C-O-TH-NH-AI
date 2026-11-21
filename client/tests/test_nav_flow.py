@@ -96,6 +96,7 @@ def follow_arrow(drv: Driver, server: ServerProcess, done, what: str, timeout: f
     becomes held keys - the nearest of the eight directions, as a player reads an arrow - a
     tenth of a second at a time."""
     end = time.time() + timeout
+    lean, last = False, None
     while time.time() < end:
         if done():
             drv.keys.held = set()
@@ -119,12 +120,14 @@ def follow_arrow(drv: Driver, server: ServerProcess, done, what: str, timeout: f
             on_exit(sc)
             continue
         ax, ay = n.reading.aim
-        kx, ky = keys_for(ax - sc.player.x, ay - sc.player.y)
+        kx, ky = keys_for(ax - sc.player.x, ay - sc.player.y, lean=lean)
         keys = KEYS.get((kx, 0), []) + KEYS.get((0, ky), [])
         if not keys:
             drv.step(2)
             continue
+        last = (sc, sc.player.x, sc.player.y)
         drv.hold(keys, 0.1)
+        lean = last == (here(drv), sc.player.x, sc.player.y)    # held against a corner: lean as the arrow does
     sc = here(drv)
     raise AssertionError(f"the arrow did not lead to {what}: in {getattr(sc, 'zone_id', type(sc).__name__)} at "
                          f"({sc.player.x:.0f}, {sc.player.y:.0f}), status {nav(drv).status}, "
@@ -179,6 +182,37 @@ def toast_rects(drv: Driver) -> list[pygame.Rect]:
         out.append(pygame.Rect(a[0], a[1], b[0] - a[0], b[1] - a[1]))
         y += 17
     return out
+
+
+def band_mark(drv: Driver, facts: dict, shot: str) -> None:
+    """A monster of band 2 on the screen under the mouse: pips after its name, its band (above
+    the newcomer's stage) in the tooltip. (Where the monsters stand is the map's: when none is on
+    the screen, the facts say so.)"""
+    from client.ui import nav_hud
+    ws = here(drv)
+    mons = sorted((e for e in ws.entities.values() if e.kind == "m" and e.alive and e.kv >= 2),
+                  key=lambda e: abs(e.pos[0] - ws.player.x) + abs(e.pos[1] - ws.player.y))
+    facts.setdefault("band_monsters_seen", []).append(len(mons))
+    mons = [e for e in mons if abs(e.pos[0] - ws.player.x) < 200 and abs(e.pos[1] - ws.player.y) < 100]
+    if not mons:
+        return
+    e = mons[0]
+    real = pygame.mouse.get_pos
+
+    def over():                                      # the mouse on its body, wherever it wanders
+        sx, sy = ws.view.to_screen(e.pos[0], e.pos[1] - 4)
+        return drv.game.display.to_window(sx, sy)
+    pygame.mouse.get_pos = over                      # (the dummy video driver cannot move the mouse)
+    try:
+        drv.step(4)
+        marks = nav_hud.band_marks(drv.game.ui, ws)
+        facts.setdefault("band_marks", []).append(marks.get(e.id))
+        assert marks.get(e.id) == (2, True), (marks, e.id, e.pos, (ws.player.x, ws.player.y))
+        assert "Trung Vực · hợp Luyện Khí tầng 4-6 · cao hơn tu vi" in nav_hud.band_tip(ws, e)
+        drv.shot(shot)
+    finally:
+        pygame.mouse.get_pos = real
+    drv.step(2)
 
 
 def run_nav_flow(workdir: Path, shots: Path | None = None) -> dict:
@@ -284,9 +318,13 @@ def run_nav_flow(workdir: Path, shots: Path | None = None) -> dict:
         warn = next(b for b in walk.banners if b[2])
         assert warn[0].startswith(target["name_vi"]) and "tầng 4-6" in warn[1] and "cao hơn tu vi" in warn[1], warn
         facts["banners_kts2"] = [b[0] for b in walk.banners]
+        drv.step(30)
+        drv.shot("kts_band2_banner_plate")
+        band_mark(drv, facts, "kts_band2_monster_mark")
         follow_arrow(drv, server, lambda: nav(drv).dest is None, target["name_vi"], timeout=120, walk=walk)
         drv.step(10)
         drv.shot("kts_band2_anchor")
+        band_mark(drv, facts, "kts_band2_monster_mark_anchor")
 
         # ---- H: home from deep inside the land, through the gate, across the village
         drv.press(pygame.K_h)

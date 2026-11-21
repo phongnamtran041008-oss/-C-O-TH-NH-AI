@@ -280,7 +280,7 @@ class WorldMapScene(Scene):
         """The zone's picture at window resolution with the khu tinted by band and outlined, the
         recommended khu in gold: built once per opening (one blit a frame after that)."""
         pic, px, py, k = self.zone_layout()
-        key = (ui.s, id(pic))
+        key = (ui.s, id(pic), self.rec_khu())      # (the server's answer may come after the first frame)
         if self._composed is not None and self._composed[0] == key:
             return self._composed[1]
         tmap = self.scene.map
@@ -321,6 +321,18 @@ class WorldMapScene(Scene):
         rec = self.rec_khu()
         self.labels = []
         taken: list[pygame.Rect] = []                 # labels already drawn (the player's avoids them)
+        gates = []
+        for o in tmap.find("portal"):                 # the gates' labels first: the camps keep off them
+            name = T.ZONE_NAMES.get(o.props.get("target"), o.props.get("target", ""))
+            sx, sy = px + o.x * k, py + o.y * k
+            nw = ui.text_size(name, 7)[0]
+            tx = min(max(sx + o.w * k / 2, px + nw / 2 + 3), px + pw - nw / 2 - 3)
+            ty = min(max(sy + o.h * k / 2, py + 8), py + ph - 8)
+            gates.append((o, name, sx, sy, nw, tx, ty))
+            taken.append(pygame.Rect(int(tx - nw / 2 - 2), int(ty - 4), int(nw + 4), 9))
+        for (rx, ry, rw, rh), props in khus:          # and the khu names, in their top-left corners
+            if chi_duong.num(props.get("band")) > 0:
+                taken.append(pygame.Rect(int(px + rx * k + 1), int(py + ry * k + 1), 60, 18))
         mx_, my_ = ui.inp.mouse
         under = chi_duong.khu_at(tmap, (mx_ - px) / k, (my_ - py) / k) \
             if px <= mx_ <= px + pw and py <= my_ <= py + ph else None      # the khu under the mouse (first wins)
@@ -329,11 +341,14 @@ class WorldMapScene(Scene):
             sx, sy, sw, sh = px + rx * k, py + ry * k, rw * k, rh * k
             lo, hi = chi_duong.num(props.get("stage_min")), chi_duong.num(props.get("stage_max"))
             name = props.get("name_vi") or props.get("khu") or ""
-            if band == 0:                          # a camp: its name under it, small, in the camp's blue
+            if band == 0:                          # a camp: its name beside it, small, in the camp's blue
                 label = name
                 lw = ui.text_size(label, 7)[0] + 4
-                lx = min(max(sx + sw / 2 - lw / 2, px + 1), px + pw - lw - 1)
-                ly = min(sy + sh + 1, py + ph - 9)
+                spots = [(sx + sw + 2, sy + sh / 2 - 4.5), (sx - lw - 2, sy + sh / 2 - 4.5),
+                         (sx + sw / 2 - lw / 2, sy + sh + 1), (sx + sw / 2 - lw / 2, sy - 10)]
+                spots = [(min(max(a, px + 1), px + pw - lw - 1), min(max(b, py + 1), py + ph - 10)) for a, b in spots]
+                lx, ly = next(((a, b) for a, b in spots
+                               if pygame.Rect(int(a), int(b), int(lw), 9).collidelist(taken) == -1), spots[0])
                 ui.fill(lx, ly, lw, 9, (20, 18, 15, 170))
                 ui.text(label, lx + 2, ly, 7, "#D6ECFA")
                 taken.append(pygame.Rect(int(lx), int(ly), int(lw), 9))
@@ -369,17 +384,11 @@ class WorldMapScene(Scene):
                 return
         clip = ui.win.get_clip()
         ui.win.set_clip(ui.rect(px, py, pw, ph))
-        for o in tmap.find("portal"):
-            sx, sy = px + o.x * k, py + o.y * k
+        for o, name, sx, sy, nw, tx, ty in gates:
             ui.fill(sx, sy, max(3, o.w * k), max(3, o.h * k), "#8CB8DA")
             ui.border(sx, sy, max(3, o.w * k), max(3, o.h * k), "#2B1D0E")
-            name = T.ZONE_NAMES.get(o.props.get("target"), o.props.get("target", ""))
-            nw = ui.text_size(name, 7)[0]
-            tx = min(max(sx + o.w * k / 2, px + nw / 2 + 3), px + pw - nw / 2 - 3)
-            ty = min(max(sy + o.h * k / 2, py + 8), py + ph - 8)
             ui.fill(tx - nw / 2 - 2, ty - 4, nw + 4, 9, (20, 18, 15, 170))
             ui.text(name, tx, ty, 7, "#D6ECFA", anchor="center")
-            taken.append(pygame.Rect(int(tx - nw / 2 - 2), int(ty - 4), int(nw + 4), 9))
         camps = any(chi_duong.num(p.get("band")) == 0 for _, p in khus)
         pois = [o for o in tmap.find("poi") if not (camps and o.props.get("poi") == "camp")
                 and o.props.get("poi") != "gate"]          # (camps and gates are named already)
