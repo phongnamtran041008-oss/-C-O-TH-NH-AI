@@ -202,7 +202,7 @@ def tour_land(drv: Driver, server: ServerProcess, zone: str, s: Shots, facts: di
 
 
 def start_at(server: ServerProcess, workdir: Path, name: str, zone: str) -> Driver:
-    token, uid = make_account(server.url, name, "Du Lãm")
+    token, uid = make_account(server.url, name, "Du Lãm " + name.rsplit("_", 1)[-1])
     grant_luyen_khi(server, uid)
     server.sql("update characters set realm='luyen_khi', realm_stage=9 where user_id=?", (uid,))
     x, y = next((o.x, o.y) for o in load_map(zone).find("spawn") if o.name == "from_village")
@@ -222,7 +222,7 @@ def start_at(server: ServerProcess, workdir: Path, name: str, zone: str) -> Driv
 def run_tour(out: Path, zones: list[str]) -> dict:
     out.mkdir(parents=True, exist_ok=True)
     facts: dict = {}
-    n = 0
+    n = max((int(p.name[:3]) for p in out.glob("[0-9][0-9][0-9]_*.png")), default=0)   # (a resumed tour numbers on)
     for k in range(0, len(zones), 4):                 # a server lets five accounts a day from one address
         with tempfile.TemporaryDirectory(prefix="kvtt_tour_") as tmp:
             server = ServerProcess(Path(tmp))
@@ -232,7 +232,7 @@ def run_tour(out: Path, zones: list[str]) -> dict:
                     sub.mkdir()
                     drv = start_at(server, sub, f"du_lam_{k + i}", zone)
                     s = Shots(drv, out, zone, n)
-                    if k == 0 and i == 0:
+                    if k == 0 and i == 0 and not any(out.glob("*_the_gioi_*")):
                         drv.press(pygame.K_n)
                         drv.wait_scene("NavPicker")
                         drv.wait(lambda: drv.has("nav_pick_rec"), 10, "the picker")
