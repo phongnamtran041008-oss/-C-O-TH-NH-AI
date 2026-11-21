@@ -175,17 +175,16 @@ apart, so fewer see each other). The world frame while walking stays at 4.6-5.1 
 The navigation work had traced 36-38 ms walking frames to the hotbar and the ability row scaling
 their icons with `pygame.transform.scale` every frame. Measured with the two rows timed inside every
 walking frame (`nav_perf`, `hud_rows_ms`, `slow_frames`), on Kiếm Trủng Sơn, Thiên Công Phường and
-Mê Đồ Lâm, 4 300-4 500 frames each, the rows drawn the old way (`NAV_PERF_OLD_ICONS=1`): **0.36-0.42 ms
+Mê Đồ Lâm, 4 300-4 500 frames each, the rows drawn as the game draws them: **0.36-0.42 ms
 a frame on average, 1.3-1.5 ms at worst, and no frame over 25 ms at all.** The icon scaling is not the
-cause of the slow frames; it costs well under half a millisecond. With the scaled icons kept
-(`world.py` `hud_icon`, below) the rows cost 0.31-0.32 ms; the one frame over 25 ms in all seven lands
+cause of the slow frames; it costs well under half a millisecond. With a cache of the scaled icons
+(tried, see below) the rows cost 0.31-0.32 ms; the one frame over 25 ms in all seven lands
 (26.7 ms on Kiếm Trủng Sơn) spent 18 ms in the rows once - the first drawing of a picture loaded
 lazily from disk (a sheet's first use), not the scaling. The 36-38 ms frames of the earlier profile
 were most likely such first uses and the network poll, under the other agents' suites.
 
-The cache stays (it is small, the same pixels - `client/tests/test_hud_icons.py` compares the
-pictures - and saves the scaling of up to eight icons a frame), but it is not a fix of anything a
-player would notice; dropping its commit is harmless.
+The cache of scaled icons that was tried here was taken out again: it fixed nothing a player would
+notice, and it broke `test_skill_fx` (the hotbar drawn with a stand-in UI object).
 
 ## 6. Defects in other agents' areas
 
