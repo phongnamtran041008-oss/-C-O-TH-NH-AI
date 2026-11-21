@@ -189,9 +189,6 @@ def validate(realms_data: dict | None = None, realm_cfg: dict | None = None) -> 
         boss = mons.get(r.get("boss", ""))
         if boss is None or not boss.get("group_shield"):
             out.append(f"{here}: boss must be a monster with a group shield")
-        for kind in r.get("room_monsters", {}):
-            if kind not in mons:
-                out.append(f"{here}: unknown room monster {kind!r}")
         if not puzzles.get("boss"):
             out.append(f"{here}: puzzles.boss missing")
         # rule 7: Linh Thạch, Tu Vi through the answers, the M7 materials and Linh Quả only; Mảnh
@@ -206,4 +203,11 @@ def validate(realms_data: dict | None = None, realm_cfg: dict | None = None) -> 
         for e in list(chest.get("table", [])) + list(loot.get("items", [])):
             if e.get("item") not in materials and e.get("item") not in REALM_EXTRA_LOOT:
                 out.append(f"{here}: loot {e} is not a material of data/math/drops.json nor Linh Quả")
+        table = {e.get("item") for e in chest.get("table", [])}
+        for t in chest.get("treasures", []):
+            if t not in table:
+                out.append(f"{here}: chest treasure {t!r} is not in its table")
+    # the creatures each realm fields, by theme and band (app/systems/realm_quai.py)
+    from . import realm_quai
+    out += realm_quai.validate(raw, c)
     return out

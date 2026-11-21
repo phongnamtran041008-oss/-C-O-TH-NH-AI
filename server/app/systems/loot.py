@@ -239,9 +239,10 @@ def _monster_caps() -> dict[str, Tier | None]:
     for zid, kinds in _zone_monsters().items():
         for kind in kinds:
             homes.setdefault(kind, set()).add(zid)
+    from . import realm_quai
     realms = json.loads((DATA_DIR / "realms.json").read_text("utf-8"))["realms"]
     for rid, r in realms.items():
-        for kind in set(r.get("room_monsters", {})) | ({r["boss"]} if r.get("boss") else set()):
+        for kind in realm_quai.fielded(rid):     # whatever band and wherever a rift opens
             homes.setdefault(kind, set()).add(rid)
     out: dict[str, Tier | None] = {}
     for kind, ids in homes.items():
@@ -299,10 +300,11 @@ def sources() -> dict[str, dict]:
         out.setdefault(zid, {"what": f"zone {zid}", "items": [], "rarities": []})
         for kind in sorted(kinds):
             add(zid, f"monster {kind} (zone {zid})", *_entries(mons.get(kind, {}).get("drops", [])))
+    from . import realm_quai
     realms = json.loads((DATA_DIR / "realms.json").read_text("utf-8"))["realms"]
     for rid, r in realms.items():
         out.setdefault(rid, {"what": f"bí cảnh {rid}", "items": [], "rarities": []})
-        for kind in sorted(set(r.get("room_monsters", {})) | ({r["boss"]} if r.get("boss") else set())):
+        for kind in sorted(realm_quai.fielded(rid)):
             add(rid, f"monster {kind} (bí cảnh {rid})", *_entries(mons.get(kind, {}).get("drops", [])))
         room = rc.get("room_loot_by_realm", {}).get(rid, {})
         add(rid, f"room loot of {rid}", *_entries(room.get("items", [])))
