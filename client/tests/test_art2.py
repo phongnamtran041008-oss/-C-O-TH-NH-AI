@@ -431,10 +431,11 @@ def test_autotile_quadrants_for_every_shape():
     assert not ok                                              # a missing transition tile is reported
 
 
-def test_the_2x_ground_is_built_once_and_dirt_cells_are_no_longer_squares():
+def test_the_2x_ground_is_built_once_and_dirt_cells_are_no_longer_squares(tmp_path):
     from client.engine.tilemap import TileMap
-    # a small land with lone dirt cells in its grass (Kiếm Trủng Sơn is a giant map since Đại Địa Đồ)
-    m = TileMap(ROOT / "client" / "assets" / "maps" / "linh_xa_nguyen.tmj")
+    # a small piece of a real land with lone dirt cells in its grass (the lands are giant maps since
+    # Đại Địa Đồ: too large for a test to build their 2x ground)
+    m = TileMap(_piece_with_islands(tmp_path, "dirt_islands.tmj", "dirt"))
     g = m.ground32()
     assert g.get_size() == (m.w * 32, m.h * 32) and m.ground32() is g and m.autotiled > 50
     from client.art import build as B
@@ -577,22 +578,35 @@ def test_every_autotile_pair_has_its_tiles():
             assert f"{rule['pair']}_{suf}" in terrain, (cell, suf)
 
 
-def _with_stone_islands(tmp_path: Path) -> Path:
-    """A small real map with single stone tiles set into its grass (no shipped map is sure to have
-    them: the giant lands paint stone in patches)."""
+def _piece_with_islands(tmp_path: Path, name: str, plant: str) -> Path:
+    """A small real map: a 64 x 36 window of the ground of a giant land (Linh Xạ Nguyên's north
+    range, mostly grass; no objects) with single tiles of `plant` set into its grass (no shipped
+    map is sure to have them: the giant lands paint their ground in patches)."""
     from client.art import build as B
     names = [n for n, _ in B.TILESET]
     data = json.loads((ROOT / "client" / "assets" / "maps" / "linh_xa_nguyen.tmj").read_text("utf-8"))
-    w, h = data["width"], data["height"]
+    big_w = data["width"]
+    w, h, x0, y0 = 64, 36, 4, 4
     g = next(l for l in data["layers"] if l["name"] == "ground")["data"]
+    g = [g[(y0 + y) * big_w + x0 + x] for y in range(h) for x in range(w)]
     for i in range(len(g)):
         x, y = i % w, i // w
         if 2 <= x < w - 2 and 2 <= y < h - 2 and x % 7 == 3 and y % 5 == 2 and all(
                 names[g[(y + dy) * w + x + dx] - 1] == "grass" for dx, dy in ((0, 0), (0, -1), (1, 0), (0, 1), (-1, 0))):
-            g[i] = names.index("stone") + 1
-    path = tmp_path / "stone_islands.tmj"
+            g[i] = names.index(plant) + 1
+    data["width"], data["height"] = w, h
+    for layer in data["layers"]:
+        if layer["type"] == "tilelayer":
+            layer["data"], layer["width"], layer["height"] = g, w, h
+        else:
+            layer["objects"] = []
+    path = tmp_path / name
     path.write_text(json.dumps(data), "utf-8")
     return path
+
+
+def _with_stone_islands(tmp_path: Path) -> Path:
+    return _piece_with_islands(tmp_path, "stone_islands.tmj", "stone")
 
 
 def test_stone_islands_are_round_and_dark_grass_gets_its_edge(tmp_path):

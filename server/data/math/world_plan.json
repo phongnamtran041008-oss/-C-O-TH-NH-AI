@@ -122,9 +122,9 @@
   {"weapon": "chuy_1", "quality": "thuong", "land": "thien_cong_phuong", "spot_vi": "Trong tay Cơ Quan Nhân Đầu Đàn, giữa Sân Đầu Đàn (Trung Vực).", "pos": [160, 146], "requires": {"realm": "luyen_khi", "stage": 6, "nodes": ["lt_do_thi"]}},
   {"weapon": "chuy_2", "quality": "ha", "land": "thien_cong_phuong", "spot_vi": "Trước lò lớn năm miệng trong Đại Lò Đúc (Thâm Xứ), chỉ mở khi đốt lại được lò.", "pos": [46, 201], "requires": {"realm": "luyen_khi", "stage": 9, "nodes": ["lt_do_thi", "ud_mang_no_ron"]}},
 
-  {"weapon": "cung_1", "quality": "ha", "land": "linh_xa_nguyen", "spot_vi": "Trên giá cung ở trường bắn.", "pos": [8, 13], "requires": {"realm": "luyen_khi", "stage": 3, "nodes": ["ud_knn"]}},
-  {"weapon": "cung_1", "quality": "trung", "land": "linh_xa_nguyen", "spot_vi": "Sau hàng bia thứ hai.", "pos": [46, 15], "requires": {"realm": "luyen_khi", "stage": 5, "nodes": ["ud_hoi_quy_1_bien", "ud_naive_bayes"]}},
-  {"weapon": "cung_1", "quality": "thuong", "land": "linh_xa_nguyen", "spot_vi": "Trong tay Tâm Ma của chính mình.", "pos": [56, 18], "requires": {"realm": "luyen_khi", "stage": 8, "nodes": ["ud_mang_no_ron"]}},
+  {"weapon": "cung_1", "quality": "ha", "land": "linh_xa_nguyen", "spot_vi": "Trên giá cung ở Trường Bắn Đầu, cạnh Lều Cửa Thảo Nguyên.", "pos": [32, 105], "requires": {"realm": "luyen_khi", "stage": 3, "nodes": ["ud_knn"]}},
+  {"weapon": "cung_1", "quality": "trung", "land": "linh_xa_nguyen", "spot_vi": "Sau hàng bia thứ hai của Trường Bắn Tầm Xa (Trung Vực).", "pos": [196, 199], "requires": {"realm": "luyen_khi", "stage": 5, "nodes": ["ud_hoi_quy_1_bien", "ud_naive_bayes"]}},
+  {"weapon": "cung_1", "quality": "thuong", "land": "linh_xa_nguyen", "spot_vi": "Trong tay Tâm Ma của chính mình, giữa Đài Vấn Tâm (Thâm Xứ).", "pos": [272, 186], "requires": {"realm": "luyen_khi", "stage": 8, "nodes": ["ud_mang_no_ron"]}},
   {"weapon": "cung_2", "quality": "ha", "land": "loi_kiep_dai", "spot_vi": "Rơi ra khi vượt Thiên Kiếp Luyện Khí.", "pos": [20, 13], "requires": {"realm": "luyen_khi", "stage": 9, "nodes": ["du_an_luyen_khi"]}},
 
   {"weapon": "truong_2", "quality": "ha", "land": "van_hai_thien_dao", "spot_vi": "Trên đảo mây đầu tiên.", "needs": "ngu_kiem_phi_hanh", "requires": {"realm": "truc_co", "stage": 1, "nodes": ["tc_hoc_co_giam_sat"]}},
@@ -159,8 +159,8 @@
   {"id": "tieu_long", "name_vi": "Tiểu Long", "land": "thien_cong_phuong", "where_vi": "Cuộn mình bên lò lớn năm miệng trong Đại Lò Đúc, sâu nhất phường (Thâm Xứ).", "requires": {"realm": "luyen_khi", "stage": 8}, "needs": null, "parries_to_tame": 5, "gift_vi": "Cưỡi được: chạy nhanh trên mặt đất.", "status": "co",
    "pos": [51, 199], "fight": {"hp": 200, "atk": 15, "def": 5, "speed": 30, "attack_radius": 24, "aggro_radius": 72},
    "gift": {"type": "mount", "speed_mult": 1.5}},
-  {"id": "ngoc_tho", "name_vi": "Ngọc Thố", "land": "linh_xa_nguyen", "where_vi": "Gặm cỏ trăng ở bờ nam thảo nguyên, giữa hai dãy bia bắn.", "requires": {"realm": "luyen_khi", "stage": 3}, "needs": null, "parries_to_tame": 3, "gift_vi": "Mỗi lần Phản Đòn hồi 5% sinh lực.", "status": "co",
-   "pos": [30, 33], "fight": {"hp": 110, "atk": 8, "def": 2, "speed": 38, "attack_radius": 22, "aggro_radius": 64},
+  {"id": "ngoc_tho", "name_vi": "Ngọc Thố", "land": "linh_xa_nguyen", "where_vi": "Gặm cỏ trăng ở Bãi Bia Nam, giữa hai dãy bia bắn của Đồng Cỏ Chải Gió.", "requires": {"realm": "luyen_khi", "stage": 3}, "needs": null, "parries_to_tame": 3, "gift_vi": "Mỗi lần Phản Đòn hồi 5% sinh lực.", "status": "co",
+   "pos": [62, 202], "fight": {"hp": 110, "atk": 8, "def": 2, "speed": 38, "attack_radius": 22, "aggro_radius": 64},
    "gift": {"type": "heal_on_right", "value": 0.05}},
   {"id": "tam_bao_thu", "name_vi": "Tầm Bảo Thử", "land": "thien_cong_phuong", "where_vi": "Làm ổ trong bãi phế liệu có tường vây ở Kho Phế Liệu (Trung Vực), giữa đống bánh răng.", "requires": {"realm": "luyen_khi", "stage": 4}, "needs": null, "parries_to_tame": 3, "gift_vi": "Hạ quái được thêm 20% linh thạch.", "status": "co",
    "pos": [127, 213], "fight": {"hp": 120, "atk": 10, "def": 2, "speed": 40, "attack_radius": 20, "aggro_radius": 60},
