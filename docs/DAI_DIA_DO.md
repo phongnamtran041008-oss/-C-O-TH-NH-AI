@@ -152,6 +152,37 @@ order (each one reads what the ones before wrote):
 The gate, its portal and the spawns are written with `m.gate(...)` (or `m.obj(...)` when the old
 map named its portal differently), after `scatter()`, with a `poi("gate", ...)`.
 
+**Arrival spawns lie in the gate camp.** On a map with khu every spawn (`spawn`, `from_village`,
+any other) must lie inside a band 0 khu, so a player walking in sees the camp's name first and
+never "band 1, then the camp, then band 1 again" (`check_maps` enforces it). Give the gate camp
+`to_edge` toward the gate: `m.camp("kts_trai_cong", ..., to_edge="s")` stretches its khu to that
+edge of the map, over the gate and the spawns.
+
+**Gotchas.** `open_tiles(tiles)` over ink or water only makes the tiles walkable: pass a repaint
+key (`open_tiles(tiles, "stone0")`), or the ground still shows ink or water. `keep_rect` before
+`scatter()` gives a clearing (the client tests stand players in the middle of some monster areas).
+
+### More helpers: `tools/mapgen/lands/_xay_dung.py`
+
+Built by the authors of Thiên Công Phường, Linh Xạ Nguyên and Lôi Kiếp Đài on top of giant.py
+(which they did not change). A module whose name starts with `_` is not a map. Import from it:
+
+| helper | what it does |
+|---|---|
+| `streets(m, khu, pitch, keep_p, offset, min_run)` | a grid of paved 2-tile streets over a khu, one every `pitch` tiles; each stretch survives with chance `keep_p` (a ruin keeps few); returns the street lines |
+| `blocks(k, xs, ys, inset)` | the rectangles between those streets |
+| `fill_block(m, rect, ri, plan)` | furnish a block: `plan` = [(chance, kind, name)], kind a building of `BUILDINGS` or a prop of `PROPS` |
+| `try_building`, `try_thing`, `clear_box` | place one building or prop where the box is free (in region `ri`) |
+| `lane(m, tiles, key)` | hand-painted walkway tiles that count as road (planks, a stair) |
+| `fence(m, tiles, ground, sprite, every)` | solid tiles with a picket picture |
+| `outline(x0, y0, x1, y1)`, `solid_ring(m, tiles, key)` | the border of a rectangle; solid wall tiles that are no barrier (roads go round) |
+| `finish_unbanded(m, extra_props, ring, gaps)` | `finish()` for a giant-toolkit map that must have **no khu**: a boss arena (Lôi Kiếp Đài) keeps its monsters exactly as before, its monster areas written by the module |
+| `PROPS` keys `x_anvil`, `x_board`, `x_mat` | extra scatter props of the city lands |
+
+A boss arena has no khu, no bands and no camps: build it with the toolkit, finish it with
+`finish_unbanded`, and write its monster areas with `m.obj(..., "monster_area", ...)` as the small
+maps did (`monster_area()` needs a khu).
+
 ### Themes
 
 `THEMES` in giant.py: `dong_co` (meadow), `dong_hoa` (flowers and peach), `chan_nui` (foothill:
@@ -209,7 +240,7 @@ When a small land grows, everything other data points at moves with it:
 3. `server/data/math/world_plan.json`: the positions and descriptions of the land's weapons and
    beasts, its `desc_vi`.
 4. `python tools/gen_maps.py <map>`; `git status` shows only that map (two copies).
-5. `python tools/check_maps.py --report`: OK, the khu table as intended.
+5. `python tools/check_maps.py --report`: OK, the khu table as intended, every spawn inside the gate camp.
 6. `python tools/preview_map.py <map> tools/reports/maps/<map>.png --scale 3`, and look at it and
    at crops.
 7. The tests of the land (grep), `python tools/check_all.py`.

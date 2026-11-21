@@ -19,7 +19,12 @@ from pathlib import Path
 import pygame
 
 from client.tests.driver import ROOT, Driver, ServerProcess
-from client.tests.test_beast_flow import GLIDE_ZONE, enter, feet, start
+from client.tests.test_beast_flow import GLIDE_FROM, GLIDE_ZONE, enter, feet, start
+
+# Đại Địa Đồ: the places come from the plan (the giant map is generated): the rock at the foot
+# of the fall is GLIDE_FROM, the water one tile north of it, the clouds (the ledge) 3 tiles north
+WATER = (GLIDE_FROM[0], GLIDE_FROM[1] - 1)
+LEDGE_ROW = GLIDE_FROM[1] - 3
 
 PREVIEW = ROOT / "art" / "preview"
 
@@ -61,14 +66,14 @@ def run_flight_flow(workdir: Path, shots: Path | None = None) -> None:
     server = ServerProcess(workdir)
     try:
         # stage 8, not 9: at 9 Kim Sí Điểu shows on the cloud pocket where the hop lands, and fights
-        uid = start(server, workdir, shots, "detu_bay", "Ngự Kiếm", GLIDE_ZONE, (20, 6), 8)
+        uid = start(server, workdir, shots, "detu_bay", "Ngự Kiếm", GLIDE_ZONE, GLIDE_FROM, 8)
         drv = Driver(server.url, workdir, shots)
         ws = enter(drv, GLIDE_ZONE)
         fv = ws.flight
         assert fv and fv["level"] == 1 and fv["gauge_max"] > 0, fv
         me = ws.my_eid()
-        x0, y0 = feet(20, 6)
-        assert ws.tile_at(20, 5) == "water" and ws.col.blocked(*feet(20, 5))
+        x0, y0 = feet(*GLIDE_FROM)
+        assert ws.tile_at(*WATER) == "water" and ws.col.blocked(*feet(*WATER))
         drv.step(10)
 
         # ---- a quick tap is still the hop (Đạp Kiếm Lướt), now a real leap with a shadow
@@ -81,7 +86,7 @@ def run_flight_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait(lambda: not ws.glide_pos(me, 0, 0)[2] and not ws.pending, 5, "the hop lands")
         drv.wait(lambda: ws.flight and ws.fly_gauge >= ws.flight["gauge_max"] - 0.05, 3, "a full gauge")
         drv.step(30)
-        assert int((ws.player.y - 1) // 16) <= 3, "over the waterfall by the hop"
+        assert int((ws.player.y - 1) // 16) <= LEDGE_ROW, "over the waterfall by the hop"
         # back down by the hop again
         rest = drv.game.now + 0.3
         drv.wait(lambda: drv.game.now > max(ws.glide_ready, rest), 5, "the hop rests (the server's cooldown too)")
@@ -121,7 +126,7 @@ def run_flight_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.step(6)
         keep(drv, "ha_canh")
         drv.wait(lambda: not ws.flyers[me].shown(drv.game.now), 3, "the touch-down")
-        assert int((ws.player.y - 1) // 16) <= 3, "over the water and landed above the fall"
+        assert int((ws.player.y - 1) // 16) <= LEDGE_ROW, "over the water and landed above the fall"
         assert ws.corrections - before <= 2, ws.corrections - before
 
         # ---- out over the water and hover: the gauge runs dry and the server carries us back

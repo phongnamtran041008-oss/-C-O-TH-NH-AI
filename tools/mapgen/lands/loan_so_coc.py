@@ -63,7 +63,7 @@ def build() -> dict:
 
     # ---- 2. the ground, then the camps on it
     m.paint(warp=7.0, scale=26.0)
-    m.camp("kts_trai_cong", "Trại Cổng Núi", (159, 222), r=8,
+    m.camp("kts_trai_cong", "Trại Cổng Núi", (159, 222), r=8, to_edge="s",
            desc_vi="Trại ngay trong cổng núi: Lò Toán, Đạo Sĩ luyện kiếm và bia kiếm. Không có quái.",
            label_vi="Trại Cổng Núi · Lò Toán")
     m.camp("kts_trai_luyen_kiem", "Trại Luyện Kiếm", (160, 148), r=6,
@@ -283,9 +283,10 @@ def monsters(m: DaiDiaDo) -> None:
             m.monster_area("kts_loan_so_coc", kind, (x, y, x + 19, y + 14), count, name=f"t{floor}_{kind[5:-3]}_{n}")
             m.keep_rect(x + 8, y + 6, x + 11, y + 8)          # a clearing in the middle of the area
         m.monster_area("kts_loan_so_coc", elite, (x0 + 25, 208, x0 + 33, 216), 1, name=f"t{floor}_{elite[5:-3]}")
+        m.keep_rect(x0 + 28, 211, x0 + 30, 213)               # its clearing
     m.monsters("kts_chan_nui", [("kiem_linh", 3), ("thiet_giap_thu", 1)], tiles_per=210)
     fx, fy = CAVE
-    m.monster_area("kts_thach_lam", "thach_khoi", (fx - 8, fy + 6, fx + 12, fy + 16), 2, name="thach_khoi_thac")
+    m.monster_area("kts_thach_lam", "thach_khoi", (fx - 10, fy + 6, fx + 12, fy + 17), 2, name="thach_khoi_thac")
     m.monsters("kts_thach_lam", [("thach_khoi", 3), ("thiet_giap_thu", 1)], [("vong_hon_kiem_si", 2)],
                tiles_per=210, skip=lambda r: r[1] <= fy + 17 and r[0] <= fx + 12)
     m.monsters("kts_co_kiem_dao", [("thach_khoi", 2), ("thiet_giap_thu", 2)], [("vong_hon_kiem_si", 2)], tiles_per=210)
