@@ -105,6 +105,7 @@ def fake_khu(tmap, x, y, w, h, kid, name, band, lo, hi):
              "anchor_x": str(int(x + w / 2)), "anchor_y": str(int(y + h / 2)), "realm": "luyen_khi"}
     tmap.objects.append(MapObject(90000 + len(tmap.objects), name, "khu", x, y, w, h, props))
     tmap.__dict__.pop("_nav_khu", None)
+    tmap._index()                     # the map looks its objects up by type: index the new one
 
 
 def run_nav_flow(workdir: Path, shots: Path | None = None) -> None:
@@ -188,6 +189,7 @@ def run_nav_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.shot("khu_banner_warn")
         ws.map.objects[:] = [o for o in ws.map.objects if o.type != "khu"]
         ws.map.__dict__.pop("_nav_khu", None)
+        ws.map._index()
         drv.step(4)
 
         # ---- H: home, through the gate and across the village to the gate of the abode
