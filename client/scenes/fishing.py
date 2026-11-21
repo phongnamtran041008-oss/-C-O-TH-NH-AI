@@ -174,16 +174,18 @@ def conditions_text(c: dict) -> str:
 # ------------------------------------------------------------------ the fishing session
 class FishQuizScene(MathQuizScene):
     """A rare fish bit: the math card sits low, the lake stays visible. It names what a right
-    answer does along the top, closes itself a moment after the answer (a wrong one stays a
-    little longer, so the solution can be read) and Enter / Esc closes it sooner."""
+    answer does along the top. A right answer closes it a moment later; after a wrong answer or
+    a timeout it stays until the player has read the solution and closes it ("Đã hiểu", Enter
+    or Space), like the card of a fight - at most READ_CAP seconds, which keeps the reel that
+    follows inside the time the server allows it (fishing.json reel_late_seconds)."""
     modal = False
     draws_world = False
     toast_y = 70
     in_combat = True            # no "Nghỉ" and no "Tiếp": the line is waiting
     can_stop = False
-    solution_margin = 30
+    solution_margin = 40        # the reveal ends above the row of "Đã hiểu"
     CLOSE_RIGHT = 1.6
-    CLOSE_WRONG = 3.5
+    READ_CAP = 25.0
 
     def card_rect(self):
         return (24, 56, 432, 202)
@@ -194,12 +196,30 @@ class FishQuizScene(MathQuizScene):
         self.on_fish_result = on_result
         self._done = False
 
+    def close_delay(self) -> float | None:
+        """Seconds after the verdict before the card closes by itself: only after a right
+        answer. None: it waits for the player to read the solution."""
+        return self.CLOSE_RIGHT if (self.result or {}).get("correct") else None
+
     def update(self, dt, top):
         super().update(dt, top)
         if self.result:
-            after = self.CLOSE_RIGHT if self.result.get("correct") else self.CLOSE_WRONG
-            if self.result_t >= after:
+            after = self.close_delay()
+            if self.result_t >= (self.READ_CAP if after is None else after):
                 self.finish()
+
+    def footer_buttons(self, ui, x, y, w, h) -> float:
+        left = super().footer_buttons(ui, x, y, w, h)
+        if ui.button("math_got_it", x + w - 108, y + h - 22, 96, 16, T.QUIZ_GOT_IT, style="primary"):
+            self.finish()
+            return left
+        if self.close_delay() is None:      # the keys that close it, on the left of the footer
+            ui.text(T.QUIZ_GOT_IT_KEYS, x + 12, y + h - 14, 7, "#5A5A5A", anchor="midleft")
+        # (not in the first half second: the key that sent the answer must not close its solution)
+        if self.result_t >= 0.5 and (ui.key(pygame.K_RETURN) or ui.key(pygame.K_SPACE)
+                                     or ui.key(pygame.K_ESCAPE)):
+            self.finish()
+        return left
 
     def finish(self, stop: bool = False):
         if self._done:
@@ -216,8 +236,6 @@ class FishQuizScene(MathQuizScene):
         if not self.result:
             ui.fill(x, y - 14, w, 12, (20, 18, 15, 190))
             ui.text(self.hint, x + w / 2, y - 8, 7, "#E9C46A", anchor="center", max_w=w - 12)
-        elif self.result_t >= 0.5 and (ui.key(pygame.K_RETURN) or ui.key(pygame.K_ESCAPE)):
-            self.finish()
 
 
 class FishingScene(Scene):

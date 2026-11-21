@@ -18,6 +18,9 @@ class Hello(BaseModel):
     t: Literal["hello"]
     v: int
     token: str = Field(max_length=1000)
+    # what this client can do beyond the protocol version: "q_read" = it reports when the card
+    # of a wrong answer closes (QRead). An old client sends none and keeps the old timing.
+    caps: list[str] = Field(default_factory=list, max_length=16)
 
 
 class Ping(BaseModel):
@@ -118,6 +121,13 @@ class MathCast(BaseModel):
     id: str | None = Field(default=None, max_length=24)
 
 
+class QRead(BaseModel):
+    """The card of a wrong (or timed-out) fight question was closed: the player has read the
+    solution, the fight may go on (realtime/combat.end_reading). `sid` = its quiz session."""
+    t: Literal["q_read"]
+    sid: str = Field(max_length=64)
+
+
 class PartyCmd(BaseModel):
     """Tổ đội (stage 9): invite by display name, answer an invite (uid = who invited), leave,
     kick or promote a member (uid)."""
@@ -147,7 +157,9 @@ class Mark(BaseModel):
 MESSAGES: dict[str, type[BaseModel]] = {"ping": Ping, "in": Input, "join": Join, "channel": Channel,
                                         "chat": Chat, "face": Face, "atk": Attack, "dodge": Dodge,
                                         "mskill": MathCast, "party": PartyCmd, "realm": RealmCmd, "mark": Mark,
-                                        "glide": Glide, "ride": Ride, "tran": Formation, "fly": Fly}
+                                        "glide": Glide, "ride": Ride, "tran": Formation, "fly": Fly,
+                                        "q_read": QRead}
+SERVER_CAPS = ["q_read"]   # sent in `welcome`: what this server understands beyond the version
 
 
 class BadMessage(Exception):
@@ -172,4 +184,4 @@ def error(code: str, message_vi: str, **extra) -> dict:
 
 __all__ = ["PROTOCOL_VERSION", "Hello", "Ping", "Input", "Join", "Channel", "Chat", "Face", "parse",
            "BadMessage", "error", "FACING", "FACING_CODE", "Attack", "MathCast", "PartyCmd", "RealmCmd",
-           "Mark", "Dodge", "Glide", "Ride", "Formation"]
+           "Mark", "Dodge", "Glide", "Ride", "Formation", "QRead", "SERVER_CAPS"]

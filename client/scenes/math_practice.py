@@ -797,9 +797,23 @@ class MathCombatQuizScene(CombatCard, MathQuizScene):
             return 1.2              # a right answer gets back to the fight a little faster
         return self.close_after
 
+    READ_CAP = 45.0             # the longest a card waits for its reader (the server's combat.READ_CAP_SECONDS)
+
+    def read_cap(self) -> float:
+        """How long the solution of a wrong answer may stay open: the server's cap when it holds
+        the fight for the reader (`read_cap` in the result), else READ_CAP - nobody can hide
+        behind an open card, and no flow can hang on one."""
+        c = (self.result or {}).get("combat") or {}
+        try:
+            return float(c.get("read_cap") or self.READ_CAP)
+        except (TypeError, ValueError):
+            return self.READ_CAP
+
     def update(self, dt, top):
         super().update(dt, top)
         delay = self.close_delay() if self.result else None
+        if delay is None and self.result:
+            delay = self.read_cap()
         if delay is not None and self.result_t >= delay:
             self.finish()
 
@@ -808,6 +822,25 @@ class MathCombatQuizScene(CombatCard, MathQuizScene):
         self.tell_fortune()
         if self.on_combat_result and self.result:
             self.on_combat_result(self.result)
+
+    def on_exit(self):
+        super().on_exit()
+        self.tell_read()
+
+    def tell_read(self) -> None:
+        """The card leaves (closed by the player, by its cap, or by the world): after anything
+        but a right answer, tell the server the solution was read (`q_read`), so the fight it
+        held for this player goes on. Only to a server that understands it (welcome.caps)."""
+        res = getattr(self, "result", None)
+        if getattr(self, "_told", False) or not (getattr(self, "sent", False) or res) or (res or {}).get("correct"):
+            return
+        net = getattr(self.game, "net", None)
+        can = getattr(net, "can", None)
+        sid = self.q.get("session_id")
+        if not sid or not callable(can) or not can("q_read"):
+            return
+        self._told = True
+        net.send({"t": "q_read", "sid": sid})
 
     def status_items(self):
         items = []

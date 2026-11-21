@@ -194,12 +194,13 @@ def test_web_ws_says_hello_goes_online_and_sends(bridge, clock):
     assert ws.send({"t": "chat", "text": "x"}) is False          # not online yet
     bridge.opened(sid)
     ws.poll()
-    assert bridge.socks[sid]["sent"] == [{"t": "hello", "v": 5, "token": "tok"}]
-    bridge.push(sid, {"t": "welcome", "you": {"uid": 7}})
+    assert bridge.socks[sid]["sent"] == [{"t": "hello", "v": 5, "token": "tok", "caps": ["q_read"]}]
+    assert not ws.can("q_read")
+    bridge.push(sid, {"t": "welcome", "you": {"uid": 7}, "caps": ["q_read"]})
     bridge.push(sid, {"t": "chat", "text": "Chào đạo hữu"})
     msgs = ws.poll()
     assert [m["t"] for m in msgs] == ["welcome", "chat"] and msgs[1]["text"] == "Chào đạo hữu"
-    assert ws.online and ws.connected_once
+    assert ws.online and ws.connected_once and ws.can("q_read")
     assert ws.send({"t": "chat", "text": "Xin chào"}) is True
     assert bridge.socks[sid]["sent"][-1] == {"t": "chat", "text": "Xin chào"}
 

@@ -8,7 +8,13 @@ wears a Mặc Thuẫn and lives through a counter hit):
     monster's own micro-skill (ParryCard);
   * a right answer is a Phản Đòn: no damage, the monster takes the counter and is stunned;
   * inside the rest window a blow lands for half and asks nothing;
-  * after it, a wrong answer lets the blow land in full and the card shows the solution.
+  * after it, a wrong answer lets the blow land in full and the card shows the solution; it
+    stays until "Đã hiểu" (Enter) while the server holds the fight - no new question - and
+    closing it tells the server (`q_read`).
+
+A card the test did not ask for (another monster's blow on a loaded machine) is answered and
+closed where it opens (clear_stray_card): a wrong answer's card waits for the player, so a
+flow that only waits would hang behind it.
 
     python -m client.tests.test_parry_flow <dir>     # leaves numbered screenshots in <dir>
 """
@@ -58,8 +64,34 @@ def hp(drv) -> int:
     return int(drv.game.state.character.get("hp") or 0)
 
 
-def wait_for_tele(drv, spy: FxSpy, mid: str, after: int, timeout: float = 8.0) -> dict:
-    drv.wait(lambda: len(spy.of("tele", id=mid)) > after, timeout, "the monster winds up")
+def clear_stray_card(drv, server) -> bool:
+    """A card this test did not ask for (on a loaded machine another monster of the area can land
+    a blow first, or ours lands before the test looks) pauses the fight for us; after a wrong or
+    timed-out answer it even waits for us to close it, and the server holds the fight until we
+    do. Answer it right and let it close, or close the solution it shows. True if there was one."""
+    if not drv.top_is(CARD):
+        return False
+    card = drv.game.top
+    if not card.result and not card.sent:
+        answer_card(drv, server, correct=True)
+    drv.wait(lambda: card.result is not None or not drv.top_is(CARD), 15, "the stray card's verdict")
+    if drv.top_is(CARD) and drv.game.top is card and card.close_delay() is None:
+        while card.result_t < 0.6:
+            drv.step(2)
+        drv.press(pygame.K_RETURN)              # "Đã hiểu": the solution was read
+    drv.wait(lambda: drv.game.top is not card, 6, "the stray card closes")
+    return True
+
+
+def wait_for_tele(drv, spy: FxSpy, mid: str, after: int, server=None, timeout: float = 8.0) -> dict:
+    end = time.time() + timeout
+    while len(spy.of("tele", id=mid)) <= after:
+        if server is not None and clear_stray_card(drv, server):
+            end = max(end, time.time() + timeout)    # the fight was paused for us meanwhile
+            continue
+        if time.time() > end:
+            raise AssertionError(f"timed out waiting for the monster winds up; scenes={drv.scene_names()}")
+        drv.step(3)
     return spy.of("tele", id=mid)[-1]
 
 
@@ -91,7 +123,7 @@ def run_parry_flow(workdir: Path, shots: Path | None = None) -> None:
         assert m.shield, "an elite keeps its Mặc Thuẫn in the wild"
         walk_to(drv, m.pos[0], m.pos[1], near=20)
         drv.click_at(drv.game.display.to_window(*ws.world_to_screen(m.pos[0], m.pos[1] - 8)))
-        tele = wait_for_tele(drv, spy, m.id, 0)
+        tele = wait_for_tele(drv, spy, m.id, 0, server)
         assert not drv.top_is(CARD), "hitting a monster asks nothing"
         assert tele.get("sh") in PLAN["telegraph"]["by_rank"]["elite"], tele
         drv.step(8)
@@ -145,8 +177,9 @@ def run_parry_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.step(2)
         drv.shot("phan_don")
         assert hp(drv) >= hp_asked, "a Phản Đòn takes no damage"
-        rows = server.sql("select skill_id, correct, run_id from math_answers where user_id=?", (uid,))
-        assert rows == [(info["skill"], 1, None)], rows
+        rows = server.sql("select skill_id, correct, run_id from math_answers where user_id=? order by id", (uid,))
+        assert rows[-1] == (info["skill"], 1, None), rows      # (a stray card may have come before)
+        answered = len(rows)
 
         # ---- the rest window: a blow lands for half and asks nothing
         rest_end = time.time() + c["rest"]
@@ -162,14 +195,30 @@ def run_parry_flow(workdir: Path, shots: Path | None = None) -> None:
             drv.step(5)
         drv.wait(lambda: drv.top_is(CARD), 15, "a card again after the rest")
         before = hp(drv)
+        card = drv.game.top
         res = answer_card(drv, server, correct=False)
         c = res["combat"]
         assert not c["parry"] and c["damage_taken"] > 0 and c["shows_solution"], c
+        # the server holds the fight while the solution is read (it understands q_read, and so do we)
+        assert drv.game.net.can("q_read") and c["read_cap"] > 0, c
         drv.step(8)
         drv.shot("guard_break_solution")
         drv.wait(lambda: hp(drv) < before, 5, "the blow lands")
         rows = server.sql("select correct from math_answers where user_id=? order by id", (uid,))
-        assert [r[0] for r in rows] == [1, 0], rows
+        assert [r[0] for r in rows][answered - 1:] == [1, 0], rows
+        hold_end = time.time() + c["rest"] + 1.0        # longer than the old rest window
+        while time.time() < hold_end:
+            drv.step(5)
+            assert drv.game.top is card, "the solution waits for the player"
+        assert not server.sql("select id from quiz_sessions where user_id=? and answered_at is null", (uid,)), \
+            "no new question while the card is open"
+        sent = []
+        real_send = drv.game.net.send
+        drv.game.net.send = lambda msg: sent.append(msg) or real_send(msg)
+        drv.press(pygame.K_RETURN)                       # "Đã hiểu"
+        drv.wait(lambda: drv.game.top is not card, 3, "the card closes on Enter")
+        drv.game.net.send = real_send
+        assert {"t": "q_read", "sid": card.q["session_id"]} in sent, sent
         drv.close()
     finally:
         server.stop()
