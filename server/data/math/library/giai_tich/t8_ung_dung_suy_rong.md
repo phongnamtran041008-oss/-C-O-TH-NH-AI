@@ -10,17 +10,17 @@ skills: [gt_t8_dien_tich, gt_t8_the_tich, gt_t8_do_dai_cung, gt_t8_suy_rong_loai
 ## Diện tích hình phẳng
 
 :::hook
-Đo một hồ nước có bờ cong: cắt hồ thành vô số dải đứng thật mỏng, mỗi dải cao bằng bờ trên trừ bờ dưới, rồi cộng lại.
+Đo hồ nước bờ cong: cắt thành dải đứng thật mỏng, mỗi dải cao bằng bờ trên trừ bờ dưới, rồi cộng.
 :::
 
 :::figure plane
 caption: Miền giữa y = x + 2 và y = x^2, từ giao điểm -1 tới 2.
-size: 160 105
-x: -1.6 2.6 1
+size: 160 78
+x: -2.8 2.6 1
 y: -0.5 4.5 1
 poly -1 1 2 4 1.7 2.89 1.4 1.96 1 1 0.6 0.36 0.3 0.09 0 0 -0.3 0.09 -0.6 0.36 -0.8 0.64 vang
 curve "x + 2" do -1.5 2.4
-text 0.5 3.5 "y = x + 2" do
+text -1.7 3.2 "y = x + 2" do
 curve "x^2" xanh -1.5 2.1
 segment 0.5 0.25 0.5 2.5 muc
 :::
@@ -31,15 +31,14 @@ Diện tích giữa hai đường là tổng các dải mỏng cao (trên - dư�
 
 $$ S = \int_a^b \big|f(x) - g(x)\big|\,dx $$
 
-Khi biên cho dạng x theo y (như y^2 = 2x), cắt dải nằm ngang dài (phải - trái) rồi lấy tích phân theo dy. Parabol a(x - r)(x - s) bao với Ox diện tích |a|(s - r)^3/6; như x^2 - 1 cho 8/6 = 4/3.
-
 Ví dụ: diện tích giữa y = x^2 và y = x + 2.
 
-1. x^2 = x + 2 khi x = -1 hoặc x = 2.
-2. Thử x = 0: đường thẳng cho 2 > 0, nằm trên.
-3. S = tích phân từ -1 đến 2 của (x + 2 - x^2) dx = 9/2.
+1. x^2 = x + 2 khi x = -1 hoặc x = 2. Thử x = 0: đường thẳng cho 2 > 0, nằm trên.
+2. S = tích phân từ -1 đến 2 của (x + 2 - x^2) dx = 9/2.
 
-> Lỗi thường gặp: bỏ trị tuyệt đối khi hiệu đổi dấu. Giữa y = x^3 và y = x trên [-1, 1], tích phân có dấu bằng 0, diện tích thật là 1/2.
+Khi biên cho dạng x theo y (như y^2 = 2x), cắt dải nằm ngang dài (phải - trái) rồi lấy tích phân theo dy. Parabol a(x - r)(x - s) bao với Ox diện tích |a|(s - r)^3/6; như x^2 - 1 cho 8/6 = 4/3.
+
+> Lỗi thường gặp: bỏ trị tuyệt đối khi hiệu đổi dấu. Giữa x^3 và x trên [-1, 1], tích phân có dấu ra 0, diện tích thật 1/2.
 
 :::check
 Q: Diện tích miền giữa parabol y = 4 - x^2 và trục Ox?
@@ -81,10 +80,17 @@ Ví dụ: quay đoạn y = x, 0 <= x <= 3 quanh Ox (được một hình nón).
 
 > Lỗi thường gặp: viết vành khăn là pi(f - g)^2. Đúng là hình tròn lớn trừ hình tròn nhỏ: pi(f^2 - g^2).
 
+:::check
+Q: Quay miền giữa y = 1 và y = x^2 (0 <= x <= 1) quanh Ox. Thể tích bằng bao nhiêu?
+A: Vành khăn bán kính ngoài 1, trong x^2: V = pi . tích phân từ 0 đến 1 của (1 - x^4) dx = 4pi/5.
+:::
+
+### Quay quanh Oy: vỏ ống
+
 :::figure plane
 caption: Quay quanh Oy: dải đứng tại x quay thành một vỏ ống bán kính x. Trải vỏ ra được tấm mỏng dài 2pi x, cao f(x).
 size: 160 95
-x: -1.3 1.3 0.5
+x: -1.3 1.3 1
 y: -0.3 1.3 0.5
 curve "1 - x^2" xanh -1 1
 poly 0.6 0 0.7 0 0.7 0.51 0.6 0.64 do
@@ -93,11 +99,6 @@ param "0.65*cos(t)" "0.12*sin(t)" 0 2*pi do
 :::
 
 Quay quanh trục Oy thì cắt dải đứng thay vì lát. Dải tại x, cao f(x), dày dx, quay thành vỏ ống có thể tích 2pi x . f(x) dx; cộng lại: V = 2pi . tích phân của x f(x) dx.
-
-:::check
-Q: Quay miền giữa y = 1 và y = x^2 (0 <= x <= 1) quanh Ox. Thể tích bằng bao nhiêu?
-A: Vành khăn bán kính ngoài 1, trong x^2: V = pi . tích phân từ 0 đến 1 của (1 - x^4) dx = 4pi/5.
-:::
 
 :::check
 Q: Quay miền dưới y = 1 - x^2 (0 <= x <= 1) quanh trục Oy. Thể tích bằng bao nhiêu?
@@ -112,7 +113,7 @@ A: Vỏ trụ: V = 2pi . tích phân từ 0 đến 1 của x(1 - x^2) dx = 2pi(1
 
 :::figure plane
 caption: Mỗi bước nhỏ là cạnh huyền sqrt(dx^2 + dy^2), mà dy = y' dx.
-size: 160 100
+size: 160 76
 x: -0.2 2.6 1
 y: -0.2 3 1
 curve "x^2/2" xanh 0 2.4
@@ -125,15 +126,14 @@ segment 1 0.5 1.8 1.62 do "ds" pos=nw
 Độ dài cung là tổng các cạnh huyền nhỏ sqrt(dx^2 + dy^2) = sqrt(1 + (y')^2) dx.
 :::
 
-Đề thường chọn đường cong để 1 + (y')^2 là một bình phương, khai căn ra gọn. Nhớ sqrt(t^2) = |t|: biểu thức đổi dấu thì phải tách đoạn.
-
 $$ L = \int_a^b \sqrt{1 + f'(x)^2}\,dx, \qquad L = \int_{\alpha}^{\beta} \sqrt{x'(t)^2 + y'(t)^2}\,dt $$
 
 Ví dụ: độ dài cung y = (2/3)x^(3/2), 0 <= x <= 8.
 
 1. y' = sqrt(x), nên 1 + (y')^2 = 1 + x.
-2. L = tích phân từ 0 đến 8 của sqrt(1 + x) dx.
-3. = (2/3)(9^(3/2) - 1) = (2/3) . 26 = 52/3.
+2. L = tích phân từ 0 đến 8 của sqrt(1 + x) dx = (2/3)(9^(3/2) - 1) = 52/3.
+
+Đề thường chọn đường cong để 1 + (y')^2 là một bình phương, khai căn ra gọn. Nhớ sqrt(t^2) = |t|: biểu thức đổi dấu thì phải tách đoạn.
 
 > Lỗi thường gặp: dùng y thay cho y' dưới căn, hoặc quên số 1. Công thức là sqrt(1 + (y')^2).
 
@@ -164,21 +164,38 @@ Tích phân tới vô cùng là giới hạn của tích phân tới R: đuôi t
 
 $$ \int_a^{+\infty} \frac{dx}{x^p} < +\infty \iff p > 1 $$
 
-Tích phân trên cả trục thì tách tại một điểm (thường là 0) thành hai nửa, mỗi nửa một cận vô hạn chạy riêng; hội tụ khi cả hai nửa hội tụ. Ví dụ 1/(1 + x^2): mỗi nửa ra pi/2, tổng pi.
-
-Phân kỳ không nhất thiết là ra vô cùng: tích phân của sin x tới R là 1 - cos R, dao động mãi không có giới hạn.
-
 Ví dụ: tính tích phân từ 1 đến +vô cùng của 3/x^4 dx.
 
 1. Tới R: [-1/x^3] từ 1 đến R = 1 - 1/R^3.
 2. R -> +vô cùng: 1/R^3 -> 0.
 3. Hội tụ, bằng 1.
 
-> Lỗi thường gặp: cắt đối xứng [-R, R] rồi cho R -> vô cùng. Với f = x, tích phân từ -R đến R luôn bằng 0 vì hai nửa triệt tiêu nhau, nhưng riêng nửa từ 0 đến R là R^2/2 -> vô cùng. Mỗi nửa phải tự hội tụ, nên tích phân này phân kỳ.
-
 :::check
 Q: Tính tích phân từ 0 đến +vô cùng của e^(-2x) dx.
 A: Tới R: (1 - e^(-2R))/2, mà e^(-2R) -> 0: bằng 1/2.
+:::
+
+### Cả trục số, và phân kỳ kiểu dao động
+
+:::figure plane
+caption: 1/(1 + x^2) trên cả trục: mỗi nửa bao diện tích pi/2, tổng pi.
+size: 200 60
+x: -5 5 1
+y: -0.1 1.2 1
+area "1/(1 + x^2)" -5 0 xanh
+area "1/(1 + x^2)" 0 5 luc
+curve "1/(1 + x^2)" muc
+:::
+
+Tích phân trên cả trục thì tách tại một điểm (thường là 0) thành hai nửa, mỗi nửa một cận vô hạn chạy riêng; hội tụ khi cả hai nửa hội tụ. Ví dụ 1/(1 + x^2): mỗi nửa ra pi/2, tổng pi.
+
+Phân kỳ không nhất thiết là ra vô cùng: tích phân của sin x tới R là 1 - cos R, dao động mãi không có giới hạn.
+
+> Lỗi thường gặp: cắt đối xứng [-R, R] rồi cho R -> vô cùng. Với f = x, tích phân từ -R đến R luôn bằng 0 vì hai nửa triệt tiêu nhau, nhưng riêng nửa từ 0 đến R là R^2/2 -> vô cùng. Mỗi nửa phải tự hội tụ, nên tích phân này phân kỳ.
+
+:::check
+Q: Tích phân từ 0 đến +vô cùng của cos x dx hội tụ không?
+A: Không. Tới R nó bằng sin R, dao động giữa -1 và 1 mãi, không có giới hạn: phân kỳ.
 :::
 
 ## Tích phân suy rộng của hàm không bị chặn
@@ -189,7 +206,7 @@ Một cây cột cao vô hạn vẫn có thể có diện tích hữu hạn, n�
 
 :::figure plane
 caption: 1/sqrt(x) vọt lên mà đủ mảnh: diện tích 2. 1/x béo hơn: vô hạn.
-size: 150 95
+size: 150 82
 x: -0.1 1.6 0.5
 y: -0.3 6 1
 area "1/sqrt(x)" 0.03 1 xanh
@@ -204,13 +221,12 @@ Hàm vọt lên vô cùng ở đầu mút thì cắt bỏ khúc nhỏ tới c, t
 
 $$ \int_0^1 \frac{dx}{x^p} < +\infty \iff p < 1 $$
 
-Điểm bất thường nằm giữa đoạn thì tách đoạn tại đó; tích phân hội tụ khi mọi phần đều hội tụ. Ở đầu mút hay gặp c ln c, dạng 0 . vô cùng: viết thành ln c/(1/c) rồi L'Hospital, ra 0.
-
 Ví dụ: tính tích phân từ 0 đến 1 của 1/x^(2/3) dx.
 
 1. Từ c đến 1: [3x^(1/3)] = 3 - 3c^(1/3).
-2. c -> 0+: c^(1/3) -> 0.
-3. Hội tụ, bằng 3 (p = 2/3 < 1, khớp).
+2. c -> 0+ thì c^(1/3) -> 0: hội tụ, bằng 3 (p = 2/3 < 1, khớp).
+
+Điểm bất thường nằm giữa đoạn thì tách đoạn tại đó; tích phân hội tụ khi mọi phần đều hội tụ. Ở đầu mút hay gặp c ln c, dạng 0 . vô cùng: viết thành ln c/(1/c) rồi L'Hospital, ra 0.
 
 > Lỗi thường gặp: không thấy điểm bất thường ở giữa. Tích phân từ 0 đến 2 của 1/(x - 1)^2 dx không phải -2: quanh x = 1 nó phân kỳ.
 
