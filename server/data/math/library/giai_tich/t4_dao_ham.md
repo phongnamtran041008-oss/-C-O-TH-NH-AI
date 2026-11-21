@@ -14,8 +14,8 @@ skills: [gt_t4_dinh_nghia_dao_ham, gt_t4_quy_tac_tinh, gt_t4_day_chuyen, gt_t4_h
 :::
 
 :::figure plane
-caption: Dây cung AB có hệ số góc (f(1 + h) - f(1))/h. Cho h -> 0, B trượt về A, dây cung quay thành tiếp tuyến.
-size: 200 120
+caption: Dây cung AB dốc (f(1 + h) - f(1))/h. Cho h -> 0, B trượt về A, dây cung thành tiếp tuyến.
+size: 200 105
 x: -0.5 3 1
 y: -1 6 1
 curve "x^2" xanh "y = x^2" pos=w
@@ -37,12 +37,6 @@ Ví dụ: f(x) = x^2 - x, tính f'(3) bằng định nghĩa.
 2. Chia cho h (h khác 0): được 5 + h.
 3. Cho h -> 0: f'(3) = 5.
 
-Biết hệ số góc thì viết được tiếp tuyến tại điểm (a, f(a)):
-
-$$ y = f'(a)(x - a) + f(a) $$
-
-f có đạo hàm tại a khi giới hạn trên tồn tại hữu hạn. Có đạo hàm thì liên tục, nhưng ngược lại thì không: |x| liên tục tại 0 mà đồ thị gãy góc, tỉ số |h|/h bằng 1 bên phải và -1 bên trái.
-
 > Lỗi thường gặp: thay h = 0 khi h còn ở mẫu, ra 0/0. Rút gọn cho hết h ở mẫu trước, rồi mới cho h -> 0.
 
 :::check
@@ -50,15 +44,39 @@ Q: Nhìn hình: tiếp tuyến của y = x^2 tại A(1, 1) có hệ số góc ba
 A: 2. Tỉ số số gia là 2 + h, cho h -> 0 được 2; tiếp tuyến là y = 2x - 1.
 :::
 
+### Tiếp tuyến, và khi nào có đạo hàm
+
+Biết hệ số góc thì viết được tiếp tuyến tại điểm (a, f(a)):
+
+$$ y = f'(a)(x - a) + f(a) $$
+
+:::figure plane
+caption: |x| liền nét tại 0 nhưng gãy góc: bên phải dốc 1, bên trái dốc -1, nên không có đạo hàm.
+size: 120 70
+x: -2 2 1
+y: -0.5 2 1
+curve "abs(x)" xanh
+text 1.1 1.7 "dốc 1"
+text -1.1 1.7 "dốc -1"
+point 0 0 do
+:::
+
+f có đạo hàm tại a khi giới hạn trên tồn tại hữu hạn. Có đạo hàm thì liên tục, nhưng ngược lại thì không: |x| liên tục tại 0 mà đồ thị gãy góc, tỉ số |h|/h bằng 1 bên phải và -1 bên trái.
+
+:::check
+Q: Viết phương trình tiếp tuyến của y = x^3 tại x = 1.
+A: f(1) = 1, f'(x) = 3x^2 nên f'(1) = 3. Tiếp tuyến: y = 3(x - 1) + 1 = 3x - 2.
+:::
+
 ## Quy tắc tính đạo hàm
 
 :::hook
-Doanh thu bằng giá nhân số lượng. Khi cả giá lẫn số lượng cùng đổi, doanh thu đổi nhanh cỡ nào? Quy tắc tích trả lời ngay, không phải quay về định nghĩa.
+Doanh thu bằng giá nhân số lượng. Cả hai cùng đổi thì doanh thu đổi nhanh cỡ nào? Quy tắc tích trả lời ngay, không cần quay về định nghĩa.
 :::
 
 :::figure plane
-caption: u và v cùng lớn thêm: diện tích u.v được thêm hai dải v.du và u.dv. Góc du.dv quá nhỏ, bỏ được.
-size: 200 110
+caption: u.v lớn thêm hai dải v.du và u.dv; góc du.dv quá nhỏ, bỏ được.
+size: 200 100
 axes: off
 x: -0.7 4.2
 y: -0.6 3.2
@@ -76,6 +94,21 @@ text -0.35 2.5 "dv"
 Đạo hàm của tích không phải tích các đạo hàm: mỗi thừa số lần lượt đổi trong khi thừa số kia đứng yên, rồi cộng hai phần lại.
 :::
 
+Ví dụ: tính đạo hàm của f(x) = x . e^x.
+
+1. Đặt u = x, v = e^x; khi đó u' = 1, v' = e^x.
+2. (uv)' = u'v + uv' = 1 . e^x + x . e^x.
+3. Gom lại: f'(x) = (x + 1) e^x.
+
+> Lỗi thường gặp: viết (uv)' = u'v'. Thử với u = v = x: (x . x)' = (x^2)' = 2x, còn u'v' chỉ bằng 1.
+
+:::check
+Q: Tính đạo hàm của x^3 . sin x.
+A: 3x^2 sin x + x^3 cos x.
+:::
+
+### Bảng đạo hàm và quy tắc thương
+
 :::figure grid
 caption: Bảng đạo hàm cơ bản, trên tập xác định của từng hàm.
 table
@@ -89,29 +122,21 @@ row "cos x" "-sin x"
 
 Tổng, hiệu và tích với hằng số thì lấy đạo hàm từng phần. Thương có quy tắc riêng; trong tử số, u'v đứng trước, đảo lại thì sai dấu.
 
-Ví dụ: tính đạo hàm của f(x) = x . e^x.
-
-1. Đặt u = x, v = e^x; khi đó u' = 1, v' = e^x.
-2. (uv)' = u'v + uv' = 1 . e^x + x . e^x.
-3. Gom lại: f'(x) = (x + 1) e^x.
-
 $$ (uv)' = u'v + uv', \qquad \left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2} $$
 
-> Lỗi thường gặp: viết (uv)' = u'v'. Thử với u = v = x: (x . x)' = (x^2)' = 2x, còn u'v' chỉ bằng 1.
-
 :::check
-Q: Tính đạo hàm của x^3 . sin x.
-A: 3x^2 sin x + x^3 cos x.
+Q: Tính đạo hàm của x/(x + 1).
+A: u = x, v = x + 1: (1 . (x + 1) - x . 1)/(x + 1)^2 = 1/(x + 1)^2.
 :::
 
 ## Quy tắc dây chuyền
 
 :::hook
-Mạng nơ-ron là một chuỗi hàm nối nhau. Muốn học, máy phải biết đầu ra đổi bao nhiêu khi một trọng số ở đầu chuỗi nhích đi: đó là quy tắc dây chuyền, gọi là lan truyền ngược.
+Mạng nơ-ron là chuỗi hàm nối nhau. Lan truyền ngược hỏi: trọng số đầu chuỗi nhích thì đầu ra đổi bao nhiêu? Đó là quy tắc dây chuyền.
 :::
 
 :::figure flow
-caption: x nhích dx thì u nhích 3 dx, rồi y nhích cos u . 3 dx. Tốc độ dọc chuỗi nhân với nhau: (sin 3x)' = cos 3x . 3.
+caption: x nhích dx thì u nhích 3 dx, y nhích cos u . 3 dx: tốc độ nhân dọc chuỗi, (sin 3x)' = cos 3x . 3.
 box "x"
 link "u' = 3"
 box "u = 3x" xanh
@@ -120,7 +145,7 @@ box "y = sin u" luc
 :::
 
 :::core
-Đạo hàm của hàm hợp là tích các tốc độ dọc chuỗi: đạo hàm hàm ngoài, lấy tại hàm trong, nhân đạo hàm hàm trong.
+Đạo hàm hàm hợp là tích các tốc độ dọc chuỗi: đạo hàm hàm ngoài (lấy tại hàm trong) nhân đạo hàm hàm trong.
 :::
 
 $$ \big(f(g(x))\big)' = f'(g(x)) \cdot g'(x) $$
@@ -131,9 +156,9 @@ Ví dụ: tính đạo hàm của f(x) = (3x + 1)^4.
 2. Đạo hàm ngoài theo u: 4u^3. Đạo hàm trong: u' = 3.
 3. Nhân lại: f'(x) = 4(3x + 1)^3 . 3 = 12(3x + 1)^3.
 
-Nhiều lớp thì nhân hết, từ ngoài vào trong: sin^2(3x) = (sin 3x)^2 có đạo hàm 2 sin 3x . cos 3x . 3.
+Nhiều lớp thì nhân hết, từ ngoài vào trong: (sin 3x)^2 có đạo hàm 2 sin 3x . cos 3x . 3.
 
-> Lỗi thường gặp: quên nhân đạo hàm hàm trong, như viết (e^(x^2))' = e^(x^2). Lấy xong đạo hàm ngoài, luôn hỏi: hàm trong là gì, đã nhân đạo hàm của nó chưa?
+> Lỗi thường gặp: quên nhân đạo hàm hàm trong, như viết (e^(x^2))' = e^(x^2). Đúng là e^(x^2) . 2x.
 
 :::check
 Q: Tính đạo hàm của cos(x^2).
@@ -147,8 +172,8 @@ A: -sin(x^2) . 2x = -2x sin(x^2).
 :::
 
 :::figure plane
-caption: y = x^2 và hàm ngược y = sqrt(x) đối xứng qua y = x. Tiếp tuyến tại hai điểm đối xứng có hệ số góc 3 và 1/3.
-size: 140 120
+caption: y = x^2 và hàm ngược sqrt(x) đối xứng qua y = x; tiếp tuyến tại hai điểm đối xứng dốc 3 và 1/3.
+size: 140 110
 aspect: equal
 x: 0 3 1
 y: 0 3 1
@@ -173,11 +198,31 @@ Ví dụ: f(x) = x^5 + x tăng ngặt. Tính (f^(-1))'(2).
 2. f'(x) = 5x^4 + 1, nên f'(1) = 6.
 3. (f^(-1))'(2) = 1/f'(1) = 1/6, không cần công thức của f^(-1).
 
-Đường cong cho bởi tham số x = x(t), y = y(t) cũng làm theo tỉ số tốc độ: dy/dx = y'(t)/x'(t), khi x'(t) khác 0. Ví dụ x = t^2, y = t^3 tại t = 1: dy/dx = 3/2.
+> Lỗi thường gặp: lấy f' tại y0 = 2 thay vì tại x0 = 1.
+
+:::check
+Q: f(x) = x^3 + 2x tăng ngặt. Tính (f^(-1))'(3).
+A: f(1) = 1 + 2 = 3 nên x0 = 1. f'(x) = 3x^2 + 2, f'(1) = 5. Vậy (f^(-1))'(3) = 1/5.
+:::
+
+### Đường cong cho bởi tham số
+
+:::figure plane
+caption: x = t^2, y = t^3: tại t = 1, điểm (1, 1) có tiếp tuyến dốc 3/2.
+size: 120 80
+aspect: equal
+x: 0 2 1
+y: -0.3 2.2 1
+param "t^2" "t^3" 0 1.3 xanh
+segment 0.5 0.25 1.6 1.9 do
+point 1 1 do "t = 1" pos=se
+:::
+
+Đường cong cho bởi tham số x = x(t), y = y(t) cũng làm theo tỉ số tốc độ: dy/dx = y'(t)/x'(t), khi x'(t) khác 0. Ví dụ x = t^2, y = t^3 tại t = 1: y'(1) = 3, x'(1) = 2, nên dy/dx = 3/2.
 
 $$ \frac{dy}{dx} = \frac{y'(t)}{x'(t)} \quad (x'(t) \ne 0) $$
 
-> Lỗi thường gặp: lấy f' tại y0 thay vì tại x0, và lật tỉ số thành x'(t)/y'(t).
+> Lỗi thường gặp: lật tỉ số thành x'(t)/y'(t). Tử là tốc độ của y, mẫu là tốc độ của x.
 
 :::check
 Q: Đường cong x = t^2 + t, y = t^3. Tính dy/dx tại t = 1.
@@ -191,8 +236,8 @@ Tính sqrt(25.2) không cần máy: đi dọc tiếp tuyến thay vì dọc đư
 :::
 
 :::figure plane
-caption: Từ x = 1 đi thêm dx = 1. Theo tiếp tuyến, y tăng dy = 2; theo đường cong, tăng 3. Đoạn tím dx^2 = 1 teo rất nhanh khi dx nhỏ lại.
-size: 210 120
+caption: Đi thêm dx = 1 từ x = 1: theo tiếp tuyến y tăng dy = 2, theo đường cong tăng 3. Phần dư tím dx^2 teo rất nhanh khi dx nhỏ.
+size: 210 100
 x: 0 3 1
 y: 0 5 1
 curve "x^2" xanh "y = x^2" pos=w
@@ -216,13 +261,26 @@ Ví dụ: tính gần đúng sqrt(25.2).
 2. f(x) = sqrt(x) có f'(x) = 1/(2 sqrt(x)), nên f'(25) = 1/10.
 3. sqrt(25.2) xấp xỉ 5 + (1/10) . 0.2 = 5.02.
 
-Đạo hàm cấp hai f'' là đạo hàm của f': tốc độ của tốc độ, như gia tốc. Lặp n lần được f^(n); chẳng hạn x^n lấy đạo hàm n lần ra n!, thêm một lần nữa ra 0.
-
-$$ (e^{ax})^{(n)} = a^n e^{ax}, \qquad \left(\frac{1}{x}\right)^{(n)} = \frac{(-1)^n n!}{x^{n+1}} $$
-
 > Lỗi thường gặp: quên nhân dx, ra sqrt(25.2) xấp xỉ 5.1. Bình phương lại để thử: 5.1^2 = 26.01, quá xa 25.2.
 
 :::check
-Q: f(x) = x^3. Tính f''(2) và vi phân df tại x = 2.
-A: f''(x) = 6x nên f''(2) = 12; df = 3x^2 dx = 12 dx.
+Q: f(x) = x^3. Tính vi phân df tại x = 2.
+A: df = f'(x) dx = 3x^2 dx, tại x = 2 là 12 dx.
+:::
+
+### Đạo hàm cấp cao
+
+Đạo hàm cấp hai f'' là đạo hàm của f': tốc độ của tốc độ, như gia tốc. Lặp n lần được f^(n); chẳng hạn x^n lấy đạo hàm n lần ra n!, thêm một lần nữa ra 0.
+
+Ví dụ: tính đạo hàm cấp ba của e^(2x).
+
+1. f' = 2e^(2x) (dây chuyền, hàm trong 2x).
+2. f'' = 2 . 2e^(2x) = 4e^(2x).
+3. f''' = 8e^(2x) = 2^3 e^(2x): mỗi lần nhân thêm 2.
+
+$$ (e^{ax})^{(n)} = a^n e^{ax}, \qquad \left(\frac{1}{x}\right)^{(n)} = \frac{(-1)^n n!}{x^{n+1}} $$
+
+:::check
+Q: f(x) = x^3. Tính f''(2).
+A: f'(x) = 3x^2, f''(x) = 6x, nên f''(2) = 12.
 :::
