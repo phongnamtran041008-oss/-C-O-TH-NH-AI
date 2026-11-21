@@ -23,8 +23,23 @@ vector 0 0 3 1 do "cột 1" pos=e
 vector 0 0 1 2 xanh "cột 2" pos=w
 :::
 
+:::core
+Định thức là hệ số phóng diện tích (cấp 3: thể tích) của ma trận vuông; bằng 0 nghĩa là các cột cùng phương, mặt phẳng bị ép bẹp.
+:::
+
+Chỉ ma trận vuông mới có định thức. Có ẩn x trong ma trận thì định thức là một biểu thức của x: đặt nó bằng số đề cho rồi giải.
+
+$$ \text{det} \begin{pmatrix} a & b \\ c & d \end{pmatrix} = ad - bc $$
+
+:::check
+Q: [2, 6; 1, 3] có định thức bao nhiêu? Hình bình hành của hai cột trông ra sao?
+A: 2 . 3 - 6 . 1 = 0. Cột (6, 3) gấp 3 lần cột (2, 1): hai mũi tên cùng phương, hình bị ép thành một đoạn thẳng, diện tích 0.
+:::
+
+### Cấp 3: quy tắc Sarrus
+
 :::figure grid
-caption: Cấp 3 (Sarrus): chép hai cột đầu sang phải. Mỗi đường chéo xuống (xanh) là một tích mang dấu +, mỗi đường chéo lên (đỏ) mang dấu -.
+caption: Chép hai cột đầu sang phải. Mỗi đường chéo xuống (xanh) là một tích mang dấu +, mỗi đường chéo lên (đỏ) mang dấu -.
 style: matrix
 table "A, chép thêm 2 cột"
 row 1 2 0 1 2
@@ -38,25 +53,17 @@ mark cell 2 4 do
 mark cell 1 5 do
 :::
 
-:::core
-Định thức là hệ số phóng diện tích (cấp 3: thể tích) của ma trận vuông; bằng 0 nghĩa là các cột cùng phương, mặt phẳng bị ép bẹp.
-:::
-
-Chỉ ma trận vuông mới có định thức. Có ẩn x trong ma trận thì định thức là một biểu thức của x: đặt nó bằng số đề cho rồi giải.
-
-Ví dụ: tính det A, với A ở hình Sarrus.
+Ví dụ: tính det A, với A ở hình.
 
 1. Ba tích xuống: 1 . 3 . 1 = 3, 2 . 1 . 2 = 4, 0 . 0 . 1 = 0. Cộng được 7.
 2. Ba tích lên: 2 . 3 . 0 = 0, 1 . 1 . 1 = 1, 1 . 0 . 2 = 0. Cộng được 1.
 3. det A = 7 - 1 = 6.
 
-$$ \text{det} \begin{pmatrix} a & b \\ c & d \end{pmatrix} = ad - bc $$
-
 > Lỗi thường gặp: cộng cả sáu tích. Ba tích theo đường chéo lên phải trừ đi. Sarrus cũng chỉ dùng cho cấp 3.
 
 :::check
-Q: [2, 6; 1, 3] có định thức bao nhiêu? Hình bình hành của hai cột trông ra sao?
-A: 2 . 3 - 6 . 1 = 0. Cột (6, 3) gấp 3 lần cột (2, 1): hai mũi tên cùng phương, hình bị ép thành một đoạn thẳng, diện tích 0.
+Q: Dùng Sarrus tính det [2, 0, 1; 1, 1, 0; 0, 3, 1].
+A: Ba tích xuống: 2 + 0 + 3 = 5. Ba tích lên đều bằng 0. det = 5.
 :::
 
 ## Khai triển theo hàng hoặc cột
@@ -66,7 +73,7 @@ Ma trận cấp 4 đã có 24 tích, cấp 10 có hơn ba triệu. Khai triển 
 :::
 
 :::figure grid
-caption: Dấu theo vị trí xếp như bàn cờ, góc trên trái là +. Xóa hàng 3, cột 2 của A (đỏ) còn lại định thức con M_32.
+caption: Dấu xếp như bàn cờ, góc trên trái là +. Xóa hàng 3, cột 2 của A (đỏ) còn định thức con M_32.
 table "dấu"
 row + - +
 row - + -
@@ -84,14 +91,13 @@ mark col 2 do
 Chọn một hàng hoặc cột; mỗi phần tử nhân với định thức nhỏ còn lại khi xóa hàng và cột của nó, kèm dấu bàn cờ, rồi cộng hết.
 :::
 
-Phần bù đại số C_ij là định thức con M_ij gắn dấu của ô (i, j). Chọn hàng hoặc cột nhiều số 0 nhất: số 0 nhân gì cũng bằng 0.
+Phần bù đại số C_ij là M_ij gắn dấu của ô (i, j). Nên chọn hàng hoặc cột nhiều số 0 nhất.
 
 Ví dụ: tính det A ở hình.
 
 1. Cột 2 là (0, 0, 5): chỉ còn số hạng của a_32 = 5.
-2. Xóa hàng 3, cột 2: M_32 = det [1, 2; 3, 1] = 1 - 6 = -5.
-3. Ô (3, 2) mang dấu -: C_32 = 5.
-4. det A = 5 . 5 = 25.
+2. Xóa hàng 3, cột 2: M_32 = det [1, 2; 3, 1] = -5. Ô (3, 2) mang dấu -, nên C_32 = 5.
+3. det A = 5 . 5 = 25.
 
 $$ C_{ij} = (-1)^{i + j} M_{ij} $$
 
@@ -135,6 +141,28 @@ mark row 4 do
 
 :::core
 Định thức nhân tính, det(AB) = det A . det B, nhưng không cộng tính; ma trận tam giác có định thức bằng tích đường chéo.
+:::
+
+:::check
+Q: det A = 7. Đổi chỗ hai hàng của A rồi cộng 3 lần hàng 1 vào hàng 2. Định thức mới là bao nhiêu?
+A: Đổi chỗ cho -7, cộng bội hàng không đổi gì: vẫn -7.
+:::
+
+### Khử về tam giác để tính
+
+:::figure grid
+caption: Khử A về tam giác (một lần đổi chỗ hàng) rồi nhân đường chéo vàng: 1 . 2 . 4 = 8.
+style: matrix
+table "A"
+row 0 2 1
+row 1 1 0
+row 2 4 5
+op "->"
+table "tam giác"
+row 1 1 0
+row 0 2 1
+row 0 0 4
+mark diag vang
 :::
 
 Ví dụ: tính det A, A có hàng (0, 2, 1), (1, 1, 0), (2, 4, 5).
@@ -220,19 +248,26 @@ mark col 4 vang
 A^(-1) là phép làm ngược của A: AA^(-1) = A^(-1)A = I; nó tồn tại đúng khi det A khác 0, tức A không ép bẹp gì cả.
 :::
 
-Cấp 2 có lối tắt: đổi chỗ hai số trên đường chéo chính, đổi dấu hai số kia, chia cho det A. Ngoài ra det(A^(-1)) = 1/det A và (A^T)^(-1) = (A^(-1))^T.
+$$ (AB)^{-1} = B^{-1} A^{-1} $$
 
-Ví dụ: kiểm tra A^(-1) ở hình bằng lối tắt, A = [1, 2; 2, 5].
+> Lỗi thường gặp: viết (AB)^(-1) = A^(-1) B^(-1). Muốn gỡ áo khoác sau khi đã mặc áo sơ mi thì phải gỡ áo khoác trước: làm ngược thì đảo thứ tự.
+
+:::check
+Q: Ma trận [2, 4; 1, 2] có nghịch đảo không? Vì sao?
+A: Không: det = 4 - 4 = 0, hai cột cùng phương nên mặt phẳng bị ép thành một đường, không làm ngược được.
+:::
+
+### Lối tắt cho cấp 2
+
+Cấp 2 có lối tắt: đổi chỗ hai số trên đường chéo chính, đổi dấu hai số kia, rồi chia cho det A. Ngoài ra det(A^(-1)) = 1/det A và (A^T)^(-1) = (A^(-1))^T.
+
+$$ \begin{pmatrix} a & b \\ c & d \end{pmatrix}^{-1} = \frac{1}{ad - bc} \begin{pmatrix} d & -b \\ -c & a \end{pmatrix} $$
+
+Ví dụ: kiểm tra bằng lối tắt A^(-1) đã tìm ở trang trước, A = [1, 2; 2, 5].
 
 1. det A = 5 - 4 = 1.
 2. Đổi chỗ 1 và 5, đổi dấu hai số 2: [5, -2; -2, 1], chia cho 1.
 3. Thử: hàng (1, 2) nhân hai cột cho 5 - 4 = 1 và -2 + 2 = 0. Đúng.
-
-$$ \begin{pmatrix} a & b \\ c & d \end{pmatrix}^{-1} = \frac{1}{ad - bc} \begin{pmatrix} d & -b \\ -c & a \end{pmatrix} $$
-
-$$ (AB)^{-1} = B^{-1} A^{-1} $$
-
-> Lỗi thường gặp: viết (AB)^(-1) = A^(-1) B^(-1). Muốn gỡ áo khoác sau khi đã mặc áo sơ mi thì phải gỡ áo khoác trước: làm ngược thì đảo thứ tự.
 
 :::check
 Q: A = [3, 1; 5, 2]. Tìm A^(-1) và det(A^(-1)).
@@ -269,8 +304,6 @@ mark col 2 vang
 Khi det A khác 0, hệ Ax = b có đúng một nghiệm x = A^(-1) b; Cramer tìm từng ẩn bằng cách thay cột của ẩn đó bằng b.
 :::
 
-A^(-1) phải đứng bên trái b: b A^(-1) không nhân được. Khi det A = 0 thì cả hai cách đều không dùng được: hệ vô nghiệm hoặc vô số nghiệm, phải khử Gauss.
-
 Ví dụ: giải hệ ở hình bằng Cramer.
 
 1. det A = 6 - 1 = 5.
@@ -281,6 +314,20 @@ Ví dụ: giải hệ ở hình bằng Cramer.
 $$ x_{k} = \frac{\text{det} A_{k}}{\text{det} A} $$
 
 > Lỗi thường gặp: thay một HÀNG của A bằng b. Cramer thay CỘT của ẩn cần tìm, vì mỗi cột ứng với một ẩn.
+
+:::check
+Q: Giải 3x + y = 7, x + y = 3 bằng Cramer.
+A: det A = 3 - 1 = 2; det A_1 = 7 - 3 = 4, x = 2; det A_2 = 9 - 7 = 2, y = 1.
+:::
+
+### Nhân với A^(-1)
+
+A^(-1) phải đứng bên trái b: b A^(-1) không nhân được. Khi det A = 0 thì cả hai cách đều không dùng được: hệ vô nghiệm hoặc vô số nghiệm, phải khử Gauss.
+
+Ví dụ: giải lại hệ 2x + y = 5, x + 3y = 5 bằng x = A^(-1) b.
+
+1. Lối tắt cấp 2: A^(-1) = (1/5) [3, -1; -1, 2].
+2. A^(-1) b = (1/5)(15 - 5, -5 + 10) = (1/5)(10, 5) = (2, 1), đúng như Cramer.
 
 :::check
 Q: Hệ x + 2y = 3, 2x + 4y = 6 có det A bằng bao nhiêu? Dùng Cramer được không, và hệ có mấy nghiệm?
