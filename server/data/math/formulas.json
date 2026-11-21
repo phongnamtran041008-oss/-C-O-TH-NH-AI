@@ -885,6 +885,12 @@
    "w": 144.24,
    "h": 10.18
   },
+  "a8481ad6acb52cc8": {
+   "tex": "V(aX + b) = a^2\\,V(X), \\qquad V(aX + bY) = a^2 V(X) + b^2 V(Y)",
+   "alt": "V(aX + b) = a^2 V(X), V(aX + bY) = a^2 V(X) + b^2 V(Y)",
+   "w": 268.04,
+   "h": 11.54
+  },
   "a89e3f91338d1ea1": {
    "tex": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^{2} + d^{2}}",
    "alt": "(a + bi)/(c + di) = ((a + bi)(c - di))/(c^2 + d^2)",

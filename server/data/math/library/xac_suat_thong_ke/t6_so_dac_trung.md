@@ -29,14 +29,28 @@ Kỳ vọng là trung bình sau rất nhiều lần thử: mỗi giá trị nhâ
 
 $$ E(X) = \sum_i x_i\,p_i, \qquad E(X) = \int_{-\infty}^{+\infty} x f(x)\,dx $$
 
-E(aX + b) = aE(X) + b, và E(X + Y) = E(X) + E(Y) kể cả khi không độc lập: 4 xúc xắc có tổng trung bình 4 . 7/2 = 14. Hàm khác thì tính theo bảng: E(g(X)) = tổng g(x_i) p_i. Mật độ 3x^2 trên [0, 1]: E(X) = tích phân của 3x^3 = 3/4.
-
 Ví dụ: trả 2 linh thạch, gieo xúc xắc; mặt 6 nhận 6, mặt 1 nhận 3, mặt khác không có gì.
 
 1. E(nhận) = 6 . 1/6 + 3 . 1/6 = 3/2.
 2. E(lãi) = 3/2 - 2 = -1/2: chơi lâu, mỗi lần mất trung bình nửa viên.
 
-> Lỗi thường gặp: cho kỳ vọng đi qua mọi hàm. X là 1 hoặc 2 (mỗi số 1/2) thì E(1/X) = 3/4, không phải 1/E(X) = 2/3.
+Biến liên tục thay tổng bằng tích phân: mật độ 3x^2 trên [0, 1] cho E(X) = tích phân của 3x^3 = 3/4.
+
+:::check
+Q: X nhận 0, 2, 5 với xác suất 1/2, 3/10, 1/5. Tính E(X).
+A: 0 + 2 . 3/10 + 5 . 1/5 = 3/5 + 1 = 8/5.
+:::
+
+### Kỳ vọng của tổng và của một hàm
+
+Kỳ vọng đi qua hàm bậc nhất: E(aX + b) = aE(X) + b. Kỳ vọng của tổng là tổng các kỳ vọng, kể cả khi các biến không độc lập: tổng số chấm của 4 xúc xắc có kỳ vọng 4 . 7/2 = 14. Với hàm khác thì phải tính theo bảng: E(g(X)) = tổng g(x_i) p_i.
+
+Ví dụ: X nhận 1, 2 với xác suất 1/2, 1/2.
+
+1. E(X) = 3/2, nên E(4X - 1) = 4 . 3/2 - 1 = 5.
+2. E(1/X) = 1 . 1/2 + 1/2 . 1/2 = 3/4, không phải 1/E(X) = 2/3.
+
+> Lỗi thường gặp: cho kỳ vọng đi qua mọi hàm, như E(1/X) = 1/E(X) hay E(X^2) = (E(X))^2.
 
 :::check
 Q: E(X) = 3. Tính E(2X - 5). X nhận 1, 2, 4 với xác suất 1/2, 1/4, 1/4: tính E(X^2).
@@ -74,19 +88,35 @@ Phương sai là trung bình bình phương khoảng cách tới kỳ vọng: đ
 
 $$ V(X) = E(X^2) - \left(E(X)\right)^2, \qquad \sigma(X) = \sqrt{V(X)} $$
 
-V(aX + b) = a^2 V(X): cộng hằng số không đổi độ tản, hệ số nhân thì bình phương. X, Y độc lập thì V(aX + bY) = a^2 V(X) + b^2 V(Y), dấu trừ vẫn thành cộng; Y = X thì không được cộng.
-
 Ví dụ: X nhận 0, 1, 3 với xác suất 1/2, 1/4, 1/4. Tính V(X).
 
 1. E(X) = 1/4 + 3/4 = 1.
 2. E(X^2) = 1/4 + 9/4 = 5/2.
-3. V(X) = 5/2 - 1^2 = 3/2.
+3. V(X) = 5/2 - 1^2 = 3/2, độ lệch chuẩn sqrt(3/2).
 
-> Lỗi thường gặp: viết E(X^2) = (E(X))^2, hay V(3X + 1) = 3V(X) + 1. Đúng là 9V(X).
+> Lỗi thường gặp: viết E(X^2) = (E(X))^2. X nhận -1 và 1 thì E(X) = 0 mà E(X^2) = 1.
 
 :::check
-Q: V(X) = 5. Tính V(-3X + 2) và độ lệch chuẩn của -3X + 2. Biết E(X) = 2, tính E(X^2).
-A: V = 9 . 5 = 45, độ lệch chuẩn sqrt(45) = 3 sqrt(5) (không âm). E(X^2) = V(X) + (E(X))^2 = 5 + 4 = 9.
+Q: E(X) = 2 và V(X) = 5. Tính E(X^2).
+A: E(X^2) = V(X) + (E(X))^2 = 5 + 4 = 9.
+:::
+
+### Phương sai khi đổi biến và khi cộng
+
+Cộng một hằng số chỉ dời phân phối, không đổi độ tản; nhân với a thì khoảng cách nhân a nên phương sai nhân a^2. X, Y độc lập thì phương sai cộng lại, dấu trừ vẫn thành cộng. Y = X thì không được cộng: V(X + X) = V(2X) = 4V(X).
+
+$$ V(aX + b) = a^2\,V(X), \qquad V(aX + bY) = a^2 V(X) + b^2 V(Y) $$
+
+Ví dụ: X, Y độc lập, V(X) = 2, V(Y) = 3.
+
+1. V(3X + 7) = 9 . 2 = 18.
+2. V(2X - Y + 4) = 4 . 2 + 3 = 11.
+
+> Lỗi thường gặp: viết V(3X + 1) = 3V(X) + 1. Đúng là 9V(X).
+
+:::check
+Q: V(X) = 5. Tính V(-3X + 2) và độ lệch chuẩn của -3X + 2.
+A: V = 9 . 5 = 45, độ lệch chuẩn sqrt(45) = 3 sqrt(5) (không âm).
 :::
 
 ## Phân phối nhị thức và Poisson
@@ -111,22 +141,38 @@ mark 2 do "E = 2"
 Nhị thức đếm số lần thành công trong n lần thử độc lập. Poisson đếm sự kiện hiếm trong một khoảng, khi biết số trung bình lambda.
 :::
 
-$$ P(X = k) = C_n^k p^k (1-p)^{n-k}, \quad E(X) = np, \quad V(X) = np(1-p) $$
-
 $$ P(X = k) = e^{-\lambda} \frac{\lambda^k}{k!}, \quad E(X) = V(X) = \lambda $$
 
-Tỉ số hai cột liền nhau của Poisson gọn: P(X = k)/P(X = k - 1) = lambda/k. Khi n lớn, p nhỏ: B(n, p) xấp xỉ Poisson với lambda = np.
+Tỉ số hai cột liền nhau gọn: P(X = k)/P(X = k - 1) = lambda/k. Khi n lớn, p nhỏ, số lần thành công B(n, p) xấp xỉ Poisson với lambda = np.
 
 Ví dụ: 2000 sản phẩm, mỗi cái hỏng với xác suất 1/1000. Dùng e^(-2) = 0.1353.
 
-1. X ~ B(2000, 1/1000) xấp xỉ Poisson với lambda = np = 2.
+1. Số hỏng xấp xỉ Poisson với lambda = np = 2.
 2. P(X = 0) = e^(-2) = 0.1353, P(X = 1) = 0.1353 . 2/1 = 0.2706.
 
-> Lỗi thường gặp: cho nhị thức phương sai bằng kỳ vọng. B(12, 1/4) có E = 3 nhưng V = 9/4; "V = E" là của Poisson.
+> Lỗi thường gặp: lấy lambda = n hay 1/p. Tham số Poisson là số trung bình np.
 
 :::check
-Q: X ~ B(12, 1/4): tính E(X), V(X). Y ~ Poisson với lambda = 4: tính P(Y = 5)/P(Y = 4).
-A: E = 3, V = 12 . 1/4 . 3/4 = 9/4. Tỉ số = lambda/5 = 4/5.
+Q: Y ~ Poisson với lambda = 4. Tính P(Y = 5)/P(Y = 4), E(Y) và V(Y).
+A: Tỉ số = lambda/5 = 4/5. E(Y) = V(Y) = 4.
+:::
+
+### Phân phối nhị thức B(n, p)
+
+B(n, p) đếm số lần thành công trong n lần thử Bernoulli độc lập, mỗi lần thành công với xác suất p. Kỳ vọng là np; phương sai np(1 - p) luôn nhỏ hơn kỳ vọng.
+
+$$ P(X = k) = C_n^k p^k (1-p)^{n-k}, \quad E(X) = np, \quad V(X) = np(1-p) $$
+
+Ví dụ: X ~ B(12, 1/4).
+
+1. E(X) = 12 . 1/4 = 3.
+2. V(X) = 12 . 1/4 . 3/4 = 9/4.
+
+> Lỗi thường gặp: cho nhị thức phương sai bằng kỳ vọng. "V = E" là của Poisson.
+
+:::check
+Q: X ~ B(30, 1/10). Tính E(X), V(X), và tham số Poisson dùng để xấp xỉ X.
+A: E = 3, V = 30 . 1/10 . 9/10 = 27/10, lambda = np = 3.
 :::
 
 ## Phân phối đều và phân phối mũ
@@ -149,22 +195,45 @@ curve "exp(-x/2)/2" 0 8 xanh
 Đều: mật độ phẳng, xác suất tỉ lệ với độ dài khoảng. Mũ: thời gian chờ với P(X > x) = e^(-lambda x), và nó không nhớ đã chờ bao lâu.
 :::
 
-Đều trên [a, b]: E = (a + b)/2, V = (b - a)^2/12. Mũ tham số lambda:
+Mũ tham số lambda, mật độ lambda e^(-lambda x) khi x > 0:
 
 $$ P(X > x) = e^{-\lambda x}, \quad E(X) = \frac{1}{\lambda}, \quad V(X) = \frac{1}{\lambda^2} $$
 
-Không nhớ: P(X > s + t | X > s) = P(X > t).
+Không nhớ: P(X > s + t | X > s) = e^(-lambda(s + t))/e^(-lambda s) = P(X > t).
 
-Ví dụ: X đều trên [2, 6].
-
-1. Mật độ 1/4: P(3 < X < 5) = 2/4. E(X) = 4, V(X) = 4^2/12 = 4/3.
-2. E(X^2) = V(X) + (E(X))^2 = 4/3 + 16 = 52/3.
-
-> Lỗi thường gặp: quên bình phương: đều trên [2, 6] có V = 16/12, không phải 4/12.
+> Lỗi thường gặp: lấy lambda bằng thời gian chờ trung bình. Trung bình 5 phút thì lambda = 1/5.
 
 :::check
 Q: Thời gian chờ có phân phối mũ, trung bình 4 phút. lambda bằng mấy? P(X > 8)? Đã chờ 5 phút, xác suất phải chờ thêm hơn 8 phút?
 A: lambda = 1/4. P(X > 8) = e^(-2). Chờ thêm vẫn là e^(-2), vì mũ không nhớ.
+:::
+
+### Phân phối đều
+
+:::figure plane
+caption: Đều trên [2, 6]: mật độ phẳng 1/4, P(3 < X < 5) là phần vàng, 2/4.
+size: 140 65
+aspect: free
+x: 0 7 1
+y: 0 0.4 0.25
+names: x f
+poly 2 0 6 0 6 0.25 2 0.25 xanh
+poly 3 0 5 0 5 0.25 3 0.25 vang
+:::
+
+Đều trên [a, b]: mật độ 1/(b - a), xác suất tỉ lệ với độ dài khoảng. E = (a + b)/2, V = (b - a)^2/12. Cần E(X^2) thì lấy V(X) + (E(X))^2.
+
+Ví dụ: X đều trên [2, 6].
+
+1. P(3 < X < 5) = 2/4 = 1/2.
+2. E(X) = 4, V(X) = 4^2/12 = 4/3.
+3. E(X^2) = 4/3 + 16 = 52/3.
+
+> Lỗi thường gặp: quên bình phương: đều trên [2, 6] có V = 16/12, không phải 4/12.
+
+:::check
+Q: X đều trên [0, 4]. Tính E(X), V(X) và E(X^2).
+A: E = 2, V = 16/12 = 4/3, E(X^2) = 4/3 + 4 = 16/3.
 :::
 
 ## Phân phối chuẩn
@@ -191,7 +260,7 @@ $$ Z = \frac{X - \mu}{\sigma} \sim N(0, 1) $$
 
 $$ P(a < X < b) = \Phi\left(\frac{b - \mu}{\sigma}\right) - \Phi\left(\frac{a - \mu}{\sigma}\right) $$
 
-Phi(x): diện tích dưới chuông từ 0 đến x; Phi(-x) = -Phi(x), nửa trục là 0.5, nên P(X > a) = 0.5 - Phi((a - mu)/sigma). Phi(0.5) = 0.1915, Phi(1) = 0.3413, Phi(1.5) = 0.4332, Phi(2) = 0.4772.
+Phi(x) là diện tích dưới chuông từ 0 đến x, tra bảng: Phi(0.5) = 0.1915, Phi(1) = 0.3413, Phi(1.5) = 0.4332, Phi(2) = 0.4772. Phi lẻ: Phi(-x) = -Phi(x).
 
 Ví dụ: X ~ N(50, 16). Tính P(48 < X < 56).
 
@@ -200,6 +269,21 @@ Ví dụ: X ~ N(50, 16). Tính P(48 < X < 56).
 3. P = Phi(1.5) - Phi(-0.5) = 0.4332 + 0.1915 = 0.6247.
 
 > Lỗi thường gặp: chia cho phương sai. Với N(50, 16) phải chia cho 4, không chia cho 16.
+
+:::check
+Q: X ~ N(20, 9). Tính P(17 < X < 26), dùng Phi(1) = 0.3413, Phi(2) = 0.4772.
+A: sigma = 3: chuẩn hóa ra -1 và 2. P = Phi(2) + Phi(1) = 0.8185.
+:::
+
+### Một phía: nửa chuông là 0.5
+
+Mỗi nửa chuông có diện tích 0.5. Nên P(X > a) = 0.5 - Phi(z) và P(X < a) = 0.5 + Phi(z), với z = (a - mu)/sigma; z âm thì Phi(z) âm, công thức vẫn đúng.
+
+Ví dụ: chiều cao X ~ N(165, 36). Tính P(X > 171).
+
+1. sigma = 6, z = (171 - 165)/6 = 1.
+2. P(X > 171) = 0.5 - Phi(1) = 0.1587.
+3. Ngược lại P(X > 159) = 0.5 - Phi(-1) = 0.8413.
 
 :::check
 Q: X ~ N(30, 25). Tính P(X < 35), dùng Phi(1) = 0.3413.
