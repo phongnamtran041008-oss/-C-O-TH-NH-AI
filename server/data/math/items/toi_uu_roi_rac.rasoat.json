@@ -1,0 +1,14 @@
+{
+  "_comment": "Bộ sinh câu thêm bởi đợt rà soát giáo trình (tools/audit_curriculum.py): các ô thuật toán và đồ thị chỉ có hai câu viết tay. Hàm sinh ở server/app/learning/math_gen/rstr_floor1.py, đáp án được tools/math_verify_rasoat.py tính lại bằng cách khác (itertools, Floyd-Warshall, lũy thừa ma trận kề, ngăn xếp, sympy). Chưa ai duyệt (reviewed: false).",
+  "subject": "toi_uu_roi_rac",
+  "items": [],
+  "generators": [
+    {"id": "tr_gx_hoan_vi_thu_may", "skill": "tr_t3_tu_dien", "tier": 3, "type": "numeric", "reviewed": false},
+    {"id": "tr_gx_danh_sach_ke_dem", "skill": "tr_t5_danh_sach_ke", "tier": 4, "type": "numeric", "reviewed": false},
+    {"id": "tr_gx_thanh_phan_lien_thong", "skill": "tr_t5_duong_di_lien_thong", "tier": 4, "type": "numeric", "reviewed": false},
+    {"id": "tr_gx_bfs_khoang_cach", "skill": "tr_t6_bfs", "tier": 4, "type": "numeric", "reviewed": false},
+    {"id": "tr_gx_dfs_thu_tu", "skill": "tr_t6_dfs", "tier": 4, "type": "numeric", "reviewed": false},
+    {"id": "tr_gx_cay_dem_la", "skill": "tr_t7_cay", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "tr_gx_ham_loi_hesse", "skill": "tr_t8_ham_loi", "tier": 5, "type": "true_false", "reviewed": false}
+  ]
+}

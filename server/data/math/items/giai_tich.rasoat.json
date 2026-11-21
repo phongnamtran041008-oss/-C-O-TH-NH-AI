@@ -1,0 +1,11 @@
+{
+  "_comment": "Bộ sinh câu thêm bởi đợt rà soát giáo trình (tools/audit_curriculum.py): bậc 5 của tầng 7 và 8 chỉ có hai câu viết tay mỗi vi kỹ năng. Hàm sinh ở server/app/learning/math_gen/rsgt_floor1.py, đáp án được tools/math_verify_rasoat.py tính lại bằng sympy. Chưa ai duyệt (reviewed: false).",
+  "subject": "giai_tich",
+  "items": [],
+  "generators": [
+    {"id": "gt_gx_nguyen_ham_hai_lan", "skill": "gt_t7_nguyen_ham", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "gt_gx_doi_bien_phan_thuc", "skill": "gt_t7_doi_bien", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "gt_gx_can_bien_thien_chuoi", "skill": "gt_t7_can_bien_thien", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "gt_gx_suy_rong_nua_truc", "skill": "gt_t8_suy_rong_loai_1", "tier": 5, "type": "numeric", "reviewed": false}
+  ]
+}

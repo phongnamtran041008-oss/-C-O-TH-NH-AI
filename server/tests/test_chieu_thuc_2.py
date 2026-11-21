@@ -157,7 +157,7 @@ def test_validate_catches_broken_new_effects_and_unreachable_requirements():
     assert any("mean nothing" in e for e in broken(lambda s: s["ngu_kiem_thuat"].update(hops=2)))
     assert any("not in Đạo Thụ" in e for e in broken(lambda s: s["ngu_kiem_thuat"]["unlock"].update(nodes=["khong_co"])))
     assert any("no content" in e for e in broken(lambda s: s["ngu_kiem_thuat"]["unlock"].update(
-        nodes=["ds_nhan_ma_tran"], floor=3)))
+        nodes=["tc_du_lieu"], floor=3)))
     assert any("below the stage" in e for e in broken(lambda s: s["kiem_vuc"]["unlock"].update(floor=2)))
     assert any("does not have" in e for e in broken(lambda s: s["van_kiem_quy_tong"]["unlock"].update(
         share={"branch": "dl", "at_least": 0.5})))

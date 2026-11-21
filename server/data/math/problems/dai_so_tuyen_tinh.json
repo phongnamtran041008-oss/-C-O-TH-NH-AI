@@ -1854,6 +1854,367 @@
           "out": ".#######\n.#######\n.#####..\n.######.\n.######.\n#######.\n.######.\n..###...\n5\n2 5 2 4 0 3 4 1 4 0\n"
         }
       ]
+    },
+    {
+      "id": "dstt_bt_np_hinh_dang_phat_song",
+      "skill": "dstt_t3_kich_thuoc_phan_tu",
+      "tier": 2,
+      "title_vi": "Hình dạng khi cộng hai mảng",
+      "statement_vi": [
+        "Trong NumPy, mỗi mảng có một hình dạng (shape): vectơ 4 phần tử có hình dạng (4), ma trận 3 hàng 4 cột có hình dạng (3, 4). Hai mảng cộng được với nhau theo luật phát sóng (broadcasting): căn hai hình dạng thẳng hàng từ bên phải, chỗ nào thiếu thì coi là 1. Rồi trên từng trục, hai số phải bằng nhau hoặc có một số bằng 1; kết quả lấy số lớn hơn.",
+        "Ví dụ (3, 4) và (4): căn thành (3, 4) và (1, 4), trục đầu 3 với 1 được, trục hai 4 với 4 được, kết quả (3, 4). Còn (2, 3) và (3, 2) thì 2 với 3 không được. NumPy làm việc này ngầm khi bạn viết A + B; ở đây hãy tự kiểm tra bằng Python thuần, trên các danh sách số."
+      ],
+      "input_vi": "Dòng một: hình dạng của A (một hoặc hai số nguyên dương). Dòng hai: hình dạng của B (một hoặc hai số nguyên dương).",
+      "output_vi": "Hình dạng của A + B (các số cách nhau một dấu cách), hoặc KHONG nếu không cộng được.",
+      "limits_vi": "Mỗi số từ 1 đến 100.",
+      "checker": "exact",
+      "samples": [
+        {
+          "in": "3 4\n4\n",
+          "out": "3 4\n",
+          "note_vi": "(4) được căn thành (1, 4), phát sóng ra 3 hàng."
+        },
+        {
+          "in": "3 1\n1 5\n",
+          "out": "3 5\n",
+          "note_vi": "Cả hai mảng cùng được kéo giãn: cột 1 ra 5 cột, hàng 1 ra 3 hàng."
+        },
+        {
+          "in": "2 3\n3 2\n",
+          "out": "KHONG\n",
+          "note_vi": "Trục đầu: 2 với 3, không bằng nhau và không có số 1."
+        }
+      ],
+      "tests": [
+        {
+          "in": "3 4\n4\n",
+          "out": "3 4\n"
+        },
+        {
+          "in": "3 1\n1 5\n",
+          "out": "3 5\n"
+        },
+        {
+          "in": "2 3\n3 2\n",
+          "out": "KHONG\n"
+        },
+        {
+          "in": "5\n5\n",
+          "out": "5\n"
+        },
+        {
+          "in": "4 1\n4 1\n",
+          "out": "4 1\n"
+        },
+        {
+          "in": "1\n7 2\n",
+          "out": "7 2\n"
+        },
+        {
+          "in": "6 2\n3\n",
+          "out": "KHONG\n"
+        },
+        {
+          "in": "1 1\n1 1\n",
+          "out": "1 1\n"
+        },
+        {
+          "in": "8 1\n5\n",
+          "out": "8 5\n"
+        },
+        {
+          "in": "2 5\n2 1\n",
+          "out": "2 5\n"
+        },
+        {
+          "in": "4 3\n1 3\n",
+          "out": "4 3\n"
+        },
+        {
+          "in": "3 2\n2\n",
+          "out": "3 2\n"
+        }
+      ]
+    },
+    {
+      "id": "dstt_bt_np_tong_theo_truc",
+      "skill": "dstt_t3_vecto_rn",
+      "tier": 2,
+      "title_vi": "Tổng theo trục",
+      "statement_vi": [
+        "Với một bảng số liệu (mỗi hàng một mẫu, mỗi cột một đặc trưng), NumPy có A.sum(axis=0) cộng dọc từng cột và A.sum(axis=1) cộng ngang từng hàng. Số ở axis chính là trục sẽ biến mất: axis = 0 thì các hàng gộp lại, còn lại một số cho mỗi cột; axis = 1 thì các cột gộp lại, còn lại một số cho mỗi hàng.",
+        "Hãy làm đúng việc đó bằng Python thuần: cho ma trận A và trục, in tổng theo trục ấy."
+      ],
+      "input_vi": "Dòng đầu: r, c và axis (0 hoặc 1). Tiếp theo r dòng, mỗi dòng c số nguyên: ma trận A.",
+      "output_vi": "Một dòng: c số (axis = 0) hoặc r số (axis = 1), cách nhau một dấu cách.",
+      "limits_vi": "1 <= r, c <= 50, mọi phần tử có trị tuyệt đối không quá 1000.",
+      "checker": "exact",
+      "samples": [
+        {
+          "in": "2 3 0\n1 2 3\n4 5 6\n",
+          "out": "5 7 9\n",
+          "note_vi": "Cộng dọc từng cột: 1+4, 2+5, 3+6."
+        },
+        {
+          "in": "2 3 1\n1 2 3\n4 5 6\n",
+          "out": "6 15\n",
+          "note_vi": "Cộng ngang từng hàng: 1+2+3 và 4+5+6."
+        }
+      ],
+      "tests": [
+        {
+          "in": "1 1 0\n5\n",
+          "out": "5\n"
+        },
+        {
+          "in": "1 1 1\n9\n",
+          "out": "9\n"
+        },
+        {
+          "in": "2 3 0\n7 3 0\n-3 -5 4\n",
+          "out": "4 -2 4\n"
+        },
+        {
+          "in": "2 3 1\n-6 4 -5\n-5 0 -3\n",
+          "out": "-7 -8\n"
+        },
+        {
+          "in": "3 2 0\n5 2\n1 -4\n9 8\n",
+          "out": "15 6\n"
+        },
+        {
+          "in": "3 2 1\n0 -7\n0 -8\n-6 2\n",
+          "out": "-7 -8 -4\n"
+        },
+        {
+          "in": "4 4 0\n9 3 2 1\n3 2 2 -9\n8 9 -2 2\n-2 4 6 -8\n",
+          "out": "18 18 8 -14\n"
+        },
+        {
+          "in": "4 4 1\n4 2 -8 7\n7 1 6 5\n6 3 -1 3\n2 -9 9 5\n",
+          "out": "5 19 11 7\n"
+        },
+        {
+          "in": "1 5 1\n-8 7 0 -6 -3\n",
+          "out": "-10\n"
+        },
+        {
+          "in": "5 1 0\n9\n-4\n-7\n-5\n1\n",
+          "out": "-6\n"
+        },
+        {
+          "in": "6 3 1\n0 1 4\n-5 -9 -8\n6 -1 -9\n-1 -7 -4\n-9 -7 -8\n-1 3 -2\n",
+          "out": "5 -22 -4 -12 -24 0\n"
+        },
+        {
+          "in": "3 6 0\n0 -8 2 8 -8 -5\n-6 -8 2 -9 -3 -4\n8 -9 6 8 3 0\n",
+          "out": "2 -25 10 7 -8 -9\n"
+        }
+      ]
+    },
+    {
+      "id": "dstt_bt_np_cong_phat_song",
+      "skill": "dstt_t3_cong_nhan_vo_huong",
+      "tier": 2,
+      "title_vi": "Cộng một vectơ vào mọi hàng",
+      "statement_vi": [
+        "Mạng nơ-ron luôn cộng thêm một vectơ độ lệch (bias) vào từng mẫu của lô dữ liệu: nếu X là bảng r hàng c cột và b là một hàng c số thì X + b nghĩa là cộng b vào từng hàng của X. NumPy tự \"phát sóng\" b thành r hàng giống nhau; bạn không cần viết vòng lặp nào, đó là điểm mạnh của nó.",
+        "Ở đây hãy tự viết phép cộng ấy bằng Python thuần để thấy đúng điều NumPy làm giúp: phần tử (i, j) của kết quả là X[i][j] + b[j]."
+      ],
+      "input_vi": "Dòng đầu: r và c. Tiếp theo r dòng, mỗi dòng c số: ma trận X. Dòng cuối: c số của vectơ b.",
+      "output_vi": "r dòng, mỗi dòng c số nguyên cách nhau một dấu cách: X + b.",
+      "limits_vi": "1 <= r, c <= 50, mọi phần tử có trị tuyệt đối không quá 1000.",
+      "checker": "exact",
+      "samples": [
+        {
+          "in": "2 2\n1 2\n3 4\n10 20\n",
+          "out": "11 22\n13 24\n",
+          "note_vi": "Hàng nào cũng được cộng thêm (10, 20)."
+        },
+        {
+          "in": "1 3\n0 0 0\n5 -5 1\n",
+          "out": "5 -5 1\n",
+          "note_vi": "Một hàng: kết quả chính là b."
+        }
+      ],
+      "tests": [
+        {
+          "in": "1 1\n8\n7\n",
+          "out": "15\n"
+        },
+        {
+          "in": "2 2\n4 8\n1 1\n9 5\n",
+          "out": "13 13\n10 6\n"
+        },
+        {
+          "in": "3 2\n-8 -6\n8 -6\n-7 2\n3 5\n",
+          "out": "-5 -1\n11 -1\n-4 7\n"
+        },
+        {
+          "in": "2 3\n-2 1 -4\n-8 1 6\n4 0 8\n",
+          "out": "2 1 4\n-4 1 14\n"
+        },
+        {
+          "in": "4 3\n2 -1 5\n-8 8 4\n4 0 4\n-4 -2 0\n-8 8 2\n",
+          "out": "-6 7 7\n-16 16 6\n-4 8 6\n-12 6 2\n"
+        },
+        {
+          "in": "1 4\n-4 -9 -8 7\n4 -3 -2 7\n",
+          "out": "0 -12 -10 14\n"
+        },
+        {
+          "in": "5 1\n-1\n-4\n4\n-9\n6\n-4\n",
+          "out": "-5\n-8\n0\n-13\n2\n"
+        },
+        {
+          "in": "3 5\n-2 4 3 -6 -7\n8 1 6 -6 0\n-6 -4 -9 -4 -1\n0 6 -5 4 -2\n",
+          "out": "-2 10 -2 -2 -9\n8 7 1 -2 -2\n-6 2 -14 0 -3\n"
+        },
+        {
+          "in": "4 4\n9 9 1 3\n-1 8 7 -5\n7 -5 -4 -7\n-5 -3 9 -6\n6 -7 6 -8\n",
+          "out": "15 2 7 -5\n5 1 13 -13\n13 -12 2 -15\n1 -10 15 -14\n"
+        },
+        {
+          "in": "6 2\n-4 9\n5 1\n4 5\n-7 6\n1 -7\n0 -8\n7 -3\n",
+          "out": "3 6\n12 -2\n11 2\n0 3\n8 -10\n7 -11\n"
+        }
+      ]
+    },
+    {
+      "id": "dstt_bt_np_cham_diem",
+      "skill": "dstt_t4_tich_vo_huong",
+      "tier": 3,
+      "title_vi": "Chấm điểm cả lô cùng lúc",
+      "statement_vi": [
+        "Một mô hình tuyến tính chấm điểm mỗi mẫu x (một vectơ d đặc trưng) bằng w . x + b, với w là vectơ trọng số và b là số độ lệch. Với cả lô n mẫu xếp thành ma trận X (mỗi hàng một mẫu), NumPy chấm hết một lần bằng đúng một dòng: X @ w + b.",
+        "Hãy tự làm đúng việc đó bằng Python thuần: với mỗi hàng của X, tính tích vô hướng với w rồi cộng b. Đây là tích ma trận nhân vectơ, thấy rõ vì sao một lớp mạng nơ-ron là một phép nhân ma trận."
+      ],
+      "input_vi": "Dòng đầu: n và d. Tiếp theo n dòng, mỗi dòng d số: ma trận X. Rồi một dòng d số: vectơ w. Dòng cuối: số b.",
+      "output_vi": "Một dòng: n số nguyên cách nhau một dấu cách, điểm của từng mẫu theo thứ tự.",
+      "limits_vi": "1 <= n, d <= 50, mọi phần tử có trị tuyệt đối không quá 100.",
+      "checker": "exact",
+      "samples": [
+        {
+          "in": "2 2\n1 2\n3 4\n1 -1\n10\n",
+          "out": "9 9\n",
+          "note_vi": "Mẫu một: 1*1 + 2*(-1) + 10 = 9; mẫu hai: 3*1 + 4*(-1) + 10 = 9."
+        },
+        {
+          "in": "1 3\n2 0 5\n1 1 1\n0\n",
+          "out": "7\n",
+          "note_vi": "Một mẫu: 2 + 0 + 5 = 7."
+        }
+      ],
+      "tests": [
+        {
+          "in": "1 1\n-8\n1\n8\n",
+          "out": "0\n"
+        },
+        {
+          "in": "1 3\n6 1 8\n5 0 5\n-9\n",
+          "out": "61\n"
+        },
+        {
+          "in": "2 2\n4 5\n5 -1\n-2 -3\n-6\n",
+          "out": "-29 -13\n"
+        },
+        {
+          "in": "3 2\n2 -2\n8 -9\n-6 5\n0 3\n6\n",
+          "out": "0 -21 21\n"
+        },
+        {
+          "in": "4 3\n3 -9 -8\n0 -4 9\n-1 -3 -5\n0 -5 9\n-3 -5 3\n9\n",
+          "out": "21 56 12 61\n"
+        },
+        {
+          "in": "2 4\n3 6 6 -4\n8 6 -7 -1\n-5 -1 -4 2\n4\n",
+          "out": "-49 -16\n"
+        },
+        {
+          "in": "5 3\n6 -8 1\n-1 6 5\n2 1 9\n-8 -1 2\n7 5 9\n0 -1 1\n1\n",
+          "out": "10 0 9 4 5\n"
+        },
+        {
+          "in": "3 5\n1 3 -3 1 -7\n-2 -1 -9 -4 4\n1 4 1 -1 4\n1 -4 0 1 -2\n9\n",
+          "out": "13 -1 -15\n"
+        },
+        {
+          "in": "6 2\n0 3\n-1 1\n-5 1\n-2 7\n3 0\n-1 -2\n-5 -2\n-2\n",
+          "out": "-8 1 21 -6 -17 7\n"
+        },
+        {
+          "in": "4 4\n-5 -7 9 -7\n5 5 0 -1\n-5 1 4 3\n1 3 4 -4\n-5 4 -2 1\n-4\n",
+          "out": "-32 -10 20 -9\n"
+        }
+      ]
+    },
+    {
+      "id": "dstt_bt_np_gram",
+      "skill": "dstt_t4_nhan_ma_tran",
+      "tier": 3,
+      "title_vi": "Chuyển vị rồi nhân: X^T X",
+      "statement_vi": [
+        "Cho bảng dữ liệu X có n hàng (mẫu) và d cột (đặc trưng). Ma trận G = X^T X có cỡ d x d, và phần tử G[a][b] là tích vô hướng của cột a với cột b của X: nó đo hai đặc trưng \"đi cùng nhau\" đến đâu. Hồi quy tuyến tính và PCA đều bắt đầu từ ma trận này.",
+        "Trong NumPy đó là một dòng, X.T @ X. Hãy tự viết bằng Python thuần: lấy chuyển vị bằng cách đổi chỗ chỉ số, rồi nhân hai ma trận bằng ba vòng lặp."
+      ],
+      "input_vi": "Dòng đầu: n và d. Tiếp theo n dòng, mỗi dòng d số nguyên: ma trận X.",
+      "output_vi": "d dòng, mỗi dòng d số nguyên cách nhau một dấu cách: ma trận X^T X.",
+      "limits_vi": "1 <= n, d <= 30, mọi phần tử có trị tuyệt đối không quá 100.",
+      "checker": "exact",
+      "samples": [
+        {
+          "in": "2 2\n1 2\n3 4\n",
+          "out": "10 14\n14 20\n",
+          "note_vi": "Cột 1 = (1, 3), cột 2 = (2, 4): 1*1+3*3 = 10, 1*2+3*4 = 14, 2*2+4*4 = 20."
+        },
+        {
+          "in": "3 1\n1\n2\n2\n",
+          "out": "9\n",
+          "note_vi": "Một cột: 1 + 4 + 4 = 9."
+        }
+      ],
+      "tests": [
+        {
+          "in": "1 1\n6\n",
+          "out": "36\n"
+        },
+        {
+          "in": "1 3\n-4 6 2\n",
+          "out": "16 -24 -8\n-24 36 12\n-8 12 4\n"
+        },
+        {
+          "in": "2 2\n-3 3\n5 0\n",
+          "out": "34 -9\n-9 9\n"
+        },
+        {
+          "in": "3 2\n-5 -6\n3 -5\n-3 -2\n",
+          "out": "43 21\n21 65\n"
+        },
+        {
+          "in": "4 3\n-3 -1 -1\n-6 -6 5\n-6 -4 4\n3 6 -5\n",
+          "out": "90 81 -66\n81 89 -75\n-66 -75 67\n"
+        },
+        {
+          "in": "2 4\n5 -2 4 -5\n3 1 -4 1\n",
+          "out": "34 -7 8 -22\n-7 5 -12 11\n8 -12 32 -24\n-22 11 -24 26\n"
+        },
+        {
+          "in": "5 3\n6 -3 5\n-4 3 4\n0 -3 -6\n4 -3 -6\n-3 2 -3\n",
+          "out": "77 -48 -1\n-48 40 27\n-1 27 122\n"
+        },
+        {
+          "in": "3 5\n-4 2 4 5 -4\n-1 0 -6 3 4\n6 -4 -3 4 4\n",
+          "out": "53 -32 -28 1 36\n-32 20 20 -6 -24\n-28 20 61 -10 -52\n1 -6 -10 50 8\n36 -24 -52 8 48\n"
+        },
+        {
+          "in": "6 2\n-5 -6\n2 2\n-5 -5\n1 2\n-4 -5\n1 -2\n",
+          "out": "72 79\n79 98\n"
+        },
+        {
+          "in": "4 4\n-6 -4 6 4\n4 2 -3 6\n-3 -1 2 0\n1 -3 -6 -4\n",
+          "out": "62 32 -60 -4\n32 30 -14 8\n-60 -14 85 30\n-4 8 30 68\n"
+        }
+      ]
     }
   ]
 }

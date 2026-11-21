@@ -1,0 +1,26 @@
+{
+  "_comment": "Bộ sinh câu thêm bởi đợt rà soát giáo trình (tools/audit_curriculum.py): tầng 7 và 8 chỉ có bộ sinh ở bậc 4, bậc 5 lặp lại hai câu viết tay; tầng 2 bậc 1 thiếu bộ sinh. Hàm sinh ở server/app/learning/math_gen/rsxs_floor1.py, đáp án được tools/math_verify_rasoat.py tính lại bằng sympy. Chưa ai duyệt (reviewed: false).",
+  "subject": "xac_suat_thong_ke",
+  "items": [],
+  "generators": [
+    {"id": "xs_gx_rut_mau_cung_nhan", "skill": "xs_t2_co_dien_to_hop", "tier": 1, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_it_nhat_mot", "skill": "xs_t2_tinh_chat", "tier": 1, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_mau_co_hoan_lai", "skill": "xs_t7_tong_the_mau", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_gia_tri_thieu", "skill": "xs_t7_dac_trung_mau", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_phan_phoi_trung_binh_mau", "skill": "xs_t7_phan_phoi_mau", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_uoc_luong_khong_chech_trong_so", "skill": "xs_t7_uoc_luong_diem", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_hop_ly_tu_so_lieu", "skill": "xs_t7_hop_ly_cuc_dai", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_tin_cay_tim_n", "skill": "xs_t8_tin_cay_trung_binh", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_tin_cay_ty_le_nguoc", "skill": "xs_t8_tin_cay_ty_le", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_co_mau_xau_nhat", "skill": "xs_t8_co_mau", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_chebyshev_tim_n", "skill": "xs_t8_luat_so_lon", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_clt_nguong", "skill": "xs_t8_gioi_han_trung_tam", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_khong_gian_mau_cach_lay", "skill": "xs_t2_hoan_lai", "tier": 1, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_chuoi_khong_hoan", "skill": "xs_t3_cong_thuc_nhan", "tier": 3, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_bayes_thu_rac", "skill": "xs_t4_bayes", "tier": 2, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_bayes_phat_hien", "skill": "xs_t4_bayes_ung_dung", "tier": 2, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_toan_phan_ba_nhanh", "skill": "xs_t4_he_day_du", "tier": 3, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_so_do_cay_hai_tang", "skill": "xs_t4_so_do_cay", "tier": 3, "type": "numeric", "reviewed": false},
+    {"id": "xs_gx_ky_vong_tuyen_tinh", "skill": "xs_t6_ky_vong", "tier": 4, "type": "numeric", "reviewed": false}
+  ]
+}

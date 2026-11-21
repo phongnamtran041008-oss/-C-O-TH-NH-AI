@@ -89,7 +89,7 @@ thước, giấy phép, mốc điểm đã kiểm chứng — nằm ở trườn
 | Nút | Được dùng | Vì sao |
 |---|---|---|
 | Luyện Khí tầng 1-3 (`ud_knn`, các nút `lt_*` đầu) | Python thuần | Tự viết khoảng cách, tích vô hướng một lần cho biết. |
-| Từ `lt_numpy` (Luyện Khí tầng 4) | NumPy | Đúng như cây đã định. |
+| Từ `lt_numpy` (Luyện Khí tầng 4) | Python thuần, theo cách nghĩ của NumPy | Game không cài NumPy: năm bài của `lt_numpy` dạy hình dạng, phát sóng, tổng theo trục, `X @ w + b`, `X.T @ X` trên danh sách (rà soát giáo trình, 2026-11-20). |
 | Từ Trúc Cơ | pandas, scikit-learn | Công cụ nghề. |
 | Từ Nguyên Anh | PyTorch | Chủ yếu ở bậc 2. |
 
@@ -359,8 +359,9 @@ lần thời gian của lời giải mẫu, không dưới 2 giây (mức mặc 
 
 - **Bàn chỉnh cung** (mục 2.4) chưa làm: nó là một màn tương tác riêng (cần gạt, vẽ đường theo khung hình), không gói
   gọn được trong `client/scenes/math_code.py` mà không làm màn bài tập rối thêm. Nên làm thành một màn riêng mở từ thẻ nút.
-- Tên và chủ đề của vài nút trong `tree.json` vẫn nhắc NumPy ("Giải bằng NumPy", "Lan truyền ngược bằng NumPy"): bài thì
-  viết bằng Python thuần. Nút `lt_numpy` vẫn trống.
+- Tên và chủ đề của hai nút trong `tree.json` từng nhắc NumPy ("Giải bằng NumPy", "Lan truyền ngược bằng NumPy"), đã sửa
+  thành Python thuần theo cách nghĩ của NumPy (rà soát giáo trình, 2026-11-20); bài thì
+  viết bằng Python thuần. Nút `lt_numpy` đã có năm bài trên danh sách (không cần NumPy).
 - Bản web (M12): các bài chạy trong tiến trình của trang, có bộ theo dõi thời gian. Trên máy bàn, lời giải mẫu của bài
   chữ số chạy theo cách ấy mất khoảng 3,4 giây cho một bộ (giới hạn của bản web là 3 × 3 = 9 giây); trong trình duyệt
   thật chưa đo, có thể quá giờ. Trang đứng hình trong lúc chạy.

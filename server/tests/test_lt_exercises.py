@@ -24,10 +24,10 @@ from tests.test_math_tree_progress import state, tree
 ROOT = Path(__file__).resolve().parents[2]
 MUTANTS = json.loads((Path(__file__).parent / "data" / "lt_mutants.json").read_text("utf-8"))
 
-#: the Lập Trình nodes of Luyện Khí that have exercises. lt_numpy is left empty on purpose: NumPy is
-#: not installed with the game and whether players must install it is the owner's call.
+#: the Lập Trình nodes of Luyện Khí; each has exercises. lt_numpy's teach the ideas of NumPy on plain lists
+#: (NumPy is not installed with the game, curriculum review 2026-11-20).
 CODE_NODES = ["lt_python_co_ban", "lt_cau_truc_du_lieu", "lt_vecto_bang_code", "lt_ham_de_quy",
-              "lt_ma_tran_gauss", "lt_mo_phong_xac_suat", "lt_do_phuc_tap", "lt_dao_ham_so", "lt_do_thi"]
+              "lt_ma_tran_gauss", "lt_numpy", "lt_mo_phong_xac_suat", "lt_do_phuc_tap", "lt_dao_ham_so", "lt_do_thi"]
 NEW_PROBLEMS = sorted(pid for pid in pr.bank() if pid in MUTANTS)
 
 
@@ -46,14 +46,17 @@ def ancestors(node_id: str) -> set[str]:
 def test_every_lap_trinh_node_of_luyen_khi_has_three_to_five_exercises_but_numpy():
     t = tree()
     lt = [n.id for n in t.nodes.values() if n.branch == "lt" and n.realm == "luyen_khi"]
-    assert sorted(lt) == sorted(CODE_NODES + ["lt_numpy"])
+    assert sorted(lt) == sorted(CODE_NODES)
     for nid in CODE_NODES:
         node = t.nodes[nid]
         assert 3 <= len(node.problems) <= 5, nid
         assert node.content == "co", nid
         assert len(set(node.problems)) == len(node.problems)
+    # NumPy is not installed with the game: its exercises teach the ideas (shapes, broadcasting, axis sums,
+    # X @ w + b, X.T @ X) on plain lists, and the node says so
     numpy = t.nodes["lt_numpy"]
-    assert numpy.problems == () and numpy.content == "chua_co"      # on purpose, see CODE_NODES
+    assert len(numpy.problems) == 5 and all(p.startswith("dstt_bt_np_") for p in numpy.problems)
+    assert "Python thuần" in numpy.why_vi and "không cài NumPy" in numpy.why_vi
 
 
 def test_the_exercise_files_are_well_formed():
@@ -173,7 +176,7 @@ async def test_a_node_is_done_when_every_one_of_its_exercises_is_solved(client, 
     assert st.status[node_id] == "done" and set(problems) <= st.solved
 
 
-async def test_the_tree_view_lists_the_exercises_of_every_node_and_numpy_alone_is_still_being_written(client):
+async def test_the_tree_view_lists_the_exercises_of_every_lap_trinh_node_of_luyen_khi(client):
     h, uid = await make(client)
     view = (await client.get("/math/tree", headers=h)).json()
     by = {n["id"]: n for n in view["nodes"]}
@@ -182,11 +185,10 @@ async def test_the_tree_view_lists_the_exercises_of_every_node_and_numpy_alone_i
         assert [p["id"] for p in listed] == list(tree().nodes[nid].problems), nid
         assert all(p["title_vi"] and p["subject_id"] and p["solved"] is False for p in listed)
         assert by[nid]["state"] != "vacant" and by[nid]["state_vi"] is None
-    assert by["lt_numpy"]["state"] == "vacant" and by["lt_numpy"]["state_vi"] == "Đang biên soạn"
-    assert by["lt_numpy"]["problems"] == []
-    # every other Lập Trình node of the later realms is still waiting for its content
-    assert {n["id"] for n in view["nodes"] if n["branch"] == "lt" and n["state"] == "vacant"} >= {
-        "lt_numpy", "tc_python_nang_cao"}
+    # every Lập Trình node of Luyện Khí has exercises now; the ones of the later realms still wait for their content
+    assert not [n["id"] for n in view["nodes"] if n["branch"] == "lt" and n["state"] == "vacant"
+                and tree().nodes[n["id"]].realm == "luyen_khi"]
+    assert {n["id"] for n in view["nodes"] if n["branch"] == "lt" and n["state"] == "vacant"} >= {"tc_python_nang_cao"}
 
 
 # ------------------------------------------------------------------ the hidden tests have teeth
