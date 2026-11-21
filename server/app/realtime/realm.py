@@ -7,6 +7,11 @@ moved from room to room when one is cleared (its seals broken and its Mặc Quá
 question of a run - a monster's, a seal's, the boss's - is a math question at the answering
 player's own floor (app/systems/math_realm.py).
 
+The creatures of a run (app/systems/realm_quai.py, docs/BI_CANH_QUAI.md) are planned once when it
+opens, by the realm's theme and the band of tu vi of the party (the weakest member's place in
+Đạo Thụ; a rift: never above the khu it tore open in). Every one carries that band (RealmMonster):
+numbers scaled, drops capped, "kv" on the wire; the room loot and the chest are paid in the band.
+
 Every realm is a math bí cảnh; its `kind` only says how it is entered: "math" at the Cổng Bí
 Cảnh whenever the gate is there, "scheduled" at the gate during the opening hours of
 balance/realm.json, "rift" through a Khe Nứt Mực that opens now and then in the wild.

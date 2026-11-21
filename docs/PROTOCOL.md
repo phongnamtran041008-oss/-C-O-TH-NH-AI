@@ -302,7 +302,11 @@ Server → client:
 - `{t: "notice", text}`: thông báo (bí cảnh sắp mở/đã mở, khe nứt vừa xuất hiện gần đây).
 - `{t: "realm", event: ...}`:
   - `entering{realm, name_vi}`, `queued{key, realm, waiting}`, `unqueued` (ngoài bí cảnh);
-  - `start{run{id, realm, name_vi, left (giây), math: true, rooms[{kind, name_vi}], members[{uid, name, in, floor}]}}`;
+  - `start{run{id, realm, name_vi, left (giây), math: true, band, band_vi, rooms[{kind, name_vi}], members[{uid, name, in, floor}]}}`;
+    `band` (2026-11-21) = dải tu vi của lượt (1 Ngoại Vi, 2 Trung Vực, 3 Thâm Xứ): dải của người yếu nhất đội theo Đạo
+    Thụ, khe nứt thì không quá dải của khu nơi nó mở (`docs/BI_CANH_QUAI.md`). Mọi quái của lượt (cả boss) có `kv` = dải
+    ấy trong `add`, như quái của khu chia dải; máu, công, thủ, tu vi, linh thạch đã nhân theo dải. `GET /realms` có thêm
+    ở mỗi hàng `band`, `band_vi`, `band_party` (dải mà một lượt vào lúc này sẽ gặp; `band_party` = tính theo cả tổ đội);
   - `room{i, n, kind, place, math, name_vi, how_vi, left, phase, puzzle}`: vào phòng (ngay sau `zone`). Mọi bí cảnh là
     bí cảnh toán (M10, xem API.md): phòng là `seal` (Trận Nhãn) hoặc `boss`;
   - `puzzle{i, puzzle}` khi đổi: `seal{seal_kind, seals[{name, broken, busy}], broken, need, missing[uid]}`, `boss{boss,
