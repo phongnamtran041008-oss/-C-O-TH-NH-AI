@@ -27,12 +27,6 @@
    "w": 121.63,
    "h": 20.93
   },
-  "054778ea7f6bd288": {
-   "tex": "(x, y, z) = t(4, -3, 1)",
-   "alt": "(x, y, z) = t(4, -3, 1)",
-   "w": 89.94,
-   "h": 10.18
-  },
   "066916cf0ca13e74": {
    "tex": "\\text{QHTT co nghiem} \\Rightarrow \\text{co nghiem toi uu tai mot dinh}",
    "alt": "QHTT co nghiem => co nghiem toi uu tai mot dinh",
@@ -85,12 +79,6 @@
    "tex": "f(a) \\cdot f(b) < 0 \\;\\Rightarrow\\; \\exists\\, c \\in (a, b) : f(c) = 0",
    "alt": "f(a) . f(b) < 0 => ton tai c thuoc (a, b) : f(c) = 0",
    "w": 175.81,
-   "h": 10.18
-  },
-  "0edcb1c94c35bfd5": {
-   "tex": "z = r(\\cos \\varphi + i \\sin \\varphi)",
-   "alt": "z = r(cos phi + i sin phi)",
-   "w": 91.31,
    "h": 10.18
   },
   "10382e38e43c88ad": {
@@ -219,12 +207,6 @@
    "w": 120.19,
    "h": 21.15
   },
-  "1fee94eb301913ef": {
-   "tex": "(3, 4 \\mid 5) - 3(1, 2 \\mid 3) = (0, -2 \\mid -4)",
-   "alt": "(3, 4 | 5) - 3(1, 2 | 3) = (0, -2 | -4)",
-   "w": 155.57,
-   "h": 10.18
-  },
   "20b37cc74e90ca34": {
    "tex": "\\int_a^b f(x)\\,dx = \\lim_{c \\to a^+} \\int_c^b f(x)\\,dx",
    "alt": "tich phan_a^b f(x) dx = lim_(c -> a^+) tich phan_c^b f(x) dx",
@@ -297,12 +279,6 @@
    "w": 137.13,
    "h": 10.78
   },
-  "29597be1dff5231b": {
-   "tex": "Ax = b, \\quad A \\text{ co } m \\times n, \\quad x \\in \\mathbb{R}^{n}, \\quad b \\in \\mathbb{R}^{m}",
-   "alt": "Ax = b, A co m x n, x thuoc R^n, b thuoc R^m",
-   "w": 187.47,
-   "h": 9.36
-  },
   "2a9f4c5eac2ae50d": {
    "tex": "\\mathrm{limsup}_{n \\to \\infty}\\, a_n = \\lim_{n \\to \\infty} \\mathrm{sup}\\,\\{a_k : k \\ge n\\}",
    "alt": "limsup_(n -> vo cung) a_n = lim_(n -> vo cung) sup {a_k : k >= n}",
@@ -333,12 +309,6 @@
    "w": 127.34,
    "h": 23.19
   },
-  "30bd9caf1cd478e3": {
-   "tex": "A \\times B = \\{(a, b) : a \\in A, b \\in B\\}",
-   "alt": "A x B = {(a, b) : a thuoc A, b thuoc B}",
-   "w": 136.79,
-   "h": 10.18
-  },
   "3169079d3b0823a1": {
    "tex": "f : X \\to \\mathbb{R}, \\quad x \\mapsto f(x)",
    "alt": "f : X -> R, x -> f(x)",
@@ -350,12 +320,6 @@
    "alt": "det A = D_(xuong) - D_(len)",
    "w": 94.55,
    "h": 10.3
-  },
-  "34c544050053402f": {
-   "tex": "A \\cdot 0 = 0",
-   "alt": "A . 0 = 0",
-   "w": 38.75,
-   "h": 8.12
   },
   "34cf332e511b5356": {
    "tex": "|x_n - x^*| \\le \\frac{b - a}{2^{n+1}}",
@@ -397,12 +361,6 @@
    "tex": "P(A_1 A_2 A_3) = P(A_1)\\,P(A_2 \\mid A_1)\\,P(A_3 \\mid A_1 A_2)",
    "alt": "P(A_1 A_2 A_3) = P(A_1) P(A_2 | A_1) P(A_3 | A_1 A_2)",
    "w": 204.94,
-   "h": 10.18
-  },
-  "397a98cce663d288": {
-   "tex": "(x, y, z) = (-1 + 3t, \\; 2 - t, \\; t), \\quad t \\in \\mathbb{R}",
-   "alt": "(x, y, z) = (-1 + 3t, 2 - t, t), t thuoc R",
-   "w": 166.02,
    "h": 10.18
   },
   "39807d78d6ebc283": {
@@ -657,12 +615,6 @@
    "w": 58.26,
    "h": 21.85
   },
-  "5547ad49cda83f3f": {
-   "tex": "\\overline{z} = a - bi",
-   "alt": "z = a - bi",
-   "w": 44.38,
-   "h": 8.56
-  },
   "5584b8fe42edf5a3": {
    "tex": "\\text{det}(A^{-1}) = \\frac{1}{\\text{det} A}",
    "alt": "det(A^(-1)) = 1/(det A)",
@@ -686,12 +638,6 @@
    "alt": "tich phan_a^(+vo cung) dx/(x^p) < +vo cung <=> p > 1",
    "w": 126.96,
    "h": 24.47
-  },
-  "5cb06c1c60c80701": {
-   "tex": "f : X \\to Y, \\quad x \\mapsto f(x)",
-   "alt": "f : X -> Y, x -> f(x)",
-   "w": 102.08,
-   "h": 10.18
   },
   "5cf17d6e12207cdf": {
    "tex": "df = f_x\\,dx + f_y\\,dy, \\qquad f(x + dx, y + dy) \\approx f(x, y) + f_x\\,dx + f_y\\,dy",
@@ -807,12 +753,6 @@
    "w": 145.64,
    "h": 26.45
   },
-  "6e2e7f899468f982": {
-   "tex": "z = a + bi, \\quad a \\in \\mathbb{R}, \\quad b \\in \\mathbb{R}",
-   "alt": "z = a + bi, a thuoc R, b thuoc R",
-   "w": 122.79,
-   "h": 9.04
-  },
   "6fa41710e30bbddc": {
    "tex": "f_x(a, b) = \\lim_{h \\to 0} \\frac{f(a + h, b) - f(a, b)}{h} = \\frac{\\partial f}{\\partial x}(a, b)",
    "alt": "f_x(a, b) = lim_(h -> 0) (f(a + h, b) - f(a, b))/h = (d f)/(d x)(a, b)",
@@ -825,23 +765,11 @@
    "w": 163.5,
    "h": 8.78
   },
-  "71ff8b25e972f593": {
-   "tex": "|z| = \\sqrt{a^{2} + b^{2}}",
-   "alt": "|z| = can(a^2 + b^2)",
-   "w": 65.44,
-   "h": 13.88
-  },
   "7286e9334b8ad8e0": {
    "tex": "2^n, \\quad (n-1)!, \\quad n!",
    "alt": "2^n, (n-1)!, n!",
    "w": 83.01,
    "h": 10.18
-  },
-  "728a1a8a7d942996": {
-   "tex": "|A| = n \\Rightarrow A \\text{ co } 2^{n} \\text{ tap con}",
-   "alt": "|A| = n => A co 2^n tap con",
-   "w": 116.48,
-   "h": 10.17
   },
   "729a351cc4d4cb96": {
    "tex": "P(X > x) = e^{-\\lambda x}, \\quad E(X) = \\frac{1}{\\lambda}, \\quad V(X) = \\frac{1}{\\lambda^2}",
@@ -878,12 +806,6 @@
    "alt": "(a_1, ..., a_n) < (b_1, ..., b_n) <=> a_i < b_i tai vi tri khac nhau dau tien i",
    "w": 290.18,
    "h": 10.18
-  },
-  "7814d01529ad00b6": {
-   "tex": "\\begin{pmatrix} 1 & 1 & 1 & 6 \\\\ 0 & 1 & 2 & 8 \\\\ 0 & 0 & 1 & 3 \\end{pmatrix}",
-   "alt": "[1, 1, 1, 6; 0, 1, 2, 8; 0, 0, 1, 3]",
-   "w": 68.72,
-   "h": 38.69
   },
   "78ad1981fa8694ec": {
    "tex": "U(f, P) = \\sum_k M_k\\, h_k, \\qquad L(f, P) = \\sum_k m_k\\, h_k",
@@ -951,12 +873,6 @@
    "w": 82.53,
    "h": 10.18
   },
-  "818833d1104b6103": {
-   "tex": "A = \\{1, 2, 3\\}",
-   "alt": "A = {1, 2, 3}",
-   "w": 55.72,
-   "h": 10.18
-  },
   "82bc2f290de80951": {
    "tex": "\\sum_{v \\in V} \\deg(v) = 2|E|",
    "alt": "tong_(v thuoc V) deg(v) = 2|E|",
@@ -979,18 +895,6 @@
    "tex": "(k + l)u = ku + lu, \\qquad k(u + v) = ku + kv",
    "alt": "(k + l)u = ku + lu, k(u + v) = ku + kv",
    "w": 189.25,
-   "h": 10.18
-  },
-  "855d8105cc9bc858": {
-   "tex": "z^{n} = w \\quad \\Leftrightarrow \\quad z \\text{ la can bac } n \\text{ cua } w",
-   "alt": "z^n = w <=> z la can bac n cua w",
-   "w": 154.1,
-   "h": 8.22
-  },
-  "8607765a58542d8f": {
-   "tex": "A \\cap B = \\{x : x \\in A \\text{ va } x \\in B\\}",
-   "alt": "A giao B = {x : x thuoc A va x thuoc B}",
-   "w": 132.21,
    "h": 10.18
   },
   "89ec2d8e124fd2b2": {
@@ -1027,12 +931,6 @@
    "tex": "\\Omega = \\{1, 2, 3, 4, 5, 6\\}",
    "alt": "Omega = {1, 2, 3, 4, 5, 6}",
    "w": 84.29,
-   "h": 10.18
-  },
-  "8d64442e0066c978": {
-   "tex": "A \\cup B = \\{x : x \\in A \\text{ hoac } x \\in B\\}",
-   "alt": "A hop B = {x : x thuoc A hoac x thuoc B}",
-   "w": 142.1,
    "h": 10.18
   },
   "8f71eb7a4e45535a": {
@@ -1371,22 +1269,10 @@
    "w": 133.75,
    "h": 9.27
   },
-  "b84c6095ad94c984": {
-   "tex": "(kA)B = k(AB) = A(kB)",
-   "alt": "(kA)B = k(AB) = A(kB)",
-   "w": 112.92,
-   "h": 10.18
-  },
   "b8553ac3190d5204": {
    "tex": "P_n = n! = n (n-1) \\cdots 2 \\cdot 1",
    "alt": "P_n = n! = n (n-1) ... 2 . 1",
    "w": 118.33,
-   "h": 10.18
-  },
-  "ba3e3c2c22180fc1": {
-   "tex": "(a + bi) + (c + di) = (a + c) + (b + d)i",
-   "alt": "(a + bi) + (c + di) = (a + c) + (b + d)i",
-   "w": 169.38,
    "h": 10.18
   },
   "bac9e8627b60e960": {
@@ -1605,12 +1491,6 @@
    "w": 209.72,
    "h": 18.36
   },
-  "db67e0687ae89c0d": {
-   "tex": "A(BC) = (AB)C",
-   "alt": "A(BC) = (AB)C",
-   "w": 75.62,
-   "h": 10.18
-  },
   "db71dcd9db2909a4": {
    "tex": "\\int_a^b f(x)\\,dx = F(b) - F(a)",
    "alt": "tich phan_a^b f(x) dx = F(b) - F(a)",
@@ -1670,12 +1550,6 @@
    "alt": "(c_1)/(a_1) >= (c_2)/(a_2) >= ... >= (c_n)/(a_n)",
    "w": 96.31,
    "h": 19.97
-  },
-  "e3d4bde0ea5f5343": {
-   "tex": "A(B + C) = AB + AC, \\quad (B + C)A = BA + CA",
-   "alt": "A(B + C) = AB + AC, (B + C)A = BA + CA",
-   "w": 215.16,
-   "h": 10.18
   },
   "e47ea27af5c2af78": {
    "tex": "\\max \\text{ gia tri luong} = \\min \\text{ kha nang thong qua lat cat}",
@@ -1737,12 +1611,6 @@
    "w": 162.83,
    "h": 10.18
   },
-  "edb5cef95eebe641": {
-   "tex": "f^{-1}(y) = x \\Leftrightarrow f(x) = y",
-   "alt": "f^(-1)(y) = x <=> f(x) = y",
-   "w": 102.24,
-   "h": 11.54
-  },
   "edb79a15843ed8d7": {
    "tex": "|A_1 \\cup A_2 \\cup \\cdots \\cup A_k| = |A_1| + |A_2| + \\cdots + |A_k|",
    "alt": "|A_1 hop A_2 hop ... hop A_k| = |A_1| + |A_2| + ... + |A_k|",
@@ -1760,12 +1628,6 @@
    "alt": "p = b - (b . n)/(n . n) n",
    "w": 65.67,
    "h": 21.04
-  },
-  "f1c4bb9eda96ca00": {
-   "tex": "A \\setminus B = \\{x : x \\in A \\text{ va } x \\notin B\\}",
-   "alt": "A \\ B = {x : x thuoc A va x khong thuoc B}",
-   "w": 130.51,
-   "h": 10.18
   },
   "f2dbc172a221ceb4": {
    "tex": "V_{Oy} = 2\\pi\\int_a^b x\\,f(x)\\,dx",

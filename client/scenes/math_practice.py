@@ -927,16 +927,27 @@ class MathPracticeScene(Scene):
         self.game.push(scene)
 
     # ------------------------------------------------------------ Chính đạo
-    def read_lesson(self, node_id: str, floor: int, doc_id: str | None, block: int = 0) -> None:
+    def read_lesson(self, node_id: str, floor: int, doc_id: str | None, block: int = 0,
+                    practice: bool = False) -> None:
         """Học bài: the lesson of this part, and the server is told it was opened (step hiểu done)."""
         def ok(r):
             if isinstance(r, dict) and r.get("guide"):
                 self.game.set_guide(r["guide"], announce=False)
         self.api.post("/guide/read", {"node_id": node_id, "floor": floor}, ok, lambda e: None)
         if doc_id:
-            self.side(DocScene(self.game, doc_id, block))
+            # `practice`: the last page offers "Luyện ngay", straight into a sitting on this part
+            self.side(DocScene(self.game, doc_id, block,
+                               on_practice=(lambda: self.practise_part(node_id, floor)) if practice else None))
         else:
             self.load()
+
+    def practise_part(self, node_id: str, floor: int) -> None:
+        """A sitting on this part: the one left open there, else a new one."""
+        run = self.open_run()
+        if run and run.get("node_id") == node_id and run.get("floor") == floor:
+            self.resume(run)
+        else:
+            self.start(node_id, floor)
 
     def do_main(self, m: dict | None = None) -> None:
         """The action of the Chính đạo card's one button (also the board's "Đi tới")."""
@@ -945,7 +956,7 @@ class MathPracticeScene(Scene):
             return
         step = m["step"]
         if step == "hoc":
-            self.read_lesson(m["node_id"], m["floor"], m.get("doc_id"), m.get("block") or 0)
+            self.read_lesson(m["node_id"], m["floor"], m.get("doc_id"), m.get("block") or 0, practice=True)
         elif step in ("luyen", "kiep"):
             run = self.open_run()
             if m.get("resume") and run and run.get("node_id") == m["node_id"]:
@@ -1179,7 +1190,8 @@ class MathPracticeScene(Scene):
         if m["step"] in ("luyen", "kiep") and m.get("doc_id") and ui.button(
                 "math_main_read", x + w - pad - bw - 62, cy + 1, 58, 12, T.PATH_REREAD, size=7,
                 enabled=not self.busy):
-            self.read_lesson(m["node_id"], m["floor"], m["doc_id"], m.get("block") or 0)
+            self.read_lesson(m["node_id"], m["floor"], m["doc_id"], m.get("block") or 0,
+                             practice=m["step"] == "luyen")
         return y + h
 
     def draw_stage_list(self, ui, x, y, w, bottom, m: dict):
@@ -1282,7 +1294,7 @@ class MathPracticeScene(Scene):
         self.draw_part_gate(ui, x, cy, w, node, part)
         if part.get("doc_id") and ui.button(f"math_doc_{node['id']}_{floor}", x + w - 118, cy, 34, 13,
                                             T.LIB_READ, size=7, style="gold"):
-            self.read_lesson(node["id"], floor, part["doc_id"])
+            self.read_lesson(node["id"], floor, part["doc_id"], practice=part_playable(row))
         if part_playable(row) and ui.button(f"math_node_{node['id']}_{floor}", x + w - 76, cy, 64, 13,
                                             T.MATH_RESUME if mine else T.MATH_PLAY, size=7, style="primary",
                                             enabled=not self.busy):
