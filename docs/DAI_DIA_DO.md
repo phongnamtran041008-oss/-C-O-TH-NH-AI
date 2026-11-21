@@ -23,9 +23,9 @@ its row in the same commit.
 | `ho_nghien_muc` | Vạn Tượng Trạch | 56 x 38 | land, small |
 | `loan_so_coc` | Kiếm Trủng Sơn | 320 x 240 | land, giant |
 | `luu_van_coc` | Lưu Vân Cốc | 320 x 240 | land, giant |
-| `thien_cong_phuong` | Thiên Công Phường | 56 x 40 | land, small |
-| `linh_xa_nguyen` | Linh Xạ Nguyên | 64 x 36 | land, small |
-| `loi_kiep_dai` | Lôi Kiếp Đài | 40 x 30 | land, small |
+| `thien_cong_phuong` | Thiên Công Phường | 320 x 240 | land, giant |
+| `linh_xa_nguyen` | Linh Xạ Nguyên | 320 x 240 | land, giant |
+| `loi_kiep_dai` | Lôi Kiếp Đài | 120 x 90 | boss arena, no khu |
 | `bi_canh` | Bí Cảnh | 66 x 32 | instance |
 
 ## Commands
