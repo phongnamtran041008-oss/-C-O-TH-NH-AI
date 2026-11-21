@@ -86,11 +86,46 @@ def bee_hurt(ch: "ChannelZone", m: "Monster", owner: "Player", bee: GuardBee, dm
     return combat.hurt_monster(ch, m, owner, dmg, False, now, bee=bee.sp)
 
 
-def _pick(ch: "ChannelZone", p: "Player", bee: GuardBee, rng_range: float) -> "Monster | None":
+class _Near:
+    """The channel's monsters in square cells of `cell` px (at least the bees' range), built once
+    per guard tick: the monsters do not move while the bees pick and sting (combat.tick moved
+    them before), so a look-up finds exactly the monsters a scan of the whole list finds, in
+    the list's order. On a giant land (260 monsters) a bee looks at a few, not at all of them."""
+
+    def __init__(self, monsters, cell: float):
+        self.cell = max(64.0, float(cell))
+        self.cells: dict = {}
+        c = self.cell
+        for i, m in enumerate(monsters):
+            k = (int(m.x // c), int(m.y // c))
+            lst = self.cells.get(k)
+            if lst is None:
+                self.cells[k] = [(i, m)]
+            else:
+                lst.append((i, m))
+
+    def around(self, x: float, y: float) -> list:
+        """The monsters whose cell is the one of (x, y) or a neighbour, in the channel's order."""
+        c = self.cell
+        cx, cy = int(x // c), int(y // c)
+        out = []
+        for gy in (cy - 1, cy, cy + 1):
+            for gx in (cx - 1, cx, cx + 1):
+                out.extend(self.cells.get((gx, gy), ()))
+        out.sort(key=lambda e: e[0])
+        return [m for _, m in out]
+
+
+def _pick(ch: "ChannelZone", p: "Player", bee: GuardBee, rng_range: float,
+          near: "_Near | None" = None) -> "Monster | None":
+    """The monster a bee stings: the one it stings already while it stays close enough, else the
+    nearest within range, the owner's own fight first. `near` (built by `tick`, cells at least
+    the range wide) gives the same candidates as the whole list, in the same order."""
     cur = ch.monster(bee.target) if bee.target else None
     if cur is not None and cur.alive and not cur.shield and _dist(p.x, p.y, cur.x, cur.y) <= rng_range + 30:
         return cur
-    cands = [m for m in ch.monsters if m.alive and not m.shield and _dist(p.x, p.y, m.x, m.y) <= rng_range]
+    pool = near.around(p.x, p.y) if near is not None and near.cell >= rng_range else ch.monsters
+    cands = [m for m in pool if m.alive and not m.shield and _dist(p.x, p.y, m.x, m.y) <= rng_range]
     if not cands:
         return None
     mine = [m for m in cands if p.user_id in m.engaged]   # help with the owner's own fight first
@@ -145,6 +180,7 @@ def hit_bees(ch: "ChannelZone", m: "Monster", now: float) -> None:
 def tick(ch: "ChannelZone", dt: float, now: float, rng: random.Random) -> None:
     c = cfg()
     rng_range = float(c["range"])
+    near = None                       # the monsters by cell, built for the first bee that looks
     for p in ch.players.values():
         if not p.bees:
             continue
@@ -154,7 +190,9 @@ def tick(ch: "ChannelZone", dt: float, now: float, rng: random.Random) -> None:
             if b.down_until:          # just came back from the hive, healed
                 b.down_until = 0.0
                 b.hp = b.max_hp
-            m = None if p.dead else _pick(ch, p, b, rng_range)
+            if near is None and not p.dead:
+                near = _Near(ch.monsters, rng_range)
+            m = None if p.dead else _pick(ch, p, b, rng_range, near)
             if m is None:
                 b.target = None
                 b.hp = min(b.max_hp, b.hp + b.max_hp * c["regen_pct_per_second"] / 100 * dt)

@@ -306,8 +306,16 @@ def test_the_arrow_leads_to_a_khu_and_says_when_it_is_reached(khu_map):
         if nav.status == "path":
             break
     assert nav.status == "path" and nav.arrow(sc) is not None
-    assert nav.plate()[0].startswith("Trung Vực Thử (Vùng Thử) · ")
-    sc.player.x = 1300                                          # walked into the khu
+    name, far, sub, warn = nav.plate()
+    assert name == "Trung Vực Thử" and far.endswith(" trượng") and sub == "Trung Vực · hợp Luyện Khí tầng 4-6"
+    assert not warn                                             # (the stage is not known yet)
+    nav.data = {"stage": {"realm": "luyen_khi", "realm_vi": "Luyện Khí", "stage": 1, "working": 2}}
+    assert nav.plate()[2] == "Trung Vực · tầng 4-6 · cao hơn tu vi" and nav.plate()[3]
+    sc.player.x = 1300                                          # walked into the khu: not there yet
+    g.now += 0.2
+    nav.update(sc)
+    assert nav.dest is not None
+    sc.player.x, sc.player.y = 1915, 482                       # at its anchor
     g.now += 0.2
     nav.update(sc)
     assert nav.dest is None and g.toasts[-1] == "Đã tới Trung Vực Thử (Vùng Thử)."
@@ -365,3 +373,123 @@ def test_every_string_is_drawn_by_the_shipped_fonts():
               out["village"]["reason_vi"]]
     missing = {ch for t in texts for ch in t if not ch.isspace() and ord(ch) not in cmap}
     assert not missing, missing
+
+
+# ------------------------------------------------------------------ roads, the first arrow, the real giant lands
+def road_map(tmp_path):
+    """A meadow 60 x 30 tiles with a road (path tiles) along row 20, from the start's column to
+    the goal's: the straight way across the grass is shorter by a little, the road is cheaper."""
+    from client.art import build as B
+    from client.engine.tilemap import TileMap
+    path_gid = next(i + 1 for i, (n, _v) in enumerate(B.TILESET) if n == "path")
+    tw, th = 60, 30
+    ground = [1] * (tw * th)
+    for x in range(5, 56):
+        ground[20 * tw + x] = path_gid
+    for y in range(8, 21):
+        ground[y * tw + 5] = path_gid
+        ground[y * tw + 55] = path_gid
+    data = {"width": tw, "height": th, "tilewidth": 16, "tileheight": 16, "properties": [],
+            "layers": [{"type": "tilelayer", "name": "ground", "data": ground},
+                       {"type": "objectgroup", "name": "objects", "objects": []},
+                       {"type": "objectgroup", "name": "collision", "objects": []}]}
+    p = tmp_path / "road.tmj"
+    p.write_text(json.dumps(data), "utf-8")
+    return TileMap(p)
+
+
+def test_the_way_keeps_to_the_road_when_it_costs_little_more(tmp_path):
+    tmap = road_map(tmp_path)
+    nv._GRIDS.clear()
+    g = nv.grid_for(tmap)
+    leg = nv.Leg(g, goal_point=(55 * 16 + 8, 8 * 16 + 11))
+    run(leg)
+    assert g.cost is not None and leg.field.weighted
+    r = leg.read(5 * 16 + 8, 8 * 16 + 11, route_cells=4000)
+    assert r.mode == "path"
+    on_road = sum(1 for x, y in r.route[1:] if tmap.ground[int(y // 16) * 60 + int(x // 16)] != 1)
+    assert on_road >= 0.9 * (len(r.route) - 1), (on_road, len(r.route))
+    assert max(y for _, y in r.route) > 19 * 16                 # down to the road, along it, up again
+
+
+def test_the_arrow_shows_before_the_whole_field_is_built():
+    """A weighted field is read from a cell whose distance is final already: the way read then
+    is the way read once the field is done."""
+    from client.engine.tilemap import load_map
+    tmap = load_map("loan_so_coc")
+    g = nv.grid_for(tmap)
+    g.build_now() if not g.ready else None
+    start = next((o.x, o.y) for o in tmap.find("spawn") if o.name == "from_village")
+    rect, props = next(k for k in chi_duong.khu_objects(tmap) if k[1]["band"] == "1")
+    leg = nv.Leg(g, goal_point=(int(props["anchor_x"]), int(props["anchor_y"])))
+    early = None
+    frames = 0
+    while not leg.step(0.003):
+        frames += 1
+        r = leg.read(*start, route_cells=900)
+        if early is None and r.mode == "path":
+            early = (frames, r.aim, r.route)
+    late = leg.read(*start, route_cells=900)
+    assert early is not None and early[0] < frames, (early and early[0], frames)
+    assert early[1] == late.aim and early[2] == late.route
+
+
+def test_every_anchor_of_the_giant_lands_is_reached_by_following_the_arrow():
+    """From the gate of Kiếm Trủng Sơn and of Lưu Vân Cốc to the anchor of every khu, walking
+    only where the arrow points (client/tests/nav_walk.py): never stuck, never more than 1.6
+    times the length of the way, the arrow never pointing through a solid (a wall, water, the
+    tree line between two khu), the feet never on water."""
+    from client.tests import nav_walk
+    rows = nav_walk.walk_land("loan_so_coc") + nav_walk.walk_land("luu_van_coc")
+    assert len(rows) == 22
+    for r in rows:
+        assert r["ok"], r
+        assert r["ratio"] < 1.6 and r["bad_aims"] == 0 and not r.get("on_water"), r
+        assert r["search_s"] < 2.0 and r["read_ms"] < 2.0, r
+
+
+def test_the_overview_is_built_in_c_and_is_the_same_picture():
+    from client.engine.tilemap import load_map
+    for zone in ("loan_so_coc", "truc_lam_thon"):
+        tm = load_map(zone)
+        cols = minimap.tile_colours()
+        fast = minimap._overview_fast(tm, tm.ground, cols)
+        light = {g: bytes(c) for g, c in cols.items()}
+        dark = {g: bytes(int(v * minimap.DARK) for v in c) for g, c in cols.items()}
+        solid = minimap.blocked_tiles(tm)
+        buf = b"".join((dark if solid[i] else light).get(g, bytes((20, 18, 15))) for i, g in enumerate(tm.ground))
+        assert pygame.image.tobytes(fast, "RGB") == buf, zone
+
+
+def test_a_giant_land_is_led_through_in_the_real_ui():
+    """A synthetic 320 x 240 tile land with khu (client/tests/nav_giant.py), drawn by the real
+    game loop: the way is found within a few frames of 3 ms, the minimap is a window, the khu
+    walked into shows its banner."""
+    import tempfile
+    from client.tests.nav_giant import run_giant_screens
+    with tempfile.TemporaryDirectory(prefix="kvtt_nav_giant_") as tmp:
+        out = run_giant_screens(Path(tmp))
+    assert out["status"] == "path" and out["route"] > 20, out
+    assert out["frames"] < 200, out
+    assert out["banner"] is not None and out["banner"][0] == "Trung Vực" and "tầng 4-6" in out["banner"][1]
+
+
+def test_monsters_of_band_2_and_3_near_the_player_carry_their_band(khu_map):
+    from client.ui import nav_hud
+    g = FakeGame()
+    g.top = None
+    nav = chi_duong.of(g)
+    nav.data = {"stage": {"realm": "luyen_khi", "realm_vi": "Luyện Khí", "stage": 1, "working": 2}}
+    sc = FakeScene(khu_map, 1900, 400)
+
+    def mon(eid, x, y, kv):
+        return type("E", (), {"id": eid, "kind": "m", "alive": 1, "kv": kv, "pos": (x, y, 0, 0)})()
+    sc.entities = {"a": mon("a", 1930, 400, 2), "b": mon("b", 2300, 400, 2), "c": mon("c", 1880, 420, 1),
+                   "d": mon("d", 1900, 450, 3)}
+    sc.game = g
+    marks = nav_hud.band_marks(None, sc)
+    assert marks == {"a": (2, True), "d": (3, True)}            # near; band 1 and the far one as before
+    assert nav_hud.band_tip(sc, sc.entities["a"]) == "Trung Vực · hợp Luyện Khí tầng 4-6 · cao hơn tu vi của con"
+    assert nav_hud.band_tip(sc, sc.entities["c"]) == ""
+    sc.entities = {"c": mon("c", 1880, 420, 1)}
+    assert nav_hud.band_marks(None, sc) == {}                    # a map without bands 2-3: nothing at all

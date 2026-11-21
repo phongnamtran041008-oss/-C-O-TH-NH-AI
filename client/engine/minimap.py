@@ -59,16 +59,50 @@ def overview(tmap) -> pygame.Surface:
     if s is not None:
         return s
     cols = tile_colours()
-    light = {g: bytes(c) for g, c in cols.items()}
-    dark = {g: bytes(int(v * DARK) for v in c) for g, c in cols.items()}
-    none = bytes((20, 18, 15))
-    solid = blocked_tiles(tmap)
     ground = tmap.ground or [0] * (tmap.w * tmap.h)
-    buf = b"".join((dark if solid[i] else light).get(g, none) for i, g in enumerate(ground))
-    s = pygame.image.frombuffer(buf, (tmap.w, tmap.h), "RGB").copy()
+    if all(0 <= g < 128 for g in cols) and max(ground, default=0) < 128 and min(ground, default=0) >= 0:
+        s = _overview_fast(tmap, ground, cols)
+    else:                         # a tile id past 127: the slow way, one tile at a time
+        light = {g: bytes(c) for g, c in cols.items()}
+        dark = {g: bytes(int(v * DARK) for v in c) for g, c in cols.items()}
+        none = bytes((20, 18, 15))
+        solid = blocked_tiles(tmap)
+        buf = b"".join((dark if solid[i] else light).get(g, none) for i, g in enumerate(ground))
+        s = pygame.image.frombuffer(buf, (tmap.w, tmap.h), "RGB").copy()
     _OVERVIEWS[key] = s
     while len(_OVERVIEWS) > 6:
         _OVERVIEWS.pop(next(iter(_OVERVIEWS)))
+    return s
+
+
+_DARKEN = bytes(i | 128 for i in range(256))     # tile id -> its palette entry under a solid
+
+
+def _overview_fast(tmap, ground, cols) -> pygame.Surface:
+    """The overview as an 8-bit picture: each byte a tile id (128 more under a solid), and a
+    palette of the tiles' colours, light and darkened. The work is in C (bytes, translate, the
+    palette blit): a 320 x 240 tile map in a few milliseconds instead of tens."""
+    w, h, tw, th = tmap.w, tmap.h, tmap.tw, tmap.th
+    idx = bytearray(bytes(ground))
+    for r in tmap.solids:                          # the tiles whose centre lies under a solid (blocked_tiles)
+        x0 = max(0, int(math.ceil((r[0] - tw / 2) / tw)))
+        x1 = min(w - 1, int(math.floor((r[0] + r[2] - tw / 2 - 0.01) / tw)))
+        y0 = max(0, int(math.ceil((r[1] - th / 2) / th)))
+        y1 = min(h - 1, int(math.floor((r[1] + r[3] - th / 2 - 0.01) / th)))
+        if x0 > x1:
+            continue
+        for y in range(y0, y1 + 1):
+            a = y * w + x0
+            idx[a: a + x1 - x0 + 1] = idx[a: a + x1 - x0 + 1].translate(_DARKEN)
+    pal = [(20, 18, 15)] * 256
+    for g, c in cols.items():
+        pal[g] = c
+        pal[g | 128] = tuple(int(v * DARK) for v in c)
+    pal[128] = pal[0]
+    p8 = pygame.image.frombuffer(bytes(idx), (w, h), "P")
+    p8.set_palette(pal)
+    s = pygame.Surface((w, h), 0, 24)
+    s.blit(p8, (0, 0))
     return s
 
 
@@ -130,9 +164,9 @@ class MiniMap:
         k = self.k
         clip = ui.win.get_clip()
         ui.win.set_clip(ui.rect(x, y, w, h))
-        for o in self.map.objects:
-            if o.type == "portal":
-                mx, my = self.to_mm(o.x, o.y)
+        for o in self.map.find("portal"):          # (by type: never a walk over the map's objects)
+            mx, my = self.to_mm(o.x, o.y)
+            if self.inside(mx, my, 8):
                 ui.fill(x + mx, y + my, max(2, o.w * k), max(2, o.h * k), PORTAL)
         for e in getattr(scene, "entities", {}).values():
             mx, my = self.to_mm(e.pos[0], e.pos[1])

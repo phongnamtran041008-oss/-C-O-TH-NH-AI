@@ -17,12 +17,14 @@ from .. import strings_nav_vi as N
 from . import navigator as nv
 
 BUDGET = 0.003            # seconds of search per frame
+SEARCH_BUDGET = 0.005     # ... while there is no way yet (the arrow is pale): the first arrow sooner
 READ_EVERY = 0.1          # seconds between two readings of the way
 ROUTE_EVERY = 0.5         # ... of the way drawn on the maps
 ROUTE_CELLS = 900         # how far down the way the maps draw (8 px cells)
 ARRIVE_PX = 26
 EXIT_PX = 30
 REFRESH_EVERY = 20.0      # seconds between two GET /nav/destinations
+FRESH = 3.0               # the picker and the big map ask again when the answer is older than this
 HUB, HOME = "truc_lam_thon", "abode"
 
 
@@ -228,7 +230,7 @@ class ChiDuong:
             self.after_px = nv.estimate_after(nv.world_zones(), self.gates, point) if gate else 0.0
             if gate is None:
                 self.gates = []
-        self.leg.step(BUDGET)
+        self.leg.step(BUDGET if self.leg.ready or self.status == "path" else SEARCH_BUDGET)
         now = g.now
         if now - self.read_t >= READ_EVERY or self.reading is None:
             self.read_t = now
@@ -252,16 +254,11 @@ class ChiDuong:
                 self.status = "exit"
 
     def _arrived(self, scene, tmap, p, point) -> bool:
+        """At the point (a khu's anchor: its heart, on its road - not its border, which on a
+        giant land may lie behind a wall from where the player stands)."""
         if math.hypot(point[0] - p.x, point[1] - p.y) < ARRIVE_PX:
             return True
-        if self.reading is not None and self.reading.mode == "here":
-            return True
-        kid = self.dest.get("khu")
-        if kid:
-            for (rx, ry, rw, rh), props in khu_objects(tmap):
-                if props.get("khu") == kid:
-                    return rx <= p.x <= rx + rw and ry <= p.y <= ry + rh
-        return False
+        return self.reading is not None and self.reading.mode == "here"
 
     def _arrive(self) -> None:
         d = self.dest
@@ -292,8 +289,9 @@ class ChiDuong:
             line = fmt.format(realm=self.realm_vi, lo=lo, hi=hi)
             ws = self.working_stage
             warn = ws is not None and lo > ws
-            if warn:
-                line += " · " + N.TOO_HIGH
+            if warn:                         # plainly: above the stage, the monsters are stronger
+                rng = f"{lo}-{hi}" if lo != hi else f"{lo}"
+                line = N.WARN_LINE.format(realm=self.realm_vi, r=rng)
         title = props.get("name_vi") or props.get("khu") or ""
         band_vi = N.BAND_NAMES.get(band, "")
         if band_vi and band_vi not in title:
@@ -316,34 +314,62 @@ class ChiDuong:
             return None
         return self.reading.dist_px + self.after_px
 
-    def plate(self) -> tuple[str, str] | None:
-        """(the line with the name and distance, a second line or "")."""
-        if self.dest is None:
+    def above_stage(self, lo) -> bool:
+        """Does a khu starting at stage `lo` lie above the player's working stage?"""
+        ws = self.working_stage
+        return ws is not None and lo is not None and num(lo) > ws
+
+    def plate(self) -> tuple[str, str, str, bool] | None:
+        """(the goal's name, its distance ("60 trượng" / "ngay đây"), a second line or "", is that
+        line a warning). The name is the khu's alone: the land is in the second line while there
+        are gates to go through, the khu's band and stages once in its land."""
+        d = self.dest
+        if d is None:
             return None
-        name = self.label()
-        d = self.distance_px()
-        tr = nv.truong(d) if d is not None else 0
-        top = N.PLATE.format(name=name, d=tr) if tr else N.PLATE_NEAR.format(name=name)
-        sub = ""
+        name = "Động Phủ" if d.get("kind") == "home" else (d.get("name_vi") or self.label())
+        dist = self.distance_px()
+        tr = nv.truong(dist) if dist is not None else 0
+        far = N.PLATE_DIST.format(d=tr) if tr else N.PLATE_HERE
+        sub, warn = "", False
         if self.status == "searching":
             sub = N.SEARCHING
         elif self.status == "straight":
-            sub = N.STRAIGHT
+            sub, warn = N.STRAIGHT, True
         elif self.status == "exit":
             sub = N.PRESS_EXIT
         elif self.gates:
             from .. import strings_vi as T
             sub = N.VIA_GATE.format(zone=T.ZONE_NAMES.get(self.gates[0].target, self.gates[0].target))
-        return top, sub
+        elif d.get("khu") and num(d.get("band")) > 0:
+            lo, hi = num(d.get("stage_min")), num(d.get("stage_max"))
+            fit = (N.BAND_FIT_ONE if lo == hi else N.BAND_FIT).format(realm=self.realm_vi, lo=lo, hi=hi)
+            sub = f"{N.BAND_NAMES.get(num(d.get('band')), '')} · {fit}"
+            if self.above_stage(lo):
+                sub = f"{N.BAND_NAMES.get(num(d.get('band')), '')} · tầng {lo}-{hi} · {N.TOO_HIGH_SHORT}"
+                warn = True
+        return name, far, sub, warn
 
     def draw_on_minimap(self, ui, mm, x: float, y: float, scene) -> None:
         """The way and the goal on a minimap (engine/minimap.py), clipped to it by the caller."""
         from .minimap import ROUTE, polyline
         if self.dest is None:
             return
-        pts = [(x + a, y + b) for a, b in (mm.to_mm(px, py) for px, py in self.route)]
-        if len(pts) >= 2:
-            polyline(ui, pts, ROUTE, 1)
+        run: list = []                  # only the pieces of the way inside the window (and one point past)
+        prev = None
+        for px, py in self.route:
+            a, b = mm.to_mm(px, py)
+            q = (x + a, y + b)
+            if mm.inside(a, b, 6):
+                if not run and prev is not None:
+                    run.append(prev)
+                run.append(q)
+            elif run:
+                run.append(q)
+                polyline(ui, run, ROUTE, 1)
+                run = []
+            prev = q
+        if len(run) >= 2:
+            polyline(ui, run, ROUTE, 1)
         goal = None
         if self.leg is not None:
             goal = self.leg.aim
