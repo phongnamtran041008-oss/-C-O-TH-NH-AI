@@ -1791,6 +1791,12 @@
    "w": 169.64,
    "h": 25.35
   },
+  "f7854b763091035a": {
+   "tex": "f(x, y) = x^{T} A y, \\qquad B = \\frac{A + A^{T}}{2}",
+   "alt": "f(x, y) = x^T A y, B = (A + A^T)/2",
+   "w": 151.1,
+   "h": 22.44
+  },
   "f7ca8f8614adedb9": {
    "tex": "\\frac{d}{dx}\\int_{u(x)}^{v(x)} f(t)\\,dt = f\\big(v(x)\\big)\\,v'(x) - f\\big(u(x)\\big)\\,u'(x)",
    "alt": "d/dxtich phan_(u(x))^(v(x)) f(t) dt = f (v(x)) v'(x) - f (u(x)) u'(x)",
