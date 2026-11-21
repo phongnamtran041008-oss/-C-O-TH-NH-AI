@@ -51,13 +51,35 @@ edge B00 C000 xam
 Tập hợp là một cái túi: mỗi vật chỉ ở trong hoặc ở ngoài, và mỗi tập con là một cách chọn lấy hay bỏ từng vật.
 :::
 
-Vật nằm trong túi là phần tử. Tập con là cả một túi nhỏ mà mọi thứ trong nó đều nằm trong túi lớn. Tập rỗng là tập con của mọi tập: nó không có gì nằm ngoài cả.
-
 Ví dụ: A = {3, 5, 8, 9} có bao nhiêu tập con?
 
 1. Đếm phần tử: A có 4 phần tử.
 2. Mỗi phần tử có 2 cách: lấy hoặc bỏ.
 3. Số tập con: 2^4 = 16, kể cả tập rỗng và chính A.
+
+:::check
+Q: Tập {x, y} có những tập con nào?
+A: Bốn tập: { }, {x}, {y}, {x, y}. Đúng 2^2 = 4.
+:::
+
+### Phần tử hay tập con
+
+:::figure graph
+caption: Mở túi {1, {2, 3}} ra chỉ thấy hai vật: số 1 và túi nhỏ {2, 3}. Số 2 nằm sâu một tầng (nét đứt).
+size: 200 90
+layout: tree
+node T "{1, {2, 3}}"
+node E1 "1" xanh
+node E2 "{2, 3}" xanh
+node F2 "2" xam
+node F3 "3" xam
+edge T E1 xanh
+edge T E2 xanh
+edge E2 F2 xam dash
+edge E2 F3 xam dash
+:::
+
+Vật nằm trong túi là phần tử. Tập con là cả một túi nhỏ mà mọi thứ trong nó đều nằm trong túi lớn. Tập rỗng là tập con của mọi tập: nó không có gì nằm ngoài cả.
 
 > Lỗi thường gặp: coi {1, {2, 3}} có ba phần tử. Nó chỉ có hai: số 1 và cái túi {2, 3}. Số 2 nằm trong túi con, không phải phần tử của tập lớn.
 
@@ -87,8 +109,6 @@ in B-A "8"
 Giao là phần chung, hợp là gom tất cả (mỗi phần tử viết một lần), còn A \ B là A bỏ đi phần dính vào B.
 :::
 
-Phần bù của A trong tập nền U là U \ A: mọi thứ của U nằm ngoài A. Có ngoặc thì làm trong ngoặc trước.
-
 Ví dụ: với A = {1, 3, 5, 6} và B = {5, 6, 8} như hình, A hợp B có bao nhiêu phần tử?
 
 1. Cộng thẳng: 4 + 3 = 7, nhưng 5 và 6 bị đếm hai lần.
@@ -96,6 +116,28 @@ Ví dụ: với A = {1, 3, 5, 6} và B = {5, 6, 8} như hình, A hợp B có bao
 3. Đúng vậy: A hợp B = {1, 3, 5, 6, 8}.
 
 $$ |A \cup B| = |A| + |B| - |A \cap B| $$
+
+:::check
+Q: A = {2, 4, 6} và B = {4, 5}. Tìm A \ B và B \ A.
+A: A \ B = {2, 6}, còn B \ A = {5}.
+:::
+
+### Hiệu và phần bù
+
+:::figure sets
+caption: Tập nền U = {1, ..., 8}. Phần tô vàng là phần bù của A: {2, 4, 7, 8}, gồm cả số 8 của B.
+size: 230 100
+universe: "U"
+set A "A" xanh
+set B "B" do
+shade ~A vang
+in A-B "1, 3"
+in A&B "5, 6"
+in B-A "8"
+in ~(A|B) "2, 4, 7"
+:::
+
+Phần bù của A trong tập nền U là U \ A: mọi thứ của U nằm ngoài A. Có ngoặc thì làm trong ngoặc trước.
 
 > Lỗi thường gặp: tưởng A \ B = B \ A. Ở hình, A \ B = {1, 3} còn B \ A = {8}: hai mảnh trăng khác nhau.
 
@@ -214,15 +256,31 @@ col "Y" a b c
 Đơn ánh: không ai dùng chung ảnh; toàn ánh: không phần tử nào của Y bị bỏ trống; song ánh: cả hai, mỗi phần tử của Y nhận đúng một mũi tên.
 :::
 
-Bác bỏ đơn ánh chỉ cần một cặp như f(1) = f(-1). Chứng minh đơn ánh thì đi từ f(u) = f(v) tới u = v; với -4x - 1, từ -4u - 1 = -4v - 1 ra ngay u = v. Toàn ánh: giải f(x) = y với mọi y của Y. Còn e^x từ R vào R đơn ánh mà không toàn ánh: nó không bao giờ ra số <= 0.
-
-$$ f(u) = f(v) \Rightarrow u = v $$
-
 Ví dụ: có bao nhiêu đơn ánh từ {1, 2, 3} vào {a, b, c, d}?
 
 1. Ảnh của 1: 4 cách.
 2. Ảnh của 2 phải khác: còn 3 cách. Ảnh của 3: còn 2 cách.
 3. Tổng: 4 . 3 . 2 = 24. Khi hai tập cùng 3 phần tử thì có 3 . 2 . 1 = 6 song ánh.
+
+:::check
+Q: Có bao nhiêu đơn ánh từ {1, 2} vào {a, b, c, d, e}?
+A: 5 . 4 = 20: ảnh của 1 có 5 cách, ảnh của 2 còn 4 cách.
+:::
+
+### Chứng minh và bác bỏ
+
+:::figure plane
+caption: Đường y = e^x đi lên mãi nên không chạm độ cao nào hai lần, nhưng không bao giờ xuống tới 0.
+size: 180 90
+x: -3 2 1
+y: -1 5 1
+curve "exp(x)" xanh "y = e^x" pos=w
+line -3 0 2 0 do dash
+:::
+
+Muốn bác bỏ đơn ánh, chỉ cần một cặp như f(1) = f(-1). Muốn chứng minh đơn ánh, đi từ f(u) = f(v) tới u = v: với f(x) = -4x - 1, từ -4u - 1 = -4v - 1 ra ngay u = v. Muốn chứng minh toàn ánh, giải f(x) = y với mọi y của Y. Hàm e^x từ R vào R là đơn ánh mà không toàn ánh, vì nó không bao giờ ra số <= 0.
+
+$$ f(u) = f(v) \Rightarrow u = v $$
 
 > Lỗi thường gặp: nói "f không toàn ánh" mà quên hỏi Y là tập nào. Đổi Y là đổi câu trả lời.
 
@@ -234,11 +292,11 @@ A: Song ánh: e^x tăng nên đơn ánh, và mọi y > 0 có x = ln y nên toàn
 ## Ánh xạ hợp và ánh xạ ngược
 
 :::hook
-Chuẩn hóa ảnh rồi cắt ảnh không cho cùng kết quả với cắt rồi mới chuẩn hóa. Mã hóa rồi giải mã thì phải trả lại đúng tin nhắn cũ: đó là ánh xạ ngược.
+Chuẩn hóa rồi cắt ảnh khác với cắt rồi mới chuẩn hóa. Mã hóa rồi giải mã phải trả lại đúng tin nhắn cũ: đó là ánh xạ ngược.
 :::
 
 :::figure flow
-caption: g(f(3)): làm f trước (bình phương), được 10.
+caption: g(f(3)) = 10: làm f trước.
 box "3"
 link "f: x^2"
 box "9" xanh
@@ -247,7 +305,7 @@ box "10" luc
 :::
 
 :::figure flow
-caption: f(g(3)): làm g trước (cộng 1), được 16. Đổi thứ tự, đổi kết quả.
+caption: f(g(3)) = 16: đổi thứ tự là đổi kết quả.
 box "3"
 link "g: +1"
 box "4" xanh
@@ -264,8 +322,7 @@ Không đơn ánh thì một đích có hai mũi tên, quay ngược không bi�
 Ví dụ: tìm ánh xạ ngược của f(x) = 5x - 4.
 
 1. Đặt y = 5x - 4 rồi giải theo x: x = (y + 4)/5.
-2. Vậy f^-1(x) = (x + 4)/5.
-3. Thử: f(2) = 6 và f^-1(6) = 10/5 = 2.
+2. Vậy f^-1(x) = (x + 4)/5. Thử: f(2) = 6 và f^-1(6) = 10/5 = 2.
 
 $$ (g \circ f)(x) = g(f(x)) $$
 
