@@ -10,11 +10,11 @@ skills: [dstt_t5_dang_ma_tran, dstt_t5_bien_doi_hang, dstt_t5_bac_thang, dstt_t5
 ## Viết hệ dưới dạng Ax = b
 
 :::hook
-Hồi quy tuyến tính dẫn tới một hệ hàng nghìn phương trình. Không ai chép từng phương trình: máy cất cả hệ vào một bảng số A và một cột b, rồi giải Ax = b.
+Hồi quy tuyến tính dẫn tới hàng nghìn phương trình. Máy cất cả hệ vào một bảng số A và một cột b, rồi giải Ax = b.
 :::
 
 :::figure grid
-caption: Hệ x + 3y = 4, 2x - y + z = 3, -y + 5z = 9. Mỗi phương trình một hàng, mỗi ẩn một cột; ẩn vắng mặt ghi 0 (đỏ). Cột vàng là vế phải b.
+caption: Mỗi phương trình một hàng, mỗi ẩn một cột; ẩn vắng mặt ghi 0 (đỏ). Cột vàng là vế phải b.
 table "(A | b)"
 head "x" "y" "z" "b"
 side "pt 1" "pt 2" "pt 3"
@@ -30,17 +30,13 @@ mark cell 3 1 do
 Ax = b là cả hệ gói lại: hàng i của A nhân vô hướng với vectơ ẩn x phải ra đúng b_i.
 :::
 
-Hệ m phương trình, n ẩn cho A cỡ m x n, x có n tọa độ, b có m tọa độ. Ghép b vào làm cột cuối được ma trận bổ sung (A | b).
+Hình là hệ x + 3y = 4, 2x - y + z = 3, -y + 5z = 9. Hệ m phương trình, n ẩn cho A cỡ m x n, x có n tọa độ, b có m tọa độ. Ghép b vào làm cột cuối được ma trận bổ sung (A | b).
 
 Ví dụ: (x, y, z) = (1, 1, 2) có là nghiệm của hệ ở hình không?
 
 1. Hàng 1: 1 . 1 + 3 . 1 + 0 . 2 = 4. Khớp.
 2. Hàng 2: 2 - 1 + 2 = 3. Khớp.
 3. Hàng 3: 0 - 1 + 10 = 9. Khớp, nên đúng là nghiệm.
-
-Hai nghiệm u, v của cùng một hệ thì hiệu của chúng giải hệ vế phải 0; còn tổng thì cho A(u + v) = 2b, không còn là nghiệm khi b khác 0.
-
-$$ A(u - v) = Au - Av = b - b = 0 $$
 
 > Lỗi thường gặp: bỏ quên số 0 của ẩn vắng mặt, làm các cột lệch nhau. Viết mọi phương trình theo cùng thứ tự x, y, z trước khi lập bảng.
 
@@ -49,14 +45,37 @@ Q: Hệ có 4 phương trình, 6 ẩn. A, x và b có cỡ bao nhiêu?
 A: A cỡ 4 x 6 (hàng là phương trình), x có 6 tọa độ (mỗi ẩn một), b có 4 tọa độ.
 :::
 
+### Hiệu hai nghiệm
+
+:::figure plane
+caption: u, v cùng nằm trên đường x + y = 2 (Ax = b). Hiệu u - v = (2, -2) nằm trên đường x + y = 0 qua gốc (Ax = 0).
+size: 170 100
+x: -2.5 3 1
+y: -2.5 3 1
+line 0 2 2 0 xanh
+line 0 0 1 -1 do dash
+point 2 0 muc "u" pos=ne
+point 0 2 muc "v" pos=e
+vector 0 0 2 -2 do "u - v" pos=e
+:::
+
+Hai nghiệm u, v của cùng một hệ thì hiệu của chúng giải hệ vế phải 0. Còn tổng thì cho A(u + v) = 2b, nên không còn là nghiệm khi b khác 0.
+
+$$ A(u - v) = Au - Av = b - b = 0 $$
+
+:::check
+Q: u và v là hai nghiệm của Ax = b với b = (3, 1). Tính A(u - v) và A(u + v).
+A: A(u - v) = b - b = (0, 0). A(u + v) = 2b = (6, 2).
+:::
+
 ## Ba phép biến đổi sơ cấp trên hàng
 
 :::hook
-Đổi thứ tự hai phương trình, nhân một phương trình với 2, cộng phương trình này vào phương trình kia: nghiệm vẫn y nguyên. Khử Gauss chỉ dùng đúng ba thao tác an toàn ấy.
+Đổi chỗ hai phương trình, nhân một phương trình với 2, cộng phương trình này vào phương trình kia: nghiệm vẫn y nguyên. Khử Gauss chỉ dùng ba thao tác ấy.
 :::
 
 :::figure grid
-caption: Chỉ hàng đứng bên trái mũi tên (hàng 2) bị thay; hàng 1 giữ nguyên. Cột vế phải cũng bị trừ: 9 - 3 . 4 = -3.
+caption: Chỉ hàng 2 bị thay, hàng 1 giữ nguyên. Cột vế phải cũng bị trừ: 9 - 3 . 4 = -3.
 style: matrix
 table "trước"
 head "x" "y" "b"
@@ -80,8 +99,7 @@ Ký hiệu: R_i <-> R_j, R_i <- kR_i, R_i <- R_i + kR_j. Không bao giờ nhân 
 Ví dụ: giải hệ có hàng (0, 3 | 6) và (2, 1 | 5).
 
 1. Hàng 1 bắt đầu bằng 0, không làm trụ được: R1 <-> R2.
-2. Được (2, 1 | 5) và (0, 3 | 6): 3y = 6, y = 2.
-3. 2x + 2 = 5, nên x = 3/2.
+2. Được (2, 1 | 5) và (0, 3 | 6): 3y = 6, y = 2. Rồi 2x + 2 = 5, x = 3/2.
 
 > Lỗi thường gặp: quên trừ ở cột vế phải, hoặc sai dấu ở đó. Phép biến đổi làm trên cả hàng, kể cả số sau dấu |.
 
@@ -97,7 +115,7 @@ Một hệ ba ẩn rối mắt trở nên dễ khi về dạng bậc thang: phư
 :::
 
 :::figure grid
-caption: Dùng trụ hàng 1 làm 0 cột x (xanh), rồi trụ hàng 2 làm 0 cột y. Trụ (vàng) lùi dần sang phải như bậc thang.
+caption: Trụ hàng 1 làm 0 cột x (xanh), rồi trụ hàng 2 làm 0 cột y. Trụ (vàng) lùi dần sang phải.
 style: matrix
 table "M"
 row 1 2 1 1
@@ -122,16 +140,34 @@ mark cell 3 3 vang
 :::
 
 :::core
-Dạng bậc thang: số khác 0 đầu tiên (trụ) của mỗi hàng nằm bên phải trụ hàng trên, hàng toàn 0 xuống cuối; khử Gauss làm 0 từng cột dưới trụ, từ trái sang phải.
+Bậc thang: trụ (số khác 0 đầu tiên) của mỗi hàng nằm bên phải trụ hàng trên; khử Gauss làm 0 từng cột dưới trụ, từ trái sang phải.
 :::
 
-Cột cuối là vế phải. Ô trụ bằng 0 thì đổi chỗ với một hàng dưới, không bao giờ chia cho 0. Dạng bậc thang không duy nhất (nhân một hàng với số khác 0 vẫn là bậc thang), nhưng vị trí các trụ thì luôn như nhau.
+Cột cuối là vế phải; hàng toàn 0 xếp xuống cuối.
 
 Ví dụ: khử M ở hình.
 
 1. R2 <- R2 - 2R1 và R3 <- R3 - R1: cột x dưới trụ thành 0.
 2. R3 <- R3 + 2R2: (0, -2, 2 | 4) + (0, 2, 2 | 0) = (0, 0, 4 | 4).
 3. Hàng cuối nói 4z = 4, nên z = 1.
+
+### Khi trụ bằng 0
+
+:::figure grid
+caption: Ô trụ bằng 0 (đỏ): đổi chỗ hai hàng rồi mới khử tiếp, không chia cho 0.
+style: matrix
+table "trước"
+row 0 1 2
+row 3 1 0
+mark cell 1 1 do
+op "R1 <-> R2"
+table "sau"
+row 3 1 0
+row 0 1 2
+mark cell 1 1 vang
+:::
+
+Ô trụ bằng 0 thì đổi chỗ với một hàng dưới, không bao giờ chia cho 0. Dạng bậc thang không duy nhất (nhân một hàng với số khác 0 vẫn là bậc thang), nhưng vị trí các trụ thì luôn như nhau.
 
 > Lỗi thường gặp: chia cho một trụ bằng 0. Gặp số 0 ở chỗ trụ thì đổi chỗ hàng trước.
 
@@ -159,6 +195,15 @@ box "x - y + 2z = 5: x = 4" luc
 Thế ngược đi từ dưới lên: giải phương trình cuối (ít ẩn nhất), rồi thay mọi giá trị vừa tìm vào phương trình ngay trên.
 :::
 
+> Lỗi thường gặp: chuyển vế quên đổi dấu. Từ x - 3 + 4 = 5 phải ra x = 5 + 3 - 4, không phải 5 - 3 + 4.
+
+:::check
+Q: Hệ bậc thang có hàng (2, 1 | 7) và (0, 3 | 3). Tìm x và y.
+A: Hàng dưới: 3y = 3, y = 1. Hàng trên: 2x + 1 = 7, x = 3.
+:::
+
+### Ẩn tự do
+
 Cột không có trụ là ẩn tự do: đặt nó bằng t, các ẩn có trụ tính theo t. Mỗi giá trị của t cho một nghiệm.
 
 Ví dụ: bậc thang (1, 1, -2 | 1), (0, 1, 3 | 4), hàng 3 toàn 0.
@@ -170,11 +215,9 @@ Ví dụ: bậc thang (1, 1, -2 | 1), (0, 1, 3 | 4), hàng 3 toàn 0.
 
 $$ (x, y, z) = (-3 + 5t, \; 4 - 3t, \; t) $$
 
-> Lỗi thường gặp: chuyển vế quên đổi dấu. Từ x - 3 + 4 = 5 phải ra x = 5 + 3 - 4, không phải 5 - 3 + 4.
-
 :::check
-Q: Hệ bậc thang có hàng (2, 1 | 7) và (0, 3 | 3). Tìm x và y.
-A: Hàng dưới: 3y = 3, y = 1. Hàng trên: 2x + 1 = 7, x = 3.
+Q: Hệ chỉ còn một hàng bậc thang (1, 2 | 3) với hai ẩn x, y. Viết mọi nghiệm.
+A: y không có trụ: y = t, rồi x = 3 - 2t. Nghiệm (3 - 2t, t).
 :::
 
 ## Biện luận số nghiệm
@@ -205,7 +248,16 @@ text 10.5 -0.6 "vô số nghiệm"
 Nhìn bậc thang: có hàng (0 ... 0 | c) với c != 0 là vô nghiệm; không có thì ẩn nào cũng có trụ là nghiệm duy nhất, còn ẩn tự do là vô số nghiệm.
 :::
 
-Không hệ nào có đúng 2 nghiệm: có hai thì cả đường thẳng qua chúng đều là nghiệm. Nhiều ẩn hơn phương trình chỉ loại nghiệm duy nhất; hệ vẫn có thể vô nghiệm.
+:::check
+Q: Hệ 3 ẩn có bậc thang: trụ ở cột x và y, hàng cuối là (0, 0, 0 | 0). Hệ có bao nhiêu nghiệm?
+A: Vô số: hàng 0 = 0 luôn đúng, không chặn gì; z không có trụ nên là ẩn tự do.
+:::
+
+### Biện luận theo tham số
+
+Không hệ nào có đúng 2 nghiệm: có hai nghiệm u, v thì cả đường thẳng qua chúng đều là nghiệm. Nhiều ẩn hơn phương trình chỉ loại nghiệm duy nhất; hệ vẫn có thể vô nghiệm.
+
+$$ A(u + t(v - u)) = b + t \cdot 0 = b $$
 
 Ví dụ: hệ x + 2y = 1, 3x + my = 4. Với m nào thì vô nghiệm?
 
@@ -213,13 +265,11 @@ Ví dụ: hệ x + 2y = 1, 3x + my = 4. Với m nào thì vô nghiệm?
 2. m = 6: hàng đó nói 0 = 1, vô nghiệm.
 3. m != 6: y có trụ, nghiệm duy nhất. Hệ này không bao giờ có vô số nghiệm.
 
-$$ A(u + t(v - u)) = b + t \cdot 0 = b $$
-
 > Lỗi thường gặp: thấy 3 ẩn, 2 phương trình là kết luận vô số nghiệm. Phải khử xong, xem có hàng 0 = c không.
 
 :::check
-Q: Hệ 3 ẩn có bậc thang: trụ ở cột x và y, hàng cuối là (0, 0, 0 | 0). Hệ có bao nhiêu nghiệm?
-A: Vô số: hàng 0 = 0 luôn đúng, không chặn gì; z không có trụ nên là ẩn tự do.
+Q: Hệ x + y = 2, 2x + 2y = k. Với k nào hệ có vô số nghiệm, với k nào vô nghiệm?
+A: R2 <- R2 - 2R1 cho (0, 0 | k - 4). k = 4: hàng 0 = 0, vô số nghiệm. k != 4: 0 = k - 4 sai, vô nghiệm.
 :::
 
 ## Hệ thuần nhất Ax = 0
@@ -230,7 +280,7 @@ Tìm những tổ hợp thuộc tính triệt tiêu nhau (dữ liệu dư thừa
 
 :::figure plane
 caption: x - 2y = 0 và 3x + y = 0 chỉ gặp nhau ở gốc: chỉ có nghiệm 0.
-size: 130 100
+size: 130 80
 x: -2.5 2.5 5
 y: -2 2 5
 line 0 0 2 1 xanh
@@ -240,7 +290,7 @@ point 0 0 muc
 
 :::figure plane
 caption: x - 2y = 0 và 2x - 4y = 0 trùng nhau: mọi t(2, 1) là nghiệm.
-size: 130 100
+size: 130 80
 x: -2.5 2.5 5
 y: -2 2 5
 line 0 0 2 1 xanh
@@ -255,6 +305,15 @@ Ax = 0 luôn có nghiệm x = 0; nó có thêm nghiệm khác 0 đúng khi có �
 
 Số ẩn tự do = số ẩn - số trụ. Hệ thuần nhất có nhiều ẩn hơn phương trình luôn có nghiệm khác 0. Cột vế phải toàn 0 nên có thể bỏ khi khử.
 
+> Lỗi thường gặp: nói hệ thuần nhất "vô nghiệm". Nó luôn có ít nhất nghiệm x = 0.
+
+:::check
+Q: Hệ thuần nhất 4 phương trình, 4 ẩn; khử Gauss được 3 trụ. Có nghiệm khác 0 không?
+A: Có: 4 - 3 = 1 ẩn tự do, cho nó giá trị khác 0 là được một nghiệm khác 0.
+:::
+
+### Giải hệ thuần nhất
+
 Ví dụ: giải x + 2y - z = 0, 2x + 5y + z = 0.
 
 1. R2 <- R2 - 2R1 cho (0, 1, 3): trụ ở x và y, z tự do.
@@ -263,9 +322,7 @@ Ví dụ: giải x + 2y - z = 0, 2x + 5y + z = 0.
 
 $$ (x, y, z) = t(7, -3, 1) $$
 
-> Lỗi thường gặp: nói hệ thuần nhất "vô nghiệm". Nó luôn có ít nhất nghiệm x = 0.
-
 :::check
-Q: Hệ thuần nhất 4 phương trình, 4 ẩn; khử Gauss được 3 trụ. Có nghiệm khác 0 không?
-A: Có: 4 - 3 = 1 ẩn tự do, cho nó giá trị khác 0 là được một nghiệm khác 0.
+Q: Giải hệ x + y = 0, y - z = 0.
+A: z tự do, đặt z = t: y = t, x = -t. Nghiệm (x, y, z) = t(-1, 1, 1).
 :::

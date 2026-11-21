@@ -33,8 +33,7 @@ Hai vectơ phải cùng số chiều, thiếu một tọa độ là không có b
 Ví dụ: tìm m để u = (m, 1, 2) và v = (3, -4, 1) có tích vô hướng 0.
 
 1. Ghép từng cặp: 3m + 1 . (-4) + 2 . 1 = 3m - 2.
-2. Cho bằng 0: 3m = 2, m = 2/3.
-3. Thử: 2 - 4 + 2 = 0.
+2. Cho bằng 0: 3m = 2, m = 2/3. Thử: 2 - 4 + 2 = 0.
 
 $$ u \cdot v = u_{1}v_{1} + u_{2}v_{2} + \ldots + u_{n}v_{n} $$
 
@@ -125,9 +124,8 @@ Nhân ma trận với một vectơ cột x: mỗi tọa độ của Ax là một
 
 Ví dụ: tính các ô còn lại của AB ở hình.
 
-1. Ô (1, 1): (1, 2, 0) . (2, 0, 4) = 2.
-2. Ô (1, 2): (1, 2, 0) . (1, -1, 2) = 1 - 2 = -1.
-3. Ô (2, 2): (-1, 3, 1) . (1, -1, 2) = -1 - 3 + 2 = -2.
+1. Ô (1, 1): (1, 2, 0) . (2, 0, 4) = 2. Ô (1, 2): (1, 2, 0) . (1, -1, 2) = -1.
+2. Ô (2, 2): (-1, 3, 1) . (1, -1, 2) = -1 - 3 + 2 = -2.
 
 $$ (AB)_{ij} = a_{i1}b_{1j} + a_{i2}b_{2j} + \ldots + a_{in}b_{nj} $$
 
@@ -163,21 +161,44 @@ F = 1 0 ; 0 -1
 ABv nghĩa là làm B trước rồi mới A; đổi thứ tự là đổi việc làm, nên nói chung AB != BA.
 :::
 
-Có cặp giao hoán: kI với mọi ma trận, A với chính nó và các lũy thừa của nó. Lạ hơn: AB có thể bằng O khi A, B đều khác O.
-
 Ví dụ: tính RF và FR (R quay 90 độ, F lật qua trục ngang).
 
 1. RF: hàng (0, -1) nhân hai cột (1, 0) và (0, -1) ra (0, 1); hàng (1, 0) ra (1, 0).
 2. FR: hàng (1, 0) ra (0, -1); hàng (0, -1) ra (-1, 0).
 3. RF = [0, 1; 1, 0] khác FR = [0, -1; -1, 0].
 
+:::check
+Q: A = [1, 2; 0, 1], B = [1, 0; 3, 1]. Tính ô (1, 1) của AB và của BA.
+A: AB: (1, 2) . (1, 3) = 7. BA: (1, 0) . (1, 0) = 1. Khác nhau, nên AB != BA.
+:::
+
+### Khi nào giao hoán, và hệ quả
+
+:::figure grid
+caption: Hai ma trận đều khác O mà tích lại bằng O: mỗi hàng của A vuông góc với mỗi cột của B.
+style: matrix
+table "A"
+row 1 1
+row 1 1
+op "x"
+table "B"
+row 1 -1
+row -1 1
+op "="
+table "AB"
+row 0 0
+row 0 0
+:::
+
+Có những cặp giao hoán: kI với mọi ma trận, A với chính nó và với các lũy thừa của nó. Điều lạ so với số: AB có thể bằng O khi cả A và B đều khác O.
+
 $$ (A + B)^{2} = A^{2} + AB + BA + B^{2} $$
 
 > Lỗi thường gặp: gộp AB + BA thành 2AB. Chỉ được gộp khi biết chắc AB = BA.
 
 :::check
-Q: A = [1, 2; 0, 1], B = [1, 0; 3, 1]. Tính ô (1, 1) của AB và của BA.
-A: AB: (1, 2) . (1, 3) = 7. BA: (1, 0) . (1, 0) = 1. Khác nhau, nên AB != BA.
+Q: A = [1, 0; 0, 0], B = [0, 0; 0, 1]. Tính AB.
+A: AB = O: hàng (1, 0) gặp hai cột (0, 0) và (0, 1) đều ra 0, hàng (0, 0) cũng ra 0.
 :::
 
 ## Tính chất của phép nhân ma trận
@@ -187,7 +208,7 @@ Mạng nơ-ron ba lớp tính W3(W2(W1 x)). Nhờ tính kết hợp, có thể g
 :::
 
 :::figure grid
-caption: A cỡ 2 x 3, B cỡ 3 x 4. Chỉ thứ tự đảo B^T A^T mới khớp cỡ với (AB)^T.
+caption: A cỡ 2 x 3, B cỡ 3 x 4: chỉ B^T A^T khớp cỡ với (AB)^T.
 table
 head "tích" "cỡ" "kết quả"
 row "(AB)^T" "lật của 2 x 4" "4 x 2"
@@ -198,7 +219,7 @@ mark row 3 do
 :::
 
 :::core
-Nhân ma trận giữ mọi luật quen thuộc (kết hợp, phân phối, đưa số ra ngoài) trừ giao hoán; vì thế chuyển vị một tích phải đảo thứ tự.
+Nhân ma trận giữ mọi luật quen thuộc trừ giao hoán; vì thế chuyển vị một tích phải đảo thứ tự.
 :::
 
 Phân phối phải giữ bên: A(B + C) = AB + AC, còn (B + C)A = BA + CA. Số thì đưa ra đâu cũng được: (kA)B = k(AB) = A(kB).
@@ -221,7 +242,7 @@ A: Đảo thứ tự và lật từng cái: B^T (A^T)^T = B^T A.
 ## Ma trận đơn vị và lũy thừa ma trận
 
 :::hook
-Thời tiết đổi trạng thái mỗi ngày theo một ma trận P. Dự báo 7 ngày sau là P^7: lũy thừa ma trận là lặp lại cùng một bước.
+Thời tiết mỗi ngày đổi theo ma trận P: 7 ngày sau là P^7, bảy lần một bước.
 :::
 
 :::figure grid
@@ -244,10 +265,10 @@ mark cell 1 2 vang
 :::
 
 :::core
-A^n là nhân A với chính nó n lần, mỗi lần hàng nhân cột, không phải lũy thừa từng ô; I đóng vai số 1: AI = IA = A.
+A^n là nhân A với chính nó n lần (hàng nhân cột), không phải lũy thừa từng ô; I đóng vai số 1.
 :::
 
-Chỉ ma trận vuông mới có lũy thừa, và A^0 = I. Ma trận chéo thì lũy thừa từng số trên đường chéo. Nếu A^2 = I thì A^n là I khi n chẵn, là A khi n lẻ. Có A khác O mà A^2 = O.
+Chỉ ma trận vuông có lũy thừa, và A^0 = I. Ma trận chéo thì lũy thừa từng số trên đường chéo. A^2 = I thì A^n là I khi n chẵn, là A khi n lẻ. Có A khác O mà A^2 = O.
 
 Ví dụ: A = [2, 1; 0, 1]. Tính A^2.
 

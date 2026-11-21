@@ -27,6 +27,25 @@ edge 2 5 xanh
 edge 3 6 luc
 :::
 
+:::core
+Quan hệ tương đương (phản xạ, đối xứng, bắc cầu) là "giống nhau theo một tiêu chí": nó cắt tập thành các lớp rời nhau phủ kín.
+:::
+
+Ví dụ: a ~ b khi a - b chia hết cho 4, trên {1, ..., 15}.
+
+1. Cùng lớp nghĩa là cùng số dư khi chia cho 4: có 4 lớp.
+2. Lớp của 2: 2, 6, 10, 14, có 4 phần tử.
+3. Bắc cầu: a - b = 4k, b - c = 4m thì a - c = 4(k + m).
+
+$$ a \sim b \iff n \mid (a - b) $$
+
+:::check
+Q: Trên Z, a R b khi |a| = |b|. Đây có là quan hệ tương đương không? Lớp của 3 là gì?
+A: Có: phản xạ, đối xứng, bắc cầu đều đúng vì chỉ so hai số |a|, |b|. Lớp của 3 là {3, -3}.
+:::
+
+### Ba tính chất và quan hệ thứ tự
+
 :::figure grid
 caption: Quan hệ trên {1, 2, 3} viết thành bảng 0/1. Phản xạ: đường chéo toàn 1. Đối xứng: bảng bằng chuyển vị của nó.
 table "R"
@@ -38,25 +57,13 @@ row 1 0 1
 mark diag
 :::
 
-:::core
-Quan hệ tương đương (phản xạ, đối xứng, bắc cầu) là "giống nhau theo một tiêu chí": nó cắt tập thành các lớp rời nhau phủ kín.
-:::
-
-Phản xạ: a R a. Đối xứng: a R b thì b R a. Bắc cầu: a R b và b R c thì a R c. Thay đối xứng bằng phản đối xứng (a R b và b R a thì a = b) là quan hệ thứ tự, như <= hay "chia hết"; toàn phần nếu mọi cặp so sánh được.
-
-Ví dụ: a ~ b khi a - b chia hết cho 4, trên {1, ..., 15}.
-
-1. Cùng lớp nghĩa là cùng số dư khi chia cho 4: có 4 lớp.
-2. Lớp của 2: 2, 6, 10, 14, có 4 phần tử.
-3. Bắc cầu: a - b = 4k, b - c = 4m thì a - c = 4(k + m).
-
-$$ a \sim b \iff n \mid (a - b) $$
+Phản xạ: a R a với mọi a. Đối xứng: a R b kéo theo b R a. Bắc cầu: a R b và b R c kéo theo a R c. Thay đối xứng bằng phản đối xứng (a R b và b R a thì a = b) ta được quan hệ thứ tự, như <= hay "chia hết"; thứ tự là toàn phần nếu mọi cặp đều so sánh được.
 
 > Lỗi thường gặp: "cộng" hai bất đẳng thức để có bắc cầu. |x - y| < 1 và |y - z| < 1 chỉ cho |x - z| < 2: x = 0, y = 0.6, z = 1.2 phá bắc cầu.
 
 :::check
-Q: Trên Z, a R b khi |a| = |b|. Đây có là quan hệ tương đương không? Lớp của 3 là gì?
-A: Có: phản xạ, đối xứng, bắc cầu đều đúng vì chỉ so hai số |a|, |b|. Lớp của 3 là {3, -3}.
+Q: Quan hệ "a chia hết b" trên {1, 2, 3, 6} có đối xứng không? Nó là loại quan hệ gì?
+A: Không đối xứng: 1 chia hết 2 nhưng 2 không chia hết 1. Nó phản xạ, phản đối xứng, bắc cầu: một quan hệ thứ tự, không toàn phần vì 2 và 3 không so sánh được.
 :::
 
 ## Phép toán hai ngôi
@@ -66,7 +73,7 @@ Mật mã và hàm băm dựng trên những phép toán lạ. Trước khi tin 
 :::
 
 :::figure grid
-caption: a * b = max(a, b) trên {0, 1, 2}. Bảng đối xứng qua đường chéo: giao hoán. Hàng của 0 chép y tiêu đề (vàng): 0 là trung hòa. Số 0 chỉ ở ô (0, 0): chỉ 0 có phần tử ngược.
+caption: a * b = max(a, b) trên {0, 1, 2}. Bảng đối xứng: giao hoán. Hàng của 0 (vàng) chép y tiêu đề: 0 là trung hòa. Số 0 chỉ ở ô (0, 0): chỉ 0 có ngược.
 table "*"
 head 0 1 2
 side 0 1 2
@@ -77,16 +84,15 @@ mark row 1 vang
 :::
 
 :::core
-Trung hòa e là phần tử "không làm gì": a * e = a với mọi a; phần tử ngược của a là thứ đưa a về đúng e, không phải về 0 hay 1.
+Trung hòa e là phần tử "không làm gì": a * e = a với mọi a; phần tử ngược đưa a về đúng e, không phải về 0 hay 1.
 :::
 
-Giao hoán: a * b = b * a. Kết hợp: (a * b) * c = a * (b * c). Chứng minh thì khai triển hai vế với mọi a, b, c; bác bỏ thì một phản ví dụ là đủ. Trung hòa, nếu có, là duy nhất và không phụ thuộc a.
+Giao hoán là a * b = b * a; kết hợp viết ở công thức dưới. Chứng minh thì khai triển hai vế với mọi a, b, c; bác bỏ thì một phản ví dụ là đủ. Trung hòa, nếu có, là duy nhất.
 
 Ví dụ: a * b = a + b - 4 trên R. Tìm trung hòa và phần tử ngược của 1.
 
 1. a * e = a + e - 4 = a với mọi a, nên e = 4.
-2. Ngược của 1: 1 * b = 1 + b - 4 phải bằng e = 4.
-3. b = 7. Thử: 1 + 7 - 4 = 4.
+2. Ngược của 1: 1 * b = 1 + b - 4 phải bằng e = 4, nên b = 7.
 
 $$ (a * b) * c = a * (b * c), \qquad a * e = e * a = a, \qquad a * a' = a' * a = e $$
 
@@ -128,15 +134,22 @@ edge 6 0 do
 Cấp của a là số bước ít nhất để lặp a quay về trung hòa; theo Lagrange, nó và mọi nhóm con đều có số phần tử chia hết cấp của nhóm.
 :::
 
-Nhóm: phép toán đóng, kết hợp, có trung hòa, ai cũng có ngược. Nhóm con: tập con khác rỗng, đóng với phép toán và lấy ngược. Trong Z_n cộng, a sinh cả nhóm khi gcd(a, n) = 1: có phi(n) phần tử sinh. Các số khả nghịch của Z_n lập nhóm nhân phi(n) phần tử.
+$$ \mathrm{ord}(a) = \frac{n}{\mathrm{gcd}(a, n)} \quad (a \in \mathbb{Z}_n), \qquad \mathrm{ord}(a) \mid |G| $$
+
+:::check
+Q: Trong Z_10 với phép cộng, 6 có cấp bao nhiêu? Kể các bước.
+A: 10/gcd(6, 10) = 5: 6, 2, 8, 4, 0.
+:::
+
+### Nhóm, nhóm con và phần tử sinh
+
+Nhóm là một tập với phép toán đóng, kết hợp, có trung hòa, và phần tử nào cũng có ngược. Nhóm con là tập con khác rỗng, đóng với phép toán và với việc lấy ngược. Trong Z_n với phép cộng, a sinh cả nhóm khi gcd(a, n) = 1, nên có phi(n) phần tử sinh. Các số khả nghịch của Z_n lập một nhóm nhân có phi(n) phần tử.
 
 Ví dụ: cấp của 2 trong nhóm nhân các số khác 0 của Z_7.
 
 1. 2^1 = 2, 2^2 = 4, 2^3 = 8 = 1 (modulo 7).
 2. Cấp là 3, chia hết 6 phần tử của nhóm.
 3. 2 không sinh cả nhóm, vì 3 nhỏ hơn 6.
-
-$$ \mathrm{ord}(a) = \frac{n}{\mathrm{gcd}(a, n)} \quad (a \in \mathbb{Z}_n), \qquad \mathrm{ord}(a) \mid |G| $$
 
 > Lỗi thường gặp: lấy 1/a làm phần tử ngược trong nhóm cộng. Phép toán là cộng thì ngược của a là -a. Hợp hai nhóm con cũng không phải nhóm con: 2 và 3 trong 2Z hợp 3Z, nhưng 5 thì không.
 
@@ -152,7 +165,7 @@ Mã QR và mã sửa lỗi trên đĩa tính toán trong một trường hữu h
 :::
 
 :::figure grid
-caption: Bảng nhân Z_6. Đỏ: hai số khác 0 nhân ra 0 (ước của 0). Xanh: tích bằng 1, chỉ 1 và 5 khả nghịch. Z_6 không là trường.
+caption: Bảng nhân Z_6. Đỏ: hai số khác 0 nhân ra 0 (ước của 0). Xanh: tích bằng 1, chỉ 1 và 5 khả nghịch.
 table
 head x 0 1 2 3 4 5
 row 0 0 0 0 0 0 0
@@ -175,11 +188,17 @@ Trường là nơi chia được cho mọi số khác 0; Z_n là trường đún
 
 Vành: cộng là nhóm giao hoán, nhân kết hợp, nhân phân phối với cộng. Trong Z_n, a khả nghịch khi gcd(a, n) = 1; mỗi số khác 0 hoặc khả nghịch, hoặc là ước của 0. Z không có ước của 0 nhưng vẫn không là trường: 2 không có nghịch đảo.
 
+:::check
+Q: Z_5 có là trường không? Nghịch đảo của 3 trong Z_5 là gì?
+A: Có, vì 5 nguyên tố. 3 . 2 = 6 = 1, nên nghịch đảo của 3 là 2.
+:::
+
+### Tìm số khả nghịch trong Z_n
+
 Ví dụ: xét Z_9.
 
-1. Khả nghịch: gcd(a, 9) = 1, tức 1, 2, 4, 5, 7, 8 (phi(9) = 6).
-2. Còn lại 3 và 6 là ước của 0: 3 . 3 = 9 = 0.
-3. Nghịch đảo của 2 là 5, vì 2 . 5 = 10 = 1. Z_9 không là trường.
+1. Khả nghịch: gcd(a, 9) = 1, tức 1, 2, 4, 5, 7, 8 (phi(9) = 6). Nghịch đảo của 2 là 5: 2 . 5 = 10 = 1.
+2. Còn lại 3 và 6 là ước của 0: 3 . 3 = 9 = 0. Vậy Z_9 không là trường.
 
 $$ \exists\, b : \; ab \equiv 1 \ (\mathrm{mod}\ n) \iff \mathrm{gcd}(a, n) = 1 $$
 
@@ -197,7 +216,7 @@ A: 2 . 4 = 8 = 1, nên là 4. Z_15: 14 số khác 0, phi(15) = 8 khả nghịch,
 :::
 
 :::figure grid
-caption: f = x1 y1 + 4 x1 y2 + 2 x2 y1 - 3 x2 y2: ô (i, j) của A là hệ số của x_i y_j. q(x) = f(x, x) gộp 4 + 2 = 6 rồi chia đôi vào B.
+caption: f = x1 y1 + 4 x1 y2 + 2 x2 y1 - 3 x2 y2: ô (i, j) của A là hệ số của x_i y_j. q = f(x, x) gộp 4 + 2 = 6, chia đôi vào B.
 table "A của f"
 head y1 y2
 side x1 x2
@@ -219,13 +238,12 @@ mark cell 2 1 luc
 Dạng song tuyến tính là f(x, y) = x^T A y với a_ij là hệ số của x_i y_j; dạng toàn phương q(x) = f(x, x) chỉ thấy phần đối xứng của A.
 :::
 
-f đối xứng đúng khi A^T = A. Hai dạng khác nhau có thể cho cùng q. Với B đối xứng cấp 2: q xác định dương khi b11 > 0 và det B > 0. Mẹo thử: q(1, 1) bằng tổng các ô của B.
+f đối xứng đúng khi A^T = A. Hai dạng khác nhau có thể cho cùng q. B đối xứng cấp 2 thì q xác định dương khi b11 > 0 và det B > 0; q(1, 1) bằng tổng các ô của B.
 
 Ví dụ: A như hình, u = (1, 1), v = (2, -1).
 
 1. Av = (2 - 4, 4 + 3) = (-2, 7); f(u, v) = -2 + 7 = 5.
-2. Au = (5, -1); f(v, u) = 10 + 1 = 11.
-3. Khác nhau, vì A không đối xứng.
+2. Au = (5, -1); f(v, u) = 10 + 1 = 11. Khác nhau, vì A không đối xứng.
 
 $$ f(x, y) = x^{T} A y, \qquad B = \frac{A + A^{T}}{2} $$
 
