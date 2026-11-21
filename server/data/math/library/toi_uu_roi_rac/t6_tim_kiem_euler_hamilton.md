@@ -254,6 +254,8 @@ Ví dụ: đồ thị liên thông 6 đỉnh, bậc 2, 4, 3, 3, 2, 2.
 1. Tổng bậc 16, nên có 16/2 = 8 cạnh.
 2. Đỉnh 3, 4 bậc lẻ: không có chu trình, có đường đi Euler từ 3 tới 4 (hoặc ngược lại).
 
+> Lỗi thường gặp: chỉ đếm đỉnh bậc lẻ mà quên kiểm tra liên thông. Hai tam giác rời nhau có mọi bậc chẵn nhưng không có chu trình Euler nào đi hết cả sáu cạnh.
+
 :::check
 Q: K_n có mọi đỉnh bậc n - 1. K_7 có chu trình Euler không? K_6 thì sao?
 A: K_7: bậc 6 chẵn, có. K_6: bậc 5 lẻ ở cả 6 đỉnh, không có chu trình, cũng không có đường đi Euler.
