@@ -561,6 +561,12 @@
    "w": 159.62,
    "h": 10.18
   },
+  "4bdde7ae2f70a5ae": {
+   "tex": "(x, y, z) = (-3 + 5t, \\; 4 - 3t, \\; t)",
+   "alt": "(x, y, z) = (-3 + 5t, 4 - 3t, t)",
+   "w": 132.93,
+   "h": 10.18
+  },
   "4c3294756f8d3949": {
    "tex": "e^x = 1 + x + \\frac{x^2}{2!} + \\frac{x^3}{3!} + \\cdots + \\frac{x^n}{n!} + o(x^n)",
    "alt": "e^x = 1 + x + (x^2)/(2!) + (x^3)/(3!) + ... + (x^n)/(n!) + o(x^n)",
@@ -884,6 +890,12 @@
    "alt": "U(f, P) = tong_k M_k h_k, L(f, P) = tong_k m_k h_k",
    "w": 203.3,
    "h": 22.05
+  },
+  "78d7610dfeb14e2f": {
+   "tex": "(x, y, z) = t(7, -3, 1)",
+   "alt": "(x, y, z) = t(7, -3, 1)",
+   "w": 89.94,
+   "h": 10.18
   },
   "795dba240832ed4e": {
    "tex": "f(x) \\sim \\frac{C}{x^p} \\;(x \\to +\\infty) \\;\\Rightarrow\\; \\left( \\int_a^{+\\infty} f(x)\\,dx < +\\infty \\iff p > 1 \\right)",
@@ -1238,6 +1250,12 @@
    "alt": "P(Y = y) = tong_(x: g(x) = y) P(X = x)",
    "w": 130.91,
    "h": 24.17
+  },
+  "a83756c9f487b712": {
+   "tex": "A(u - v) = Au - Av = b - b = 0",
+   "alt": "A(u - v) = Au - Av = b - b = 0",
+   "w": 144.24,
+   "h": 10.18
   },
   "a89e3f91338d1ea1": {
    "tex": "\\frac{a + bi}{c + di} = \\frac{(a + bi)(c - di)}{c^{2} + d^{2}}",
@@ -1616,6 +1634,12 @@
    "alt": "E(g(X)) = tong_x g(x) P(X = x), E(g(X)) e g(E(X))",
    "w": 235,
    "h": 21.46
+  },
+  "de55afc08b221f3b": {
+   "tex": "x^{2} - y^{2} = a, \\quad 2xy = b, \\quad x^{2} + y^{2} = |w|",
+   "alt": "x^2 - y^2 = a, 2xy = b, x^2 + y^2 = |w|",
+   "w": 173.05,
+   "h": 11.54
   },
   "dea5c8b8fd750e49": {
    "tex": "P(AB) = P(A)\\,P(B \\mid A)",
