@@ -246,6 +246,7 @@ class DocScene(Scene):
         self.on_practice = on_practice
         self.page = 0
         self.pages: list[tuple[int, int]] = []        # (first block, end) of each page
+        self.page_section: list[int] = []             # the section each page belongs to
         self.scroll = 0.0
         self.items: list[dict] = []
         self.block_y: dict[int, float] = {}
@@ -257,10 +258,15 @@ class DocScene(Scene):
     def loaded(self, doc: dict) -> None:
         self.doc = doc
         self.built_for = None
-        starts = [n for n, b in enumerate(doc["blocks"]) if b["type"] == "section"] or [0]
+        # A page per section; in a format-2 lesson a `###` heading inside a section starts a page of
+        # its own, so a micro-skill that holds two ideas is two short pages, not one long scroll.
+        breaks = ("section", "heading") if doc.get("format", 1) >= 2 else ("section",)
+        starts = [n for n, b in enumerate(doc["blocks"]) if b["type"] in breaks] or [0]
         starts[0] = 0                                    # anything before the first section joins page 1
         ends = starts[1:] + [len(doc["blocks"])]
         self.pages = list(zip(starts, ends))
+        first = [n for n, b in enumerate(doc["blocks"]) if b["type"] == "section"]
+        self.page_section = [max(0, sum(1 for s in first if s <= a) - 1) for a, _ in self.pages]
         self.page = self.page_of(self.want_block)
         self.want_block = 0
         self.game.guide_seen("library_doc")
@@ -309,7 +315,14 @@ class DocScene(Scene):
         return [(n, b["title_vi"]) for n, b in enumerate(self.doc["blocks"]) if b["type"] == "section"]
 
     def current_section(self) -> int:
-        return self.page
+        """The index of the section (micro-skill) the page shown belongs to."""
+        return self.page_section[self.page] if self.page < len(self.page_section) else self.page
+
+    def part_of_section(self) -> tuple[int, int]:
+        """(k, m): the page shown is page k of the m pages of its section."""
+        here = self.current_section()
+        same = [i for i, s in enumerate(self.page_section) if s == here]
+        return (same.index(self.page) + 1, len(same)) if self.page in same else (1, 1)
 
     def go_page(self, page: int, to_end: bool = False) -> None:
         page = max(0, min(len(self.pages) - 1, page))
@@ -417,8 +430,12 @@ class DocScene(Scene):
             ui.fill(dx + i * 6 + (4 - size) / 2, y + 12 - size / 2, size, size, colour)
         head = f"{T.MATH_FLOOR.format(n=self.doc['floor'])} · {self.doc['title_vi']}"
         ui.text(pretty(mathdraw.fit(ui, head, 7, dx - x - PAD - 8)), x + PAD, y + 12, 7, GREY, anchor="midleft")
-        title = sections[here][1] if here < len(sections) else self.doc["title_vi"]
-        ui.text(pretty(mathdraw.fit(ui, title, SECTION, w - 2 * PAD)), x + PAD, y + 18, SECTION, UICOL["accent"])
+        sec = self.current_section()
+        title = sections[sec][1] if sec < len(sections) else self.doc["title_vi"]
+        k, m = self.part_of_section()
+        part = f" ({k}/{m})" if m > 1 else ""            # a section split into several short pages
+        ui.text(pretty(mathdraw.fit(ui, title, SECTION, w - 2 * PAD - ui.text_size(part, SECTION)[0])) + part,
+                x + PAD, y + 18, SECTION, UICOL["accent"])
         ui.fill(x + PAD, y + CONTENT_TOP - 4, w - 2 * PAD, 1, RULE)
 
     def draw_footer(self, ui, x, y, w, h, n_pages) -> None:

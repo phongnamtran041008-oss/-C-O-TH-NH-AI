@@ -457,3 +457,23 @@ def test_every_example_of_the_writers_guide_parses():
     for block in blocks:
         lines = block.splitlines()
         check_fits(mf.parse_figure(lines[0].split()[1], lines[1:-1]))
+
+
+# ------------------------------------------------------------------ a section split into pages
+def test_a_heading_starts_a_page_with_its_own_word_and_formula_budget():
+    """`###` inside a section starts a new page of the reader: the words are counted per page,
+    so a micro-skill with two ideas is two short pages instead of one long scroll."""
+    half = "chu " * 80
+    one_page = CARD.replace("Ví dụ ngắn.", f"{half}\n\n{half}")
+    _, problems = parse(one_page)
+    assert any("160 words" in p for p in problems), problems
+    two_pages = CARD.replace("Ví dụ ngắn.", f"{half}\n\n### Ý thứ hai\n\n{half}")
+    doc, problems = parse(two_pages)
+    assert problems == [], problems
+    assert [b["type"] for b in doc.blocks].count("heading") == 1
+
+
+def test_a_section_cannot_be_cut_into_too_many_pages():
+    many = CARD.replace("Ví dụ ngắn.", "Một.\n\n### Hai\n\nHai.\n\n### Ba\n\nBa.\n\n### Bốn\n\nBốn.")
+    _, problems = parse(many)
+    assert any("pages" in p and "at most" in p for p in problems), problems

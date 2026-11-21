@@ -69,8 +69,9 @@ MAX_CORE = 180
 MAX_CHECK = 200                  # the question, and the answer, each
 # The budget of one section of a `format: 2` lesson (one card, one micro-skill).
 MAX_PROSE_WORDS = 110            # text + bullets; hook, core, steps, notes and checks are not counted
-MAX_SECTION_FORMULAS = 2
+MAX_SECTION_FORMULAS = 2         # per page
 MAX_STEPS = 5
+MAX_SECTION_PAGES = 3            # a section may be split by `###` headings into this many pages
 
 
 # ------------------------------------------------------------------ TeX in plain text
@@ -466,13 +467,27 @@ def budget_problems(doc: "Document") -> list[str]:
             errors.append(f"{where}: needs a :::figure or a :::matrix to look at")
         if "check" not in kinds:
             errors.append(f"{where}: needs a :::check")
-        prose = sum(_words(b["text"]) for b in section if b["type"] == "text") + \
-            sum(_words(item) for b in section if b["type"] == "bullets" for item in b["items"])
-        if prose > MAX_PROSE_WORDS:
-            errors.append(f"{where}: {prose} words of text and bullets, at most {MAX_PROSE_WORDS} "
-                          "(move it into a figure, or cut it)")
-        if kinds.count("formula") > MAX_SECTION_FORMULAS:
-            errors.append(f"{where}: {kinds.count('formula')} formulas, at most {MAX_SECTION_FORMULAS}")
+        # Words and formulas are counted per PAGE: a `###` heading inside a section starts a page of
+        # its own in the reader, so a micro-skill with two ideas is two short pages.
+        pages: list[list[dict]] = [[]]
+        for b in section[1:]:
+            if b["type"] == "heading" and pages[-1]:
+                pages.append([])
+            pages[-1].append(b)
+        if len(pages) > MAX_SECTION_PAGES:
+            errors.append(f"{where}: {len(pages)} pages (### headings), at most {MAX_SECTION_PAGES}")
+        for k, page in enumerate(pages, 1):
+            at = where if len(pages) == 1 else f"{where}, page {k}"
+            prose = sum(_words(b["text"]) for b in page if b["type"] == "text") + \
+                sum(_words(item) for b in page if b["type"] == "bullets" for item in b["items"])
+            if prose > MAX_PROSE_WORDS:
+                errors.append(f"{at}: {prose} words of text and bullets, at most {MAX_PROSE_WORDS} "
+                              "(move it into a figure, cut it, or start a new page with a ### heading)")
+            n_formulas = sum(1 for b in page if b["type"] == "formula")
+            if n_formulas > MAX_SECTION_FORMULAS:
+                errors.append(f"{at}: {n_formulas} formulas, at most {MAX_SECTION_FORMULAS}")
+            if len(pages) > 1 and not any(b["type"] not in ("heading",) for b in page):
+                errors.append(f"{at}: the page is empty")
         for b in section:
             if b["type"] == "steps" and len(b["items"]) > MAX_STEPS:
                 errors.append(f"{where}: a list of {len(b['items'])} steps, at most {MAX_STEPS}")

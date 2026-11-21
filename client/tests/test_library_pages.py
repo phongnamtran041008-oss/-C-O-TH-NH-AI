@@ -159,3 +159,26 @@ def test_an_old_document_still_reads_page_by_page(ui):
     assert len(scene.pages) == len(old[0].skills)
     assert scene.layout_problems(ui) == []
     assert any(it["kind"] == "text" for it in scene.items)
+
+
+def test_a_heading_inside_a_section_is_a_page_of_its_own(ui):
+    """A `###` heading splits a micro-skill into short pages; the section stays the same one."""
+    src = (ROOT / "server/data/math/library/giai_tich/t4_dao_ham.md").read_text("utf-8")
+    marker = "Biết hệ số góc thì viết được tiếp tuyến"
+    assert marker in src
+    doc, problems = math_library.parse_document(src.replace(marker, "### Tiếp tuyến\n\n" + marker, 1))
+    assert doc is not None and problems == [], problems
+    game = Game()
+    game.api.docs = {doc.id: doc}
+    scene = DocScene(game, doc.id)
+    assert len(scene.pages) == len(doc.skills) + 1
+    assert scene.page_section[:3] == [0, 0, 1]
+    frame(ui, scene)
+    assert scene.part_of_section() == (1, 2)
+    frame(ui, scene, key(pygame.K_RIGHT))
+    frame(ui, scene)
+    assert scene.page == 1 and scene.current_section() == 0 and scene.part_of_section() == (2, 2)
+    assert any(it["kind"] == "text" and "Tiếp tuyến" in it["text"] for it in scene.items)
+    assert scene.layout_problems(ui) == []
+    # a question still opens the page of its micro-skill
+    assert DocScene(game, doc.id, doc.section_of(doc.skills[1])).page == 2
