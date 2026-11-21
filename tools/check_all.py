@@ -811,6 +811,7 @@ CHECKS = [
      check_tree),
     ("Lộ Trình: guide.json chapters, steps, checks, rewards and text lengths are sound", check_guide),
     ("fonts: every string the game shows can be drawn", check_fonts),
+    ("Đại Địa Đồ: maps walkable, khu and bands sound, monsters distributed (tools/check_maps.py)", lambda: __import__("check_maps").problems()),
 ]
 
 

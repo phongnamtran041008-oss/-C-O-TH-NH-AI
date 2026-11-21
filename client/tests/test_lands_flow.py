@@ -133,7 +133,13 @@ def run_lands_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.step(10)
         drv.shot("luu_van_coc")
 
-        # ---- a Vân Xà strikes: its card asks Giải Tích, a right answer is a Phản Đòn
+        # ---- a Vân Xà strikes: its card asks Giải Tích, a right answer is a Phản Đòn. Đại Địa Đồ: no
+        # monster lives within 10 tiles of the gate, so first walk to the nearest area of Vân Xà
+        lmap = maps.load(zones()[LAND]["map"])
+        px, py = ws.player.x, ws.player.y
+        area = min((a for a in lmap.monster_areas if a.props.get("monster") == CREATURE),
+                   key=lambda a: math.hypot(a.x + a.w / 2 - px, a.y + a.h / 2 - py))
+        route_to(drv, server, LAND, area.x + area.w / 2, area.y + area.h / 2, near=120, timeout=90)
         drv.wait(lambda: nearest(ws, CREATURE) is not None, 10, "a Vân Xà")
         m = nearest(ws, CREATURE)                     # the stream winds between: go round by the bridge
         route_to(drv, server, LAND, m.pos[0], m.pos[1], near=30)
@@ -245,7 +251,7 @@ def run_weapon_spot_flow(workdir: Path, shots: Path | None = None) -> None:
 
 # ------------------------------------------------------------------ the tour (screenshots only)
 SCENIC = {   # land -> a tile to stand on for its picture
-    "kiem_trung_son": (44, 13), "luu_van_coc": (27, 21), "van_tuong_trach": (30, 16),
+    "kiem_trung_son": (160, 150), "luu_van_coc": (150, 192), "van_tuong_trach": (30, 16),
     "me_do_lam": (50, 12), "thien_cong_phuong": (12, 7), "linh_xa_nguyen": (40, 18),
     "loi_kiep_dai": (20, 22),
 }

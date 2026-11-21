@@ -31,7 +31,10 @@ def test_the_ground_tiles_are_named_alike():
 def test_the_client_picks_the_landing_the_server_accepts():
     g = next(u for u in PLAN["unlocks"] if u["id"] == "dap_kiem_luot")["glide"]
     over = set(g["over_tiles"])
-    for name, (tx, ty) in (("loan_so_coc", (51, 6)), ("luu_van_coc", (20, 6))):
+    spots = {f"{p['weapon']}_{p['quality']}": p["pos"] for p in PLAN["weapons_placed"] if p.get("pos")}
+    # the ledge 4 tiles below the peak of Kiếm Trủng Sơn, the shore 3 below the pool of Lưu Vân Cốc
+    for name, spot, below in (("loan_so_coc", "kiem_2_ha", 4), ("luu_van_coc", "dao_2_ha", 3)):
+        tx, ty = spots[spot][0], spots[spot][1] + below
         z = maps.load(name)
         x, y = tx * 16 + 8.0, ty * 16 + 12.0
         to = cg.pick(z.collider, z.tile_name, over, x, y, 0, -1, g["max_px"], g["min_px"])

@@ -113,11 +113,16 @@ def test_each_creature_teaches_something_of_its_own():
 
 
 def test_the_lands_feel_more_alive_not_swamped():
+    from app.realtime import dia_do
+    budget = dia_do.distribution()["max_monsters_per_land"]
     for land in {v[0] for v in NEW.values()}:
         zmap = World(mono=FakeMono())._channels(lands.zone_of(land))[0].map
         added = sum(int(a.props["count"]) for a in zmap.monster_areas if a.props["monster"] in NEW)
-        assert 2 <= added <= 5, land
         total = sum(int(a.props["count"]) for a in zmap.monster_areas)
+        if zmap.khu:      # a giant land of Đại Địa Đồ: its own distribution rules (tools/check_maps.py)
+            assert added >= 2 and total <= budget, land
+            continue
+        assert 2 <= added <= 5, land
         assert total <= 45, land
 
 
