@@ -6668,7 +6668,7 @@
       {
        "name": "text",
        "type": "string",
-       "value": "↑ Kiếm Trủng Sơn"
+       "value": "Bắc → Kiếm Trủng Sơn"
       }
      ]
     },
@@ -6767,7 +6767,7 @@
       {
        "name": "text",
        "type": "string",
-       "value": "← Vạn Tượng Trạch"
+       "value": "Tây → Vạn Tượng Trạch"
       }
      ]
     },
@@ -6878,7 +6878,7 @@
       {
        "name": "text",
        "type": "string",
-       "value": "↑ Lưu Vân Cốc"
+       "value": "Bắc → Lưu Vân Cốc"
       }
      ]
     },
@@ -6954,7 +6954,7 @@
       {
        "name": "text",
        "type": "string",
-       "value": "↑ Lôi Kiếp Đài"
+       "value": "Bắc → Lôi Kiếp Đài"
       }
      ]
     },
@@ -7030,7 +7030,7 @@
       {
        "name": "text",
        "type": "string",
-       "value": "← Thiên Công Phường"
+       "value": "Tây → Thiên Công Phường"
       }
      ]
     },
@@ -7106,7 +7106,7 @@
       {
        "name": "text",
        "type": "string",
-       "value": "Linh Xạ Nguyên →"
+       "value": "Đông → Linh Xạ Nguyên"
       }
      ]
     },

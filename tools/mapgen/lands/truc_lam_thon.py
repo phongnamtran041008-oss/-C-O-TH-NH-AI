@@ -85,14 +85,14 @@ def village() -> dict:
     m.obj("to_loan_so_coc", "portal", 16 * T, -8, 4 * T, T + 10, target="loan_so_coc",
           target_spawn="from_village")
     m.obj("Đi Kiếm Trủng Sơn", "sign", 20 * T, 3 * T, 16, 20, sprite="sign",
-          text="↑ Kiếm Trủng Sơn")
+          text="Bắc → Kiếm Trủng Sơn")
     m.solid(20 * T + 6, 3 * T + 14, 4, 6)
     m.obj("from_loan_so_coc", "spawn", 17 * T, 3 * T, 1, 1)
     # stage 6: the pond can be fished (spec 11.1), the west gate leads to Hồ Nghiên Mực
     m.obj("pond", "area", 4 * T, 26 * T, 7 * T, 5 * T, kind="pond", pool="ao")
     m.obj("Cổng Tây", "prop", 0, 16 * T - 8, 32, 40, sprite="portal")
     m.obj("to_lake", "portal", -8, 16 * T, T + 12, 4 * T, target="ho_nghien_muc", target_spawn="from_village")
-    m.obj("Đi Vạn Tượng Trạch", "sign", 3 * T, 14 * T, 16, 20, sprite="sign", text="← Vạn Tượng Trạch")
+    m.obj("Đi Vạn Tượng Trạch", "sign", 3 * T, 14 * T, 16, 20, sprite="sign", text="Tây → Vạn Tượng Trạch")
     m.solid(3 * T + 6, 14 * T + 14, 4, 6)
     m.obj("from_lake", "spawn", 3 * T, 18 * T, 1, 1)
     # stage 9: Cổng Bí Cảnh on the square (secret realms, spec 14)
@@ -111,25 +111,25 @@ def village_lands(m: MapBuilder) -> None:
     m.fill(45, 0, 48, 4, ["path0", "path1"], reserve=False)
     m.fill(47, 5, 48, 15, ["path0", "path1"], reserve=False)
     m.gate("n", 45, "luu_van_coc", "from_village", "Cổng Mây")
-    m.sign("Đi Lưu Vân Cốc", "↑ Lưu Vân Cốc", 44, 3)
+    m.sign("Đi Lưu Vân Cốc", "Bắc → Lưu Vân Cốc", 44, 3)
     m.obj("from_luu_van_coc", "spawn", 47 * T, 3 * T, 1, 1)
     # north-west: Lôi Kiếp Đài, the trial at the end of the realm
     m.clear(0, 0, 6, 12)
     m.fill(2, 0, 5, 3, ["path0", "path1"], reserve=False)
     m.fill(2, 4, 4, 8, ["path0", "path1"], reserve=False)
     m.gate("n", 2, "loi_kiep_dai", "from_village", "Cổng Lôi")
-    m.sign("Đi Lôi Kiếp Đài", "↑ Lôi Kiếp Đài", 6, 2)
+    m.sign("Đi Lôi Kiếp Đài", "Bắc → Lôi Kiếp Đài", 6, 2)
     m.obj("from_loi_kiep_dai", "spawn", 3 * T + 8, 3 * T, 1, 1)
     # west, above the lake road: Thiên Công Phường
     m.fill(0, 9, 8, 11, ["path0", "path1", "path0"], reserve=False)
     m.gate("w", 9, "thien_cong_phuong", "from_village", "Cổng Thợ")
-    m.sign("Đi Thiên Công Phường", "← Thiên Công Phường", 5, 12)
+    m.sign("Đi Thiên Công Phường", "Tây → Thiên Công Phường", 5, 12)
     m.obj("from_thien_cong_phuong", "spawn", 3 * T, 10 * T + 8, 1, 1)
     # east, past the Thủ Thành gate: Linh Xạ Nguyên
     m.clear(46, 25, W - 1, 30)
     m.fill(46, 27, W - 1, 28, ["path0", "path1"], reserve=False)
     m.gate("e", 26, "linh_xa_nguyen", "from_village", "Cổng Xạ")
-    m.sign("Đi Linh Xạ Nguyên", "Linh Xạ Nguyên →", 52, 25)
+    m.sign("Đi Linh Xạ Nguyên", "Đông → Linh Xạ Nguyên", 52, 25)
     m.obj("from_linh_xa_nguyen", "spawn", (W - 4) * T, 28 * T, 1, 1)
 
 
