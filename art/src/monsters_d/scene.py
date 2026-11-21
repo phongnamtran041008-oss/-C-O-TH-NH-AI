@@ -90,15 +90,20 @@ def main():
     # the pivot): per facing, the armature object slides straight away from the camera by
     # shift_<dir> metres, so the limbs nearest the camera stand on the pivot row and the
     # far ones draw higher, as they should. See fitcheck.py and README.
-    shift = {d: float(arm.get(f"shift_{d}", 0.0)) for d in ("down", "up", "side")}
-    away = {"down": (0.0, shift["down"]), "up": (0.0, -shift["up"]),
-            "right": (shift["side"], 0.0), "left": (-shift["side"], 0.0)}
+    # A clip may override it (`shift_<dir>_<clip>`): a rearing horse has only its hind
+    # hooves on the ground.
+
+    def away(d, clip_name):
+        key = "side" if d in ("left", "right") else d
+        v = float(arm.get(f"shift_{key}_{clip_name}", arm.get(f"shift_{key}", 0.0)))
+        return {"down": (0.0, v), "up": (0.0, -v), "right": (v, 0.0), "left": (-v, 0.0)}[d]
 
     def on_frame(clip_name, d, i):
-        arm.location = (away[d][0], away[d][1], 0.0)
+        x, y = away(d, clip_name)
+        arm.location = (x, y, 0.0)
         bpy.context.view_layer.update()
 
-    hook = on_frame if any(shift.values()) else None
+    hook = on_frame if any(k.startswith("shift_") for k in arm.keys()) else None
     for variant, out_id, label in (("base", a.id, name_vi), ("di", f"{a.id}_di", f"{name_vi} Dị Chủng")):
         rig.apply_variant(variant)
         kit.render_animated(arm, out_id, clips, OUT, name_vi=label, kind=KIND[frame],

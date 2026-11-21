@@ -20,7 +20,7 @@ import math
 from common import S, att, six
 from rig import aim, armature, ball, cone, lerp_pose, material, merge, tube, use_collection
 
-SC = 1.5
+SC = 1.42
 LEGS = {"leg_f_l": (0.065, -0.04), "leg_f_r": (-0.065, -0.04), "leg_b": (0.0, 0.075)}
 VENTS = [(0.16, 0.07), (-0.16, 0.07)]
 Z = 0.045                        # the pot stands this much higher than at first, to show its legs
@@ -87,7 +87,7 @@ def build():
         cone("ll_lip", 0.22, 0.22, 0.022, (0, 0, 0.635 + Z), boss, seg=18),
         cone("ll_stem", 0.03, 0.025, 0.06, (0, 0, 0.73 + Z), bronze_dk, seg=8),
         ball("ll_bud", (0.05, 0.05, 0.06), (0, 0, 0.78 + Z), boss, seg=10, rings=6),
-        aim("ll_budtip", boss, (0, 0, 0.82 + Z), (0, 0, 0.87 + Z), 0.03, 0.0, seg=6),
+        aim("ll_budtip", boss, (0, 0, 0.82 + Z), (0, 0, 0.85 + Z), 0.03, 0.0, seg=6),
         *[ball(f"ll_lidstud{k}", (0.02,) * 3, (0.15 * math.cos(a), 0.15 * math.sin(a), 0.675 + Z), boss, seg=6, rings=4)
           for k, a in enumerate(math.tau * j / 6 + 0.5 for j in range(6))])
 
@@ -160,23 +160,23 @@ def clips(arm):
             p[name] = {"l": (0, 0, 0.026 * lift if name == up else -0.008 * lift)}
         walk.append(p)
 
-    gape = base(0, fire_s=1.5, lid=-68)
+    gape = base(0, fire_s=1.15, lid=-42)
     gape["body"] = {"r": (-9, 0, 0), "s": (1.04, 1.04, 1.04), "l": (0, 0.02, 0)}
     gape.update(puffs(0.6, 1.4))
     windup = [merge(base(0, fire_s=1.1, lid=-30), {"body": {"r": (-4, 0, 0)}}), gape,
-              merge(gape, {"fire": {"s": 1.65, "r": (0, 0, 30)}, "lid": {"r": (-70, 0, 0)}}),
-              merge(gape, merge(puffs(0.9, 1.4), {"fire": {"s": 1.55, "r": (0, 0, -20)}, "lid": {"r": (-66, 0, 0)}}))]
+              merge(gape, {"fire": {"s": 1.25, "r": (0, 0, 30)}, "lid": {"r": (-44, 0, 0)}}),
+              merge(gape, merge(puffs(0.9, 1.4), {"fire": {"s": 1.2, "r": (0, 0, -20)}, "lid": {"r": (-40, 0, 0)}}))]
 
-    lurch = base(0, fire_s=1.2, lid=-58)
+    lurch = base(0, fire_s=1.1, lid=-40)
     lurch["body"] = {"r": (10, 0, 0), "l": (0, -0.02, 0)}
-    lurch["blast"] = {"s": (0.8, 0.55, 0.8)}
-    blast = base(1, fire_s=1.0, lid=-60)
+    lurch["blast"] = {"s": (0.7, 0.5, 0.7)}
+    blast = base(1, fire_s=1.0, lid=-42)
     blast["body"] = {"r": (12, 0, 0), "l": (0, -0.025, 0)}
-    blast["blast"] = {"s": 1.0}
+    blast["blast"] = {"s": 0.82}
     blast.update(puffs(0.3, 1.5))
     fade = base(2, fire_s=0.8, lid=-30)
     fade["body"] = {"r": (5, 0, 0)}
-    fade["blast"] = {"s": (0.6, 1.05, 0.6), "l": (0, -0.04, 0.02)}
+    fade["blast"] = {"s": (0.5, 0.85, 0.5), "l": (0, -0.02, 0.02)}
     slam = base(3, fire_s=0.6, lid=2)
     slam["body"] = {"r": (1, 0, 0), "s": (1.04, 1.04, 0.96)}
     attack = [lurch, blast, fade, slam]
@@ -189,10 +189,10 @@ def clips(arm):
            "leg_f_l": {"l": (0, 0, 0.02)}, "leg_f_r": {"r": (0, 0, 0), "l": (0, 0, 0.0)}}
     for k in range(len(VENTS)):
         tip[f"puff{k}"] = {"s": 0.0}
-    die = [merge(base(0, fire_s=1.5, lid=-40), merge(puffs(0.7, 1.6), {"body": {"r": (-10, 0, 0)}})),
-           merge(base(1, fire_s=1.3, lid=-110), merge(puffs(0.2, 1.8), {"lid": {"r": (-95, 0, 0), "l": (0, 0.04, 0.0)},
+    die = [merge(base(0, fire_s=1.3, lid=-30), merge(puffs(0.7, 1.4), {"body": {"r": (-10, 0, 0)}})),
+           merge(base(1, fire_s=1.0, lid=-30), merge(puffs(0.2, 1.2), {"lid": {"r": (-30, 0, 0), "l": (0, 0.0, 0.0)},
                                                                          "body": {"r": (-6, 6, 0)}})),
-           merge(base(2, fire_s=0.6, lid=-140), {"lid": {"r": (-140, 0, 0), "l": (0, 0.07, -0.10)}, "body": {"r": (0, 14, 0)}}),
+           merge(base(2, fire_s=0.6, lid=-80), {"lid": {"r": (-80, 0, 0), "l": (0, 0.04, -0.10)}, "body": {"r": (6, 10, 0)}}),
            merge(lerp_pose(base(0), tip, 0.7), {"fire": {"s": 0.25}}),
            merge(tip, {"puff0": {"s": 0.8, "l": (0, 0, 0.08)}, "puff1": {"s": 0.6, "l": (0, 0, 0.04)}}),
            merge(tip, {"puff0": {"s": 1.0, "l": (0, 0, 0.14)}, "puff1": {"s": 0.8, "l": (0, 0, 0.10)}})]

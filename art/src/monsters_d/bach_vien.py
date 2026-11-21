@@ -20,7 +20,7 @@ import math
 
 from common import C, Limb, S, att, posed, rest_table, six
 from quadrupeds import gait
-from rig import aim, armature, ball, box, lerp_pose, material, merge, use_collection
+from rig import aim, armature, ball, box, lerp_pose, material, merge, shadow, shadow_material, use_collection
 
 SC = 1.45                       # the whole ape is built at 1/SC and scaled up
 PELVIS_H = (0.15, 0.40)         # (y, z) head of the pelvis bone
@@ -124,6 +124,9 @@ def build():
         att(arm, f"ft_{s}", box(f"bv_foot{s}", (0.07, 0.12, 0.04), (x * 0.105, 0.075, 0.02), skin, bevel=0.015))
 
 
+    # a flat contact shadow under the footprint: grounds the heavy body and keeps the middle
+    # of the lowest rows on the pivot while a hand or foot is lifted
+    shadow("bv_shadow", 0.155, 0.14, shadow_material("MAT_bv_shadow"), arm)
     clips(arm)
     arm.scale = (SC, SC, SC)
     # a footprint wider than the ground band: slide away from the camera per facing
@@ -185,15 +188,15 @@ def clips(arm):
 
     # windup: rears up on its hind legs, both fists raised high overhead, roaring
     crouch = body(t=(0.0, -0.03), p=6, c=4, hands={"l": (0.02, 0), "r": (0.02, 0)}, jaw=10)
-    rear = body(t=(0.04, -0.06), p=-14, c=-8, arms_fk={"l": (-112, -200), "r": (-112, -200)},
+    rear = body(t=(0.04, -0.08), p=-8, c=-6, arms_fk={"l": (-100, -200), "r": (-100, -200)},
                 head=(-14, 0, 0), jaw=34)
     windup = [crouch, rear,
-              merge(rear, body(t=(0.04, -0.065), p=-15, c=-9, arms_fk={"l": (-116, -204), "r": (-108, -196)},
+              merge(rear, body(t=(0.04, -0.085), p=-9, c=-7, arms_fk={"l": (-104, -204), "r": (-96, -196)},
                                head=(-16, 0, 4), jaw=38)),
-              merge(rear, body(t=(0.04, -0.06), p=-14, c=-8, arms_fk={"l": (-108, -196), "r": (-116, -204)},
+              merge(rear, body(t=(0.04, -0.08), p=-8, c=-6, arms_fk={"l": (-96, -196), "r": (-104, -204)},
                                head=(-15, 0, -4), jaw=36))]
     # attack: the double-fist ground slam just in front of it
-    swing = body(t=(0.02, -0.04), p=-4, c=4, arms_fk={"l": (-80, -125), "r": (-80, -125)}, head=(-6, 0, 0), jaw=24)
+    swing = body(t=(0.02, -0.04), p=-4, c=4, arms_fk={"l": (-62, -168), "r": (-62, -168)}, head=(-6, 0, 0), jaw=24)
     slam = body(t=(-0.01, -0.06), p=14, c=10, hands={"l": (-0.025, 0.0), "r": (-0.025, 0.0)}, head=(10, 0, 0), jaw=30)
     shake = body(t=(-0.01, -0.055), p=13, c=9, hands={"l": (-0.025, 0.0), "r": (-0.025, 0.0)}, head=(6, 0, 0), jaw=12)
     recover = lerp_pose(slam, idle[0], 0.7)
@@ -203,7 +206,7 @@ def clips(arm):
            body(t=(0.01, -0.005), p=-4, c=-2, hands={"l": (0.01, 0.0), "r": (0.01, 0.0)}, head=(-6, 0, 4), jaw=6)]
 
     sit = body(t=(0.03, -0.17), p=-6, c=6, hands={"l": (0.04, 0.0), "r": (0.04, 0.0)}, head=(10, 0, 10), jaw=10)
-    slump = body(t=(0.09, -0.24), p=24, c=12, arms_fk={"l": (-30, -50), "r": (-24, -40)}, head=(10, 0, 40), jaw=14)
+    slump = body(t=(0.06, -0.19), p=8, c=6, arms_fk={"l": (2, 10), "r": (4, 12)}, head=(0, 0, 50), jaw=14)
     die = [body(t=(0.03, -0.01), p=-14, c=-8, hands={"l": (0.03, 0.03), "r": (0.03, 0.03)}, head=(-26, 0, 0), jaw=34),
            sit,
            lerp_pose(sit, slump, 0.45),

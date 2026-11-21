@@ -27,9 +27,10 @@ def main():
     size = int(arm.get("frame", 48))
     px, py = PIVOT[size]
     foot = max(4.0, size / 12)
-    sh = {d: float(arm.get(f"shift_{d}", 0.0)) for d in ("down", "up", "side")}
-    away = {"down": (0.0, sh["down"]), "up": (0.0, -sh["up"]), "right": (sh["side"], 0.0),
-            "left": (-sh["side"], 0.0)}
+    def away(d, clip_name):
+        key = "side" if d in ("left", "right") else d
+        v = float(arm.get(f"shift_{key}_{clip_name}", arm.get(f"shift_{key}", 0.0)))
+        return {"down": (0.0, v), "up": (0.0, -v), "right": (v, 0.0), "left": (-v, 0.0)}[d]
     meshes = [o for o in scene.objects if o.type == "MESH" and "holdout" not in o.name]
     worst_all = 0.0
     for act in sorted(bpy.data.actions, key=lambda a: a.name):
@@ -61,8 +62,9 @@ def main():
             P0, names = P0[keep], names[keep]
             for d, yaw in DIRS.items():
                 P = P0.copy()
-                P[:, 0] += away[d][0]
-                P[:, 1] += away[d][1]
+                ox, oy = away(d, act.name)
+                P[:, 0] += ox
+                P[:, 1] += oy
                 c, s = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
                 x = P[:, 0] * c - P[:, 1] * s
                 y = P[:, 0] * s + P[:, 1] * c

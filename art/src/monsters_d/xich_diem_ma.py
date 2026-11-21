@@ -24,14 +24,16 @@ from __future__ import annotations
 import math
 
 from common import Limb, S, att, posed, rest_table, six
-from rig import aim, armature, ball, cone, lerp_pose, material, merge, set_root_offset, use_collection
+from rig import (aim, armature, ball, cone, lerp_pose, material, merge, set_root_offset, shadow,
+                 shadow_material, use_collection)
 
-SC = 1.35
+SC = 1.15
 BODY_H = (0.18, 0.52)
-FX, HX = 0.075, 0.08          # half track of the fore and hind legs
+FX, HX = 0.085, 0.09          # half track of the fore and hind legs
 
 BONES = [
     ("root", (0, 0, 0), (0, 0, 0.1), None),
+    ("shadow", (0, 0.0225, 0.0), (0, -0.08, 0.0), "root"),
     ("body", (0, 0.18, 0.52), (0, -0.20, 0.56), "root"),
     ("neck1", (0, -0.22, 0.58), (0, -0.32, 0.74), "body"),
     ("neck2", (0, -0.32, 0.74), (0, -0.41, 0.86), "neck1"),
@@ -77,23 +79,23 @@ def build():
 
     # ---- trunk: barrel, deep chest, sloping shoulder, withers, croup, rump and haunches
     att(arm, "body",
-        ball("xd_barrel", (0.11, 0.29, 0.13), (0, 0.0, 0.48), coat, seg=16, rings=10),
-        ball("xd_chest", (0.11, 0.12, 0.14), (0, -0.19, 0.49), coat, seg=14, rings=8),
+        ball("xd_barrel", (0.14, 0.29, 0.135), (0, 0.0, 0.48), coat, seg=16, rings=10),
+        ball("xd_chest", (0.135, 0.12, 0.14), (0, -0.19, 0.49), coat, seg=14, rings=8),
         aim("xd_shoulder", coat, (0, -0.15, 0.62), (0, -0.27, 0.46), 0.075, 0.06, seg=10, smooth=True),
         ball("xd_withers", (0.065, 0.09, 0.05), (0, -0.15, 0.60), coat, seg=10, rings=6),
-        ball("xd_rump", (0.12, 0.13, 0.13), (0, 0.20, 0.51), coat, seg=14, rings=8),
-        ball("xd_croup", (0.085, 0.10, 0.05), (0, 0.17, 0.595), coat, seg=10, rings=6),
+        ball("xd_rump", (0.145, 0.13, 0.13), (0, 0.20, 0.51), coat, seg=14, rings=8),
+        ball("xd_croup", (0.10, 0.10, 0.05), (0, 0.17, 0.595), coat, seg=10, rings=6),
         aim("xd_haunchl", coat, (0.05, 0.20, 0.53), (HX, 0.12, 0.39), 0.075, 0.05, seg=10, smooth=True),
         aim("xd_haunchr", coat, (-0.05, 0.20, 0.53), (-HX, 0.12, 0.39), 0.075, 0.05, seg=10, smooth=True),
         aim("xd_elbowl", coat, (FX * 0.8, -0.24, 0.47), (FX, -0.20, 0.37), 0.05, 0.04, seg=8, smooth=True),
         aim("xd_elbowr", coat, (-FX * 0.8, -0.24, 0.47), (-FX, -0.20, 0.37), 0.05, 0.04, seg=8, smooth=True))
 
     # ---- neck and head
-    att(arm, "neck1", aim("xd_neck1", coat, (0, -0.19, 0.54), (0, -0.33, 0.75), 0.095, 0.07, seg=12, smooth=True))
+    att(arm, "neck1", aim("xd_neck1", coat, (0, -0.19, 0.54), (0, -0.33, 0.75), 0.10, 0.07, seg=12, smooth=True))
     att(arm, "neck2", aim("xd_neck2", coat, (0, -0.32, 0.73), (0, -0.41, 0.86), 0.072, 0.056, seg=12, smooth=True),
         ball("xd_throat", (0.05, 0.05, 0.06), (0, -0.40, 0.79), coat, seg=8, rings=5))
     att(arm, "head",
-        ball("xd_cheek", (0.055, 0.07, 0.065), (0, -0.445, 0.83), coat, seg=12, rings=8),
+        ball("xd_cheek", (0.062, 0.07, 0.065), (0, -0.445, 0.83), coat, seg=12, rings=8),
         aim("xd_face", coat, (0, -0.44, 0.85), (0, -0.585, 0.715), 0.052, 0.036, seg=10, smooth=True),
         ball("xd_muzzle", (0.04, 0.045, 0.042), (0, -0.585, 0.71), muzzle, seg=10, rings=6),
         ball("xd_eyel", (0.016, 0.022, 0.016), (0.052, -0.47, 0.84), eye, seg=8, rings=5),
@@ -133,11 +135,18 @@ def build():
         att(arm, f"emf_{s}", *_embers(f"xd_emf{s}", x * FX, -0.215, ember))
         att(arm, f"emh_{s}", *_embers(f"xd_emh{s}", x * HX, 0.24, ember))
 
+    # a flat contact shadow under the hooves (its own bone, so the rearing windup can draw
+    # it in): grounds the horse and keeps the middle of the lowest rows on the pivot while
+    # a hoof is in the air
+    sh = shadow("xd_shadow", 0.14, 0.27, shadow_material("MAT_xd_shadow"), arm)
+    att(arm, "shadow", sh)
     clips(arm)
     arm.scale = (SC, SC, SC)
     # the hooves span more than the ground band when it faces the camera or away from it
-    arm["shift_down"] = 0.17
-    arm["shift_up"] = 0.17
+    arm["shift_down"] = 0.21
+    arm["shift_up"] = 0.18
+    arm["shift_side"] = 0.03
+    arm["shift_down_windup"] = 0.08     # rearing: only the hind hooves touch the ground
     return arm
 
 
@@ -159,11 +168,12 @@ def hoof_path(phase, s, lift, stance=0.75):
 
 
 def pose(t=(0.0, 0.0), p=0.0, fore=None, hind=None, fore_fk=None, hind_fk=None, neck=(0, 0), head=0.0,
-         turn=0.0, mane=0.0, mane_s=1.0, tail=(0, 0, 0), tail_side=0.0, embers=None, root_y=0.0, fire=1.0):
+         turn=0.0, mane=0.0, mane_s=1.0, tail=(0, 0, 0), tail_side=0.0, embers=None, root_y=0.0, fire=1.0,
+         shadow_s=1.0):
     """fore / hind: {side: (dy, lift, flip)} hoof targets; *_fk: {side: (upper, lower, hoof)}
     absolute changes of angle. neck: (neck1, neck2) pitch; mane: lag pitch of the fire."""
     fore, hind = fore or {}, hind or {}
-    out = {"root": {"l": (0, root_y, 0)},
+    out = {"root": {"l": (0, root_y, 0)}, "shadow": {"s": shadow_s},
            "body": {"l": (0, t[0], t[1]), "r": (p, 0, 0)},
            "neck1": {"r": (neck[0], 0, turn * 0.5)}, "neck2": {"r": (neck[1], 0, turn * 0.5)},
            "head": {"r": (head, 0, 0)},
@@ -223,46 +233,46 @@ def clips(arm):
                          tail=(-6, 6 * S(i, 6), 10 * S(i, 6, -0.9)), tail_side=10 * S(i, 6, -0.6), embers=em))
 
     # windup: rears on the hind legs, forelegs tucked, head up, mane and tail flaring
-    rear = pose(t=(0.0, 0.0), p=-32, fore_fk={"l": (-95, -10, 30), "r": (-80, 0, 30)},
+    rear = pose(t=(0.0, 0.0), p=-20, fore_fk={"l": (-95, -10, 30), "r": (-80, 0, 30)},
                 hind={"l": (-0.035, 0.0, 0.0), "r": (-0.02, 0.0, 0.0)},
-                neck=(14, 6), head=10, mane=-22, mane_s=1.35, tail=(28, 10, -6), tail_side=0)
-    windup = [pose(t=(0.0, -0.03), p=4, neck=(16, 8), head=6, mane=-10, mane_s=1.15,
-                   fore={"l": (-0.01, 0.0, 0.0), "r": (0.0, 0.0, 0.0)}, hind={"l": (-0.02, 0.0, 0.0), "r": (-0.02, 0.0, 0.0)},
-                   tail=(10, 4, 0)),
+                neck=(14, 6), head=10, mane=-22, mane_s=1.35, tail=(28, 10, -6), tail_side=0, shadow_s=0.7)
+    windup = [pose(t=(0.0, -0.01), p=-12, fore_fk={"l": (-60, 10, 30), "r": (-45, 15, 25)},
+                   hind={"l": (-0.03, 0.0, 0.0), "r": (-0.02, 0.0, 0.0)},
+                   neck=(8, 4), head=6, mane=-16, mane_s=1.2, tail=(16, 6, 0), shadow_s=0.7),
               rear,
-              merge(rear, pose(t=(0.0, 0.0), p=-34, fore_fk={"l": (-80, 0, 30), "r": (-98, -14, 30)},
+              merge(rear, pose(t=(0.0, 0.0), p=-22, fore_fk={"l": (-80, 0, 30), "r": (-98, -14, 30)},
                                hind={"l": (-0.035, 0.0, 0.0), "r": (-0.02, 0.0, 0.0)},
-                               neck=(12, 6), head=12, mane=-28, mane_s=1.45, tail=(30, 14, -10), tail_side=8)),
-              merge(rear, pose(t=(0.0, 0.0), p=-33, fore_fk={"l": (-96, -12, 30), "r": (-82, 0, 30)},
+                               neck=(12, 6), head=12, mane=-28, mane_s=1.45, tail=(30, 14, -10), tail_side=8, shadow_s=0.7)),
+              merge(rear, pose(t=(0.0, 0.0), p=-21, fore_fk={"l": (-96, -12, 30), "r": (-82, 0, 30)},
                                hind={"l": (-0.035, 0.0, 0.0), "r": (-0.02, 0.0, 0.0)},
-                               neck=(14, 6), head=10, mane=-24, mane_s=1.4, tail=(28, 10, -8), tail_side=-8))]
+                               neck=(14, 6), head=10, mane=-24, mane_s=1.4, tail=(28, 10, -8), tail_side=-8, shadow_s=0.7))]
 
     # attack: drops out of the rear into a charge; the forelegs strike out on the hit frame
-    lunge = pose(t=(0.0, -0.01), p=6, fore_fk={"l": (-55, -40, 20), "r": (-35, -15, 10)},
+    lunge = pose(t=(0.0, -0.01), p=6, fore_fk={"l": (-82, -58, 20), "r": (-76, -46, 10)},
                  hind={"l": (0.03, 0.0, 0.0), "r": (0.045, 0.02, 0.3)},
-                 neck=(26, 10), head=14, mane=-40, mane_s=1.4, tail=(-40, -20, -10), root_y=-0.01)
-    strike = pose(t=(0.0, -0.025), p=8, fore={"l": (-0.035, 0.0, 0.0), "r": (-0.01, 0.03, 0.5)},
+                 neck=(14, 5), head=12, mane=-40, mane_s=1.4, tail=(-12, -6, 0), root_y=-0.01)
+    strike = pose(t=(0.0, -0.025), p=8, fore={"l": (-0.015, 0.0, 0.0), "r": (0.0, 0.03, 0.5)},
                   hind={"l": (0.04, 0.0, 0.0), "r": (0.03, 0.0, 0.0)},
-                  neck=(30, 12), head=16, mane=-44, mane_s=1.45, tail=(-44, -20, -14), root_y=-0.015,
+                  neck=(14, 6), head=12, mane=-44, mane_s=1.45, tail=(-14, -8, -4), root_y=-0.008,
                   embers={"emf_l": 1.0, "emf_r": 0.6})
     settle = pose(t=(0.0, -0.012), p=3, fore={"l": (-0.02, 0.0, 0.0), "r": (-0.01, 0.0, 0.0)},
                   hind={"l": (0.02, 0.0, 0.0), "r": (0.02, 0.0, 0.0)},
-                  neck=(14, 6), head=8, mane=-24, mane_s=1.2, tail=(-20, -8, 0), root_y=-0.008,
+                  neck=(10, 4), head=6, mane=-24, mane_s=1.2, tail=(-8, -4, 0), root_y=-0.008,
                   embers={"emf_l": 0.5})
     attack = [lunge, strike, settle, lerp_pose(settle, idle[0], 0.7)]
 
     hit = [pose(t=(0.01, 0.0), p=-8, fore={"l": (0.0, 0.035, 0.5), "r": (0.01, 0.0, 0.0)},
-                neck=(-16, -8), head=-10, mane=6, mane_s=0.8, tail=(14, 10, 6), turn=10),
+                neck=(-8, -4), head=-6, mane=6, mane_s=0.8, tail=(14, 10, 6), turn=10),
            pose(t=(0.004, 0.0), p=-3, neck=(-6, -3), head=-4, mane=-2, mane_s=0.9, tail=(4, 4, 2), turn=4)]
 
     kneel = pose(t=(0.0, -0.20), p=10, fore_fk={"l": (-70, 95, 60), "r": (-66, 92, 60)},
                  hind_fk={"l": (26, -88, -90), "r": (24, -86, -90)},
-                 neck=(26, 14), head=20, mane=-4, mane_s=0.6, tail=(30, 20, 10), fire=0.7)
+                 neck=(20, 10), head=16, mane=-4, mane_s=0.6, tail=(10, 6, 4), fire=0.7)
     down = pose(t=(0.0, -0.33), p=4, fore_fk={"l": (-82, 100, 70), "r": (-78, 98, 70)},
                 hind_fk={"l": (30, -92, -90), "r": (28, -90, -90)},
-                neck=(44, 20), head=24, turn=30, mane=10, mane_s=0.25, tail=(40, 26, 14), tail_side=30, fire=0.35)
+                neck=(30, 12), head=20, turn=30, mane=10, mane_s=0.25, tail=(10, 6, 4), tail_side=30, fire=0.35)
     die = [pose(t=(0.01, 0.0), p=-10, fore={"l": (0.0, 0.04, 0.6), "r": (0.0, 0.0, 0.0)},
-                neck=(-20, -10), head=-14, mane=10, mane_s=1.3, tail=(20, 10, 10), turn=-10),
+                neck=(-10, -5), head=-8, mane=10, mane_s=1.2, tail=(20, 10, 10), turn=-10),
            pose(t=(0.0, -0.06), p=6, fore={"l": (-0.01, 0.0, 0.0), "r": (0.0, 0.0, 0.0)},
                 neck=(12, 6), head=8, mane=-6, mane_s=1.0, tail=(16, 10, 6), fire=0.9),
            kneel,
