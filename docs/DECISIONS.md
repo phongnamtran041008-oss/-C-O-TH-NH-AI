@@ -1570,7 +1570,7 @@ Tác giả: "Mình muốn có thành tựu", làm kỹ, làm đẹp. Chi tiết 
   và nguồn; nút nào trong game chạm tới. Báo cáo cho chủ dự án: `docs/GIAO_TRINH_RA_SOAT.md`.
 - **Ô mỏng** = vi kỹ năng ở một bậc có dưới 10 câu khác nhau (câu viết tay tính 1, bộ sinh tính số câu khác nhau của 40 hạt
   giống). Trước: 72 ô trên đường chính; sau 41 bộ sinh mới: 31. Bộ sinh mới ở `math_gen/rs{dstt,gt,tr,xs}_floor1.py`, id
-  `*_gx_*`, khai báo trong `items/<môn>.rasoat.json`, đáp án tính lại bằng sympy ở `tools/math_verify_rasoat.py`. Chưa duyệt.
+  `*_g<tầng>_*`, khai báo trong `items/<môn>.rasoat.json`, đáp án tính lại bằng sympy ở `tools/math_verify_rasoat.py`. Chưa duyệt.
 - **Luật mới trong `math_tree.validate()`**: cờ `content` của nút phải khớp thực tế (có câu hỏi hoặc bài tập thì `co`; `co`
   mà trống thì lỗi), và một bài tập chỉ thuộc một nút. 38 nút Luyện Khí ghi `dang_viet` đã được đổi sang `co`.
 - **`lt_numpy` có nội dung, không cần NumPy**: năm bài trên danh sách (hình dạng và phát sóng, tổng theo trục, cộng vectơ vào

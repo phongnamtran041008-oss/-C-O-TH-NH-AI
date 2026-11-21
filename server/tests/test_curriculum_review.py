@@ -13,8 +13,9 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 import audit_curriculum as audit          # noqa: E402
 import math_verify                         # noqa: E402
+import math_verify_rasoat                  # noqa: E402
 
-REVIEW_GENERATORS = sorted(g for g in math_items.generators() if "_gx_" in g)
+REVIEW_GENERATORS = sorted(math_verify_rasoat.EXPECTED)
 
 
 @pytest.fixture(scope="module")

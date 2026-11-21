@@ -1,5 +1,5 @@
 """Xác Suất và Thống Kê: generators added by the curriculum review (see rsdstt_floor1.py for why).
-Ids start with `xs_gx_`. Floors 7-8 had generators only at tier 4, so tier 5 repeated two
+Ids are `xs_g<floor>_<name>`. Floors 7-8 had generators only at tier 4, so tier 5 repeated two
 hand-written questions: the ones here ask the same ideas the other way round (find n from an
 interval, find the unbiased weight, find the maximum-likelihood estimate from data). Every answer
 is an exact fraction or decimal; tools/math_verify_rasoat.py recomputes each one with sympy."""
@@ -16,7 +16,7 @@ from .xs_floor8 import PROPORTION_SAMPLES, Z_LEVELS, _sqrt_fraction, _z_given
 
 
 # ------------------------------------------------------------------ floor 2 (tier 1)
-@generator("xs_gx_rut_mau_cung_nhan")
+@generator("xs_g2_rut_mau_cung_nhan")
 def rut_mau_cung_nhan(rng: random.Random) -> Draw:
     """Tier 1: classical probability with combinations: draw k items at once, all of one kind."""
     good, bad = rng.randint(3, 9), rng.randint(2, 8)
@@ -35,7 +35,7 @@ def rut_mau_cung_nhan(rng: random.Random) -> Draw:
                      f"Xác suất = {math.comb(good, k)}/{math.comb(total, k)} = {num(p)}."])
 
 
-@generator("xs_gx_it_nhat_mot")
+@generator("xs_g2_it_nhat_mot_rs")
 def it_nhat_mot(rng: random.Random) -> Draw:
     """Tier 1: P(at least one) = 1 - P(none), with independent trials."""
     miss = rng.choice([Fraction(1, 10), Fraction(1, 5), Fraction(1, 4), Fraction(1, 3), Fraction(1, 2),
@@ -54,7 +54,7 @@ def it_nhat_mot(rng: random.Random) -> Draw:
 
 
 # ------------------------------------------------------------------ floor 7 (tier 5)
-@generator("xs_gx_mau_co_hoan_lai")
+@generator("xs_g7_mau_co_hoan_lai")
 def mau_co_hoan_lai(rng: random.Random) -> Draw:
     """Tier 5: a population of three values, samples of two with replacement: P(X_tb >= m)."""
     values = sorted(rng.sample(range(1, 10), 3))
@@ -75,7 +75,7 @@ def mau_co_hoan_lai(rng: random.Random) -> Draw:
                      f"Số mẫu có X_tb >= {num(m)} là {good}, nên xác suất = {good}/9 = {num(p)}."])
 
 
-@generator("xs_gx_gia_tri_thieu")
+@generator("xs_g7_gia_tri_thieu")
 def gia_tri_thieu(rng: random.Random) -> Draw:
     """Tier 5: n - 1 values and the sample mean are given; find the missing value, then s^2."""
     n = rng.randint(5, 7)
@@ -97,7 +97,7 @@ def gia_tri_thieu(rng: random.Random) -> Draw:
                      f"Tổng bình phương độ lệch = {ss}; s^2 = {ss}/({n} - 1) = {num(s2)}."])
 
 
-@generator("xs_gx_phan_phoi_trung_binh_mau")
+@generator("xs_g7_phan_phoi_trung_binh_mau")
 def phan_phoi_trung_binh_mau(rng: random.Random) -> Draw:
     """Tier 5: the spread of the sample mean shrinks like sigma/sqrt(n): find n, or Var of the mean."""
     if rng.random() < 0.5:
@@ -125,7 +125,7 @@ def phan_phoi_trung_binh_mau(rng: random.Random) -> Draw:
                      f"Var(X_tb) = {var}/{n} = {num(ans)}. (Kỳ vọng 50 không ảnh hưởng tới phương sai.)"])
 
 
-@generator("xs_gx_uoc_luong_khong_chech_trong_so")
+@generator("xs_g7_uoc_luong_khong_chech_trong_so")
 def uoc_luong_khong_chech(rng: random.Random) -> Draw:
     """Tier 5: T = a X1 + b X2 + c X3 is unbiased for mu iff a + b + c = 1; find c, then Var(T)."""
     a, b = rng.choice([Fraction(1, 5), Fraction(1, 4), Fraction(1, 3), Fraction(1, 6), Fraction(1, 2)]), \
@@ -145,7 +145,7 @@ def uoc_luong_khong_chech(rng: random.Random) -> Draw:
                      f"= {num(var)}."])
 
 
-@generator("xs_gx_hop_ly_tu_so_lieu")
+@generator("xs_g7_hop_ly_tu_so_lieu")
 def hop_ly_tu_so_lieu(rng: random.Random) -> Draw:
     """Tier 5: the maximum-likelihood estimate from data, three families."""
     kind = rng.choice(["poisson", "mu", "bernoulli"])
@@ -193,7 +193,7 @@ def hop_ly_tu_so_lieu(rng: random.Random) -> Draw:
 
 
 # ------------------------------------------------------------------ floor 8 (tier 5)
-@generator("xs_gx_tin_cay_tim_n")
+@generator("xs_g8_tin_cay_tim_n")
 def tin_cay_tim_n(rng: random.Random) -> Draw:
     """Tier 5: an interval for the mean (sigma known) is given; find the sample size."""
     level = rng.choice(list(Z_LEVELS))
@@ -216,7 +216,7 @@ def tin_cay_tim_n(rng: random.Random) -> Draw:
                      f"Vậy n = {k}^2 = {n}. (Trung bình mẫu là điểm giữa: {dec(xbar)}.)"])
 
 
-@generator("xs_gx_tin_cay_ty_le_nguoc")
+@generator("xs_g8_tin_cay_ty_le_nguoc")
 def tin_cay_ty_le_nguoc(rng: random.Random) -> Draw:
     """Tier 5: an interval for a proportion is given with n; find how many cases the sample had."""
     n, m = rng.choice(PROPORTION_SAMPLES)
@@ -235,7 +235,7 @@ def tin_cay_ty_le_nguoc(rng: random.Random) -> Draw:
                      f"Số người thích = f . n = {dec(f)} . {n} = {m}."])
 
 
-@generator("xs_gx_co_mau_xau_nhat")
+@generator("xs_g8_co_mau_xau_nhat")
 def co_mau_xau_nhat(rng: random.Random) -> Draw:
     """Tier 5: the sample size for a proportion when nothing is known about it, using f(1 - f) <= 1/4."""
     level = rng.choice(list(Z_LEVELS))
@@ -254,7 +254,7 @@ def co_mau_xau_nhat(rng: random.Random) -> Draw:
                      f"n là số nguyên nhỏ nhất không nhỏ hơn {dec(bound)}: n = {n}."])
 
 
-@generator("xs_gx_chebyshev_tim_n")
+@generator("xs_g8_chebyshev_tim_n")
 def chebyshev_tim_n(rng: random.Random) -> Draw:
     """Tier 5: Chebyshev for the sample mean: P(|X_tb - mu| >= eps) <= sigma^2/(n eps^2) <= delta; find n."""
     sigma2 = rng.choice([4, 9, 16, 25, 36, 49, 64, 100])
@@ -273,7 +273,7 @@ def chebyshev_tim_n(rng: random.Random) -> Draw:
                      f"n là số nguyên nhỏ nhất không nhỏ hơn giá trị đó: n = {n}."])
 
 
-@generator("xs_gx_clt_nguong")
+@generator("xs_g8_clt_nguong")
 def clt_nguong(rng: random.Random) -> Draw:
     """Tier 5: the threshold t with P(S > t) = tail for a sum of n independent terms (CLT)."""
     n = rng.choice([25, 36, 49, 64, 81, 100, 144])
@@ -297,7 +297,7 @@ def clt_nguong(rng: random.Random) -> Draw:
 
 
 # ------------------------------------------------------------------ more cells found thin (floors 2-6)
-@generator("xs_gx_khong_gian_mau_cach_lay")
+@generator("xs_g2_khong_gian_mau_cach_lay")
 def khong_gian_mau_cach_lay(rng: random.Random) -> Draw:
     """Tier 1: the size of the sample space for drawing k of n numbered tickets, by the way of drawing."""
     n = rng.randint(5, 12)
@@ -322,7 +322,7 @@ def khong_gian_mau_cach_lay(rng: random.Random) -> Draw:
         solution_vi=["Xem rút kiểu nào: có hoàn lại, không hoàn lại hay đồng thời; mỗi kiểu có một cách đếm.", step])
 
 
-@generator("xs_gx_chuoi_khong_hoan")
+@generator("xs_g3_chuoi_khong_hoan")
 def chuoi_khong_hoan(rng: random.Random) -> Draw:
     """Tier 3: the multiplication rule for three draws without replacement, in one given colour order."""
     red, blue = rng.randint(3, 7), rng.randint(3, 7)
@@ -348,7 +348,7 @@ def chuoi_khong_hoan(rng: random.Random) -> Draw:
                      f"Tích = {num(p)}."])
 
 
-@generator("xs_gx_bayes_thu_rac")
+@generator("xs_g4_bayes_thu_rac")
 def bayes_thu_rac(rng: random.Random) -> Draw:
     """Tier 2: Bayes with a spam filter: P(spam | the word appears)."""
     spam = rng.choice([Fraction(1, 5), Fraction(3, 10), Fraction(2, 5), Fraction(1, 2), Fraction(1, 10)])
@@ -368,7 +368,7 @@ def bayes_thu_rac(rng: random.Random) -> Draw:
                      f"Bayes: P(rác | có từ) = ({num(both)})/(({num(both)}) + ({num(other)})) = {num(p)}."])
 
 
-@generator("xs_gx_bayes_phat_hien")
+@generator("xs_g4_bayes_phat_hien")
 def bayes_phat_hien(rng: random.Random) -> Draw:
     """Tier 2: Bayes for a detector (rare event, sensitivity, false alarm rate)."""
     rate = rng.choice([Fraction(1, 100), Fraction(1, 50), Fraction(1, 20), Fraction(1, 10)])
@@ -389,7 +389,7 @@ def bayes_phat_hien(rng: random.Random) -> Draw:
                      "Con số này khác độ nhạy: một báo động chưa chắc là gian lận thật, vì có cả báo nhầm."])
 
 
-@generator("xs_gx_toan_phan_ba_nhanh")
+@generator("xs_g4_toan_phan_ba_nhanh")
 def toan_phan_ba_nhanh(rng: random.Random) -> Draw:
     """Tier 3: total probability over a complete system of three groups."""
     a = rng.choice([Fraction(1, 5), Fraction(1, 4), Fraction(3, 10), Fraction(1, 2)])
@@ -409,7 +409,7 @@ def toan_phan_ba_nhanh(rng: random.Random) -> Draw:
                      f"= {num(a)} . {num(rates[0])} + {num(b)} . {num(rates[1])} + {num(c)} . {num(rates[2])} = {num(total)}."])
 
 
-@generator("xs_gx_so_do_cay_hai_tang")
+@generator("xs_g4_so_do_cay_hai_tang")
 def so_do_cay_hai_tang(rng: random.Random) -> Draw:
     """Tier 3: a two-stage tree: P(B) = P(A) P(B|A) + P(not A) P(B|not A)."""
     pa = rng.choice([Fraction(1, 3), Fraction(2, 3), Fraction(3, 5), Fraction(2, 5), Fraction(1, 4), Fraction(3, 4)])
@@ -428,7 +428,7 @@ def so_do_cay_hai_tang(rng: random.Random) -> Draw:
                      f"Hai đường đi này xung khắc, cộng lại: {num(both)}."])
 
 
-@generator("xs_gx_ky_vong_tuyen_tinh")
+@generator("xs_g6_ky_vong_tuyen_tinh")
 def ky_vong_tuyen_tinh(rng: random.Random) -> Draw:
     """Tier 4: E(aX + b) from a four-value table (probabilities in twentieths)."""
     values = sorted(rng.sample(range(-3, 9), 4))

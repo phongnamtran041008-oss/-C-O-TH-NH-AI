@@ -3,9 +3,9 @@
   "subject": "giai_tich",
   "items": [],
   "generators": [
-    {"id": "gt_gx_nguyen_ham_hai_lan", "skill": "gt_t7_nguyen_ham", "tier": 5, "type": "numeric", "reviewed": false},
-    {"id": "gt_gx_doi_bien_phan_thuc", "skill": "gt_t7_doi_bien", "tier": 5, "type": "numeric", "reviewed": false},
-    {"id": "gt_gx_can_bien_thien_chuoi", "skill": "gt_t7_can_bien_thien", "tier": 5, "type": "numeric", "reviewed": false},
-    {"id": "gt_gx_suy_rong_nua_truc", "skill": "gt_t8_suy_rong_loai_1", "tier": 5, "type": "numeric", "reviewed": false}
+    {"id": "gt_g7_nguyen_ham_hai_lan", "skill": "gt_t7_nguyen_ham", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "gt_g7_doi_bien_phan_thuc", "skill": "gt_t7_doi_bien", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "gt_g7_can_bien_thien_chuoi", "skill": "gt_t7_can_bien_thien", "tier": 5, "type": "numeric", "reviewed": false},
+    {"id": "gt_g8_suy_rong_nua_truc", "skill": "gt_t8_suy_rong_loai_1", "tier": 5, "type": "numeric", "reviewed": false}
   ]
 }

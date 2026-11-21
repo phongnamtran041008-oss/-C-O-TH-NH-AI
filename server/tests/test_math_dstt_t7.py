@@ -55,7 +55,10 @@ def expected():
     sys.path.insert(0, str(ROOT / "tools"))
     try:
         import math_verify_dstt_t7 as module
-        yield module.EXPECTED
+        import math_verify_rasoat
+        # the curriculum review's generators (tools/math_verify_rasoat.py) sit on these floors too
+        mine = {k: v for k, v in math_verify_rasoat.EXPECTED.items() if k.startswith(('dstt_g7_', 'dstt_g8_', 'dstt_g9_'))}
+        yield {**module.EXPECTED, **mine}
     finally:
         sys.path.remove(str(ROOT / "tools"))
 

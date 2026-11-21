@@ -1,5 +1,5 @@
 """Giải Tích: generators added by the curriculum review (see rsdstt_floor1.py for why). Ids start
-with `gt_gx_`, all on tier 5 of floors 7-8, where each cell had two hand-written questions and no
+`gt_g<floor>_<name>`, all on tier 5 of floors 7-8, where each cell had two hand-written questions and no
 generator. Every answer is a fraction or a whole number worked out from a closed form by hand;
 tools/math_verify_rasoat.py integrates and differentiates the same expressions with sympy."""
 from __future__ import annotations
@@ -31,7 +31,7 @@ def _poly(coeffs: list[int], var: str = "x") -> str:
     return text
 
 
-@generator("gt_gx_nguyen_ham_hai_lan")
+@generator("gt_g7_nguyen_ham_hai_lan")
 def nguyen_ham_hai_lan(rng: random.Random) -> Draw:
     """Two integrations with two conditions: f'' = a x + b, f'(1) = c, f(0) = d; find f(2)."""
     a = rng.choice([-6, -3, -2, 2, 3, 6, 4])
@@ -52,7 +52,7 @@ def nguyen_ham_hai_lan(rng: random.Random) -> Draw:
                      f"f(2) = {paren(Fraction(a, 6) * 8)} + {paren(Fraction(b, 2) * 4)} + {paren(c1 * 2)} + {paren(d)} = {num(f2)}."])
 
 
-@generator("gt_gx_doi_bien_phan_thuc")
+@generator("gt_g7_doi_bien_phan_thuc")
 def doi_bien_phan_thuc(rng: random.Random) -> Draw:
     """Substitution u = x^2 + c, in two shapes: x (x^2 + c)^k and x / (x^2 + c)^2, on [0, A]."""
     kind = rng.choice(["luy_thua", "nghich"])
@@ -79,7 +79,7 @@ def doi_bien_phan_thuc(rng: random.Random) -> Draw:
         solution_vi=steps)
 
 
-@generator("gt_gx_can_bien_thien_chuoi")
+@generator("gt_g7_can_bien_thien_chuoi")
 def can_bien_thien_chuoi(rng: random.Random) -> Draw:
     """F(x) = integral from x to x^2 of (t^2 + a t + b) dt; F'(x0) by the chain rule."""
     a, b = rng.randint(-3, 3), rng.randint(-3, 3)
@@ -97,7 +97,7 @@ def can_bien_thien_chuoi(rng: random.Random) -> Draw:
                      f"F'({x0}) = {g(x0 * x0)} . {2 * x0} - {g(x0)} = {dF}."])
 
 
-@generator("gt_gx_suy_rong_nua_truc")
+@generator("gt_g8_suy_rong_nua_truc")
 def suy_rong_nua_truc(rng: random.Random) -> Draw:
     """Improper integrals to +infinity with a closed rational value."""
     kind = rng.choice(["luy_thua", "mu"])
