@@ -3,109 +3,203 @@ id: xs_lib_t3
 title_vi: Công thức cộng, nhân, xác suất có điều kiện và Bernoulli
 subject: xac_suat_thong_ke
 floor: 3
-summary_vi: Bốn công cụ để tính xác suất mà không phải liệt kê cả không gian mẫu: cộng cho chữ "hoặc", nhân cho chữ "và", điều kiện khi đã biết thêm thông tin, và Bernoulli cho các lần thử lặp lại.
+format: 2
+summary_vi: Tính xác suất mà không liệt kê cả không gian mẫu: "hoặc" thì cộng rồi trừ phần chung, "biết rằng" thì thu nhỏ thế giới, "và" thì nhân dọc nhánh cây, lặp lại thì dùng Bernoulli.
 skills: [xs_t3_cong_thuc_cong, xs_t3_dieu_kien, xs_t3_cong_thuc_nhan, xs_t3_doc_lap, xs_t3_bernoulli]
 ---
 ## Công thức cộng xác suất
 
-Với hai sự kiện bất kỳ A và B:
+:::hook
+Tông môn có 30 đệ tử: 18 người luyện kiếm, 12 người luyện đan, 5 người luyện cả hai. Có bao nhiêu người luyện ít nhất một môn? Không phải 18 + 12.
+:::
+
+:::figure sets
+caption: 18 + 12 đếm 5 người vàng hai lần. Trừ một lần: 25 người.
+size: 190 95
+universe: "30"
+set A "kiếm 18" xanh
+set B "đan 12" do
+shade A&B vang
+in A-B "13"
+in A&B "5"
+in B-A "7"
+in ~(A|B) "5"
+:::
+
+:::core
+Hợp: cộng hai phần, trừ phần chung một lần vì nó bị đếm hai lần. Xung khắc thì không có gì để trừ.
+:::
 
 $$ P(A + B) = P(A) + P(B) - P(AB) $$
 
-Số hạng cuối có mặt vì những kết quả thuộc cả A và B đã được tính hai lần, một lần trong P(A) và một lần trong P(B). Khi A, B xung khắc thì P(AB) = 0 và công thức chỉ còn P(A) + P(B).
+Biết ba trong P(A), P(B), P(AB), P(A + B) là ra số thứ tư. Ba sự kiện: cộng ba, trừ ba phần chung từng cặp, cộng lại phần chung cả ba.
 
-Ví dụ rút một lá từ bộ 52 lá, tính xác suất được lá cơ hoặc lá K:
+Ví dụ: chọn ngẫu nhiên một số từ 1 đến 20. P(chia hết cho 2 hoặc 3)?
 
-1. P(cơ) = 13/52, P(K) = 4/52.
-2. Lá K cơ thuộc cả hai, nên P(AB) = 1/52.
-3. P = 13/52 + 4/52 - 1/52 = 16/52 = 4/13.
+1. Chia hết cho 2: 10 số; cho 3: 6 số; cho cả hai, tức cho 6: 3 số.
+2. P = (10 + 6 - 3)/20 = 13/20.
 
-Với ba sự kiện, cộng ba xác suất, trừ ba xác suất của từng cặp, rồi cộng lại xác suất của cả ba. Chọn ngẫu nhiên một số từ 1 đến 30, xác suất chia hết cho 2, 3 hoặc 5 là (15 + 10 + 6 - 5 - 3 - 2 + 1)/30 = 22/30 = 11/15.
+> Lỗi thường gặp: cộng thẳng P(A) + P(B) khi A, B có phần chung.
 
-Công thức cộng còn dùng ngược: biết ba trong bốn đại lượng P(A), P(B), P(AB), P(A + B) thì tìm được cái còn lại. Nếu P(A) + P(B) > 1 thì A và B chắc chắn không xung khắc.
-
-> Lỗi thường gặp: cộng thẳng P(A) + P(B) khi A, B có kết quả chung. Lá cơ hoặc lá K có xác suất 16/52, không phải 17/52.
+:::check
+Q: P(A) = 2/3, P(B) = 1/2. A, B xung khắc được không? P(AB) ít nhất là bao nhiêu?
+A: Không: xung khắc thì P(A + B) = 7/6 > 1, vô lý. P(AB) = 7/6 - P(A + B) >= 7/6 - 1 = 1/6.
+:::
 
 ## Xác suất có điều kiện
 
-Xác suất của A khi biết B đã xảy ra, viết P(A|B), được tính bằng cách thu hẹp không gian mẫu về B:
+:::hook
+Trong 100 người có 20 người đeo kính. Biết người được chọn đeo kính, câu hỏi "người này là nữ?" chỉ còn xét trong 20 người đó, không phải cả 100.
+:::
+
+:::figure sets
+caption: Biết B (đeo kính), thế giới thu về hình tròn B: 20 người. Phần đỏ, A trong B, có 12 người: P(A|B) = 12/20.
+size: 190 95
+universe: "100 người"
+set A "A: nữ" xanh
+set B "B: kính" do
+shade B-A vang
+shade A&B do
+in A-B "48"
+in A&B "12"
+in B-A "8"
+in ~(A|B) "32"
+:::
+
+:::core
+Biết B đã xảy ra thì thế giới thu lại chỉ còn B. P(A|B) là phần của A nằm trong B.
+:::
 
 $$ P(A \mid B) = \frac{P(AB)}{P(B)}, \quad P(B) > 0 $$
 
-Với các kết quả đồng khả năng, đó chính là số kết quả thuộc cả A và B chia cho số kết quả thuộc B.
+Ví dụ: lớp có nam 10 đạt, 15 trượt; nữ 12 đạt, 3 trượt.
 
-Ví dụ gieo hai xúc xắc, biết tổng bằng 8, tính xác suất có một mặt 6:
+1. P(nữ | đạt): thu về 22 bạn đạt, có 12 nữ: 12/22 = 6/11.
+2. P(đạt | nữ): thu về 15 bạn nữ, có 12 đạt: 12/15 = 4/5.
+3. Cùng tử số 12, khác mẫu số: hai câu hỏi khác nhau.
 
-1. Biết tổng bằng 8, chỉ còn (2, 6), (3, 5), (4, 4), (5, 3), (6, 2): 5 cặp.
-2. Có mặt 6: (2, 6) và (6, 2).
-3. P = 2/5.
+> Lỗi thường gặp: lẫn P(A|B) với P(B|A). Sự kiện đứng sau dấu | là điều đã biết, và nó nằm ở mẫu số.
 
-Với một bảng số liệu, điều kiện cho biết lấy hàng nào hoặc cột nào làm mẫu số. Một trường có khoa Toán 30 nam, 20 nữ và khoa Lý 10 nam, 40 nữ:
-
-- P(nữ | khoa Toán) = 20/50 = 2/5: mẫu số là 50 sinh viên khoa Toán.
-- P(khoa Toán | nữ) = 20/60 = 1/3: mẫu số là 60 sinh viên nữ.
-
-Hai con số khác nhau dù cùng tử số 20.
-
-> Lỗi thường gặp: lẫn P(A|B) với P(B|A). Sự kiện đứng sau dấu | là điều đã biết, và xác suất của nó nằm ở mẫu số. Chia nhầm cho P(A) là đã tính một câu hỏi khác.
+:::check
+Q: Gieo hai xúc xắc, biết tổng bằng 6. Xác suất có một mặt 1 là bao nhiêu?
+A: Thế giới còn 5 cặp: (1, 5), (2, 4), (3, 3), (4, 2), (5, 1). Có mặt 1: 2 cặp. P = 2/5.
+:::
 
 ## Công thức nhân xác suất
 
-Nhân hai vế của định nghĩa xác suất có điều kiện với P(A):
+:::hook
+Soát lô 10 linh đan có 3 viên hỏng, lấy lần lượt không trả lại: sau mỗi lần lấy, lô đã khác đi.
+:::
+
+:::figure graph
+caption: Nhánh sau ghi xác suất khi đã biết nhánh trước. Đường đỏ: 7/10 . 6/9 = 7/15.
+size: 200 95
+layout: ltr
+node S "lô 10"
+node T "tốt"
+node H "hỏng"
+node TT "tốt"
+node TH "hỏng"
+node HT "tốt"
+node HH "hỏng"
+edge S T "7/10" do
+edge S H "3/10"
+edge T TT "6/9" do
+edge T TH "3/9"
+edge H HT "7/9"
+edge H HH "2/9"
+:::
+
+:::core
+P(A và B) bằng P(A) nhân P(B khi đã biết A): đi dọc một nhánh cây và nhân các số trên đường.
+:::
 
 $$ P(AB) = P(A)\,P(B \mid A) $$
 
-Cách dùng điển hình là các lần lấy nối tiếp không hoàn lại: xác suất của lần sau tính trên những gì còn lại sau lần trước. Với nhiều lần, cứ nhân tiếp.
+Ví dụ: hộp 5 đỏ, 3 xanh, lấy lần lượt 3 bi không hoàn lại. P(đỏ, xanh, đỏ)?
 
-$$ P(A_1 A_2 A_3) = P(A_1)\,P(A_2 \mid A_1)\,P(A_3 \mid A_1 A_2) $$
+1. Lần 1 đỏ: 5/8.
+2. Còn 7 bi, 3 xanh: 3/7. Còn 6 bi, 4 đỏ: 4/6.
+3. Nhân: 5/8 . 3/7 . 4/6 = 60/336 = 5/28.
 
-Ví dụ lô 8 sản phẩm có 2 phế phẩm, lấy lần lượt 3 sản phẩm không hoàn lại, tính xác suất cả 3 đều tốt:
+> Lỗi thường gặp: không hoàn lại mà vẫn nhân 5/8 . 3/8 . 5/8. Mỗi bước hộp đã vơi một bi.
 
-1. Lần 1 tốt: 6/8.
-2. Biết lần 1 tốt, còn 7 sản phẩm với 5 tốt: 5/7.
-3. Biết hai lần đầu tốt, còn 6 sản phẩm với 4 tốt: 4/6.
-4. Nhân lại: 6/8 . 5/7 . 4/6 = 5/14.
-
-Thử chìa khóa cũng vậy: 5 chìa, 1 chìa đúng, thử lần lượt và bỏ chìa sai ra. Mở được ở lần thứ ba có xác suất 4/5 . 3/4 . 1/3 = 1/5.
-
-> Lỗi thường gặp: không hoàn lại mà vẫn nhân các xác suất như lúc đầu. Rút 2 lá không hoàn lại, cả hai là át có xác suất 4/52 . 3/51 = 1/221, không phải 4/52 . 4/52.
+:::check
+Q: 5 chìa, 1 chìa đúng, thử lần lượt, bỏ chìa sai ra. P(mở được ở lần thứ hai)?
+A: Lần 1 sai 4/5, rồi còn 4 chìa: đúng 1/4. P = 4/5 . 1/4 = 1/5.
+:::
 
 ## Sự kiện độc lập
 
-A và B độc lập khi việc biết A xảy ra hay không không làm đổi xác suất của B. Định nghĩa dùng để kiểm tra là:
+:::hook
+Hai camera an ninh chạy riêng rẽ: camera này hỏng không làm camera kia dễ hỏng hơn. Vì vậy xác suất cả hai cùng hỏng chỉ là tích.
+:::
+
+:::figure grid
+caption: A, B độc lập: mỗi ô là tích của số ở đầu hàng và đầu cột, ví dụ 1/2 . 2/5 = 1/5.
+table
+head "B: 2/5" "không B: 3/5"
+side "A: 1/2" "không A: 1/2"
+row "1/5" "3/10"
+row "1/5" "3/10"
+mark cell 1 1 vang
+:::
+
+:::core
+Độc lập là biết A không làm đổi khả năng của B, nên P(AB) = P(A) P(B). Xung khắc thì ngược hẳn: biết A là biết chắc B không xảy ra.
+:::
 
 $$ P(AB) = P(A)\,P(B) $$
 
-Nếu A, B độc lập thì các cặp A và đối của B, Ā và B, Ā và đối của B cũng độc lập. Các phép thử tách biệt về vật lý (hai xạ thủ bắn riêng, xúc xắc và đồng xu) thường được coi là độc lập.
+A, B độc lập thì A với đối của B, Ā với B, Ā với đối của B cũng độc lập.
 
-Ví dụ hai xạ thủ bắn độc lập, trúng với xác suất 4/5 và 7/10, tính xác suất có ít nhất một người trúng:
+Ví dụ: hai linh kiện độc lập, tốt với xác suất 4/5 và 3/4.
 
-1. Sự kiện đối: cả hai cùng trượt, 1/5 . 3/10 = 3/50.
-2. P = 1 - 3/50 = 47/50.
+1. Nối tiếp, cần cả hai tốt: 4/5 . 3/4 = 3/5.
+2. Song song, cần ít nhất một tốt: đối là cả hai hỏng, 1/5 . 1/4 = 1/20.
+3. P(song song thông) = 1 - 1/20 = 19/20.
 
-Có lúc độc lập xuất hiện ở chỗ không ngờ: gieo hai xúc xắc, "xúc xắc 1 chẵn" và "tổng bằng 7" độc lập, vì P(AB) = 3/36 = 1/12 đúng bằng 1/2 . 1/6. Vì vậy phải tính, không đoán.
+> Lỗi thường gặp: tưởng không có kết quả chung là độc lập. Đó là xung khắc; hai sự kiện xung khắc có xác suất dương thì không bao giờ độc lập.
 
-Mạch song song thông khi ít nhất một linh kiện tốt; mạch nối tiếp thông khi mọi linh kiện đều tốt. Với các linh kiện độc lập, mạch nối tiếp nhân xác suất tốt, mạch song song lấy 1 trừ tích các xác suất hỏng.
-
-> Lỗi thường gặp: nghĩ rằng hai sự kiện không có kết quả chung thì độc lập. Đó là xung khắc, và hai sự kiện xung khắc có xác suất dương thì không bao giờ độc lập: biết A xảy ra là biết chắc B không xảy ra.
+:::check
+Q: Gieo xúc xắc. A: số chấm nhỏ hơn 3, B: số chấm chẵn. A và B có độc lập không?
+A: Có. P(A) = 1/3, P(B) = 1/2, AB = {2} nên P(AB) = 1/6 = 1/3 . 1/2. Phải tính, không đoán.
+:::
 
 ## Công thức Bernoulli
 
-Dãy n phép thử Bernoulli là n phép thử độc lập, mỗi lần chỉ xét sự kiện A (thành công) xảy ra hay không, và P(A) = p như nhau ở mọi lần. Xác suất có đúng k lần thành công là:
+:::hook
+Mỗi thư mời gửi đi được mở với xác suất 1/10, các thư độc lập. Gửi 5 thư, khả năng có đúng 2 thư được mở là bao nhiêu?
+:::
+
+:::figure bars
+caption: n = 4, p = 1/4. P(đúng k lần), k = 0..4, là 81, 108, 54, 12, 1 phần 256: cộng lại đủ 1.
+size: 200 95
+values: off
+bar "0" 81
+bar "1" 108 do
+bar "2" 54
+bar "3" 12
+bar "4" 1
+:::
+
+:::core
+Mỗi dãy có k lần thành công có xác suất p^k (1 - p)^(n - k), và có C(n, k) dãy như thế.
+:::
 
 $$ P_n(k) = C_n^k \, p^k (1-p)^{n-k} $$
 
-Ý nghĩa từng phần: p^k (1 - p)^(n - k) là xác suất của một dãy cụ thể có k lần thành công ở những vị trí đã chọn, còn C(n, k) đếm số cách chọn k vị trí đó trong n lần.
+Điều kiện: các lần độc lập, cùng một p (p tùy ý). Ít nhất 1 lần: 1 - (1 - p)^n.
 
-Ví dụ thi trắc nghiệm 5 câu, mỗi câu 4 phương án, chọn ngẫu nhiên, tính xác suất đúng ít nhất 4 câu:
+Ví dụ: 5 thư, p = 1/10, tính P(đúng 2 thư được mở).
 
-1. Đây là 5 phép thử Bernoulli với p = 1/4.
-2. Đúng 4 câu: C(5, 4) (1/4)^4 (3/4) = 15/1024.
-3. Đúng 5 câu: (1/4)^5 = 1/1024.
-4. Cộng lại: 16/1024 = 1/64.
+1. Một dãy cụ thể, như "mở, mở, không, không, không": (1/10)^2 (9/10)^3.
+2. Số cách chọn 2 vị trí trong 5: C(5, 2) = 10.
+3. P = 10 . 729/100000 = 729/10000.
 
-Câu hỏi "ít nhất 1 lần" nên tính qua sự kiện đối: 1 - (1 - p)^n. Ba sản phẩm, mỗi cái hỏng với xác suất 1/10, có ít nhất 1 cái hỏng với xác suất 1 - (9/10)^3 = 271/1000.
+> Lỗi thường gặp: quên C(n, k), chỉ tính một dãy cụ thể.
 
-p không cần bằng 1/2; điều bắt buộc là các lần độc lập và p không đổi. Rút bài không hoàn lại không phải dãy Bernoulli, vì p đổi sau mỗi lần rút.
-
-> Lỗi thường gặp: quên hệ số C(n, k). Gieo xúc xắc 4 lần, đúng 1 lần ra mặt 6 có xác suất 4 . (1/6)(5/6)^3 = 125/324, vì lần ra mặt 6 có thể là lần 1, 2, 3 hoặc 4.
+:::check
+Q: Nhìn hình (n = 4, p = 1/4): k nào có xác suất lớn nhất? Tính P(ít nhất 1 lần thành công).
+A: k = 1, với 108/256 = 27/64. P(ít nhất 1) = 1 - (3/4)^4 = 1 - 81/256 = 175/256.
+:::
