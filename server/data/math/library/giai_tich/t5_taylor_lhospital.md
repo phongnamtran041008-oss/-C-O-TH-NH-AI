@@ -38,6 +38,24 @@ Ví dụ: tìm c của định lý Lagrange cho f(x) = 1/x trên [1, 4].
 2. Hệ số góc dây cung: (1/4 - 1)/(4 - 1) = -1/4.
 3. f'(c) = -1/c^2 = -1/4 nên c^2 = 4; lấy c = 2, nằm trong (1, 4).
 
+:::check
+Q: Tìm c của định lý Lagrange cho f(x) = x^3 trên [0, 3].
+A: Dây cung dốc (27 - 0)/3 = 9. f'(c) = 3c^2 = 9 nên c = sqrt(3), xấp xỉ 1.73, nằm trong (0, 3).
+:::
+
+### Rolle, Cauchy và hai cách dùng
+
+:::figure plane
+caption: Rolle: f(0) = f(2) thì ở giữa có c = 1 với tiếp tuyến nằm ngang, f'(c) = 0.
+size: 130 70
+x: -0.3 2.3 1
+y: -0.3 1.4 1
+curve "x*(2 - x)" xanh
+tangent "x*(2 - x)" 1 do len=30
+point 2 0 muc
+point 1 1 do "c" pos=n
+:::
+
 Rolle là trường hợp f(a) = f(b): có c với f'(c) = 0. Cauchy là Lagrange cho hai hàm chạy cùng lúc: (f(b) - f(a))/(g(b) - g(a)) = f'(c)/g'(c). Hai cách dùng:
 
 - chặn: |f'| <= M thì |f(b) - f(a)| <= M |b - a|;
@@ -80,6 +98,23 @@ Ví dụ: đa thức Taylor bậc 2 của sqrt(x) quanh 9, rồi ước lượng
 3. f''(x) = -1/(4x sqrt(x)), nên f''(9) = -1/108; chia 2! được -1/216.
 4. sqrt(x) xấp xỉ 3 + (x - 9)/6 - (x - 9)^2/216. Tại 10: 3.16204, số thật là 3.16228.
 
+:::check
+Q: Viết đa thức Taylor bậc 2 của e^x quanh 0.
+A: Mọi đạo hàm của e^x tại 0 đều bằng 1, nên được 1 + x + x^2/2! = 1 + x + x^2/2.
+:::
+
+### Hệ số và phần dư
+
+:::figure plane
+caption: Tại x = 1, e^x và 1 + x + x^2/2 lệch nhau e - 2.5, khoảng 0.22: dưới mức chặn e/6, khoảng 0.45.
+size: 150 75
+x: 0 1.2 0.5
+y: 0.8 3.4 1
+curve "exp(x)" xanh "e^x" pos=nw
+curve "1 + x + x^2/2" do "bậc 2" pos=se
+segment 1 2.5 1 2.718 tim
+:::
+
 Hệ số của (x - a)^k là f^(k)(a)/k!: đạo hàm lấy tại số a, rồi chia k!. Một đa thức bậc n chính là đa thức Taylor bậc n của nó quanh mọi điểm. Phần dư dạng Lagrange f^(n+1)(c)/(n+1)! . (x - a)^(n+1), với c giữa a và x, dùng để chặn sai số: thay e^x bằng 1 + x + x^2/2 trên [0, 1], sai không quá e/6 < 1/2.
 
 > Lỗi thường gặp: quên chia k!. Số hạng bậc 2 của e^x quanh 1 là (e/2)(x - 1)^2, không phải e(x - 1)^2.
@@ -92,7 +127,7 @@ A: p''(x) = 6x nên p''(1) = 6; chia 2! được 3.
 ## Khai triển Maclaurin của các hàm cơ bản
 
 :::hook
-Thư viện toán trong máy tính tính sin, e^x bằng vài số hạng của các dãy dưới đây. Thuộc năm khai triển này là có trong tay bảng tra cho cả chương giới hạn.
+Máy tính tính sin, e^x bằng vài số hạng của các dãy dưới đây. Thuộc năm khai triển này là có bảng tra cho cả chương giới hạn.
 :::
 
 :::figure plane
@@ -127,7 +162,23 @@ Ví dụ: tìm hệ số của x^3 trong e^x . sin x.
 2. Các cặp nhân ra x^3: 1 . (-x^3/6) và (x^2/2) . x.
 3. Cộng hệ số: -1/6 + 1/2 = 1/3.
 
-Thay biến thì lũy thừa cả hệ số: sin(3x) = 3x - (3x)^3/6 + ... = 3x - (9/2)x^3 + ... Đọc ngược: hệ số của x^k nhân k! ra f^(k)(0). sin lẻ nên chỉ có mũ lẻ; cos chẵn nên chỉ có mũ chẵn.
+:::check
+Q: Tìm hệ số của x^2 trong e^x . cos x.
+A: (1 + x + x^2/2 + ...)(1 - x^2/2 + ...): các cặp ra x^2 là 1 . (-x^2/2) và (x^2/2) . 1, cộng lại 0.
+:::
+
+### Thay biến và đọc ngược
+
+:::figure flow
+caption: Thay u = 3x vào khai triển của sin u: lũy thừa cả số 3.
+box "sin u = u - u^3/6 + ..."
+link "u = 3x"
+box "3x - (3x)^3/6 + ..." xanh
+link "rút gọn"
+box "3x - (9/2)x^3 + ..." luc
+:::
+
+Thay biến thì lũy thừa cả hệ số, như hình: sin(3x) có số hạng bậc ba -(9/2)x^3, không phải -3x^3/6. Đọc ngược: hệ số của x^k nhân k! ra f^(k)(0). sin lẻ nên chỉ có mũ lẻ; cos chẵn nên chỉ có mũ chẵn.
 
 > Lỗi thường gặp: thay u = 3x vào ln(1 + u) mà quên lũy thừa số 3: u^2/2 là 9x^2/2, không phải 3x^2/2.
 
@@ -143,10 +194,10 @@ Hai đại lượng cùng teo về 0, ai teo nhanh hơn? L'Hospital trả lời 
 :::
 
 :::figure plane
-caption: Phóng to quanh x = 1: x^2 - 1 và ln x cùng qua 0, trông như hai đường thẳng dốc 2 và dốc 1. Tỉ số của chúng tiến về 2/1 = 2.
-size: 160 110
-x: 0.7 1.3 0.1
-y: -0.6 0.7 0.2
+caption: Quanh x = 1, x^2 - 1 và ln x như hai đường thẳng dốc 2 và dốc 1: tỉ số về 2.
+size: 160 90
+x: 0.7 1.3 0.2
+y: -0.6 0.7 0.3
 curve "x^2 - 1" do "x^2 - 1" pos=w
 curve "ln(x)" xanh "ln x" pos=se
 point 1 0 muc
@@ -165,13 +216,28 @@ Ví dụ: tính giới hạn của (e^(3x) - 1 - 3x)/x^2 khi x -> 0.
 3. Lần 2: 9e^(3x)/2.
 4. Hết vô định: giới hạn bằng 9/2.
 
-Mỗi lần dùng xong, thay số kiểm lại dạng; ra số chia số khác 0 thì dừng. Ở vô cùng: ln x / x -> 0, x^2/e^x -> 0 (dùng hai lần). e^x thắng mọi lũy thừa, lũy thừa thắng ln. Quy tắc chỉ đi một chiều: f'/g' không có giới hạn thì chưa kết luận gì; (x + sin x)/x vẫn -> 1.
-
 > Lỗi thường gặp: dùng khi không vô định. (x^2 + 1)/(x + 2) khi x -> 1 bằng 2/3; lấy đạo hàm lại ra 2, sai. Cũng đừng lấy đạo hàm cả phân thức.
 
 :::check
 Q: Tính giới hạn của (x^4 - 1)/(x^3 - 1) khi x -> 1.
 A: Dạng 0/0: chuyển thành 4x^3/(3x^2), thay x = 1 được 4/3.
+:::
+
+### Ai thắng ở vô cùng
+
+Mỗi lần dùng xong, thay số kiểm lại dạng; ra số chia số khác 0 thì dừng. Có khi phải dùng nhiều lần.
+
+Ví dụ: tính giới hạn của x^2/e^x khi x -> +vô cùng.
+
+1. Dạng vô cùng/vô cùng: lần 1 được 2x/e^x, vẫn vô cùng/vô cùng.
+2. Lần 2 được 2/e^x.
+3. Mẫu phình to, tử đứng yên: giới hạn bằng 0.
+
+Tương tự ln x / x -> 0. Thứ tự lớn nhanh: e^x thắng mọi lũy thừa, lũy thừa thắng ln. Quy tắc chỉ đi một chiều: f'/g' không có giới hạn thì chưa kết luận gì; (x + sin x)/x vẫn -> 1.
+
+:::check
+Q: Tính giới hạn của ln x / sqrt(x) khi x -> +vô cùng.
+A: Dạng vô cùng/vô cùng: (1/x)/(1/(2 sqrt(x))) = 2/sqrt(x) -> 0. Lũy thừa thắng ln.
 :::
 
 ## Các dạng vô định khác
@@ -181,7 +247,7 @@ Lãi 100% một năm, chia làm n kỳ: (1 + 1/n)^n. Cơ số về 1 mà số m�
 :::
 
 :::figure flow
-caption: Dạng mũ (1^vô cùng, 0^0, vô cùng^0): lấy ln ra một tích, đổi thành thương (vc là vô cùng), tính ra L, rồi trả lại e mũ.
+caption: Dạng mũ 1^vc, 0^0, vc^0 (vc: vô cùng): lấy ln, đổi thành thương, tính L, trả lại e mũ.
 box "u^v"
 link "lấy ln"
 box "v . ln u" xanh
@@ -199,19 +265,25 @@ $$ \lim u(x)^{v(x)} = e^{\lim v(x)\ln u(x)} $$
 
 Ví dụ: tính giới hạn của (1 - 2/x)^(3x) khi x -> +vô cùng.
 
-1. Cơ số -> 1, số mũ -> vô cùng: dạng 1^vô cùng.
-2. Lấy ln: 3x . ln(1 - 2/x).
-3. ln(1 - 2/x) ~ -2/x, nên số mũ -> 3x . (-2/x) = -6.
-4. Trả lại e mũ: giới hạn là e^(-6).
+1. Cơ số -> 1, số mũ -> vô cùng: dạng 1^vô cùng. Lấy ln: 3x . ln(1 - 2/x).
+2. ln(1 - 2/x) ~ -2/x, nên số mũ -> 3x . (-2/x) = -6.
+3. Trả lại e mũ: giới hạn là e^(-6).
 
-Hai dạng còn lại:
+> Lỗi thường gặp: tính xong số mũ rồi quên lấy e mũ, như kết luận (cos x)^(1/x^2) -> -1/2 thay vì e^(-1/2). Và coi 1^vô cùng là 1.
+
+:::check
+Q: Tính giới hạn của (1 + 3/x)^x khi x -> +vô cùng.
+A: Lấy ln: x . ln(1 + 3/x), mà ln(1 + 3/x) ~ 3/x, nên số mũ -> 3. Giới hạn là e^3.
+:::
+
+### Dạng 0 . vô cùng và vô cùng - vô cùng
+
+Hai dạng còn lại đều đổi về một thương:
 
 - 0 . vô cùng: chuyển một thừa số xuống mẫu. x ln x = ln x / (1/x) -> 0 khi x -> 0+.
 - vô cùng - vô cùng: quy đồng thành một phân số. 1/sin^2 x - 1/x^2 = (x^2 - sin^2 x)/(x^2 sin^2 x) -> 1/3.
 
 Khai triển Maclaurin thường nhanh hơn dùng L'Hospital nhiều lần: (e^x - 1 - x)/x^2 = (x^2/2 + ...)/x^2 -> 1/2.
-
-> Lỗi thường gặp: tính xong số mũ rồi quên lấy e mũ, như kết luận (cos x)^(1/x^2) -> -1/2 thay vì e^(-1/2). Và coi 1^vô cùng là 1.
 
 :::check
 Q: Tính giới hạn của x . (ln(x + 5) - ln x) khi x -> +vô cùng.
