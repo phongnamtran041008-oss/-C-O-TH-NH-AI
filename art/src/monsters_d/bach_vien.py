@@ -49,15 +49,26 @@ REST = rest_table(BONES)
 
 def build():
     use_collection("COL_bach_vien")
-    fur = material("MAT_bv_fur", (0.60, 0.58, 0.64), (0.27, 0.24, 0.30), ramp=("bone", "hair"))
+    # White fur in three clearly stepped tones: a cool grey shadow (bone #9894a2), the white
+    # (#cfcbd3) and a highlight only on the planes that face the key light. The tone bands
+    # are widened for the white look only (kit_shadow/kit_light_<variant>, see scene.py).
+    fur = material("MAT_bv_fur", (0.81, 0.80, 0.83), (0.27, 0.24, 0.30), ramp=("bone", "hair"))
     # the limbs carry their own (same-coloured) material so the kit draws an inner line
-    # where an arm crosses the body
-    limb = material("MAT_bv_fur_limb", (0.60, 0.58, 0.64), (0.27, 0.24, 0.30), ramp=("bone", "hair"))
-    fur_sh = material("MAT_bv_fur_shade", (0.62, 0.60, 0.66), (0.18, 0.16, 0.20), ramp=("bone", "hair"))
-    skin = material("MAT_bv_skin", (0.37, 0.39, 0.44), (0.58, 0.19, 0.16), ramp=("stone", "red"))
-    skin_lt = material("MAT_bv_skin_light", (0.53, 0.56, 0.60), (0.78, 0.33, 0.23), ramp=("stone", "red"))
+    # where an arm or a thigh crosses the body
+    limb = material("MAT_bv_fur_limb", (0.81, 0.80, 0.83), (0.27, 0.24, 0.30), ramp=("bone", "hair"))
+    for m in (fur, limb):
+        m["kit_shadow_base"] = 0.42
+        m["kit_light_base"] = 0.80
+    fur_sh = material("MAT_bv_fur_shade", (0.60, 0.58, 0.64), (0.18, 0.16, 0.20), ramp=("bone", "hair"))
+    saddle = material("MAT_bv_saddle", (0.35, 0.35, 0.40), (0.11, 0.10, 0.13), ramp=("bone", "hair"))
+    # bare dark grey-brown skin: face, brow ridge, chest, hands and feet
+    skin = material("MAT_bv_skin", (0.28, 0.22, 0.18), (0.58, 0.19, 0.16), ramp=("earth", "red"))
+    skin_lt = material("MAT_bv_skin_light", (0.42, 0.35, 0.28), (0.78, 0.33, 0.23), ramp=("earth", "red"))
+    for m in (skin, skin_lt):                 # the bare skin stays dark: hardly any light tone
+        m["kit_light_base"] = 0.95
     brow = material("MAT_bv_brow", (0.97, 0.96, 0.97), (0.40, 0.36, 0.43), ramp=("bone", "hair"))
     eye = material("MAT_bv_eye", (1.0, 0.89, 0.48), (1.0, 0.68, 0.23), emit=5.0, glow=("holy", "flame"))
+    eye["kit_halo"] = 0                       # a clean gold pixel, no smear over the dark face
     scar = material("MAT_bv_scar", (0.36, 0.10, 0.11), (0.93, 0.87, 0.70), ramp=("red", "paper"))
     mouth = material("MAT_bv_mouth", (0.11, 0.10, 0.13), (0.11, 0.10, 0.13), ramp="hair")
     bead = material("MAT_bv_bead", (0.34, 0.20, 0.13), (0.90, 0.72, 0.23), ramp=("wood", "gold"))
@@ -72,7 +83,12 @@ def build():
         ball("bv_hump", (0.17, 0.15, 0.10), (0, 0.0, 0.74), fur),
         ball("bv_pec", (0.115, 0.05, 0.10), (0, -0.20, 0.57), skin),
         *[ball(f"bv_shag{k}", (0.06, 0.06, 0.045), (x, 0.08, z), fur_sh, seg=8, rings=5)
-          for k, (x, z) in enumerate(((0.11, 0.68), (-0.11, 0.68), (0.0, 0.78)))])
+          for k, (x, z) in enumerate(((0.11, 0.68), (-0.11, 0.68)))],
+        # the darker grey saddle down the back: over the hump and down the slope
+        ball("bv_saddle1", (0.075, 0.12, 0.03), (0, 0.0, 0.835), saddle, rot=(-12, 0, 0), seg=12, rings=6),
+        ball("bv_saddle2", (0.07, 0.07, 0.03), (0, 0.10, 0.765), saddle, rot=(-50, 0, 0), seg=12, rings=6))
+    att(arm, "pelvis", ball("bv_saddle3", (0.07, 0.08, 0.03), (0, 0.13, 0.62), saddle, rot=(-55, 0, 0), seg=12, rings=6),
+        ball("bv_saddle4", (0.065, 0.06, 0.03), (0, 0.17, 0.535), saddle, rot=(-30, 0, 0), seg=12, rings=6))
     beads = []
     for k in range(11):
         a = math.tau * k / 11 - math.pi / 2
@@ -86,22 +102,23 @@ def build():
     att(arm, "head",
         ball("bv_skull", (0.11, 0.10, 0.10), (0, HY, HZ), fur),
         ball("bv_crest", (0.075, 0.08, 0.06), (0, HY + 0.04, HZ + 0.075), fur, seg=10, rings=6),
-        ball("bv_face", (0.09, 0.06, 0.085), (0, HY - 0.08, HZ - 0.01), skin, seg=12, rings=8),
-        ball("bv_muzzle", (0.065, 0.05, 0.048), (0, HY - 0.125, HZ - 0.055), skin_lt, seg=10, rings=6),
-        box("bv_brow", (0.16, 0.045, 0.032), (0, HY - 0.115, HZ + 0.04), brow, bevel=0.01),
-        aim("bv_browl", brow, (0.06, HY - 0.11, HZ + 0.045), (0.17, HY - 0.05, HZ + 0.02), 0.024, 0.0, seg=5),
-        aim("bv_browr", brow, (-0.06, HY - 0.11, HZ + 0.045), (-0.17, HY - 0.05, HZ + 0.02), 0.024, 0.0, seg=5),
-        ball("bv_eyel", (0.024, 0.012, 0.019), (0.037, HY - 0.125, HZ + 0.012), eye, seg=8, rings=5),
-        ball("bv_eyer", (0.024, 0.012, 0.019), (-0.037, HY - 0.125, HZ + 0.012), eye, seg=8, rings=5),
-        box("bv_scar", (0.013, 0.012, 0.09), (-0.04, HY - 0.13, HZ + 0.012), scar, rot=(0, 28, 0)),
-        box("bv_nostril", (0.036, 0.012, 0.01), (0, HY - 0.155, HZ - 0.04), mouth),
+        # a big bare face wrapping round the front of the head (it shows in profile too)
+        ball("bv_face", (0.10, 0.08, 0.095), (0, HY - 0.075, HZ - 0.01), skin, seg=14, rings=8),
+        ball("bv_muzzle", (0.07, 0.06, 0.05), (0, HY - 0.135, HZ - 0.06), skin_lt, seg=10, rings=6),
+        box("bv_brow", (0.17, 0.05, 0.04), (0, HY - 0.125, HZ + 0.045), skin, bevel=0.012),
+        aim("bv_browl", brow, (0.07, HY - 0.11, HZ + 0.06), (0.17, HY - 0.05, HZ + 0.04), 0.02, 0.0, seg=5),
+        aim("bv_browr", brow, (-0.07, HY - 0.11, HZ + 0.06), (-0.17, HY - 0.05, HZ + 0.04), 0.02, 0.0, seg=5),
+        ball("bv_eyel", (0.027, 0.016, 0.022), (0.045, HY - 0.145, HZ + 0.012), eye, seg=8, rings=5),
+        ball("bv_eyer", (0.027, 0.016, 0.022), (-0.045, HY - 0.145, HZ + 0.012), eye, seg=8, rings=5),
+        box("bv_scar", (0.013, 0.012, 0.09), (-0.047, HY - 0.155, HZ + 0.012), scar, rot=(0, 28, 0)),
+        box("bv_nostril", (0.036, 0.012, 0.01), (0, HY - 0.19, HZ - 0.045), mouth),
         ball("bv_earl", (0.025, 0.03, 0.035), (0.11, HY, HZ), skin, seg=8, rings=5),
         ball("bv_earr", (0.025, 0.03, 0.035), (-0.11, HY, HZ), skin, seg=8, rings=5),
-        ball("bv_cheekl", (0.05, 0.05, 0.06), (0.09, HY - 0.05, HZ - 0.04), brow, seg=8, rings=5),
-        ball("bv_cheekr", (0.05, 0.05, 0.06), (-0.09, HY - 0.05, HZ - 0.04), brow, seg=8, rings=5))
+        ball("bv_cheekl", (0.04, 0.04, 0.05), (0.095, HY - 0.01, HZ - 0.045), brow, seg=8, rings=5),
+        ball("bv_cheekr", (0.04, 0.04, 0.05), (-0.095, HY - 0.01, HZ - 0.045), brow, seg=8, rings=5))
     att(arm, "jaw", ball("bv_jaw", (0.055, 0.045, 0.03), (0, HY - 0.095, HZ - 0.09), skin, seg=10, rings=6),
-        box("bv_mouth", (0.065, 0.012, 0.012), (0, HY - 0.15, HZ - 0.08), mouth),
-        aim("bv_beard", brow, (0, HY - 0.10, HZ - 0.10), (0, HY - 0.12, HZ - 0.22), 0.05, 0.0, seg=8),
+        box("bv_mouth", (0.065, 0.012, 0.012), (0, HY - 0.17, HZ - 0.085), mouth),
+        aim("bv_beard", brow, (0, HY - 0.09, HZ - 0.10), (0, HY - 0.10, HZ - 0.19), 0.045, 0.0, seg=8),
         aim("bv_beardl", brow, (0.04, HY - 0.08, HZ - 0.09), (0.06, HY - 0.08, HZ - 0.18), 0.032, 0.0, seg=6),
         aim("bv_beardr", brow, (-0.04, HY - 0.08, HZ - 0.09), (-0.06, HY - 0.08, HZ - 0.18), 0.032, 0.0, seg=6))
 

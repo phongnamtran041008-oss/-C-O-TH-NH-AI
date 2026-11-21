@@ -106,6 +106,12 @@ def main():
     hook = on_frame if any(k.startswith("shift_") for k in arm.keys()) else None
     for variant, out_id, label in (("base", a.id, name_vi), ("di", f"{a.id}_di", f"{name_vi} Dị Chủng")):
         rig.apply_variant(variant)
+        for m in bpy.data.materials:          # tone bands that differ per look
+            for key in ("kit_shadow", "kit_light"):
+                if f"{key}_{variant}" in m:
+                    m[key] = m[f"{key}_{variant}"]
+                elif (f"{key}_base" in m or f"{key}_di" in m) and key in m:
+                    del m[key]
         kit.render_animated(arm, out_id, clips, OUT, name_vi=label, kind=KIND[frame],
                             holdout=hold or None, on_frame=hook)
     arm.location = (0, 0, 0)

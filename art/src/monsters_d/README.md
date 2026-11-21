@@ -149,9 +149,17 @@ radius ~1.5 tiles (the slam's shockwave); a near circle around itself is also fa
   top of the frame; walk failed the feet-drift rule. -> fur based one tone darker (so the
   light tone only lands on lit planes), lower overhead fists, a bent-arm swing frame, the
   contact shadow, die slump pulled back into the frame.
-- Still weak: at 1× the white base still reads as a soft white mass, its face is a few
-  pixels with one gold eye from the side (the dị chủng reads better); die is a slump onto the
-  haunches rather than a full topple (a full fall runs out of the frame).
+- Round 4 (lead review: the white look was "a snowman of balls" with almost no face):
+  fur rebased on the white with widened tone bands for the white look only (cool grey
+  #9894a2 shadow / white / highlight, `kit_shadow_base` 0.42, `kit_light_base` 0.80,
+  applied per look in scene.py), a bare dark grey-brown face wrapping round the head (brow
+  ridge, muzzle, mouth; it shows in profile), gold eyes without a glow halo (two from the
+  front, one in profile), dark bare hands and feet, a darker grey saddle down the hump and
+  back, smaller white cheek tufts and beard so the face is the front of the head. The
+  skeleton and clips are unchanged; the dị chủng look is unchanged apart from the new face
+  and saddle shapes.
+- Still weak: die is a slump onto the haunches rather than a full topple (a full fall runs
+  out of the frame); the saddle is subtle except from behind.
 
 ### Cơ Quan Thú (`co_quan_thu`, normal 48), Thiên Công Phường
 A clockwork hound, sibling of Cơ Quan Nhân (same woods, bronze, gold gear and lantern
