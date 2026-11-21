@@ -47,10 +47,10 @@
     "tri_chu_tinh": "tri_chu_tinh", "moc_yeu": "moc_yeu_di", "co_quan_nhan": "co_quan_nhan",
     "co_quan_nhan_dau_dan": "co_quan_nhan_di", "tam_ma": "tam_ma", "tam_ma_chap_niem": "tam_ma_di",
     "loi_long": "loi_long_di",
-    "_bestiary": "the thirteen creatures of the bestiary (2026-11-20) borrow the closest existing sheet until the artists' own monsters/<id> (+ <id>_di) arrive; the hovering ones (van_diep, loi_ung, u_minh_dang, loi_linh) borrow floating sheets",
-    "thiet_giap_thu": "thiet_giap_thu", "vong_hon_kiem_si": "vong_hon_kiem_si_di", "van_diep": "van_diep", "loi_ung": "loi_ung_di",
-    "u_minh_dang": "u_minh_dang", "huyet_ngac": "huyet_ngac_di", "hoa_yeu": "moc_yeu", "bach_vien": "thach_khoi_di",
-    "co_quan_thu": "co_quan_nhan", "lo_linh": "co_quan_nhan_di", "thao_nhan": "co_quan_nhan", "xich_diem_ma": "phong_lang_di",
+    "_bestiary": "the thirteen creatures of the bestiary (2026-11-20), each on its own sheet (art batches monsters_c and monsters_d); every one also has a <id>_di colour variant, not used yet",
+    "thiet_giap_thu": "thiet_giap_thu", "vong_hon_kiem_si": "vong_hon_kiem_si", "van_diep": "van_diep", "loi_ung": "loi_ung",
+    "u_minh_dang": "u_minh_dang", "huyet_ngac": "huyet_ngac", "hoa_yeu": "hoa_yeu", "bach_vien": "bach_vien",
+    "co_quan_thu": "co_quan_thu", "lo_linh": "lo_linh", "thao_nhan": "thao_nhan", "xich_diem_ma": "xich_diem_ma",
     "loi_linh": "loi_linh"
   },
   "monster_subjects": {

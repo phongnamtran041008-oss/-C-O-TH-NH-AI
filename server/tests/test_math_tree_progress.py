@@ -483,7 +483,12 @@ async def test_the_working_stage_is_one_above_the_stage_reached(client):
     assert view["open_floor"] == 2
     by = {s["id"]: s for s in view["skills"]}
     for sid, sk in math_skills.skills().items():           # a chiêu of "floor n" opens at Luyện Khí tầng n
-        assert by[sid]["unlocked"] == (sk["unlock"]["floor"] <= 2)
+        u = sk["unlock"]
+        if u.get("nodes") or u.get("share"):                # ...and one earned on Đạo Thụ needs its nodes too
+            assert not by[sid]["unlocked"], sid             # (none of them is a stage-1 node)
+            assert by[sid]["locked_vi"]
+        else:
+            assert by[sid]["unlocked"] == (u["floor"] <= 2), sid
 
 
 async def test_the_dungeon_and_the_towers_read_the_reached_floors(client):
