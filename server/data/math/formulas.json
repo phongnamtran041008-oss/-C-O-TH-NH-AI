@@ -507,6 +507,12 @@
    "w": 82.6,
    "h": 12.8
   },
+  "63c2d1dc3eead87e": {
+   "tex": "n \\ge \\left(\\frac{z\\,\\sigma}{\\varepsilon_0}\\right)^2",
+   "alt": "n >= ((z sigma)/(epsilon_0))^2",
+   "w": 55.84,
+   "h": 26.44
+  },
   "65f6b867cfc2e82b": {
    "tex": "\\nabla f(x^*) = 0, \\quad H(x^*) \\text{ xac dinh duong}",
    "alt": "grad f(x^*) = 0, H(x^*) xac dinh duong",
@@ -1202,6 +1208,12 @@
    "alt": "lim (f(x))/(g(x)) = lim (f'(x))/(g'(x))",
    "w": 96.26,
    "h": 24.73
+  },
+  "e08279a757861c4c": {
+   "tex": "n \\ge \\frac{z^2\\, p(1-p)}{\\varepsilon_0^2}",
+   "alt": "n >= (z^2 p(1-p))/(epsilon_0^2)",
+   "w": 70.74,
+   "h": 26.89
   },
   "e37aa6899e7e993a": {
    "tex": "(f^{-1})'(y_0) = \\frac{1}{f'(x_0)}",
