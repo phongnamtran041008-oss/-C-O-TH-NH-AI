@@ -281,6 +281,7 @@ def monsters(m: DaiDiaDo) -> None:
                                                     (a, 0, 2, 1))):
             x, y = x0 + 21 * col, 174 + 16 * row
             m.monster_area("kts_loan_so_coc", kind, (x, y, x + 19, y + 14), count, name=f"t{floor}_{kind[5:-3]}_{n}")
+            m.keep_rect(x + 8, y + 6, x + 11, y + 8)          # a clearing in the middle of the area
         m.monster_area("kts_loan_so_coc", elite, (x0 + 25, 208, x0 + 33, 216), 1, name=f"t{floor}_{elite[5:-3]}")
     m.monsters("kts_chan_nui", [("kiem_linh", 3), ("thiet_giap_thu", 1)], tiles_per=210)
     fx, fy = CAVE

@@ -37,6 +37,9 @@ TAME = "huyen_quy"
 TAME_ZONE = "ho_nghien_muc"          # Vạn Tượng Trạch
 GLIDE_ZONE = "luu_van_coc"           # Lưu Vân Cốc
 GLIDE_SPOT = "dao_2_ha"              # in the clouds above the waterfall
+# the shore 3 tiles below it, where the glide starts (read from the plan: the map is generated)
+GLIDE_FROM = next((p["pos"][0], p["pos"][1] + 3) for p in PLAN["weapons_placed"]
+                  if f"{p['weapon']}_{p['quality']}" == GLIDE_SPOT)
 
 
 def beast_plan(bid: str) -> dict:
@@ -159,7 +162,7 @@ def run_tame_flow(workdir: Path, shots: Path | None = None) -> None:
 def run_glide_flow(workdir: Path, shots: Path | None = None) -> None:
     server = ServerProcess(workdir)
     try:
-        uid = start(server, workdir, shots, "detu_luot", "Đạp Kiếm", GLIDE_ZONE, (20, 6), 9)
+        uid = start(server, workdir, shots, "detu_luot", "Đạp Kiếm", GLIDE_ZONE, GLIDE_FROM, 9)
         server.sql("insert into pets(user_id, pet_type, level, equipped) values (?, 'tieu_long', 1, 1)", (uid,))
         drv = Driver(server.url, workdir, shots)
         ws = enter(drv, GLIDE_ZONE)
@@ -168,7 +171,7 @@ def run_glide_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait(lambda: any(sp.id == GLIDE_SPOT for sp in ws.weapon_spots), 10, "the spots of the land")
         spot = next(sp for sp in ws.weapon_spots if sp.id == GLIDE_SPOT)
         assert spot.state == "available", spot.reason_vi
-        x0, y0 = feet(20, 6)
+        x0, y0 = feet(*GLIDE_FROM)
 
         # ---- on foot the spot is out of reach: the water stops the steps
         walk_to(drv, spot.x, spot.y, near=4, timeout=1.5)

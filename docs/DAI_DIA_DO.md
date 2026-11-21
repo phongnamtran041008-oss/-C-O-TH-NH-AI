@@ -113,14 +113,14 @@ The numbers are in `dia_do.json` `distribution`; `tools/check_maps.py` enforces 
 6. **Density**: about one monster per `tiles_per_monster` (150-250) walkable tiles inside the
    monster areas of a khu (an area of 2 or more: 112-375 each).
 7. **At most `max_monsters_per_land` (260) monsters per map** (the server's budget).
-7b. **An area fits in the leash**: a monster dragged more than `leash_radius` (260 px,
+8. **An area fits in the leash**: a monster dragged more than `leash_radius` (260 px,
     `server/data/balance/combat.json`) from the middle of its area gives up the fight, so no
     point of an area may lie further than 0.8 x that from its middle: at most about 20 x 15
     tiles. Make many small areas, never one big one (`monster_area` refuses a bigger one).
-8. **A land's creatures stay in their land** (`land` in `server/data/math/monsters.json`).
-9. **The nine quái lỗi sai** (`dstt_*`) stay in Kiếm Trủng Sơn, band 1, grouped by their floor
+9. **A land's creatures stay in their land** (`land` in `server/data/math/monsters.json`).
+10. **The nine quái lỗi sai** (`dstt_*`) stay in Kiếm Trủng Sơn, band 1, grouped by their floor
    (Loạn Số Cốc: floor 1 nearest the gate camp, floor 3 at the far end).
-10. A land that has no normal creature of tầng 7-9 (Lưu Vân Cốc) fills band 3 with its elites
+11. A land that has no normal creature of tầng 7-9 (Lưu Vân Cốc) fills band 3 with its elites
     only, one per area, a handful per khu; a later creature of those stages goes there.
 
 ## The toolkit (`tools/mapgen/giant.py`)
