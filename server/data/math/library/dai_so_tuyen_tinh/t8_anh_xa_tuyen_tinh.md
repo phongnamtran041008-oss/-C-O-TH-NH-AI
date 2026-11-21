@@ -14,8 +14,8 @@ Trong game, xoay, lật hay phóng to nhân vật là biến đổi mọi điể
 :::
 
 :::figure plane
-caption: f(x, y) = (2x - y, x + y) đưa ô vuông đơn vị (xanh) thành hình bình hành (vàng) dựng trên f(e1) = (2, 1) và f(e2) = (-1, 1).
-size: 150 110
+caption: f(x, y) = (2x - y, x + y) đưa ô vuông xanh thành hình bình hành vàng, dựng trên f(e1) = (2, 1) và f(e2) = (-1, 1).
+size: 150 95
 x: -1.5 2.5 1
 y: -0.5 2.5 1
 poly 0 0 2 1 1 2 -1 1 vang
@@ -28,21 +28,42 @@ vector 0 0 -1 1 do
 Ánh xạ tuyến tính giữ phép cộng và phép nhân với số; vì thế biết ảnh của các vectơ cơ sở là biết ảnh của mọi vectơ.
 :::
 
-Hệ quả: f(0) = 0. Từ R^n vào R^m, f tuyến tính khi mỗi tọa độ của f(x) là tổ hợp của x, y, ... không hằng số, không tích, bình phương hay trị tuyệt đối. Vài mẫu: chiếu lên Ox là (x, 0), lật qua Ox là (x, -y), quay 90 độ là (-y, x).
+$$ f(u + v) = f(u) + f(v), \qquad f(ku) = k f(u) $$
 
 Ví dụ: f(1, 1) = (2, 0), f(1, -1) = (0, 4). Tính f(3, 1).
 
 1. Viết (3, 1) = a(1, 1) + b(1, -1): a + b = 3, a - b = 1, nên a = 2, b = 1.
-2. f giữ tổ hợp: f(3, 1) = 2 f(1, 1) + 1 f(1, -1).
-3. = (4, 0) + (0, 4) = (4, 4).
-
-$$ f(u + v) = f(u) + f(v), \qquad f(ku) = k f(u) $$
+2. f giữ tổ hợp: f(3, 1) = 2 f(1, 1) + 1 f(1, -1) = (4, 0) + (0, 4) = (4, 4).
 
 > Lỗi thường gặp: lấy luôn hệ số (2, 1) làm f(3, 1). Đó là tọa độ của (3, 1); ảnh phải tính qua f(1, 1) và f(1, -1).
 
 :::check
 Q: f tuyến tính và f(2, 4) = (6, -2). Tính f(1, 2) và f(0, 0).
 A: (1, 2) = (1/2)(2, 4), nên f(1, 2) = (3, -1). Còn f(0, 0) = (0, 0) với mọi ánh xạ tuyến tính.
+:::
+
+### Nhận ra ánh xạ tuyến tính
+
+:::figure plane
+caption: Ba mẫu quen tác động lên u = (2, 1): chiếu lên Ox, lật qua Ox, quay 90 độ.
+size: 170 100
+x: -2 3.5 1
+y: -1.5 2.5 1
+vector 0 0 2 1 muc
+vector 0 0 2 0 xanh
+vector 0 0 2 -1 do
+vector 0 0 -1 2 luc
+text 2.3 1.2 "u"
+text 2.8 0.25 "chiếu"
+text 2.6 -1.2 "lật"
+text -1.5 2.2 "quay"
+:::
+
+Hệ quả của định nghĩa: f(0) = 0, ánh xạ tuyến tính luôn giữ gốc đứng yên. Từ R^n vào R^m, f tuyến tính khi mỗi tọa độ của f(x) là một tổ hợp của x, y, ...: không có hằng số, không có tích, bình phương hay trị tuyệt đối. Ba mẫu trong hình: chiếu lên Ox là (x, 0), lật qua Ox là (x, -y), quay 90 độ là (-y, x).
+
+:::check
+Q: f(x, y) = (x + 1, y) có tuyến tính không? Còn g(x, y) = (3y, x - y)?
+A: f không: f(0, 0) = (1, 0) khác 0. g có: mỗi tọa độ là tổ hợp của x, y, không hằng số.
 :::
 
 ## Nhân Ker f và ảnh Im f
@@ -106,17 +127,24 @@ point 1.5 0 xanh
 Mỗi chiều của không gian nguồn hoặc bị đè về 0, hoặc sống sót thành một chiều của ảnh: dim Ker + dim Im = dim nguồn.
 :::
 
-Với f(x) = Ax: dim Im f = rank A. f: R^n -> R^m đơn ánh cần n <= m, toàn ánh cần n >= m. Khi n = m, đơn ánh, toàn ánh, song ánh là một.
+$$ \text{dim} \, \text{Ker} f + \text{dim} \, \text{Im} f = \text{dim} \, V $$
+
+> Lỗi thường gặp: dùng số chiều của không gian ĐÍCH trong định lý. Vế phải là số chiều của không gian nguồn (số cột của A).
+
+:::check
+Q: f: R^5 -> R^3 tuyến tính có dim Ker f = 2. dim Im f bằng mấy? f có toàn ánh không?
+A: dim Im f = 5 - 2 = 3 = dim R^3, nên f toàn ánh.
+:::
+
+### Số chiều quyết định đơn ánh, toàn ánh
+
+Với f(x) = Ax thì dim Im f = rank A. f: R^n -> R^m muốn đơn ánh thì cần n <= m, muốn toàn ánh thì cần n >= m. Khi n = m, đơn ánh, toàn ánh và song ánh là một.
 
 Ví dụ: f(x, y, z, t) = (x - y, z + t, x - y + z + t), từ R^4 vào R^3.
 
 1. Hàng 3 = hàng 1 + hàng 2, nên rank A = 2 = dim Im f.
 2. dim Ker f = 4 - 2 = 2.
 3. dim Im f = 2 < 3: f không toàn ánh.
-
-$$ \text{dim} \, \text{Ker} f + \text{dim} \, \text{Im} f = \text{dim} \, V $$
-
-> Lỗi thường gặp: dùng số chiều của không gian ĐÍCH trong định lý. Vế phải là số chiều của không gian nguồn (số cột của A).
 
 :::check
 Q: Có ánh xạ tuyến tính từ R^3 lên toàn R^4 không? Có ánh xạ đơn ánh từ R^4 vào R^3 không?
@@ -149,9 +177,8 @@ Cột j của ma trận là ảnh của vectơ cơ sở thứ j, viết bằng t
 
 Ví dụ: f(p) = x p' trên đa thức bậc <= 2, cơ sở 1, x, x^2.
 
-1. f(1) = 0, f(x) = x, f(x^2) = 2x^2.
-2. Tọa độ: (0, 0, 0), (0, 1, 0), (0, 0, 2).
-3. Đặt làm cột: ma trận chéo với đường chéo 0, 1, 2.
+1. f(1) = 0, f(x) = x, f(x^2) = 2x^2: tọa độ (0, 0, 0), (0, 1, 0), (0, 0, 2).
+2. Đặt làm cột: ma trận chéo với đường chéo 0, 1, 2.
 
 $$ [f(v)]_{C} = A \, [v]_{B} $$
 
@@ -165,7 +192,7 @@ A: f(b1) = (1, 1) = b1, tọa độ (1, 0); f(b2) = (-1, 1) = -b2, tọa độ (
 ## Hợp ánh xạ và tích ma trận
 
 :::hook
-Một ảnh đi qua nhiều lớp biến đổi liên tiếp. Gộp các lớp tuyến tính lại thành một phép chỉ là nhân các ma trận, nhưng phải đúng thứ tự.
+Gộp nhiều lớp biến đổi tuyến tính liên tiếp thành một phép chỉ là nhân các ma trận, nhưng phải đúng thứ tự.
 :::
 
 :::figure flow
@@ -181,8 +208,6 @@ box "g(f(x))" luc
 Làm f rồi làm g ứng với tích A_g A_f, ma trận của phép làm sau đứng bên trái; phép làm ngược f^(-1) ứng với A_f^(-1).
 :::
 
-f là đẳng cấu (song ánh tuyến tính) khi ma trận vuông của nó có det khác 0. det = 0 thì f đè bẹp gì đó, không làm ngược được.
-
 Ví dụ: f(x, y) = (y, x), g(x, y) = (x, x + y). Tìm ma trận của g o f.
 
 1. A_f = [0, 1; 1, 0], A_g = [1, 0; 1, 1].
@@ -190,6 +215,24 @@ Ví dụ: f(x, y) = (y, x), g(x, y) = (x, x + y). Tìm ma trận của g o f.
 3. Thử: g(f(x, y)) = g(y, x) = (y, y + x). Khớp. Còn f o g có ma trận A_f A_g = [1, 1; 1, 0], khác.
 
 $$ A_{g \circ f} = A_{g} A_{f} $$
+
+:::check
+Q: f(x, y) = (2x, y), g(x, y) = (x + y, y). Ma trận của g o f là gì?
+A: A_g A_f = [1, 1; 0, 1][2, 0; 0, 1] = [2, 1; 0, 1]. Thử: g(2x, y) = (2x + y, y).
+:::
+
+### Ánh xạ ngược
+
+:::figure flow
+caption: Làm f rồi làm f^(-1) là về chỗ cũ: A_f^(-1) A_f = I.
+box "x"
+link "A_f"
+box "f(x)" xanh
+link "A_f^(-1)"
+box "x" luc
+:::
+
+f là đẳng cấu (song ánh tuyến tính) khi ma trận vuông của nó có det khác 0. Khi det = 0, f đè bẹp một hướng nào đó nên không làm ngược được.
 
 $$ A_{f^{-1}} = (A_{f})^{-1}, \qquad (g \circ f)^{-1} = f^{-1} \circ g^{-1} $$
 
