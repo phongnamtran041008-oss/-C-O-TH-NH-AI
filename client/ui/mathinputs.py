@@ -24,7 +24,16 @@ what the server grades (contract M9 section 1): {"pairs": [...]} / {"order": [..
 
 Vietnamese step text is long. Every row wraps its text to its column; when the rows would not
 fit the room the card has, the font steps down 8 -> 7 -> 6 and, as the last resort, text is
-cut with an ellipsis. Nothing is ever drawn outside the rectangle it was given.
+cut with an ellipsis (and `ui.note_cut` tells the layout audit). Nothing is ever drawn outside
+the rectangle it was given. The card sizes itself so the last resort is not needed
+(`board_need`).
+
+Every text of a question (rows, parts, options, the reveal) goes through mathtext.pretty, so
+x^2 is drawn as a superscript and <= as ≤. What the player types never does.
+
+`scroll_view` is the one scrolling text region of the card: rows of wrapped text (with a
+hanging number for solution steps) and matrices, drawn from a line offset, with a scrollbar
+and a "còn nữa" line when they do not all fit; the wheel and Up / Down move it.
 """
 from __future__ import annotations
 
@@ -34,6 +43,7 @@ from fractions import Fraction
 import pygame
 
 from .. import strings_vi as T
+from .mathtext import pretty
 
 LETTERS = "ABCDEF"
 PAIR_COLOURS = ("#C9573C", "#3C7CC8", "#5E9444", "#B8862E", "#8E5AC8", "#2F8F8F")
@@ -166,8 +176,21 @@ def given_text(inp: str, given: dict) -> str:
     return ""
 
 
-def answer_lines(inp: str, text: str) -> list[str]:
-    """The `answer_text` of the reveal as one line per pair / step."""
+def answer_lines(inp: str, text: str, lefts: list[str] | None = None) -> list[str]:
+    """The `answer_text` of the reveal as one line per pair / step. A matching answer is
+    "left — right; left — right"; given the left items (in the order the server writes them) a
+    ";" inside a right item does not split it."""
+    if inp == "matching" and lefts:
+        starts, pos = [], 0
+        for left in lefts:
+            i = text.find(f"{left} — ", pos)
+            if i < 0:
+                break
+            starts.append(i)
+            pos = i + len(left)
+        else:
+            ends = starts[1:] + [len(text)]
+            return [text[a:b].strip().rstrip(";").strip() for a, b in zip(starts, ends)]
     if inp == "matching":
         return [p.strip() for p in text.split(";") if p.strip()]
     if inp == "ordering":
@@ -180,9 +203,11 @@ def _wrap(ui, text: str, size: float, max_w: float) -> list[str]:
     return ui.f.wrap(text, size, int(max_w * ui.s), ui.s) or [""]
 
 
-def _clip(lines: list[str], n: int) -> list[str]:
+def _clip(lines: list[str], n: int, ui=None) -> list[str]:
     if len(lines) <= n:
         return lines
+    if ui is not None:
+        ui.note_cut(" ".join(lines))
     keep = lines[:max(1, n)]
     keep[-1] = keep[-1].rstrip()[:-1].rstrip() + "…" if len(keep[-1]) > 1 else "…"
     return keep
@@ -203,8 +228,31 @@ def layout(ui, texts: list[str], widths: list[float], avail: float):
     size = SIZES[-1]                                    # last resort: cut the text, keep every row
     each = max(7.0, (avail - GAP * (len(texts) - 1)) / max(1, len(texts)))     # (never taller than the room allows)
     fit = max(1, int((each - 4) // pitch(size)))
-    return size, [(each, [_clip(_wrap(ui, t, size, widths[c]), fit) for c, t in enumerate(row)])
+    return size, [(each, [_clip(_wrap(ui, t, size, widths[c]), fit, ui) for c, t in enumerate(row)])
                   for row in texts]
+
+
+def rows_need(ui, texts: list[list[str]], widths: list[float], size: float) -> float:
+    """The height `layout` gives these rows at this font size (no step down, no cut)."""
+    pitch = ui.text_size("Ag", size)[1] * 1.15
+    rows = [max(14.0, max(len(_wrap(ui, t, size, widths[c])) for c, t in enumerate(row)) * pitch + 4)
+            for row in texts]
+    return sum(rows) + GAP * max(0, len(rows) - 1)
+
+
+def board_need(ui, inp: str, prompt: dict, w: float, size: float) -> float:
+    """The height the board of a matching / ordering / find-the-mistake question needs at this
+    font size in a card of width w: its rows, the row of buttons under them and the gap."""
+    if inp == "matching":
+        cw = (w - 32 - LINK) / 2
+        texts = [[pretty(a), pretty(b)] for a, b in zip(prompt.get("left") or [], prompt.get("right") or [])]
+        widths = [cw - 22, cw - 22]
+    else:
+        texts = [[pretty(t)] for t in (prompt.get("steps") if inp == "ordering" else prompt.get("lines")) or []]
+        widths = [w - 32 - 40]
+    if not texts:
+        return 0.0
+    return rows_need(ui, texts, widths, size) + BUTTONS_H + 4
 
 
 def _row_text(ui, lines: list[str], x: float, y: float, h: float, size: float, colour="#2B2B2B") -> None:
@@ -221,7 +269,7 @@ def draw_matching(ui, st: MatchingState, left: list[str], right: list[str], x: f
     lx, rx = x + 16, x + 16 + cw + LINK
     tw = cw - 22
     avail = bottom - y - BUTTONS_H - 4
-    size, rows = layout(ui, [[l, r] for l, r in zip(left, right)], [tw, tw], avail)
+    size, rows = layout(ui, [[pretty(l), pretty(r)] for l, r in zip(left, right)], [tw, tw], avail)
     # the rows of both columns are shared, so a left item and the right item beside it are as tall
     pos = []
     cy = y
@@ -267,7 +315,7 @@ def draw_ordering(ui, st: OrderingState, steps: list[str], x: float, y: float, w
                   sent: bool) -> dict | None:
     avail = bottom - y - BUTTONS_H - 4
     tw = w - 32 - 40
-    size, rows = layout(ui, [[s] for s in steps], [tw], avail)
+    size, rows = layout(ui, [[pretty(s)] for s in steps], [tw], avail)
     cy = y
     for i, (h, lines) in enumerate(rows):
         n = st.number_of(i)
@@ -289,7 +337,7 @@ def draw_find_mistake(ui, st: FindMistakeState, lines: list[str], x: float, y: f
     """The numbered lines of the solution as rows; click one (or press its number) to name it."""
     avail = bottom - y - BUTTONS_H - 4
     tw = w - 32 - 40
-    size, rows = layout(ui, [[s] for s in lines], [tw], avail)
+    size, rows = layout(ui, [[pretty(s)] for s in lines], [tw], avail)
     cy = y
     for i, (h, ls) in enumerate(rows):
         chosen = st.sel == i
@@ -313,8 +361,15 @@ def _bottom_row(ui, st, x: float, y: float, w: float, sent: bool, key_hint: str)
         st.undo()
     if ui.button("mq_clear", x + 76, y, 52, BUTTONS_H, T.MQ_CLEAR, size=7, enabled=not sent):
         st.clear()
-    ui.text(key_hint, x + 134 + (w - 134 - 16 - 78) / 2, y + BUTTONS_H / 2, 6, "#8E877A", anchor="center",
-            max_w=w - 134 - 16 - 84)
+    room = w - 134 - 16 - 84
+    hint_lines = _wrap(ui, key_hint, 6, room)
+    pitch6 = ui.text_size("Ag", 6)[1]
+    if len(hint_lines) > 2:                             # (two short lines fit beside the buttons)
+        ui.note_cut(key_hint)
+    else:
+        for i, line in enumerate(hint_lines):
+            ui.text(line, x + 134 + room / 2 + 3, y + BUTTONS_H / 2 + (i - (len(hint_lines) - 1) / 2) * pitch6, 6,
+                    "#8E877A", anchor="center")
     go = ui.button("mq_submit", x + w - 16 - 72, y, 72, BUTTONS_H, T.QUIZ_SUBMIT, style="primary", size=8,
                    enabled=st.complete and not sent, key=pygame.K_RETURN if st.complete and not sent else None)
     return st.answer() if go and st.complete and not sent else None
@@ -444,7 +499,7 @@ def tribulation_reveal_rows(parts: list[dict], reveal: dict, given: dict, correc
     rows: list[tuple[str, str, int]] = []
     for k, part in enumerate(parts):
         info = shown[k] if k < len(shown) else {}
-        letter, ans = PART_LETTERS[k], info.get("answer_text", "")
+        letter, ans = PART_LETTERS[k], pretty(info.get("answer_text", ""))
         g = given_parts[k] if isinstance(given_parts, list) and k < len(given_parts) else None
         if timed_out and g is None:
             rows.append((T.TRIB_PART_BLANK.format(k=letter, a=ans), grey, 0))
@@ -454,11 +509,12 @@ def tribulation_reveal_rows(parts: list[dict], reveal: dict, given: dict, correc
             rows.append((T.TRIB_PART_BLANK.format(k=letter, a=ans), red, 0))
         else:
             rows.append((T.TRIB_PART_WRONG.format(k=letter, a=ans), red, 0))
-            rows.append((T.TRIB_PART_GIVEN.format(a=part_given_text(part, g)), red, 12))
+            given_text = part_given_text(part, g)
+            rows.append((T.TRIB_PART_GIVEN.format(a=pretty(given_text) if "option" in g else given_text), red, 12))
     steps = (reveal or {}).get("solution_vi") or []
     if steps:
         rows.append((T.MATH_SOLUTION, ink, 0))
-        rows += [(f"{n}. {step}", ink, 4) for n, step in enumerate(steps, 1)]
+        rows += [(f"{n}. {pretty(step)}", ink, 4) for n, step in enumerate(steps, 1)]
     return rows
 
 
@@ -479,28 +535,82 @@ def draw_scrolled(ui, rows: list[tuple[str, str, int]], x: float, y: float, w: f
     """Rows of text wrapped to `w`, drawn from line `offset` for as many lines as fit between
     y and bottom; the wheel and Up / Down move them when they do not all fit (and a small hint
     says so). Nothing is drawn below `bottom`. Returns the clamped offset."""
-    pitch = ui.text_size("Ag", size)[1] * 1.15
-    lines: list[tuple[str, str, int]] = []
-    for text, colour, indent in rows:
-        lines += [(line, colour, indent) for line in _wrap(ui, text, size, w - indent - 10)]
-    fit = max(1, int((bottom - y) / pitch + 1e-6))
-    top = max(0, len(lines) - fit)
-    if scroll and len(lines) > fit:
+    return scroll_view(ui, rows, x, y, w, bottom - y, offset, size, scroll)[0]
+
+
+def view_lines(ui, rows, w: float, size: float = 8) -> list[tuple]:
+    """The rows of a scrolling region as the lines it shows: ("text", line, colour, size, x
+    offset, hanging prefix or "") or ("mat", matrices, height). A row is a (text, colour,
+    indent) tuple or a dict {"text", "colour", "indent", "size", "hang"} - "hang" being a
+    prefix such as "3." that stands left of every wrapped line of the text - or a dict
+    {"matrices": [...]}. Texts are drawn as given: the caller applies `pretty`."""
+    from .mathdraw import matrices_size
+    out: list[tuple] = []
+    for row in rows:
+        if isinstance(row, dict) and row.get("matrices"):
+            out.append(("mat", row["matrices"], matrices_size(ui, row["matrices"])[1] + 4, row.get("indent", 4)))
+            continue
+        if isinstance(row, dict):
+            text, colour, indent = row.get("text", ""), row.get("colour", "#2B2B2B"), row.get("indent", 0)
+            sz, hang = row.get("size", size), row.get("hang", "")
+        else:
+            (text, colour, indent), sz, hang = row[:3], size, ""
+        hw = ui.text_size(hang + " ", sz)[0] if hang else 0.0
+        for i, line in enumerate(_wrap(ui, text, sz, w - indent - hw - 10)):
+            out.append(("text", line, colour, sz, indent + hw, hang if i == 0 else "", indent))
+    return out
+
+
+def _line_h(ui, line: tuple) -> float:
+    return line[2] if line[0] == "mat" else ui.text_size("Ag", line[3])[1] * 1.15
+
+
+def scroll_view(ui, rows, x: float, y: float, w: float, h: float, offset: int, size: float = 8,
+                scroll: bool = True) -> tuple[int, bool]:
+    """Draws the rows (see view_lines) in the box x, y, w, h from line `offset`: only whole
+    lines, never one cut at the bottom. When they do not all fit, a scrollbar runs down the right
+    edge, the last line of the box says "còn nữa" while there is more below, and the wheel and
+    Up / Down move the view. Returns (the clamped offset, whether the rows overflow the box)."""
+    lines = view_lines(ui, rows, w - 6, size)
+    heights = [_line_h(ui, ln) for ln in lines]
+    over = sum(heights) > h + 0.01
+    more_h = ui.text_size("Ag", 6)[1] + 1 if over else 0.0
+    room = h - more_h
+    top, acc = len(lines), 0.0               # the largest offset that still fills the box
+    while top > 0 and acc + heights[top - 1] <= room + 0.01:
+        top -= 1
+        acc += heights[top]
+    if over and scroll:
         offset = scroll_by(ui, offset)
     offset = max(0, min(offset, top))
-    for i, (line, colour, indent) in enumerate(lines[offset:offset + fit]):
-        ui.text(line, x + indent, y + i * pitch, size, colour)
-    if len(lines) > fit:                    # a thin bar on the right: where the view is
-        bar = bottom - y
-        ui.fill(x + w - 3, y, 2, bar, "#D9CDB4")
-        ui.fill(x + w - 3, y + bar * offset / len(lines), 2, max(4.0, bar * fit / len(lines)), "#8E877A")
-    return offset
+    cy, shown = y, 0
+    for line, lh in zip(lines[offset:], heights[offset:]):
+        if cy + lh > y + room + 0.01:
+            break
+        if line[0] == "mat":
+            from .mathdraw import draw_matrices
+            draw_matrices(ui, line[1], x + line[3], cy + 1, centered=False)
+        else:
+            _, text, colour, sz, dx, hang, indent = line
+            if hang:
+                ui.text(hang, x + indent, cy, sz, colour)
+            ui.text(text, x + dx, cy, sz, colour)
+        cy += lh
+        shown += 1
+    if over:
+        ui.fill(x + w - 3, y, 2, h, "#D9CDB4")                 # the bar, and where the view is in it
+        total = max(1.0, sum(heights))
+        ui.fill(x + w - 3, y + h * sum(heights[:offset]) / total, 2,
+                max(4.0, h * sum(heights[offset:offset + shown]) / total), "#8E877A")
+        if offset < top:
+            ui.text(T.QUIZ_MORE, x + w - 8, y + h, 6, "#8E877A", anchor="bottomright")
+    return offset, over
 
 
 def _choice_rows(ui, options: list[dict], w: float, avail: float):
     """(columns, size, rows) for the options of a choice part: one column when they fit, else
     two side by side (layout() steps the font down, and clips as the last resort)."""
-    texts = [f"{i + 1}. {o['text']}" for i, o in enumerate(options)]
+    texts = [f"{i + 1}. {pretty(o['text'])}" for i, o in enumerate(options)]
     size, rows = layout(ui, [[t] for t in texts], [w - 12], avail)
     if size == SIZES[0] and len(texts) > 1 or len(texts) <= 2:
         return 1, size, rows
@@ -513,7 +623,7 @@ def _choice_rows(ui, options: list[dict], w: float, avail: float):
 def _part_need(ui, part: dict, w: float) -> float:
     """The height the board of this part wants: its question, its input and the rows around."""
     pitch = ui.text_size("Ag", TEXT_SIZE)[1] * 1.15
-    q = min(3, len(_wrap(ui, part.get("text", ""), TEXT_SIZE, w - 32))) * pitch
+    q = len(_wrap(ui, pretty(part.get("text", "")), TEXT_SIZE, w - 32)) * pitch
     inp = part.get("input")
     if inp == "truefalse":
         body = TF_H
@@ -541,13 +651,14 @@ def draw_tribulation(ui, st: TribulationState, prompt: dict, x: float, y: float,
     mats = prompt.get("matrices") or []
     mw, mh = matrices_size(ui, mats, TEXT_SIZE) if mats else (0.0, 0.0)
     tw = w - 32 - (mw + 10 if mats else 0)
-    lines = _wrap(ui, prompt.get("text", ""), TEXT_SIZE, tw)
+    situation = pretty(prompt.get("text", ""))
+    lines = _wrap(ui, situation, TEXT_SIZE, tw)
     room = max(MIN_SITUATION, bottom - y - board - 4)
     # the text scrolls inside its room; the matrices are never cut (the board gives way instead)
     top_h = max(min(room, len(lines) * pitch), mh, pitch)
     if mats:
         draw_matrices(ui, mats, x + w - 16 - mw, y, centered=False, size=TEXT_SIZE)
-    st.scroll = draw_scrolled(ui, [(prompt.get("text", ""), "#2B2B2B", 0)], x + 16, y, tw + 10, y + top_h,
+    st.scroll = draw_scrolled(ui, [(situation, "#2B2B2B", 0)], x + 16, y, tw + 10, y + top_h,
                               st.scroll, TEXT_SIZE, scroll=not sent)
     cy = y + top_h + 4
     ui.fill(x + 16, cy - 2, w - 32, 1, "#D9CDB4")
@@ -568,11 +679,11 @@ def _draw_part(ui, st: TribulationState, parts: list[dict], x: float, y: float, 
     pitch = ui.text_size("Ag", TEXT_SIZE)[1] * 1.15
     nav_y = bottom - NAV_H
     inp = part.get("input")
-    # up to three lines of the part's question; fewer only when the card is too short for them
-    # and the input below (the last resort: then the text is cut with an ellipsis)
+    # the whole of the part's question (the board is sized for its tallest part); fewer lines only
+    # when the card is too short for them and the input below - the last resort, cut and reported
     keep = {"truefalse": TF_H, "number": BOX_H}.get(inp, 2 * (14 + GAP))
-    room = max(1, min(3, int((nav_y - 8 - cy - keep) // pitch)))
-    q_lines = _clip(_wrap(ui, part.get("text", ""), TEXT_SIZE, w - 32), room)
+    room = max(1, int((nav_y - 8 - cy - keep) // pitch))
+    q_lines = _clip(_wrap(ui, pretty(part.get("text", "")), TEXT_SIZE, w - 32), room, ui)
     for i, line in enumerate(q_lines):
         ui.text(line, x + 16, cy + i * pitch, TEXT_SIZE, "#2B2B2B")
     cy += len(q_lines) * pitch + 4

@@ -37,7 +37,9 @@ def card_open(drv: Driver) -> bool:
 
 def answer_open_card(drv: Driver, server: ServerProcess, asked: list) -> None:
     card = drv.game.top
-    if card.result:              # only showing the result of the last answer: it closes itself
+    if card.result:              # only showing the result of the last answer: a right one closes itself,
+        if not card.result.get("correct"):          # a wrong one (a timeout) waits to be read
+            drv.click("math_got_it")
         drv.wait(lambda: drv.game.top is not card, 8, "the card closes")
         return
     asked.append(card.q["math"])

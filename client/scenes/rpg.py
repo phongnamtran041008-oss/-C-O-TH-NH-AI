@@ -42,44 +42,39 @@ class ParryCard(MathCombatQuizScene):
     """The card of a blow that landed (world_plan.json "combat": questions only when a monster
     hits you). The monster's question as ever - its own micro-skill at the player's tier - with
     what is at stake written on top: right is a Phản Đòn (no damage, a counter hit, a stun,
-    linh lực and tu vi), wrong or out of time and the blow lands, and the card then stays long
-    enough to read the solution."""
+    linh lực and tu vi), wrong or out of time and the blow lands. A Phản Đòn closes the card a
+    moment later; after a blow that landed it stays until the player has read the solution and
+    closes it ("Đã hiểu", Enter or Space)."""
     RIGHT_SECONDS = 1.3
-    WRONG_SECONDS = 4.5
-    solution_margin = 70        # two lines under the solution: what the answer did, and the rest window
 
     def __init__(self, game, question: dict, monster_id: str, hit: dict, on_result=None):
         super().__init__(game, question, monster_id, on_result=on_result)
         self.hit = hit or {}
 
-    def draw_ui(self, ui):
-        super().draw_ui(ui)
-        if self.result:
-            return
-        x, y, w, h = self.panel_rect()
-        ui.text(T.PARRY_HEADER.format(monster=self.hit.get("monster_vi", ""), dmg=self.hit.get("dmg", 0)),
-                x + 12, y + 28, 7, "#B8862E", max_w=w - 90)
+    def status_items(self):
+        head = T.PARRY_HEADER.format(monster=self.hit.get("monster_vi", ""), dmg=self.hit.get("dmg", 0))
+        return [(head, "#B8862E", "left")] + super().status_items()
 
-    def draw_math_result(self, ui, x, y, w, h):
-        MathQuizScene.draw_math_result(self, ui, x, y, w, h)    # the verdict and, if wrong, the solution
+    def close_delay(self):
         c = (self.result or {}).get("combat") or {}
+        return self.RIGHT_SECONDS if c.get("parry") else None
+
+    def reveal_lines(self):
+        """What the answer did, at the top of the reveal: the Phản Đòn or the blow, and the rest."""
+        c = (self.result or {}).get("combat") or {}
+        out = []
         if c.get("parry"):
             qi = int(round(c.get("qi_gain", 0)))
             txt = (T.PARRY_RESULT_GONE.format(qi=qi) if c.get("gone") else
                    T.PARRY_RESULT.format(n=c.get("damage", 0), s=f"{c.get('stun', 0):g}", qi=qi))
             if c.get("shield_broken"):
                 txt = f"{T.SHIELD_BROKEN} {txt}"
-            ui.text(txt, x + w - 12, y + h - 30, 7, "#4F7A35", anchor="bottomright", max_w=w - 24)
-            self.close_after = self.RIGHT_SECONDS
+            out.append((txt, "#4F7A35"))
         elif "parry" in c:
-            ui.text(T.GUARD_BREAK_RESULT.format(n=c.get("damage_taken", 0)), x + w - 12, y + h - 30, 8,
-                    "#BC4749", anchor="bottomright", max_w=w - 24)
-            self.close_after = self.WRONG_SECONDS
+            out.append((T.GUARD_BREAK_RESULT.format(n=c.get("damage_taken", 0)), "#BC4749"))
         if c.get("rest"):
-            ui.text(T.PARRY_REST.format(s=f"{c['rest']:g}"), x + w - 12, y + h - 43, 7, "#6B6B6B",
-                    anchor="bottomright", max_w=w - 24)
-        if self.result_t >= 0.5 and (ui.key(pygame.K_RETURN) or ui.key(pygame.K_ESCAPE)):
-            self.finish()
+            out.append((T.PARRY_REST.format(s=f"{c['rest']:g}"), "#6B6B6B"))
+        return out + self.mistake_reveal()
 
 
 # ------------------------------------------------------------------ cultivation
