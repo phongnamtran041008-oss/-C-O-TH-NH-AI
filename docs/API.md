@@ -939,3 +939,24 @@ và `CHECKS` của `guide.py`).
 - `POST /guide/seen {key}` -> `{guide: <như GET /guide>}`. Khoá nhận: `welcome`, `board`, và mọi `key` mà một
   bước `seen` của guide.json dùng (máy khách gửi `math_hub`, `library_doc`, `village`); khoá khác: `bad_key`
   (400). Gửi lại không sao.
+
+## Chỉ Đường (đi đâu cho hợp tu vi)
+
+`server/app/systems/navigation.py`, luật và cách máy khách vẽ mũi tên: `docs/CHI_DUONG.md`. "Tu vi" của nơi chốn
+là chỗ người chơi đang học trên Đạo Thụ, không phải cảnh giới của nhân vật.
+
+- `GET /nav/destinations` -> `{stage: {realm, realm_vi, stage, working}, recommended: <đích> | null,
+  lands: [<đích>], locked: [{kind: "locked", land, zone, name_vi, branch, open: false, reason_vi}],
+  home: <đích>, village: <đích>}`.
+  - `<đích>` = `{kind: "recommended" | "land" | "home" | "village", land, zone, khu: <id khu> | null, name_vi,
+    land_vi, band: 1-3 | null, band_vi, stage_min, stage_max, x, y, branch, learning_stage, open, fit_vi,
+    reason_vi}`. `x, y` (pixel của bản đồ `zone`) là chỗ cần đi tới: `anchor` của khu, hoặc điểm `from_village`
+    của vùng đất khi bản đồ chưa chia khu (khi ấy `khu`, `band`, `stage_min/max` là `null`). `fit_vi` =
+    "hợp Luyện Khí tầng 4-6" ("" khi không có khu); `reason_vi` = một câu vì sao.
+  - `recommended`: vùng đất mở có nhánh mà nút đang học (frontier) ở tầng thấp nhất; hoà thì theo thứ tự ds, gt,
+    xs, tr, lt, ud; Lôi Kiếp Đài thắng tất cả khi đã mở và tu vi đã tới tầng cuối của cảnh giới. Trong vùng đất:
+    khu có `[stage_min, stage_max]` chứa tầng ấy (khu `band` 0 không bao giờ là đích). `lands` = mỗi vùng đất
+    mở khác một đích (khu hợp với nhánh của nó). `locked` = vùng đất đã xây mà cổng chưa cho vào, với lý do của
+    cổng (`lands.refusal`). Không có vùng đất nào mở: `recommended` là `null`.
+  - `home`: `zone: "abode"`, `via: "truc_lam_thon"`; `x, y` là điểm `from_abode` trước cổng Động Phủ ở làng
+    (bước qua cổng là việc của người chơi). `village`: điểm `spawn` giữa Trúc Lâm Thôn.

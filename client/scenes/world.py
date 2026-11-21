@@ -33,6 +33,7 @@ from ..engine.tilemap import load_map
 from ..engine.vfx import Vfx
 from ..net.interpolation import Interpolator
 from ..ui.dialog import DialogScene
+from ..ui import nav_hud
 from . import guide
 from .abode import Player
 from .base import Scene
@@ -2766,14 +2767,12 @@ class WorldScene(Scene):
         return img, (int(bx - cx), int(by - cy))
 
     def _build_minimap(self) -> pygame.Surface:
-        k = min(100 / self.map.px_w, 64 / self.map.px_h)
-        w, h = max(1, int(self.map.px_w * k)), max(1, int(self.map.px_h * k))
-        self.mm_k = k
-        base = pygame.Surface((self.map.px_w, self.map.px_h))
-        self.map.draw_ground(base, (0, 0), 0)
-        for r in self.map.solids:
-            pygame.draw.rect(base, rgb("n"), r)
-        return pygame.transform.smoothscale(base, (w, h))
+        """engine/minimap.py: built from the tile colours (one pixel per tile), never by drawing
+        the map; the whole map when it is small, a window round the player on a big one."""
+        from ..engine.minimap import MiniMap
+        self.mm = MiniMap(self.map)
+        self.mm_k = self.mm.k
+        return self.mm.frame
 
     def _cam(self, surf) -> tuple[int, int]:
         """Place the camera (self.view) and return its top-left in screen pixels of the zoomed
@@ -3291,6 +3290,7 @@ class WorldScene(Scene):
             surf.blit(self.frozen, (0, 0))         # hit-stop: the picture holds; input does not
             return
         self.draw_world_now(surf)
+        nav_hud.draw_world(surf, self)             # Chỉ Đường: the arrow round the player
         if vf is not None and vf.freeze_pending:
             self.frozen = surf.copy()
             vf.freeze_pending = False
@@ -3426,21 +3426,7 @@ class WorldScene(Scene):
         # minimap (top right)
         mw, mh = self.minimap.get_size()
         mx, my = 476 - mw, 4
-        ui.fill(mx - 2, my - 2, mw + 4, mh + 4, "#3A342C")
-        ui.image(self.minimap, mx, my)
-        k = self.mm_k
-        for o in self.map.objects:
-            if o.type == "portal":
-                ui.fill(mx + o.x * k, my + o.y * k, max(2, o.w * k), max(2, o.h * k), "#8CB8DA")
-        for e in self.entities.values():
-            if e.kind == "p":
-                ui.fill(mx + e.pos[0] * k - 1, my + e.pos[1] * k - 1, 2, 2, "#FFFFFF")
-            elif e.kind == "r":
-                ui.fill(mx + e.pos[0] * k - 1.5, my + e.pos[1] * k - 1.5, 3, 3, "#8E5AC8")
-        for f in self.sniffed or []:               # what the Linh Hồ smells
-            ui.fill(mx + (f["pos"][0] * 16 + 8) * k - 1.5, my + (f["pos"][1] * 16 + 12) * k - 1.5, 3, 3, "#F4A261")
-        ui.fill(mx + self.player.x * k - 1.5, my + self.player.y * k - 1.5, 3, 3, "#E9C46A")
-        ui.border(mx - 2, my - 2, mw + 4, mh + 4, "#8B5A2B")
+        self.mm.draw(ui, mx, my, self)             # gates, players, the Linh Hồ's finds, Chỉ Đường, me
         # quest tracker under the minimap
         quests = [q for q in (g.state.quests or {}).get("quests", []) if q["state"] in ("active", "done")]
         if quests:
@@ -3460,6 +3446,7 @@ class WorldScene(Scene):
         g.chatbox.draw(ui, in_zone=self.joined, enabled=top)
         self._hud_buttons(ui, top)
         self._hud_input(ui, top)
+        nav_hud.hud(ui, self, top)                 # Chỉ Đường: plate, khu banner, N / M / H
 
     def _hud_buttons(self, ui, top: bool) -> None:
         g = self.game
