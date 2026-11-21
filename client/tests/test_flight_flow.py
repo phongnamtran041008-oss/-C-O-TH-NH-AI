@@ -60,7 +60,8 @@ def take_off(drv: Driver, ws, level: int) -> None:
 def run_flight_flow(workdir: Path, shots: Path | None = None) -> None:
     server = ServerProcess(workdir)
     try:
-        uid = start(server, workdir, shots, "detu_bay", "Ngự Kiếm", GLIDE_ZONE, (20, 6), 9)
+        # stage 8, not 9: at 9 Kim Sí Điểu shows on the cloud pocket where the hop lands, and fights
+        uid = start(server, workdir, shots, "detu_bay", "Ngự Kiếm", GLIDE_ZONE, (20, 6), 8)
         drv = Driver(server.url, workdir, shots)
         ws = enter(drv, GLIDE_ZONE)
         fv = ws.flight

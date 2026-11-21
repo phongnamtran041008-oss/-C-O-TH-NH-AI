@@ -88,7 +88,8 @@ def test_the_village_gate_opens_the_math_tower_defence(tmp_path):
     game, asked = game_without_server(tmp_path)
     game.state.me = {"met_td": True}
     gate = type("Obj", (), {"type": "interact", "props": {"action": "td"}})()
-    stub = type("W", (), {"game": game, "talking_to": None, "action_of": lambda self, t: "td"})()
+    stub = type("W", (), {"game": game, "talking_to": None, "action_of": lambda self, t: "td",
+                          "grounded_only": lambda self: False})()      # on the ground, not on the sword
     WorldScene.interact(stub, ("object", gate))
     assert isinstance(game.top, MathTdScene)
     game.api.close()

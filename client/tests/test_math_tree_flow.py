@@ -189,15 +189,16 @@ def run_tree_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.wait(lambda: len(drv.toast_log) > n_toasts + 1, 5, "the refusal of the trial")
         assert top(drv).run is None and not top(drv).busy
 
-        # ---- a vacant node says "Đang biên soạn" and cannot be started
+        # ---- every Lập Trình node of Luyện Khí is written now (NumPy got its exercises): the tab shows none
+        # as "Đang biên soạn"; a node with nothing written yet (Trúc Cơ) is vacant and cannot be started
         drv.click("math_tab_lt")
-        vacant = [r for r in MT.node_rows(top(drv).tree, "lt") if r.node["id"] == VACANT][0]
-        assert vacant.node["state"] == "vacant" and MT.row_state(vacant) == "vacant"
+        assert all(MT.row_state(r) != "vacant" for r in MT.node_rows(top(drv).tree, "lt"))
+        vacant = MT.node_by_id(top(drv).tree, VACANT)
+        assert vacant["state"] == "vacant" and all(MT.row_state(r) == "vacant" for r in MT.rows_of(vacant))
         assert not any(w.startswith(f"math_node_{VACANT}") or w.startswith(f"math_trial_{VACANT}")
                        for w in drv.game.ui.widgets)
-        assert T.TREE_VACANT == "Đang biên soạn" and text.count(T.TREE_VACANT) == 0
-        assert drawn_text(drv).count(T.TREE_VACANT) >= 1
-        drv.shot("tree_branch_lt_vacant")
+        assert T.TREE_VACANT == "Đang biên soạn" and drawn_text(drv).count(T.TREE_VACANT) == 0
+        drv.shot("tree_branch_lt")
 
         # ---- a sitting on a node
         drv.click("math_tab_next")
