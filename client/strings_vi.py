@@ -876,6 +876,16 @@ CODE_SAMPLE_LINE = "Ví dụ {n}: {v}"
 CODE_PASSED = "Qua {p}/{t} test"
 CODE_BEST = "Tốt nhất: {v}, {p}/{t} test"
 CODE_RUN_HINT = "Chạy thử dùng ví dụ trong đề. Nộp bài chạy trên test ẩn và nhận Tu Vi."
+CODE_SAMPLE_IN = "Vào:"
+CODE_SAMPLE_OUT = "Ra:"
+CODE_DETAIL = "Chi tiết"
+CODE_DETAIL_TITLE = "Kết quả chi tiết"
+CODE_GOT = "Chương trình in ra:"
+CODE_WANT = "Đáp án đúng:"
+CODE_PRINTED_NOTHING = "(không in gì)"
+CODE_ERROR = "Lỗi chương trình:"
+CODE_MORE_LINES = "(còn {n} dòng nữa)"
+CODE_SCROLL_HINT = "Lăn chuột hoặc PgUp / PgDn để xem tiếp"
 CODE_VERDICTS = {
     "AC": "Đúng hết",
     "WA": "Sai kết quả",

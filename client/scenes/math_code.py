@@ -26,6 +26,8 @@ from .. import strings_vi as T
 from ..art.palette import UI as UICOL
 from ..engine import coderun
 from ..ui.codebox import CodeBox
+from ..ui.mathtext import pretty
+from ..ui.mono import TextPane, wrap_prose
 from .base import MessageBox, Scene
 from .math_library import scroll_rows
 
@@ -95,6 +97,23 @@ def grade_of(score, bars: list, higher: bool) -> int:
     return sum(1 for b in bars if (score >= b if higher else score <= b))
 
 
+def fit_title(ui, text: str, max_w: float, sizes=(8, 7)) -> tuple[float, list[str]]:
+    """The largest size at which `text` fits on one line of `max_w`; failing that, the
+    smallest size on as many lines as it needs - a title is never cut with "..."."""
+    for size in sizes:
+        lines = wrap_prose(ui, text, size, max_w)
+        if len(lines) == 1:
+            return size, lines
+    return sizes[-1], wrap_prose(ui, text, sizes[-1], max_w)
+
+
+def head_lines(text: str, keep: int = 40) -> tuple[str, int]:
+    """The first `keep` lines of a program's output (what a long output shows) and how many
+    lines are left out."""
+    lines = (text or "").rstrip("\n").split("\n")
+    return "\n".join(lines[:keep]), max(0, len(lines) - keep)
+
+
 class ProblemListScene(Scene):
     """The exercises of a subject, floor by floor. Locked floors are not in the answer."""
 
@@ -150,34 +169,58 @@ class ProblemListScene(Scene):
         else:
             ui.text(T.CODE_RUN_HINT, x + 12, y + 21, 7, GREY, max_w=w - 24)
             # M11: one row per floor title and per exercise; more than fit scroll (wheel, Up / Down)
-            rows = [(f, p) for f in floors for p in [None] + list(f["problems"])]
+            # a long title takes a second line (at a size smaller) instead of being cut, so rows
+            # differ in height: the list scrolls by rows, and shows the ones that fit whole
+            rows = []
+            for f in floors:
+                head = f"{T.MATH_FLOOR.format(n=f['floor'])} · {f['title_vi']}"
+                hs, hl = fit_title(ui, head, w - 24, sizes=(8, 7))
+                rows.append((f, None, hs, hl, 6 + 9 * len(hl) if len(hl) > 1 else 16))
+                for p in f["problems"]:
+                    ts, tl = fit_title(ui, p["title_vi"], 152, sizes=(8, 7))
+                    rows.append((f, p, ts, tl, 16 if len(tl) == 1 else 4 + 9 * len(tl)))
             top, bottom = y + 34, y + h - 24
-            shown = int((bottom - top) // 16)
-            self.first = scroll_rows(ui, self.first, len(rows), shown, x, top, w, bottom - top)
+
+            def fits(start):
+                used, k = 0, 0
+                for r in rows[start:]:
+                    if used + r[4] > bottom - top:
+                        break
+                    used, k = used + r[4], k + 1
+                return k
+            last_first = 0
+            while last_first < len(rows) and fits(last_first) < len(rows) - last_first:
+                last_first += 1
+            shown = fits(min(self.first, last_first))
+            self.first = min(last_first, scroll_rows(ui, self.first, len(rows), shown, x, top, w, bottom - top))
+            shown = fits(self.first)
             cy = top
-            for f, p in rows[self.first:self.first + shown]:
+            for f, p, size, lines, rh in rows[self.first:self.first + shown]:
                 if p is None:
-                    ui.text(f"{T.MATH_FLOOR.format(n=f['floor'])} · {f['title_vi']}", x + 12, cy + 2, 8,
-                            UICOL["accent"], max_w=w - 24)
-                    cy += 16
+                    for k, line in enumerate(lines):
+                        ui.text(line, x + 12, cy + 2 + 9 * k, size, UICOL["accent"])
+                    cy += rh
                     continue
                 best = p.get("best") or {}
-                ui.text(p["title_vi"], x + 18, cy + 7, 8, "#2B2B2B", anchor="midleft", max_w=148)
-                ui.text(T.MATH_TIER_ONE.format(lo=p["tier"]), x + 176, cy + 7, 7, GREY, anchor="midleft")
+                mid = cy + rh / 2 - 1
+                for k, line in enumerate(lines):
+                    ui.text(line, x + 18, mid + (k - (len(lines) - 1) / 2) * 9, size, "#2B2B2B",
+                            anchor="midleft")
+                ui.text(T.MATH_TIER_ONE.format(lo=p["tier"]), x + 176, mid, 7, GREY, anchor="midleft")
                 if best and "grade" in best:        # a scored exercise: its best grade instead of the count
-                    ui.text(best["grade_vi"], x + 212, cy + 7, 7, GRADE_COLOUR[best["grade"]], anchor="midleft")
+                    ui.text(best["grade_vi"], x + 212, mid, 7, GRADE_COLOUR[best["grade"]], anchor="midleft")
                 else:
                     ui.text((T.XT_HIDDEN_SETS if p.get("scored") else T.CODE_HIDDEN_TESTS).format(n=p["tests"]),
-                            x + 212, cy + 7, 7, GREY, anchor="midleft")
+                            x + 212, mid, 7, GREY, anchor="midleft")
                 if best and "grade" in best:
                     pass
                 elif best:
-                    ui.text(best["verdict"], x + w - 84, cy + 7, 7,
+                    ui.text(best["verdict"], x + w - 84, mid, 7,
                             VERDICT_COLOUR.get(best["verdict"], GREY), anchor="midright")
-                if ui.button(f"code_open_{p['id']}", x + w - 78, cy, 66, 13, T.CODE_OPEN, size=7,
+                if ui.button(f"code_open_{p['id']}", x + w - 78, mid - 7, 66, 13, T.CODE_OPEN, size=7,
                              style="primary", enabled=not self.busy):
                     self.game.push(ProblemScene(self.game, p["id"]))
-                cy += 16
+                cy += rh
             if len(rows) > shown:
                 ui.text(T.MATH_LIST_MORE.format(a=self.first + 1, b=min(len(rows), self.first + shown),
                                                 t=len(rows)), x + 12, y + h - 13, 7, GREY, anchor="midleft")
@@ -202,6 +245,11 @@ class ProblemScene(Scene):
         self._done: list[tuple] = []        # filled by the worker thread, read in update()
         self.log: tuple[int, dict] = (0, {})    # Xạ Trường: (which run, its training log)
         self.show_target = False            # Xạ Trường: the target view instead of the statement
+        self.show_detail = False            # the result in full (each test, what was printed, the error)
+        self.outputs: list[str] = []        # what the program printed on the samples (Chạy thử)
+        self.statement_pane = TextPane()
+        self.detail_pane = TextPane()
+        self.result_pane = TextPane()
 
     @property
     def scored(self) -> bool:
@@ -270,6 +318,7 @@ class ProblemScene(Scene):
                 continue
             self.note = T.CODE_SENDING
             self.log = attempt.log                      # stays here: the server never sees it
+            self.outputs = [] if attempt_id else list(attempt.outputs)
             body = {"outputs": attempt.outputs, "status": attempt.status,
                     "times_ms": attempt.times_ms, "error": attempt.error,
                     "code": self.box.text if attempt_id else ""}
@@ -280,6 +329,9 @@ class ProblemScene(Scene):
                 self.busy, self.mode, self.note = False, "", ""
                 self.result = data
                 self.show_target = bool(data.get("result", {}).get("scored"))
+                # a crash or a compile error: its message is what to read next, in full
+                self.show_detail = not self.show_target and bool((data.get("result") or {}).get("error"))
+                self.detail_pane.first = 0
                 self.game.on_xp(data.get("xp"))         # the HUD hears about the Tu Vi at once
                 if data.get("xp_gained"):
                     self.game.toast(T.MATH_XP.format(n=data["xp_gained"]), UICOL["green"])
@@ -298,11 +350,19 @@ class ProblemScene(Scene):
                 self.close()
             return
         p = self.problem
-        ui.text(p["title_vi"], x + 10, y + 17, 10, UICOL["accent"], max_w=240)
-        ui.text(f"{T.MATH_FLOOR.format(n=p['floor'])} · "
-                f"{T.MATH_TIER_LABEL.format(n=p['tier'], name=p['tier_name_vi'])}",
-                x + w - 10, y + 22, 7, GREY, anchor="midright")
-        if self.show_target and self.result and self.result["result"].get("scored"):
+        where = (f"{T.MATH_FLOOR.format(n=p['floor'])} · "
+                 f"{T.MATH_TIER_LABEL.format(n=p['tier'], name=p['tier_name_vi'])}")
+        ui.text(where, x + w - 10, y + 22, 7, GREY, anchor="midright")
+        room = w - 30 - ui.text_size(where, 7)[0]           # the title, as large as fits on its line
+        size, lines = fit_title(ui, p["title_vi"], room, sizes=(10, 9, 8, 7))
+        if len(lines) == 1:
+            ui.text(lines[0], x + 10, y + 22, size, UICOL["accent"], anchor="midleft")
+        else:                                               # two small lines in the same band
+            for k, line in enumerate(lines[:2]):
+                ui.text(line, x + 10, y + 13 + 9 * k, 7, UICOL["accent"])
+        if self.show_detail and self.result:
+            self.draw_detail(ui, x + 10, y + 32, 196, 194)
+        elif self.show_target and self.result and self.result["result"].get("scored"):
             self.draw_target(ui, x + 10, y + 32, 196, 194)
         else:
             self.draw_statement(ui, x + 10, y + 32, 196, 194)
@@ -314,68 +374,102 @@ class ProblemScene(Scene):
             self.save()
             self.close()
 
-    def draw_statement(self, ui, x, y, w, h):
+    def statement_blocks(self) -> tuple:
+        """The statement as TextPane blocks: prose with its maths drawn as maths (pretty), the
+        samples verbatim in monospace boxes."""
         p = self.problem
-        if ui.hover(x, y, w, h) and ui.inp.wheel:
-            self.scroll = max(0.0, self.scroll - ui.inp.wheel * 8)
-            ui.inp.wheel = 0
-        ui.fill(x, y, w, h, "#F8F1E3")
-        ui.border(x, y, w, h, "#C9BFA8")
-        cy = y + 4 - self.scroll
-        blocks: list[tuple[str, str, float]] = []
-        for para in p["statement_vi"]:
-            blocks.append(("text", para, 8))
+        ink, x_ink = "#2B2B2B", UICOL["accent"]
+        blocks = [("text", pretty(para), 8, ink, 2, 3) for para in p["statement_vi"]]
         for label, body in ((T.CODE_INPUT, p["input_vi"]), (T.CODE_OUTPUT, p["output_vi"]),
                             (T.CODE_LIMITS, p["limits_vi"])):
             if body:
-                blocks.append(("head", label, 8))
-                blocks.append(("text", body, 7))
+                blocks.append(("text", label, 8, x_ink, 2, 1))
+                blocks.append(("text", pretty(body), 7, ink, 6, 3))
         for n, s in enumerate(p["samples"], 1):
-            blocks.append(("head", T.CODE_SAMPLE.format(n=n), 8))
+            blocks.append(("text", T.CODE_SAMPLE.format(n=n), 8, x_ink, 2, 1))
             if s.get("big"):                    # a generated practice set: too long to print
-                blocks.append(("note", T.XT_PRACTICE.format(note=s.get("note_vi", "")), 7))
+                blocks.append(("text", pretty(T.XT_PRACTICE.format(note=s.get("note_vi", ""))), 7, GREY, 6, 3))
                 continue
-            blocks.append(("mono", s["in"].rstrip("\n"), 7))
-            blocks.append(("arrow", s["out"].rstrip("\n"), 7))
+            blocks.append(("text", T.CODE_SAMPLE_IN, 7, GREY, 6, 1))
+            blocks.append(("mono", s["in"].rstrip("\n"), 7, ink, 8, 2))
+            blocks.append(("text", T.CODE_SAMPLE_OUT, 7, GREY, 6, 1))
+            blocks.append(("mono", s["out"].rstrip("\n"), 7, "#2F6B3A", 8, 2))
             if s.get("note_vi"):
-                blocks.append(("note", s["note_vi"], 7))
+                blocks.append(("text", pretty(s["note_vi"]), 7, GREY, 6, 3))
         if p.get("scored"):
             bars = " / ".join(bar_text(b, "do_chinh_xac" if p.get("higher_better") else "sai_so")
                               for b in p.get("grades", []))
-            blocks.append(("note", T.XT_BARS.format(bars=bars), 7))
-        style = {"head": (4, UICOL["accent"], 2), "mono": (8, "#2B2B2B", 1),
-                 "arrow": (8, UICOL["green"], 2), "note": (8, GREY, 3), "text": (4, "#2B2B2B", 3)}
-        clip = ui.win.get_clip()
-        ui.win.set_clip(ui.rect(x, y + 1, w, h - 2))     # a long statement scrolls inside its box
-        try:
-            for kind, text, size in blocks:
-                indent, colour, gap = style[kind]
-                if kind == "arrow":
-                    text = "-> " + text.replace("\n", " / ")
-                block_h = self._height(ui, text, size, w - indent - 4)
-                if y - block_h < cy < y + h - 2:        # only what the window can show is drawn
-                    ui.text(text, x + indent, cy, size, colour, max_w=w - indent - 4)
-                cy += block_h + gap
-        finally:
-            ui.win.set_clip(clip)
-        self.height = (cy + self.scroll) - (y + 4)  # the whole statement, scrolled or not
-        self.scroll = max(0.0, min(self.scroll, max(0.0, self.height - h + 8)))
+            blocks.append(("text", T.XT_BARS.format(bars=bars), 7, GREY, 2, 3))
+        return tuple(blocks)
+
+    def draw_statement(self, ui, x, y, w, h):
+        """The statement scrolls inside its box: the wheel over it, PgUp / PgDn while the
+        editor does not have the keys (a click on the statement takes them), a scrollbar."""
+        if ui.click_in(x, y, w, h):
+            ui.set_focus("statement")
+        ui.fill(x, y, w, h, "#F8F1E3")
+        ui.border(x, y, w, h, "#C9BFA8")
+        pane = self.statement_pane
+        pane.draw(ui, x + 2, y + 1, w - 3, h - 2, self.statement_blocks(), keys=ui.focus != "code")
+        self.scroll, self.height = pane.first, len(pane.rows)
+
+    def detail_blocks(self) -> tuple:
+        """The last result in full: each test, on the samples what the program printed against
+        the right answer, and the whole error message, verbatim."""
+        res = self.result["result"]
+        sample = self.result.get("mode") == "run"
+        colour = VERDICT_COLOUR.get(res["verdict"], GREY)
+        blocks = [("text", verdict_text(res["verdict"]), 9, colour, 0, 1),
+                  ("text", self.tail_text(res), 7, GREY, 0, 3)]
+        tests = res.get("tests", [])
+        if sample:
+            samples = self.problem.get("samples", [])
+            for t in tests:
+                blocks.append(("text", T.CODE_SAMPLE_LINE.format(n=t["test"], v=verdict_text(t["verdict"])), 7,
+                               VERDICT_COLOUR.get(t["verdict"], GREY), 0, 1))
+                k = t["test"] - 1
+                if t["verdict"] == "WA" and 0 <= k < len(samples) and not samples[k].get("big"):
+                    got, more = head_lines(self.outputs[k] if k < len(self.outputs) else "")
+                    want, more_w = head_lines(samples[k]["out"])
+                    blocks.append(("text", T.CODE_GOT, 7, GREY, 4, 1))
+                    blocks.append(("mono", got if got.strip() else T.CODE_PRINTED_NOTHING, 7, "#2B2B2B", 6, 1))
+                    if more:
+                        blocks.append(("text", T.CODE_MORE_LINES.format(n=more), 7, GREY, 6, 1))
+                    blocks.append(("text", T.CODE_WANT, 7, GREY, 4, 1))
+                    blocks.append(("mono", want, 7, "#2F6B3A", 6, 1))
+                    if more_w:
+                        blocks.append(("text", T.CODE_MORE_LINES.format(n=more_w), 7, GREY, 6, 1))
+                    blocks.append(("text", "", 4, GREY, 0, 1))
+        elif tests:
+            line = "   ".join(T.CODE_TEST_LINE.format(n=t["test"], v=t["verdict"]) for t in tests)
+            blocks.append(("text", line, 7, GREY, 0, 3))
+        if res.get("error"):
+            blocks.append(("text", T.CODE_ERROR, 7, UICOL["accent"], 0, 1))
+            blocks.append(("mono", res["error"].strip("\n"), 7, "#8A2E1F", 2, 2))
+        return tuple(blocks)
+
+    def draw_detail(self, ui, x, y, w, h):
+        if ui.click_in(x, y, w, h - 18):
+            ui.set_focus("statement")
+        ui.fill(x, y, w, h, "#F8F1E3")
+        ui.border(x, y, w, h, "#C9BFA8")
+        ui.text(T.CODE_DETAIL_TITLE, x + 4, y + 3, 8, UICOL["accent"])
+        self.detail_pane.draw(ui, x + 2, y + 14, w - 3, h - 34, self.detail_blocks(), keys=ui.focus != "code")
+        if ui.button("code_statement", x + w - 58, y + h - 16, 54, 13, T.XT_SHOW_STATEMENT, size=7):
+            self.show_detail = False
 
     @staticmethod
-    def _height(ui, text: str, size: float, max_w: float) -> float:
-        """How tall ui.text will draw this, without drawing it: the same sum ui.text makes,
-        over the same rendered lines (cached), so a line with stacked Vietnamese marks,
-        taller than "Ag", is counted at its real height."""
-        lines = ui.f.wrap(text, size, int(max_w * ui.s), ui.s) or [""]
-        heights = [ui.f.render(line, size, "#2B2B2B", ui.s).get_height() for line in lines]
-        lh = max(heights) * (1.15 if len(heights) > 1 else 1)
-        return (lh * (len(heights) - 1) + heights[-1]) / ui.s
+    def tail_text(res: dict) -> str:
+        tail = T.CODE_PASSED.format(p=res["passed"], t=res["total"])
+        if res.get("ms"):
+            tail += "   " + T.MATH_SECONDS.format(n=round(res["ms"] / 1000, 2))
+        return tail
 
     def draw_editor(self, ui, x, y, w, h):
         focused = ui.focus == "code" and not self.busy
-        if ui.click_in(x, y, w, h):
-            ui.set_focus("code")
-            focused = True
+        if ui.hover(x, y, w, h) and (ui.inp.clicked or ui.inp.mouse_down):
+            ui.set_focus("code")            # (the box itself takes the click: it moves the caret)
+            focused = not self.busy
         if focused:
             self.box.handle(ui)
         self.box.draw(ui, x, y, w, h, focused)
@@ -414,17 +508,17 @@ class ProblemScene(Scene):
             return
         colour = VERDICT_COLOUR.get(res["verdict"], GREY)
         ui.text(verdict_text(res["verdict"]), x, y + 6, 10, colour, anchor="midleft")
-        tail = T.CODE_PASSED.format(p=res["passed"], t=res["total"])
-        if res.get("ms"):
-            tail += "   " + T.MATH_SECONDS.format(n=round(res["ms"] / 1000, 2))
-        ui.text(tail, x + w, y + 6, 7, GREY, anchor="midright")
-        cy = y + 16
+        if ui.button("code_detail", x + w - 50, y, 50, 12, T.CODE_DETAIL, size=7, selected=self.show_detail):
+            self.show_detail = not self.show_detail
+            self.detail_pane.first = 0
         line = "   ".join(
             (T.CODE_SAMPLE_LINE if sample else T.CODE_TEST_LINE).format(n=t["test"], v=t["verdict"])
-            for t in res["tests"][:8])
-        cy += ui.text(line, x, cy, 7, GREY, max_w=w).h + 2
-        if res.get("error"):
-            ui.text(res["error"].strip().splitlines()[-1][:120], x, cy, 7, UICOL["accent"], max_w=w)
+            for t in res["tests"])
+        blocks = [("text", self.tail_text(res) + "   " + line, 7, GREY, 0, 1)]
+        if res.get("error"):            # the last line first: the name of the error; Chi tiết has it all
+            last = res["error"].strip().splitlines()[-1] if res["error"].strip() else ""
+            blocks.append(("mono", last, 7, "#8A2E1F", 2, 1))
+        self.result_pane.draw(ui, x - 2, y + 13, w + 2, h - 13, tuple(blocks))
 
     # ------------------------------------------------------------ Xa Truong: scored results
     def draw_scored_line(self, ui, res: dict, x, y, w, h):
@@ -435,7 +529,8 @@ class ProblemScene(Scene):
         if ui.button("code_target", x, y + 16, 60, 13, label, size=7):
             self.show_target = not self.show_target
         if res.get("error"):
-            ui.text(res["error"].strip().splitlines()[-1][:120], x + 66, y + 17, 7, UICOL["accent"], max_w=w - 66)
+            last = res["error"].strip().splitlines()[-1] if res["error"].strip() else ""
+            self.result_pane.draw(ui, x + 64, y + 14, w - 64, h - 14, (("mono", last, 7, "#8A2E1F", 2, 1),))
 
     def draw_target(self, ui, x, y, w, h):
         """The target view of a scored result: grade, each set against the bars, loss curve."""
