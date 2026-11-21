@@ -23,6 +23,7 @@ import pygame
 from .. import strings_vi as T
 from ..art.palette import UI as UICOL
 from ..ui import figures, mathdraw
+from ..ui.mathtext import pretty
 from .base import Scene
 
 GREY = "#5A5A5A"
@@ -88,7 +89,7 @@ class _Page:
               first: str | None = None, first_colour: str | None = None) -> None:
         ui = self.ui
         lh = line_h(ui, size)
-        wrapped = ui.f.wrap((first or "") + text, size, int(width * ui.s), ui.s)
+        wrapped = ui.f.wrap((first or "") + pretty(text), size, int(width * ui.s), ui.s)   # x^2 drawn as maths
         for i, line in enumerate(wrapped):
             w, h = ui.text_size(line, size)
             it = self.add(kind="text", text=line, x=x, y=self.y, w=w, h=h, size=size, color=colour, role="fg",
@@ -415,9 +416,9 @@ class DocScene(Scene):
             size = 4 if i == here else 3
             ui.fill(dx + i * 6 + (4 - size) / 2, y + 12 - size / 2, size, size, colour)
         head = f"{T.MATH_FLOOR.format(n=self.doc['floor'])} · {self.doc['title_vi']}"
-        ui.text(mathdraw.fit(ui, head, 7, dx - x - PAD - 8), x + PAD, y + 12, 7, GREY, anchor="midleft")
+        ui.text(pretty(mathdraw.fit(ui, head, 7, dx - x - PAD - 8)), x + PAD, y + 12, 7, GREY, anchor="midleft")
         title = sections[here][1] if here < len(sections) else self.doc["title_vi"]
-        ui.text(mathdraw.fit(ui, title, SECTION, w - 2 * PAD), x + PAD, y + 18, SECTION, UICOL["accent"])
+        ui.text(pretty(mathdraw.fit(ui, title, SECTION, w - 2 * PAD)), x + PAD, y + 18, SECTION, UICOL["accent"])
         ui.fill(x + PAD, y + CONTENT_TOP - 4, w - 2 * PAD, 1, RULE)
 
     def draw_footer(self, ui, x, y, w, h, n_pages) -> None:

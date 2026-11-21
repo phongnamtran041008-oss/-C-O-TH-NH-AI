@@ -18,6 +18,7 @@ import pygame
 
 from ..art.palette import UI as UICOL
 from ..art.palette import rgb
+from .mathtext import pretty
 
 COLOURS = {
     "do": UICOL["accent"],      # vermilion
@@ -46,7 +47,7 @@ def colour(name: str | None, a: int = 255, paper: str = PAPER) -> tuple[int, int
 
 
 def caption_lines(ui, fig: dict, width: float) -> list[str]:
-    return ui.f.wrap(fig.get("caption", ""), CAPTION, int(width * ui.s), ui.s) if fig.get("caption") else []
+    return ui.f.wrap(pretty(fig.get("caption", "")), CAPTION, int(width * ui.s), ui.s) if fig.get("caption") else []
 
 
 def caption_h(ui, fig: dict, width: float) -> float:
@@ -141,7 +142,7 @@ def draw(ui, fig: dict, x: float, y: float, k: float = 1.0) -> None:
     for p in fig.get("prims", []):
         t = p["t"]
         if t == "text":
-            ui.text(p["s"], x + p["x"] * k, y + p["y"] * k, p["size"] * k, colour(p.get("c")),
+            ui.text(pretty(p["s"]), x + p["x"] * k, y + p["y"] * k, p["size"] * k, colour(p.get("c")),
                     anchor=p.get("anchor", "center"))
             continue
         c = colour(p.get("c"), p.get("a", 255))
@@ -215,7 +216,7 @@ def text_rects(ui, fig: dict, x: float, y: float, k: float = 1.0) -> list[tuple[
     for p in fig.get("prims", []):
         if p["t"] != "text":
             continue
-        w, h = ui.text_size(p["s"], p["size"] * k)
+        w, h = ui.text_size(pretty(p["s"]), p["size"] * k)
         a = p.get("anchor", "center")
         px, py = x + p["x"] * k, y + p["y"] * k
         x0 = px - (w / 2 if a in ("center", "midtop", "midbottom") else w if a.endswith("right") else 0)

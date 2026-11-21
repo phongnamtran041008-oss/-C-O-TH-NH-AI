@@ -112,7 +112,7 @@ def _inner_script(inner: str) -> str | None:
 
 
 _SUP_TOKEN = re.compile(rf"-?(?:\d+(?:\.\d+)?(?![0-9])|(?:{_GREEK_NAMES}|[A-Za-zμπΔ])(?![{_LETTER}0-9_(]))")
-_SUB_BASE = re.compile(rf"(?:(?<![{_LETTER}_])(?:[{_LETTER}μΔπ]|{_GREEK_NAMES}|log)|\])_")
+_SUB_BASE = re.compile(rf"(?:(?<![{_LETTER}_])(?:[{_LETTER}μΔπ]|{_GREEK_NAMES}|log)|[])])_")
 _SUB_TOKEN = re.compile(rf"(?:\d{{1,3}}(?![0-9_])|[A-Za-z]{{1,3}}\d{{0,2}}(?![{_LETTER}0-9_]))")
 
 
