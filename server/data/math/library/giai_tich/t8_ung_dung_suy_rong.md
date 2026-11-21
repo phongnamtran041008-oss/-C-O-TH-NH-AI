@@ -31,7 +31,7 @@ Diện tích giữa hai đường là tổng các dải mỏng cao (trên - dư�
 
 $$ S = \int_a^b \big|f(x) - g(x)\big|\,dx $$
 
-Theo y thì lấy (phải - trái) dy. Parabol a(x - r)(x - s) và Ox: diện tích |a|(s - r)^3/6.
+Khi biên cho dạng x theo y (như y^2 = 2x), cắt dải nằm ngang dài (phải - trái) rồi lấy tích phân theo dy. Parabol a(x - r)(x - s) bao với Ox diện tích |a|(s - r)^3/6; như x^2 - 1 cho 8/6 = 4/3.
 
 Ví dụ: diện tích giữa y = x^2 và y = x + 2.
 
@@ -71,7 +71,7 @@ Thể tích là tổng các lát mỏng: quay quanh Ox, lát tại x là hình t
 
 $$ V_{Ox} = \pi\int_a^b f(x)^2\,dx $$
 
-Giữa f >= g >= 0: lát là vành khăn pi(f^2 - g^2). Quay quanh Oy: dải đứng thành vỏ trụ, V = 2pi . tích phân của x f(x) dx.
+Miền nằm giữa hai đường f >= g >= 0 thì lát có lỗ ở giữa, là vành khăn: hình tròn lớn trừ hình tròn nhỏ, pi(f^2 - g^2).
 
 Ví dụ: quay đoạn y = x, 0 <= x <= 3 quanh Ox (được một hình nón).
 
@@ -81,9 +81,27 @@ Ví dụ: quay đoạn y = x, 0 <= x <= 3 quanh Ox (được một hình nón).
 
 > Lỗi thường gặp: viết vành khăn là pi(f - g)^2. Đúng là hình tròn lớn trừ hình tròn nhỏ: pi(f^2 - g^2).
 
+:::figure plane
+caption: Quay quanh Oy: dải đứng tại x quay thành một vỏ ống bán kính x. Trải vỏ ra được tấm mỏng dài 2pi x, cao f(x).
+size: 160 95
+x: -1.3 1.3 0.5
+y: -0.3 1.3 0.5
+curve "1 - x^2" xanh -1 1
+poly 0.6 0 0.7 0 0.7 0.51 0.6 0.64 do
+poly -0.7 0 -0.6 0 -0.6 0.64 -0.7 0.51 xam
+param "0.65*cos(t)" "0.12*sin(t)" 0 2*pi do
+:::
+
+Quay quanh trục Oy thì cắt dải đứng thay vì lát. Dải tại x, cao f(x), dày dx, quay thành vỏ ống có thể tích 2pi x . f(x) dx; cộng lại: V = 2pi . tích phân của x f(x) dx.
+
 :::check
 Q: Quay miền giữa y = 1 và y = x^2 (0 <= x <= 1) quanh Ox. Thể tích bằng bao nhiêu?
 A: Vành khăn bán kính ngoài 1, trong x^2: V = pi . tích phân từ 0 đến 1 của (1 - x^4) dx = 4pi/5.
+:::
+
+:::check
+Q: Quay miền dưới y = 1 - x^2 (0 <= x <= 1) quanh trục Oy. Thể tích bằng bao nhiêu?
+A: Vỏ trụ: V = 2pi . tích phân từ 0 đến 1 của x(1 - x^2) dx = 2pi(1/2 - 1/4) = pi/2.
 :::
 
 ## Độ dài đường cong
@@ -107,7 +125,7 @@ segment 1 0.5 1.8 1.62 do "ds" pos=nw
 Độ dài cung là tổng các cạnh huyền nhỏ sqrt(dx^2 + dy^2) = sqrt(1 + (y')^2) dx.
 :::
 
-Đề thường chọn để dưới căn là một bình phương; khai căn thì giữ trị tuyệt đối.
+Đề thường chọn đường cong để 1 + (y')^2 là một bình phương, khai căn ra gọn. Nhớ sqrt(t^2) = |t|: biểu thức đổi dấu thì phải tách đoạn.
 
 $$ L = \int_a^b \sqrt{1 + f'(x)^2}\,dx, \qquad L = \int_{\alpha}^{\beta} \sqrt{x'(t)^2 + y'(t)^2}\,dt $$
 
@@ -146,7 +164,9 @@ Tích phân tới vô cùng là giới hạn của tích phân tới R: đuôi t
 
 $$ \int_a^{+\infty} \frac{dx}{x^p} < +\infty \iff p > 1 $$
 
-Cả trục: tách tại một điểm, hai đầu lấy giới hạn riêng. Với sin x, 1 - cos R dao động mãi: phân kỳ.
+Tích phân trên cả trục thì tách tại một điểm (thường là 0) thành hai nửa, mỗi nửa một cận vô hạn chạy riêng; hội tụ khi cả hai nửa hội tụ. Ví dụ 1/(1 + x^2): mỗi nửa ra pi/2, tổng pi.
+
+Phân kỳ không nhất thiết là ra vô cùng: tích phân của sin x tới R là 1 - cos R, dao động mãi không có giới hạn.
 
 Ví dụ: tính tích phân từ 1 đến +vô cùng của 3/x^4 dx.
 
@@ -154,7 +174,7 @@ Ví dụ: tính tích phân từ 1 đến +vô cùng của 3/x^4 dx.
 2. R -> +vô cùng: 1/R^3 -> 0.
 3. Hội tụ, bằng 1.
 
-> Lỗi thường gặp: cắt đối xứng [-R, R]. Tích phân của x từ -R đến R luôn bằng 0, nhưng nửa từ 0 đến R là R^2/2: phân kỳ.
+> Lỗi thường gặp: cắt đối xứng [-R, R] rồi cho R -> vô cùng. Với f = x, tích phân từ -R đến R luôn bằng 0 vì hai nửa triệt tiêu nhau, nhưng riêng nửa từ 0 đến R là R^2/2 -> vô cùng. Mỗi nửa phải tự hội tụ, nên tích phân này phân kỳ.
 
 :::check
 Q: Tính tích phân từ 0 đến +vô cùng của e^(-2x) dx.
@@ -184,7 +204,7 @@ Hàm vọt lên vô cùng ở đầu mút thì cắt bỏ khúc nhỏ tới c, t
 
 $$ \int_0^1 \frac{dx}{x^p} < +\infty \iff p < 1 $$
 
-Điểm bất thường ở giữa đoạn: tách tại đó, mọi phần phải hội tụ. c ln c -> 0: tính bằng L'Hospital.
+Điểm bất thường nằm giữa đoạn thì tách đoạn tại đó; tích phân hội tụ khi mọi phần đều hội tụ. Ở đầu mút hay gặp c ln c, dạng 0 . vô cùng: viết thành ln c/(1/c) rồi L'Hospital, ra 0.
 
 Ví dụ: tính tích phân từ 0 đến 1 của 1/x^(2/3) dx.
 
@@ -224,7 +244,7 @@ Ví dụ: tích phân từ 1 đến +vô cùng của (x + 1)/(x^3 + 2) dx hội 
 2. Tỉ số với 1/x^2 dần tới 1, nên hai tích phân cùng số phận.
 3. p = 2 > 1: hội tụ.
 
-So sánh thẳng, 0 <= f <= g: g hội tụ thì f hội tụ; f phân kỳ thì g phân kỳ. Từ 0 tới vô cùng: xét riêng hai đầu.
+So sánh thẳng, với 0 <= f <= g: nằm dưới một hàm có diện tích hữu hạn thì f cũng hữu hạn; nằm trên một hàm có diện tích vô hạn thì g cũng vô hạn. Tích phân từ 0 tới vô cùng có hai chỗ nguy hiểm: xét riêng gần 0 và gần vô cùng.
 
 > Lỗi thường gặp: so sánh sai chiều. 1/(x + sqrt(x)) <= 1/x mà 1/x phân kỳ thì chưa nói được gì; phải chặn dưới: 1/(x + sqrt(x)) >= 1/(2x).
 
