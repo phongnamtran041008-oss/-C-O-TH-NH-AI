@@ -24,8 +24,9 @@ from ..ui.mathdraw import draw_matrices, fit, matrices_size
 from .base import Scene
 from .math_code import ProblemListScene
 from .math_library import DocScene, LibraryListScene, scroll_rows, subject_tabs
-from .math_tree import (NEXT_TAB, NodeCardScene, Row, first_tab, header_text, locked_reason, names_of,
-                        node_by_id, node_rows, part_playable, progress_text, row_label, row_state, stage_text,
+from .math_tree import (NEXT_TAB, NodeCardScene, Row, draw_chips, exercises_subject, first_tab, fit_lines,
+                        header_text, later_ids, locked_reason, main_head, main_label, main_progress, main_step,
+                        names_of, node_by_id, node_rows, part_playable, progress_text, row_state, stage_text,
                         tab_list)
 from .quiz import KEYS, CombatCard, QuizScene
 
@@ -465,21 +466,28 @@ HUB_DOORS = (("math_hub_dungeon", T.MATH_HUB_DUNGEON, ".math_dungeon", "MathDung
 class MathPracticeScene(Scene):
     """The hub of the math bí cảnh: Đạo Thụ, the curriculum tree, and the sitting that runs on a node.
 
-    Đạo Thụ replaced "four subjects, floors 1-9 in order". The header says where the player
-    stands (Luyện Khí tầng 2/9); a tab per branch lists its nodes, and "Nên học" lists the open
-    main-path nodes of every branch. One row per part of a node (a node that spans two floors has
-    two): its gate, its Thiên kiếp nhỏ, its Tàng Thư page and "Luyện". Clicking a node's name
-    opens its card. The hub opens on the tab of the sitting left open, else on "Nên học".
-    A branch that is a subject keeps the bài kiểm tra đầu vào and the bài tập of that subject.
+    The first tab is **Chính đạo**, the main quest: a card for the ONE next step the server names
+    (GET /math/tree `main`) - the node's full name, why an AI engineer needs it, the chips Hiểu ->
+    Luyện -> Vượt cổng and one primary button (also Enter) whose label follows the step: Học bài
+    (opens the lesson and reports it read, POST /guide/read), Luyện, Độ Thiên kiếp nhỏ, Làm bài tập.
+    Under the card the main nodes of the stage in path order, each done / now / later.
+
+    A tab per branch lists its nodes for browsing: one row per part of a node (a node that spans
+    two floors has two) with its gate, its Thiên kiếp nhỏ, its Tàng Thư page and "Luyện"; a node
+    ahead of the current step carries "Để sau" but is not blocked. Clicking a node's name opens its
+    card. A branch that is a subject keeps the bài kiểm tra đầu vào and the bài tập of that subject.
+    Hầm Ngục, Thủ Thành and Cơ Duyên sit small along the bottom under "Luyện thêm".
 
     Both the tree (GET /math/tree) and the path (GET /math/path, for the placement test and the
-    exercise count) are read; the hub shows nothing until both have come."""
+    exercise count) are read; the hub shows nothing until both have come. `act=True` (the board's
+    "Đi tới") does the card's action as soon as they have."""
 
     LIST_TOP = 52           # the first row, below the tabs and the header line
     ROW = 16
     SHOWN = 9               # rows that fit above the bottom buttons
+    CARD_TOP = 36           # the Chính đạo card, right under the tabs
 
-    def __init__(self, game):
+    def __init__(self, game, act: bool = False):
         super().__init__(game)
         self.path: dict | None = None
         self.tree: dict | None = None
@@ -490,13 +498,61 @@ class MathPracticeScene(Scene):
         self.busy = False
         self.tab: str | None = None         # the id of the tab shown ("next" or a branch id)
         self.first = 0                      # the first row shown (the list scrolls)
+        self.act = act                      # do the Chính đạo action once the tree has come
+        self.reload_on_resume = False       # a lesson, exercises or a side mode was opened over the hub
 
     def on_enter(self):
         self.load()
 
+    def on_resume(self):
+        if self.reload_on_resume:
+            self.reload_on_resume = False
+            self.load(quiet=True)
+
+    def side(self, scene) -> None:
+        """Open a scene over the hub; the tree is read again when it closes."""
+        self.reload_on_resume = True
+        self.game.push(scene)
+
+    # ------------------------------------------------------------ Chính đạo
+    def read_lesson(self, node_id: str, floor: int, doc_id: str | None, block: int = 0) -> None:
+        """Học bài: the lesson of this part, and the server is told it was opened (step hiểu done)."""
+        def ok(r):
+            if isinstance(r, dict) and r.get("guide"):
+                self.game.set_guide(r["guide"], announce=False)
+        self.api.post("/guide/read", {"node_id": node_id, "floor": floor}, ok, lambda e: None)
+        if doc_id:
+            self.side(DocScene(self.game, doc_id, block))
+        else:
+            self.load()
+
+    def do_main(self, m: dict | None = None) -> None:
+        """The action of the Chính đạo card's one button (also the board's "Đi tới")."""
+        m = m or main_step(self.tree)
+        if not m or self.busy:
+            return
+        step = m["step"]
+        if step == "hoc":
+            self.read_lesson(m["node_id"], m["floor"], m.get("doc_id"), m.get("block") or 0)
+        elif step in ("luyen", "kiep"):
+            run = self.open_run()
+            if m.get("resume") and run and run.get("node_id") == m["node_id"]:
+                self.resume(run)
+            else:
+                self.start(m["node_id"], m["floor"], trial=step == "kiep")
+        elif step == "code":
+            node = node_by_id(self.tree, m["node_id"]) or {}
+            subject = exercises_subject(node) or m.get("subject_id")
+            if subject:
+                self.side(ProblemListScene(self.game, subject, only=[p["id"] for p in node.get("problems", [])]
+                                           or None))
+
     # ------------------------------------------------------------ server calls
-    def load(self):
-        self.busy = True
+    def load(self, quiet: bool = False):
+        """Read the path and the tree. `quiet` (the hub came back from a lesson, exercises or a
+        side mode): the buttons stay usable while the new tree comes."""
+        if not quiet:
+            self.busy = True
         got: dict = {}
         failed = []
 
@@ -505,17 +561,25 @@ class MathPracticeScene(Scene):
                 got[key] = data
                 if len(got) < 2:
                     return
-                self.busy = False
+                if not quiet:
+                    self.busy = False
                 self.path, self.tree = got["path"], got["tree"]
                 self.tabs = tab_list(self.tree)
                 if self.tab not in [t["id"] for t in self.tabs]:
                     self.tab, self.first = first_tab(self.tree), 0
+                if self.act:                    # the board's "Đi tới": the card's action, once
+                    self.act = False
+                    self.tab = NEXT_TAB
+                    self.do_main()
             return ok
 
         def broke(err):
             if not failed:                  # one message for the pair of requests
                 failed.append(err)
-                self.fail(err)
+                if quiet:
+                    self.game.api_error(err)
+                else:
+                    self.fail(err)
         self.api.get("/math/path", arrived("path"), broke)
         self.api.get("/math/tree", arrived("tree"), broke)
 
@@ -602,16 +666,21 @@ class MathPracticeScene(Scene):
             ui.text(T.MATH_LOADING, x + w / 2, y + h / 2, 9, GREY, anchor="center")
         else:
             self.draw_tree(ui, x, y, w, h)
-        if ui.button("math_library", x + 12, y + h - 20, 76, 14, T.LIB_TITLE, size=7, style="gold",
-                     enabled=ready):
+        if ui.button("math_library", x + 12, y + h - 20, 76, 14, T.LIB_TITLE, size=7, enabled=ready):
             sub = self.tab_subject()
+            m = main_step(self.tree) if ready else None
             rows = node_rows(self.tree, self.tab) if ready else []
-            first = next((r.part["subject_id"] for r in rows if r.part), None)
-            self.game.push(LibraryListScene(self.game, sub["id"] if sub else first))
-        if not self.summary:      # M10: the other ways to play - each one a scene of its own
+            first = (m or {}).get("subject_id") if self.tab == NEXT_TAB else None
+            first = first or next((r.part["subject_id"] for r in rows if r.part), None)
+            self.side(LibraryListScene(self.game, sub["id"] if sub else first))
+        if not self.summary:      # M10: the other ways to play - side modes, drawn small: "Luyện thêm"
+            ui.text(T.PATH_SIDE, x + 95, y + h - 13, 7, PALE, anchor="midleft")
             for i, (wid, label, module, cls) in enumerate(HUB_DOORS):
-                if ui.button(wid, x + 94 + i * 64, y + h - 20, 60, 14, label, size=7, enabled=ready):
-                    self.game.push(getattr(importlib.import_module(module, __package__), cls)(self.game))
+                bx = x + 148 + i * 59               # (light: a thin pale frame, no fill, no shadow)
+                ui.border(bx, y + h - 19, 56, 12, "#C9B48A")
+                if ui.button(wid, bx, y + h - 19, 56, 12, label, size=7, style="ghost", enabled=ready,
+                             tooltip=T.PATH_SIDE_TIP):
+                    self.side(getattr(importlib.import_module(module, __package__), cls)(self.game))
         if ui.button("math_close", x + w - 62, y + h - 20, 50, 14, T.CLOSE, key=pygame.K_ESCAPE):
             self.close()
 
@@ -620,6 +689,10 @@ class MathPracticeScene(Scene):
                            x + 12, y + 19, w - 24)
         if self.tabs[tab]["id"] != self.tab:
             self.tab, self.first = self.tabs[tab]["id"], 0
+        m = main_step(self.tree)
+        if self.tab == NEXT_TAB and m is not None:
+            self.draw_main(ui, x, y, w, h, m)
+            return
         self.draw_header(ui, x, y + 36, w)
         rows = node_rows(self.tree, self.tab)
         top, height = y + self.LIST_TOP, self.ROW * self.SHOWN
@@ -629,6 +702,7 @@ class MathPracticeScene(Scene):
             return
         self.first = scroll_rows(ui, self.first, len(rows), self.SHOWN, x, top, w, height)
         run = self.open_run()
+        self.later = later_ids(self.tree)       # ahead of the current step on Chính đạo: "Để sau"
         cy = top
         for row in rows[self.first:self.first + self.SHOWN]:
             self.draw_row(ui, x, cy, w, row, run)
@@ -636,6 +710,104 @@ class MathPracticeScene(Scene):
         if len(rows) > self.SHOWN:
             ui.text(T.MATH_LIST_MORE.format(a=self.first + 1, b=min(len(rows), self.first + self.SHOWN), t=len(rows)),
                     x + 12, top + height + 4, 7, GREY)
+
+    # ------------------------------------------------------------ the Chính đạo tab
+    def draw_main(self, ui, x, y, w, h, m: dict):
+        """The card of the one next step, then the main nodes of its stage in path order."""
+        cx, cw = x + 12, w - 24
+        top = y + self.CARD_TOP
+        if m["step"] == "done":
+            ui.text(header_text(self.tree["stage"]), cx, top + 2, 8, UICOL["accent"])
+            ui.text(T.PATH_DONE_TITLE, x + w / 2, top + 50, 11, UICOL["green"], anchor="center")
+            ui.text(T.PATH_DONE_BODY, x + w / 2, top + 66, 8, GREY, anchor="midtop", max_w=w - 60)
+            return
+        bottom = self.draw_card(ui, cx, top, cw, m)
+        self.draw_stage_list(ui, cx, bottom + 5, cw, y + h - 24, m)
+
+    def draw_card(self, ui, x, y, w, m: dict) -> float:
+        """The card; returns its bottom edge. Nothing on it is cut: the name takes a second line or a
+        smaller size, the why wraps."""
+        pad, inner = 8, w - 16
+
+        def lh(size):
+            return ui.text_size("Ag", size)[1]
+        name_size, name_lines = fit_lines(ui, m["name_vi"], inner, sizes=(11, 10, 9, 8), lines=2)
+        why = m.get("why_vi") or ""
+        why_lines = ui.f.wrap(why, 7, int(inner * ui.s), ui.s) if why else []
+        name_h = lh(name_size) * (1 + 1.0 * (len(name_lines) - 1))
+        why_h = lh(7) * 1.1 * len(why_lines)
+        h = pad + lh(7) + 3 + name_h + 3 + why_h + 6 + 16 + pad - 2
+        ui.fill(x + 1, y + 2, w, h, (0, 0, 0, 50))
+        ui.fill(x, y, w, h, "#FFF8E6")
+        ui.border(x, y, w, h, "#B8862E")
+        ui.fill(x, y, 3, h, UICOL["gold"])
+        cy = y + pad - 2
+        ui.text(main_head(m), x + pad, cy, 7, "#B8862E")
+        ui.text(m.get("branch_vi") or "", x + w - pad, cy, 7, GREY, anchor="topright")
+        cy += lh(7) + 3
+        if ui.button("math_main_info", x + pad - 2, cy - 1, inner + 4, name_h + 2, "", style="ghost"):
+            node = node_by_id(self.tree, m["node_id"])
+            if node:
+                self.game.push(NodeCardScene(self.game, node, self.tree))
+        ui.text("\n".join(name_lines), x + pad, cy, name_size, INK, line_gap=1.0)
+        cy += name_h + 3
+        if why_lines:
+            ui.text("\n".join(why_lines), x + pad, cy, 7, GREY, line_gap=1.1)
+            cy += why_h
+        cy += 6
+        # the chips Hiểu -> Luyện -> Vượt cổng, then what is left inside the step
+        chx = draw_chips(ui, x + pad, cy + 1, m)
+        more = main_progress(m)
+        if more:
+            ui.text(more, chx, cy + 7.5, 7, GREY, anchor="midleft")
+        bw = 104
+        if ui.button("math_main_go", x + w - pad - bw, cy - 1, bw, 16, main_label(m), size=8, style="primary",
+                     key=pygame.K_RETURN, enabled=not self.busy):
+            self.do_main(m)
+        if m["step"] in ("luyen", "kiep") and m.get("doc_id") and ui.button(
+                "math_main_read", x + w - pad - bw - 62, cy + 1, 58, 12, T.PATH_REREAD, size=7,
+                enabled=not self.busy):
+            self.read_lesson(m["node_id"], m["floor"], m["doc_id"], m.get("block") or 0)
+        return y + h
+
+    def draw_stage_list(self, ui, x, y, w, bottom, m: dict):
+        """The main nodes of the stage in path order, numbered: done / now / later (dimmed, still
+        reachable: a click opens the node's card). One column, or two when the stage is long."""
+        nodes = m.get("stage_nodes") or []
+        ui.text(T.PATH_LIST.format(n=m.get("stage") or 0), x + 2, y, 7, UICOL["accent"])
+        top = y + 11
+        if not nodes:
+            return
+        room = bottom - top
+        cols = 1 if room / len(nodes) >= 10 else 2
+        per = -(-len(nodes) // cols)
+        pitch = min(13.0, room / per)
+        colw = w / cols
+        for i, n in enumerate(nodes):
+            c, r = divmod(i, per)
+            rx, ry, rw = x + c * colw, top + r * pitch, colw - (4 if cols > 1 else 0)
+            state = n["state"]
+            if state == "now":
+                ui.fill(rx, ry, rw, pitch - 1, "#F6DFA0")
+            if ui.button(f"math_path_{n['id']}", rx, ry, rw, pitch - 1, "", style="ghost"):
+                node = node_by_id(self.tree, n["id"])
+                if node:
+                    self.game.push(NodeCardScene(self.game, node, self.tree))
+            ink = {"done": GREY, "now": INK}.get(state, PALE)
+            mcol = {"done": UICOL["green"], "now": "#B8862E"}.get(state, PALE)
+            mid = ry + (pitch - 1) / 2
+            if cols == 1:                       # the state in words at the right end
+                mark = T.PATH_STATE.get(state, "")
+                ui.text(mark, rx + rw - 3, mid, 7, mcol, anchor="midright")
+                room_w = rw - 18 - ui.text_size(mark, 7)[0] - 8
+            else:                               # two columns: a coloured square, the name gets the room
+                ui.fill(rx + rw - 7, mid - 2, 4, 4, mcol)
+                room_w = rw - 18 - 10
+            ui.text(f"{i + 1}.", rx + 3, mid, 7, ink, anchor="midleft")
+            # one line at 7, 6 or 5; two lines only where two really fit in the row
+            two = 2 if pitch >= 2 * ui.text_size("Ag", 6)[1] + 1 else 1
+            size, lines = fit_lines(ui, n["name_vi"], room_w, sizes=(7, 6, 5), lines=two)
+            ui.text("\n".join(lines), rx + 16, mid, size, ink, anchor="midleft", line_gap=0.95)
 
     def draw_header(self, ui, x, cy, w):
         """Under the tabs: where the player stands, and - on the branch of a subject - the bài
@@ -663,21 +835,31 @@ class MathPracticeScene(Scene):
 
     def draw_row(self, ui, x, cy, w, row: Row, run: dict | None):
         node, part, kind = row.node, row.part, row_state(row)
-        ink = INK if kind in ("part", "code") else PALE
-        ui.text(stage_text(node), x + 12, cy + 7, 7, GREY if node.get("stage") is not None else "#C99A3A",
-                anchor="midleft")
+        # ahead on Chính đạo and open (a locked node already says what it needs first)
+        later = node["id"] in getattr(self, "later", ()) and kind != "locked"
+        ink = INK if kind in ("part", "code") and not later else PALE
+        if later:                                   # ahead on Chính đạo: reachable, but marked
+            ui.text(stage_text(node), x + 12, cy + 4, 6, GREY, anchor="midleft")
+            ui.text(T.PATH_LATER, x + 12, cy + 11, 6, "#B8862E", anchor="midleft")
+        else:
+            ui.text(stage_text(node), x + 12, cy + 7, 7, GREY if node.get("stage") is not None else "#C99A3A",
+                    anchor="midleft")
         info = f"math_info_{node['id']}" if row.first else f"math_info_{node['id']}_{row.index}"
         if ui.button(info, x + 50, cy, 128 if part is not None else 172, 13, "", style="ghost"):
             self.game.push(NodeCardScene(self.game, node, self.tree))
-        # (a row with no part has no tiers, so its name may use the room of the tiers column)
-        ui.text(row_label(ui, row, 122 if part is not None else 170), x + 52, cy + 7, 8, ink, anchor="midleft")
+        # (a row with no part has no tiers, so its name may use the room of the tiers column); a long
+        # name goes on two lines or a size smaller, never cut
+        tail = " " + T.TREE_PART.format(i=row.index, n=row.count) if row.count > 1 else ""
+        size, lines = fit_lines(ui, node["name_vi"] + tail, 124 if part is not None else 170)
+        ui.text("\n".join(lines), x + 52, cy + 7, size, ink, anchor="midleft", line_gap=1.0)
         if part is not None:
             ui.text(tiers_text(part["tier_min"], part["tier_max"]), x + 182, cy + 7, 7, GREY, anchor="midleft")
         if kind == "vacant":
             ui.text(T.TREE_VACANT, x + w - 12, cy + 7, 7, PALE, anchor="midright")
             return
         if kind == "locked":
-            ui.text(fit(ui, locked_reason(node), 7, 166), x + w - 12, cy + 7, 7, PALE, anchor="midright")
+            size, lines = fit_lines(ui, locked_reason(node), 166, sizes=(7, 6))
+            ui.text("\n".join(lines), x + w - 12, cy + 7, size, PALE, anchor="midright", line_gap=1.0)
             return
         if kind == "code":
             ui.text(T.TREE_NODE_DONE if node["state"] == "done" else T.TREE_CODE_ONLY, x + w - 12, cy + 7, 7,
@@ -688,7 +870,7 @@ class MathPracticeScene(Scene):
         self.draw_part_gate(ui, x, cy, w, node, part)
         if part.get("doc_id") and ui.button(f"math_doc_{node['id']}_{floor}", x + w - 118, cy, 34, 13,
                                             T.LIB_READ, size=7, style="gold"):
-            self.game.push(DocScene(self.game, part["doc_id"]))
+            self.read_lesson(node["id"], floor, part["doc_id"])
         if part_playable(row) and ui.button(f"math_node_{node['id']}_{floor}", x + w - 76, cy, 64, 13,
                                             T.MATH_RESUME if mine else T.MATH_PLAY, size=7, style="primary",
                                             enabled=not self.busy):

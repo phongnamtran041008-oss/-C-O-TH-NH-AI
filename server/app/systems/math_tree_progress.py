@@ -30,12 +30,19 @@ The rules (the contract of the Đạo Thụ milestone, R1-R12):
   * R6 a micro-skill of the tree's `cut` list is never asked (math_practice._templates drops
     it for every mode); an optional node's micro-skills only in that node's own sittings.
   * R9 outside a sitting the player's own place in subject S is the **frontier** of S: the
-    first open main-path part of S in tree order (realm, stage, node id); else the last passed
+    first open main-path part of S in tree order (realm, stage, place on Chính đạo); else the last passed
     main part of S; else the first main part of S that has questions.
   * R10 a programming exercise is open when its micro-skill is in an open or done node.
   * R12 three primitives for the callers that used to read "the floor the player has
     reached": `frontier` (questions for this player now), `reached_floors` (which floors may be
     shown or entered) and `working_stage` (the floor number used as a level threshold).
+  * Chính đạo, the main quest: `next_step` names the ONE thing to do now - the first
+    main-path node on the path (math_tree.Tree.main_path) that is not done, its first part not
+    passed, and which of the three steps of that part comes next: hiểu (read the lesson), luyện
+    (practise until the gate opens), độ kiếp (the Thiên kiếp nhỏ); a node of exercises only has
+    the step "code". Reading a lesson is recorded in `users.flags["path"]["read"]` (key
+    "<node>:<floor>"); a part the player already has answers on counts as read, so an old save
+    is never sent back to read.
 """
 from __future__ import annotations
 
@@ -48,7 +55,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import settings
 from ..learning import math_library, math_mastery, math_path, math_problems, math_tree
-from ..models import MathRun, MathSubmission, User
+from ..models import MathAnswer, MathRun, MathSubmission, User
 
 TRIAL = "trial"
 OPEN, DONE, LOCKED, VACANT = "open", "done", "locked", "vacant"
@@ -116,8 +123,9 @@ def parts(node: math_tree.Node | str) -> list[Part]:
 
 
 def node_order(node: math_tree.Node) -> tuple:
-    """Tree order: realm, stage, node id (an optional node has no stage and comes last)."""
-    return (not node.main, tree().realm_order[node.realm], node.stage or 99, node.id)
+    """Tree order is Chính đạo (math_tree.Tree.path_key): realm, stage, then the place of the
+    node inside its stage on the one learning path; optional nodes have no stage and come last."""
+    return tree().path_key(node.id)
 
 
 def all_parts(main_only: bool = False) -> list[Part]:
@@ -378,7 +386,9 @@ async def allowed_skills(db: AsyncSession, user_id: int, st: TreeState | None = 
                          optional: bool = False) -> set[str]:
     """The micro-skills of open or done nodes, minus the cut ones. Outside a node's own
     sittings an optional node's micro-skills are never asked (R6), so they are left out
-    unless `optional` is set."""
+    unless `optional` is set. (An open node may be one the player has not reached on Chính
+    đạo yet: the side modes that read this - Hầm Ngục, Thủ Thành - can ask it; see
+    docs/TAN_THU_LO_TRINH.md, "Chính đạo là nhiệm vụ chính".)"""
     return allowed_skills_of(await _state(db, user_id, st), optional)
 
 
@@ -429,6 +439,152 @@ def locked_message(st: TreeState, node_ids: list[str]) -> str:
                 missing.append(r)
     names = ", ".join(t.nodes[r].name_vi for r in missing)
     return f"Nút này chưa mở. Hãy học xong trước: {names}." if names else "Nút này chưa mở."
+
+
+# ------------------------------------------------------------------ Chính đạo: the one next step
+PATH_FLAG = "path"                       # users.flags["path"] = {"read": ["<node>:<floor>", ...]}
+READ_MAX = 600                           # (far more parts than the tree has: a bound, not a limit)
+HOC, LUYEN, KIEP, CODE, FINISHED = "hoc", "luyen", "kiep", "code", "done"
+
+
+def lesson_key(node_id: str, floor: int) -> str:
+    return f"{node_id}:{int(floor)}"
+
+
+def read_lessons(flags: dict | None) -> set[str]:
+    """The lessons the player opened from Chính đạo (or any node's "Đọc"), as lesson keys."""
+    p = (flags or {}).get(PATH_FLAG)
+    r = p.get("read") if isinstance(p, dict) else None
+    return {x for x in r if isinstance(x, str)} if isinstance(r, list) else set()
+
+
+def path_nodes(st: TreeState, realm: str | None = None, stage: int | None = None) -> list[math_tree.Node]:
+    """The main-path nodes on Chính đạo that have something to learn (a vacant node is no
+    work for the player), in path order; only those of a realm / stage when given."""
+    t = st.tree
+    return [t.nodes[i] for i in t.main_path() if st.status[i] != VACANT
+            and (realm is None or t.nodes[i].realm == realm) and (stage is None or t.nodes[i].stage == stage)]
+
+
+def current_node(st: TreeState) -> math_tree.Node | None:
+    """The first node on Chính đạo that is not done yet; None once the whole path is done.
+    The path respects `requires`, so every node before it is done and it is open."""
+    return next((n for n in path_nodes(st) if st.status[n.id] != DONE), None)
+
+
+def current_part(st: TreeState, node: math_tree.Node) -> Part | None:
+    return next((p for p in parts(node) if st.has_questions(p) and not st.part_passed(p)), None)
+
+
+async def _answered(db: AsyncSession, user_id: int, skills) -> bool:
+    if not skills:
+        return False
+    return (await db.execute(select(MathAnswer.id).where(
+        MathAnswer.user_id == user_id, MathAnswer.skill_id.in_(list(skills))).limit(1))).first() is not None
+
+
+def _stage_list(st: TreeState, node: math_tree.Node) -> list[dict]:
+    names = {b["id"]: b["name_vi"] for b in st.tree.raw.get("branches", [])}
+    return [{"id": n.id, "name_vi": n.name_vi, "branch": n.branch, "branch_vi": names.get(n.branch, n.branch),
+             "kind": n.kind,
+             "state": DONE if st.status[n.id] == DONE else "now" if n.id == node.id else "later"}
+            for n in path_nodes(st, node.realm, node.stage)]
+
+
+async def next_step(db: AsyncSession, user: User, st: TreeState | None = None, flags: dict | None = None) -> dict:
+    """GET /math/tree `main` and GET /guide `main`: the ONE thing to do now on Chính đạo.
+
+    {node_id, name_vi, why_vi, branch, branch_vi, kind, realm, realm_name_vi, stage, index,
+     total (the node's place among the stage's main nodes), step (hoc | luyen | kiep | code | done),
+     done: {hieu, luyen, kiep} (the three chips of the part being learned), part {subject_id,
+     floor, index, count} or None, gate {done, total, ok} or None, doc_id and block (the lesson
+     and the section of the part's first micro-skill), subject_id and floor (where to sit down),
+     problems [{id, title_vi, solved}] and problems_done / problems_total (a node of exercises),
+     resume (the open sitting is on this part: "practice" or "trial", else None), stage_nodes
+     [{id, name_vi, branch, branch_vi, kind, state: done | now | later}] in path order,
+     path_done / path_total (nodes of the realm)}."""
+    from . import math_practice
+    st = st if st is not None else await state(db, user.id)
+    t = st.tree
+    node = current_node(st)
+    realms = {r["id"]: r["name_vi"] for r in t.raw.get("realms", [])}
+    if node is None:
+        realm, stage = st.stage
+        return {"step": FINISHED, "node_id": None, "path": None, "name_vi": None, "why_vi": None, "branch": None,
+                "branch_vi": None, "kind": None, "realm": realm, "realm_name_vi": realms.get(realm), "stage": stage,
+                "index": 0, "total": 0, "done": {"hieu": True, "luyen": True, "kiep": True}, "part": None,
+                "gate": None, "doc_id": None, "block": 0, "subject_id": None, "floor": None, "problems": [],
+                "problems_done": 0, "problems_total": 0, "resume": None, "stage_nodes": [],
+                "path_done": len(path_nodes(st)), "path_total": len(path_nodes(st))}
+    stage_nodes = _stage_list(st, node)
+    realm_nodes = path_nodes(st, node.realm)
+    out = {"node_id": node.id, "path": t.path_rank.get(node.id), "name_vi": node.name_vi, "why_vi": node.why_vi, "branch": node.branch,
+           "branch_vi": next((s["branch_vi"] for s in stage_nodes if s["id"] == node.id), node.branch),
+           "kind": node.kind, "realm": node.realm, "realm_name_vi": realms.get(node.realm), "stage": node.stage,
+           "index": [s["id"] for s in stage_nodes].index(node.id) + 1, "total": len(stage_nodes),
+           "part": None, "gate": None, "doc_id": None, "block": 0, "subject_id": None, "floor": None,
+           "problems": [], "problems_done": 0, "problems_total": 0, "resume": None, "stage_nodes": stage_nodes,
+           "path_done": sum(1 for n in realm_nodes if st.status[n.id] == DONE), "path_total": len(realm_nodes)}
+    asked = [p for p in parts(node) if st.has_questions(p)]
+    part = current_part(st, node)
+    problems = [p for p in node.problems if problem_available(p)]
+    if problems:
+        bank = math_problems.bank()
+        out["problems"] = [{"id": p, "title_vi": bank[p].title_vi, "solved": p in st.solved} for p in problems]
+        out["problems_done"] = sum(1 for p in problems if p in st.solved)
+        out["problems_total"] = len(problems)
+    if part is None:                    # every part passed (or none): the node's exercises are left
+        todo = [p for p in problems if p not in st.solved]
+        first = math_problems.bank()[todo[0]] if todo else None
+        out.update(step=CODE, done={"hieu": True, "luyen": True, "kiep": True},
+                   subject_id=first.subject if first else None, floor=first.floor if first else None)
+        return out
+    gate = await math_practice.part_gate(db, user.id, part)
+    view = gate.view()
+    flags = user.flags if flags is None else flags
+    read = lesson_key(node.id, part.floor) in read_lessons(flags) or await _answered(db, user.id, part.skills)
+    docs = math_library.for_floor(part.subject_id, part.floor)
+    run = await math_practice.open_run(db, user.id)
+    mine = run is not None and run.node_id == node.id and run.floor == part.floor
+    read = read or mine or not docs         # a sitting already begun there, or no lesson to read
+    out.update(step=KIEP if gate.ok else LUYEN if read else HOC,
+               done={"hieu": read or gate.ok, "luyen": gate.ok, "kiep": False},
+               part={"subject_id": part.subject_id, "floor": part.floor, "index": asked.index(part) + 1,
+                     "count": len(asked)},
+               gate={"done": sum(1 for k in view["skills"] if k["ok"]), "total": len(view["skills"]), "ok": gate.ok},
+               doc_id=docs[0].id if docs else None,
+               block=docs[0].section_of(part.skills[0]) if docs and part.skills else 0,
+               subject_id=part.subject_id, floor=part.floor)
+    if mine and run.mode == math_practice.TRIAL:            # a Thiên kiếp nhỏ left open: finish it
+        out.update(step=KIEP, resume="trial")
+    elif mine and out["step"] == LUYEN:                    # a sitting left open on this part
+        out["resume"] = "practice"
+    return out
+
+
+async def mark_read(db: AsyncSession, user: User, node_id: str, floor: int) -> str:
+    """POST /guide/read: the player opened the lesson of this part of a node. Recorded in
+    users.flags["path"]["read"] with a compare-and-swap on the flags column (guide.swap_flags),
+    idempotent; returns the lesson key. Raises KeyError for a part that does not exist."""
+    from . import guide
+    part = part_of_node(node_id, floor)
+    if part is None:
+        raise KeyError(node_id)
+    key = lesson_key(node_id, floor)
+
+    def add(path: dict) -> dict | None:
+        read = [x for x in (path.get("read") or []) if isinstance(x, str)]
+        if key in read:
+            return None
+        return {**path, "read": (read + [key])[-READ_MAX:]}
+    await guide.swap_flags(db, user, PATH_FLAG, add)
+    return key
+
+
+def part_of_node(node_id: str, floor: int) -> Part | None:
+    if node_id not in tree().nodes:
+        return None
+    return next((p for p in parts(node_id) if p.floor == int(floor)), None)
 
 
 # ------------------------------------------------------------------ the view
@@ -489,6 +645,7 @@ async def tree_view(db: AsyncSession, user: User) -> dict:
         nodes.append({
             "id": node.id, "branch": node.branch, "realm": node.realm, "stage": node.stage,
             "status": node.status, "kind": node.kind, "name_vi": node.name_vi, "why_vi": node.why_vi,
+            "path": t.path_rank.get(node.id),          # place on Chính đạo (None: optional)
             "topics_vi": list(node.topics_vi), "state": status,
             "state_vi": VACANT_VI if status == VACANT else None,
             "requires": [{"id": r, "name_vi": t.nodes[r].name_vi, "done": r in st.done} for r in node.requires],
@@ -505,4 +662,5 @@ async def tree_view(db: AsyncSession, user: User) -> dict:
                          for b in t.raw.get("branches", [])],
             "nodes": nodes,
             "next": [n for n in st.open if t.nodes[n].main],
+            "main": await next_step(db, user, st),
             "run": math_practice.run_view(run) if run else None}

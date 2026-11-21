@@ -46,6 +46,17 @@ async def guide_claim(body: ClaimIn, user: User = Depends(write_user), db: Async
     return await _run(db, guide.claim(db, user, body.id))
 
 
+class ReadIn(BaseModel):
+    node_id: str = Field(max_length=64)
+    floor: int = Field(ge=0, le=99)
+
+
+@router.post("/guide/read")
+async def guide_read(body: ReadIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
+    """Chính đạo: the player opened the lesson of this part of a node (step "hoc" is done)."""
+    return await _run(db, guide.read(db, user, body.node_id, body.floor))
+
+
 @router.post("/guide/seen")
 async def guide_seen(body: SeenIn, user: User = Depends(write_user), db: AsyncSession = Depends(get_db)):
     """The client declares a fact only it knows (the welcome was read, a panel was opened)."""

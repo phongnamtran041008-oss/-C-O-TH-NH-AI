@@ -32,6 +32,55 @@
   {"id": "ht", "name_vi": "Hệ Thống", "subject": null, "role_vi": "Từ Luyện Hư trở lên."},
   {"id": "nc", "name_vi": "Nghiên Cứu và Dẫn Dắt", "subject": null, "role_vi": "Từ Hợp Thể trở lên."}
  ],
+ "main_path": {
+  "_comment": "Chính đạo: thứ tự học duy nhất của các nút chính đạo, mỗi cảnh giới một danh sách, mỗi tầng một dòng. Trong một tầng, nút đứng ngay sau những nút nó dựa vào, và nút lập trình hay thực chiến đứng ngay sau phần toán nó dùng, để toán vừa học được dùng ngay. Nút trong 'requires' luôn đứng trước. server/app/learning/math_tree.py kiểm: mỗi nút chính đạo có mặt đúng một lần, ở đúng tầng của nó.",
+  "luyen_khi": [
+   ["ds_ngon_ngu", "tr_logic_dem", "lt_python_co_ban", "gt_ham_so", "xs_dem_su_kien"],
+   ["ds_vecto_ma_tran", "lt_cau_truc_du_lieu", "gt_gioi_han", "tr_dem", "xs_xac_suat"],
+   ["ds_nhan_ma_tran", "lt_vecto_bang_code", "ud_knn", "tr_liet_ke_quay_lui", "lt_ham_de_quy", "gt_dao_ham", "xs_dieu_kien"],
+   ["ds_he_gauss", "lt_ma_tran_gauss", "lt_numpy", "xs_bayes", "lt_mo_phong_xac_suat", "tr_thuat_toan", "tr_do_thi", "gt_cuc_tri"],
+   ["lt_dao_ham_so", "ud_hoi_quy_1_bien", "ud_naive_bayes", "lt_do_phuc_tap", "tr_tim_kiem", "ds_dinh_thuc_nghich_dao", "gt_taylor", "gt_tich_phan", "xs_bnn_roi_rac"],
+   ["lt_do_thi", "tr_cay_duong_di", "ds_khong_gian", "gt_tich_phan_ung_dung", "xs_bnn_lien_tuc", "gt_nhieu_bien"],
+   ["ds_anh_xa_tuyen_tinh", "ds_truc_giao_chieu", "ud_binh_phuong_toi_thieu", "gt_gradient", "tr_toi_uu_loi", "xs_ky_vong_phan_phoi"],
+   ["tr_gradient_descent", "ud_mang_no_ron", "xs_mau_uoc_luong", "xs_tuong_quan_hoi_quy", "ds_tri_rieng"],
+   ["ds_pca_svd", "ud_pca", "ud_logistic", "xs_tin_cay", "xs_kiem_dinh", "ud_ab_test", "du_an_luyen_khi"]
+  ],
+  "truc_co": [
+   ["tc_python_nang_cao", "tc_du_lieu", "tc_hoc_co_giam_sat"],
+   ["tc_hoi_quy", "tc_phan_loai", "tc_cay_quyet_dinh"],
+   ["tc_git", "tc_danh_gia", "du_an_truc_co"]
+  ],
+  "ket_dan": [
+   ["kd_thong_tin", "kd_ensemble"],
+   ["kd_toi_uu_ml", "kd_dac_trung", "kd_khong_giam_sat"],
+   ["kd_svm", "du_an_ket_dan"]
+  ],
+  "nguyen_anh": [
+   ["na_autograd", "na_pytorch"],
+   ["na_huan_luyen", "na_cnn"],
+   ["na_chuoi", "du_an_nguyen_anh"]
+  ],
+  "hoa_than": [
+   ["ht_attention", "ht_gpt_nho"],
+   ["ht_tinh_chinh", "ht_ung_dung_llm"],
+   ["ht_danh_gia_llm", "du_an_hoa_than"]
+  ],
+  "luyen_hu": [
+   ["lh_ky_thuat_phan_mem", "lh_du_lieu_lon"],
+   ["lh_trien_khai", "lh_huan_luyen_lon"],
+   ["lh_giam_sat", "du_an_luyen_hu"]
+  ],
+  "hop_the": [
+   ["hp_doc_bai_bao", "hp_tai_lap"],
+   ["hp_hoc_tang_cuong", "hp_an_toan"],
+   ["hp_viet", "du_an_hop_the"]
+  ],
+  "dai_thua": [
+   ["dt_gu_nghien_cuu"],
+   ["dt_dan_dat_doi", "dt_chien_luoc"],
+   ["du_an_dai_thua"]
+  ]
+ },
  "nodes": [
   {"id": "ds_ngon_ngu", "branch": "ds", "realm": "luyen_khi", "stage": 1, "status": "chinh", "kind": "toan", "content": "co",
    "name_vi": "Tập hợp và ánh xạ", "why_vi": "Mọi mô hình là một ánh xạ từ dữ liệu vào tới kết quả ra; hàm hợp chính là các lớp của mạng nơ-ron xếp chồng.",

@@ -26,6 +26,7 @@ from ..art.palette import UI as UICOL
 from ..ui.dialog import DialogScene
 from ..ui.mathdraw import fit
 from .base import Scene
+from .math_tree import draw_chips, fit_lines, main_head, main_label, main_progress, main_step_line
 
 WELCOME = True                      # False: no welcome dialog, no automatic board (tests)
 
@@ -35,6 +36,7 @@ PALE = "#8E877A"
 GOLD_TEXT = "#B8862E"               # gold that stays readable on paper
 GREEN = "#6A994E"
 BONUS = "@bonus"                    # the key of the chapter bonus row (a step id never has an "@")
+MAIN = "@main"                      # the first entry of the board: Chính đạo, the main quest
 GOTO_IDS = ("math", "library", "dungeon", "td", "fortune", "char")
 TRACKER_W, TRACKER_H = 142, 35     # narrow enough to stay clear of a "Xong: ..." toast in the world
 
@@ -72,8 +74,10 @@ def chapter_pick(ch: dict, current: dict | None) -> str:
 
 
 def default_selection(view: dict) -> tuple[str, str]:
-    """(chapter id, row key) the board opens on: the current step; with none, the first
-    chapter that still has something to do or to claim, else the first one."""
+    """(chapter id, row key) the board opens on: Chính đạo once it leads; else the current step;
+    with none, the first chapter that still has something to do or to claim, else the first one."""
+    if leads_with_main(view):
+        return MAIN, MAIN
     cur = view.get("current")
     chapters = view["chapters"]
     if cur and find_chapter(view, cur["chapter_id"]):
@@ -132,10 +136,27 @@ def stage_line(stage: dict | None) -> str:
                                 t=stage.get("stages", "?"))
 
 
+def leads_with_main(view: dict | None) -> bool:
+    """Chính đạo leads the HUD box and the board once the welcome steps are done (server `lead`)."""
+    m = (view or {}).get("main")
+    return bool((view or {}).get("lead") == "main" and isinstance(m, dict) and m.get("step"))
+
+
 def tracker_model(view: dict) -> dict:
     """What the HUD box says: header, title, "n/c" (only when c > 1), hint, and `body` - the text
-    shown in place of title and hint when no step is current (the study line, or all done)."""
+    shown in place of title and hint when no step is current (the study line, or all done).
+    Once Chính đạo leads: header "Chính đạo 2/5 · F1", the node's name as title, the step as hint
+    ("Luyện · Cổng 1/4") and `claim` ("Nhận 2") when rewards wait on the board."""
     n = view.get("claimable") or 0
+    if leads_with_main(view):
+        m = view["main"]
+        claim = T.GUIDE_HUD_MAIN_CLAIM.format(n=n) if n else ""
+        if m["step"] == "done":
+            return {"header": T.GUIDE_HUD_MAIN_DONE, "title": "", "count": "", "hint": "",
+                    "body": T.PATH_DONE_TITLE, "claim": claim, "main": True}
+        return {"header": T.GUIDE_HUD_MAIN.format(i=m.get("index") or 0, t=m.get("total") or 0),
+                "title": m.get("name_vi") or "", "count": "", "hint": main_step_line(m), "body": "",
+                "claim": claim, "main": True}
     cur, study = view.get("current"), view.get("study")
     if n > 0:
         header = T.GUIDE_HUD_CLAIM.format(n=n)
@@ -144,9 +165,25 @@ def tracker_model(view: dict) -> dict:
     if cur:
         count = f"{cur['progress']}/{cur['count']}" if cur.get("count", 1) > 1 else ""
         return {"header": header, "title": cur["title_vi"], "count": count, "hint": cur.get("hint_vi") or "",
-                "body": ""}
+                "body": "", "claim": "", "main": False}
     return {"header": header, "title": "", "count": "", "hint": "",
-            "body": study["text_vi"] if study else T.GUIDE_HUD_ALL_DONE}
+            "body": study["text_vi"] if study else T.GUIDE_HUD_ALL_DONE, "claim": "", "main": False}
+
+
+def main_detail(view: dict) -> dict | None:
+    """What the board shows for the Chính đạo entry: the same step as the hub card."""
+    m = (view or {}).get("main")
+    if not isinstance(m, dict) or not m.get("step"):
+        return None
+    if m["step"] == "done":
+        return {"title": T.PATH_DONE_TITLE, "head": T.GUIDE_MAIN_SUB, "why": T.PATH_DONE_BODY, "step": "",
+                "hint": "", "stage": "", "goto": False}
+    stage = T.GUIDE_MAIN_STAGE.format(realm=m.get("realm_name_vi") or "", n=m.get("stage") or 0,
+                                      i=m.get("index") or 0, t=m.get("total") or 0, d=m.get("path_done") or 0,
+                                      a=m.get("path_total") or 0)
+    return {"title": m.get("name_vi") or "", "head": main_head(m), "why": m.get("why_vi") or "",
+            "step": main_label(m), "hint": T.PATH_HINT.get(m["step"], ""), "progress": main_progress(m),
+            "stage": stage, "goto": True}
 
 
 # ------------------------------------------------------------------ HUD pieces
@@ -158,16 +195,31 @@ def draw_tracker(ui, game, x: float, y: float, enabled: bool) -> int:
         return 0
     m = tracker_model(view)
     w, h = TRACKER_W, TRACKER_H
+    title = None
+    if m.get("main") and m["title"]:        # the node's whole name: a second line before a cut
+        size, lines = fit_lines(ui, m["title"], w - 8, sizes=(8, 7), lines=2)
+        title = (size, lines)
+        if len(lines) > 1:
+            h += ui.text_size("Ag", size)[1]
     # not ui.button: a ghost button that is disabled would still paint itself grey
     ui.widgets["hud_guide"] = ui.rect(x, y, w, h)
     hov = enabled and ui.hover(x, y, w, h)
     ui.fill(x, y, w, h, (244, 235, 217, 235))
     ui.border(x, y, w, h, "#8B5A2B")
+    if m.get("main"):                       # Chính đạo leads: a gold edge, like the hub card
+        ui.fill(x, y, 2, h, UICOL["gold"])
     if hov:
         ui.fill(x, y, w, h, (255, 255, 255, 70))
         ui.hot = "hud_guide"
     ui.text(m["header"], x + 4, y + 3, 7, GOLD_TEXT)
-    if m["body"]:
+    if m.get("claim"):
+        ui.text(m["claim"], x + w - 4, y + 3, 7, GREEN, anchor="topright")
+    if title is not None:
+        size, lines = title
+        lh = ui.text_size("Ag", size)[1]
+        ui.text("\n".join(lines), x + 4, y + 12, size, INK, line_gap=1.0)
+        ui.text(fit(ui, m["hint"], 7, w - 8), x + 4, y + 12 + lh * len(lines) + 1, 7, "#A33B2B")
+    elif m["body"]:
         lines = ui.f.wrap(m["body"], 7, int((w - 8) * ui.s), ui.s)[:2]
         if len(lines) == 2 and len(ui.f.wrap(m["body"], 7, int((w - 8) * ui.s), ui.s)) > 2:
             lines[1] = fit(ui, lines[1] + "...", 7, w - 8)
@@ -233,6 +285,7 @@ class GuideScene(Scene):
         self.tab = tab
         self.ch_id: str | None = None
         self.sel: str | None = None
+        self.picked = False         # the player chose a chapter: Chính đạo no longer takes the selection
         self.first = 0              # the first step row shown
         self.show_sel = True        # scroll the list so the selected row is visible
         self.topic = topic
@@ -248,6 +301,7 @@ class GuideScene(Scene):
 
     # ------------------------------------------------------------ actions
     def select_chapter(self, ch: dict) -> None:
+        self.picked = True
         self.ch_id, self.first, self.show_sel = ch["id"], 0, True
         self.sel = chapter_pick(ch, (self.game.state.guide or {}).get("current"))
 
@@ -258,7 +312,11 @@ class GuideScene(Scene):
         """Close the board and open the panel the step is about."""
         g = self.game
         self.close()
-        if where == "math":
+        if where == MAIN:                   # Chính đạo: the hub, doing what its card's button does
+            from .math_practice import MathPracticeScene
+            g.guide_seen("math_hub")
+            g.push(MathPracticeScene(g, act=True))
+        elif where == "math":
             g.open_math()
         elif where == "char":
             g.open_char()
@@ -325,15 +383,25 @@ class GuideScene(Scene):
         chapters = view["chapters"]
         if not chapters:
             return
-        if find_chapter(view, self.ch_id) is None:
+        has_main = main_detail(view) is not None
+        if self.ch_id == MAIN and not has_main:
+            self.ch_id = None
+        if not self.picked and leads_with_main(view) and self.ch_id != MAIN:
+            self.ch_id, self.sel = MAIN, MAIN   # (Chính đạo began to lead while the board was open)
+        if self.ch_id != MAIN and find_chapter(view, self.ch_id) is None:
             self.ch_id, self.sel = default_selection(view)
             self.show_sel = True
+        shown = 4 if has_main else 5
+        self.draw_chapters(ui, view, x + 10, y + 25, has_main, shown)
+        rows = len(chapters[:shown]) + (1 if has_main else 0)
+        self.draw_study(ui, view, x + 10, y + 25 + rows * (self.CH_ROW + 2) + 3, y + h - 25)
+        rx, rw = x + self.LEFT_W + 16, w - self.LEFT_W - 26
+        if self.ch_id == MAIN:
+            self.draw_main(ui, view, x, y, w, h, rx, rw)
+            return
         ch = find_chapter(view, self.ch_id)
         if self.sel not in list_items(ch):
             self.sel = chapter_pick(ch, view.get("current"))
-        self.draw_chapters(ui, view, x + 10, y + 25)
-        self.draw_study(ui, view, x + 10, y + 25 + len(chapters[:5]) * (self.CH_ROW + 2) + 3, y + h - 25)
-        rx, rw = x + self.LEFT_W + 16, w - self.LEFT_W - 26
         items = list_items(ch)
         self.draw_steps(ui, view, ch, items, rx, y + 25, rw)
         ui.fill(rx, y + 25 + self.ROW * self.ROWS + 2, rw, 1, "#D8CBAE")
@@ -355,8 +423,73 @@ class GuideScene(Scene):
             if detail["help"] and ui.button("guide_help", bx, by, 60, 14, T.GUIDE_HELP, size=7):
                 self.go_help(detail["help"])
 
-    def draw_chapters(self, ui, view, x, y) -> None:
-        for i, ch in enumerate(view["chapters"][:5]):
+    def draw_main(self, ui, view, x, y, w, h, rx, rw) -> None:
+        """The Chính đạo entry: the same one step as the hub card, and "Đi tới" doing what the
+        card's button does (the lesson, the sitting, the trial or the exercises)."""
+        d = main_detail(view)
+        m = view["main"]
+        cy = y + 25
+        ui.text(T.GUIDE_MAIN_SUB, rx, cy, 7, GOLD_TEXT)
+        cy += 10
+        size, lines = fit_lines(ui, d["title"], rw, sizes=(10, 9, 8), lines=2)
+        ui.text("\n".join(lines), rx, cy, size, INK, line_gap=1.0)
+        cy += ui.text_size("Ag", size)[1] * len(lines) + 2
+        if d["goto"]:
+            ui.text(d["head"], rx, cy, 7, UICOL["accent"])
+            cy += 11
+        cy = ui.text(d["why"], rx, cy, 8, INK, max_w=rw).bottom + 5
+        if d["goto"]:
+            end = draw_chips(ui, rx, cy, m)
+            if d["progress"]:
+                ui.text(d["progress"], end, cy + 6.5, 7, GREY, anchor="midleft")
+            cy += 18
+            ui.text("-", rx + 1, cy, 7, GREY)
+            cy = ui.text(T.GUIDE_MAIN_STEP.format(step=d["step"], hint=d["hint"]), rx + 7, cy, 7, GREY,
+                         max_w=rw - 7).bottom + 3
+            ui.text(fit(ui, d["stage"], 7, rw), rx, cy, 7, GREEN)
+            self.draw_main_nodes(ui, m, rx, cy + 12, rw, y + h - 26)
+        bx, by = x + 12, y + h - 20
+        if d["goto"] and ui.button("guide_goto", bx, by, 60, 14, T.GUIDE_GOTO, size=7, style="primary",
+                                   key=pygame.K_RETURN):
+            self.go_to(MAIN)
+            return
+        if ui.button("guide_help", bx + 66, by, 60, 14, T.GUIDE_HELP, size=7):
+            self.go_help("chinh_dao")
+
+    @staticmethod
+    def draw_main_nodes(ui, m, x, y, w, bottom) -> None:
+        """The stage's main nodes in path order under the Chính đạo entry: done, now, later."""
+        nodes = m.get("stage_nodes") or []
+        if not nodes or bottom - y < 10:
+            return
+        cols = 1 if (bottom - y) / len(nodes) >= 10 else 2
+        per = -(-len(nodes) // cols)
+        pitch = min(10.0, (bottom - y) / per)
+        colw = w / cols
+        for i, n in enumerate(nodes):
+            c, r = divmod(i, per)
+            rx, ry = x + c * colw, y + r * pitch
+            col = {"done": GREEN, "now": INK}.get(n["state"], PALE)
+            ui.fill(rx, ry + pitch / 2 - 2, 4, 4, {"done": GREEN, "now": UICOL["gold"]}.get(n["state"], "#CFC6B4"))
+            size, lines = fit_lines(ui, f"{i + 1}. {n['name_vi']}", colw - 12, sizes=(7, 6, 5), lines=1)
+            ui.text(lines[0], rx + 7, ry + pitch / 2, size, col, anchor="midleft")
+
+    def draw_chapters(self, ui, view, x, y, has_main: bool = False, shown: int = 5) -> None:
+        if has_main:                        # Chính đạo first: the main quest
+            sel = self.ch_id == MAIN
+            if ui.button("guide_ch_main", x, y, self.LEFT_W, self.CH_ROW, "", style="ghost", selected=sel,
+                         tooltip=T.GUIDE_MAIN_INTRO):
+                self.ch_id, self.sel = MAIN, MAIN
+            if not sel:
+                ui.fill(x, y, self.LEFT_W, self.CH_ROW, "#FBF0C8")
+                ui.border(x, y, self.LEFT_W, self.CH_ROW, UICOL["gold"])
+            ui.fill(x, y, 3, self.CH_ROW, UICOL["gold"])
+            m = view["main"]
+            ui.text(T.GUIDE_MAIN_CHAPTER, x + 6, y + 3, 8, "#FFFFFF" if sel else INK)
+            sub = main_step_line(m) if m["step"] != "done" else T.GUIDE_MARK_DONE
+            ui.text(fit(ui, sub, 7, self.LEFT_W - 10), x + 6, y + 13, 7, "#E3D5BA" if sel else GREY)
+            y += self.CH_ROW + 2
+        for i, ch in enumerate(view["chapters"][:shown]):
             ry = y + i * (self.CH_ROW + 2)
             sel = ch["id"] == self.ch_id
             if ui.button(f"guide_ch_{ch['id']}", x, ry, self.LEFT_W, self.CH_ROW, "", style="ghost", selected=sel,
@@ -385,9 +518,14 @@ class GuideScene(Scene):
         ui.border(x, y, w, bottom - y, "#C9B48A")
         ui.text(T.GUIDE_STUDYING, x + 5, y + 3, 7, GOLD_TEXT)
         study = view.get("study")
+        m = view.get("main")
+        if isinstance(m, dict) and m.get("node_id"):        # Chính đạo: the node and its step
+            text = T.GUIDE_STUDY_MAIN.format(name=m["name_vi"], step=main_step_line(m))
+        else:
+            text = study["text_vi"] if study else T.GUIDE_STUDY_NONE
         line_h = ui.text_size("Ag", 7)[1] * 1.15
         room = int((bottom - y - 26) // line_h)
-        lines = ui.f.wrap(study["text_vi"] if study else T.GUIDE_STUDY_NONE, 7, int((w - 10) * ui.s), ui.s)
+        lines = ui.f.wrap(text, 7, int((w - 10) * ui.s), ui.s)
         if len(lines) > room:
             lines = lines[:max(1, room)]
             lines[-1] = fit(ui, lines[-1] + "...", 7, w - 10)

@@ -49,7 +49,7 @@ def run_placement_flow(workdir: Path, shots: Path | None = None) -> None:
             drv.press(pygame.K_RETURN)
             drv.step(3)
 
-        # ---- the hub: a tab per branch, opened on "Nên học"
+        # ---- the hub: a tab per branch, opened on "Chính đạo"
         drv.click("hud_math")
         drv.wait(lambda: drv.top_is("MathPracticeScene") and top(drv).path is not None, 10, "the math path")
         subjects = top(drv).path["subjects"]
@@ -57,7 +57,7 @@ def run_placement_flow(workdir: Path, shots: Path | None = None) -> None:
         assert len(subjects) >= 2 and tabs[0] == "next" and len(tabs) > 3
         assert top(drv).tab == "next"
         assert all(drv.has(f"math_tab_{t}") for t in tabs)
-        assert all(drv.has(f"math_node_{n}_1") for n in top(drv).tree["next"][:1])
+        assert drv.has("math_main_go")                  # Chính đạo: one card, one button
         assert all(drv.has(d) for d in ("math_library", "math_close", "math_hub_dungeon", "math_hub_td",
                                         "math_hub_fortune"))
         drv.shot("hub_first_subject")

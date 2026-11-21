@@ -17,7 +17,7 @@ from client.scenes import guide
 from client.tests.driver import ROOT, Driver, ServerProcess
 from client.tests.test_flow import advance_dialogs
 from client.tests.test_linh_phong_flow import abode
-from client.tests.test_math_flow import FLOOR_1, answer_math, top, wait_question
+from client.tests.test_math_flow import answer_math, top, wait_question
 from client.tests.test_math_tree_flow import drawn_text
 from client.tests.test_world_flow import make_account
 
@@ -113,8 +113,13 @@ def run_guide_flow(workdir: Path, shots: Path | None = None) -> None:
             assert flags["tutorial"] == 5 and "welcome" in flags["guide"]["seen"]      # the old tutorial is over
             assert state_of(drv, "g_welcome") == "done" and state_of(drv, "g_board") == "done"
             assert drv.game.state.guide["welcome"]["seen"]
-            assert drv.has("guide_step_g_welcome") and drv.has("guide_ch_c4_luyen_khi") and drv.has("guide_close")
+            # Chính đạo leads once the welcome steps are done: the board opens on its one step
+            assert drv.game.state.guide["lead"] == "main" and drv.game.top.ch_id == guide.MAIN
+            assert drv.has("guide_ch_main") and drv.has("guide_goto") and drv.has("guide_ch_c4_luyen_khi")
+            assert drv.game.state.guide["main"]["name_vi"] in drawn_text(drv)
             drv.shot("board_first_open")
+            drv.click("guide_ch_c1_nhap_mon")
+            assert drv.has("guide_step_g_welcome") and drv.has("guide_close")
 
             # ---- claim a step: the Linh Thạch go up by its reward, once
             drv.click("guide_step_g_welcome")
@@ -160,7 +165,10 @@ def run_guide_flow(workdir: Path, shots: Path | None = None) -> None:
             drv.wait(lambda: drv.has("hud_guide"), 5, "the HUD box")
             cur = drv.game.state.guide["current"]
             assert cur["step_id"] == "g_open_tree" and cur["title_vi"] == "Mở Đạo Thụ"
-            assert cur["title_vi"] in drawn_text(drv)
+            main = drv.game.state.guide["main"]         # the box leads with Chính đạo, not with the step
+            text = drawn_text(drv)
+            assert main["node_id"] == "ds_ngon_ngu" and any(main["name_vi"] in t for t in text), text
+            assert "Học bài" in text and "Chính đạo 1/5 · F1" in text
             drv.shot("abode_hud_tracker")
 
             # ---- M opens Đạo Thụ; closing it and pressing F1 shows the step done
@@ -173,16 +181,35 @@ def run_guide_flow(workdir: Path, shots: Path | None = None) -> None:
             drv.wait(lambda: drv.top_is("GuideScene"), 5, "the board by F1")
             assert state_of(drv, "g_open_tree") == "done"
 
-            # ---- "Đi tới": the button closes the board and opens the hub
+            # ---- "Đi tới" of a step: the button closes the board and opens the hub
             drv.click("guide_ch_c1_nhap_mon")
             select_step(drv, "g_first_run")
             assert STEPS["g_first_run"]["goto"] == "math" and drv.has("guide_goto") and drv.has("guide_help")
             drv.click("guide_goto")
             drv.wait(lambda: drv.top_is("MathPracticeScene") and top(drv).path is not None, 10, "the hub")
             assert "GuideScene" not in drv.scene_names()
+            assert top(drv).tab == "next" and drv.has("math_main_go")
+            drv.click("math_close")
+            drv.wait(lambda: not drv.top_is("MathPracticeScene"), 5, "the abode")
 
-            # ---- a sitting finishes g_first_run: the "Xong" toast comes by itself
-            drv.click(FLOOR_1)
+            # ---- "Đi tới" of Chính đạo does what the hub card's button does: the lesson first
+            drv.press(pygame.K_F1)
+            drv.wait(lambda: drv.top_is("GuideScene"), 5, "the board by F1")
+            assert drv.game.top.ch_id == guide.MAIN
+            drv.shot("board_main_entry")
+            drv.click("guide_goto")
+            drv.wait(lambda: drv.top_is("DocScene"), 10, "the lesson of the first node")
+            assert "GuideScene" not in drv.scene_names()
+            drv.wait(lambda: "ds_ngon_ngu:1" in json.loads(server.sql("select flags from users where id=?",
+                                                                       (uid,))[0][0]).get("path", {}).get("read", []),
+                     10, "the lesson recorded as read")
+            drv.press(pygame.K_ESCAPE)
+            drv.wait(lambda: drv.top_is("MathPracticeScene") and top(drv).tree is not None
+                     and top(drv).tree["main"]["step"] == "luyen", 10, "the card at Luyện")
+            drv.shot("hub_main_luyen")
+
+            # ---- a sitting from the card finishes g_first_run: the "Xong" toast comes by itself
+            drv.click("math_main_go")
             wait_question(drv)
             answer_math(drv, server, correct=True)
             drv.click("math_stop")

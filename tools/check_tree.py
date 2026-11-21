@@ -5,7 +5,8 @@
     python tools/check_tree.py --doc      # also (re)write docs/GIAO_TRINH_CAY.md
 
 The data is `server/data/math/tree.json` and `server/data/math/world_plan.json`; the rules
-are in `server/app/learning/math_tree.py`. The document is generated from the data, so it can
+are in `server/app/learning/math_tree.py`, Chính đạo (`main_path`, the one order of the main-path
+nodes) included. The document is generated from the data, so it can
 never say something different from what the game will read. tools/check_all.py runs the
 same checks (and that every main-path node can be reached) as one of its checks.
 """
@@ -51,7 +52,10 @@ def build_doc() -> str:
       "mà cái cũ không mai một.")
     w("- Lên một **tầng** tu vi khi mọi nút chính đạo của tầng ấy xong — luôn gồm cả toán lẫn code.")
     w(f"- {raw['rules']['no_proof_items_vi']}")
-    w("- **Bàng môn** là phần tuỳ chọn, không chặn gì. Phần **bị loại** không bao giờ được hỏi.\n")
+    w("- **Bàng môn** là phần tuỳ chọn, không chặn gì. Phần **bị loại** không bao giờ được hỏi.")
+    w("- **Chính đạo** (`main_path` trong tree.json) là thứ tự học duy nhất của các nút chính đạo: cảnh giới, tầng, "
+      "rồi thứ tự trong tầng (cột #). Nút luôn đứng sau những nút nó cần; nút lập trình hay thực chiến đứng ngay "
+      "sau phần toán nó dùng. Game dẫn người chơi đi đúng thứ tự ấy, mỗi lúc một việc.\n")
     w(f"Trong {len(skills)} vi kỹ năng của bốn bí cảnh: **{status.count('chinh')} chính đạo**, "
       f"{status.count('phu')} bàng môn (tuỳ chọn), {status.count('cut')} bị loại.\n")
 
@@ -69,18 +73,18 @@ def build_doc() -> str:
             if got:
                 head += f" — mở khoá: {', '.join(got)}"
             w(head + "\n")
-            w("| Nút | Loại | Nhánh | Học gì | Cần xong trước | Ôn lại | Câu hỏi |")
-            w("|---|---|---|---|---|---|---|")
-            for n in sorted(here, key=lambda n: (n.branch, n.id)):
+            w("| # | Nút | Loại | Nhánh | Học gì | Cần xong trước | Ôn lại | Câu hỏi |")
+            w("|---|---|---|---|---|---|---|---|")
+            for i, n in enumerate(sorted(here, key=lambda n: t.path_rank[n.id]), 1):     # Chính đạo order
                 what = ", ".join(names.get(s, s) for s in n.skills) or ", ".join(n.topics_vi)
                 need = ", ".join(t.nodes[r].name_vi for r in n.requires) or "—"
                 rev = ", ".join(t.nodes[r].name_vi for r in n.reinforces) or "—"
-                w(f"| **{n.name_vi}** | {KIND_VI[n.kind]} | {branch[n.branch]['name_vi']} | {what} | {need} | {rev} "
+                w(f"| {i} | **{n.name_vi}** | {KIND_VI[n.kind]} | {branch[n.branch]['name_vi']} | {what} | {need} | {rev} "
                   f"| {CONTENT_VI[n.content]} |")
             w("")
         if realm["id"] == "luyen_khi":
             w("**Vì sao cần từng nút (Luyện Khí):**\n")
-            for n in sorted(t.main_nodes("luyen_khi"), key=lambda n: (n.stage, n.branch, n.id)):
+            for n in sorted(t.main_nodes("luyen_khi"), key=lambda n: t.path_rank[n.id]):
                 w(f"- *{n.name_vi}* — {n.why_vi}")
             w("")
 
@@ -176,7 +180,7 @@ def main(argv: list[str]) -> int:
             print("  -", e)
         return 1
     t = mt.tree()
-    print(f"check_tree: ok - {len(t.nodes)} nodes ({len(t.main_nodes())} on the main path), "
+    print(f"check_tree: ok - {len(t.nodes)} nodes ({len(t.main_path())} on Chính đạo, in one order), "
           f"{len(mt.world_plan()['weapons_placed'])} weapons placed, {len(mt.world_plan()['beasts'])} beasts")
     if args.doc:
         DOC.write_text(build_doc(), "utf-8", newline="\n")

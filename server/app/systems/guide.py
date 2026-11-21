@@ -8,7 +8,11 @@ steps are done. The rules:
     records - math answers, sittings, passed Thiên kiếp nhỏ, the player's place on Đạo Thụ,
     dungeon runs, thủ thành stars, the cơ duyên log, exercises solved, the character's
     realm. No other system calls into this one. The only facts the client declares are a
-    handful of "seen" keys (the welcome dialog was read, a panel was opened).
+    handful of "seen" keys (the welcome dialog was read, a panel was opened) and which
+    lessons of Đạo Thụ were opened (POST /guide/read, math_tree_progress.mark_read).
+  * **Chính đạo leads.** The view carries `main`, the ONE next step on the learning path
+    (math_tree_progress.next_step), and `lead`: "main" once the welcome steps are done - from
+    then on the HUD box and the board put that step first - else "steps".
   * **Steps are never locked.** An old save may find many steps already done and claim them
     all at once. A step is `active` (check not met), `done` (met, reward waiting) or
     `claimed`. A chapter is `active`, `done` (every required step done or claimed, bonus
@@ -63,6 +67,10 @@ REWARD_KEYS = ("spirit_stones", "immortal_jade", "xp", "items")
 ID_RE = re.compile(r"^[a-z0-9_]{1,40}$")
 CJK_START = 0x2E80
 SWAP_TRIES = 5
+# Chính đạo is the main quest: once these welcome steps are done the HUD box and the board lead
+# with the next step on the learning path (`main`, math_tree_progress.next_step), not with a step
+MAIN = "main"
+WELCOME_STEPS = ("g_welcome", "g_board")
 
 # the longest text the board can lay out (characters)
 LIMITS = {"chapter_title": 24, "chapter_intro": 120, "step_title": 28, "step_desc": 140, "how_line": 90,
@@ -578,10 +586,13 @@ async def _board(db: AsyncSession, user: User, flags: dict | None, st: tp.TreeSt
                              "done": done, "total": len(required), "state": state,
                              "rewards_vi": rewards_vi(ch["rewards"]), "steps": steps, "_rewards": ch["rewards"]})
     d = data()
+    states = {s["id"]: s["state"] for c in out_chapters for s in c["steps"]}
+    lead = MAIN if all(states.get(i, CLAIMED) != ACTIVE for i in WELCOME_STEPS) else "steps"
     return {"title_vi": d["title_vi"],
             "welcome": {"seen": "welcome" in g["seen"], "speaker_vi": d["welcome"]["speaker_vi"],
                         "lines_vi": list(d["welcome"]["lines_vi"])},
             "chapters": out_chapters, "current": current, "claimable": claimable,
+            "main": await tp.next_step(db, user, st, flags), "lead": lead,
             "study": await _study(db, user.id, st), "stage": tp.stage_view(st),
             "handbook": [{"id": p["id"], "title_vi": p["title_vi"], "lines_vi": list(p["lines_vi"])}
                          for p in d["handbook"]]}
@@ -613,13 +624,24 @@ async def _swap(db: AsyncSession, user: User, change) -> dict:
     change; it may raise), and write it only if the column still holds what was read - a
     compare-and-swap, retried when another request changed the flags in between. Returns
     the flags now stored."""
+    return await swap_flags(db, user, FLAG, change, read=_guide)
+
+
+async def swap_flags(db: AsyncSession, user: User, key: str, change, read=None) -> dict:
+    """The compare-and-swap of `_swap` for any one key of users.flags: `change(value)` gets the
+    key's value (a dict; `read(flags)` builds it when given) and returns the new one or None."""
+    def current(flags: dict) -> dict:
+        if read is not None:
+            return read(flags)
+        v = flags.get(key)
+        return dict(v) if isinstance(v, dict) else {}
     for _ in range(SWAP_TRIES):
         raw, flags = await _read_flags(db, user.id)
-        new_guide = change(_guide(flags))
-        if new_guide is None:
+        new_value = change(current(flags))
+        if new_value is None:
             set_committed_value(user, "flags", flags)
             return flags
-        new = {**flags, FLAG: new_guide}
+        new = {**flags, key: new_value}
         same = User.flags.is_(None) if raw is None else cast(User.flags, Text) == raw
         res = await db.execute(update(User).where(User.id == user.id, same).values(flags=new)
                                .execution_options(synchronize_session=False))
@@ -638,6 +660,18 @@ async def seen(db: AsyncSession, user: User, key: str) -> dict:
         return None if key in g["seen"] else {**g, "seen": g["seen"] + [key]}
     flags = await _swap(db, user, add)
     return {"guide": _public(await _board(db, user, flags))}
+
+
+async def read(db: AsyncSession, user: User, node_id: str, floor: int) -> dict:
+    """POST /guide/read: the player opened the lesson of a part of a node (the "Học bài" of
+    Chính đạo, or a node's "Đọc"). Idempotent; answers the new next step and the board."""
+    try:
+        key = await tp.mark_read(db, user, node_id, floor)
+    except KeyError:
+        raise GuideError(404, "no_part", "Nút này không có phần ấy.")
+    _, flags = await _read_flags(db, user.id)
+    board = _public(await _board(db, user, flags))
+    return {"read": key, "main": board["main"], "guide": board}
 
 
 async def claim(db: AsyncSession, user: User, target: str) -> dict:
