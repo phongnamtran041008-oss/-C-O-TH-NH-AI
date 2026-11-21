@@ -59,7 +59,7 @@ def g_reeds(P, D, r):
 
 
 def g_fog(P, D, r):
-    if P > 0.58:
+    if P > 0.72 and D > 0.4:
         return "stone0"
     if P < 0.2:
         return "dark_grass0"
@@ -67,7 +67,7 @@ def g_fog(P, D, r):
 
 
 def g_moss(P, D, r):
-    if P > 0.62:
+    if P > 0.7:
         return "stone0"
     if P < 0.28:
         return "dark_grass0" if r < 0.6 else "dark_grass1"
@@ -75,7 +75,7 @@ def g_moss(P, D, r):
 
 
 def g_dark(P, D, r):
-    if P < 0.3:
+    if P < 0.46:
         return "dark_grass0" if r < 0.6 else "dark_grass1"
     if P > 0.7:
         return "dirt0"
@@ -83,18 +83,18 @@ def g_dark(P, D, r):
 
 
 def g_blood(P, D, r):
-    if P > 0.55:
+    if P > 0.5:
         return "dirt0"
     if P < 0.28:
         return "dark_grass1"
-    return "grass2" if r < 0.6 else "dirt0"
+    return "grass2"
 
 
 def themes(m) -> None:
     m.themes["lau_say"] = Theme("lau_say", g_reeds, [("tall_grass", 6), ("bush", 2), ("tree", 1), ("rock", 1)],
                                 [("tall_grass", 4), ("tree", 3), ("bush", 2)], 0.05, 0.16, 14.0, 0.56)
-    m.themes["suong_dam"] = Theme("suong_dam", g_fog, [("cloud", 3), ("tall_grass", 3), ("rock", 1), ("bush", 1)],
-                                  [("cloud", 3), ("tree", 2), ("tall_grass", 2)], 0.045, 0.15, 14.0, 0.56)
+    m.themes["suong_dam"] = Theme("suong_dam", g_fog, [("cloud", 5), ("tall_grass", 3), ("rock", 1), ("bush", 1)],
+                                  [("cloud", 4), ("tree", 2), ("tall_grass", 2)], 0.055, 0.16, 14.0, 0.56)
     m.themes["reu"] = Theme("reu", g_moss, [("rock", 3), ("boulder", 1), ("tall_grass", 3), ("bush", 2)],
                             [("boulder", 3), ("tree", 2), ("bush", 2)], 0.045, 0.15, 14.0, 0.56)
     m.themes["dam_toi"] = Theme("dam_toi", g_dark, [("dead_tree", 3), ("tall_grass", 4), ("rock", 1), ("cloud", 1)],
@@ -223,7 +223,7 @@ def island_seeds(m, rng) -> tuple[list, dict]:
         ("n_lau", LAU, "vtt_lau_say", 9), ("n_dom", DOM_DOM, "vtt_dom_dom", 9),
         ("n_kim", KIM, "vtt_thach_ban", 8), ("n_fog", FOG, "vtt_dao_suong", 10),
         ("n_phao", PHAO, "vtt_cau_phao", 6), ("n_mieu", (MIEU[0], MIEU[1] + 6), "vtt_mieu_chim", 7),
-        ("n_co_thu", CO_THU, "vtt_dam_sau", 4), ("n_ngac", NGAC, "vtt_huyet_dam", 9),
+        ("n_co_thu", CO_THU, "vtt_dam_sau", 5.5), ("n_ngac", NGAC, "vtt_huyet_dam", 9),
     ]
     for sid, tile, kid, r in special:
         add(sid, tile, kid, r)
@@ -431,6 +431,10 @@ def places(m) -> None:
     x, y = CO_THU
     m.tree(x, y - 1, "tree")
     m.blocked_tiles.update({(x - 1, y - 1), (x, y - 1), (x + 1, y - 1), (x, y - 2)})
+    for i, (dx, dy) in enumerate(((-3, -1), (3, 0))):
+        tree_at(m, x + dx, y + dy, "tree")
+    thing_at(m, "Đèn gốc cây", "lantern", x + 2, y + 2, 8, 24, foot=(4, 4), variant=31)
+    thing_at(m, "Rễ cổ thụ", "log", x - 2, y + 2, 24, 16)
     m.poi("landmark", "Cổ Thụ Giữa Đầm", x, y - 1)
     # Bến Ngạc Đỏ: dead trees round a pale shore
     x, y = NGAC

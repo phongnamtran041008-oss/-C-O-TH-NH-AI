@@ -6,9 +6,9 @@ whose ways are a graph of cells - glades walled by trees in the forest, reed isl
                   cells that touch, a spanning tree of them plus a few extra edges;
 * ``glade_walls`` a wall of trees on every border between two cells (the forest);
 * ``islands``     land around each seed, water everywhere else (the marsh);
-* ``route_signs`` a signpost at every junction: for each way out, the nearest named place whose
-                  shortest way starts there (a routing table), "ngõ cụt" for a branch that leads
-                  nowhere else;
+* ``route_signs`` a signpost at every junction: for each way out, the nearest named place that
+                  way (marked "đường vòng" when another way is shorter: a routing table),
+                  "ngõ cụt" for a branch that leads nowhere else;
 * ``fill``        monster areas over a khu like DaiDiaDo.monsters, for khu that are partly water;
 * ``Builder``     DaiDiaDo with a tighter cover of the solid tiles by rectangles (fewer
                   collision objects on maps with many small walls).
@@ -258,12 +258,28 @@ def _direction(path: list) -> str:
     return ARROWS[d]
 
 
+def _dijkstra(adj: dict, start: str, w0: float = 0, skip: str | None = None) -> dict:
+    dist = {start: w0}
+    q = [(w0, start)]
+    while q:
+        d, u = heapq.heappop(q)
+        if d > dist.get(u, 1e18):
+            continue
+        for v, w, _p in adj.get(u, ()):
+            if v == skip:
+                continue
+            if d + w < dist.get(v, 1e18):
+                dist[v] = d + w
+                heapq.heappush(q, (d + w, v))
+    return dist
+
+
 def route_signs(m: DaiDiaDo, named: dict, at=None, min_degree: int = 3, dead_end_vi: str = "ngõ cụt",
-                loop_vi: str = "vòng lại", max_lines: int = 4) -> int:
+                detour_vi: str = "đường vòng", max_lines: int = 4) -> int:
     """A signpost by every node with `min_degree` roads or more (and by the nodes of `at`): one
-    line per way out, "Bắc → <the nearest place of `named` whose shortest way leaves by it>";
-    a way out that leads only to places with no name says `dead_end_vi` when it is a branch
-    with no other way back, else `loop_vi`. `named`: node id -> label."""
+    line per way out, "Bắc → <the nearest place of `named` that way>" - with "(đường vòng)"
+    when another way out reaches that place sooner - or `dead_end_vi` for a branch that leads
+    to no named place and has no other way back. `named`: node id -> label."""
     adj: dict[str, list] = {}
     for e in m.edges:
         w = len(e["path"])
@@ -275,53 +291,33 @@ def route_signs(m: DaiDiaDo, named: dict, at=None, min_degree: int = 3, dead_end
         ways = adj[nid]
         if len(ways) < min_degree and nid not in at:
             continue
-        # Dijkstra from nid, remembering the first way taken
-        dist = {nid: 0}
-        first: dict[str, int] = {}
-        q = []
-        for i, (b, w, _p) in enumerate(ways):
-            if w < dist.get(b, 1e18):
-                dist[b] = w
-                first[b] = i
-                heapq.heappush(q, (w, b))
-        while q:
-            d, u = heapq.heappop(q)
-            if d > dist.get(u, 1e18):
-                continue
-            for v, w, _p in adj.get(u, ()):
-                if v == nid:
-                    continue
-                if d + w < dist.get(v, 1e18):
-                    dist[v] = d + w
-                    first[v] = first[u]
-                    heapq.heappush(q, (d + w, v))
+        best_any = _dijkstra(adj, nid)
         lines = []
-        for i, (b, w, p) in enumerate(ways):
-            best = None
-            for v, lab in named.items():
-                if v != nid and first.get(v) == i and (best is None or dist[v] < best[0]):
-                    best = (dist[v], lab)
-            if best is None:
-                # a branch: removing nid cuts b off from the rest
-                seen = {nid, b}
-                stack = [b]
-                back = False
-                while stack and not back:
-                    u = stack.pop()
-                    for v, _w, _p in adj.get(u, ()):
-                        if v == nid and u != b:
-                            back = True
-                            break
-                        if v not in seen:
-                            seen.add(v)
-                            stack.append(v)
-                label = loop_vi if back else dead_end_vi
+        per_way = []
+        direct: set = set()
+        for b, w, p in ways:
+            via = _dijkstra(adj, b, w, skip=nid)
+            cand = sorted((via[v], v) for v in named if v != nid and v in via)
+            per_way.append((b, p, via, cand))
+            mine = [v for d, v in cand if d <= best_any.get(v, 1e18) + 0.5]
+            if mine:
+                direct.add(mine[0])                  # what the direct ways will say
+        for b, p, via, cand in per_way:
+            if not cand:
+                others = {o for o, _w, _p in ways if o != b}
+                label = "lối vòng về đây" if others & set(via) else dead_end_vi
             else:
-                label = best[1]
-            d = _direction(p)
-            text = f"{d} → {label}"
+                mine = [v for d, v in cand if d <= best_any.get(v, 1e18) + 0.5]
+                fresh = [v for d, v in cand if v not in direct]
+                if mine:
+                    label = named[mine[0]]
+                elif fresh:
+                    label = f"{named[fresh[0]]} ({detour_vi})"
+                else:
+                    label = f"{named[cand[0][1]]} ({detour_vi})"
+            text = f"{_direction(p)} → {label}"
             if text not in [t for _o, t in lines]:
-                lines.append((list(ARROWS.values()).index(d), text))
+                lines.append((list(ARROWS.values()).index(_direction(p)), text))
         if len(lines) < 2:
             continue
         spot = m.free_near(*m.nodes[nid]["tile"], radius=4)

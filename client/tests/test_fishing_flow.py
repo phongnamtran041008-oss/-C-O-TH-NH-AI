@@ -17,6 +17,16 @@ from client.tests.test_linh_phong_flow import abode, give
 from client.tests.test_world_flow import make_account
 
 
+def ngu_ong_feet() -> tuple[float, float]:
+    """Ngư Ông's feet on the lake map (read from the map: it is generated). His dock starts
+    two tiles east of him and runs north into Hồ Nghiên Mực."""
+    data = json.loads((Path(__file__).resolve().parents[2] / "server" / "maps" / "ho_nghien_muc.tmj")
+                      .read_text("utf-8"))
+    o = next(o for layer in data["layers"] if layer["type"] == "objectgroup" for o in layer["objects"]
+             if o.get("type") == "npc" and {"name": "npc", "type": "string", "value": "fisher"} in o.get("properties", []))
+    return o["x"] + o["width"] / 2, o["y"] + o["height"]
+
+
 def fishing_scene(drv: Driver):
     from client.scenes.fishing import FishingScene
     return next((s for s in drv.game.scenes if isinstance(s, FishingScene)), None)
@@ -119,7 +129,9 @@ def run_fishing_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.close()
 
         # ---- Hồ Nghiên Mực: Ngư Ông, his shop, the dock
-        server.sql("update characters set zone_id='ho_nghien_muc', x=408, y=472, facing='up' where user_id=?", (uid,))
+        fx, fy = ngu_ong_feet()                  # stand one tile below Ngư Ông, facing him
+        server.sql("update characters set zone_id='ho_nghien_muc', x=?, y=?, facing='up' where user_id=?",
+                   (fx, fy + 16, uid))
         drv = Driver(url, workdir, shots)
         drv.click("menu_start")
         from client.tests.test_combat_flow import world
@@ -150,7 +162,7 @@ def run_fishing_flow(workdir: Path, shots: Path | None = None) -> None:
         drv.hold([pygame.K_d], 0.45)
         drv.hold([pygame.K_w], 1.2)
         ws = world(drv)
-        assert 432 <= ws.player.x <= 464 and ws.player.y < 420, (ws.player.x, ws.player.y)
+        assert fx + 24 <= ws.player.x <= fx + 56 and ws.player.y < fy - 36, (ws.player.x, ws.player.y)
         drv.step(10)
         out = one_cast(drv, server)
         assert out["result"] in ("caught", "escaped", "snapped")

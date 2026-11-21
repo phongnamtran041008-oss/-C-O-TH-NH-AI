@@ -89,7 +89,7 @@ def g_old(P, D, r):
 
 
 def g_mist(P, D, r):
-    if P > 0.66:
+    if P > 0.78 and D > 0.45:
         return "stone0"
     if P < 0.3:
         return "dark_grass0" if r < 0.7 else "dark_grass1"
@@ -113,11 +113,11 @@ def g_spider(P, D, r):
 
 
 def g_valley(P, D, r):
-    if P > 0.7:
+    if P > 0.8 and D > 0.4:
         return "stone0"
     if P < 0.3:
         return "dark_grass0" if r < 0.7 else "dark_grass1"
-    return "dirt0" if D > 0.5 else "grass2"
+    return "dirt0" if P > 0.62 else "grass2"
 
 
 def themes(m) -> None:
@@ -127,7 +127,7 @@ def themes(m) -> None:
                                  [("peach", 4), ("tree", 3), ("bush", 1)], 0.035, 0.14, 15.0, 0.57)
     m.themes["co_lam"] = Theme("co_lam", g_old, [("tree", 3), ("stump", 2), ("log", 1), ("bush", 2), ("tall_grass", 2)],
                                [("tree", 7), ("pine", 2)], 0.035, 0.15, 16.0, 0.56)
-    m.themes["rung_suong"] = Theme("rung_suong", g_mist, [("pine", 3), ("cloud", 2), ("bush", 1), ("tall_grass", 2), ("stump", 1)],
+    m.themes["rung_suong"] = Theme("rung_suong", g_mist, [("pine", 3), ("cloud", 4), ("bush", 1), ("tall_grass", 2), ("stump", 1)],
                                    [("pine", 6), ("cloud", 1), ("tree", 1)], 0.035, 0.14, 15.0, 0.57)
     m.themes["muc_lam"] = Theme("muc_lam", g_ink_wood, [("dead_tree", 3), ("rock", 2), ("stump", 2), ("crystal", 1)],
                                 [("dead_tree", 6), ("tree", 1)], 0.035, 0.14, 15.0, 0.57)
@@ -187,7 +187,7 @@ def build() -> dict:
     disc(m, CAY_ME, 6.5, "dirt0", "dark_grass1")
     disc(m, (52, 200), 6.5, "dirt0", "stone0")
     disc(m, HANG_HO, 4.5, "dirt0", "stone0")
-    disc(m, NGO_CUT_SAU, 3.5, "stone0", "dirt0")
+    disc(m, NGO_CUT_SAU, 3.5, "dirt0", "dark_grass1")
     disc(m, CUU_VI, 4.5, "flowers1", "dirt0")
     lm = landmark_rects()
     no_walls(m, lm)
@@ -452,9 +452,7 @@ def valley(m) -> None:
             d = math.hypot(x - bx, (y - by) * 1.2)
             if d > 15:
                 continue
-            key = "stone0" if d < 2.5 else "dirt0" if d < 6.5 else "dark_grass1" if d < 10.5 else "dark_grass0"
-            if 6.5 <= d < 7.3 or 10.5 <= d < 11.3:
-                key = "stone0"             # the contour lines
+            key = "dirt0" if d < 7.5 else "dark_grass1" if d < 11.5 else "dark_grass0"
             m.setg(x, y, key)
 
 
@@ -697,6 +695,8 @@ def places(m, cells: Cells, fixed: dict) -> None:
     # the mother tree and the ring of ink trees round its hollow
     cx, cy = CAY_ME
     tree_near(m, cx, cy - 2, "tree", avoid={(cx, cy), (cx, cy - 1)})
+    for dx, dy in ((-2, -3), (2, -3), (0, -4)):          # its crown: a knot of old trees
+        tree_at(m, cx + dx, cy + dy, "tree")
     for i, tx, ty in ring_of(cx, cy - 1, 9, 6, 5):
         tree_at(m, tx, ty, "ink_tree")
     m.sign("Hốc Cây Mẹ", "Cây mẹ của cả khu rừng. Mộc Yêu canh hốc cây.", cx + 2, cy + 1)
@@ -721,6 +721,8 @@ def places(m, cells: Cells, fixed: dict) -> None:
     # Cửu Vĩ Hồ's old tree in the south-east corner
     cx, cy = CUU_VI
     tree_near(m, cx, cy - 2, "tree", avoid={(cx, cy), (cx, cy - 1), CUU_VI_HO})
+    for dx, dy in ((-2, -3), (2, -3)):
+        tree_at(m, cx + dx, cy + dy, "tree")
     thing_at(m, "Đèn", "lantern", cx - 2, cy, 8, 24, foot=(4, 4), variant=9)
     m.poi("beast", "Gốc Cổ Thụ · Cửu Vĩ Hồ", *CUU_VI_HO)
 

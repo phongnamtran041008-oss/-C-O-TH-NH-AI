@@ -1,5 +1,5 @@
 """Đại Địa Đồ (2026-11-21): the bands of tu vi of the giant lands (realtime/dia_do.py,
-data/math/dia_do.json) - the khu of Kiếm Trủng Sơn and Lưu Vân Cốc, a monster's band from its
+data/math/dia_do.json) - the khu of Kiếm Trủng Sơn, Lưu Vân Cốc, Mê Đồ Lâm and Vạn Tượng Trạch, a monster's band from its
 area, its scaled numbers, its capped drops, `kv` in its record, and the asker that prefers the
 nodes of the band. Every number is read from the data, never repeated here."""
 import random
@@ -12,7 +12,7 @@ from app.systems import catalog, cultivation, loot
 from tests.test_combat import fighter, gw, last, settle  # noqa: F401  (gw is a fixture)
 from tests.test_loot import set_tier
 
-GIANT = ("loan_so_coc", "luu_van_coc")
+GIANT = ("loan_so_coc", "luu_van_coc", "rung_muc_loang", "ho_nghien_muc")
 FORCED = 1000.0
 
 
@@ -22,6 +22,23 @@ def bands() -> dict:
 
 def spawned(zone: str) -> list:
     return ai.spawn_all(maps.load(zone), random.Random(4))
+
+
+def plain_spawned(tmp_path) -> list:
+    """The monsters of a map without bands (a small map with monster areas and no khu)."""
+    import json
+    area = {"id": 2, "name": "slimes", "type": "monster_area", "x": 32, "y": 32, "width": 160, "height": 160,
+            "properties": [{"name": "monster", "type": "string", "value": "ink_slime"},
+                           {"name": "count", "type": "string", "value": "3"}]}
+    doc = {"width": 20, "height": 20, "tilewidth": 16, "tileheight": 16,
+           "layers": [{"type": "tilelayer", "name": "ground", "data": [1] * 400},
+                      {"type": "objectgroup", "name": "objects", "objects": [
+                          {"id": 1, "name": "spawn", "type": "spawn", "x": 100, "y": 100, "width": 0, "height": 0},
+                          area]},
+                      {"type": "objectgroup", "name": "collision", "objects": []}]}
+    p = tmp_path / "plain.tmj"
+    p.write_text(json.dumps(doc), "utf-8")
+    return ai.spawn_all(maps.parse(p), random.Random(4))
 
 
 # ------------------------------------------------------------------ the data
@@ -67,7 +84,8 @@ def test_khu_ids_are_unique_in_the_world_and_found_by_id():
     ids = [k["id"] for k in dia_do.all_khu()]
     assert len(ids) == len(set(ids)) and len(ids) >= 2 * 9
     assert dia_do.khu("kts_dinh")["zone"] == "loan_so_coc" and dia_do.khu("lvc_cao_nguyen")["band"] == 3
-    assert dia_do.khu_list("rung_muc_loang") == () and dia_do.poi_list("rung_muc_loang") == []
+    assert dia_do.khu("mdl_me_cung")["zone"] == "rung_muc_loang" and dia_do.khu("vtt_mieu_chim")["band"] == 3
+    assert dia_do.khu_list("truc_lam_thon") == () and dia_do.poi_list("truc_lam_thon") == []
 
 
 # ------------------------------------------------------------------ a monster's band
@@ -84,8 +102,8 @@ def test_every_monster_of_a_giant_land_takes_the_band_of_its_area(zone):
         assert k["band"] == band and k["zone"] == zone
 
 
-def test_a_monster_without_bands_is_the_old_monster():
-    ms = spawned("rung_muc_loang")
+def test_a_monster_without_bands_is_the_old_monster(tmp_path):
+    ms = plain_spawned(tmp_path)
     assert ms and all(m.band == 0 and "kv" not in m.full() for m in ms)
     assert all(m.info is catalog.monsters()[m.kind] for m in ms)
 
@@ -160,7 +178,7 @@ class _St:
         self.tree = math_tree.tree()
 
 
-def test_a_creature_prefers_the_nodes_of_its_band():
+def test_a_creature_prefers_the_nodes_of_its_band(tmp_path):
     nodes = catalog.monsters()["thiet_giap_thu"]["nodes"]
     t = math_tree.tree()
     for m in spawned("loan_so_coc"):
@@ -170,7 +188,7 @@ def test_a_creature_prefers_the_nodes_of_its_band():
         pref = lands.LandAsker.band_nodes(_St(), nodes, m)
         assert pref and all(lo <= t.nodes[n].stage <= hi for n in pref)
     assert lands.LandAsker.band_nodes(_St(), nodes, None) == []
-    plain = spawned("rung_muc_loang")[0]
+    plain = plain_spawned(tmp_path)[0]
     assert lands.LandAsker.band_nodes(_St(), nodes, plain) == []
 
 
