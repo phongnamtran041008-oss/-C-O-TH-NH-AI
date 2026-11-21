@@ -3,131 +3,211 @@ id: xs_lib_t1
 title_vi: Phép thử, sự kiện và giải tích kết hợp
 subject: xac_suat_thong_ke
 floor: 1
-summary_vi: Trước khi nói đến xác suất phải biết phép thử cho ra những kết quả nào, gọi tên các sự kiện, và đếm cho đúng: lúc nào cộng, lúc nào nhân, lúc nào thứ tự có ý nghĩa.
+format: 2
+summary_vi: Trước khi tính xác suất phải thấy hết các kết quả và đếm cho đúng: một kết quả trông ra sao, sự kiện là tập nào, lúc nào cộng, lúc nào nhân, lúc nào thứ tự có nghĩa.
 skills: [xs_t1_khong_gian_mau, xs_t1_quan_he_su_kien, xs_t1_quy_tac_dem, xs_t1_hoan_vi_chinh_hop, xs_t1_to_hop]
 ---
 ## Phép thử và không gian mẫu
 
-Phép thử là một việc làm mà ta biết trước mọi kết quả có thể xảy ra nhưng không biết trước kết quả nào sẽ xảy ra: tung đồng xu, gieo xúc xắc, rút một lá bài. Tập mọi kết quả có thể của phép thử gọi là không gian mẫu, thường ký hiệu là Omega.
+:::hook
+Trò Đổ Linh Thạch gieo hai xúc xắc, tổng 7 thì thắng. Muốn biết tổng 7 có dễ ra hơn tổng 2 không, trước hết phải thấy hết mọi kết quả có thể.
+:::
 
-$$ \Omega = \{1, 2, 3, 4, 5, 6\} $$
+:::figure grid
+caption: 36 cặp (xúc xắc 1, xúc xắc 2), ô ghi tổng. Tổng 7: 6 ô vàng; tổng 2: 1 ô đỏ.
+table "tổng"
+head "1" "2" "3" "4" "5" "6"
+side "1" "2" "3" "4" "5" "6"
+row 2 3 4 5 6 7
+row 3 4 5 6 7 8
+row 4 5 6 7 8 9
+row 5 6 7 8 9 10
+row 6 7 8 9 10 11
+row 7 8 9 10 11 12
+mark cell 1 1 do
+mark cell 1 6 vang
+mark cell 2 5 vang
+mark cell 3 4 vang
+mark cell 4 3 vang
+mark cell 5 2 vang
+mark cell 6 1 vang
+:::
 
-Đó là không gian mẫu của phép gieo một con xúc xắc. Việc đầu tiên của mọi bài xác suất là nói rõ một kết quả trông như thế nào.
+:::core
+Không gian mẫu Omega là mọi kết quả có thể. Nhiều vật thì một kết quả ghi từng vật, nên số kết quả là tích.
+:::
 
-- Tung hai đồng xu và ghi mặt từng đồng xu: một kết quả là một cặp như SN, nên có 4 kết quả SS, SN, NS, NN.
-- Lấy lần lượt hai viên bi và ghi số theo thứ tự lấy: một kết quả là cặp có thứ tự (lần 1, lần 2).
-- Khi phép thử gồm nhiều phần nối tiếp, số kết quả bằng tích số khả năng của từng phần.
+Hai xúc xắc là hai vật khác nhau, kể cả khi trông giống hệt: ô (1, 2) khác ô (2, 1). Ghi riêng tổng thì chỉ còn 11 kết quả, nhưng chúng không đồng khả năng.
 
-Ví dụ tung 2 đồng xu và gieo 1 xúc xắc:
+Ví dụ: tung 1 đồng xu rồi gieo 2 xúc xắc. Không gian mẫu có mấy phần tử?
 
-1. Một kết quả ghi mặt của đồng xu 1, mặt của đồng xu 2 và số chấm của xúc xắc.
-2. Hai đồng xu cho 2 . 2 = 4 khả năng, xúc xắc cho 6 khả năng.
-3. Không gian mẫu có 4 . 6 = 24 phần tử.
+1. Một kết quả ghi mặt đồng xu, rồi số chấm xúc xắc 1, rồi xúc xắc 2.
+2. Đồng xu có 2 khả năng, mỗi xúc xắc có 6.
+3. Nhân lại: 2 . 6 . 6 = 72 phần tử.
 
-Chú ý: chỉ ghi tổng số chấm của hai xúc xắc thì vẫn được một không gian mẫu {2, 3, ..., 12}, nhưng 11 kết quả đó không đồng khả năng. Ở tầng sau, muốn dùng định nghĩa cổ điển thì phải chọn không gian mẫu gồm các kết quả đồng khả năng: các cặp (xúc xắc 1, xúc xắc 2).
+> Lỗi thường gặp: tung hai đồng xu mà gộp SN với NS. Đánh số hai đồng xu là thấy: có 4 kết quả, không phải 3.
 
-> Lỗi thường gặp: coi SN và NS là một kết quả. Hai đồng xu là hai vật khác nhau, kể cả khi trông giống hệt nhau, nên "đồng xu 1 sấp, đồng xu 2 ngửa" và "đồng xu 1 ngửa, đồng xu 2 sấp" là hai kết quả.
+:::check
+Q: Nhìn hình: tổng 8 có bao nhiêu ô? Tổng 8 dễ ra gấp mấy lần tổng 2?
+A: 5 ô: (2, 6), (3, 5), (4, 4), (5, 3), (6, 2). Gấp 5 lần, vì tổng 2 chỉ có ô (1, 1).
+:::
 
 ## Quan hệ giữa các sự kiện
 
-Một sự kiện (còn gọi là biến cố) là một tập con của không gian mẫu: nó xảy ra khi kết quả của phép thử thuộc tập đó. Gieo xúc xắc, sự kiện "ra mặt chẵn" là A = {2, 4, 6}.
+:::hook
+Bộ lọc thư chặn một thư nếu có đường link lạ HOẶC người gửi lạ; gắn cờ đỏ nếu có CẢ HAI. "Hoặc" là gom lại, "và" là lấy phần chung.
+:::
 
-Từ hai sự kiện A và B lập ra các sự kiện mới:
+:::figure sets
+caption: Gieo xúc xắc. Vàng là AB = {4, 6}; cả hai hình tròn là A + B; 1, 3 nằm ngoài.
+size: 190 95
+universe: "Omega"
+set A "A: chẵn" xanh
+set B "B: > 3" do
+shade A&B vang
+in A-B "2"
+in A&B "4, 6"
+in B-A "5"
+in ~(A|B) "1, 3"
+:::
 
-- Tổng A + B xảy ra khi ít nhất một trong hai sự kiện xảy ra: đó là hợp của hai tập.
-- Tích AB xảy ra khi cả hai cùng xảy ra: đó là giao của hai tập.
-- Sự kiện đối Ā xảy ra đúng khi A không xảy ra: đó là phần còn lại của Omega.
+:::core
+Sự kiện là tập con của Omega: A + B là hợp (ít nhất một xảy ra), AB là giao (cả hai), Ā là phần ngoài A.
+:::
 
-$$ A + B = A \cup B, \quad AB = A \cap B $$
+- Xung khắc: AB rỗng, hai hình không chạm nhau.
+- A kéo theo B: hình A nằm trọn trong B.
+- Đối nhau: xung khắc và gộp lại đủ Omega.
 
-Ba quan hệ hay gặp:
+Ví dụ: với A, B ở hình, tìm đối của A + B.
 
-- A và B xung khắc khi chúng không thể cùng xảy ra, tức AB là sự kiện không thể (không có kết quả chung).
-- A kéo theo B khi hễ A xảy ra thì B xảy ra, tức mọi kết quả của A đều thuộc B.
-- A và Ā là hai sự kiện đối nhau: xung khắc và tổng của chúng là sự kiện chắc chắn.
+1. A + B = {2, 4, 5, 6}, phần còn lại là {1, 3}.
+2. Ā = {1, 3, 5}, đối của B là {1, 2, 3}: giao của chúng cũng là {1, 3}.
 
-Ví dụ gieo xúc xắc với A = {2, 4, 6} (mặt chẵn) và B = {4, 5, 6} (mặt lớn hơn 3):
+> Lỗi thường gặp: lấy đối của A + B bằng tổng hai sự kiện đối. "Không (A hoặc B)" là "không A VÀ không B": phải lấy giao.
 
-1. A + B = {2, 4, 5, 6}.
-2. AB = {4, 6}.
-3. Ā = {1, 3, 5}.
-4. A xảy ra mà B không xảy ra là {2}.
-
-Sự kiện đối của một tổng là tích các sự kiện đối: "không có A hoặc B" nghĩa là "không A và không B". Nhờ vậy, sự kiện đối của "có ít nhất một đồng xu ngửa" là "mọi đồng xu đều sấp".
-
-> Lỗi thường gặp: viết sự kiện đối của A + B thành tổng của hai sự kiện đối. Phải là tích. Kiểm tra bằng ví dụ trên: đối của A + B là {1, 3}, đúng bằng giao của Ā = {1, 3, 5} với đối của B là {1, 2, 3}.
+:::check
+Q: Gieo xúc xắc. A = {1, 2}, B = {5, 6}. A và B có xung khắc không? Có đối nhau không?
+A: Xung khắc, vì không có mặt chung. Không đối nhau: gộp lại thiếu mặt 3 và 4.
+:::
 
 ## Quy tắc cộng và quy tắc nhân
 
-Hai quy tắc này là nền của mọi phép đếm.
+:::hook
+Thử mô hình với 3 tốc độ học và 2 cỡ lô dữ liệu: mỗi cấu hình phải chọn đủ cả hai. Lưới thử có bao nhiêu cấu hình?
+:::
 
-- Quy tắc cộng: một việc được làm theo một trong hai phương án loại trừ nhau, phương án một có m cách, phương án hai có n cách, thì có m + n cách.
-- Quy tắc nhân: một việc phải làm qua hai bước nối tiếp, bước một có m cách, ứng với mỗi cách đó bước hai có n cách, thì có m . n cách.
+:::figure graph
+caption: Mỗi tốc độ học mở ra 2 nhánh cỡ lô: 3 . 2 = 6 lá, mỗi lá là một cấu hình.
+layout: ltr
+node R "chọn"
+node L1 "0.1"
+node L2 "0.01"
+node L3 "0.001"
+node A1 "lô 32"
+node A2 "lô 64"
+node B1 "lô 32"
+node B2 "lô 64"
+node C1 "lô 32"
+node C2 "lô 64"
+edge R L1 xanh
+edge R L2 xanh
+edge R L3 xanh
+edge L1 A1
+edge L1 A2
+edge L2 B1
+edge L2 B2
+edge L3 C1
+edge L3 C2
+:::
 
-$$ m + n \quad \text{(chon mot phuong an)}, \qquad m \cdot n \quad \text{(lam ca hai buoc)} $$
+:::core
+Chỉ chọn MỘT trong các phương án thì cộng; phải làm XONG mọi bước nối tiếp thì nhân.
+:::
 
-Câu hỏi để chọn quy tắc: làm xong một phần đã đủ chưa? Đi tàu hoặc đi máy bay thì chọn một là đủ, nên cộng. Chọn áo rồi chọn quần thì phải làm cả hai, nên nhân.
+Đi tàu (3 chuyến) hoặc máy bay (2 chuyến): chọn một là xong, 3 + 2 = 5 cách. Mã k ký tự lấy trong n ký tự, được lặp: n^k mã.
 
-Khi được lặp lại, mỗi vị trí có đủ mọi lựa chọn: mã gồm k ký tự lấy trong n ký tự, được lặp, có n^k mã.
+Ví dụ: lập số có 3 chữ số khác nhau từ 0, 1, 2, 3.
 
-Ví dụ: có bao nhiêu số có 3 chữ số khác nhau lập từ 0, 1, 2, 3, 4?
+1. Hàng trăm khác 0 (vị trí bị ràng buộc làm trước): 3 cách.
+2. Hàng chục khác hàng trăm, được là 0: còn 3 cách.
+3. Hàng đơn vị: còn 2 cách. Nhân lại: 3 . 3 . 2 = 18 số.
 
-1. Hàng trăm không được là 0: có 4 cách.
-2. Hàng chục khác hàng trăm, được là 0: còn 4 cách.
-3. Hàng đơn vị khác hai chữ số trước: còn 3 cách.
-4. Nhân lại: 4 . 4 . 3 = 48 số.
+> Lỗi thường gặp: cho hàng trăm cả chữ số 0. Số 012 chỉ có hai chữ số.
 
-Gặp ràng buộc thì xử lý vị trí bị ràng buộc trước (ở đây là hàng trăm), rồi mới đến các vị trí tự do.
-
-> Lỗi thường gặp: quên rằng chữ số đầu của một số không được là 0, và cho hàng trăm đủ mọi chữ số. Từ 0, 1, 2, 3, 4, 5 lập số có 3 chữ số khác nhau thì hàng trăm chỉ có 5 cách, đáp số là 5 . 5 . 4 = 100, không phải 120.
+:::check
+Q: Mã PIN 3 chữ số (0 đến 9, được lặp), chữ số đầu phải chẵn. Có bao nhiêu mã?
+A: Chữ số đầu 5 cách (0, 2, 4, 6, 8), hai chữ số sau mỗi chữ 10 cách: 5 . 10 . 10 = 500.
+:::
 
 ## Hoán vị và chỉnh hợp
 
-Xếp n vật khác nhau thành một hàng: chỗ đầu có n cách, chỗ thứ hai còn n - 1 cách, cứ thế đến chỗ cuối còn 1 cách. Mỗi cách xếp là một hoán vị.
+:::hook
+Trang chủ gợi ý đặt 3 trong 10 bộ phim vào ô số 1, 2, 3. Đổi chỗ hai phim là ra một trang chủ khác: thứ tự có nghĩa.
+:::
 
-$$ P_n = n! = n (n-1) \cdots 2 \cdot 1 $$
+:::figure flow
+caption: Phim đã đặt không dùng lại: A(10, 3) = 10 . 9 . 8.
+box "ô 1: 10 cách" xanh
+link "x"
+box "ô 2: 9 cách" xanh
+link "x"
+box "ô 3: 8 cách" xanh
+link "="
+box "720" luc
+:::
 
-Chọn k vật trong n vật rồi xếp chúng theo thứ tự (k chỗ khác nhau, k chức vụ khác nhau) là một chỉnh hợp chập k của n. Trong các câu hỏi của game, số đó viết là A(n, k).
+:::core
+Khi đổi vai là ra cách mới, thứ tự có nghĩa: mỗi chỗ sau ít đi một lựa chọn. Xếp hết n vật là n!, lấp k chỗ là A(n, k).
+:::
 
 $$ A_n^k = n (n-1) \cdots (n-k+1) = \frac{n!}{(n-k)!} $$
 
-Dấu hiệu nhận ra thứ tự có ý nghĩa: đổi chỗ hai người được chọn thì ra một cách khác. Lớp trưởng An, lớp phó Bình khác với lớp trưởng Bình, lớp phó An.
+Ví dụ: xếp 4 người thành hàng, An và Bình đứng cạnh nhau.
 
-Hai mẹo hay dùng:
+1. Buộc An, Bình thành khối; khối và 2 người kia: 3! = 6 cách.
+2. Trong khối đổi chỗ được: 6 . 2 = 12 cách.
+3. Không cạnh nhau thì lấy phần còn lại: 4! - 12 = 12.
 
-- Hai người phải đứng cạnh nhau: buộc họ thành một khối, xếp khối như một người, rồi nhân với 2 vì trong khối đổi chỗ được.
-- Hai người không được đứng cạnh nhau: đếm mọi cách rồi trừ đi các cách họ đứng cạnh nhau.
+> Lỗi thường gặp: trao vàng, bạc, đồng mà chia cho 3!. Huy chương khác nhau: đó là chỉnh hợp.
 
-Ví dụ xếp 6 người sao cho X và Y không đứng cạnh nhau:
-
-1. Mọi cách xếp: 6! = 720.
-2. X, Y cạnh nhau: khối XY cùng 4 người xếp được 5! = 120 cách, nhân 2 vì đổi chỗ trong khối: 240.
-3. Không cạnh nhau: 720 - 240 = 480.
-
-> Lỗi thường gặp: trao huy chương vàng, bạc, đồng cho 3 trong 7 người mà lại chia cho 3!. Các huy chương khác nhau nên thứ tự có ý nghĩa: đáp số là A(7, 3) = 210, không phải 35.
+:::check
+Q: Chọn 1 chưởng môn, 1 trưởng lão trong 6 đệ tử: mấy cách? Sao không là 15?
+A: A(6, 2) = 6 . 5 = 30. 15 là số nhóm hai người, nhưng An làm chưởng môn khác Bình làm chưởng môn.
+:::
 
 ## Tổ hợp
 
-Chọn k vật trong n vật mà không kể thứ tự (chỉ quan tâm nhóm gồm những ai) là một tổ hợp chập k của n, trong game viết là C(n, k). Mỗi nhóm k vật xếp được k! thứ tự, nên số tổ hợp bằng số chỉnh hợp chia cho k!.
+:::hook
+Chọn 3 trong 10 đặc trưng để huấn luyện mô hình: chỉ cần biết bộ nào được chọn, chọn trước hay sau không quan trọng.
+:::
+
+:::figure grid
+caption: 6 thứ tự chỉ là 3 nhóm: mỗi nhóm bị đếm 2! lần.
+table
+head "nhóm" "thứ tự"
+row "{a, b}" "ab, ba"
+row "{a, c}" "ac, ca"
+row "{b, c}" "bc, cb"
+:::
+
+:::core
+Tổ hợp đếm nhóm, không kể thứ tự: số cách xếp có thứ tự chia cho k!, vì mỗi nhóm k vật bị đếm k! lần.
+:::
 
 $$ C_n^k = \frac{A_n^k}{k!} = \frac{n!}{k!\,(n-k)!} $$
 
-Chọn k vật để lấy cũng là chọn n - k vật để bỏ lại, nên:
+Lấy 2 trong 5: thành nhóm C(5, 2) = 10, có thứ tự A(5, 2) = 20, có thứ tự và được lặp 5^2 = 25. Chọn k để lấy cũng là chọn n - k để bỏ: C(n, k) = C(n, n - k).
 
-$$ C_n^k = C_n^{n-k} $$
+Ví dụ: 4 nam, 3 nữ. Chọn 3 người, có ít nhất 1 nữ.
 
-Ví dụ: một nhóm 5 nam và 4 nữ, chọn 3 người sao cho có ít nhất 1 nữ.
+1. Mọi nhóm 3 trong 7 người: C(7, 3) = 35.
+2. Nhóm không có nữ (3 trong 4 nam): C(4, 3) = 4.
+3. Có ít nhất 1 nữ: 35 - 4 = 31.
 
-1. Mọi cách chọn 3 người trong 9 người: C(9, 3) = 84.
-2. Các cách không có nữ nào, tức chọn 3 trong 5 nam: C(5, 3) = 10.
-3. Có ít nhất 1 nữ: 84 - 10 = 74.
+> Lỗi thường gặp: chọn 2 nam VÀ 1 nữ mà cộng C(4, 2) + C(3, 1). Làm cả hai việc thì nhân: 6 . 3 = 18.
 
-Khi phải chọn từ hai nhóm (ví dụ 2 bi đỏ và 1 bi xanh), chọn trong từng nhóm là các bước nối tiếp nên nhân: C(6, 2) . C(4, 1) = 15 . 4 = 60.
-
-Bảng so sánh nhanh khi chọn 2 trong 6:
-
-- Không kể thứ tự, không lặp: C(6, 2) = 15.
-- Có thứ tự, không lặp: A(6, 2) = 30.
-- Có thứ tự, được lặp: 6^2 = 36.
-
-> Lỗi thường gặp: cộng số cách chọn của hai nhóm thay vì nhân. Lấy 2 bi đỏ trong 6 và 1 bi xanh trong 4 là phải làm cả hai việc, nên có 15 . 4 = 60 cách chứ không phải 15 + 4 = 19.
+:::check
+Q: 8 điểm, không 3 điểm nào thẳng hàng: vẽ được bao nhiêu tam giác?
+A: Tam giác ABC cũng là tam giác BCA: không kể thứ tự. C(8, 3) = 56.
+:::
