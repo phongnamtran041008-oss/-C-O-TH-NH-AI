@@ -10,7 +10,7 @@ skills: [xs_t9_gia_thuyet, xs_t9_kiem_dinh_trung_binh, xs_t9_kiem_dinh_ty_le, xs
 ## Giả thuyết, mức ý nghĩa và hai loại sai lầm
 
 :::hook
-Bộ lọc thư coi mọi thư là thư thường (H0), chỉ đưa vào thư rác khi bằng chứng đủ mạnh. Lọc nhầm thư thật và bỏ lọt thư rác là hai cái sai khác nhau.
+Bộ lọc coi mọi thư là thư thường (H0), chỉ đưa vào thư rác khi đủ bằng chứng. Lọc nhầm thư thật và bỏ lọt thư rác là hai cái sai khác nhau.
 :::
 
 :::figure plane
@@ -27,14 +27,11 @@ line 1.645 0 1.645 0.43 xam dash "vạch" pos=n
 :::
 
 :::core
-H0 là lời công bố; chỉ bác bỏ nó khi dữ liệu quá hiếm nếu nó đúng. Sai loại một là bác bỏ nhầm (xác suất alpha), sai loại hai là bỏ sót (beta).
+Chỉ bác bỏ lời công bố H0 khi dữ liệu quá hiếm nếu H0 đúng. Bác bỏ nhầm: sai loại một (alpha); bỏ sót: sai loại hai (beta).
 :::
 
-$$ |z| > z_{\alpha/2}, \qquad z > z_{\alpha} $$
-
 - H0 luôn là đẳng thức (mu = 500). H1: mu khác 500 (hai phía), mu < 500 hay mu > 500 (một phía).
-- Vạch mức 5%: 1.96 hai phía, 1.645 một phía; mức 1%: 2.58 và 2.33. Lực là 1 - beta.
-- p-giá trị: xác suất, khi H0 đúng, được kết quả lệch ít nhất như đã thấy. Bác bỏ khi p < alpha.
+- alpha = P(bác bỏ | H0 đúng), beta = P(giữ H0 | H1 đúng), lực = 1 - beta.
 
 Ví dụ: sigma = 6, n = 36, H0: mu = 20, H1: mu = 22.5; bác bỏ khi x_tb > 22. Dùng Phi(2) = 0.4772, Phi(0.5) = 0.1915.
 
@@ -42,11 +39,32 @@ Ví dụ: sigma = 6, n = 36, H0: mu = 20, H1: mu = 22.5; bác bỏ khi x_tb > 22
 2. alpha = P(x_tb > 22 | mu = 20) = 0.5 - Phi(2) = 0.0228.
 3. beta = P(x_tb <= 22 | mu = 22.5) = 0.5 - Phi(0.5) = 0.3085.
 
-> Lỗi thường gặp: coi "không bác bỏ H0" là đã chứng minh H0 đúng, hay đọc p-giá trị là xác suất để H0 đúng.
+> Lỗi thường gặp: coi "không bác bỏ H0" là đã chứng minh H0 đúng. Có thể chỉ là beta lớn: dữ liệu chưa đủ.
 
 :::check
 Q: Bộ lọc thư: H0 "thư thường", bác bỏ thì chuyển vào thư rác. Sai lầm loại một và loại hai là gì?
 A: Loại một: thư thường bị đưa vào thư rác (bác bỏ H0 khi H0 đúng). Loại hai: thư rác lọt vào hộp thư (không bác bỏ khi H0 sai).
+:::
+
+### Vạch bác bỏ và p-giá trị
+
+Vạch đặt sao cho đuôi vượt vạch, tính khi H0 đúng, đúng bằng alpha. Hai phía thì chia alpha cho hai đuôi.
+
+$$ |z| > z_{\alpha/2}, \qquad z > z_{\alpha} $$
+
+- Mức 5%: 1.96 hai phía, 1.645 một phía. Mức 1%: 2.58 hai phía, 2.33 một phía.
+- p-giá trị: xác suất, khi H0 đúng, được kết quả lệch ít nhất như đã thấy. Bác bỏ khi p < alpha.
+
+Ví dụ: kiểm định hai phía cho z = -2, dùng Phi(2) = 0.4772.
+
+1. p = 2(0.5 - Phi(2)) = 0.0456.
+2. p < 0.05: bác bỏ ở mức 5%. p > 0.01: chưa bác bỏ ở mức 1%.
+
+> Lỗi thường gặp: đọc p-giá trị là xác suất để H0 đúng, hay dùng 1.645 cho kiểm định hai phía.
+
+:::check
+Q: Thống kê z = 1.7, mức 5%. Bác bỏ H0 không, nếu H1 là hai phía? Nếu H1 là một phía phải?
+A: Hai phía: 1.7 < 1.96, chưa bác bỏ. Một phía phải: 1.7 > 1.645, bác bỏ.
 :::
 
 ## Kiểm định trung bình một tổng thể
@@ -147,9 +165,7 @@ Hai mẫu độc lập: phương sai của hiệu là tổng hai phương sai. R
 
 $$ z = \frac{x_{tb1} - x_{tb2}}{\sqrt{\sigma_1^2/n_1 + \sigma_2^2/n_2}} $$
 
-$$ s^2 = \frac{(n_1 - 1)s_1^2 + (n_2 - 1)s_2^2}{n_1 + n_2 - 2}, \qquad t = \frac{x_{tb1} - x_{tb2}}{\sqrt{s^2(1/n_1 + 1/n_2)}} $$
-
-Mẫu lớn: thay sigma bằng s. Mẫu nhỏ, hai tổng thể chuẩn cùng phương sai: gộp như dòng dưới, Student n_1 + n_2 - 2 bậc tự do; n_1 = n_2 = 9, s_1^2 = 20, s_2^2 = 16 cho s^2 = 18, sai số chuẩn 2.
+Mẫu lớn thì thay sigma bằng s.
 
 Ví dụ: sigma_1 = 12, n_1 = 16; sigma_2 = 8, n_2 = 4; hiệu trung bình 11; hai phía, mức 5%.
 
@@ -161,6 +177,25 @@ Ví dụ: sigma_1 = 12, n_1 = 16; sigma_2 = 8, n_2 = 4; hiệu trung bình 11; h
 :::check
 Q: Hai mẫu lớn có trung bình chênh 3, sai số chuẩn của hiệu là 2. Kiểm định H1: mu_1 > mu_2 mức 5% có bác bỏ H0 không?
 A: z = 3/2 = 1.5 < 1.645: chưa đủ cơ sở. Hai trung bình mẫu khác nhau chưa đủ để kết luận.
+:::
+
+### Mẫu nhỏ: gộp phương sai
+
+Hai tổng thể chuẩn, cùng phương sai chưa biết, mẫu nhỏ: gộp hai phương sai mẫu thành một s^2, có trọng số là bậc tự do n_i - 1, rồi dùng Student n_1 + n_2 - 2 bậc tự do.
+
+$$ s^2 = \frac{(n_1 - 1)s_1^2 + (n_2 - 1)s_2^2}{n_1 + n_2 - 2}, \qquad t = \frac{x_{tb1} - x_{tb2}}{\sqrt{s^2(1/n_1 + 1/n_2)}} $$
+
+Ví dụ: n_1 = n_2 = 9, s_1^2 = 20, s_2^2 = 16, hiệu trung bình 5, hai phía mức 5%, t(16; 0.025) = 2.120.
+
+1. s^2 = (8 . 20 + 8 . 16)/16 = 18.
+2. Sai số chuẩn: sqrt(18 . 2/9) = 2.
+3. t = 5/2 = 2.5 > 2.120: bác bỏ H0.
+
+> Lỗi thường gặp: lấy trung bình cộng hai phương sai khi hai mẫu khác cỡ, hay dùng n_1 + n_2 bậc tự do.
+
+:::check
+Q: n_1 = 4, s_1^2 = 12; n_2 = 6, s_2^2 = 6. Tính s^2 gộp và số bậc tự do.
+A: s^2 = (3 . 12 + 5 . 6)/8 = 66/8 = 33/4; 4 + 6 - 2 = 8 bậc tự do.
 :::
 
 ## So sánh hai tỷ lệ
