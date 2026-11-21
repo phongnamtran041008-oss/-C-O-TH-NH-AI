@@ -19,8 +19,8 @@ its row in the same commit.
 |---|---|---|---|
 | `abode` | Động Phủ | 40 x 24 | private |
 | `truc_lam_thon` | Trúc Lâm Thôn | 56 x 36 | hub |
-| `rung_muc_loang` | Mê Đồ Lâm | 60 x 40 | land, small |
-| `ho_nghien_muc` | Vạn Tượng Trạch | 56 x 38 | land, small |
+| `rung_muc_loang` | Mê Đồ Lâm | 320 x 240 | land, giant |
+| `ho_nghien_muc` | Vạn Tượng Trạch | 320 x 240 | land, giant |
 | `loan_so_coc` | Kiếm Trủng Sơn | 320 x 240 | land, giant |
 | `luu_van_coc` | Lưu Vân Cốc | 320 x 240 | land, giant |
 | `thien_cong_phuong` | Thiên Công Phường | 320 x 240 | land, giant |
